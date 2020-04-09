@@ -25,11 +25,11 @@
   ;; mid level
   (:export #:call-with-stack #:with-stack)
   (:export #:up #:down #:visible)
-  (:export #:map-frames #:list-frames)
+  (:export #:map-stack #:list-stack)
   ;; defined later in conditions.lsp
   (:export #:safe-prin1 #:prin1-frame-call)
   ;; high level
-  (:export #:map-frames-ids #:goto)
+  (:export #:map-indexed-stack #:goto)
   (:export #:hide-package #:unhide-package
            #:hide #:unhide #:unhide-all)
   ;; misc
@@ -47,27 +47,42 @@
 
 ;;; FIXME: Consing up the whole list only to discard it is silly.
 (defun call-with-frame (function)
+  "Functional version of WITH-FRAME."
   (core:call-with-backtrace
    (lambda (bt)
      (declare (core:lambda-name call-with-frame-lambda))
      (funcall function (first bt)))))
 
 (defmacro with-frame ((frame) &body body)
+  "Execute the body in an environment in which FRAME is bound to a CLASP-DEBUG:FRAME object representing the current continuation. This frame object has dynamic extent.
+This is a low level interface, representing as much information as Clasp can provide. WITH-TRUNCATED-STACK and WITH-CAPPED-STACK are ignored, and any notion of filtering out frames is not involved. UP, DOWN, MAP-STACK, etc. are therefore not supported; you can use FRAME-UP and FRAME-DOWN instead.
+See WITH-STACK for the more friendly interface."
   `(call-with-frame (lambda (,frame) ,@body)))
 
 (defun frame-up (frame)
+  "Return the frame directly above the current frame, or NIL if there are no more frames.
+
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the caller is 'above' the frame for what it calls."
   (core:backtrace-frame-up frame))
 
 (defun frame-down (frame)
+  "Return the frame directly below the current frame, or NIL if there are no more frames.
+
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the callee is 'below' the frame for what called it."
   (core:backtrace-frame-down frame))
 
 (defun frame-function (frame)
+  "Return the function being called in this frame, or NIL if it is not available.
+The FRAME-FUNCTION-xxx functions may return meaningful information even when this function fails."
   (core:backtrace-frame-closure frame))
 
 (defun frame-arguments (frame)
+  "Return the list of arguments to the call for this frame."
   (coerce (core:backtrace-frame-arguments frame) 'list))
 
 (defun frame-locals (frame)
+  "Return an alist of local lexical variables and their values at the continuation the frame represents. The CARs are variable names and CDRs their values.
+Multiple bindings with the same name may be returned, as there is no notion of lexical scope in this interface."
   ;; TODO: This is not a real solution, at all.
   (let* ((fname (clasp-debug:frame-function-name frame))
          (args (clasp-debug:frame-arguments frame)))
@@ -92,6 +107,7 @@
                             arg)))))
 
 (defun frame-source-position (frame)
+  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call."
   (multiple-value-bind (pathname line-number column)
       (core::code-source-position
        (core:backtrace-frame-return-address frame))
@@ -101,35 +117,46 @@
      :column column)))
 
 (defun frame-language (frame)
+  "Return a marker of the programming language of the code for this frame. May be :LISP or :C++."
   (core:backtrace-frame-type frame))
 
 (defun frame-function-name (frame)
+  "Return the name of the function being called in this frame. This will be one of:
+* A symbol.
+* A list (SETF symbol).
+* A list that is one of Clasp's function names, such as (FLET ...), (LABELS ...), or (METHOD ...).
+* A string, representing a C or C++ function."
   (core:backtrace-frame-print-name frame))
 
 (defun frame-function-lambda-list (frame)
+  "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
   ;; FIXME: Get from function description
   (let ((f (frame-function frame)))
     (if f
-        (values (ext:function-lambda-list f) t)
+        (ext:function-lambda-list f)
         (values nil nil))))
 
 (defun frame-function-source-position (frame)
+  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's function."
   ;; TODO: Get from function description
   (declare (ignore frame))
   nil)
 
 (defun frame-function-form (frame)
+  "Return a lambda expression for this frame's function if it's available, or else NIL."
   ;; TODO
   (declare (ignore frame))
   nil)
 
 (defun frame-function-documentation (frame)
+  "Return the docstring for this frame's function if it exists and is available, or else NIL."
   (let ((f (frame-function frame)))
     (if f
         (documentation f 'function)
         nil)))
 
 (defun disassemble-frame (frame)
+  "Disassemble this frame's function to *standard-output*."
   ;; TODO: Use function-start-address, function-end-address
   (let ((f (frame-function frame)))
     (when f (disassemble f))))
@@ -144,19 +171,25 @@
 (defun call-with-truncated-stack (function) (funcall function))
 
 (defmacro with-truncated-stack ((&key) &body body)
+  "Execute the body such that WITH-STACK and derived tools will not see frames below this form's continuation.
+Only the innermost WITH-TRUNCATED-STACK matters for this purpose."
   ;; progn to avoid declarations
   `(call-with-truncated-stack (lambda () (progn ,@body))))
 
 (defun truncation-frame-p (frame)
+  "Return true iff this frame represents a use of WITH-TRUNCATED-STACK."
   (eq (frame-function-name frame) 'call-with-truncated-stack))
 
 (declaim (notinline call-with-capped-stack))
 (defun call-with-capped-stack (function) (funcall function))
 
 (defmacro with-capped-stack ((&key) &body body)
+  "Execute the body such that WITH-STACK and derived tools will not see frames above this form's continuation.
+Only the outermost WITH-CAPPED-STACK matters for this purpose."
   `(call-with-capped-stack (lambda () (progn ,@body))))
 
 (defun cap-frame-p (frame)
+  "Return true iff this frame represents a use of WITH-CAPPED-STACK."
   (eq (frame-function-name frame) 'call-with-capped-stack))
 
 ;;; Mid level interface: Navigate frames nicely
@@ -185,6 +218,7 @@
       ((or (null f) (cap-frame-p f)) f)))
 
 (defun call-with-stack (function &key)
+  "Functional form of WITH-STACK."
   (call-with-frame
    (lambda (frame)
      (declare (core:lambda-name call-with-stack-lambda))
@@ -194,11 +228,16 @@
 
 (defmacro with-stack ((stack &rest kwargs &key &allow-other-keys)
                       &body body)
+  "Execute the body in an environment in which FRAME is bound to a CLASP-DEBUG:FRAME object representing the current continuation. This frame object has dynamic extent.
+You can use UP and DOWN to navigate frames. Frames above and below WITH-CAPPED-STACK and WITH-TRUNCATED-STACK are inaccessible with these operators.
+Frames hidden by *FRAME-FILTERS* will be skipped.
+See WITH-STACK for the lower level interface."
   `(call-with-stack (lambda (,stack) ,@body) ,@kwargs))
 
 (defparameter *frame-filters* (list 'non-lisp-frame-p
                                     'package-hider
-                                    'fname-hider))
+                                    'fname-hider)
+  "A list of function designators. Any CLASP-DEBUG:FRAME for which any of the functions returns true will be considered invisible by the mid level CLASP-DEBUG interface (e.g. UP, DOWN)")
 
 (defun frame-visible-p (frame)
   (notany (lambda (f) (funcall f frame)) *frame-filters*))
@@ -219,21 +258,26 @@
     (when (frame-visible-p next) (return next))))
 
 (defun up (frame &optional (n 1))
+  "Return the nth visible frame above the given frame, or if there are not that many visible frames above, return the topmost frame."
   (loop repeat n do (setf frame (up1 frame *stack-top*)))
   frame)
 
 (defun down (frame &optional (n 1))
+  "Return the nth visible frame below the given frame, or if there are not that many visible frames above, return the bottommost frame."
   (loop repeat n do (setf frame (down1 frame *stack-bot*)))
   frame)
 
 ;; Return the frame if it's visible, or else the next
 ;; visible frame up if it's not.
 (defun visible (frame)
+  "If FRAME is visible, return it. Otherwise return the nearest visible frame above."
   (if (frame-visible-p frame)
       frame
       (up frame)))
 
-(defun map-frames (function frame &key count)
+(defun map-stack (function frame &key count)
+  "Call FUNCTION exactly once on each visible frame in the stack, starting at FRAME and then proceeding upward.
+If COUNT is provided, at most that many visible frames are called on."
   (loop for f = (visible frame) then (up f)
         for i from 0
         when (or (and count (= i count))
@@ -243,11 +287,13 @@
           return (values)
         do (funcall function f)))
 
-(defun list-frames (frame &key count)
+(defun list-stack (frame &key count)
+  "Return a list of visible frames starting at FRAME and moving upward.
+If COUNT is provided, at most that many frames are returned."
   (let ((l nil))
-    (map-frames
+    (map-stack
      (lambda (frame)
-       (declare (core:lambda-name list-frames-lambda))
+       (declare (core:lambda-name list-stack-lambda))
        (push frame l))
      frame
      :count count)
@@ -262,7 +308,10 @@
 ;;; visibility. If all frames are visible these IDs will
 ;;; be contiguous as well. If COUNT is provided, at most
 ;;; that many visible frames have the function called on them.
-(defun map-frames-ids (function base &key count)
+(defun map-indexed-stack (function base &key count)
+  "Like MAP-STACK, except the function is called with two arguments: the frame, and an index number.
+These index numbers start with base = 0 and increase by 1 for each frame, visible or not. This means that frames from the same WITH-STACK will have consistent indices even if visibility rules are changed between MAP-INDEXED-STACK calls.
+Note that as with MAP-STACK, only visible frames are used with respect to the COUNT."
   (loop for f = base then (frame-up f)
         for i from 0
         with c = 0
@@ -273,6 +322,8 @@
         until (and count (= c count))))
 
 (defun goto (base i)
+  "Return the frame I up from the base frame, where I is an index as in MAP-INDEXED-STACK.
+Note that as such, the frame returned may not be visible."
   (loop repeat i
         if (eq (frame-up base) *stack-top*) return base
         else do (setf base (frame-up base)))
@@ -286,11 +337,13 @@
 (defparameter *hidden-packages* nil)
 
 (defun hide-package (package-designator)
+  "Mark frames whose functions are in the given package as invisible. See FUNCTION-NAME-PACKAGE."
   (pushnew (find-package package-designator) *hidden-packages*
            :test #'eq)
   *hidden-packages*)
 
 (defun unhide-package (package-designator)
+  "Undo HIDE-PACKAGE for the given package."
   (setq *hidden-packages*
         (delete (find-package package-designator) *hidden-packages*
                 :test #'eq))
@@ -314,10 +367,12 @@
     clos::interpreted-discriminating-function))
 
 (defun hide (function-name)
+  "Mark frames whose functions have the given name as invisible."
   (pushnew function-name *hidden-fnames* :test #'equal)
   *hidden-fnames*)
 
 (defun unhide (function-name)
+  "Undo a HIDE on the given function name."
   (setq *hidden-fnames*
         (delete function-name *hidden-fnames* :test #'equal))
   *hidden-fnames*)
@@ -327,13 +382,16 @@
           :test #'equal))
 
 (defun unhide-all ()
+  "Unhide all hidden packages and function names."
   (setq *hidden-packages* nil *hidden-fnames* nil))
 
 ;;; Miscellaneous.
 
-;;; Return the package a function name conceptually belongs to.
+;;; 
 ;;; Used above and by SLDB. FIXME: Robustness
 (defun function-name-package (function-name)
+  "Return the package a function name conceptually belongs to, or NIL if there is none.
+For example, for a function-name that is a symbol, returns that symbol's package, and for a function-name that is a list (SETF symbol), returns that symbol's package."
   (cond ((null function-name) nil) ; information is lacking
         ((stringp function-name) nil) ; C/C++ frame, inapplicable
         ((eq function-name 'cl:lambda) nil) ; anonymous

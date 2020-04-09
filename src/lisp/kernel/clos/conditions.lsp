@@ -1047,6 +1047,8 @@ bstrings."
 (in-package #:clasp-debug)
 
 (defun safe-prin1 (object &optional output-stream-designator)
+  "PRIN1 the OBJECT to the given stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled. If the object cannot be printed, an unreadable representation is returned instead."
   (let ((string
           (handler-case
               ;; First just try it.
@@ -1072,6 +1074,8 @@ bstrings."
       (safe-prin1 fname output-stream-designator)))
 
 (defun prin1-frame-call (frame &optional output-stream-designator)
+  "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
   (let ((fname (clasp-debug:frame-function-name frame))
         (args (clasp-debug:frame-arguments frame)))
     (if (null args)

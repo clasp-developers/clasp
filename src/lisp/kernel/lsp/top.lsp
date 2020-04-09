@@ -735,7 +735,7 @@ Use special code 0 to cancel this operation.")
   (core:btcl))
 
 (defun tpl-backtrace (&optional count)
-  (clasp-debug:map-frames-ids
+  (clasp-debug:map-indexed-stack
    (lambda (frame i)
      (format t "~&~d: " i)
      (clasp-debug:prin1-frame-call frame))
