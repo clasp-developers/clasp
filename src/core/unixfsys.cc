@@ -2221,5 +2221,35 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
   return fdset;
 }
 
+CL_LAMBDA(filedescriptor);
+CL_DECLARE();
+CL_DOCSTRING("Fstat values size mtime and mode for file-descriptor, nil on error");
+CL_DEFUN T_mv core__fstat(int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return Values(_Nil<T_O>());
+  else
+    return Values (Integer_O::create(sb.st_size),
+                   Integer_O::create((gctools::Fixnum) sb.st_mtime),
+                   Integer_O::create((gctools::Fixnum) sb.st_mode));
+                                     
+};
+
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("stat values size mtime and mode for a pathname, nil on error");
+CL_DEFUN T_mv core__stat (T_sp pathname) {
+  struct stat sb;
+  String_sp filename = gc::As<String_sp>(cl__namestring(pathname));
+  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+    return Values (_Nil<T_O>());
+  else
+    return Values(Integer_O::create(sb.st_size),
+                  Integer_O::create((gctools::Fixnum) sb.st_mtime),
+                  Integer_O::create((gctools::Fixnum) sb.st_mode));
+};
+
+SYMBOL_EXPORT_SC_(CorePkg, fstat);
+SYMBOL_EXPORT_SC_(CorePkg, stat);
 
 }; // namespace core
