@@ -512,3 +512,35 @@
 
 (test can-read-nil-bitarray-0 (zerop (row-major-aref #0A0 0)))
 (test can-read-nil-bitarray-1 (= 1 (row-major-aref #0A1 0)))
+
+(test all-char-names-can-be-read-again
+      (dotimes (x (min 65535 char-code-limit) t)
+        (let ((char (code-char x)))
+          (unless (char= char
+                         (handler-case
+                             (read-from-string (format nil "#\\~a" (char-name char)))
+                           (error (e)(values "" e))))
+            (return nil)))))
+
+(test all-chars-can-be-read-again
+      (dotimes (x (min 65535 char-code-limit) t)
+        (let ((c (code-char x)))
+          (unless (or (not (characterp c))
+                      (let ((name (char-name c)))
+                        (or (null name)
+                            (and (stringp name)
+                                 (char= c (name-char name))))))
+            (return nil)))))
+
+
+(test name-char.2
+      (null
+       (loop for s in '("RubOut" "PAGe" "BacKspace" "RetUrn" "Tab" "LineFeed"
+                        "SpaCE" "NewLine")
+          unless
+            (let ((c1 (name-char (string-upcase s)))
+                  (c2 (name-char (string-downcase s)))
+                  (c3 (name-char (string-capitalize s)))
+                  (c4 (name-char s)))
+              (and (char= c1 c2) (char= c2 c3) (char= c3 c4)))
+          collect s)))
