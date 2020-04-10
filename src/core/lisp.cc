@@ -1213,6 +1213,8 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
   features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
+  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
+  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
 #ifdef _TARGET_OS_DARWIN
   features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
