@@ -1036,7 +1036,7 @@ This works like compile-lambda-function in bclasp."
   (gethash char *mapping-char-code-to-char-names*))
   
 (defun process-unicode-file ()
-  (let ((file "SOURCE-DIR:tools-for-build;UnicodeData.txt"))
+  (let ((file (merge-pathnames #P"UnicodeData.txt" (translate-logical-pathname #P"SOURCE-DIR:tools-for-build;"))))
     (with-open-file (stream file :element-type 'character :direction :input :external-format :utf-8)
       (loop
          (let ((line (read-line stream nil :end)))
