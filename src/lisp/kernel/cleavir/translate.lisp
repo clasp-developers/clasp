@@ -1036,7 +1036,7 @@ This works like compile-lambda-function in bclasp."
   (gethash char *mapping-char-code-to-char-names*))
   
 (defun process-unicode-file ()
-  (let ((file "sys:kernel;cleavir;UnicodeData.txt"))
+  (let ((file "SOURCE-DIR:tools-for-build;UnicodeData.txt"))
     (with-open-file (stream file :element-type 'character :direction :input :external-format :utf-8)
       (loop
          (let ((line (read-line stream nil :end)))
@@ -1080,7 +1080,6 @@ This works like compile-lambda-function in bclasp."
     (process-low-mappings)))
     
 (defmethod eclector.reader:find-character ((client clasp-cst-client) name)
-  (ensure-unicode-table-loaded)
   (or (call-next-method)
       (gethash name *additional-clasp-character-names*)
       (simple-unicode-name name)))
@@ -1090,11 +1089,9 @@ This works like compile-lambda-function in bclasp."
                                (string string-designator)
                                (symbol (symbol-name string-designator))
                                (character (string string-designator))))))
-    (ensure-unicode-table-loaded)
     (eclector.reader:find-character *cst-client* name)))
 
 (defun cl:char-name (char)
-  (ensure-unicode-table-loaded)
   (or 
    (values (map-char-to-char-name char))
    ;;; If there is no mapping, at least return "U<char-code-as-hex>"

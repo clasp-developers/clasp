@@ -51,6 +51,7 @@
                ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")
+               (:file "define-unicode-tables")
                (:file "inline-prep")
                ;;                 (:file "auto-compile")
                ;;                 (:file "inline")

@@ -53,7 +53,6 @@
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
 
 (defmethod eclector.reader:find-character ((client clasp-non-cst-elector-client) name)
-  (clasp-cleavir::ensure-unicode-table-loaded)
   (or (call-next-method)
       (gethash name clasp-cleavir::*additional-clasp-character-names*)
       (clasp-cleavir::simple-unicode-name name)))
