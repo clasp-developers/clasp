@@ -79,6 +79,41 @@ FunctionDescription* makeFunctionDescription(T_sp functionName,
   return fdesc;
 }
 
+T_sp FunctionDescription::sourcePathname() const {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
+  return CONS_CAR(cell);
+}
+
+void FunctionDescription::setf_sourcePathname(T_sp sourceFileName) {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
+  cell->rplaca(sourceFileName);
+}
+
+T_sp FunctionDescription::functionName() const {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
+  return CONS_CDR(cell);
+}
+
+T_sp FunctionDescription::lambdaList() const {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
+  return CONS_CAR(cell);
+}
+
+void FunctionDescription::setf_lambdaList(T_sp lambda_list) {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
+  cell->rplaca(lambda_list);
+}
+
+T_sp FunctionDescription::docstring() const {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
+  return CONS_CDR(cell);
+}
+
+void FunctionDescription::setf_docstring(T_sp x) {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
+  cell->rplacd(x);
+}
+
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp func) {
   T_sp functionName = func->functionName();
   if (functionName.unboundp()) {
