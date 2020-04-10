@@ -28,6 +28,7 @@
   (:export #:map-stack #:list-stack)
   ;; defined later in conditions.lsp
   (:export #:safe-prin1 #:prin1-frame-call
+           #:princ-code-source-line
            #:print-stack #:print-backtrace)
   ;; high level
   (:export #:map-indexed-stack #:goto)
@@ -108,14 +109,16 @@ Multiple bindings with the same name may be returned, as there is no notion of l
                             arg)))))
 
 (defun frame-source-position (frame)
-  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call."
+  "Return a CODE-SOURCE-LINE object representing the source file position for this frame's call, or NIL if no information is available."
   (multiple-value-bind (pathname line-number column)
       (core::code-source-position
        (core:backtrace-frame-return-address frame))
-    (make-code-source-line
-     :pathname pathname
-     :line-number line-number
-     :column column)))
+    (if (null pathname)
+        nil
+        (make-code-source-line
+         :pathname pathname
+         :line-number line-number
+         :column column))))
 
 (defun frame-language (frame)
   "Return a marker of the programming language of the code for this frame. May be :LISP or :C++."

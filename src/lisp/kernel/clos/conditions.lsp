@@ -1088,20 +1088,39 @@ Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
                (write-char #\) output-stream-designator))))
   frame)
 
-(defun print-stack (base &key (stream *standard-output*) count)
+(defun princ-code-source-line (code-source-line &optional output-stream-designator)
+  "Write a human-readable representation of the CODE-SOURCE-LINE to the stream."
+  (let ((string
+          (handler-case
+              (format nil "~a:~d"
+                      (clasp-debug:code-source-line-pathname code-source-line)
+                      (clasp-debug:code-source-line-line-number code-source-line))
+            (serious-condition () "error while printing code-source-line"))))
+    (write-string string output-stream-designator)))
+
+(defun print-stack (base &key (stream *standard-output*) count source-positions)
   "Write a representation of the stack beginning at BASE to STREAM.
-If COUNT is provided and not NIL, at most COUNT frames are printed."
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
   (map-indexed-stack
    (lambda (frame i)
-     (format stream "~&~d: " i)
-     (prin1-frame-call frame stream))
+     (format stream "~&~4d: " i)
+     (prin1-frame-call frame stream)
+     (when source-positions
+       (let ((fsp (frame-source-position frame)))
+         (when fsp
+           (fresh-line stream)
+           (write-string "    |---> " stream)
+           (princ-code-source-line fsp stream)))))
    base
    :count count)
   (fresh-line stream)
   (values))
 
-(defun print-backtrace (&key (stream *standard-output*) count)
+(defun print-backtrace (&key (stream *standard-output*) count source-positions)
   "Write a current backtrace to STREAM.
-If COUNT is provided and not NIL, at most COUNT frames are printed."
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
   (with-stack (stack)
-    (print-stack stack :stream stream :count count)))
+    (print-stack stack :stream stream :count count
+                 :source-positions source-positions)))
