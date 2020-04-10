@@ -1218,49 +1218,6 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-#if 0
-CL_DEFUN void core__test_backtrace() {
-  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
-  if (top == NULL) {
-    printf("Empty InvocationHistoryStack\n");
-    return;
-  }
-  int index = 0;
-  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    T_sp frame = cur->valist_sp();
-    printf("Frame[%d] = %p\n", index, frame.raw_());
-    ++index;
-  }
-  printf("----Done\n");
-}
-#endif
-
-SYMBOL_EXPORT_SC_(CorePkg,make_shadow_backtrace_frame);
-
-CL_DEFUN List_sp core__shadow_backtrace_as_list() {
-  const InvocationHistoryFrame *top = my_thread->_InvocationHistoryStackTop;
-  if (top == NULL) {
-    return _Nil<T_O>();
-  }
-  ql::list result;
-  int index = 0;
-  for (const InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
-    if (cur->_Previous) {
-      T_sp frame = eval::funcall(_sym_make_shadow_backtrace_frame,
-                                 INTERN_(kw,index), make_fixnum(index),
-                                 INTERN_(kw,frame_address), Pointer_O::create((void*)cur),
-                                 INTERN_(kw,function_name), gc::As<Closure_sp>(cur->function())->functionName(),
-                                 INTERN_(kw,function), cur->function(),
-                                 INTERN_(kw,arguments), cur->arguments(),
-                                 INTERN_(kw,environment), cur->function());
-      result << frame;
-      ++index;
-    }
-  }
-  return result.cons();
-}
-
-
 bool search_for_matching_close_bracket(const std::string& sin, size_t& pos, stringstream& sacc) {
   for ( size_t i=pos; i<sin.size(); ++i ) {
     if (sin[i] == '>') {
