@@ -108,70 +108,9 @@ For C/C++ frames - return (list 'c-function name)."
           (setf (backtrace-frame-function-name frame) name
                 (backtrace-frame-print-name frame) print-name))
         (setf (backtrace-frame-function-name frame) common-lisp-name
-              (backtrace-frame-print-name frame) common-lisp-name))))
+              (backtrace-frame-print-name frame) common-lisp-name)))) ; return ALL frames
 
-(defun gather-frames (frames start-trigger &key verbose)
-  (let ((state (if start-trigger
-                   :skip-first-frames
-                   :gather)) ; If the start-trigger is NIL start gathering right away
-        new-state result)
-    (dolist (frame frames)
-      (let ((func-name (backtrace-frame-function-name frame)))
-        ;; State machine
-        (setq new-state (cond
-                          ((and (eq state :skip-first-frames)
-                                (funcall start-trigger frame))
-                           :gather)
-                          (t state)))
-        (when verbose
-          (bformat t "-----state -> %s   new-state -> %s%N" state new-state)
-          (bformat t "     frame: %s%N" frame))
-        (setq state new-state)
-        (when (and (eq (backtrace-frame-type frame) :lisp)
-                   (eq state :gather))
-          (when verbose (bformat t "     PUSHED!%N"))
-          (push frame result))))
-    (reverse result)))
-
-;;; Extract just the Common Lisp backtrace frames
-;;; starting from a frame that satisfies gather-start-trigger
-(defun common-lisp-backtrace-frames (backtrace &key verbose (focus t)
-                                                 (gather-start-trigger
-                                                  (lambda (frame)
-                                                    (and (eq :lisp (backtrace-frame-type frame))
-                                                         (eq 'cl:error (backtrace-frame-function-name frame)))))
-                                       gather-all-frames)
-  "Extract the common lisp backtrace frames.  Provide a gather-start-trigger function
-that takes one argument (the backtrace-frame-function-name) and returns T it should trigger when to start
-recording backtrace frames for Common Lisp.   Looking for the 'UNIVERSAL-ERROR-HANDLER' string
-is one way to eliminate frames that aren't interesting to the user.
-Set gather-all-frames to T and you can gather C++ and Common Lisp frames"
-  (let ((frames backtrace))
-    (cond
-      ((gather-frames frames gather-start-trigger :verbose verbose)) ; Start gathering on a specific frame
-      ((gather-frames frames (lambda (frame) (eq :lisp (backtrace-frame-type frame))) :verbose verbose)) ; return all :LISP frames
-      (t frames)))) ; return ALL frames
-
-(defun bt-argument (frame-index argument-index)
-  "Get argument argument-index (or all if argument-index is not a number) from frame frame-index in current backtrace"
-  (core:call-with-backtrace
-   #'(lambda (raw-backtrace)
-       (let ((frames (common-lisp-backtrace-frames raw-backtrace))
-             (index 0))
-         (dolist (frame frames)
-           (when (= index frame-index)
-             (let ((arguments-vector (backtrace-frame-arguments frame)))
-               (return-from bt-argument
-                 (if (numberp argument-index)
-                     (if (> (length arguments-vector) argument-index)
-                         (aref arguments-vector argument-index)
-                         :invalid-argument-index)
-                     arguments-vector))))
-           (incf index)))
-       (return-from bt-argument :invalid-frame-index))))
-
-(export '(common-lisp-backtrace-frames
-          backtrace-frame-function-name backtrace-frame-arguments bt-argument))
+(export '(backtrace-frame-function-name backtrace-frame-arguments))
 
 (defmacro with-dtrace-trigger (&body body)
   `(unwind-protect
