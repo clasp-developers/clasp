@@ -735,14 +735,7 @@ Use special code 0 to cancel this operation.")
   (core:btcl))
 
 (defun tpl-backtrace (&optional count)
-  (clasp-debug:map-indexed-stack
-   (lambda (frame i)
-     (format t "~&~d: " i)
-     (clasp-debug:prin1-frame-call frame))
-   *break-base*
-   :count count)
-  (terpri)
-  (values))
+  (clasp-debug:print-stack *break-base* :count count))
 
 (defun break-where ()
   (if (<= *tpl-level* 0)
@@ -1014,7 +1007,7 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
   (declare (ignore old-hook))
   (format *error-output* "~&Condition of type: ~a~%~a~%"
           (type-of condition) condition)
-  (ext:btcl :all t :source-info t)
+  (clasp-debug:print-backtrace)
   (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
   (core:quit 1))
 

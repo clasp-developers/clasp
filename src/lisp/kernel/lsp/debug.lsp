@@ -27,7 +27,8 @@
   (:export #:up #:down #:visible)
   (:export #:map-stack #:list-stack)
   ;; defined later in conditions.lsp
-  (:export #:safe-prin1 #:prin1-frame-call)
+  (:export #:safe-prin1 #:prin1-frame-call
+           #:print-stack #:print-backtrace)
   ;; high level
   (:export #:map-indexed-stack #:goto)
   (:export #:hide-package #:unhide-package

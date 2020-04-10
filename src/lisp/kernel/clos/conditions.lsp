@@ -1087,3 +1087,21 @@ Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
                         (safe-prin1 arg output-stream-designator))
                (write-char #\) output-stream-designator))))
   frame)
+
+(defun print-stack (base &key (stream *standard-output*) count)
+  "Write a representation of the stack beginning at BASE to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed."
+  (map-indexed-stack
+   (lambda (frame i)
+     (format stream "~&~d: " i)
+     (prin1-frame-call frame stream))
+   base
+   :count count)
+  (fresh-line stream)
+  (values))
+
+(defun print-backtrace (&key (stream *standard-output*) count)
+  "Write a current backtrace to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed."
+  (with-stack (stack)
+    (print-stack stack :stream stream :count count)))
