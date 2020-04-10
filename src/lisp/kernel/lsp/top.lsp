@@ -1009,7 +1009,8 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
           (type-of condition) condition)
   (let ((clasp-debug:*frame-filters* nil))
     (clasp-debug:print-backtrace :stream *error-output*
-                                 :source-positions t))
+                                 :source-positions t
+                                 :delimited nil))
   (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
   (core:quit 1))
 

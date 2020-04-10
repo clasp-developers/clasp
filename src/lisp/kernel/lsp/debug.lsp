@@ -5,7 +5,6 @@
            #:code-source-line-pathname
            #:code-source-line-line-number
            #:code-source-line-column)
-  (:export #:call-with-frame #:with-frame)
   (:import-from #:core #:frame)
   (:export #:frame)
   (:export #:frame-up #:frame-down)
@@ -47,30 +46,20 @@
 (defstruct (code-source-line (:type vector) :named)
   pathname line-number column)
 
-;;; FIXME: Consing up the whole list only to discard it is silly.
-(defun call-with-frame (function)
-  "Functional version of WITH-FRAME."
-  (core:call-with-backtrace
-   (lambda (bt)
-     (declare (core:lambda-name call-with-frame-lambda))
-     (funcall function (first bt)))))
-
-(defmacro with-frame ((frame) &body body)
-  "Execute the body in an environment in which FRAME is bound to a CLASP-DEBUG:FRAME object representing the current continuation. This frame object has dynamic extent.
-This is a low level interface, representing as much information as Clasp can provide. WITH-TRUNCATED-STACK and WITH-CAPPED-STACK are ignored, and any notion of filtering out frames is not involved. UP, DOWN, MAP-STACK, etc. are therefore not supported; you can use FRAME-UP and FRAME-DOWN instead.
-See WITH-STACK for the more friendly interface."
-  `(call-with-frame (lambda (,frame) ,@body)))
-
 (defun frame-up (frame)
   "Return the frame directly above the current frame, or NIL if there are no more frames.
 
-This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the caller is 'above' the frame for what it calls."
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the caller is 'above' the frame for what it calls.
+
+This function ignores visibility and may not halt at delimiters. UP is the higher level interface."
   (core:backtrace-frame-up frame))
 
 (defun frame-down (frame)
   "Return the frame directly below the current frame, or NIL if there are no more frames.
 
-This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the callee is 'below' the frame for what called it."
+This notion of direction is arbitrary, and unrelated to any machine stack growth directions. The frame for the callee is 'below' the frame for what called it.
+
+This function ignores visibility and may not halt at delimiters. DOWN is the lower level interface."
   (core:backtrace-frame-down frame))
 
 (defun frame-function (frame)
@@ -175,7 +164,7 @@ Multiple bindings with the same name may be returned, as there is no notion of l
 (defun call-with-truncated-stack (function) (funcall function))
 
 (defmacro with-truncated-stack ((&key) &body body)
-  "Execute the body such that WITH-STACK and derived tools will not see frames below this form's continuation.
+  "Execute the body such that WITH-STACK and derived tools will not see frames below this form's continuation, unless they are passed :delimited nil.
 Only the innermost WITH-TRUNCATED-STACK matters for this purpose."
   ;; progn to avoid declarations
   `(call-with-truncated-stack (lambda () (progn ,@body))))
@@ -188,7 +177,7 @@ Only the innermost WITH-TRUNCATED-STACK matters for this purpose."
 (defun call-with-capped-stack (function) (funcall function))
 
 (defmacro with-capped-stack ((&key) &body body)
-  "Execute the body such that WITH-STACK and derived tools will not see frames above this form's continuation.
+  "Execute the body such that WITH-STACK and derived tools will not see frames above this form's continuation, unless they are passed :delimited nil.
 Only the outermost WITH-CAPPED-STACK matters for this purpose."
   `(call-with-capped-stack (lambda () (progn ,@body))))
 
@@ -221,22 +210,26 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
   (do ((f start (frame-up f)))
       ((or (null f) (cap-frame-p f)) f)))
 
-(defun call-with-stack (function &key)
+(defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
-  (call-with-frame
-   (lambda (frame)
+  ;; FIXME: Consing up the list and then discarding it is silly.
+  (core:call-with-backtrace
+   (lambda (bt)
      (declare (core:lambda-name call-with-stack-lambda))
-     (let* ((*stack-bot* (find-bottom-frame frame))
-            (*stack-top* (find-top-frame *stack-bot*)))
+     (let* ((frame (first bt))
+            (*stack-bot* (if delimited (find-bottom-frame frame) frame))
+            (*stack-top* (if delimited (find-top-frame *stack-bot*) nil)))
        (funcall function *stack-bot*)))))
 
-(defmacro with-stack ((stack &rest kwargs &key &allow-other-keys)
+(defmacro with-stack ((stack &rest kwargs &key (delimited t))
                       &body body)
   "Execute the body in an environment in which FRAME is bound to a CLASP-DEBUG:FRAME object representing the current continuation. This frame object has dynamic extent.
-You can use UP and DOWN to navigate frames. Frames above and below WITH-CAPPED-STACK and WITH-TRUNCATED-STACK are inaccessible with these operators.
+You can use UP and DOWN to navigate frames. Frames above and below WITH-CAPPED-STACK and WITH-TRUNCATED-STACK are inaccessible with these operators, unless DELIMITED is false (default true).
 Frames hidden by *FRAME-FILTERS* will be skipped.
-See WITH-STACK for the lower level interface."
-  `(call-with-stack (lambda (,stack) ,@body) ,@kwargs))
+The delimiters and visibility may be ignored by using the lower level FRAME-UP, FRAME-DOWN."
+  (declare (ignore delimited))
+  `(call-with-stack (lambda (,stack) (declare (core:lambda-name with-stack-lambda)) ,@body)
+                    ,@kwargs))
 
 (defparameter *frame-filters* (list 'non-lisp-frame-p
                                     'package-hider

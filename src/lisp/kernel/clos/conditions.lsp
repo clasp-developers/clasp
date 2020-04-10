@@ -1117,10 +1117,12 @@ If SOURCE-POSITIONS is true, a description of the source position of each frame'
   (fresh-line stream)
   (values))
 
-(defun print-backtrace (&key (stream *standard-output*) count source-positions)
+(defun print-backtrace (&key (stream *standard-output*) count source-positions
+                          (delimited t))
   "Write a current backtrace to STREAM.
 If COUNT is provided and not NIL, at most COUNT frames are printed.
-If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
-  (with-stack (stack)
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed.
+Other keyword arguments are passed to WITH-STACK."
+  (with-stack (stack :delimited delimited)
     (print-stack stack :stream stream :count count
                  :source-positions source-positions)))
