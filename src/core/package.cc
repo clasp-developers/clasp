@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h> // for eval::funcall
+#include <clasp/core/cons.h>
 
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
@@ -83,6 +84,17 @@ CL_DECLARE();
 CL_DOCSTRING("packageNicknames");
 CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
+  return package->getNicknames();
+};
+
+CL_LAMBDA(pkg nickname);
+CL_DECLARE();
+CL_DOCSTRING("packageNicknames");
+CL_DEFUN T_sp core__package_add_nickname(T_sp pkg, T_sp nick) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  String_sp nickname  = coerce::stringDesignator(nick);
+  _lisp->mapNameToPackage(nickname->get_std_string(), package);
+  package->setNicknames(Cons_O::create(nickname, package->getNicknames()));
   return package->getNicknames();
 };
 
