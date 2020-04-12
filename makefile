@@ -11,8 +11,8 @@ cando-jupyter:
 	./waf build_cboehm && ~/Development/cando/build/boehm/iclasp-boehm -l "source-dir:extensions;cando;src;lisp;load-cando-jupyter.lisp" -e "(core:quit)"
 	echo "Build done"
 
+#update_dependencies is included in configure
 configure:
-	./waf update_dependencies
 	./waf configure --prefix=$(PREFIX)
 
 clean:
@@ -23,7 +23,14 @@ clean-modules:
 	find src/lisp/modules/ . -name '*.fasl' -exec rm {} \;
 	find src/lisp/modules/ . -name '*.o' -exec rm {} \;
 
+install:
+	./waf install_cboehm
+
+check:
+	./waf test
+
 TAGS:
+	rm TAGS
 	find src/ -type f -iname "*.cc" | etags --append -
 	find include/ -type f -iname "*.h" | etags --append -
 
@@ -141,4 +148,6 @@ update-quicklisp:
 	(cd ~/quicklisp/local-projects/cl-nglview; git pull origin master)
 	(cd ~/quicklisp/local-projects/cl-bqplot; git pull origin master)
 	(cd ~/quicklisp/local-projects/trivial-backtrace; git pull origin master)
+
+.PHONY: TAGS
 
