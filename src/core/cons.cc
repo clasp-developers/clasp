@@ -91,7 +91,7 @@ CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
 CL_LAMBDA(plist indicator);
 CL_DECLARE();
 CL_DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
-CL_DEFUN T_mv core__rem_f(List_sp plist, Symbol_sp indicator) {
+CL_DEFUN T_mv core__rem_f(List_sp plist, T_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
     T_sp tplist = plist;
