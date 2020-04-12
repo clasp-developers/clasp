@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h> // for eval::funcall
 #include <clasp/core/cons.h>
-
+#include <clasp/core/lispList.h>
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
 
@@ -89,12 +89,25 @@ CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
 
 CL_LAMBDA(pkg nickname);
 CL_DECLARE();
-CL_DOCSTRING("packageNicknames");
-CL_DEFUN T_sp core__package_add_nickname(T_sp pkg, T_sp nick) {
+CL_DOCSTRING("adds the nickname <nickname> to package");
+CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
   Package_sp package = coerce::packageDesignator(pkg);
   String_sp nickname  = coerce::stringDesignator(nick);
   _lisp->mapNameToPackage(nickname->get_std_string(), package);
   package->setNicknames(Cons_O::create(nickname, package->getNicknames()));
+  return package->getNicknames();
+};
+
+CL_LAMBDA(pkg nickname);
+CL_DECLARE();
+CL_DOCSTRING("removes the nickname <nickname> from package");
+CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  unlikely_if (package->getNicknames().nilp())
+    return _Nil<T_O>();
+  String_sp nickname  = coerce::stringDesignator(nick);
+  _lisp->unmapNameToPackage(nickname->get_std_string());
+  package->setNicknames(remove_equal(nickname, package->getNicknames()));
   return package->getNicknames();
 };
 

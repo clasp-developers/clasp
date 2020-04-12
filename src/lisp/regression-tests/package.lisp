@@ -87,3 +87,26 @@
                           nil)))
              (list-all-packages)))
 
+(defpackage :%test% (:use))
+
+(test add-nickname
+      (let ((package (find-package :%test%)))
+        (and (null (package-nicknames package))
+             (let ()
+               (ext:package-add-nickname package :future-common-lisp)
+               (and (package-nicknames package)
+                    (find-package :future-common-lisp))))))
+
+(defpackage :%test-foo% (:use))
+(test remove-nickname
+      (let ((package (find-package :%test-foo%)))
+        (and (null (package-nicknames package))
+             (let ()
+               (ext:package-add-nickname package :very-future-common-lisp)
+               (and (package-nicknames package)
+                    (find-package :very-future-common-lisp)))
+             (let ()
+               (ext:package-remove-nickname package :very-future-common-lisp)
+               (null (package-nicknames package))
+               (null (find-package :very-future-common-lisp))))))
+

@@ -442,6 +442,15 @@ CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   return list.asCons()->nreconc(tail);
 };
 
+List_sp remove_equal(T_sp element, List_sp alist) {
+  ql::list new_list;
+  for (List_sp cur = alist; cur.notnilp(); cur = oCdr(cur)) {
+    if (!cl__equal(element, oCar(cur)))
+      new_list << oCar(cur);
+  }   
+  return new_list.cons();
+};
+
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
