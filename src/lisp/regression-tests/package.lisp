@@ -88,8 +88,10 @@
              (list-all-packages)))
 
 (defpackage :%test% (:use))
+(defpackage :%test-foo% (:use))
+(defpackage :%test-bar% (:use)(:nicknames :a-nickname))
 
-(test add-nickname
+(test add-nickname-happy-path
       (let ((package (find-package :%test%)))
         (and (null (package-nicknames package))
              (let ()
@@ -97,8 +99,23 @@
                (and (package-nicknames package)
                     (find-package :future-common-lisp))))))
 
-(defpackage :%test-foo% (:use))
-(test remove-nickname
+(test-expect-error add-nickname-inexisting-package
+    (let ((package-desig :inexistant-package))
+      (ext:package-add-nickname package-desig :a-nickname))
+    :type package-error)
+
+(test-expect-error add-nickname-already-in-use
+    (let ((package-desig :%test%))
+      (ext:package-add-nickname package-desig :a-nickname))
+    :type package-error)
+
+(test-expect-error add-nickname-twice
+    (let ((package-desig :%test%))
+      (ext:package-add-nickname package-desig :a-new-nickname)
+      (ext:package-add-nickname package-desig :a-new-nickname))
+    :type package-error)
+
+(test remove-nickname-happy-path
       (let ((package (find-package :%test-foo%)))
         (and (null (package-nicknames package))
              (let ()
@@ -109,4 +126,22 @@
                (ext:package-remove-nickname package :very-future-common-lisp)
                (null (package-nicknames package))
                (null (find-package :very-future-common-lisp))))))
+
+(test remove-nickname-inexistant-nickname
+      (null (ext:package-remove-nickname (find-package :%test-foo%) :inexistant-nickname)))
+
+(test remove-nickname-of-other-package
+      (null (ext:package-remove-nickname (find-package :%test-foo%) :a-nickname)))
+
+(test-expect-error remove-nickname-inexisting-package-existing-nickname
+    (let ((package-desig :inexistant-package))
+      (and (null (find-package package-desig))
+           (ext:package-remove-nickname package-desig :a-nickname)))
+    :type package-error)
+
+(test-expect-error remove-nickname-inexisting-package-inexisting-nickname
+    (let ((package-desig :inexistant-package))
+      (and (null (find-package package-desig))
+           (ext:package-remove-nickname package-desig :inexistant-nickname)))
+   :type package-error)
 
