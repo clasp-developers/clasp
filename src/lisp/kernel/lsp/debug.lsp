@@ -215,11 +215,10 @@ Only the outermost WITH-CAPPED-STACK matters for this purpose."
 (defun call-with-stack (function &key (delimited t))
   "Functional form of WITH-STACK."
   ;; FIXME: Consing up the list and then discarding it is silly.
-  (core:call-with-backtrace
-   (lambda (bt)
+  (core:call-with-frame
+   (lambda (frame)
      (declare (core:lambda-name call-with-stack-lambda))
-     (let* ((frame (first bt))
-            (*stack-bot* (if delimited (find-bottom-frame frame) frame))
+     (let* ((*stack-bot* (if delimited (find-bottom-frame frame) frame))
             (*stack-top* (if delimited (find-top-frame *stack-bot*) nil)))
        (funcall function *stack-bot*)))))
 

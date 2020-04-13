@@ -1683,6 +1683,33 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
   return result.cons();
 }
 
+// Fill in backtrace frames, relying on the built in doubly linked list structure.
+T_sp backtrace_stack(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)
+{
+  uintptr_t stack_top_hint = ~0;
+  if (_sym_STARstack_top_hintSTAR->symbolValue().notnilp()) {
+    if (gc::IsA<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue())) {
+      Pointer_sp stack_top_hint_ptr = gc::As_unsafe<Pointer_sp>(_sym_STARstack_top_hintSTAR->symbolValue());
+      stack_top_hint = (uintptr_t)stack_top_hint_ptr->ptr();
+    }
+  }
+  uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
+  T_sp prev_entry = _Nil<T_O>();
+  T_sp first_entry = _Nil<T_O>();
+  for ( size_t i=1; i<backtrace.size(); ++i ) {
+    if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
+      Frame_sp entry = lisp_frame_from_backtrace_entry(backtrace[i], args_as_pointers);
+      // Link up frames
+      if (first_entry.notnilp()) {
+        backtrace_frame_down_set(entry, prev_entry);
+        backtrace_frame_up_set(gc::As_unsafe<Frame_sp>(prev_entry), entry);
+      } else first_entry = entry;
+      prev_entry = entry;
+    }
+  }
+  return first_entry;
+}
+
 CL_LAMBDA(closure &optional args-as-pointers);
 CL_DECLARE();
 CL_DOCSTRING(R"doc(Generate a backtrace and pass it to the closure for printing or debugging.
@@ -1699,6 +1726,14 @@ CL_DEFUN T_mv core__call_with_backtrace(Function_sp closure, bool args_as_pointe
   return eval::funcall(closure,frames);
 }
 
+CL_LAMBDA(closure);
+CL_DECLARE();
+CL_DOCSTRING("Call the closure with one argument, a frame representing the current continuation, which has dynamic extent.");
+CL_DEFUN T_mv core__call_with_frame(Function_sp closure, bool args_as_pointers) {
+  std::vector<BacktraceEntry> backtrace;
+  fill_backtrace(backtrace);
+  return eval::funcall(closure, backtrace_stack(backtrace, false));
+}
 
 CL_DOCSTRING(R"doc(Dump a backtrace containing only Common Lisp frames by default but includes C++ frames if all is T.
 If args is T then print arguments, otherwise don't.  If source-info is T then dump source-info after every frame.)doc");
