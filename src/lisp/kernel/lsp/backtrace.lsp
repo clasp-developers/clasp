@@ -13,7 +13,6 @@
 ;;; backtrace-frame struct is now defined in C++ in debugger.h and debugger.cc
 ;;;
 
-
 (defun dump-jit-symbol-info ()
   (maphash (lambda (key value)
              (let ((func-size (first value))
@@ -21,68 +20,6 @@
                (bformat t "%s -> %s %s%N" key func-start func-size)))
            cmp::*jit-saved-symbol-info*)
   (values))
-
-
-;;; Use a return address to identify the JITted function that contains it
-(defun locate-jit-symbol-info (address)
-  (maphash (lambda (key value)
-             (let ((func-size (first value))
-                   (func-start (second value)))
-               (if (core:pointer-in-pointer-range address func-start func-size)
-                   (return-from locate-jit-symbol-info (values key func-start func-size)))))
-           cmp::*jit-saved-symbol-info*)
-  (values))
-
-(defun ensure-function-name (name)
-  "Return a symbol or cons that can be used as a function name in a backtrace.
-For Lisp it's easy - it must be a symbol or (setf symbol) - return that.
-For C/C++ frames - return (list 'c-function name)."
-  (cond
-    ((symbolp name) name)
-    ((consp name) name)
-    ((stringp name) (list :c-function name))
-    (t (error "Illegal name for function ~a" name))))
-
-;;; This is messy - backtrace_symbols for macOS and Linux return different strings
-;;; Extracting the name and the return address from the strings handled differently
-;;; depending on the operating system.
-(defun extract-backtrace-frame-name (line)
-  ;; On OS X this is how we get the name part
-  ;; The format seems to be as follows:
-  ;; "framenumber    processname        address      functionname"
-  ;; with variable numbers of spaces. processname is always at character 4 so we start there.
-  #+target-os-darwin
-  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
-         (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
-         (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
-         (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
-         (pos3 (position-if (lambda (c) (char/= c #\space)) line :start pos2e)))
-    (subseq line pos3 (length line)))
-  #+target-os-freebsd ; fixme cracauer, confirm that this works
-  (let* ((pos1 (position-if (lambda (c) (char/= c #\space)) line :start 4)) ; skip whitespace
-         (pos1e (position-if (lambda (c) (char= c #\space)) line :start pos1)) ; skip chars
-         (pos2 (position-if (lambda (c) (char/= c #\space)) line :start pos1e))
-         (pos2e (position-if (lambda (c) (char= c #\space)) line :start pos2)) ; skip chars
-         (pos3 (position-if (lambda (c) (char/= c #\space)) line :start pos2e)))
-    (subseq line pos3 (length line)))
-  #+target-os-linux
-  (let ((pos-open (position-if (lambda (c) (char= c #\()) line)))
-    (if pos-open
-        (let* ((pos-name-start (1+ pos-open))
-               (pos-close (position-if (lambda (c) (char= c #\))) line :start pos-name-start :end nil :from-end t))
-               (pos-name-end (position #\+ line :start pos-name-start :end pos-close :from-end t))
-               (name (cond
-                      ((null pos-name-end) :unknown-lisp-function)
-                      ((= pos-name-start pos-name-end) :unknown-lisp-function)
-                      (t (subseq line pos-name-start pos-name-end)))))
-          name)
-      (let* ((square-open (position #\[ line))
-             (square-close (position #\] line)))
-        (if (and square-open square-close)
-            (subseq line (1+ square-open) square-close)
-          :unknown-lisp-function)))))
-
-(export '(backtrace-frame-function-name backtrace-frame-arguments))
 
 (defmacro with-dtrace-trigger (&body body)
   `(unwind-protect
