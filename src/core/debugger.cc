@@ -128,15 +128,6 @@ CL_DEFUN T_sp core__backtrace_frame_raw_name(Frame_sp frame) {
   return frame->raw_name;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_function_name(Frame_sp frame) {
-  return frame->function_name;
-}
-CL_LISPIFY_NAME("backtrace-frame-function-name");
-CL_DEFUN_SETF T_sp core__backtrace_frame_function_name_set(T_sp name, Frame_sp frame) {
-  frame->function_name = name;
-  return name;
-}
-
 CL_DEFUN T_sp core__backtrace_frame_print_name(Frame_sp frame) {
   return frame->print_name;
 }
@@ -249,10 +240,7 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, Frame_sp frame, T_sp stre
 {
   T_sp name = core__backtrace_frame_print_name(frame);
   if (name.nilp()) {
-    name = core__backtrace_frame_function_name(frame);
-    if (name.nilp()) {
-      name = core__backtrace_frame_raw_name(frame);
-    }
+    name = core__backtrace_frame_raw_name(frame);
   }
   T_sp arguments = core__backtrace_frame_arguments(frame);
   stringstream num;
@@ -1638,14 +1626,21 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
     if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
       Frame_sp entry;
       Symbol_sp stype;
+      T_sp fname;
       if (backtrace[i]._Stage == lispFrame) {
         if (backtrace[i]._SymbolName.find("___LAMBDA___")!=string::npos) {
-          stype = cl::_sym_lambda;
+          fname = stype = cl::_sym_lambda;
         } else {
           stype = INTERN_(kw,lisp);
+          // NOTE: FD is off right now, so we use the closure instead (below).
+          fname = _Nil<T_O>();//fd->functionName();
         }
       } else {
         stype = INTERN_(kw,c_PLUS__PLUS_);
+        std::string result;
+        bool demangled = maybe_demangle(backtrace[i]._SymbolName, result);
+        if (demangled) fname = SimpleBaseString_O::make(result);
+        else fname = SimpleBaseString_O::make(backtrace[i]._SymbolName);
       }
       T_sp funcDesc = _Nil<T_O>();
       if (backtrace[i]._FunctionDescription!=0) {
@@ -1658,10 +1653,12 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
         core::T_mv args_closure = capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset,args_as_pointers,backtrace[i]._InvocationHistoryFrameAddress);
         arguments = args_closure;
         closure = args_closure.second();
+        fname = gc::As<Function_sp>(closure)->functionName();
       }
       entry = Frame_O::make(stype,
                             Pointer_O::create((void*)backtrace[i]._ReturnAddress),
                             SimpleBaseString_O::make(backtrace[i]._SymbolName),
+                            fname,
                             Pointer_O::create((void*)backtrace[i]._BasePointer),
                             core::make_fixnum(backtrace[i]._FrameOffset),
                             core::make_fixnum(backtrace[i]._FrameSize),
@@ -1677,7 +1674,7 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
       }
       prev_entry = entry;
       // Fix name (TODO: Get function names from function description instead)
-      core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
+      // core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
       result << entry;
     } else {
 #if 0
@@ -1720,17 +1717,6 @@ CL_DEFUN void core__btcl(T_sp stream, bool all, bool args, bool source_info)
   List_sp frames = fill_backtrace_frames(backtrace,false);
   write_bf_stream(BF("Dumping backtrace\n"),stream);
   T_sp cur = frames;
-  while (cur.consp()) {
-    Frame_sp frame = gc::As<Frame_sp>(CONS_CAR(cur));
-    if (core__backtrace_frame_type(frame)==kw::_sym_lisp &&
-        core__backtrace_frame_function_name(frame) == _sym_universalErrorHandler) {
-      cur = CONS_CDR(cur); // skip this one
-      goto DUMP;
-    }
-    cur = CONS_CDR(cur);
-  }
-  cur = frames;
- DUMP:
   core__dump_backtrace(cur,stream,args,all,source_info);
   clasp_finish_output(stream);
 }

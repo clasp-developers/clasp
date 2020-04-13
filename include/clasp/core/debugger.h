@@ -41,12 +41,12 @@ class Frame_O : public General_O {
   LISP_CLASS(core, CorePkg, Frame_O, "frame", General_O);
   virtual ~Frame_O() {};
 public:
-  Frame_O(T_sp a_stype, T_sp a_return_address, T_sp a_raw_name,
+  Frame_O(T_sp a_stype, T_sp a_return_address, T_sp a_raw_name, T_sp a_fname,
           T_sp a_base_pointer, T_sp a_frame_offset, T_sp a_frame_size,
           T_sp a_function_start_address, T_sp a_function_end_address,
           T_sp a_function_description, T_sp a_arguments, T_sp a_closure)
     : stype(a_stype), return_address(a_return_address),
-      raw_name(a_raw_name), base_pointer(a_base_pointer),
+      raw_name(a_raw_name), print_name(a_fname), base_pointer(a_base_pointer),
       frame_offset(a_frame_offset), frame_size(a_frame_size),
       function_start_address(a_function_start_address),
       function_end_address(a_function_end_address),
@@ -55,12 +55,12 @@ public:
       up(_Nil<T_O>()), down(_Nil<T_O>())
   {}
   static Frame_sp make(T_sp stype, T_sp return_address, T_sp raw_name,
-                       T_sp base_pointer, T_sp frame_offset,
+                       T_sp fname, T_sp base_pointer, T_sp frame_offset,
                        T_sp frame_size, T_sp function_start_address,
                        T_sp function_end_address, T_sp function_description,
                        T_sp arguments, T_sp closure) {
     GC_ALLOCATE_VARIADIC(Frame_O, ret,
-                         stype, return_address, raw_name,
+                         stype, return_address, raw_name, fname,
                          base_pointer, frame_offset, frame_size,
                          function_start_address, function_end_address,
                          function_description, arguments, closure);
@@ -70,8 +70,7 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
   T_sp stype;
   T_sp return_address;
   T_sp raw_name;
-  T_sp function_name; // initialized later
-  T_sp print_name; // initialized later
+  T_sp print_name;
   T_sp base_pointer;
   T_sp frame_offset;
   T_sp frame_size;
@@ -87,7 +86,6 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
 T_sp core__backtrace_frame_type(Frame_sp frame);
 T_sp core__backtrace_frame_return_address(Frame_sp frame);
 T_sp core__backtrace_frame_raw_name(Frame_sp frame);
-T_sp core__backtrace_frame_function_name(Frame_sp frame);
 T_sp core__backtrace_frame_print_name(Frame_sp frame);
 T_sp core__backtrace_frame_base_pointer(Frame_sp frame);
 T_sp core__backtrace_frame_offset(Frame_sp frame);
