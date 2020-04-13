@@ -82,34 +82,6 @@ For C/C++ frames - return (list 'c-function name)."
             (subseq line (1+ square-open) square-close)
           :unknown-lisp-function)))))
 
-;;; Return the backtrace as a list of backtrace-frame
-(defun backtrace-frame-fix-names (frame)
-  (let ((common-lisp-name (backtrace-frame-raw-name frame)))
-    (if (and common-lisp-name (search "^^" common-lisp-name))
-        (let* ((name-with-parts #+target-os-linux common-lisp-name
-                                ;; fixme cracauer.  Find out what FreeBSD actually needs here
-                                #+target-os-freebsd common-lisp-name
-                                #+target-os-darwin (if (char= (char common-lisp-name 0) #\_)
-                                                       (subseq common-lisp-name 1 (length common-lisp-name)) ; strip preceeding "_"
-                                                       common-lisp-name))
-               (parts (cmp:unescape-and-split-jit-name name-with-parts))
-               (symbol-name (first parts))
-               (package-name (second parts))
-               (maybe-fn-or-specializers (third parts))
-               (maybe-method (fourth parts))
-               (name (intern symbol-name (or package-name :keyword)))
-               (print-name (cond
-                             ((backtrace-frame-closure frame)
-                              (function-name
-                               (backtrace-frame-closure frame)))
-                             ((string= maybe-method "METHOD")
-                              (format nil "(METHOD ~a ~a)" name maybe-fn-or-specializers))
-                             (t name))))
-          (setf (backtrace-frame-function-name frame) name
-                (backtrace-frame-print-name frame) print-name))
-        (setf (backtrace-frame-function-name frame) common-lisp-name
-              (backtrace-frame-print-name frame) common-lisp-name)))) ; return ALL frames
-
 (export '(backtrace-frame-function-name backtrace-frame-arguments))
 
 (defmacro with-dtrace-trigger (&body body)
