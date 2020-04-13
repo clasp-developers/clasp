@@ -119,7 +119,9 @@ Multiple bindings with the same name may be returned, as there is no notion of l
 * A list (SETF symbol).
 * A list that is one of Clasp's function names, such as (FLET ...), (LABELS ...), or (METHOD ...).
 * A string, representing a C or C++ function."
-  (core:backtrace-frame-function-name frame))
+  (or (core:backtrace-frame-function-name frame)
+      ;; _RUN-ALL names don't have proper function names for some reason, so fall back.
+      (core:backtrace-frame-raw-name frame)))
 
 (defun frame-function-lambda-list (frame)
   "Return the lambda list of the function being called in this frame, and a second value indicating success. This function may fail, in which case the first value is undefined and the second is NIL. In success the first value is the lambda list and the second value is true."
