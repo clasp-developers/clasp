@@ -292,7 +292,7 @@ CL_DEFUN void core__dump_backtrace( List_sp backtrace, T_sp stream, bool args, b
     }
   }
 }
-    
+
 
 CL_DOCSTRING(R"doc(Return true if the indicated frame is visible. 
 core:*ihs-mode* is used to determine if a particular frame is visible.
