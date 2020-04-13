@@ -1601,7 +1601,51 @@ CL_DEFUN T_mv core__call_with_stack_top_hint(Function_sp thunk)
   return eval::funcall(thunk);
 }
 
-
+Frame_sp lisp_frame_from_backtrace_entry(BacktraceEntry& entry, bool args_as_pointers) {
+  Symbol_sp stype;
+  T_sp fname;
+  if (entry._Stage == lispFrame) {
+    if (entry._SymbolName.find("___LAMBDA___")!=string::npos) {
+      fname = stype = cl::_sym_lambda;
+    } else {
+      stype = INTERN_(kw,lisp);
+      // NOTE: FD is wrong right now, so we use the closure instead (below).
+      fname = _Nil<T_O>();//fd->functionName();
+    }
+  } else {
+    stype = INTERN_(kw,c_PLUS__PLUS_);
+    std::string result;
+    bool demangled = maybe_demangle(entry._SymbolName, result);
+    if (demangled) fname = SimpleBaseString_O::make(result);
+    else fname = SimpleBaseString_O::make(entry._SymbolName);
+  }
+  T_sp funcDesc = _Nil<T_O>();
+  if (entry._FunctionDescription != 0) {
+    funcDesc = Pointer_O::create((void*)entry._FunctionDescription);
+  }
+  T_sp arguments = _Nil<T_O>();
+  T_sp closure = _Nil<T_O>();
+  if (entry._FrameOffset != 0 || entry._InvocationHistoryFrameAddress != 0) {
+    T_mv args_closure = capture_arguments(entry._FunctionStart,
+                                          entry._BasePointer,
+                                          entry._FrameOffset,
+                                          args_as_pointers,
+                                          entry._InvocationHistoryFrameAddress);
+    arguments = args_closure;
+    closure = args_closure.second();
+    fname = gc::As<Function_sp>(closure)->functionName();
+  }
+  return Frame_O::make(stype,
+                       Pointer_O::create((void*)entry._ReturnAddress),
+                       SimpleBaseString_O::make(entry._SymbolName),
+                       fname,
+                       Pointer_O::create((void*)entry._BasePointer),
+                       core::make_fixnum(entry._FrameOffset),
+                       core::make_fixnum(entry._FrameSize),
+                       Pointer_O::create((void*)entry._FunctionStart),
+                       Pointer_O::create((void*)entry._FunctionEnd),
+                       funcDesc, arguments, closure);
+}
 
 List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)
 {
@@ -1619,57 +1663,13 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
   ql::list result;
   for ( size_t i=1; i<backtrace.size(); ++i ) {
     if (bp<backtrace[i]._BasePointer && backtrace[i]._BasePointer!=0 && backtrace[i]._BasePointer<stack_top_hint) {
-      Frame_sp entry;
-      Symbol_sp stype;
-      T_sp fname;
-      if (backtrace[i]._Stage == lispFrame) {
-        if (backtrace[i]._SymbolName.find("___LAMBDA___")!=string::npos) {
-          fname = stype = cl::_sym_lambda;
-        } else {
-          stype = INTERN_(kw,lisp);
-          // NOTE: FD is off right now, so we use the closure instead (below).
-          fname = _Nil<T_O>();//fd->functionName();
-        }
-      } else {
-        stype = INTERN_(kw,c_PLUS__PLUS_);
-        std::string result;
-        bool demangled = maybe_demangle(backtrace[i]._SymbolName, result);
-        if (demangled) fname = SimpleBaseString_O::make(result);
-        else fname = SimpleBaseString_O::make(backtrace[i]._SymbolName);
-      }
-      T_sp funcDesc = _Nil<T_O>();
-      if (backtrace[i]._FunctionDescription!=0) {
-        funcDesc = Pointer_O::create((void*)backtrace[i]._FunctionDescription);
-      }
-      ql::list args;
-      core::T_sp arguments = _Nil<core::T_O>();
-      core::T_sp closure = _Nil<core::T_O>();
-      if (backtrace[i]._FrameOffset!=0 || backtrace[i]._InvocationHistoryFrameAddress!=0) {
-        core::T_mv args_closure = capture_arguments(backtrace[i]._FunctionStart,backtrace[i]._BasePointer,backtrace[i]._FrameOffset,args_as_pointers,backtrace[i]._InvocationHistoryFrameAddress);
-        arguments = args_closure;
-        closure = args_closure.second();
-        fname = gc::As<Function_sp>(closure)->functionName();
-      }
-      entry = Frame_O::make(stype,
-                            Pointer_O::create((void*)backtrace[i]._ReturnAddress),
-                            SimpleBaseString_O::make(backtrace[i]._SymbolName),
-                            fname,
-                            Pointer_O::create((void*)backtrace[i]._BasePointer),
-                            core::make_fixnum(backtrace[i]._FrameOffset),
-                            core::make_fixnum(backtrace[i]._FrameSize),
-                            Pointer_O::create((void*)backtrace[i]._FunctionStart),
-                            Pointer_O::create((void*)backtrace[i]._FunctionEnd),
-                            funcDesc,
-                            arguments,
-                            closure);
+      Frame_sp entry = lisp_frame_from_backtrace_entry(backtrace[i], args_as_pointers);
       // Link up frames
       if (prev_entry.notnilp()) {
         backtrace_frame_down_set(entry, prev_entry);
         backtrace_frame_up_set(gc::As_unsafe<Frame_sp>(prev_entry), entry);
       }
       prev_entry = entry;
-      // Fix name (TODO: Get function names from function description instead)
-      // core::eval::funcall(_sym_backtrace_frame_fix_names,entry);
       result << entry;
     } else {
 #if 0
@@ -1682,8 +1682,6 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
   }
   return result.cons();
 }
-
-
 
 CL_LAMBDA(closure &optional args-as-pointers);
 CL_DECLARE();
