@@ -46,7 +46,7 @@ public:
           T_sp a_function_start_address, T_sp a_function_end_address,
           T_sp a_function_description, T_sp a_arguments, T_sp a_closure)
     : stype(a_stype), return_address(a_return_address),
-      raw_name(a_raw_name), print_name(a_fname), base_pointer(a_base_pointer),
+      raw_name(a_raw_name), function_name(a_fname), base_pointer(a_base_pointer),
       frame_offset(a_frame_offset), frame_size(a_frame_size),
       function_start_address(a_function_start_address),
       function_end_address(a_function_end_address),
@@ -70,7 +70,7 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
   T_sp stype;
   T_sp return_address;
   T_sp raw_name;
-  T_sp print_name;
+  T_sp function_name;
   T_sp base_pointer;
   T_sp frame_offset;
   T_sp frame_size;
@@ -86,7 +86,7 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
 T_sp core__backtrace_frame_type(Frame_sp frame);
 T_sp core__backtrace_frame_return_address(Frame_sp frame);
 T_sp core__backtrace_frame_raw_name(Frame_sp frame);
-T_sp core__backtrace_frame_print_name(Frame_sp frame);
+T_sp core__backtrace_frame_function_name(Frame_sp frame);
 T_sp core__backtrace_frame_base_pointer(Frame_sp frame);
 T_sp core__backtrace_frame_offset(Frame_sp frame);
 T_sp core__backtrace_frame_function_start_address(Frame_sp frame);

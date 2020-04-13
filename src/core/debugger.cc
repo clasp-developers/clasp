@@ -128,13 +128,8 @@ CL_DEFUN T_sp core__backtrace_frame_raw_name(Frame_sp frame) {
   return frame->raw_name;
 }
 
-CL_DEFUN T_sp core__backtrace_frame_print_name(Frame_sp frame) {
-  return frame->print_name;
-}
-CL_LISPIFY_NAME("backtrace-frame-print-name");
-CL_DEFUN_SETF T_sp core__backtrace_frame_print_name_setf(T_sp name, Frame_sp frame) {
-  frame->print_name = name;
-  return name;
+CL_DEFUN T_sp core__backtrace_frame_function_name(Frame_sp frame) {
+  return frame->function_name;
 }
 
 CL_DEFUN T_sp core__backtrace_frame_base_pointer(Frame_sp frame) {
@@ -238,7 +233,7 @@ std::string thing_as_string(T_sp obj)
 CL_LAMBDA(index frame &key (stream *debug-io*) (args t) (source-info t));
 CL_DEFUN void core__backtrace_frame_to_stream(int idx, Frame_sp frame, T_sp stream, bool args, bool do_source_info)
 {
-  T_sp name = core__backtrace_frame_print_name(frame);
+  T_sp name = core__backtrace_frame_function_name(frame);
   if (name.nilp()) {
     name = core__backtrace_frame_raw_name(frame);
   }
