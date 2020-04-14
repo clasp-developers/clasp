@@ -7,14 +7,16 @@
    If mode = :lisp, define lisp-handler"
   (flet ((handle-lisp-handler (signal-as-int)
              (core::note-signal-handler signal-as-int lisp-handler)
-             2))
+             2)
+         (handle-non-lisp-handler (signal-as-int)
+             (core::forget-signal-handler signal-as-int)))
       (let ((int-signal (core::external-to-int-signal signal)))
         (cond (int-signal
                (core:enable-disable-signals
                 int-signal
                 (ecase mode
-                  (:ignore 0)
-                  (:default 1)
+                  (:ignore  (handle-non-lisp-handler int-signal) 0)
+                  (:default (handle-non-lisp-handler int-signal) 1)
                   (:lisp (handle-lisp-handler int-signal))))
                :done)
               (t :not-found)))))
@@ -94,6 +96,10 @@ COMMON-LISP-USER> Processed Signal 13
         
 (defun note-signal-handler (signal function)
   (setf (getf *signal-to-function* signal) function))
+
+(defun forget-signal-handler (signal)
+  (when *signal-to-function*
+    (remf *signal-to-function* signal)))
 
 (defun get-signal-handler (signal)
   (getf *signal-to-function* signal))
