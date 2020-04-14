@@ -184,6 +184,8 @@
             restart-function restart-report-function
             restart-interactive-function restart-test-function
             restart-associated-conditions
+            ;; Debugger
+            tpl-frame tpl-argument tpl-arguments
             )))
 
 

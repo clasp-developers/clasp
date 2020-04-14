@@ -435,19 +435,13 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil))
-    #+(or)(core:call-with-stack-top-hint
-           (lambda ()
-             (with-simple-restart (continue "Return from BREAK.")
-               (invoke-debugger
-                (make-condition 'SIMPLE-CONDITION
-                                :FORMAT-CONTROL format-control
-                                :FORMAT-ARGUMENTS format-arguments))))))
-  (with-simple-restart (continue "Return from BREAK.")
-    (invoke-debugger
-     (make-condition 'SIMPLE-CONDITION
-                     :FORMAT-CONTROL format-control
-                     :FORMAT-ARGUMENTS format-arguments)))
+  (clasp-debug:with-truncated-stack ()
+    (with-simple-restart (continue "Return from BREAK.")
+      (let ((*debugger-hook* nil))
+        (invoke-debugger
+         (make-condition 'SIMPLE-CONDITION
+                         :FORMAT-CONTROL format-control
+                         :FORMAT-ARGUMENTS format-arguments)))))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -1020,28 +1014,115 @@ error and NIL for a fatal error.  FUNCTION-NAME is the name of the function
 that caused the error.  CONTINUE-FORMAT-STRING and ERROR-FORMAT-STRING are the
 format strings of the error message.  ARGS are the arguments to the format
 bstrings."
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
-    (cond
-      ((eq t continue-string)
-       ; from CEerror; mostly allocation errors
-       (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((stringp continue-string)
-       (with-simple-restart (continue "~?" continue-string args)
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((and continue-string (symbolp continue-string))
-       ; from CEerror
-       (with-simple-restart (accept "Accept the error, returning NIL")
-	 (multiple-value-bind (rv used-restart)
-	   (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	     (multiple-value-bind (rv used-restart)
-	       (with-simple-restart (continue "Continue, using ~S" continue-string)
-		 (%signal condition)
-		 (invoke-debugger condition))
-	       (if used-restart continue-string rv)))
-	   (if used-restart t rv))))
-      (t
-       (%signal condition)
-       (invoke-debugger condition)))))
+  (clasp-debug:with-truncated-stack ()
+    (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
+      (cond
+        ((eq t continue-string)
+                                        ; from CEerror; mostly allocation errors
+         (with-simple-restart (ignore "Ignore the error, and try the operation again")
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((stringp continue-string)
+         (with-simple-restart (continue "~?" continue-string args)
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((and continue-string (symbolp continue-string))
+                                        ; from CEerror
+         (with-simple-restart (accept "Accept the error, returning NIL")
+           (multiple-value-bind (rv used-restart)
+               (with-simple-restart (ignore "Ignore the error, and try the operation again")
+                 (multiple-value-bind (rv used-restart)
+                     (with-simple-restart (continue "Continue, using ~S" continue-string)
+                       (%signal condition)
+                       (invoke-debugger condition))
+                   (if used-restart continue-string rv)))
+             (if used-restart t rv))))
+        (t
+         (%signal condition)
+         (invoke-debugger condition))))))
+
+;;; Now that the condition system is up, define a few more things for
+;;; the sake of the debugger
+
+(in-package #:clasp-debug)
+
+(defun safe-prin1 (object &optional output-stream-designator)
+  "PRIN1 the OBJECT to the given stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled. If the object cannot be printed, an unreadable representation is returned instead."
+  (let ((string
+          (handler-case
+              ;; First just try it.
+              (prin1-to-string object)
+            (serious-condition ()
+              (handler-case
+                  ;; OK, print type.
+                  ;; FIXME: Should print a pointer too but I don't actually
+                  ;; know how to get that from Lisp.
+                  (let ((type (type-of object)))
+                    (concatenate 'string
+                                 "#<error printing "
+                                 (prin1-to-string type)
+                                 ">"))
+                (serious-condition ()
+                  ;; Couldn't print the type. Give up entirely.
+                  "#<error printing object>"))))))
+    (write-string string output-stream-designator)))
+
+(defun display-fname (fname &optional output-stream-designator)
+  (if (stringp fname) ; C/C++ frame
+      (write-string fname output-stream-designator)
+      (safe-prin1 fname output-stream-designator)))
+
+(defun prin1-frame-call (frame &optional output-stream-designator)
+  "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
+  (let ((fname (clasp-debug:frame-function-name frame))
+        (args (clasp-debug:frame-arguments frame)))
+    (if (null args)
+        (display-fname fname output-stream-designator)
+        (progn (write-char #\( output-stream-designator)
+               (display-fname fname output-stream-designator)
+               (loop for arg in args
+                     do (write-char #\Space output-stream-designator)
+                        (safe-prin1 arg output-stream-designator))
+               (write-char #\) output-stream-designator))))
+  frame)
+
+(defun princ-code-source-line (code-source-line &optional output-stream-designator)
+  "Write a human-readable representation of the CODE-SOURCE-LINE to the stream."
+  (let ((string
+          (handler-case
+              (format nil "~a:~d"
+                      (clasp-debug:code-source-line-pathname code-source-line)
+                      (clasp-debug:code-source-line-line-number code-source-line))
+            (serious-condition () "error while printing code-source-line"))))
+    (write-string string output-stream-designator)))
+
+(defun print-stack (base &key (stream *standard-output*) count source-positions)
+  "Write a representation of the stack beginning at BASE to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
+  (map-indexed-stack
+   (lambda (frame i)
+     (format stream "~&~4d: " i)
+     (prin1-frame-call frame stream)
+     (when source-positions
+       (let ((fsp (frame-source-position frame)))
+         (when fsp
+           (fresh-line stream)
+           (write-string "    |---> " stream)
+           (princ-code-source-line fsp stream)))))
+   base
+   :count count)
+  (fresh-line stream)
+  (values))
+
+(defun print-backtrace (&key (stream *standard-output*) count source-positions
+                          (delimited t))
+  "Write a current backtrace to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed.
+Other keyword arguments are passed to WITH-STACK."
+  (with-stack (stack :delimited delimited)
+    (print-stack stack :stream stream :count count
+                 :source-positions source-positions)))
