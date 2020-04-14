@@ -155,9 +155,9 @@ Multiple bindings with the same name may be returned, as there is no notion of l
 
 (defun disassemble-frame (frame)
   "Disassemble this frame's function to *standard-output*."
-  ;; TODO: Use function-start-address, function-end-address
-  (let ((f (frame-function frame)))
-    (when f (disassemble f))))
+  (cmp::disassemble-assembly
+   (core:backtrace-frame-function-start-address frame)
+   (core:backtrace-frame-function-end-address frame)))
 
 ;;; Frame selection
 
