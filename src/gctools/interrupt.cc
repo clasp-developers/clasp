@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <csignal>
 #include <xmmintrin.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
@@ -217,6 +218,20 @@ CL_DEFUN void core__check_pending_interrupts() {
   handle_all_queued_interrupts();
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,call_lisp_symbol_handler);
+void lisp_signal_handler(int sig) {
+  core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig));
+}
+
+CL_DEFUN void core__enable_disable_signals(int signal, int mod) {
+  if (mod == 0)
+    std::signal(signal, SIG_IGN);
+  else if (mod == 1)
+    std::signal(signal, SIG_DFL);
+  else 
+    std::signal(signal, lisp_signal_handler);
+}
+      
 // HANDLERS
 
 // This is both a signal handler and called by signal handlers.
@@ -382,6 +397,9 @@ void initialize_signals(int clasp_signal) {
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  // Ignore sigpipe for now
+  // signal(SIGPIPE, SIG_IGN);
   // FIXME: Move?
   init_float_traps();
   // core__disable_fpe_masks();
