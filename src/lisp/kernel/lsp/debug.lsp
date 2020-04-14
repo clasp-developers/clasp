@@ -28,9 +28,12 @@
   ;; defined later in conditions.lsp
   (:export #:safe-prin1 #:prin1-frame-call
            #:princ-code-source-line
-           #:print-stack #:print-backtrace)
+           #:print-stack)
   ;; high level
   (:export #:map-indexed-stack #:goto)
+  (:export #:print-backtrace ; in conditions.lsp
+           #:map-backtrace
+           #:map-indexed-backtrace)
   (:export #:hide-package #:unhide-package
            #:hide #:unhide #:unhide-all)
   ;; misc
@@ -326,6 +329,16 @@ Note that as such, the frame returned may not be visible."
         if (eq (frame-up base) *stack-top*) return base
         else do (setf base (frame-up base)))
   base)
+
+(defun map-backtrace (function &key count (delimited t))
+  "Like MAP-STACK, but implicitly uses WITH-STACK to obtain and use the current stack."
+  (with-stack (stack :delimited delimited)
+    (map-stack function stack :count count)))
+
+(defun map-indexed-backtrace (function &key count (delimited t))
+  "Like MAP-INDEXED-STACK, but implicitly uses WITH-STACK to obtain and use the current stack."
+  (with-stack (stack :delimited delimited)
+    (map-indexed-stack function stack :count count)))
 
 ;;; Some filters
 
