@@ -363,8 +363,10 @@ values of the last FORM.  If no FORM is given, returns NIL."
 		  "CASE: The selector ~A can only appear at the last position."
 		  (list selector)))
 	       (setq form `(PROGN ,@(cdr clause))))
-	      ((consp selector)
-	       (setq form `(IF (MEMBER ,key ',selector)
+	      ((listp selector)
+	       (setq form `(IF (or ,@(mapcar (lambda (obj)
+                                               `(eql ,key ',obj))
+                                             selector))
 			       (PROGN ,@(cdr clause))
 			       ,form)))
 	      (selector
