@@ -21,7 +21,7 @@
 
 (defmacro defgeneric (&whole whole &rest args)
   (multiple-value-bind (function-specifier lambda-list options)
-    (parse-defgeneric args)
+      (parse-defgeneric args)
     (parse-lambda-list lambda-list)
     ;; process options
     (multiple-value-bind (option-list method-list)
@@ -55,53 +55,56 @@
 	 (declarations '())
 	 arg-list)
     (dolist (option options)
-      (let ((option-name (first option))
-	    option-value)
-	(cond ((eq option-name :method)
-	       ;; We do not need to check the validity of this
-	       ;; because DEFMETHOD will do it.
-	       (push (rest option) method-list))
-	      ((eq option-name 'declare)
-	       (setf declarations (append (rest option) declarations)))
-	      ((member option-name processed-options)
-	       (simple-program-error "Option ~s specified more than once"
-				     option-name))
-	      (t
-	       (push option-name processed-options)
-	       ;; We leave much of the type checking for SHARED-INITIALIZE
-	       (setq option-value
-		     (case option-name
-		       (:argument-precedence-order
-			(rest option))
-		       (:method-combination
-			(rest option))
-		       ((:documentation :generic-function-class :method-class)
-			(unless (endp (cddr option))
-			  (simple-program-error "Too many arguments for option ~A"
-						option-name))
-			(second option))
-		       (otherwise
-			(simple-program-error "~S is not a legal defgeneric option"
-					      option-name))))
-	       (setf arg-list `(',option-name ',option-value ,@arg-list))))))
+      (ext:with-current-source-form (option)
+        (let ((option-name (first option))
+              option-value)
+          (cond ((eq option-name :method)
+                 ;; We do not need to check the validity of this
+                 ;; because DEFMETHOD will do it.
+                 (push (rest option) method-list))
+                ((eq option-name 'declare)
+                 (setf declarations (append (rest option) declarations)))
+                ((member option-name processed-options)
+                 (simple-program-error "Option ~s specified more than once"
+                                       option-name))
+                (t
+                 (push option-name processed-options)
+                 ;; We leave much of the type checking for SHARED-INITIALIZE
+                 (setq option-value
+                       (case option-name
+                         (:argument-precedence-order
+                          (rest option))
+                         (:method-combination
+                          (rest option))
+                         ((:documentation :generic-function-class :method-class)
+                          (unless (endp (cddr option))
+                            (simple-program-error "Too many arguments for option ~A"
+                                                  option-name))
+                          (second option))
+                         (otherwise
+                          (simple-program-error "~S is not a legal defgeneric option"
+                                                option-name))))
+                 (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
 	      ,@(when declarations `(:declarations ',declarations)))
 	    method-list)))
 
+;;; For effect. Checks whether the lambda list is well formed.
 (defun parse-lambda-list (lambda-list &optional post-keyword)
-  (let ((arg (car lambda-list)))
-    (cond ((null lambda-list))
-	  ((eq arg '&AUX)
-	   (simple-program-error "&aux is not allowed in a generic function lambda-list"))
-	  ((member arg lambda-list-keywords)
-	   (parse-lambda-list (cdr lambda-list) t))
-	  (post-keyword
-	   ;; After a lambda-list-keyword there can be no specializers.
-	   (parse-lambda-list (cdr lambda-list) t))
-	  (t
-	   (if (listp arg)
-	       (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
-	       (parse-lambda-list (cdr lambda-list)))))))
+  (ext:with-current-source-form (lambda-list)
+    (let ((arg (car lambda-list)))
+      (cond ((null lambda-list))
+            ((eq arg '&AUX)
+             (simple-program-error "&aux is not allowed in a generic function lambda-list"))
+            ((member arg lambda-list-keywords)
+             (parse-lambda-list (cdr lambda-list) t))
+            (post-keyword
+             ;; After a lambda-list-keyword there can be no specializers.
+             (parse-lambda-list (cdr lambda-list) t))
+            (t
+             (if (listp arg)
+                 (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
+                 (parse-lambda-list (cdr lambda-list))))))))
 
 (defun valid-declaration-p (decl)
   (and (eq (first decl) 'OPTIMIZE)

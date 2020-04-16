@@ -157,37 +157,38 @@
 
 
 (defun munge-with-condition-restarts-form (original-form env)
-  (let ((form (macroexpand original-form env)))
-    (if (consp form)
-        (let* ((name (first form))
-               (condition-form
-                 (case name
-                   ((signal)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-condition 'signal))
-                   ((warn)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-warning 'warn))
-                   ((error)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-error 'error))
-                   ((cerror)
-                    `(coerce-to-condition ,(third form)
-                                          (list ,@(cdddr form))
-                                          'simple-error 'cerror)))))
-          (if condition-form
-              (let ((condition-var (gensym "CONDITION")))
-                `(let ((,condition-var ,condition-form))
-                   (with-condition-restarts ,condition-var
-                       (first *restart-clusters*)
-                     ,(if (eq name 'cerror)
-                          `(cerror ,(second form) ,condition-var)
-                          `(,name ,condition-var)))))
-              original-form))
-        original-form)))
+  (ext:with-current-source-form (original-form)
+    (let ((form (macroexpand original-form env)))
+      (if (consp form)
+          (let* ((name (first form))
+                 (condition-form
+                   (case name
+                     ((signal)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-condition 'signal))
+                     ((warn)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-warning 'warn))
+                     ((error)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-error 'error))
+                     ((cerror)
+                      `(coerce-to-condition ,(third form)
+                                            (list ,@(cdddr form))
+                                            'simple-error 'cerror)))))
+            (if condition-form
+                (let ((condition-var (gensym "CONDITION")))
+                  `(let ((,condition-var ,condition-form))
+                     (with-condition-restarts ,condition-var
+                         (first *restart-clusters*)
+                       ,(if (eq name 'cerror)
+                            `(cerror ,(second form) ,condition-var)
+                            `(,name ,condition-var)))))
+                original-form))
+          original-form))))
 
 (defmacro restart-case (expression &body clauses &environment env)
   (flet ((transform-keywords (&key report interactive test)
@@ -209,21 +210,22 @@
     (let* ((block-tag (gensym))
            (temp-var  (gensym))
            (data (mapcar #'(lambda (clause)
-                             (let (keywords (forms (cddr clause)))
-                               (do ()
-                                   ((null forms))
-                                 (if (keywordp (car forms))
-                                     (setq keywords (list* (car forms)
-                                                           (cadr forms)
-                                                           keywords)
-                                           forms (cddr forms))
-                                     (return)))
-                               (list (car clause) 		;Name=0
-                                     (gensym) 			;Tag=1
-                                     (apply #'transform-keywords ;Keywords=2
-                                            keywords)
-                                     (cadr clause)		;BVL=3
-                                     forms))) 			;Body=4
+                             (ext:with-current-source-form (clause)
+                               (let (keywords (forms (cddr clause)))
+                                 (do ()
+                                     ((null forms))
+                                   (if (keywordp (car forms))
+                                       (setq keywords (list* (car forms)
+                                                             (cadr forms)
+                                                             keywords)
+                                             forms (cddr forms))
+                                       (return)))
+                                 (list (car clause) 		;Name=0
+                                       (gensym) 			;Tag=1
+                                       (apply #'transform-keywords ;Keywords=2
+                                              keywords)
+                                       (cadr clause)		;BVL=3
+                                       forms)))) 			;Body=4
                          clauses))
            (expression (munge-with-condition-restarts-form expression env)))
       `(block ,block-tag
@@ -289,19 +291,20 @@
   ;; says the function is evaluated in the CURRENT lexical environment.
   (let* ((class-options nil))
     (dolist (option options)
-      (case (car option)
-	((:DEFAULT-INITARGS :DOCUMENTATION)
-	 (push option class-options))
-	(:REPORT
-         (let ((reporter (cadr option)))
-           (push `(reporter :initform #',(if (stringp reporter)
-                                             `(lambda (condition stream)
-                                                (declare (ignore condition))
-                                                (write-string ,reporter stream))
-                                             reporter))
-                 slot-specs)))
-	(otherwise (cerror "Ignore this DEFINE-CONDITION option."
-			   "Invalid DEFINE-CONDITION option: ~S" option))))
+      (ext:with-current-source-form (option)
+        (case (car option)
+          ((:DEFAULT-INITARGS :DOCUMENTATION)
+           (push option class-options))
+          (:REPORT
+           (let ((reporter (cadr option)))
+             (push `(reporter :initform #',(if (stringp reporter)
+                                               `(lambda (condition stream)
+                                                  (declare (ignore condition))
+                                                  (write-string ,reporter stream))
+                                               reporter))
+                   slot-specs)))
+          (otherwise (cerror "Ignore this DEFINE-CONDITION option."
+                             "Invalid DEFINE-CONDITION option: ~S" option)))))
     `(PROGN
       (DEFCLASS ,name ,(or parent-list '(CONDITION)) ,slot-specs ,@class-options)
       ',NAME)))
@@ -330,12 +333,15 @@
 (defparameter *handler-clusters* nil)
 
 (defmacro handler-bind (bindings &body forms)
-  (unless (every #'(lambda (x) (and (listp x) (= (length x) 2))) bindings)
-    (error "Ill-formed handler bindings."))
   `(let ((*handler-clusters*
-	  (cons (list ,@(mapcar #'(lambda (x) `(cons ',(car x) ,(cadr x)))
-				bindings))
-		*handler-clusters*)))
+           (cons (list ,@(mapcar #'(lambda (binding)
+                                     (ext:with-current-source-form (binding)
+                                       (unless (and (listp binding)
+                                                    (= (length binding) 2))
+                                         (error "Ill-formed handler binding."))
+                                       `(cons ',(car binding) ,(cadr binding))))
+                                 bindings))
+                 *handler-clusters*)))
      ,@forms))
 
 (defun %signal (condition)

@@ -94,7 +94,7 @@ in the generic function lambda-list to the generic function lambda-list"
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
     (multiple-value-bind (lambda-list required-parameters specializers)
-	(parse-specialized-lambda-list specialized-lambda-list)
+        (parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
 	(multiple-value-bind (generic-function method)
@@ -119,14 +119,16 @@ in the generic function lambda-list to the generic function lambda-list"
                                ,@options))))))))
 
 (defun specializers-expression (specializers)
-  `(list ,@(loop for spec in specializers
-                 collect (etypecase spec
-                           (symbol `(find-class ',spec))
-                           ((cons (eql eql) (cons t null)) ; (eql #<anything>)
-                            `(intern-eql-specializer ,(second spec)))
-                           ;; CLHS DEFMETHOD seems to say literal specializers are
-                           ;; not allowed, but i'm not sure...
-                           (specializer spec)))))
+  `(list
+    ,@(loop for spec in specializers
+            collect (ext:with-current-source-form (spec)
+                      (etypecase spec
+                        (symbol `(find-class ',spec))
+                        ((cons (eql eql) (cons t null)) ; (eql #<anything>)
+                         `(intern-eql-specializer ,(second spec)))
+                        ;; CLHS DEFMETHOD seems to say literal specializers are
+                        ;; not allowed, but i'm not sure...
+                        (specializer spec))))))
 
 (defun fixup-specializers (specializers)
   (mapcar (lambda (spec)
@@ -293,47 +295,48 @@ in the generic function lambda-list to the generic function lambda-list"
     "This function takes a method lambda list and outputs the list of required
 arguments, the list of specializers and a new lambda list where the specializer
 have disappeared."
-    ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
-    ;; syntactically correct and will output as a first argument the
-    ;; list of required arguments. We use this list to extract the
-    ;; specializers and build a lambda list without specializers.
-    (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
-                   (rest arglist))
-          (lambda-list (copy-list specialized-lambda-list))
-          (ll lambda-list (rest ll))
-          (required-parameters '())
-          (specializers '())
-          arg variable specializer)
-         ((null arglist)
-          (values lambda-list
-                  (nreverse required-parameters)
-                  (nreverse specializers)))
-      (setf arg (first arglist))
-      (cond
-        ;; Just a variable
-        ((atom arg)
-         (setf variable arg specializer T))
-        ;; List contains more elements than variable and specializer
-        ((not (endp (cddr arg)))
-         (si::simple-program-error "Syntax error in method specializer ~A" arg))
-        ;; Specializer is NIL
-        ((null (setf variable (first arg)
-                     specializer (second arg)))
-         (si::simple-program-error
-          "NIL is not a valid specializer in a method lambda list"))
-        ;; Specializer is a class name
-        ((atom specializer))
-        ;; Specializer is (EQL value)
-        ((and (eql (first specializer) 'EQL)
-              (cdr specializer)
-              (endp (cddr specializer))))
-        ;; Otherwise, syntax error
-        (t
-         (si::simple-program-error "Syntax error in method specializer ~A" arg)))
-      (setf (first ll) variable)
-      (push variable required-parameters)
-      (push specializer specializers)))
-  )
+    (ext:with-current-source-form (specialized-lambda-list)
+      ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
+      ;; syntactically correct and will output as a first argument the
+      ;; list of required arguments. We use this list to extract the
+      ;; specializers and build a lambda list without specializers.
+      (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
+                     (rest arglist))
+            (lambda-list (copy-list specialized-lambda-list))
+            (ll lambda-list (rest ll))
+            (required-parameters '())
+            (specializers '())
+            arg variable specializer)
+           ((null arglist)
+            (values lambda-list
+                    (nreverse required-parameters)
+                    (nreverse specializers)))
+        (setf arg (first arglist))
+        (ext:with-current-source-form (arg)
+          (cond
+            ;; Just a variable
+            ((atom arg)
+             (setf variable arg specializer T))
+            ;; List contains more elements than variable and specializer
+            ((not (endp (cddr arg)))
+             (si::simple-program-error "Syntax error in method specializer ~A" arg))
+            ;; Specializer is NIL
+            ((null (setf variable (first arg)
+                         specializer (second arg)))
+             (si::simple-program-error
+              "NIL is not a valid specializer in a method lambda list"))
+            ;; Specializer is a class name
+            ((atom specializer))
+            ;; Specializer is (EQL value)
+            ((and (eql (first specializer) 'EQL)
+                  (cdr specializer)
+                  (endp (cddr specializer))))
+            ;; Otherwise, syntax error
+            (t
+             (si::simple-program-error "Syntax error in method specializer ~A" arg)))
+          (setf (first ll) variable)
+          (push variable required-parameters)
+          (push specializer specializers))))))
 
 (defun declaration-specializers (arglist declarations)
   (do ((argscan arglist (cdr argscan))
@@ -449,8 +452,13 @@ have disappeared."
 (defmacro with-accessors (slot-accessor-pairs instance-form &body body)
   (let* ((temp (gensym))
 	 (accessors (do ((scan slot-accessor-pairs (cdr scan))
-			(res))
-		       ((null scan) (nreverse res))
-		       (push `(,(caar scan) (,(cadar scan) ,temp)) res))))
+                         (res))
+                        ((null scan) (nreverse res))
+                      (let ((entry (car scan)))
+                        (ext:with-current-source-form (entry)
+                          (unless (and (listp entry)
+                                       (= (length entry) 2))
+                            (error "Malformed WITH-ACCESSORS syntax."))
+                          (push `(,(car entry) (,(cadr entry) ,temp)) res))))))
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))

@@ -45,8 +45,9 @@
 	   ;; Collect the SETF-EXPANSION of each place as a list of the
 	   ;; values returned by GET-SETF-EXPANSION. 
 	   (loop for place in places
-		 collect (multiple-value-list
-			  (get-setf-expansion place environment)))))
+		 collect (ext:with-current-source-form (place)
+                           (multiple-value-list
+                            (get-setf-expansion place environment))))))
     (flet ((make-let*-bindings (temporary-variables value-forms)
 	     (loop for var in temporary-variables
 		   for form in value-forms
@@ -116,8 +117,9 @@
 	   ;; Collect the SETF-EXPANSION of each place as a list of the
 	   ;; values returned by GET-SETF-EXPANSION. 
 	   (loop for place in places
-		 collect (multiple-value-list
-			  (get-setf-expansion place environment))))
+		 collect (ext:with-current-source-form (place)
+                           (multiple-value-list
+                            (get-setf-expansion place environment)))))
 	 (result
 	   ;; We start by creating the body of the result, which
 	   ;; contains all the STORE-FORMs, storing the

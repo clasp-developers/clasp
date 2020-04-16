@@ -2843,9 +2843,11 @@
   ;; (format "control-string" ...)
   (when (and (constantp destination env)
              (stringp (ext:constant-form-value destination env)))
-    (warn "Literal string as destination in FORMAT:~%  ~s" whole)
+    (ext:with-current-source-form (destination)
+      (warn "Literal string as destination in FORMAT:~%  ~s" whole))
     (return-from format whole))
-  (let ((control-string (and (constantp control-string env)
+  (let ((original-control-string control-string)
+        (control-string (and (constantp control-string env)
                              (ext:constant-form-value control-string env))))
     (if (stringp control-string)
         (let ((fun-sym (gensym "FUN"))
@@ -2855,7 +2857,8 @@
               ;; We call %formatter-guts here because it has the side effect
               ;; of signaling an error if the control string is invalid.
               ;; We want to do that before check-min/max-format-arguments.
-              (%formatter-guts control-string)
+              (ext:with-current-source-form (original-control-string)
+                (%formatter-guts control-string))
             (check-min/max-format-arguments control-string (length args))
             (let* ((body
                      (if (eq variables 't)

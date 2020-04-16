@@ -7,12 +7,12 @@
 
 ;;; to work with fpe-exceptions
 (defun ext::get-fpe-parameters (traps all-traps)
-;;; (loop for trap in all-traps collect trap collect (if (find trap traps) nil t))
-  (let ((result nil))
-    (dolist (trap all-traps)
-      (push trap result)
-      (push (if (find trap traps) nil t) result))
-    (reverse result)))
+  (ext:with-current-source-form (traps)
+    (let ((result nil))
+      (dolist (trap all-traps)
+        (push trap result)
+        (push (if (find trap traps) nil t) result))
+      (reverse result))))
 
 (defmacro ext:with-float-traps-masked (traps &body body)
   (let ((previous (gensym "PREVIOUS"))
@@ -34,12 +34,11 @@
 
 (defmacro do-c++-iterator ((i iterator &optional (cur (gensym)) (begin (gensym)) (end (gensym))) &rest body)
   `(multiple-value-bind (,begin ,end)
-                        ,iterator
-                        (do* ((,cur ,begin (core:iterator-step ,cur))
-                              (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
-                             ((core:iterator= ,cur ,end))
-                             ,@body)))
-
+       ,iterator
+     (do* ((,cur ,begin (core:iterator-step ,cur))
+           (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
+          ((core:iterator= ,cur ,end))
+       ,@body)))
 
 (defmacro map-c++-iterator (code iterator)
   (let ((val (gensym)))

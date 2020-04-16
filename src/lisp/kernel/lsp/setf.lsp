@@ -53,12 +53,13 @@
 ;;; FIXME: This is not very error-tolerant. In particular we don't check for &aux.
 ;;; But fixing it will require a more robust lambda list system.
 (defun extract-defsetf-lambda-list (lambda-list)
-  (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
-      (values lambda-list nil)
-      (let ((last-two (last lambda-list 2)))
-        (if (eq (first last-two) '&environment)
-            (values (ldiff lambda-list last-two) (second last-two))
-            (values lambda-list nil)))))
+  (ext:with-current-source-form (lambda-list)
+    (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
+        (values lambda-list nil)
+        (let ((last-two (last lambda-list 2)))
+          (if (eq (first last-two) '&environment)
+              (values (ldiff lambda-list last-two) (second last-two))
+              (values lambda-list nil))))))
 
 (defmacro defsetf (&whole whole access-fn &rest rest)
   "Syntax: (defsetf symbol update-fun [doc])
@@ -410,15 +411,16 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 ;;; The expansion function for SETF.
 (defun setf-expand-1 (place newvalue env)
   (declare (notinline mapcar))
-  (multiple-value-bind (vars vals stores store-form access-form)
-      (get-setf-expansion place env)
-    (cond ((trivial-setf-form place vars stores store-form access-form)
-	   (list 'setq place newvalue))
-	  ((try-simpler-expansion place vars vals stores newvalue store-form))
-	  (t
-	   `(let* ,(mapcar #'list vars vals)
-	      (multiple-value-bind ,stores ,newvalue
-		,store-form))))))
+  (ext:with-current-source-form (place)
+    (multiple-value-bind (vars vals stores store-form access-form)
+        (get-setf-expansion place env)
+      (cond ((trivial-setf-form place vars stores store-form access-form)
+             (list 'setq place newvalue))
+            ((try-simpler-expansion place vars vals stores newvalue store-form))
+            (t
+             `(let* ,(mapcar #'list vars vals)
+                (multiple-value-bind ,stores ,newvalue
+                  ,store-form)))))))
 
 (defun setf-expand (l env)
   (cond ((endp l) nil)
@@ -484,14 +486,15 @@ the corresponding PLACE.  Returns NIL."
          (build (nreverse temp-groups) (nreverse value-groups) store-forms)))
     (when (endp (cdr r)) (error "~S is an illegal PSETF form" whole))
     (let ((place (car r)) (subform (cadr r)))
-      (multiple-value-bind (temps values stores store-form access-form)
-          (get-setf-expansion place env)
-        (declare (ignore access-form))
-        ;; FIXME?: We should maybe signal an error if temps and values
-        ;; have different lengths (i.e. setf expander is broken)
-        (setq temp-groups (cons (mapcar #'list temps values) temp-groups))
-        (setq value-groups (cons (cons stores subform) value-groups))
-        (setq store-forms (cons store-form store-forms))))))
+      (ext:with-current-source-form (place)
+        (multiple-value-bind (temps values stores store-form access-form)
+            (get-setf-expansion place env)
+          (declare (ignore access-form))
+          ;; FIXME?: We should maybe signal an error if temps and values
+          ;; have different lengths (i.e. setf expander is broken)
+          (setq temp-groups (cons (mapcar #'list temps values) temp-groups))
+          (setq value-groups (cons (cons stores subform) value-groups))
+          (setq store-forms (cons store-form store-forms)))))))
 
 ;;; DEFINE-MODIFY-MACRO macro, by Bruno Haible.
 (defmacro define-modify-macro (name lambdalist function &optional docstring)

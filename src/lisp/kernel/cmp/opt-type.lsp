@@ -306,84 +306,85 @@
               nil)))))
 
 (defun typep-expansion (type env &optional (form nil formp))
-  (flet ((default () (if formp form `(typep object ',type))))
-    (multiple-value-bind (head args) (normalize-type type)
-      (case head
-        ((t) 't)
-        ((nil) 'nil)
-        ((and or)
-         `(,head ,@(mapcar (lambda (type) (typep-expansion type env)) args)))
-        ((not) `(not ,(typep-expansion (first args) env)))
-        ((eql) `(eql object ',(first args)))
-        ((satisfies)
-         `(if (funcall (fdefinition ',(first args)) object) t nil))
-        ((member)
-         `(or ,@(mapcar (lambda (x) `(eql object ',x)) args)))
-        ((cons)
-         (destructuring-bind (&optional (cart '*) (cdrt '*)) args
-           (cons-typep-form cart cdrt env)))
-        ((simple-array complex-array array)
-         (destructuring-bind (&optional (et '*) (dims '*)) args
-           (array-typep-form
-            head
-            (if (integerp dims)
-                (make-list dims :initial-element '*)
-                dims)
-            (if (eq et '*)
-                et
-                (upgraded-array-element-type et env)))))
-        ((sequence)
-         `(or (listp object) (vectorp object)))
-        ((standard-char)
-         `(and (characterp object) (standard-char-p object)))
-        ;; NOTE: Probably won't actually occur, due to normalization.
-        ((bignum)
-         `(and (integerp object) (not (fixnump object))))
-        ((#+short-float short-float #+long-float long-float
-          single-float double-float
-          float integer rational real)
-         (destructuring-bind (&optional (low '*) (high '*)) args
-           ;; Check the bounds for correctness.
-           ;; We use primitives for testing with them, so we want
-           ;; to be sure that they're valid.
-           (cond ((valid-number-type-p head low high)
-                  (real-interval-typep-form head low high))
-                 (t (cmp:warn-invalid-number-type nil type)
-                    (default)))))
-        ((complex)
-         ;; This covers (complex whatever) types in addition to just complex.
-         ;; We don't have multiple complex types in the backend,
-         ;; so we can just do this.
-         ;; See comment in DEFUN TYPEP in lsp/predlib.lsp.
-         `(complexp object))
-        (otherwise
-         ;; Last ditch efforts.
-         (cond
-           ;; Is there a simple predicate?
-           ((simple-type-predicate type)
-            `(,(simple-type-predicate type) object))
-           ;; Could be a C++ class kind of thing.
-           ;; NOTE: This is a static header check, so it shouldn't be used
-           ;; for anything that could be subclassed. The most likely candidate
-           ;; for this problem is STREAM, but it's caught by the previous case.
-           ((gethash type core:+type-header-value-map+)
-            `(if (cleavir-primop:typeq object ,type) t nil))
-           ;; Maybe it's a class name? (See also, comment in clos/defclass.lsp.)
-           ((and (symbolp type) (class-info type env))
-            ;; By semantic constraints, classes that are defined at compile time
-            ;; must still be defined at load time, and have the same superclasses
-            ;; and metaclass. This would let us just serialize and check the CPL,
-            ;; but to be a little flexible we only assume that it will still be a
-            ;; class (i.e. so users can do technically-illegal redefinitions easier).
-            `(subclassp (class-of object) (find-class ',type)))
-           ;; Could be a literal class?
-           ((clos::classp type)
-            `(subclassp (class-of object) ,type))
-           ;; We know nothing.
-           (t
-            ;; NOTE: In cclasp cleavir will wrap this with better source info.
-            (cmp:warn-undefined-type nil type)
-            (default))))))))
+  (ext:with-current-source-form (type)
+    (flet ((default () (if formp form `(typep object ',type))))
+      (multiple-value-bind (head args) (normalize-type type)
+        (case head
+          ((t) 't)
+          ((nil) 'nil)
+          ((and or)
+           `(,head ,@(mapcar (lambda (type) (typep-expansion type env)) args)))
+          ((not) `(not ,(typep-expansion (first args) env)))
+          ((eql) `(eql object ',(first args)))
+          ((satisfies)
+           `(if (funcall (fdefinition ',(first args)) object) t nil))
+          ((member)
+           `(or ,@(mapcar (lambda (x) `(eql object ',x)) args)))
+          ((cons)
+           (destructuring-bind (&optional (cart '*) (cdrt '*)) args
+             (cons-typep-form cart cdrt env)))
+          ((simple-array complex-array array)
+           (destructuring-bind (&optional (et '*) (dims '*)) args
+             (array-typep-form
+              head
+              (if (integerp dims)
+                  (make-list dims :initial-element '*)
+                  dims)
+              (if (eq et '*)
+                  et
+                  (upgraded-array-element-type et env)))))
+          ((sequence)
+           `(or (listp object) (vectorp object)))
+          ((standard-char)
+           `(and (characterp object) (standard-char-p object)))
+          ;; NOTE: Probably won't actually occur, due to normalization.
+          ((bignum)
+           `(and (integerp object) (not (fixnump object))))
+          ((#+short-float short-float #+long-float long-float
+            single-float double-float
+            float integer rational real)
+           (destructuring-bind (&optional (low '*) (high '*)) args
+             ;; Check the bounds for correctness.
+             ;; We use primitives for testing with them, so we want
+             ;; to be sure that they're valid.
+             (cond ((valid-number-type-p head low high)
+                    (real-interval-typep-form head low high))
+                   (t (cmp:warn-invalid-number-type nil type)
+                      (default)))))
+          ((complex)
+           ;; This covers (complex whatever) types in addition to just complex.
+           ;; We don't have multiple complex types in the backend,
+           ;; so we can just do this.
+           ;; See comment in DEFUN TYPEP in lsp/predlib.lsp.
+           `(complexp object))
+          (otherwise
+           ;; Last ditch efforts.
+           (cond
+             ;; Is there a simple predicate?
+             ((simple-type-predicate type)
+              `(,(simple-type-predicate type) object))
+             ;; Could be a C++ class kind of thing.
+             ;; NOTE: This is a static header check, so it shouldn't be used
+             ;; for anything that could be subclassed. The most likely candidate
+             ;; for this problem is STREAM, but it's caught by the previous case.
+             ((gethash type core:+type-header-value-map+)
+              `(if (cleavir-primop:typeq object ,type) t nil))
+             ;; Maybe it's a class name? (See also, comment in clos/defclass.lsp.)
+             ((and (symbolp type) (class-info type env))
+              ;; By semantic constraints, classes that are defined at compile time
+              ;; must still be defined at load time, and have the same superclasses
+              ;; and metaclass. This would let us just serialize and check the CPL,
+              ;; but to be a little flexible we only assume that it will still be a
+              ;; class (i.e. so users can do technically-illegal redefinitions easier).
+              `(subclassp (class-of object) (find-class ',type)))
+             ;; Could be a literal class?
+             ((clos::classp type)
+              `(subclassp (class-of object) ,type))
+             ;; We know nothing.
+             (t
+              ;; NOTE: In cclasp cleavir will wrap this with better source info.
+              (cmp:warn-undefined-type nil type)
+              (default)))))))))
 
 (define-compiler-macro typep (&whole whole object type &optional environment
                                      &environment macro-env)
@@ -400,69 +401,75 @@
 ;;; COERCE
 ;;;
 
-;;; FIXME: This should not exist. Instead, coerce should be inlined, and
+;;; FIXME: These should not exist. Instead, coerce should be inlined, and
 ;;; the compiler should eliminate tests where both arguments are constant.
 ;;; This will require expand-deftype or whatever to be constant foldable,
 ;;; which is a little weird as its behavior does change. Just, per
 ;;; the compiletime/runtime restrictions, any type defined at compile time
 ;;; has to be the same at runtime.
+(defun expand-coercion (type env whole)
+  (ext:with-current-source-form (type)
+    (flet ((da (form) `(the (values ,type &rest nil) ,form)))
+      (multiple-value-bind (head tail)
+          (normalize-type type env)
+        (case head
+          ((t) (da obj))
+          ((character base-char) (da `(character object)))
+          ((float) (da `(float object)))
+          ((short-float) (da `(float object 0.0s0)))
+          ((single-float) (da `(float object 0.0f0)))
+          ((double-float) (da `(float object 0.0d0)))
+          ((long-float) (da `(float object 0.0l0)))
+          ((function) (da `(coerce-to-function object)))
+          ((complex)
+           ;; This is the only case where the returned value
+           ;; may not be of the provided type, due to complex rational rules.
+           (destructuring-bind (&optional (realtype t) (imagtype t))
+               tail
+             `(complex (coerce (realpart object) ',realtype)
+                       (coerce (imagpart object) ',imagtype))))
+          ;; I don't think this is required or necessary, but we
+          ;; already had it.
+          ((and)
+           (labels ((aux (form tail)
+                      (if (= (length tail) 1)
+                          `(coerce ,form ,(first tail))
+                          (aux `(coerce ,form ,(first tail)) (rest tail)))))
+             (if (= (length tail) 0)
+                 `(the t object)
+                 (aux obj tail))))
+          (t
+           ;; Might be a sequence type.
+           (cond
+             ((subtypep type 'list env)
+              `(coerce-to-list object))
+             ((subtypep type 'sequence env)
+              `(replace (make-sequence ',type (length object)) object))
+             (t ; Dunno what's going on. Punt to runtime.
+              ;; COERCE is actually defined for any type, provided
+              ;; that type exists: if the object is of the given
+              ;; type, it is returned, and otherwise a type-error
+              ;; is signaled. Nonetheless, if we reach here with a
+              ;; constant type, it's either undefined or does not
+              ;; have a coercion defined (e.g. INTEGER), which would
+              ;; be a weird thing to do. So we signal a style-warning.
+              ;; FIXME: We should differentiate "not defined" and
+              ;; "no coercion behavior", though.
+              ;; And maybe "can't figure it out at compile time but
+              ;; will at runtime".
+              (cmp:warn-cannot-coerce nil type)
+              whole))))))))
+
 (define-compiler-macro coerce (&whole form object type &environment env)
   (if (constantp type env)
-      (let ((type (ext:constant-form-value type env))
-            (obj (gensym "OBJECT")))
-        `(let ((,obj ,object))
-           ;; this check is required by the definition of coerce.
-           ;; of course, we should eliminate it later.
-           (if (typep ,obj ',type)
-               ,obj
-               ,(flet ((da (form) `(the (values ,type &rest nil) ,form)))
-                  (multiple-value-bind (head tail)
-                      (normalize-type type env)
-                    (case head
-                      ((t) (da obj))
-                      ((character base-char) (da `(character ,obj)))
-                      ((float) (da `(float ,obj)))
-                      ((short-float) (da `(float ,obj 0.0s0)))
-                      ((single-float) (da `(float ,obj 0.0f0)))
-                      ((double-float) (da `(float ,obj 0.0d0)))
-                      ((long-float) (da `(float ,obj 0.0l0)))
-                      ((function) (da `(coerce-to-function ,obj)))
-                      ((complex)
-                       ;; This is the only case where the returned value
-                       ;; may not be of the provided type, due to complex rational rules.
-                       (destructuring-bind (&optional (realtype t) (imagtype t))
-                           tail
-                         `(complex (coerce (realpart ,obj) ',realtype)
-                                   (coerce (imagpart ,obj) ',imagtype))))
-                      ;; I don't think this is required or necessary, but we
-                      ;; already had it.
-                      ((and)
-                       (labels ((aux (form tail)
-                                  (if (= (length tail) 1)
-                                      `(coerce ,form ,(first tail))
-                                      (aux `(coerce ,form ,(first tail)) (rest tail)))))
-                         (if (= (length tail) 0)
-                             `(the t ,obj)
-                             (aux obj tail))))
-                      (t
-                       ;; Might be a sequence type.
-                       (cond
-                         ((subtypep type 'list env)
-                          `(coerce-to-list ,obj))
-                         ((subtypep type 'sequence env)
-                          `(replace (make-sequence ',type (length ,obj)) ,obj))
-                         (t ; Dunno what's going on. Punt to runtime.
-                          ;; COERCE is actually defined for any type, provided
-                          ;; that type exists: if the object is of the given
-                          ;; type, it is returned, and otherwise a type-error
-                          ;; is signaled. Nonetheless, if we reach here with a
-                          ;; constant type, it's either undefined or does not
-                          ;; have a coercion defined (e.g. INTEGER), which would
-                          ;; be a weird thing to do. So we signal a style-warning.
-                          ;; FIXME: We should differentiate "not defined" and
-                          ;; "no coercion behavior", though.
-                          ;; And maybe "can't figure it out at compile time but
-                          ;; will at runtime".
-                          (cmp:warn-cannot-coerce nil type)
-                          (return-from coerce form))))))))))
+      (let* ((type (ext:constant-form-value type env))
+             (expansion (expand-coercion type env form)))
+        (if (eq expansion form) ; failure
+            form
+            `(let ((object ,object))
+               ;; this check is required by the definition of coerce.
+               ;; of course, we should eliminate it later.
+               (if (typep object ',type)
+                   object
+                   ,expansion))))
       form))
