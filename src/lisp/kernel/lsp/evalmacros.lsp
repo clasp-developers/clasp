@@ -228,6 +228,10 @@ the corresponding VAR.  Returns NIL."
 	   (PROGN
 	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS)))))))))
 
+;; Augmented by a compiler macro once cleavir is loaded.
+(defmacro ext:with-current-source-form ((&rest forms) &body body)
+  ;; Evaluate forms for their side effects. Otherwise, inoperative.
+  `(progn ,@forms ,@body))
 
 ; conditionals
 
@@ -238,19 +242,20 @@ in order that follow the TEST and returns all values of the last FORM.  If no
 forms follow the TEST, then returns the value of the TEST.  Returns NIL, if no
 TESTs evaluates to non-NIL."
   (dolist (l (reverse clauses) form)	; don't use nreverse here
-    (if (endp (cdr l))
-	(if (eq (car l) 't)
-	    (setq form 't)
-	    (let ((sym (gensym)))
-	      (setq form `(LET ((,sym ,(car l)))
-			   (IF ,sym ,sym ,form)))))
-	(if (eq (car l) 't)
-	    (setq form (if (endp (cddr l))
-			   (cadr l)
-			   `(PROGN ,@(cdr l))))
-	    (setq form (if (endp (cddr l))
-			   `(IF ,(car l) ,(cadr l) ,form)
-			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form)))))))
+    (ext:with-current-source-form (l)
+      (if (endp (cdr l))
+          (if (eq (car l) 't)
+              (setq form 't)
+              (let ((sym (gensym)))
+                (setq form `(LET ((,sym ,(car l)))
+                              (IF ,sym ,sym ,form)))))
+          (if (eq (car l) 't)
+              (setq form (if (endp (cddr l))
+                             (cadr l)
+                             `(PROGN ,@(cdr l))))
+              (setq form (if (endp (cddr l))
+                             `(IF ,(car l) ,(cadr l) ,form)
+                             `(IF ,(car l) (PROGN ,@(cdr l)) ,form))))))))
 
 ; program feature
 
@@ -355,25 +360,27 @@ values of the last FORM.  If no FORM is given, returns NIL."
     (dolist (clause (reverse clauses)
 	     `(LET ((,key ,keyform))
 		,form))
-      (let ((selector (car clause)))
-	(cond ((or (eq selector T) (eq selector 'OTHERWISE))
-	       (unless last
-		 (si::signal-simple-error
-		  'simple-program-error nil
-		  "CASE: The selector ~A can only appear at the last position."
-		  (list selector)))
-	       (setq form `(PROGN ,@(cdr clause))))
-	      ((listp selector)
-	       (setq form `(IF (or ,@(mapcar (lambda (obj)
-                                               `(eql ,key ',obj))
-                                             selector))
-			       (PROGN ,@(cdr clause))
-			       ,form)))
-	      (selector
-	       (setq form `(IF (EQL ,key ',selector)
-			       (PROGN ,@(cdr clause))
-			       ,form))))
-	(setq last nil)))))
+      (ext:with-current-source-form (clause)
+        (let ((selector (car clause)))
+          (cond ((or (eq selector T) (eq selector 'OTHERWISE))
+                 (unless last
+                   (si::signal-simple-error
+                    'simple-program-error nil
+                    "CASE: The selector ~A can only appear at the last position."
+                    (list selector)))
+                 (setq form `(PROGN ,@(cdr clause))))
+                ((listp selector)
+                 (setq form `(IF (or ,@(ext:with-current-source-form (selector)
+                                         (mapcar (lambda (obj)
+                                                   `(eql ,key ',obj))
+                                                 selector)))
+                                 (PROGN ,@(cdr clause))
+                                 ,form)))
+                (selector
+                 (setq form `(IF (EQL ,key ',selector)
+                                 (PROGN ,@(cdr clause))
+                                 ,form))))
+          (setq last nil))))))
 
 (defmacro return (&optional (val nil)) `(RETURN-FROM NIL ,val))
 

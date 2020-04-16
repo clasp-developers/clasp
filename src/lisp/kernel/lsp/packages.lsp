@@ -186,6 +186,6 @@
             restart-associated-conditions
             ;; Debugger
             tpl-frame tpl-argument tpl-arguments
+            ;; Misc
+            with-current-source-form
             )))
-
-
