@@ -230,6 +230,16 @@ the corresponding VAR.  Returns NIL."
 
 ;; Augmented by a compiler macro once cleavir is loaded.
 (defmacro ext:with-current-source-form ((&rest forms) &body body)
+  "Within BODY, the \"current source form\" will be the first element of FORMS
+for which a source location can be ascertained, if any. This source form and
+its source location will be used in condition reports from the compiler.
+WITH-CURRENT-SOURCE-FORM is intended for use in macroexpansion and compiler
+macroexpansion functions, to improve error reporting. For example, a SETF-like
+macro could make each place the current source form while processing it; then
+if that processing results in an error, the compiler report can localize that
+to the place, not the SETF-like-form as a whole.
+Outside of the compiler, this operator has no effect (i.e. evaluates the BODY
+as a progn)."
   ;; Evaluate forms for their side effects. Otherwise, inoperative.
   `(progn ,@forms ,@body))
 
