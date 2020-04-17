@@ -413,7 +413,7 @@
       (multiple-value-bind (head tail)
           (normalize-type type env)
         (case head
-          ((t) (da obj))
+          ((t) (da 'object))
           ((character base-char) (da `(character object)))
           ((float) (da `(float object)))
           ((short-float) (da `(float object 0.0s0)))
@@ -433,11 +433,11 @@
           ((and)
            (labels ((aux (form tail)
                       (if (= (length tail) 1)
-                          `(coerce ,form ,(first tail))
-                          (aux `(coerce ,form ,(first tail)) (rest tail)))))
+                          `(coerce ,form ',(first tail))
+                          (aux `(coerce ,form ',(first tail)) (rest tail)))))
              (if (= (length tail) 0)
                  `(the t object)
-                 (aux obj tail))))
+                 (aux 'object tail))))
           (t
            ;; Might be a sequence type.
            (cond
