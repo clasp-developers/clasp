@@ -616,11 +616,14 @@ COMPILE-FILE will use the default *clasp-env*."
       ((cleavir-env:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
+            (origin-spi (cleavir-env:origin condition))
+            (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
-           (cmp:register-global-function-ref (cleavir-environment:name condition))
+           (cmp:register-global-function-ref
+            (cleavir-environment:name condition)
+            (origin-spi (cleavir-env:origin condition)))
            (invoke-restart 'cleavir-cst-to-ast:consider-global)))
        (cleavir-cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)
