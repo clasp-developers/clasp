@@ -975,6 +975,12 @@
                      collecting `(,var ,sym)))
          ,@body))))
 
+;;; Ditto, a compiler macro to avoid confusing bclasp.
+#+cst
+(define-cleavir-compiler-macro ext:with-current-source-form
+    (&whole f (&rest forms) &body body)
+  `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))
+
 ;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
 ;;; for validity. However, they do rely on their efficiency being from
 ;;; multiple-value-bind being efficient, which it is not without the above version.
