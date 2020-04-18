@@ -441,7 +441,7 @@ void initialize_signals(int clasp_signal) {
 CL_LAMBDA(signal symbol function);
 CL_DECLARE();
 CL_DOCSTRING("Set current handler for signal");
-CL_DEFUN void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Function_sp handler) {
+CL_DEFUN void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
   WITH_READ_WRITE_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
 }
