@@ -1,5 +1,4 @@
 #include <signal.h>
-#include <csignal>
 #include <xmmintrin.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
@@ -223,15 +222,22 @@ void lisp_signal_handler(int sig) {
   core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig));
 }
 
-CL_DEFUN void core__enable_disable_signals(int signal, int mod) {
+CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
+  struct sigaction new_action;
   if (mod == 0)
-    std::signal(signal, SIG_IGN);
+    new_action.sa_handler = SIG_IGN;  
   else if (mod == 1)
-    std::signal(signal, SIG_DFL);
-  else 
-    std::signal(signal, lisp_signal_handler);
+   new_action.sa_handler = SIG_DFL; 
+  else
+    new_action.sa_handler = lisp_signal_handler;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = (SA_NODEFER | SA_RESTART);
+  if (sigaction (signal, &new_action, NULL) == 0)
+    return 0;
+  else
+    return -1;
 }
-      
+
 // HANDLERS
 
 // This is both a signal handler and called by signal handlers.
@@ -396,13 +402,27 @@ void initialize_signals(int clasp_signal) {
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
+  // HAndle all signals that would terminate clasp (and can be caught)
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  // Ignore sigpipe for now
-  // signal(SIGPIPE, SIG_IGN);
+  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTSTP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#ifdef SIGVTALRM
+  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#endif
+  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  
   // FIXME: Move?
   init_float_traps();
-  // core__disable_fpe_masks();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
