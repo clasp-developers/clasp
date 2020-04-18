@@ -53,7 +53,10 @@ core::T_sp safe_signal_handler(int sig) {
   return key;
 }
 
-core::T_mv gctools__signal_info(int sig) {
+CL_LAMBDA(signal);
+CL_DECLARE();
+CL_DOCSTRING("return Current handler for signal");
+CL_DEFUN core::T_mv gctools__signal_info(int sig) {
   return Values(safe_signal_name(sig),safe_signal_handler(sig));
 }
 
@@ -281,7 +284,7 @@ CL_DEFUN void core__disable_all_fpe_masks() {
 
 CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand);
 CL_DECLARE();
-CL_DOCSTRING("zerop");
+CL_DOCSTRING("core::enable-fpe-masks");
 CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
   // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
   // mask all -> no fpe-exceptions
@@ -402,7 +405,7 @@ void initialize_signals(int clasp_signal) {
     INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
-  // HAndle all signals that would terminate clasp (and can be caught)
+  // Handle all signals that would terminate clasp (and can be caught)
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
@@ -435,7 +438,10 @@ void initialize_signals(int clasp_signal) {
     ADD_SIGNAL_SYMBOL(sig,sigsym,handler); \
   }
 
-void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Function_sp handler) {
+CL_LAMBDA(signal symbol function);
+CL_DECLARE();
+CL_DOCSTRING("Set current handler for signal");
+CL_DEFUN void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Function_sp handler) {
   WITH_READ_WRITE_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
 }
