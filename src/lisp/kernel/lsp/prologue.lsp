@@ -1,9 +1,9 @@
 #+clasp-min
 (progn
+  (setq *features* (cons :clasp-min *features*))
+  (setq *features* (cons :aclasp *features*))
   (if (core:is-interactive-lisp)
       (progn
-        (setq *features* (cons :clasp-min *features*))
-        (setq *features* (cons :aclasp *features*))
         (format t "Starting ~a ... loading image...~%"
                  (lisp-implementation-version)))))
 #+bclasp
