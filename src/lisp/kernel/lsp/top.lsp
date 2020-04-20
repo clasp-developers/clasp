@@ -329,7 +329,7 @@
         See also: :variables.~%")
   ))
 
-(defun top-level (&key set-package)
+(defun top-level (&key set-package noprint)
   "Args: ()
 Clasp specific.
 The top-level loop of Clasp. It is called by default when Clasp is invoked."
@@ -341,7 +341,7 @@ The top-level loop of Clasp. It is called by default when Clasp is invoked."
         (in-package "CL-USER"))
 
       (let ((*tpl-level* -1))
-	(tpl))
+	(tpl :noprint noprint))
       0)))
 
 #+threads
@@ -470,7 +470,7 @@ Use special code 0 to cancel this operation.")
 
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
-	      (broken-at nil)
+	      noprint
 	      (quiet nil))
   (let* ((*quit-tags* (cons *quit-tag* *quit-tags*))
 	 (*quit-tag* *quit-tags*)	; any unique new value
@@ -507,7 +507,8 @@ Use special code 0 to cancel this operation.")
                      (break-where)
                      (setf quiet t))
                  (setq - (locally (declare (notinline tpl-read))
-                           (tpl-prompt)
+                           (unless noprint
+                             (tpl-prompt))
                            (let ((expr (tpl-read)))
                              (when sys:*echo-repl-tpl-read*
                                (format t "#|REPL echo|# ~s~%" expr))
@@ -516,7 +517,8 @@ Use special code 0 to cancel this operation.")
                                (funcall core:*eval-with-env-hook* - *break-env*)
                                )
                        /// // // / / values *** ** ** * * (car /))
-                 (tpl-print values)))))
+                 (unless noprint
+                   (tpl-print values))))))
           (loop
            (setq +++ ++ ++ + + -)
            (when
