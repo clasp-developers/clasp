@@ -24,7 +24,6 @@
             maybe-load-clasprc
             process-command-line-load-eval-sequence
             top-level
-            run-repl
             *defun-inline-hook*
             *proclaim-hook*
             proper-list-p

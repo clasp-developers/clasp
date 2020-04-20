@@ -9,7 +9,6 @@
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
-          run-repl
           cons-car
           cons-cdr
           debug-break))
@@ -797,12 +796,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;
 
 (export 'core:top-level)
-(defun run-repl ()
-  (if (fboundp 'core:top-level)
-      (progn
-        (maybe-load-clasprc)
-        (core:top-level))
-      (core:low-level-repl)))
 
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
