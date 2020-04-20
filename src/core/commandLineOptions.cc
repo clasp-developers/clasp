@@ -59,6 +59,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-d/--describe file   - Describe the clasp data structures for lldb Python API\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
+             "-D/--disable-debugger - If the debugger would be entered, Clasp instead quits"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
@@ -129,7 +130,10 @@ void process_clasp_arguments(CommandLineOptions* options)
     }
     else if (arg == "-I" || arg == "--ignore-image") {
       options->_DontLoadImage = true;
+    } else if (arg == "-D" || arg == "--disable-debugger") {
+      options->_DebuggerDisabled = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
+      options->_DebuggerDisabled = true;
       options->_Interactive = false;
     } else if (arg == "-R" || arg == "--resource-dir") {
       options->_ResourceDir = options->_RawArguments[iarg+1];
@@ -188,19 +192,20 @@ void process_clasp_arguments(CommandLineOptions* options)
 CommandLineOptions::CommandLineOptions(int argc, char *argv[])
   : _ProcessArguments(process_clasp_arguments),
     _DontLoadImage(false),
-      _DontLoadInitLsp(false),
-      _DisableMpi(false),
-      _HasImageFile(false),
+    _DontLoadInitLsp(false),
+    _DisableMpi(false),
+    _HasImageFile(false),
     _HasDescribeFile(false),
-      _Stage('c'),
-      _ImageFile(""),
-      _GotRandomNumberSeed(false),
-      _RandomNumberSeed(0),
-      _Interactive(true),
-      _Version(false),
-      _SilentStartup(true),
-      _NoRc(false),
-      _PauseForDebugger(false)
+    _Stage('c'),
+    _ImageFile(""),
+    _GotRandomNumberSeed(false),
+    _RandomNumberSeed(0),
+    _DebuggerDisabled(false),
+    _Interactive(true),
+    _Version(false),
+    _SilentStartup(true),
+    _NoRc(false),
+    _PauseForDebugger(false)
 
 {
   for (int i = 0; i < argc; ++i) {

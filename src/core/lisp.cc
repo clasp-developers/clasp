@@ -1304,6 +1304,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
 
+  this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
   if (this->_Interactive) {
     List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
@@ -1427,6 +1428,18 @@ CL_DEFUN void core__low_level_repl() {
     }
   }
 };
+
+CL_DEFUN void ext__enable_debugger() {
+  _lisp->_DebuggerDisabled = false;
+}
+
+CL_DEFUN void ext__disable_debugger() {
+  _lisp->_DebuggerDisabled = true;
+}
+
+CL_DEFUN bool core__debugger_disabled_p() {
+  return _lisp->_DebuggerDisabled;
+}
 
 CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;

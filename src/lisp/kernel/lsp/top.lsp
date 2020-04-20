@@ -977,6 +977,16 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
             (let ((*break-frame* (clasp-debug:visible *break-base*)))
               (tpl :commands debug-commands))))))))
 
+(defun non-debugger (condition)
+  (format *error-output* "~&Condition of type: ~a~%~a~%"
+          (type-of condition) condition)
+  (let ((clasp-debug:*frame-filters* nil))
+    (clasp-debug:print-backtrace :stream *error-output*
+                                 :source-positions t
+                                 :delimited nil))
+  (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
+  (core:quit 1))
+
 (defun invoke-debugger (condition)
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
   ;; called when the debugger is disabled. We adopt this mechanism
@@ -989,6 +999,9 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
     (when old-hook
       (let ((*debugger-hook* nil))
         (funcall old-hook condition old-hook))))
+  (when (core:debugger-disabled-p)
+    ;; Does not return.
+    (non-debugger condition))
   (locally
     (declare (notinline default-debugger))
     (if (<= 0 *tpl-level*) ;; Do we have a top-level REPL above us?
@@ -1002,18 +1015,3 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
                + ++ +++ - * ** *** / // ///)
           (default-debugger condition))))
   (finish-output))
-
-(defun core::debugger-disabled-hook (condition old-hook)
-  (declare (ignore old-hook))
-  (format *error-output* "~&Condition of type: ~a~%~a~%"
-          (type-of condition) condition)
-  (let ((clasp-debug:*frame-filters* nil))
-    (clasp-debug:print-backtrace :stream *error-output*
-                                 :source-positions t
-                                 :delimited nil))
-  (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
-  (core:quit 1))
-
-(eval-when (:execute :load-toplevel)
-  (when (null (core:is-interactive-lisp))
-    (setq ext:*invoke-debugger-hook* 'debugger-disabled-hook)))

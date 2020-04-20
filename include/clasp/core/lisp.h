@@ -373,6 +373,7 @@ public:
 	*/
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
+  bool _DebuggerDisabled;
   bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
