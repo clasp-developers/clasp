@@ -329,9 +329,7 @@
         See also: :variables.~%")
   ))
 
-(defparameter *lisp-initialized* nil)
-
-(defun top-level (&optional (process-command-line nil) (set-package nil))
+(defun top-level (&key set-package)
   "Args: ()
 Clasp specific.
 The top-level loop of Clasp. It is called by default when Clasp is invoked."
@@ -341,8 +339,6 @@ The top-level loop of Clasp. It is called by default when Clasp is invoked."
 
       (when set-package
         (in-package "CL-USER"))
-
-      (setq *lisp-initialized* t)
 
       (let ((*tpl-level* -1))
 	(tpl))

@@ -9,6 +9,6 @@
     (core:maybe-load-clasprc)
     (core:process-command-line-load-eval-sequence)
     (if (core:is-interactive-lisp)
-        (core:top-level nil nil)
+        (core:top-level)
         (core:exit 0))))
 
