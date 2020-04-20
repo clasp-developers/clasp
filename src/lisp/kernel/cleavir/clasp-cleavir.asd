@@ -24,7 +24,6 @@
                :sicl-additional-conditions)
   :serial t
   :components ((:file "packages")
-                 ;;                 (:file "compile-cclasp")
                (:file "cleavir-fixups-and-hacks")
                (:file "system")
                (:file "policy")
