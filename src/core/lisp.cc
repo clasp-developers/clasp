@@ -1429,10 +1429,12 @@ CL_DEFUN void core__low_level_repl() {
   }
 };
 
+CL_DOCSTRING("Enable the system debugger if it has been disabled by disable-debugger.");
 CL_DEFUN void ext__enable_debugger() {
   _lisp->_DebuggerDisabled = false;
 }
 
+CL_DOCSTRING("Disable the system debugger. If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.");
 CL_DEFUN void ext__disable_debugger() {
   _lisp->_DebuggerDisabled = true;
 }
