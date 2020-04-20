@@ -2559,6 +2559,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
+  my_thread->_Process->_Phase = mp::Active;
   gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
 #ifndef SCRAPING
