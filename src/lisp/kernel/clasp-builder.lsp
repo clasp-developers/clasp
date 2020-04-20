@@ -523,8 +523,7 @@ Return files."
                                #+(or)(progn
                                        (core:bformat t "A child started up with pid %d - sleeping for 10 seconds%N" (core:getpid))
                                        (sleep 10))
-                               ;; Turn off interactive mode so that errors cause clasp to die with backtrace
-                               (core:set-interactive-lisp nil)
+                               (ext:disable-debugger)
                                (let ((new-sigset (core:make-cxx-object 'core:sigset))
                                      (old-sigset (core:make-cxx-object 'core:sigset)))
                                  (core:sigset-sigaddset new-sigset 'core:signal-sigint)
