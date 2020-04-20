@@ -8,8 +8,7 @@
    lisp-handler must only be provided, if mode = :lisp.
    lisp-handler should be a function of one argument (the signal)
    Returns :done if successfull,
-           :signal-not-found if the names signal was not found and
-           :error-defining-handler if there was an error defining the handler"
+           signals an error, if signal is not recognized or cannot be set"
   (flet ((handle-lisp-handler (signal-as-int)
            (core::note-signal-handler signal-as-int lisp-handler)
            2)
@@ -26,8 +25,8 @@
                              (:lisp (handle-lisp-handler int-signal)))))
              (if (zerop result)
                  :done
-                 :error-defining-handler))
-            (t :signal-not-found)))))
+                 (error "Setting signal ~s in mode ~s errored " signal mode)))
+            (t (error "Signal ~s not recognized, Handler cannot be set" signal))))))
 
 (defun default-interrupt (signal)
   "Sets the handler to the default handler for signal"
@@ -38,11 +37,11 @@
   (enable-interrupt signal :ignore))
 
 (defun get-signal-handler (signal)
-  "Get a lisp handler handler for signal, or nil if none defined"
+  "Get a lisp handler handler for signal, or signals an error, if signal is not recognized"
   (let ((internal-signal (core::external-to-int-signal signal)))
     (if internal-signal
         (core::get-signal-handler internal-signal)
-        nil)))
+        (error "Signal ~s not recognized, Handler cannot be read" signal))))
 
 (defun set-signal-handler (signal handler)
   "Set a lisp handler handler for signal"
@@ -57,7 +56,7 @@
 ;;; Only include posix signals
 ;;; Codes taken from https://gitlab.common-lisp.net/cmucl/cmucl/-/blob/master/src/code/signal.lisp
 ;;; #+linux is only valid for linux on x86/ARM (http://man7.org/linux/man-pages/man7/signal.7.html)
-;;; bsd signals verified with https://www.freebsd.org/cgi/man.cgi?query=signal&sektion=3&manpath=freebsd-release-ports
+;;; bsd signal mapping verified with https://www.freebsd.org/cgi/man.cgi?query=signal&sektion=3&manpath=freebsd-release-ports
 (defun external-to-int-signal (signal)
   (let* ((signal-alist
           '((:SIGHUP  1       :term "hangup ")
@@ -66,7 +65,7 @@
             (:SIGILL  4       :core "illegal instruction (not reset when caught) ")
             (:SIGTRAP 5       :unknown "trace trap (not reset when caught) ")
             (:SIGABRT 6       :core "abort() ")
-            #+(or) (:SIGPOLL 7       :unknown"pollable event ([XSR] generated, not supported) ")
+            #+linux (:SIGPOLL 29       :unknown"pollable event ([XSR] generated, not supported) ")
             #+(or)(:SIGIOT  6       :core "compatibility ")
             #+(or) (:SIGEMT  7       :unknown "EMT instruction ")
             (:SIGFPE  8       :core "floating point exception ")
