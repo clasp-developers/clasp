@@ -236,12 +236,6 @@ class Lisp_O {
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _PackagesMutex;
 #endif
-#if 0
-    HashTableEq_sp _SetfDefinitions;
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _SetfDefinitionsMutex;
-#endif
-#endif
     bool _MpiEnabled;
     int _MpiRank;
     int _MpiSize;

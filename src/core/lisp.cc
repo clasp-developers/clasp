@@ -1341,7 +1341,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }
-  LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }
 
 T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
