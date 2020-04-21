@@ -1305,6 +1305,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
 
   this->_NoInform = options._NoInform;
+  this->_NoPrint = options._NoPrint;
   this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
   if (this->_Interactive) {
@@ -1431,6 +1432,10 @@ CL_DEFUN void core__low_level_repl() {
 
 CL_DEFUN bool core__noinform_p() {
   return _lisp->_NoInform;
+}
+
+CL_DEFUN bool core__noprint_p() {
+  return _lisp->_NoPrint;
 }
 
 CL_DOCSTRING("Enable the system debugger if it has been disabled by disable-debugger.");

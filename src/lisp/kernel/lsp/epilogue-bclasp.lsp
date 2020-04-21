@@ -9,5 +9,5 @@
             (cond ((core:is-interactive-lisp)
                    (unless (core:noinform-p)
                      (format t "Starting bclasp~%"))
-                   (core:top-level))
+                   (core:top-level :noprint (core:noprint-p)))
                   (t (core:exit 0)))))

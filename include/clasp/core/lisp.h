@@ -366,6 +366,7 @@ public:
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
   bool _NoInform;
+  bool _NoPrint;
   bool _DebuggerDisabled;
   bool _Interactive;
   string _FunctionName;

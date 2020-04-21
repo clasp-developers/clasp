@@ -60,6 +60,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "--noinform           - Don't print startup banner text\n"
+             "--noprint            - Don't prompt or print in read-eval loop\n"
              "-D/--disable-debugger - If the debugger would be entered, Clasp instead quits\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
@@ -133,6 +134,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_DontLoadImage = true;
     } else if (arg == "--noinform") {
       options->_NoInform = true;
+    } else if (arg == "--noprint") {
+      options->_NoPrint = true;
     } else if (arg == "-D" || arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
@@ -204,6 +207,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),
+    _NoPrint(false),
     _DebuggerDisabled(false),
     _Interactive(true),
     _Version(false),
