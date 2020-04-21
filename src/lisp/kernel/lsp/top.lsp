@@ -737,9 +737,10 @@ Use special code 0 to cancel this operation.")
 
 (defun break-where ()
   (if (<= *tpl-level* 0)
-      #-threads (format t "~&Top level.~%")
-      #+threads (format t "~&Top level in: ~A.~%" mp:*current-process*)
-    (tpl-print-current)))
+      (unless (core:noinform-p)
+        #-threads (format t "~&Top level.~%")
+        #+threads (format t "~&Top level in: ~A.~%" mp:*current-process*))
+      (tpl-print-current)))
 
 (defun set-current-frame ()
   (setf *break-frame* (clasp-debug:visible *break-frame*))

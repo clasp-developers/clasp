@@ -7,6 +7,7 @@
             (core:maybe-load-clasprc)
             (core:process-command-line-load-eval-sequence)
             (cond ((core:is-interactive-lisp)
-                   (format t "Starting bclasp~%")
+                   (unless (core:noinform-p)
+                     (format t "Starting bclasp~%"))
                    (core:top-level))
                   (t (core:exit 0)))))

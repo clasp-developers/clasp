@@ -295,10 +295,8 @@ class Lisp_O {
     GCRoots();
   };
 
-  friend class IncrementTraceLevel;
   friend class MultipleValues;
   friend class CoreExposer;
-  friend class ConditionHandlerManager;
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
@@ -367,6 +365,7 @@ public:
 	*/
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
+  bool _NoInform;
   bool _DebuggerDisabled;
   bool _Interactive;
   string _FunctionName;
