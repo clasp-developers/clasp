@@ -61,7 +61,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "--noinform           - Don't print startup banner text\n"
              "--noprint            - Don't prompt or print in read-eval loop\n"
-             "-D/--disable-debugger - If the debugger would be entered, Clasp instead quits\n"
+             "-D/--disable-debugger - If the default debugger would be entered, Clasp instead quits\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
