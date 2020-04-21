@@ -50,6 +50,7 @@
 (in-package :core)
 
 (defparameter *signal-to-function* nil)
+(defparameter *cache-signal-alist* nil)
 
 
 ;;; See https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
@@ -58,45 +59,12 @@
 ;;; #+linux is only valid for linux on x86/ARM (http://man7.org/linux/man-pages/man7/signal.7.html)
 ;;; bsd signal mapping verified with https://www.freebsd.org/cgi/man.cgi?query=signal&sektion=3&manpath=freebsd-release-ports
 (defun external-to-int-signal (signal)
-  (let* ((signal-alist
-          '((:SIGHUP  1       :term "hangup ")
-            (:SIGINT  2       :term "interrupt ")
-            (:SIGQUIT 3       :core "quit ")
-            (:SIGILL  4       :core "illegal instruction (not reset when caught) ")
-            (:SIGTRAP 5       :unknown "trace trap (not reset when caught) ")
-            (:SIGABRT 6       :core "abort() ")
-            #+linux (:SIGPOLL 29       :unknown"pollable event ([XSR] generated, not supported) ")
-            #+(or)(:SIGIOT  6       :core "compatibility ")
-            #+(or) (:SIGEMT  7       :unknown "EMT instruction ")
-            (:SIGFPE  8       :core "floating point exception ")
-            (:SIGKILL 9       :term "kill (cannot be caught or ignored) ")
-            (:SIGBUS  #-linux 10 #+linux 7     :term "bus error ")
-            (:SIGSEGV 11      :core "segmentation violation ")
-            (:SIGSYS  #-linux 12 #+linux 31     :unknown "bad argument to system call ")
-            (:SIGPIPE 13      :term "write on a pipe with no one to read it ")
-            (:SIGALRM 14      :term "alarm clock ")
-            (:SIGTERM 15      :term "software termination signal from kill ")
-            (:SIGURG  #-linux 16 #+linux 23      :term "urgent condition on IO channel ")
-            (:SIGSTOP #-linux 17 #+linux 19      :term "sendable stop signal not from tty ")
-            (:SIGTSTP #-linux 18 #+linux 20     "stop signal from tty ")
-            (:SIGCONT #-linux 19 #+linux 18     "continue a stopped process ")
-            (:SIGCHLD #-linux 20 #+linux 17     "to parent on child stop or exit ")
-            (:SIGTTIN 21      "to readers pgrp upon background tty read ")
-            (:SIGTTOU 22      "like TTIN for output if (tp->t_local&LTOSTOP) ")
-            #+(or) (:SIGIO   #-linux 23 #+linux 29     "input/output possible signal ")
-            (:SIGXCPU 24      "exceeded CPU time limit ")
-            (:SIGXFSZ 25      "exceeded file size limit ")
-            (:SIGVTALRM 26    "virtual time alarm ")
-            (:SIGPROF 27      "profiling time alarm ")
-            #+(or) (:SIGWINCH 28     "window size changes ")
-            #+(or) (:SIGINFO 29      "information request ")
-            (:SIGUSR1 #-linux 30 #+linux 10     "user defined signal 1 ")
-            (:SIGUSR2 #-linux 31 #+linux 12     "user defined signal 2 ")))
+  (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
          (found (Assoc signal signal-alist)))
     (if found
-        (second found)
+        (cdr found)
         nil)))
-        
+
 (defun note-signal-handler (signal function)
   (setf (getf *signal-to-function* signal) function))
 
