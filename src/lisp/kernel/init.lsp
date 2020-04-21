@@ -203,7 +203,9 @@
           quit
           btcl
           ihs-argument
-          with-float-traps-masked))
+          with-float-traps-masked
+          enable-interrupt default-interrupt ignore-interrupt
+          get-signal-handler set-signal-handler))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
