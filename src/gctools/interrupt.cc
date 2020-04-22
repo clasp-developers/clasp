@@ -412,7 +412,6 @@ void initialize_signals(int clasp_signal) {
   INIT_SIGNAL(SIGHUP, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGQUIT, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTERM, (SA_NODEFER | SA_RESTART), handle_signal_now);
-  INIT_SIGNAL(SIGTSTP, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
   INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
