@@ -406,11 +406,10 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf ext:symbol-macro) (expansion name)
-  (put-sysprop name 'ext:symbol-macro
-               (lambda (form env)
-                 (declare (ignore form env))
-                 expansion)))
+(defun (setf ext:symbol-macro) (expander name &optional env)
+  (when env
+    (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
+  (put-sysprop name 'ext:symbol-macro expander))
 
 (defmacro define-symbol-macro (&whole whole symbol expansion)
   (cond ((not (symbolp symbol))
@@ -422,7 +421,11 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	(t
 	 `(progn
             (eval-when (:compile-toplevel :load-toplevel :execute)
-              (funcall #'(setf ext:symbol-macro) ',expansion ',symbol))
+              (funcall #'(setf ext:symbol-macro)
+                       #'(lambda (form env)
+                           (declare (ignore form env))
+                           ',expansion)
+                       ',symbol))
             ,@(when (and core:*current-source-pos-info*
                          (fboundp 'variable-source-info-saver))
                 (variable-source-info-saver symbol core:*current-source-pos-info*))
