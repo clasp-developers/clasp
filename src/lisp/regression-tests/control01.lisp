@@ -91,4 +91,41 @@
               (macrolet ((%m (&key ((:a (b c)))) `(quote (,c ,b))))
     (%m :a (1 2)))))
 
+;;; Test that setf expanders are shadowed by flet, labels, and macrolet.
+(define-setf-expander issue-982-place (place &environment env)
+  (get-setf-expansion `(cdr ,place) env))
 
+(test issue-982-flet
+      (flet ((issue-982-place (c) (car c))
+             ((setf issue-982-place) (n c) (setf (car c) n)))
+        (declare (ignore #'issue-982-place))
+        (let ((c (cons nil nil)))
+          (setf (issue-982-place c) t)
+          (car c))))
+
+(test issue-982-labels
+      (labels ((issue-982-place (c) (car c))
+               ((setf issue-982-place) (n c) (setf (car c) n)))
+        (declare (ignore #'issue-982-place))
+        (let ((c (cons nil nil)))
+          (setf (issue-982-place c) t)
+          (car c))))
+
+(test issue-982-macrolet
+      (macrolet ((issue-982-place (c) `(car ,c)))
+        (let ((c (cons nil nil)))
+          (setf (issue-982-place c) t)
+          (car c))))
+
+;;; Test that setf uses macroexpand-1, not macroexpand,
+;;; and therefore can prefer setf expanders to macro expanders.
+(define-setf-expander macro-place-1 (place &environment env)
+  (get-setf-expansion `(cdr ,place) env))
+
+(defmacro macro-place-1 (place) `(car ,place))
+
+(test macro-place-1
+      (macrolet ((macro-place-pre (place) `(macro-place-1 ,place)))
+        (let ((c (cons nil nil)))
+          (setf (macro-place-pre c) t)
+          (cdr c))))
