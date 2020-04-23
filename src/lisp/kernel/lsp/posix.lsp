@@ -47,6 +47,40 @@
   "Set a lisp handler handler for signal"
   (enable-interrupt signal :lisp handler))
 
+(defun stat (pathname &optional type)
+  "Returns data of the posix stat() function for pathname
+if pathname is not found, returns nil
+if type is nil or :size, returns stat.st_size (file size in bytes, follows symbolic links)
+if type is :mtime, returns stat.st_mtime (Time of last data modification.)
+if type is :mode, returns stat.st_mode (Mode of file)
+errors, if type has another value"
+  (multiple-value-bind
+        (size mtime mode)
+      (core:stat (translate-logical-pathname pathname))
+      (ecase type
+        ((nil :size) size)
+        (:mtime mtime)
+        (:mode mode))))
+
+(defun fstat (file-descriptor &optional type)
+  "Returns data of the posix fstat() function for file-descriptor
+if pathname is not found, returns nil
+if type is nil or :size, returns stat.st_size (file size in bytes, follows symbolic links)
+if type is :mtime, returns stat.st_mtime (Time of last data modification.)
+if type is :mode, returns stat.st_mode (Mode of file)
+errors, if type has another value"
+  (multiple-value-bind
+        (size mtime mode)
+      (core:fstat file-descriptor)
+      (ecase type
+        ((nil :size) size)
+        (:mtime mtime)
+        (:mode mode))))
+
+(defun stream-file-descriptor (stream)
+  "Retuns the file-descriptor for stream"
+  (core:file-stream-fd stream))
+
 (in-package :core)
 
 (defparameter *signal-to-function* nil)

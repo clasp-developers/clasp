@@ -205,7 +205,8 @@
           ihs-argument
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
-          get-signal-handler set-signal-handler))
+          get-signal-handler set-signal-handler
+          stat fstat stream-file-descriptor))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
