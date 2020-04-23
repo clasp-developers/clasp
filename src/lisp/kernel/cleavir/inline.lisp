@@ -351,17 +351,17 @@
           generic (return-from ,inlined-name ,@generic)))))
   (define-with-contagion primop:inlined-two-arg-+ nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-                                       (if (cleavir-primop:fixnum-add x y z)
-                                           z
-                                           (core:convert-overflow-result-to-bignum z))))
+       (if (cleavir-primop:fixnum-add x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-add single-float x y))
     ((cleavir-primop:float-add double-float x y))
     ((core:two-arg-+ x y)))
   (define-with-contagion primop:inlined-two-arg-- nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-                                       (if (cleavir-primop:fixnum-sub x y z)
-                                           z
-                                           (core:convert-overflow-result-to-bignum z))))
+       (if (cleavir-primop:fixnum-sub x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-sub single-float x y))
     ((cleavir-primop:float-sub double-float x y))
     ((core:two-arg-- x y)))
