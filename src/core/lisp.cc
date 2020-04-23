@@ -1849,46 +1849,22 @@ CL_DECLARE();
 CL_DOCSTRING("macroexpand_1");
 CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   T_sp expansionFunction = _Nil<T_O>();
-  if (form.nilp()) {
-    return form;
-  } else if (form.consp()) {
+  if (form.consp()) {
     Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.raw_()));
     T_sp head = cons_car(cform);
     if (cl__symbolp(head)) {
-      Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
-      if (env.nilp()) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      } else if (gc::IsA<Environment_sp>(env)) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-#if 0        
-      } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, ce);
-#endif        
-      } else {
-        // It must be a Cleavir environment
-        if (cleavirEnv::_sym_macroFunction->fboundp()) {
-          expansionFunction = eval::funcall(cleavirEnv::_sym_macroFunction, headSymbol, env);
-        }
-      }
+      expansionFunction = cl__macro_function(gc::As_unsafe<Symbol_sp>(head), env);
     }
-    if (expansionFunction.notnilp()) {
-      T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-      T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
-      return (Values(expanded, _lisp->_true()));
-    }
-    return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
     expansionFunction = ext__symbol_macro(sform, env);
-    if (expansionFunction.notnilp()) {
-      T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-      T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
-      return (Values(expanded, _lisp->_true()));
-    }
-    return Values(form, _Nil<T_O>());
   }
-  return Values(form, _Nil<T_O>());
+  if (expansionFunction.notnilp()) {
+    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+    T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
+    return (Values(expanded, _lisp->_true()));
+  } else
+    return Values(form, _Nil<T_O>());
 }
 
 CL_LAMBDA(form &optional env);
