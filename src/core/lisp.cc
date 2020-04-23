@@ -1879,36 +1879,12 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     }
     return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
-    if (env.nilp()) {
-      expansionFunction = ext__symbol_macro(sform, env);
-    } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-      expansionFunction = ext__symbol_macro(sform, eenv);
-#if 0
-    } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
-      clcenv::Info_sp info = clcenv::variable_info(cenv,sform);
-      if (clcenv::SymbolMacroInfo_sp smi = info.asOrNull<clcenv::SymbolMacroInfo_O>() ) {
-        expansionFunction = smi->_Expansion;
-      }
-#endif
-    } else {
-      // It must be a Cleavir environment
-      if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
-        T_sp expanded = eval::funcall(cleavirEnv::_sym_symbolMacroExpansion, sform, env);
-        if (expanded == sform) {
-          return Values(sform, _Nil<T_O>());
-        }
-        return Values(expanded, _lisp->_true());
-      } else {
-        SIMPLE_ERROR(BF("Illegal environment for MACROEXPAND-1 of symbol-macro %s") % _rep_(sform));
-      }
-    }
+    expansionFunction = ext__symbol_macro(sform, env);
     if (expansionFunction.notnilp()) {
       T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
       Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
       T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
-      if (expanded != form) {
-        return (Values(expanded, _lisp->_true()));
-      }
+      return (Values(expanded, _lisp->_true()));
     }
     return Values(form, _Nil<T_O>());
   }
