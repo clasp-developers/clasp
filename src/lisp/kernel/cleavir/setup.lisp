@@ -252,6 +252,12 @@ when this is t a lot of graphs will be generated.")
             expansion))
         nil)))
 
+;;; Used by core:operator-shadowed-p
+(defun core:cleavir-operator-shadowed-p (name environment)
+  (typep (cleavir-env:function-info environment name)
+         '(or cleavir-env:local-function-info
+           cleavir-env:local-macro-info)))
+
 (defun type-expand-1 (type-specifier &optional env)
   (let (head)
     (etypecase type-specifier

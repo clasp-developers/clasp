@@ -599,6 +599,31 @@ CL_DEFUN_SETF T_sp core__setf_function_type(T_sp type, T_sp name, T_sp env) {
   return type;
 }
 
+// Return whether this thing is shadowed in the function namespace.
+// It's shadowed if there's an flet or labels or macrolet for the name.
+// Used by get-setf-expansion and a few other places.
+// Note that this will return T even if there is no global definition to shadow.
+CL_DEFUN bool core__operator_shadowed_p(T_sp name, T_sp env) {
+  if (env.nilp()) {
+    // No lexical environment.
+    return false;
+  } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
+    // Native environment. Check for local functions.
+    int depth;
+    int index;
+    Function_sp value;
+    T_sp functionEnv = _Nil<T_O>();
+    if (eenv->findFunction(name, depth, index, value, functionEnv))
+      return true;
+    // No local function, check for local macro instead.
+    return Environment_O::clasp_findMacro(eenv, name, depth, index, value);
+  } else { // Cleavir, maybe
+    SYMBOL_EXPORT_SC_(CorePkg, cleavir_operator_shadowed_p);
+    T_sp lbool = eval::funcall(core::_sym_cleavir_operator_shadowed_p,
+                               name, env);
+    return lbool.notnilp();
+  }
+}
 
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
