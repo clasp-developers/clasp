@@ -54,4 +54,8 @@
             (= (nth-value 2 (ext:stat file))
                (nth-value 2 (ext:fstat fd)))))))
 
+(test-expect-error file-stream-file-descriptor-wrong-type
+                   (ext:file-stream-file-descriptor 23)
+                   :type type-error)
+
 
