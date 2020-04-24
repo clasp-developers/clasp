@@ -47,51 +47,12 @@
   "Set a lisp handler handler for signal"
   (enable-interrupt signal :lisp handler))
 
-(defun stat (pathname &optional type)
-  "Returns data of the posix stat() function for pathname
-if pathname is not found, returns nil
-if type is nil or :size, returns stat.st_size (file size in bytes, follows symbolic links)
-if type is :mtime, returns stat.st_mtime (Time of last data modification.)
-if type is :mode, returns stat.st_mode (Mode of file)
-errors, if type has another value"
-  (multiple-value-bind
-        (size mtime mode)
-      (core:stat (translate-logical-pathname pathname))
-      (ecase type
-        ((nil :size) size)
-        (:mtime mtime)
-        (:mode mode))))
-
-(defun fstat (file-descriptor &optional type)
-  "Returns data of the posix fstat() function for file-descriptor
-if pathname is not found, returns nil
-if type is nil or :size, returns stat.st_size (file size in bytes, follows symbolic links)
-if type is :mtime, returns stat.st_mtime (Time of last data modification.)
-if type is :mode, returns stat.st_mode (Mode of file)
-errors, if type has another value"
-  (multiple-value-bind
-        (size mtime mode)
-      (core:fstat file-descriptor)
-      (ecase type
-        ((nil :size) size)
-        (:mtime mtime)
-        (:mode mode))))
-
-(defun stream-file-descriptor (stream)
-  "Retuns the file-descriptor for stream"
-  (core:file-stream-fd stream))
-
 (in-package :core)
 
 (defparameter *signal-to-function* nil)
 (defparameter *cache-signal-alist* nil)
 
-
-;;; See https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
-;;; Only include posix signals
-;;; Codes taken from https://gitlab.common-lisp.net/cmucl/cmucl/-/blob/master/src/code/signal.lisp
-;;; #+linux is only valid for linux on x86/ARM (http://man7.org/linux/man-pages/man7/signal.7.html)
-;;; bsd signal mapping verified with https://www.freebsd.org/cgi/man.cgi?query=signal&sektion=3&manpath=freebsd-release-ports
+;;; For Signal see https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
 (defun external-to-int-signal (signal)
   (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
          (found (Assoc signal signal-alist)))

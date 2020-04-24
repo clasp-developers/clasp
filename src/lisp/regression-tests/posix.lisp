@@ -8,44 +8,50 @@
 (test-expect-error get-signal-handler-wrong-signal
                    (ext:get-signal-handler :sig-non-existant)
                    :type simple-error)
-(test stat-size
+(test stat-all
       (ext:stat "sys:regression-tests;run-all.lisp"))
 
-(test stat-size-2
+(test stat-size
       (let ((file "sys:regression-tests;run-all.lisp"))
-        (= (ext:stat file)
-           (ext:stat file :size))))
+        (numberp (nth-value 0 (ext:stat file)))))
 
-(test stat-size-mtime
-      (ext:stat "sys:regression-tests;run-all.lisp" :mtime))
+(test stat-mtime
+      (let ((file "sys:regression-tests;run-all.lisp"))
+        (numberp (nth-value 1 (ext:stat file)))))
 
 (test stat-size-mtime-no-logical-pathname
-      (ext:stat (translate-logical-pathname "sys:regression-tests;run-all.lisp") :mtime))
+      (let ((file-no-lp (translate-logical-pathname "sys:regression-tests;run-all.lisp"))
+            (file-lp "sys:regression-tests;run-all.lisp"))
+        (= (nth-value 1 (ext:stat file-no-lp))(nth-value 1 (ext:stat file-lp)))))
 
 (test stat-size-mode
-      (ext:stat "sys:regression-tests;run-all.lisp" :mode))
+      (nth-value 2 (ext:stat "sys:regression-tests;run-all.lisp")))
 
+(test fstat-all
+      (let ((file "sys:regression-tests;run-all.lisp"))
+        (with-open-file (stream file :direction :input)
+          (let ((fd (ext:file-stream-file-descriptor stream)))
+            (ext:fstat fd)))))
+ 
 (test fstat-size
       (let ((file "sys:regression-tests;run-all.lisp"))
         (with-open-file (stream file :direction :input)
-          (let ((fd (ext:stream-file-descriptor stream)))
-            (= (ext:stat file)
-               (ext:stat file :size)
-               (ext:fstat fd)
-               (ext:fstat fd :size))))))
+          (let ((fd (ext:file-stream-file-descriptor stream)))
+            (= (nth-value 0 (ext:stat file))
+               (nth-value 0 (ext:fstat fd)))))))
 
 (test fstat-mtime
       (let ((file "sys:regression-tests;run-all.lisp"))
         (with-open-file (stream file :direction :input)
-          (let ((fd (ext:stream-file-descriptor stream)))
-            (= (ext:stat file :mtime)
-               (ext:fstat fd :mtime))))))
+          (let ((fd (ext:file-stream-file-descriptor stream)))
+            (= (nth-value 1 (ext:stat file))
+               (nth-value 1 (ext:fstat fd)))))))
 
 (test fstat-mode
       (let ((file "sys:regression-tests;run-all.lisp"))
         (with-open-file (stream file :direction :input)
-          (let ((fd (ext:stream-file-descriptor stream)))
-            (= (ext:stat file :mode)
-               (ext:fstat fd :mode))))))
+          (let ((fd (ext:file-stream-file-descriptor stream)))
+            (= (nth-value 2 (ext:stat file))
+               (nth-value 2 (ext:fstat fd)))))))
 
 

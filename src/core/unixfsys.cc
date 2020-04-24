@@ -2223,8 +2223,13 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
 
 CL_LAMBDA(filedescriptor);
 CL_DECLARE();
-CL_DOCSTRING("Fstat values size mtime and mode for file-descriptor, nil on error");
-CL_DEFUN T_mv core__fstat(int filedescriptor) {
+CL_DOCSTRING("Returns data of the posix fstat() function for file-descriptor"
+"if pathname is not found, returns nil"
+"else mutiple values of"
+"stat.st_size (file size in bytes, follows symbolic links)"
+"stat.st_mtime (Time of last data modification.)"
+"stat.st_mode (Mode of file)");
+CL_DEFUN T_mv ext__fstat(int filedescriptor) {
   struct stat sb;
   if (fstat(filedescriptor, &sb) == -1)
     return Values(_Nil<T_O>());
@@ -2237,10 +2242,15 @@ CL_DEFUN T_mv core__fstat(int filedescriptor) {
 
 CL_LAMBDA(pathname);
 CL_DECLARE();
-CL_DOCSTRING("stat values size mtime and mode for a pathname, nil on error");
-CL_DEFUN T_mv core__stat (T_sp pathname) {
+CL_DOCSTRING("Returns data of the posix stat() function for pathname"
+"if pathname is not found, returns nil"
+"else mutiple values of"
+"stat.st_size (file size in bytes, follows symbolic links)"
+"stat.st_mtime (Time of last data modification.)"
+"stat.st_mode (Mode of file)");
+CL_DEFUN T_mv ext__stat (T_sp pathname) {
   struct stat sb;
-  String_sp filename = gc::As<String_sp>(cl__namestring(pathname));
+  String_sp filename = gc::As<String_sp>(cl__namestring(cl__translate_logical_pathname (pathname)));
   if (stat(filename->get_std_string().c_str(), &sb) == -1)
     return Values (_Nil<T_O>());
   else
@@ -2249,7 +2259,7 @@ CL_DEFUN T_mv core__stat (T_sp pathname) {
                   Integer_O::create((gctools::Fixnum) sb.st_mode));
 };
 
-SYMBOL_EXPORT_SC_(CorePkg, fstat);
-SYMBOL_EXPORT_SC_(CorePkg, stat);
+SYMBOL_EXPORT_SC_(ExtPkg, fstat);
+SYMBOL_EXPORT_SC_(ExtPkg, stat);
 
 }; // namespace core
