@@ -52,7 +52,6 @@ namespace core {
     LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Function_O);
 // These indices MUST match the order and positions of slots in +standard-generic-function-slots+
     typedef enum { REF_GFUN_NAME = 0,
-                   REF_GFUN_SPECIALIZERS = 1,  // lock
                    REF_GFUN_LAMBDA_LIST = 3,   // lock
                  } GenericFunctionSlots;
     // Additionally, this structure is known to the compiler,
@@ -97,7 +96,6 @@ namespace core {
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
   public:
     T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
-    T_sp GFUN_SPECIALIZERS() const { return this->instanceRef(REF_GFUN_SPECIALIZERS); };
     T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
     void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
     {
