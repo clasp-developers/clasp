@@ -602,35 +602,39 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; Standard-object has no slots and inherits only from t:
 ;;; (defclass standard-object (t) ())
 
+(defun describe-slots (object stream)
+  (let* ((class (class-of object))
+         (slotds (class-slots class))
+         (max-slot-name-length 24)
+         (plist nil))
+    ;; Go through the slots getting a max slot name length,
+    ;; and also sorting the slots by :allocation.
+    ;; (This code is based off of SBCL's SB-IMPL::DESCRIBE-INSTANCE.)
+    (dolist (slotd slotds)
+      (setf max-slot-name-length
+            (max max-slot-name-length
+                 (length (symbol-name
+                          (slot-definition-name slotd)))))
+      (push slotd (getf plist (slot-definition-allocation slotd))))
+    ;; Now dump the info.
+    (loop for (allocation slotds) on plist by #'cddr
+          do (format stream "~&Slots with ~s allocation:" allocation)
+             (dolist (slotd (nreverse slotds)) ; keep original order
+               (let ((slot-name (slot-definition-name slotd)))
+                 (format stream "~&  ~va: ~a"
+                         max-slot-name-length slot-name
+                         (if (slot-boundp object slot-name)
+                             (slot-value object slot-name)
+                             "Unbound"))))))
+  object)
+
 (defmethod describe-object ((obj standard-object) (stream t))
   (let* ((class (si:instance-class obj))
 	 (slotds (class-slots class))
 	 slotname has-shared-slots)
-    (format stream "~%~S is an instance of class ~A"
+    (format stream "~&~S - ~S"
 	    obj (class-name class))
-    (when slotds
-      ;; print instance slots
-      (format stream "~%it has the following instance slots")
-      (dolist (slot slotds)
-	(setq slotname (slot-definition-name slot))
-	(case (slot-definition-allocation slot)
-	  (:INSTANCE
-	   (format stream "~%~A:~24,8T~A"
-		   slotname
-		   (if (slot-boundp obj slotname)
-		       (slot-value obj slotname) "Unbound")))
-	  ;; :CLASS
-	  (T (setq has-shared-slots t))))
-      (when has-shared-slots
-	;; print class slots
-	(format stream "~%it has the following class slots")
-	(dolist (slot slotds)
-	  (setq slotname (slot-definition-name slot))
-	  (unless (eq (slot-definition-allocation slot) :INSTANCE)
-	    (format stream "~%~A:~24,8T~A"
-		    slotname
-		    (if (slot-boundp obj slotname)
-			(slot-value obj slotname) "Unbound")))))))
+    (describe-slots obj stream))
   obj)
 
 ;;; ----------------------------------------------------------------------
