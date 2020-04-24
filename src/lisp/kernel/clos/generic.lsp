@@ -259,7 +259,7 @@ Not a valid documentation object ~A"
      &rest args
      &key
        (method-class 'STANDARD-METHOD method-class-p)
-       (generic-function-class (class-of gfun))
+       (generic-function-class (class-of gfun) gfcp)
        (delete-methods nil))
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
@@ -273,9 +273,13 @@ Not a valid documentation object ~A"
   ;; (See ANSI DEFGENERIC entry)
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
-  (unless (si::subclassp generic-function-class (find-class 'generic-function))
-    (error "~A is not a valid :GENERIC-FUNCTION-CLASS argument for ENSURE-GENERIC-FUNCTION."
-	   generic-function-class))
+  (when gfcp
+    ;; ANSI DEFGENERIC talks about the possibility of change-class-ing a
+    ;; generic function, but AMOP specifically rules this possibility out.
+    ;; We go with the latter.
+    (unless (eq generic-function-class (class-of gfun))
+      (error "Cannot change the class of generic function ~a from ~a to ~a. See AMOP, ENSURE-GENERIC-FUNCTION-USING-CLASS."
+             name (class-name (class-of gfun)) (class-name generic-function-class))))
   (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (when delete-methods
@@ -301,8 +305,13 @@ Not a valid documentation object ~A"
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
-  (when (and method-class-p (symbolp generic-function-class))
+  (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
+  (when (symbolp generic-function-class)
+    (setf generic-function-class (find-class generic-function-class)))
+  (unless (si::subclassp generic-function-class (find-class 'generic-function))
+    (error "~A is not a valid :GENERIC-FUNCTION-CLASS argument for ENSURE-GENERIC-FUNCTION, as it is not a subclass of GENERIC-FUNCTION."
+	   generic-function-class))
   (apply #'make-instance generic-function-class :name name args))
 
 ;;; Miscellany
