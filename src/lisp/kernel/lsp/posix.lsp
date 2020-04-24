@@ -52,12 +52,7 @@
 (defparameter *signal-to-function* nil)
 (defparameter *cache-signal-alist* nil)
 
-
-;;; See https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
-;;; Only include posix signals
-;;; Codes taken from https://gitlab.common-lisp.net/cmucl/cmucl/-/blob/master/src/code/signal.lisp
-;;; #+linux is only valid for linux on x86/ARM (http://man7.org/linux/man-pages/man7/signal.7.html)
-;;; bsd signal mapping verified with https://www.freebsd.org/cgi/man.cgi?query=signal&sektion=3&manpath=freebsd-release-ports
+;;; For Signal see https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
 (defun external-to-int-signal (signal)
   (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
          (found (Assoc signal signal-alist)))
