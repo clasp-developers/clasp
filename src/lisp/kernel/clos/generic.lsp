@@ -86,6 +86,8 @@
                                                 option-name))))
                  (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
+              ,@(when core:*current-source-pos-info*
+                  (list ''source-position core:*current-source-pos-info*))
 	      ,@(when declarations `(:declarations ',declarations)))
 	    method-list)))
 
@@ -184,7 +186,9 @@ Not a valid documentation object ~A"
 (defmethod shared-initialize :after
     ((gfun standard-generic-function) slot-names &rest initargs
      &key (name nil name-p) (lambda-list nil l-l-p)
-       (argument-precedence-order nil a-o-p))
+       (argument-precedence-order nil a-o-p)
+     ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
+       ((source-position spi) nil spi-p))
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
@@ -208,7 +212,19 @@ Not a valid documentation object ~A"
   ;; If we have a new lambda list, set the display lambda list.
   (when l-l-p
     (setf-lambda-list gfun lambda-list))
-  ;; And finally, set up the actual function.
+  ;; If we have a source position, set that.
+  (when spi-p
+    ;; FIXME: Too many fields and the underlying function makes a new SPI. Dumb.
+    (core:set-source-pos-info
+     gfun
+     (core:file-scope-pathname
+      (core:file-scope
+       (core:source-pos-info-file-handle spi)))
+     (core:source-pos-info-lineno spi)
+     ;; 1+ copied from cmpir.lsp. Dunno why it's there.
+     (1+ (core:source-pos-info-column spi))
+     (core:source-pos-info-filepos spi)))
+  ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
