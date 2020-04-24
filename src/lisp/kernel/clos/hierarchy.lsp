@@ -151,7 +151,6 @@
       (method-class
        :initarg :method-class
        :initform (find-class 'standard-method))
-      (docstring :initarg :documentation :initform nil)
       (methods :initform nil :accessor generic-function-methods)
       (a-p-o-function :initform nil :accessor generic-function-a-p-o-function)
       (declarations

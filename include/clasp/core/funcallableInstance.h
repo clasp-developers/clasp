@@ -121,7 +121,6 @@ namespace core {
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
-    virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };

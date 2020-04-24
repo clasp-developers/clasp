@@ -450,14 +450,6 @@ q (or Q):             quits the inspection.~%~
          (setf (documentation (compiler-macro-function object) doc-type)
                new-value))))
 
-(defmethod documentation ((object standard-generic-function) doc-type)
-  (when (member doc-type '(t function))
-    (slot-value object 'docstring)))
-
-(defmethod (setf documentation) (new-value (object standard-generic-function) doc-type)
-  (when (member doc-type '(t function))
-    (setf (slot-value object 'docstring) new-value)))
-
 (defmethod documentation ((object standard-method) doc-type)
   (when (member doc-type '(t function))
     (slot-value object 'docstring)))

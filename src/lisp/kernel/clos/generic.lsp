@@ -186,8 +186,9 @@ Not a valid documentation object ~A"
 (defmethod shared-initialize :after
     ((gfun standard-generic-function) slot-names &rest initargs
      &key (name nil name-p) (lambda-list nil l-l-p)
+       (documentation nil documentation-p)
        (argument-precedence-order nil a-o-p)
-     ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
+       ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
        ((source-position spi) nil spi-p))
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize.generic-function))
@@ -212,6 +213,9 @@ Not a valid documentation object ~A"
   ;; If we have a new lambda list, set the display lambda list.
   (when l-l-p
     (setf-lambda-list gfun lambda-list))
+  ;; Ditto docstring.
+  (when documentation-p
+    (setf (core:function-docstring gfun) documentation))
   ;; If we have a source position, set that.
   (when spi-p
     ;; FIXME: Too many fields and the underlying function makes a new SPI. Dumb.
