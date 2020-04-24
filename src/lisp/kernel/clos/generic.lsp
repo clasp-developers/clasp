@@ -220,10 +220,10 @@ Not a valid documentation object ~A"
      (core:file-scope-pathname
       (core:file-scope
        (core:source-pos-info-file-handle spi)))
+     (core:source-pos-info-filepos spi)
      (core:source-pos-info-lineno spi)
      ;; 1+ copied from cmpir.lsp. Dunno why it's there.
-     (1+ (core:source-pos-info-column spi))
-     (core:source-pos-info-filepos spi)))
+     (1+ (core:source-pos-info-column spi))))
   ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (when (generic-function-methods gfun)
