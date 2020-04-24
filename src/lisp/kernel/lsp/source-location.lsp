@@ -108,8 +108,13 @@
     (source-locations-set-info sls 'defmethod description)))
 
 (defun generic-function-source-locations (gf)
-  ;; FIXME: Include the actual defgeneric's location too.
-  (mapcan #'method-source-location (clos:generic-function-methods gf)))
+  (let ((method-sls (mapcan #'method-source-location (clos:generic-function-methods gf))))
+    (multiple-value-bind (file pos)
+        (compiled-function-file gf)
+      (if file
+          (list* (make-source-location :pathname file :offset pos :definer 'defgeneric)
+                 method-sls)
+          method-sls))))
 
 (defun source-location-impl (name kind)
   "* Arguments
