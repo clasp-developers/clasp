@@ -121,46 +121,39 @@
 (defun lambda-list-required-arguments (lambda-list)
   (rest (si::process-lambda-list lambda-list t)))
 
-(defmethod shared-initialize ((gfun generic-function) slot-names &rest initargs
-			      &key (name nil)
-			      (lambda-list nil l-l-p)
-			      (argument-precedence-order nil a-o-p)
-			      (documentation nil)
-			      (declarations nil)
-			      (method-class (find-class 'method))
-			      &aux
-			      (gfun-name (if (slot-boundp gfun 'name)
-					     (slot-value gfun 'name)
-					     (or name :anonymous)))
-			      )
-  (declare (ignore initargs slot-names)
-           (core:lambda-name shared-initialize.generic-function))
-  ;;
+(defmethod shared-initialize :before
+    ((gfun standard-generic-function) slot-names &rest initargs
+     &key (name nil) (argument-precedence-order nil a-o-p)
+       (lambda-list nil l-l-p) (declarations nil)
+       (documentation nil) (method-class (find-class 'method))
+     &aux (gfun-name (if (slot-boundp gfun 'name)
+                         (slot-value gfun 'name)
+                         (or name :anonymous))))
   ;; Check the validity of several fields.
-  ;;
   (when a-o-p
     (unless l-l-p
-      (simple-program-error "When defining generic function ~A~%Supplied :argument-precedence-order, but :lambda-list is missing"
+      (simple-program-error "When defining generic function ~A
+Supplied :argument-precedence-order, but :lambda-list is missing"
 			    gfun-name))
     (dolist (l (lambda-list-required-arguments lambda-list))
       (unless (= (count l argument-precedence-order) 1)
-	(simple-program-error "When defining generic function ~A~%The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
+	(simple-program-error "When defining generic function ~A
+The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
 			      gfun-name l argument-precedence-order))))
   (unless (every #'valid-declaration-p declarations)
-    (simple-program-error "When defining generic function ~A~%Not a valid declaration list: ~A"
-			  gfun-name declarations))
-  (unless (or (null documentation) (stringp documentation))
+    (simple-program-error "When defining generic function ~A
+Not a valid declaration list: ~A"
+                          gfun-name declarations))
+  (unless (typep documentation '(or null string))
     (error 'simple-type-error
-	   :format-control "When defining generic function~A~%Not a valid documentation object ~"
+	   :format-control "When defining generic function~A
+Not a valid documentation object ~A"
 	   :format-arguments (list gfun-name documentation)
 	   :datum documentation
 	   :expected-type '(or null string)))
   (unless (si::subclassp method-class (find-class 'method))
-    (error 'simple-type-error
-	   :format-control "When defining generic function~A~%Not a valid method class, ~A"
-	   :format-arguments (list gfun-name method-class)
-	   :datum method-class
-	   :expected-type 'method))
+    (simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
+                          gfun-name method-class))
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
   (when (and l-l-p (slot-boundp gfun 'methods))
@@ -169,8 +162,31 @@
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
-			    gfun lambda-list)))
-  (call-next-method) ; now that we have completed the assertions.
+			    gfun lambda-list))))
+
+(defun force-generic-function-specializer-profile (gfun vec)
+  ;; FIXME: This is dumb. Use an atomic set.
+  (loop for existing = (generic-function-specializer-profile gfun)
+        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
+        until (eq exchange vec)))
+
+(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
+  (cond ((slot-boundp gfun 'lambda-list)
+         (let ((lambda-list (generic-function-lambda-list gfun)))
+           (force-generic-function-specializer-profile
+            gfun
+            (make-array (length (lambda-list-required-arguments lambda-list))
+                        :initial-element nil))))
+        (errorp
+         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
+                gfun))))
+
+(defmethod shared-initialize :after
+    ((gfun standard-generic-function) slot-names &rest initargs
+     &key (lambda-list nil l-l-p)
+       (argument-precedence-order nil a-o-p))
+  (declare (ignore slot-names)
+           (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
@@ -186,38 +202,11 @@
     (setf-lambda-list gfun lambda-list))
   ;; And finally, set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
-  gfun)
-
-(defun force-generic-function-specializer-profile (gfun vec)
-  (loop for existing = (generic-function-specializer-profile gfun)
-        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
-        until (eq exchange vec)))
-
-(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
-  (cond ((slot-boundp gfun 'lambda-list)
-         (let ((lambda-list (generic-function-lambda-list gfun)))
-           (force-generic-function-specializer-profile
-            gfun
-            (make-array (length (lambda-list-required-arguments lambda-list))
-                        :initial-element nil))))
-        (errorp
-         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
-                gfun))))
-  
-(defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
-  "In Clasp we need to initialize the specializer-profile with an 
-   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
-  (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun :errorp nil))
-  gfun)
-
-(defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
-                                     &rest initargs)
-  (declare (ignore slot-names)
-           (core:lambda-name shared-initialize-standard-generic-function))
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs))
+  (update-dependents gfun initargs)
+  (unless (generic-function-specializer-profile gfun)
+    (initialize-generic-function-specializer-profile gfun :errorp nil)))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
   ;; Check if the redefinition is trivial.
