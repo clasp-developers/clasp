@@ -75,6 +75,7 @@ struct FunctionDescription {
   T_sp sourcePathname() const;
   void setf_sourcePathname(T_sp);
   T_sp functionName() const;
+  void setf_functionName(T_sp);
   T_sp lambdaList() const;
   void setf_lambdaList(T_sp);
   T_sp docstring() const;
@@ -116,6 +117,9 @@ namespace core {
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();
+    }
+    CL_DEFMETHOD void setf_functionName(T_sp name) {
+      this->fdesc()->setf_functionName(name);
     }
     T_sp docstring() const {
       return this->fdesc()->docstring();

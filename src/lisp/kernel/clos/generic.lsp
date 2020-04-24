@@ -183,7 +183,7 @@ Not a valid documentation object ~A"
 
 (defmethod shared-initialize :after
     ((gfun standard-generic-function) slot-names &rest initargs
-     &key (lambda-list nil l-l-p)
+     &key (name nil name-p) (lambda-list nil l-l-p)
        (argument-precedence-order nil a-o-p))
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize.generic-function))
@@ -196,9 +196,17 @@ Not a valid documentation object ~A"
   (when (and l-l-p (not a-o-p))
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
-  ;; If we have a new lambda list and no display-lambda-list set up already, do that.
-  ;; (If we already have a display ll, we probably don't need to alter it?)
-  (when (and l-l-p (eq (ext:function-lambda-list gfun) (core:unbound)))
+  ;; If we have a new name, set the internal name.
+  ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA
+  ;; NOTE: Right this second, core:function-name just reads the slot, so it will never
+  ;; be unbound.
+  ;; NOTE: MOP says it should be NIL, but we use LAMBDA elsewhere. Could fix that.
+  (if name-p
+      (setf-function-name gfun name)
+      (when (eq (core:function-name gfun) (core:unbound))
+        (setf-function-name gfun 'cl:lambda)))
+  ;; If we have a new lambda list, set the display lambda list.
+  (when l-l-p
     (setf-lambda-list gfun lambda-list))
   ;; And finally, set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))

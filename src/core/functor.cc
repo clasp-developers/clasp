@@ -94,6 +94,11 @@ T_sp FunctionDescription::functionName() const {
   return CONS_CDR(cell);
 }
 
+void FunctionDescription::setf_functionName(T_sp name) {
+  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
+  cell->rplacd(name);
+}
+
 T_sp FunctionDescription::lambdaList() const {
   Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
   return CONS_CAR(cell);
