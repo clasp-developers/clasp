@@ -127,7 +127,7 @@
     ((gfun standard-generic-function) slot-names &rest initargs
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
-       (documentation nil) (method-class (find-class 'method))
+       (documentation nil) (method-class nil m-c-p)
      &aux (gfun-name (if (slot-boundp gfun 'name)
                          (slot-value gfun 'name)
                          (or name :anonymous))))
@@ -153,7 +153,7 @@ Not a valid documentation object ~A"
 	   :format-arguments (list gfun-name documentation)
 	   :datum documentation
 	   :expected-type '(or null string)))
-  (unless (si::subclassp method-class (find-class 'method))
+  (unless (or (not m-c-p) (si::subclassp method-class (find-class 'method)))
     (simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
                           gfun-name method-class))
   ;; When supplying a new lambda-list, ensure that it is compatible with
