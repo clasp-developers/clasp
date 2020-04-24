@@ -283,7 +283,8 @@ CL_DEFUN size_t core__function_call_counter(Function_sp f)
 }
 #endif
 
-T_sp Function_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
+CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile,
+                                               size_t filePos, int lineno, int column) {
   T_mv sfi_mv = core__file_scope(sourceFile);
   FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
   this->setf_sourcePathname(sfi->pathname());
