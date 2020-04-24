@@ -95,16 +95,6 @@ namespace core {
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
   public:
-    T_sp GFUN_NAME() const { return this->instanceRef(REF_GFUN_NAME); };
-    T_sp GFUN_LAMBDA_LIST() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
-    void GFUN_LAMBDA_LIST_set(T_sp lambda_list)
-    {
-      if (this->instanceRef(REF_GFUN_LAMBDA_LIST).unboundp() && lambda_list.nilp()) {
-        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-        return;
-      }
-      this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
-    };
     T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile.load(); };
     T_sp GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value);
     T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
@@ -127,9 +117,8 @@ namespace core {
     T_sp make_instance();
   public:
   // Add support for Function_O methods
-    T_sp functionName() const { return this->GFUN_NAME(); };
+    T_sp functionName() const { return this->instanceRef(REF_GFUN_NAME); }
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
-    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
@@ -140,8 +129,14 @@ namespace core {
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
-    virtual void setf_lambda_list(List_sp lambda_list) { this->GFUN_LAMBDA_LIST_set(lambda_list); };
-    virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
+    virtual T_sp lambda_list() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
+    virtual void setf_lambda_list(List_sp lambda_list) {
+      if (this->instanceRef(REF_GFUN_LAMBDA_LIST).unboundp() && lambda_list.nilp()) {
+        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
+        return;
+      }
+      this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
+    }
   public:
     static size_t rack_stamp_offset();
 

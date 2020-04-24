@@ -2004,7 +2004,7 @@ std::string dbg_safe_repr(uintptr_t raw) {
     } else if (gc::IsA<core::FuncallableInstance_sp>(obj)) {
       core::FuncallableInstance_sp fi = gc::As_unsafe<core::FuncallableInstance_sp>(obj);
       ss << "#<FUNCALLABLE-INSTANCE ";
-      ss << _safe_rep_(fi->GFUN_NAME());
+      ss << _safe_rep_(fi->functionName());
       ss << ">@" << (void*)raw;;
     } else {
       core::General_sp gen = gc::As_unsafe<core::General_sp>(obj);
