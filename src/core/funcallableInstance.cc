@@ -179,10 +179,6 @@ string FuncallableInstance_O::__repr__() const {
   return ss.str();
 }
 
-void FuncallableInstance_O::LISP_INVOKE() {
-  IMPLEMENT_ME();
-}
-
 LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   SETUP_CLOSURE(FuncallableInstance_O,closure);
   INCREMENT_FUNCTION_CALL_COUNTER(closure);

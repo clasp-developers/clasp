@@ -133,10 +133,6 @@ namespace core {
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
     virtual T_sp docstring() const { HARD_IMPLEMENT_ME(); };
-    virtual void *functionAddress() const { HARD_IMPLEMENT_ME(); };
-    virtual bool macroP() const { return false; };
-    virtual T_sp getKind() const { return kw::_sym_function; };
-    virtual int sourceFileInfoHandle() const { HARD_IMPLEMENT_ME(); };
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
@@ -148,8 +144,6 @@ namespace core {
     virtual T_sp lambda_list() const { return this->GFUN_LAMBDA_LIST(); };
   public:
     static size_t rack_stamp_offset();
-  public:
-    virtual void LISP_INVOKE();
 
   public: // Functions here
     Fixnum stamp() const;
