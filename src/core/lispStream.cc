@@ -4411,6 +4411,11 @@ CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
   return ret;
 }
 
+// Temporary shim until we can update SLIME.
+CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
+  return ext__file_stream_file_descriptor(s);
+}
+
        /**********************************************************************
      * MEDIUM LEVEL INTERFACE
      */
