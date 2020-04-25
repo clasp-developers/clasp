@@ -388,7 +388,7 @@ have disappeared."
 ;;; early version used during bootstrap
 (defun add-method (gf method)
   (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+ +standard-class-slots+)
-    (let* ((name (slot-value gf 'name))
+    (let* ((name (core:function-name gf))
 	   (method-entry (assoc name *early-methods*)))
       (unless method-entry
 	(setq method-entry (list name))

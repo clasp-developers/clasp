@@ -50,11 +50,7 @@ namespace core {
 
   class FuncallableInstance_O : public Function_O {
     LISP_CLASS(core, CorePkg, FuncallableInstance_O, "FuncallableInstance",Function_O);
-// These indices MUST match the order and positions of slots in +standard-generic-function-slots+
-    typedef enum { REF_GFUN_NAME = 0,
-                   REF_GFUN_LAMBDA_LIST = 3,   // lock
-                 } GenericFunctionSlots;
-    // Additionally, this structure is known to the compiler,
+    // This structure is known to the compiler,
     // in src/lisp/kernel/cmp/cmpintrinsics.lsp.
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
@@ -117,7 +113,7 @@ namespace core {
     T_sp make_instance();
   public:
   // Add support for Function_O methods
-    T_sp functionName() const { return this->instanceRef(REF_GFUN_NAME); }
+    T_sp functionName() const { return this->fdesc()->functionName(); }
     virtual T_sp closedEnvironment() const { HARD_IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { HARD_IMPLEMENT_ME();;
     virtual List_sp declares() const { HARD_IMPLEMENT_ME(); };
@@ -128,14 +124,6 @@ namespace core {
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
-    virtual T_sp lambda_list() const { return this->instanceRef(REF_GFUN_LAMBDA_LIST);};
-    virtual void setf_lambda_list(List_sp lambda_list) {
-      if (this->instanceRef(REF_GFUN_LAMBDA_LIST).unboundp() && lambda_list.nilp()) {
-        printf("%s:%d Ignoring GFUN_LAMBDA_LIST_SET - returning\n", __FILE__, __LINE__ );
-        return;
-      }
-      this->instanceSet(REF_GFUN_LAMBDA_LIST,lambda_list);
-    }
   public:
     static size_t rack_stamp_offset();
 

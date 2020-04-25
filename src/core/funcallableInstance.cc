@@ -155,6 +155,8 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
   return val;
 }
 
+// Get the name of a generic function without calling any generic functions
+// (e.g., generic-function-name). Nice for debugging CLOS.
 CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun)
 {
   return gfun->functionName();

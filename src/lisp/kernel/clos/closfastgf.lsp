@@ -21,7 +21,7 @@
 ;;;
 ;;; Debugging code
 ;;;
-;;; Add :LOG-CMPGF to log fastgf messages during the slow path.
+;;; Add :DEBUG-FASTGF to log fastgf messages during the slow path.
 ;;;
 #+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)

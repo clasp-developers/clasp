@@ -128,9 +128,7 @@
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
        (documentation nil) (method-class nil m-c-p)
-     &aux (gfun-name (if (slot-boundp gfun 'name)
-                         (slot-value gfun 'name)
-                         (or name :anonymous))))
+     &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   ;; Check the validity of several fields.
   (when a-o-p
     (unless l-l-p
@@ -202,9 +200,7 @@ Not a valid documentation object ~A"
     (setf (generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
   ;; If we have a new name, set the internal name.
-  ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA
-  ;; NOTE: Right this second, core:function-name just reads the slot, so it will never
-  ;; be unbound.
+  ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA.
   ;; NOTE: MOP says it should be NIL, but we use LAMBDA elsewhere. Could fix that.
   (if name-p
       (setf-function-name gfun name)
