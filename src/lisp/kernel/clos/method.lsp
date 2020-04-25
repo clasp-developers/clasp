@@ -269,9 +269,10 @@ in the generic function lambda-list to the generic function lambda-list"
 	     form))
       ;; CODE-WALK returns NIL if the walk could not be completed,
       ;; e.g. due to an error. Otherwise we just use the side effects.
+      ;; If the walk can't be completed, we assume the worst.
       (unless (cmp:code-walk #'code-walker method-lambda env)
-        (setq call-next-method-p t
-              next-method-p-p t)))
+        (setq call-next-method-p 'function
+              next-method-p-p 'function)))
     (values call-next-method-p next-method-p-p)))
                                    
 
