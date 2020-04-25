@@ -483,7 +483,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     #+debug-long-call-history
     (when (> (length (generic-function-call-history generic-function)) 16384)
       (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
-    (invalidate-discriminating-function generic-function)
+    (force-dispatcher generic-function)
     (values)))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
