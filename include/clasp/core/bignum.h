@@ -309,4 +309,41 @@ namespace core {
 
  };
 
+
+namespace core {
+FORWARD(TheNextBignum);
+};
+
+
+template <>
+struct gctools::GCInfo<core::TheNextBignum_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+
+namespace core {
+class TheNextBignum_O : public Integer_O {
+  LISP_CLASS(core, ClPkg, TheNextBignum_O, "TheNextBignum",Integer_O);
+public:
+  typedef mp_limb_t limb_type;
+  TheNextBignum_O(int64_t signed_length, limb_type initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const limb_type* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
+  }
+private: // instance variables here
+  gctools::GCSignedLengthArray_moveable<limb_type> _limbs;
+
+public: // Functions here
+  static TheNextBignum_sp create( int64_t signed_number_of_limbs, limb_type initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const limb_type* initialContents=NULL)
+  {
+    GC_ALLOCATE_VARIADIC(TheNextBignum_O,b,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+    return b;
+  };
+
+  virtual Number_sp rational_() const {IMPLEMENT_ME();};
+  
+}; // TheNextBignum class
+
+}; // core namespace
+
+
 #endif /* _bignum_H_ */

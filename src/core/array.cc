@@ -359,7 +359,7 @@ T_sp MDArray_O::replaceArray(T_sp other)
 {
   MDArray_sp mdo = gc::As<MDArray_sp>(other);
   *this = *mdo;
-  for ( size_t i(0); i<mdo->_Dimensions._Length; ++i ) {
+  for ( size_t i(0); i<mdo->_Dimensions.length(); ++i ) {
     this->_Dimensions[i] = mdo->_Dimensions[i];
   }
   return this->asSmartPtr();
@@ -503,8 +503,8 @@ CL_DEFUN void core__mdarray_dump(Array_sp a)
   write_bf_stream(BF("MDArray _Data = %p\n") % (void*)&*(mda->_Data));
   write_bf_stream(BF("MDArray _DisplacedIndexOffset = %d\n") % mda->_DisplacedIndexOffset);
   write_bf_stream(BF("MDArray _Flags = %d\n") % mda->_Flags._Flags);
-  write_bf_stream(BF("MDArray _Dimensions._Length = %d\n") % mda->_Dimensions._Length);
-  for ( size_t i(0); i<mda->_Dimensions._Length; ++i ) {
+  write_bf_stream(BF("MDArray _Dimensions.length() = %d\n") % mda->_Dimensions.length());
+  for ( size_t i(0); i<mda->_Dimensions.length(); ++i ) {
     write_bf_stream(BF("MDArray _Dimensions[%d = %d\n") % i % mda->_Dimensions[i]);
   }
 }

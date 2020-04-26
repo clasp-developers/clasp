@@ -349,10 +349,10 @@ namespace core {
       return this->_Data;
     }
 
-    virtual size_t rank() const override { return this->_Dimensions._Length; };
+    virtual size_t rank() const override { return this->_Dimensions.length(); };
     virtual size_t arrayDimension(size_t axisNumber) const override {
-      LIKELY_if (axisNumber<this->_Dimensions._Length) return this->_Dimensions[axisNumber];
-      badAxisNumberError(cl::_sym_arrayDimension,this->_Dimensions._Length,axisNumber);
+      LIKELY_if (axisNumber<this->_Dimensions.length()) return this->_Dimensions[axisNumber];
+      badAxisNumberError(cl::_sym_arrayDimension,this->_Dimensions.length(),axisNumber);
 
     };
     virtual size_t displacedIndexOffset() const override {return this->_DisplacedIndexOffset;}
@@ -373,7 +373,7 @@ namespace core {
     virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
     virtual vector<size_t> arrayDimensionsAsVector() const {
       vector<size_t> dims;
-      for (size_t i(0); i<this->_Dimensions._Length; ++i ) {
+      for (size_t i(0); i<this->_Dimensions.length(); ++i ) {
         dims.push_back(this->_Dimensions[i]);
       }
       return dims;

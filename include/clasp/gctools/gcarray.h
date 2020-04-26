@@ -40,7 +40,7 @@ class GCArray_moveable : public GCContainer {
  typedef value_type container_value_type;
  typedef T *iterator;
  typedef T const *const_iterator;
- size_t _Length; // Index one beyond the total number of elements allocated
+ int64_t _Length; // Index one beyond the total number of elements allocated
  T _Data[0];      // Store _Length numbers of T structs/classes starting here
  // This is the deepest part of the array allocation machinery.
  // The arguments here don't exactly match make-array's, though. Having both is ok here.
@@ -56,7 +56,7 @@ class GCArray_moveable : public GCContainer {
      this->_Data[h] = initialContents[h];
    }
 #if 1
-   for (size_t i(initialContentsSize); i<this->_Length; ++i)
+   for (size_t i(initialContentsSize); i<this->length(); ++i)
      new(&(this->_Data[i])) value_type(initialElement);
 #else
    // You can use this to leave arrays uninitialized if there's no :initial-element.
@@ -73,15 +73,15 @@ class GCArray_moveable : public GCContainer {
 #endif
  }
  public:
- inline size_t size() const { return this->length(); };
- inline size_t length() const { return this->_Length; };
+ inline uint64_t size() const { return this->length(); };
+  inline uint64_t length() const { return static_cast<uint64_t>(this->_Length); };
  value_type *data() { return this->_Data; };
  value_type &operator[](size_t i) { return this->_Data[i]; };
  const value_type &operator[](size_t i) const { return this->_Data[i]; };
  iterator begin() { return &this->_Data[0]; };
- iterator end() { return &this->_Data[this->_Length]; };
+  iterator end() { return &this->_Data[this->length()]; };
  const_iterator begin() const { return &this->_Data[0]; };
- const_iterator end() const { return &this->_Data[this->_Length]; };
+  const_iterator end() const { return &this->_Data[this->length()]; };
 };
 
 template <typename Array>
@@ -94,6 +94,19 @@ void Array0_dump(const Array &v, const char *head = "") {
   }
   printf("\n");
 }
+
+
+
+template <class T>
+class GCSignedLengthArray_moveable : public GCArray_moveable<T> {
+public:
+  GCSignedLengthArray_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
+                               size_t initialContentsSize=0, const T* initialContents=NULL) : GCArray_moveable<T>(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {}
+  inline int64_t signedLength() const { return this->_Length; };
+  inline size_t length() const { return std::abs(this->_Length); };
+  inline size_t size() const { return this->length(); };
+  inline int64_t sign() const { return this->_Length>0 ? 1 : (this->_Length<0 ? -1 : 0); }
+};
 
 } // namespace gctools
 

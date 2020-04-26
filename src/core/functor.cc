@@ -262,7 +262,7 @@ T_sp ClosureWithSlots_O::interpretedSourceCode() {
 bool ClosureWithSlots_O::openP() {
   switch (this->closureType) {
   case bclaspClosure: return this->closedEnvironment().nilp();
-  case cclaspClosure: return (this->_Slots._Length == 0);
+  case cclaspClosure: return (this->_Slots.length() == 0);
   default: return false;
   }
 }
@@ -346,7 +346,7 @@ CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
   ASSERT(gc::IsA<ClosureWithSlots_sp>(tclosure));
   ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(tclosure);
   if (closure->closureType == ClosureWithSlots_O::cclaspClosure) {
-    return closure->_Slots._Length;
+    return closure->_Slots.length();
   }
   if (tclosure->closedEnvironment().notnilp()) {
     return gc::As<ValueFrame_sp>(tclosure->closedEnvironment())->length();
@@ -414,8 +414,8 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
       }
         break;
     case ClosureWithSlots_O::cclaspClosure:
-        if ( index >= closure->_Slots._Length ) {
-          SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Length );
+        if ( index >= closure->_Slots.length() ) {
+          SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots.length() );
         }
         return closure->_Slots[index];
     }
