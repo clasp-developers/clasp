@@ -155,8 +155,8 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
 CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("zerop");
-CL_DEFUN bool cl__zerop(T_sp num) {
-  return clasp_zerop(gc::As<Number_sp>(num));
+CL_DEFUN bool cl__zerop(Number_sp num) {
+  return clasp_zerop(num);
 }
 
 CL_LAMBDA(z);
