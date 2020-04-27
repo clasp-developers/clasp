@@ -263,7 +263,7 @@
           return outcome))
 
 (defun compute-outcome
-    (generic-function method-combination methods actual-specializers &key log actual-arguments)
+    (generic-function method-combination methods actual-specializers &key log)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
   ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
@@ -550,8 +550,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                        (generic-function-method-combination generic-function)
                        method-list
                        argument-classes
-                       :log t
-                       :actual-arguments arguments)))
+                       :log t)))
         ;; Can we memoize the call, i.e. add it to the call history?
         (gf-log "Done with compute-outcome%N")
         (cond ((null method-list) ; we avoid memoizing no-applicable-methods, as it's probably just a mistake,
