@@ -272,25 +272,6 @@
   (declare (ignore arguments node))
   '(go dispatch-miss))
 
-;;; Keeps track of the number of dispatchers that were compiled and
-;;;   is used to give the roots array in each dispatcher a unique name.
-#+threads(defvar *dispatcher-count-lock* (mp:make-lock :name '*dispatcher-count-lock*))
-(defvar *dispatcher-count* 0)
-(defun increment-dispatcher-count ()
-  #-threads(incf *dispatcher-count*)
-  #+threads(unwind-protect
-       (progn
-         (mp:get-lock *dispatcher-count-lock*)
-         (incf *dispatcher-count*))
-    (mp:giveup-lock *dispatcher-count-lock*)))
-(defun dispatcher-count ()
-  #-threads *dispatcher-count*
-  #+threads(unwind-protect
-                (progn
-                  (mp:get-lock *dispatcher-count-lock*)
-                  *dispatcher-count*)
-             (mp:giveup-lock *dispatcher-count-lock*)))
-
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
 (defun codegen-dispatcher (call-history specializer-profile generic-function
