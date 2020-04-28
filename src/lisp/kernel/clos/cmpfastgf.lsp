@@ -275,7 +275,7 @@
 (defvar *fastgf-use-compiler* nil)
 (defvar *fastgf-timer-start*)
 (defun codegen-dispatcher (call-history specializer-profile generic-function
-                           &rest args &key generic-function-name output-path log-gf force-compile)
+                           &rest args &key generic-function-name log-gf force-compile)
   (let* ((*log-gf* log-gf)
          (*fastgf-timer-start* (get-internal-real-time))
          (compiled (calculate-dtree call-history specializer-profile)))

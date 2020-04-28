@@ -678,7 +678,6 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                             specializer-profile
                             generic-function
                             :generic-function-name (core:function-name generic-function)
-                            :output-path output-path
                             #+debug-fastgf :log-gf
                             #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
       (invalidated-discriminating-function-closure generic-function)))
@@ -695,8 +694,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (incf-debug-fastgf-didx))
     (set-funcallable-instance-function generic-function
                                        (calculate-fastgf-dispatch-function
-                                        generic-function
-                                        :output-path log-output))))
+                                        generic-function))))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))
