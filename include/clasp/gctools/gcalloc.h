@@ -83,8 +83,9 @@ struct GCObjectInitializer<tagged_pointer<OT>, false> {
 
 #if defined USE_BOEHM
 namespace gctools {
-template <class T>
-class root_allocator : public traceable_allocator<T> {};
+    template <class T>
+    class root_allocator {};
+    
 };
 #endif
 

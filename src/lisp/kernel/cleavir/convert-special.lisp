@@ -57,7 +57,8 @@
                     collect `(cleavir-generate-ast:convert ,s env system)))))
        (defmethod cleavir-cst-to-ast:convert-special
            ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
-         (cst:db origin (,@syms) (cst:rest cst)
+         (cst:db origin (op ,@syms) cst
+           (declare (ignore op))
            (make-instance
             ',ast
             ,@(loop for i in initargs
@@ -86,7 +87,11 @@
       `(cleavir-primop:multiple-value-call (core:coerce-fdesignator ,function-form) ,@forms)
       `(core:multiple-value-funcall
         (core:coerce-fdesignator ,function-form)
-        ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))))
+        ,@(mapcar (lambda (x)
+                    `#'(lambda ()
+                         (declare (core:lambda-name core::mvc-argument-lambda))
+                         (progn ,x)))
+                  forms))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -351,24 +356,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CATCH
-;;;
-;;; Convert catch into a call
-
-(defmacro catch (tag &body body)
-  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
-
-#+(or)
-(progn
-  (def-ast-macro catch (tag &body body)
-    `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body))))
-
-  (def-cst-macro catch (tag . body) origin
-    (reinitialize-instance (cst:cst-from-expression `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@body)))) :source origin)))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Converting core::local-tagbody to tagbody
 ;;;        and core::local-block to block
 ;;;
@@ -399,7 +386,7 @@
 ;;;
 ;;; Converting THROW
 ;;;
-;;; Convert throw into a call
+
 (defmethod cleavir-generate-ast::convert-special
     ((symbol (eql 'cl:throw)) form environment (system clasp-cleavir:clasp))
   (destructuring-bind (tag result-form) 
@@ -435,7 +422,11 @@
   (destructuring-bind (protected &rest cleanup) (rest form)
     (make-instance 'cc-ast:unwind-protect-ast
       :body-ast (cleavir-generate-ast:convert protected env system)
-      :cleanup-ast (cleavir-generate-ast:convert `(lambda () ,@cleanup) env system))))
+      :cleanup-ast (cleavir-generate-ast:convert
+                    `(lambda ()
+                       (declare (core:lambda-name core::unwind-cleanup-lambda))
+                       (progn ,@cleanup))
+                    env system))))
 
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'cl:unwind-protect)) cst env (system clasp-cleavir:clasp))
@@ -608,4 +599,5 @@
   (make-instance 'cc-ast:bind-ast
     :name-ast (cleavir-cst-to-ast:convert-constant variable-cst env system)
     :value-ast value-ast
-    :body-ast (funcall next-thunk)))
+    :body-ast (funcall next-thunk)
+    :origin (cst:source variable-cst)))

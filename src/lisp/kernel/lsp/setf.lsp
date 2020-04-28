@@ -32,9 +32,13 @@
 
 (defvar *setf-expanders* (make-hash-table :test #'eq :thread-safe t))
 
-(defun setf-expander (symbol)
-  (values (gethash symbol *setf-expanders*)))
-(defun (setf setf-expander) (expander symbol)
+(defun setf-expander (symbol &optional environment)
+  (if (core:operator-shadowed-p symbol environment)
+      nil
+      (values (gethash symbol *setf-expanders*))))
+(defun (setf setf-expander) (expander symbol &optional environment)
+  (unless (null environment)
+    (error "(setf setf-expander) was passed a non-null environment"))
   (core:hash-table-setf-gethash *setf-expanders* symbol expander))
 (export 'setf-expander)
 
@@ -53,12 +57,13 @@
 ;;; FIXME: This is not very error-tolerant. In particular we don't check for &aux.
 ;;; But fixing it will require a more robust lambda list system.
 (defun extract-defsetf-lambda-list (lambda-list)
-  (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
-      (values lambda-list nil)
-      (let ((last-two (last lambda-list 2)))
-        (if (eq (first last-two) '&environment)
-            (values (ldiff lambda-list last-two) (second last-two))
-            (values lambda-list nil)))))
+  (ext:with-current-source-form (lambda-list)
+    (if (or (null lambda-list) (null (rest lambda-list))) ; trivial case
+        (values lambda-list nil)
+        (let ((last-two (last lambda-list 2)))
+          (if (eq (first last-two) '&environment)
+              (values (ldiff lambda-list last-two) (second last-two))
+              (values lambda-list nil))))))
 
 (defmacro defsetf (&whole whole access-fn &rest rest)
   "Syntax: (defsetf symbol update-fun [doc])
@@ -155,10 +160,13 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
               ',access-fn)
      ',access-fn))
 
-(defun get-setf-expansion (place &optional env &aux f)
+(defun get-setf-expansion (place &optional env)
   "Returns the 'five gangs' (see DEFINE-SETF-EXPANDER) for PLACE as five values."
   ;; Note that macroexpansion of SETF arguments can only be done via
-  ;; MACROEXPAND-1 [ANSI 5.1.2.7]
+  ;; MACROEXPAND-1 [ANSI 5.1.2.7].
+  ;; This is so that, if a macro form expands into another macro form, and that
+  ;; macro has a defined setf expansion, the expansion is preferred over
+  ;; expanding the macro.
   (cond ((symbolp place)
          ;; Could be a symbol macro.
          (multiple-value-bind (expansion expanded) (macroexpand-1 place env)
@@ -168,23 +176,30 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
                ;; It's not. Simple variable set.
                (let ((store (gensym "STORE")))
                  (values nil nil (list store) `(setq ,place ,store) place)))))
-        ((or (not (consp place)) (not (symbolp (car place))))
-         (error "Invalid syntax: ~S is not a place." place))
-        ;; Compound place. Check for SETF expander.
-        ((setq f (ext:setf-expander (car place)))
-         (funcall f place env))
-        ;; Check for macro definition.
-        ((and (setq f (macroexpand-1 place env)) (not (equal f place)))
-         (get-setf-expansion f env))
-        ;; Default expansion.
+        ((and (consp place) (symbolp (car place)))
+         (let ((head (car place)))
+           ;; Compound place. First, check for a setf expander.
+           (let ((expander (ext:setf-expander head env)))
+             (if expander
+                 (funcall expander place env)
+                 ;; Check for a macro definition.
+                 (multiple-value-bind (expansion expandedp)
+                     (macroexpand-1 place env)
+                   (if expandedp ; expanded, so recur
+                       (get-setf-expansion expansion env)
+                       ;; Nothing. Default expansion.
+                       (let* ((operator (car place))
+                              (arguments (cdr place))
+                              (temps (mapcar (lambda (f)
+                                               (declare (ignore f))
+                                               (gensym "TEMP"))
+                                             arguments))
+                              (store (gensym "STORE")))
+                         (values temps arguments (list store)
+                                 `(funcall #'(setf ,operator) ,store ,@temps)
+                                 `(,operator ,@temps)))))))))
         (t
-         (let* ((operator (car place))
-                (arguments (cdr place))
-                (temps (mapcar (lambda (f) (declare (ignore f)) (gensym "TEMP")) arguments))
-                (store (gensym "STORE")))
-           (values temps arguments (list store)
-                   `(funcall #'(setf ,operator) ,store ,@temps)
-                   `(,operator ,@temps))))))
+         (error "Invalid syntax: ~s is not a place." place))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -410,15 +425,16 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 ;;; The expansion function for SETF.
 (defun setf-expand-1 (place newvalue env)
   (declare (notinline mapcar))
-  (multiple-value-bind (vars vals stores store-form access-form)
-      (get-setf-expansion place env)
-    (cond ((trivial-setf-form place vars stores store-form access-form)
-	   (list 'setq place newvalue))
-	  ((try-simpler-expansion place vars vals stores newvalue store-form))
-	  (t
-	   `(let* ,(mapcar #'list vars vals)
-	      (multiple-value-bind ,stores ,newvalue
-		,store-form))))))
+  (ext:with-current-source-form (place)
+    (multiple-value-bind (vars vals stores store-form access-form)
+        (get-setf-expansion place env)
+      (cond ((trivial-setf-form place vars stores store-form access-form)
+             (list 'setq place newvalue))
+            ((try-simpler-expansion place vars vals stores newvalue store-form))
+            (t
+             `(let* ,(mapcar #'list vars vals)
+                (multiple-value-bind ,stores ,newvalue
+                  ,store-form)))))))
 
 (defun setf-expand (l env)
   (cond ((endp l) nil)
@@ -484,14 +500,15 @@ the corresponding PLACE.  Returns NIL."
          (build (nreverse temp-groups) (nreverse value-groups) store-forms)))
     (when (endp (cdr r)) (error "~S is an illegal PSETF form" whole))
     (let ((place (car r)) (subform (cadr r)))
-      (multiple-value-bind (temps values stores store-form access-form)
-          (get-setf-expansion place env)
-        (declare (ignore access-form))
-        ;; FIXME?: We should maybe signal an error if temps and values
-        ;; have different lengths (i.e. setf expander is broken)
-        (setq temp-groups (cons (mapcar #'list temps values) temp-groups))
-        (setq value-groups (cons (cons stores subform) value-groups))
-        (setq store-forms (cons store-form store-forms))))))
+      (ext:with-current-source-form (place)
+        (multiple-value-bind (temps values stores store-form access-form)
+            (get-setf-expansion place env)
+          (declare (ignore access-form))
+          ;; FIXME?: We should maybe signal an error if temps and values
+          ;; have different lengths (i.e. setf expander is broken)
+          (setq temp-groups (cons (mapcar #'list temps values) temp-groups))
+          (setq value-groups (cons (cons stores subform) value-groups))
+          (setq store-forms (cons store-form store-forms)))))))
 
 ;;; DEFINE-MODIFY-MACRO macro, by Bruno Haible.
 (defmacro define-modify-macro (name lambdalist function &optional docstring)

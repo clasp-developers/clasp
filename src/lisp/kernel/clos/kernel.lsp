@@ -91,7 +91,6 @@
       ;; create a fake standard-generic-function object:
       (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
-	      :name name
 	      :spec-list nil
 	      :method-combination (find-method-combination nil 'standard nil)
 	      :lambda-list lambda-list
@@ -104,15 +103,20 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
+        (setf-function-name gfun name)
         (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
 
+;;; made into generic functions later
+(defun generic-function-name (generic-function)
+  (core:function-name generic-function))
 
 (defun (setf generic-function-name) (new-name gf)
   (if *clos-booted*
       (reinitialize-instance gf :name new-name)
-      (setf (slot-value gf 'name) new-name)))
+      (setf-function-name gf new-name))
+  new-name)
 
 ;;; Will be the standard method after fixup.
 (defun compute-discriminating-function (generic-function)

@@ -21,7 +21,7 @@
 
 (defmacro defgeneric (&whole whole &rest args)
   (multiple-value-bind (function-specifier lambda-list options)
-    (parse-defgeneric args)
+      (parse-defgeneric args)
     (parse-lambda-list lambda-list)
     ;; process options
     (multiple-value-bind (option-list method-list)
@@ -55,53 +55,58 @@
 	 (declarations '())
 	 arg-list)
     (dolist (option options)
-      (let ((option-name (first option))
-	    option-value)
-	(cond ((eq option-name :method)
-	       ;; We do not need to check the validity of this
-	       ;; because DEFMETHOD will do it.
-	       (push (rest option) method-list))
-	      ((eq option-name 'declare)
-	       (setf declarations (append (rest option) declarations)))
-	      ((member option-name processed-options)
-	       (simple-program-error "Option ~s specified more than once"
-				     option-name))
-	      (t
-	       (push option-name processed-options)
-	       ;; We leave much of the type checking for SHARED-INITIALIZE
-	       (setq option-value
-		     (case option-name
-		       (:argument-precedence-order
-			(rest option))
-		       (:method-combination
-			(rest option))
-		       ((:documentation :generic-function-class :method-class)
-			(unless (endp (cddr option))
-			  (simple-program-error "Too many arguments for option ~A"
-						option-name))
-			(second option))
-		       (otherwise
-			(simple-program-error "~S is not a legal defgeneric option"
-					      option-name))))
-	       (setf arg-list `(',option-name ',option-value ,@arg-list))))))
+      (ext:with-current-source-form (option)
+        (let ((option-name (first option))
+              option-value)
+          (cond ((eq option-name :method)
+                 ;; We do not need to check the validity of this
+                 ;; because DEFMETHOD will do it.
+                 (push (rest option) method-list))
+                ((eq option-name 'declare)
+                 (setf declarations (append (rest option) declarations)))
+                ((member option-name processed-options)
+                 (simple-program-error "Option ~s specified more than once"
+                                       option-name))
+                (t
+                 (push option-name processed-options)
+                 ;; We leave much of the type checking for SHARED-INITIALIZE
+                 (setq option-value
+                       (case option-name
+                         (:argument-precedence-order
+                          (rest option))
+                         (:method-combination
+                          (rest option))
+                         ((:documentation :generic-function-class :method-class)
+                          (unless (endp (cddr option))
+                            (simple-program-error "Too many arguments for option ~A"
+                                                  option-name))
+                          (second option))
+                         (otherwise
+                          (simple-program-error "~S is not a legal defgeneric option"
+                                                option-name))))
+                 (setf arg-list `(',option-name ',option-value ,@arg-list)))))))
     (values `(:lambda-list ',lambda-list ,@arg-list
+              ,@(when core:*current-source-pos-info*
+                  (list ''source-position core:*current-source-pos-info*))
 	      ,@(when declarations `(:declarations ',declarations)))
 	    method-list)))
 
+;;; For effect. Checks whether the lambda list is well formed.
 (defun parse-lambda-list (lambda-list &optional post-keyword)
-  (let ((arg (car lambda-list)))
-    (cond ((null lambda-list))
-	  ((eq arg '&AUX)
-	   (simple-program-error "&aux is not allowed in a generic function lambda-list"))
-	  ((member arg lambda-list-keywords)
-	   (parse-lambda-list (cdr lambda-list) t))
-	  (post-keyword
-	   ;; After a lambda-list-keyword there can be no specializers.
-	   (parse-lambda-list (cdr lambda-list) t))
-	  (t
-	   (if (listp arg)
-	       (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
-	       (parse-lambda-list (cdr lambda-list)))))))
+  (ext:with-current-source-form (lambda-list)
+    (let ((arg (car lambda-list)))
+      (cond ((null lambda-list))
+            ((eq arg '&AUX)
+             (simple-program-error "&aux is not allowed in a generic function lambda-list"))
+            ((member arg lambda-list-keywords)
+             (parse-lambda-list (cdr lambda-list) t))
+            (post-keyword
+             ;; After a lambda-list-keyword there can be no specializers.
+             (parse-lambda-list (cdr lambda-list) t))
+            (t
+             (if (listp arg)
+                 (simple-program-error "the parameters cannot be specialized in generic function lambda-list")
+                 (parse-lambda-list (cdr lambda-list))))))))
 
 (defun valid-declaration-p (decl)
   (and (eq (first decl) 'OPTIMIZE)
@@ -118,46 +123,37 @@
 (defun lambda-list-required-arguments (lambda-list)
   (rest (si::process-lambda-list lambda-list t)))
 
-(defmethod shared-initialize ((gfun generic-function) slot-names &rest initargs
-			      &key (name nil)
-			      (lambda-list nil l-l-p)
-			      (argument-precedence-order nil a-o-p)
-			      (documentation nil)
-			      (declarations nil)
-			      (method-class (find-class 'method))
-			      &aux
-			      (gfun-name (if (slot-boundp gfun 'name)
-					     (slot-value gfun 'name)
-					     (or name :anonymous)))
-			      )
-  (declare (ignore initargs slot-names)
-           (core:lambda-name shared-initialize.generic-function))
-  ;;
+(defmethod shared-initialize :before
+    ((gfun standard-generic-function) slot-names &rest initargs
+     &key (name nil) (argument-precedence-order nil a-o-p)
+       (lambda-list nil l-l-p) (declarations nil)
+       (documentation nil) (method-class nil m-c-p)
+     &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   ;; Check the validity of several fields.
-  ;;
   (when a-o-p
     (unless l-l-p
-      (simple-program-error "When defining generic function ~A~%Supplied :argument-precedence-order, but :lambda-list is missing"
+      (simple-program-error "When defining generic function ~A
+Supplied :argument-precedence-order, but :lambda-list is missing"
 			    gfun-name))
     (dolist (l (lambda-list-required-arguments lambda-list))
       (unless (= (count l argument-precedence-order) 1)
-	(simple-program-error "When defining generic function ~A~%The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
+	(simple-program-error "When defining generic function ~A
+The required argument ~A does not appear exactly once in the ARGUMENT-PRECEDENCE-ORDER list ~A"
 			      gfun-name l argument-precedence-order))))
   (unless (every #'valid-declaration-p declarations)
-    (simple-program-error "When defining generic function ~A~%Not a valid declaration list: ~A"
-			  gfun-name declarations))
-  (unless (or (null documentation) (stringp documentation))
+    (simple-program-error "When defining generic function ~A
+Not a valid declaration list: ~A"
+                          gfun-name declarations))
+  (unless (typep documentation '(or null string))
     (error 'simple-type-error
-	   :format-control "When defining generic function~A~%Not a valid documentation object ~"
+	   :format-control "When defining generic function~A
+Not a valid documentation object ~A"
 	   :format-arguments (list gfun-name documentation)
 	   :datum documentation
 	   :expected-type '(or null string)))
-  (unless (si::subclassp method-class (find-class 'method))
-    (error 'simple-type-error
-	   :format-control "When defining generic function~A~%Not a valid method class, ~A"
-	   :format-arguments (list gfun-name method-class)
-	   :datum method-class
-	   :expected-type 'method))
+  (unless (or (not m-c-p) (si::subclassp method-class (find-class 'method)))
+    (simple-program-error "When defining generic function~A~%Not a valid method class, ~A"
+                          gfun-name method-class))
   ;; When supplying a new lambda-list, ensure that it is compatible with
   ;; the old list of methods.
   (when (and l-l-p (slot-boundp gfun 'methods))
@@ -166,26 +162,10 @@
 		       (congruent-lambda-p lambda-list x))
 		 (mapcar #'method-lambda-list (generic-function-methods gfun)))
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
-			    gfun lambda-list)))
-  (call-next-method) ; now that we have completed the assertions.
-  ;; Coerce a method combination if required.
-  (let ((combination (generic-function-method-combination gfun)))
-    (unless (typep combination 'method-combination)
-      (setf (generic-function-method-combination gfun)
-	    (find-method-combination gfun (first combination) (rest combination)))))
-  ;; If we have a new lambda list but no argument precedence, default the latter.
-  (when (and l-l-p (not a-o-p))
-    (setf (generic-function-argument-precedence-order gfun)
-	  (lambda-list-required-arguments lambda-list)))
-  ;; If we have a new lambda list and no display-lambda-list set up already, do that.
-  ;; (If we already have a display ll, we probably don't need to alter it?)
-  (when (and l-l-p (eq (ext:function-lambda-list gfun) (core:unbound)))
-    (setf-lambda-list gfun lambda-list))
-  ;; And finally, set up the actual function.
-  (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
-  gfun)
+			    gfun lambda-list))))
 
 (defun force-generic-function-specializer-profile (gfun vec)
+  ;; FIXME: This is dumb. Use an atomic set.
   (loop for existing = (generic-function-specializer-profile gfun)
         for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
         until (eq exchange vec)))
@@ -200,21 +180,57 @@
         (errorp
          (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
                 gfun))))
-  
-(defmethod shared-initialize :after ((gfun generic-function) slot-names &rest initargs)
-  "In Clasp we need to initialize the specializer-profile with an 
-   array of (length (lambda-list-required-arguments lambda-list)) full of nil."
-  (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun :errorp nil))
-  gfun)
 
-(defmethod shared-initialize :after ((gfun standard-generic-function) slot-names
-                                     &rest initargs)
+(defmethod shared-initialize :after
+    ((gfun standard-generic-function) slot-names &rest initargs
+     &key (name nil name-p) (lambda-list nil l-l-p)
+       (documentation nil documentation-p)
+       (argument-precedence-order nil a-o-p)
+       ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
+       ((source-position spi) nil spi-p))
   (declare (ignore slot-names)
-           (core:lambda-name shared-initialize-standard-generic-function))
+           (core:lambda-name shared-initialize.generic-function))
+  ;; Coerce a method combination if required.
+  (let ((combination (generic-function-method-combination gfun)))
+    (unless (typep combination 'method-combination)
+      (setf (generic-function-method-combination gfun)
+	    (find-method-combination gfun (first combination) (rest combination)))))
+  ;; If we have a new lambda list but no argument precedence, default the latter.
+  (when (and l-l-p (not a-o-p))
+    (setf (generic-function-argument-precedence-order gfun)
+	  (lambda-list-required-arguments lambda-list)))
+  ;; If we have a new name, set the internal name.
+  ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA.
+  ;; NOTE: MOP says it should be NIL, but we use LAMBDA elsewhere. Could fix that.
+  (if name-p
+      (setf-function-name gfun name)
+      (when (eq (core:function-name gfun) (core:unbound))
+        (setf-function-name gfun 'cl:lambda)))
+  ;; If we have a new lambda list, set the display lambda list.
+  (when l-l-p
+    (setf-lambda-list gfun lambda-list))
+  ;; Ditto docstring.
+  (when documentation-p
+    (setf (core:function-docstring gfun) documentation))
+  ;; If we have a source position, set that.
+  (when spi-p
+    ;; FIXME: Too many fields and the underlying function makes a new SPI. Dumb.
+    (core:set-source-pos-info
+     gfun
+     (core:file-scope-pathname
+      (core:file-scope
+       (core:source-pos-info-file-handle spi)))
+     (core:source-pos-info-filepos spi)
+     (core:source-pos-info-lineno spi)
+     ;; 1+ copied from cmpir.lsp. Dunno why it's there.
+     (1+ (core:source-pos-info-column spi))))
+  ;; Set up the actual function.
+  (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs))
+  (update-dependents gfun initargs)
+  (unless (generic-function-specializer-profile gfun)
+    (initialize-generic-function-specializer-profile gfun :errorp nil)))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
   ;; Check if the redefinition is trivial.
@@ -243,7 +259,7 @@
      &rest args
      &key
        (method-class 'STANDARD-METHOD method-class-p)
-       (generic-function-class (class-of gfun))
+       (generic-function-class (class-of gfun) gfcp)
        (delete-methods nil))
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
@@ -257,9 +273,13 @@
   ;; (See ANSI DEFGENERIC entry)
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
-  (unless (si::subclassp generic-function-class (find-class 'generic-function))
-    (error "~A is not a valid :GENERIC-FUNCTION-CLASS argument for ENSURE-GENERIC-FUNCTION."
-	   generic-function-class))
+  (when gfcp
+    ;; ANSI DEFGENERIC talks about the possibility of change-class-ing a
+    ;; generic function, but AMOP specifically rules this possibility out.
+    ;; We go with the latter.
+    (unless (eq generic-function-class (class-of gfun))
+      (error "Cannot change the class of generic function ~a from ~a to ~a. See AMOP, ENSURE-GENERIC-FUNCTION-USING-CLASS."
+             name (class-name (class-of gfun)) (class-name generic-function-class))))
   (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
   (when delete-methods
@@ -285,8 +305,13 @@
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
-  (when (and method-class-p (symbolp generic-function-class))
+  (when (and method-class-p (symbolp method-class))
     (setf args (list* :method-class (find-class method-class) args)))
+  (when (symbolp generic-function-class)
+    (setf generic-function-class (find-class generic-function-class)))
+  (unless (si::subclassp generic-function-class (find-class 'generic-function))
+    (error "~A is not a valid :GENERIC-FUNCTION-CLASS argument for ENSURE-GENERIC-FUNCTION, as it is not a subclass of GENERIC-FUNCTION."
+	   generic-function-class))
   (apply #'make-instance generic-function-class :name name args))
 
 ;;; Miscellany

@@ -41,45 +41,32 @@
             (error (p) (values :error p)))
         (eql :unbound-slot-error key)))
 
-(test disassemble-2 (progn
-                      (disassemble 'car)
-                      t))
-(test disassemble-3 (progn
-                      (disassemble #'car)
-                      t))
-(test disassemble-4 (progn
-                      (disassemble '(lambda(a) a))
-                      t))
-(test disassemble-5 (progn
-                      (disassemble '(lambda()) :type :ir)
-                      t))
+(defun test-disassemble (&rest args)
+  (let ((*standard-output* (make-broadcast-stream)))
+    (apply #'disassemble args)
+    t))
+
+(test disassemble-2 (test-disassemble 'car))
+(test disassemble-3 (test-disassemble #'car))
+(test disassemble-4 (test-disassemble '(lambda (a) a)))
+(test disassemble-5 (test-disassemble '(lambda ()) :type :ir))
 
 (test disassemble-5-bclasp
       (let ((cmp:*CLEAVIR-COMPILE-HOOK* nil))
-        (disassemble '(lambda()) :type :ir)
-        t))
+        (test-disassemble '(lambda ()) :type :ir)))
 
-(defun %foo% (n)(* n n))
+(defun %foo% (n) (* n n))
 
-(test disassemble-6 (progn
-                      (disassemble '%foo%)
-                      t))
-
-(test disassemble-7 (progn
-                      (disassemble (compile nil '(lambda(n) n)))
-                      t))
+(test disassemble-6 (test-disassemble '%foo%))
+(test disassemble-7 (test-disassemble (compile nil '(lambda (n) n))))
 
 (defgeneric disassemble-example-fn2 (x y z))
-(test disassemble-8 (progn
-                      (disassemble 'disassemble-example-fn2)
-                      t))
+(test disassemble-8 (test-disassemble 'disassemble-example-fn2))
 
 (defgeneric disassemble-example-fn3 (x y z))
 (defmethod disassemble-example-fn3 ((x t)(y t)(z t)) (list x y z))
 
-(test disassemble-9 (progn
-                      (disassemble ' disassemble-example-fn3)
-                      t))
+(test disassemble-9 (test-disassemble 'disassemble-example-fn3))
 
 (test load-stream.1
       (with-input-from-string (s "(defun foo())")
@@ -201,3 +188,26 @@
                    (FLET ((%F4 (&OPTIONAL &KEY (KEY1 9911946289546) (KEY2 -19296971321001))
                             3904101166444))
                      -128503000536183044))))))
+
+(defun do-call (local-fun)
+  (unwind-protect
+       (funcall local-fun)
+    (progn
+      #+clasp(core:fflush)
+      )))
+
+(defun reproduce ()
+  (block here
+    (flet ((local-fun ()
+             (return-from here (values :value))))
+      (do-call #'local-fun))))
+
+(test test-issue-948-a
+ (not (null (multiple-value-list (reproduce)))))
+
+(test test-issue-948-b
+ (let ((lock (mp:make-lock :name "Foo")))
+   (= 4
+      (block nil
+        (mp:with-lock (lock)
+          (apply (lambda (id) (return id)) (list 4)))))))

@@ -45,10 +45,15 @@
 	  (do ((scan slot-entries (cdr scan))
 	       (res))
 	      ((null scan) (nreverse res))
-	    (if (symbolp (first scan))
-		(push `(,(first scan) (slot-value ,temp ',(first scan))) res)
-		(push `(,(caar scan)
-			 (slot-value ,temp ',(cadar scan))) res)))))
+            (let ((entry (first scan)))
+              (ext:with-current-source-form (entry)
+                (etypecase entry
+                  (symbol
+                   (push `(,entry (slot-value ,temp ',entry)) res))
+                  ((cons symbol (cons symbol null))
+                   (push `(,(first entry)
+                           (slot-value ,temp ',(second entry)))
+                         res))))))))
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))
 

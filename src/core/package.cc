@@ -45,7 +45,8 @@ THE SOFTWARE.
 #include <clasp/core/debugger.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h> // for eval::funcall
-
+#include <clasp/core/cons.h>
+#include <clasp/core/lispList.h>
 // last include is wrappers.h
 #include <clasp/core/wrappers.h>
 
@@ -84,6 +85,49 @@ CL_DOCSTRING("packageNicknames");
 CL_DEFUN T_sp cl__package_nicknames(T_sp pkg) {
   Package_sp package = coerce::packageDesignator(pkg);
   return package->getNicknames();
+};
+
+CL_LAMBDA(pkg nickname);
+CL_DECLARE();
+CL_DOCSTRING("Adds the nickname <nickname> to package. "
+             "Returns new nicknames. A package error is signalled,"
+             " if package does not exist, or nickname is already in use");
+CL_DEFUN T_sp ext__package_add_nickname(T_sp pkg, T_sp nick) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  String_sp nickname  = coerce::stringDesignator(nick);
+  T_sp packageUsingNickName = _lisp->findPackage(nickname->get_std_string());
+  if (packageUsingNickName.notnilp()) {
+    if (Package_sp pkg = packageUsingNickName.asOrNull<Package_O>())
+      SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" ,
+                                  nickname->get_std_string() , pkg->getName());
+    else
+      SIMPLE_PACKAGE_ERROR("Package nickname[~a] is already being used" ,
+                                  nickname->get_std_string());
+      }
+  else {
+    _lisp->mapNameToPackage(nickname->get_std_string(), package);
+    package->setNicknames(Cons_O::create(nickname, package->getNicknames()));
+    return package->getNicknames();
+  }
+};
+
+CL_LAMBDA(pkg nickname);
+CL_DECLARE();
+CL_DOCSTRING("Removes the nickname <nickname> from package."
+             "Returns nil, if nickname does not belong to package."
+             "A package error is signalled, if package does not exist");
+CL_DEFUN T_sp ext__package_remove_nickname(T_sp pkg, T_sp nick) {
+  Package_sp package = coerce::packageDesignator(pkg);
+  unlikely_if (package->getNicknames().nilp())
+    return _Nil<T_O>();
+  String_sp nickname  = coerce::stringDesignator(nick);
+  // verify if nickname is really nicknames of this package
+  if (_lisp->findPackage(nickname->get_std_string()) == package) {
+    _lisp->unmapNameToPackage(nickname->get_std_string());
+    package->setNicknames(remove_equal(nickname, package->getNicknames()));
+    return package->getNicknames();
+  }
+  else return _Nil<T_O>();
 };
 
 CL_LAMBDA(pkg);

@@ -124,7 +124,7 @@ void loadModule(llvmo::Module_sp module)
   finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine);
 }
   
-CL_LAMBDA(filename context &optional verbose print external_format);
+CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
 {
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());

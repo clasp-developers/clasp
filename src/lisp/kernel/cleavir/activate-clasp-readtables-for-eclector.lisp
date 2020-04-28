@@ -57,6 +57,9 @@
       (gethash name clasp-cleavir::*additional-clasp-character-names*)
       (clasp-cleavir::simple-unicode-name name)))
 
+(defmethod eclector.reader:make-structure-instance ((client clasp-non-cst-elector-client) name initargs)
+  (core::make-structure name initargs))
+
 ;;; From eclector macro functions:
 ;;; So we need a way for readers for lists and vectors to explicitly
 ;;; allow for backquote and comma, whereas BY DEFAULT, they should not
@@ -108,19 +111,31 @@
   (eclector.reader::set-standard-dispatch-macro-characters cl:*readtable*)
   (cl:set-dispatch-macro-character #\# #\a 'core:sharp-a-reader cl:*readtable*)
   (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\I #'core::read-cxx-object cl:*readtable*)
+  (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object cl:*readtable*)
   (cl:set-dispatch-macro-character #\# #\! 'core::sharp-!-reader cl:*readtable*)
-  ;;; Crosscompile sbcl fails w/o that
-  (cl:set-dispatch-macro-character #\# #\s 'core:sharp-s-reader cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\S 'core:sharp-s-reader cl:*readtable*)
-
   ;;; also change read 
   (setq core:*read-hook* 'read-with-readtable-synced)
   (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced)
-  ;;; read-from-string calls read or read-preserving-whitespace
+  ;;; read-from-string is overwritten above
   )
 
 (eclector.readtable::init-clasp-as-eclector-reader)  
+
+
+
+(defun patch-object (client value-old seen-objects mapping)
+  (multiple-value-bind (value-new found-p)
+      (gethash value-old mapping)
+    (if found-p
+        value-new
+        (progn
+          (eclector.reader:fixup client value-old seen-objects mapping)
+          value-old))))
+
+(defmethod eclector.reader:fixup (client (object core:cxx-object) seen-objects mapping)
+  (let ((patcher (core:make-record-patcher (lambda (object)
+                                             (patch-object client object seen-objects mapping)))))
+    (core:patch-object object patcher)))
 
 
 

@@ -18,7 +18,8 @@
   (:use "CL")
   (:import-from :CORE "WITH-UNIQUE-NAMES")
   (:export "WITH-LOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
-           "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"))
+           "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"
+           "ABORT-PROCESS"))
 
 #+threads
 (in-package "MP")
@@ -141,3 +142,14 @@ Valid values of argument OP are :READ or :WRITE
            (,(if (eq :read op)
                  'mp:giveup-rwlock-read
                'mp:giveup-rwlock-write) ,s-lock)))))
+
+#+threads
+(defun abort-process (&optional datum &rest arguments)
+  "Immediately end the current process abnormally.
+If PROCESS-JOIN is called on this process thereafter, it will signal an error of type PROCESS-JOIN-ERROR.
+If DATUM is provided, it and ARGUMENTS designate a condition of default type SIMPLE-ERROR. This condition will be attached to the PROCESS-JOIN-ERROR."
+  ;; Bootstrap note: coerce-to-condition won't be defined until CLOS is up.
+  (%abort-process
+   (if datum
+       (core::coerce-to-condition datum arguments 'simple-error 'abort-process)
+       nil)))

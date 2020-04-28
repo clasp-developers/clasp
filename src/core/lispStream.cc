@@ -4389,27 +4389,31 @@ BEGIN:
 
 CL_LAMBDA(s);
 CL_DECLARE();
-CL_DOCSTRING("core-file-stream-fd");
-CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
-  T_sp ret;
+CL_DOCSTRING("Returns the file descriptor for a stream");
+CL_DEFUN T_sp ext__file_stream_file_descriptor(T_sp s) {
   unlikely_if(!AnsiStreamP(s))
-      FEerror("file_stream_fd: not a stream", 0);
-
+    TYPE_ERROR(s, cl::_sym_Stream_O);
+  T_sp ret;
   switch (StreamMode(s)) {
   case clasp_smm_input:
   case clasp_smm_output:
   case clasp_smm_io:
-    ret = make_fixnum(fileno(IOStreamStreamFile(s)));
-    break;
+      ret = make_fixnum(fileno(IOStreamStreamFile(s)));
+      break;
   case clasp_smm_input_file:
   case clasp_smm_output_file:
   case clasp_smm_io_file:
-    ret = make_fixnum(IOFileStreamDescriptor(s));
-    break;
+      ret = make_fixnum(IOFileStreamDescriptor(s));
+      break;
   default:
-    clasp_internal_error("not a file stream");
+      SIMPLE_ERROR(BF("Internal error: %s:%d Wrong Stream Mode %d\n") % __FILE__ % __LINE__ % StreamMode(s));
   }
   return ret;
+}
+
+// Temporary shim until we can update SLIME.
+CL_DEFUN T_sp core__file_stream_fd(T_sp s) {
+  return ext__file_stream_file_descriptor(s);
 }
 
        /**********************************************************************
@@ -6170,40 +6174,41 @@ SYMBOL_EXPORT_SC_(ClPkg,open);
 SYMBOL_EXPORT_SC_(KeywordPkg,direction);
 SYMBOL_EXPORT_SC_(KeywordPkg,output);
 SYMBOL_EXPORT_SC_(KeywordPkg,input);
-  SYMBOL_EXPORT_SC_(ClPkg, filePosition);
-  SYMBOL_EXPORT_SC_(ClPkg, readSequence);
-  SYMBOL_EXPORT_SC_(CorePkg, doReadSequence);
-  SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
-  SYMBOL_EXPORT_SC_(ClPkg, read_line);
-  SYMBOL_EXPORT_SC_(ClPkg, terpri);
-  SYMBOL_EXPORT_SC_(ClPkg, freshLine);
-  SYMBOL_EXPORT_SC_(ClPkg, writeString);
-  SYMBOL_EXPORT_SC_(ClPkg, writeLine);
-  SYMBOL_EXPORT_SC_(ClPkg, writeChar);
-  SYMBOL_EXPORT_SC_(ClPkg, clearInput);
-  SYMBOL_EXPORT_SC_(ClPkg, clearOutput);
-  SYMBOL_EXPORT_SC_(ClPkg, readByte);
-  SYMBOL_EXPORT_SC_(ClPkg, peekChar);
-  SYMBOL_EXPORT_SC_(ClPkg, readChar);
-  SYMBOL_EXPORT_SC_(ClPkg, readCharNoHang);
-  SYMBOL_EXPORT_SC_(ClPkg, force_output);
-  SYMBOL_EXPORT_SC_(ClPkg, finish_output);
-  SYMBOL_EXPORT_SC_(ClPkg, listen);
-  SYMBOL_EXPORT_SC_(ClPkg, unread_char);
-  SYMBOL_EXPORT_SC_(CorePkg, fileColumn);
-  SYMBOL_EXPORT_SC_(CorePkg, makeStringOutputStreamFromString);
-  SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
-  SYMBOL_EXPORT_SC_(CorePkg, do_write_sequence);
-  SYMBOL_EXPORT_SC_(ClPkg, writeByte);
-  SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);
-  SYMBOL_EXPORT_SC_(ClPkg, output_stream_p);
-  SYMBOL_EXPORT_SC_(ClPkg, interactive_stream_p);
-  SYMBOL_EXPORT_SC_(ClPkg, streamp);
-  SYMBOL_EXPORT_SC_(ClPkg, close);
-  SYMBOL_EXPORT_SC_(ClPkg, get_output_stream_string);
-  SYMBOL_EXPORT_SC_(CorePkg, streamLinenumber);
-  SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
-  SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
+SYMBOL_EXPORT_SC_(ClPkg, filePosition);
+SYMBOL_EXPORT_SC_(ClPkg, readSequence);
+SYMBOL_EXPORT_SC_(CorePkg, doReadSequence);
+SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
+SYMBOL_EXPORT_SC_(ClPkg, read_line);
+SYMBOL_EXPORT_SC_(ClPkg, terpri);
+SYMBOL_EXPORT_SC_(ClPkg, freshLine);
+SYMBOL_EXPORT_SC_(ClPkg, writeString);
+SYMBOL_EXPORT_SC_(ClPkg, writeLine);
+SYMBOL_EXPORT_SC_(ClPkg, writeChar);
+SYMBOL_EXPORT_SC_(ClPkg, clearInput);
+SYMBOL_EXPORT_SC_(ClPkg, clearOutput);
+SYMBOL_EXPORT_SC_(ClPkg, readByte);
+SYMBOL_EXPORT_SC_(ClPkg, peekChar);
+SYMBOL_EXPORT_SC_(ClPkg, readChar);
+SYMBOL_EXPORT_SC_(ClPkg, readCharNoHang);
+SYMBOL_EXPORT_SC_(ClPkg, force_output);
+SYMBOL_EXPORT_SC_(ClPkg, finish_output);
+SYMBOL_EXPORT_SC_(ClPkg, listen);
+SYMBOL_EXPORT_SC_(ClPkg, unread_char);
+SYMBOL_EXPORT_SC_(CorePkg, fileColumn);
+SYMBOL_EXPORT_SC_(CorePkg, makeStringOutputStreamFromString);
+SYMBOL_EXPORT_SC_(ClPkg, makeStringOutputStream);
+SYMBOL_EXPORT_SC_(CorePkg, do_write_sequence);
+SYMBOL_EXPORT_SC_(ClPkg, writeByte);
+SYMBOL_EXPORT_SC_(ClPkg, input_stream_p);
+SYMBOL_EXPORT_SC_(ClPkg, output_stream_p);
+SYMBOL_EXPORT_SC_(ClPkg, interactive_stream_p);
+SYMBOL_EXPORT_SC_(ClPkg, streamp);
+SYMBOL_EXPORT_SC_(ClPkg, close);
+SYMBOL_EXPORT_SC_(ClPkg, get_output_stream_string);
+SYMBOL_EXPORT_SC_(CorePkg, streamLinenumber);
+SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
+SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
+SYMBOL_EXPORT_SC_(ExtPkg, file_stream_file_descriptor);
 
 CL_DOCSTRING("Use read to read characters if they are available - return (values num-read errno-or-nil)");
 CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
@@ -6236,6 +6241,7 @@ CL_DEFUN void core__close_fd(int filedes) {
 SYMBOL_EXPORT_SC_(KeywordPkg,seek_set);
 SYMBOL_EXPORT_SC_(KeywordPkg,seek_cur);
 SYMBOL_EXPORT_SC_(KeywordPkg,seek_end);
+
 CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence)
 {
   int iwhence;

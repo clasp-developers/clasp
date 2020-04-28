@@ -30,42 +30,11 @@
 (defun safe-llvm-get-name (what)
   (llvm-sys:get-name what))
 
-#+(or)
-(defun disassemble-assembly-for-llvm-functions (llvm-function-list)
-  "Given a list of llvm::Functions that were JITted - generate disassembly for them.
-Return T if disassembly was achieved - otherwise NIL"
-  (bformat t "There are %d associated functions - disassembling them.%N" (length llvm-function-list))
-  (let ((success nil))
-    (dolist (llvm-func llvm-function-list)
-      (bformat t "%N%s-----%N" (safe-llvm-get-name llvm-func))
-      (let* ((llvm-function-name (bformat nil "_%s" (safe-llvm-get-name llvm-func)))
-             (symbol-info (gethash llvm-function-name *jit-saved-symbol-info*)))
-        (if symbol-info
-            (let ((bytes (first symbol-info))
-                  (address (second symbol-info)))
-              (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
-                                                 
-                                                 address
-                                                 :start-byte-offset 09
-                                                 :end-byte-offset bytes)
-              (setf success t))
-            (progn
-              (bformat t "Could not disassemble associated function%N")))))
-    success))
-
+;;; Used by debugger - see clasp-debug:disassemble-frame
 (defun disassemble-assembly (start end)
   (format t "; disassemble-assembly Size: ~s Origin: ~s~%" (- (core:pointer-integer end) (core:pointer-integer start)) start)
   (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
                                      start end))
-
-(defun disassemble-from-address (address &key (start-instruction-index 0) (num-instructions 16)
-                                           start-byte-offset end-byte-offset)
-  (llvm-sys:disassemble-instructions (get-builtin-target-triple-and-data-layout)
-                                     address
-                                     :start-instruction-index start-instruction-index
-                                     :num-instructions num-instructions
-                                     :start-byte-offset start-byte-offset
-                                     :end-byte-offset end-byte-offset))
 
 (defun disassemble-function-to-asm (function)
   (multiple-value-bind (symbol start end type)

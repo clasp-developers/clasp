@@ -228,6 +228,20 @@ the corresponding VAR.  Returns NIL."
 	   (PROGN
 	     (LIST* 'LET* (NREVERSE BINDINGS) (NREVERSE (CONS NIL FORMS)))))))))
 
+;; Augmented by a compiler macro once cleavir is loaded.
+(defmacro ext:with-current-source-form ((&rest forms) &body body)
+  "Within BODY, the \"current source form\" will be the first element of FORMS
+for which a source location can be ascertained, if any. This source form and
+its source location will be used in condition reports from the compiler.
+WITH-CURRENT-SOURCE-FORM is intended for use in macroexpansion and compiler
+macroexpansion functions, to improve error reporting. For example, a SETF-like
+macro could make each place the current source form while processing it; then
+if that processing results in an error, the compiler report can localize that
+to the place, not the SETF-like-form as a whole.
+Outside of the compiler, this operator has no effect (i.e. evaluates the BODY
+as a progn)."
+  ;; Evaluate forms for their side effects. Otherwise, inoperative.
+  `(progn ,@forms ,@body))
 
 ; conditionals
 
@@ -238,19 +252,20 @@ in order that follow the TEST and returns all values of the last FORM.  If no
 forms follow the TEST, then returns the value of the TEST.  Returns NIL, if no
 TESTs evaluates to non-NIL."
   (dolist (l (reverse clauses) form)	; don't use nreverse here
-    (if (endp (cdr l))
-	(if (eq (car l) 't)
-	    (setq form 't)
-	    (let ((sym (gensym)))
-	      (setq form `(LET ((,sym ,(car l)))
-			   (IF ,sym ,sym ,form)))))
-	(if (eq (car l) 't)
-	    (setq form (if (endp (cddr l))
-			   (cadr l)
-			   `(PROGN ,@(cdr l))))
-	    (setq form (if (endp (cddr l))
-			   `(IF ,(car l) ,(cadr l) ,form)
-			   `(IF ,(car l) (PROGN ,@(cdr l)) ,form)))))))
+    (ext:with-current-source-form (l)
+      (if (endp (cdr l))
+          (if (eq (car l) 't)
+              (setq form 't)
+              (let ((sym (gensym)))
+                (setq form `(LET ((,sym ,(car l)))
+                              (IF ,sym ,sym ,form)))))
+          (if (eq (car l) 't)
+              (setq form (if (endp (cddr l))
+                             (cadr l)
+                             `(PROGN ,@(cdr l))))
+              (setq form (if (endp (cddr l))
+                             `(IF ,(car l) ,(cadr l) ,form)
+                             `(IF ,(car l) (PROGN ,@(cdr l)) ,form))))))))
 
 ; program feature
 
@@ -355,23 +370,27 @@ values of the last FORM.  If no FORM is given, returns NIL."
     (dolist (clause (reverse clauses)
 	     `(LET ((,key ,keyform))
 		,form))
-      (let ((selector (car clause)))
-	(cond ((or (eq selector T) (eq selector 'OTHERWISE))
-	       (unless last
-		 (si::signal-simple-error
-		  'simple-program-error nil
-		  "CASE: The selector ~A can only appear at the last position."
-		  (list selector)))
-	       (setq form `(PROGN ,@(cdr clause))))
-	      ((consp selector)
-	       (setq form `(IF (MEMBER ,key ',selector)
-			       (PROGN ,@(cdr clause))
-			       ,form)))
-	      (selector
-	       (setq form `(IF (EQL ,key ',selector)
-			       (PROGN ,@(cdr clause))
-			       ,form))))
-	(setq last nil)))))
+      (ext:with-current-source-form (clause)
+        (let ((selector (car clause)))
+          (cond ((or (eq selector T) (eq selector 'OTHERWISE))
+                 (unless last
+                   (si::signal-simple-error
+                    'simple-program-error nil
+                    "CASE: The selector ~A can only appear at the last position."
+                    (list selector)))
+                 (setq form `(PROGN ,@(cdr clause))))
+                ((listp selector)
+                 (setq form `(IF (or ,@(ext:with-current-source-form (selector)
+                                         (mapcar (lambda (obj)
+                                                   `(eql ,key ',obj))
+                                                 selector)))
+                                 (PROGN ,@(cdr clause))
+                                 ,form)))
+                (selector
+                 (setq form `(IF (EQL ,key ',selector)
+                                 (PROGN ,@(cdr clause))
+                                 ,form))))
+          (setq last nil))))))
 
 (defmacro return (&optional (val nil)) `(RETURN-FROM NIL ,val))
 
@@ -387,11 +406,10 @@ values of the last FORM.  If no FORM is given, returns NIL."
      (si::select-package ,(string name))
      *package*))
 
-(defun (setf ext:symbol-macro) (expansion name)
-  (put-sysprop name 'ext:symbol-macro
-               (lambda (form env)
-                 (declare (ignore form env))
-                 expansion)))
+(defun (setf ext:symbol-macro) (expander name &optional env)
+  (when env
+    (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
+  (put-sysprop name 'ext:symbol-macro expander))
 
 (defmacro define-symbol-macro (&whole whole symbol expansion)
   (cond ((not (symbolp symbol))
@@ -403,7 +421,11 @@ values of the last FORM.  If no FORM is given, returns NIL."
 	(t
 	 `(progn
             (eval-when (:compile-toplevel :load-toplevel :execute)
-              (funcall #'(setf ext:symbol-macro) ',expansion ',symbol))
+              (funcall #'(setf ext:symbol-macro)
+                       #'(lambda (form env)
+                           (declare (ignore form env))
+                           ',expansion)
+                       ',symbol))
             ,@(when (and core:*current-source-pos-info*
                          (fboundp 'variable-source-info-saver))
                 (variable-source-info-saver symbol core:*current-source-pos-info*))

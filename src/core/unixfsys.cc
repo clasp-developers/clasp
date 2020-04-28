@@ -2221,5 +2221,45 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
   return fdset;
 }
 
+CL_LAMBDA(filedescriptor);
+CL_DECLARE();
+CL_DOCSTRING("Returns data of the posix fstat() function for file-descriptor"
+"if pathname is not found, returns nil"
+"else mutiple values of"
+"stat.st_size (file size in bytes, follows symbolic links)"
+"stat.st_mtime (Time of last data modification.)"
+"stat.st_mode (Mode of file)");
+CL_DEFUN T_mv ext__fstat(int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return Values(_Nil<T_O>());
+  else
+    return Values (Integer_O::create(sb.st_size),
+                   Integer_O::create((gctools::Fixnum) sb.st_mtime),
+                   Integer_O::create((gctools::Fixnum) sb.st_mode));
+                                     
+};
+
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("Returns data of the posix stat() function for pathname"
+"if pathname is not found, returns nil"
+"else mutiple values of"
+"stat.st_size (file size in bytes, follows symbolic links)"
+"stat.st_mtime (Time of last data modification.)"
+"stat.st_mode (Mode of file)");
+CL_DEFUN T_mv ext__stat (T_sp pathname) {
+  struct stat sb;
+  String_sp filename = gc::As<String_sp>(cl__namestring(cl__translate_logical_pathname (pathname)));
+  if (stat(filename->get_std_string().c_str(), &sb) == -1)
+    return Values (_Nil<T_O>());
+  else
+    return Values(Integer_O::create(sb.st_size),
+                  Integer_O::create((gctools::Fixnum) sb.st_mtime),
+                  Integer_O::create((gctools::Fixnum) sb.st_mode));
+};
+
+SYMBOL_EXPORT_SC_(ExtPkg, fstat);
+SYMBOL_EXPORT_SC_(ExtPkg, stat);
 
 }; // namespace core

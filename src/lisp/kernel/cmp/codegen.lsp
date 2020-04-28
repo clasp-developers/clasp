@@ -39,7 +39,9 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
-      (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
+      (let* ((name (core:extract-lambda-name-from-declares
+                    declares (or given-name
+                                 `(cl:lambda ,(lambda-list-for-name lambda-list)))))
              (fn (with-new-function (fn fn-env result
                                         :function-name name
                                         :parent-env env-around-lambda
@@ -81,6 +83,25 @@ Could return more functions that provide lambda-list for swank for example"
         (if (null name) (error "The lambda name is nil"))
         (values fn name lambda-list)))))
 
+;;; Given a lambda list, return a lambda list suitable for display purposes.
+;;; This means only the external interface is required.
+;;; No default values, no -p variables, no &aux.
+(defun lambda-list-for-name (raw-lambda-list)
+  (multiple-value-bind (req opt rest keyflag keys aok-p)
+      (core:process-lambda-list raw-lambda-list 'function)
+    `(,@(rest req)
+      ,@(unless (zerop (first opt)) '(&optional))
+      ,@(let ((optnames nil))
+          (do ((opts (rest opt) (cdddr opts)))
+              ((null opts) (nreverse optnames))
+            (push (first opts) optnames)))
+      ,@(when rest `(&rest ,rest))
+      ,@(when keyflag '(&key))
+      ,@(let ((keykeys nil))
+          (do ((key (rest keys) (cddddr key)))
+              ((null key) keykeys)
+            (push (first key) keykeys)))
+      ,@(when aok-p '(&allow-other-keys)))))
 
 (defun compile-lambda-function (lambda-or-lambda-block &optional env &key (linkage 'llvm-sys:internal-linkage))
   "Compile a lambda form and return an llvm-ir function that evaluates it.

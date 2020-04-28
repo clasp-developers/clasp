@@ -235,13 +235,28 @@ when this is t a lot of graphs will be generated.")
 	   (cleavir-environment:macro-function symbol environment))
 	  (t (cleavir-environment:macro-function symbol *clasp-env*))))
 
-
 (defmethod cleavir-environment:symbol-macro-expansion (symbol (environment clasp-global-environment))
   (macroexpand symbol nil))
 
-
 (defmethod cleavir-environment:symbol-macro-expansion (symbol (environment NULL))
   (macroexpand symbol nil))
+
+;;; Used by ext:symbol-macro
+(defun core:cleavir-symbol-macro (symbol environment)
+  (let ((info (cleavir-env:variable-info environment symbol)))
+    (if (typep info 'cleavir-env:symbol-macro-info)
+        (let ((expansion (cleavir-env:expansion info)))
+          (lambda (form env)
+            (declare (ignore form env)
+                     (core:lambda-name cleavir-symbol-macro-function))
+            expansion))
+        nil)))
+
+;;; Used by core:operator-shadowed-p
+(defun core:cleavir-operator-shadowed-p (name environment)
+  (typep (cleavir-env:function-info environment name)
+         '(or cleavir-env:local-function-info
+           cleavir-env:local-macro-info)))
 
 (defun type-expand-1 (type-specifier &optional env)
   (let (head)

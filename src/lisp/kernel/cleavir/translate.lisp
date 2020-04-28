@@ -26,13 +26,13 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction :around
     (instruction return-value abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
-    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
+    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
+               (eq cleavir-generate-ast:*compiler* 'compile-file))
 ;;;    (error "translate-simple-instruction :around")
-      (format *error-output* "simple-instruction with nil origin: ~a~%" instruction)
-      (when (and (typep instruction 'cleavir-ir:assignment-instruction)
-                 (ssablep (first (cleavir-ir:inputs instruction)))
-                 (ssablep (first (cleavir-ir:outputs instruction))))
-        (format *error-output* "   but it doesn't matter because both input and output are ssablep~%")))
+      (unless (and (typep instruction 'cleavir-ir:assignment-instruction)
+                   (ssablep (first (cleavir-ir:inputs instruction)))
+                   (ssablep (first (cleavir-ir:outputs instruction))))
+        (format *error-output* "simple-instruction with nil origin: ~a~%" instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999993))
       (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-ir:dynamic-environment instruction)
@@ -45,7 +45,8 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-branch-instruction :around
     (instruction return-value successors abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
-    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction)))
+    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
+               (eq cleavir-generate-ast:*compiler* 'compile-file))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
       (cmp:with-landing-pad (maybe-entry-landing-pad
@@ -179,10 +180,7 @@ when this is t a lot of graphs will be generated.")
                  #-stealth-gids(format *debug-log* "- - - -  END layout-basic-block  owner: ~a   -->  ~a~%" (cleavir-ir-gml::label owner) basic-block))))
 
 (defun get-or-create-lambda-name (instr)
-  (if (typep instr 'clasp-cleavir-hir:named-enter-instruction)
-      (clasp-cleavir-hir:lambda-name instr)
-      'TOP-LEVEL))
-
+  (or (cleavir-ir:name instr) 'TOP-LEVEL))
 
 (defun ensure-origin (origin &optional (num 99999))
   (if origin
@@ -270,17 +268,10 @@ when this is t a lot of graphs will be generated.")
   (let* ((origin (cleavir-ir:origin enter))
          (source-pos-info (origin-spi origin)))
     (cond
-      ((typep enter 'clasp-cleavir-hir:named-enter-instruction)
-       (cmp:make-function-info :function-name llvm-function-name
-                               :lambda-list (clasp-cleavir-hir:original-lambda-list enter)
-                               :docstring (clasp-cleavir-hir:docstring enter)
-                               :declares nil
-                               :form nil
-                               :spi source-pos-info))
       ((typep enter 'cleavir-ir:enter-instruction)
        (cmp:make-function-info :function-name llvm-function-name
-                               :lambda-list nil
-                               :docstring nil
+                               :lambda-list (cleavir-ir:original-lambda-list enter)
+                               :docstring (cleavir-ir:docstring enter)
                                :declares nil
                                :form nil
                                :spi source-pos-info))
@@ -625,11 +616,14 @@ COMPILE-FILE will use the default *clasp-env*."
       ((cleavir-env:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-env:origin condition)) (cleavir-environment:name condition))
+            (origin-spi (cleavir-env:origin condition))
+            (cleavir-environment:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
        (cleavir-env:no-function-info
          (lambda (condition)
-           (cmp:register-global-function-ref (cleavir-environment:name condition))
+           (cmp:register-global-function-ref
+            (cleavir-environment:name condition)
+            (origin-spi (cleavir-env:origin condition)))
            (invoke-restart 'cleavir-cst-to-ast:consider-global)))
        (cleavir-cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)
@@ -849,55 +843,6 @@ This works like compile-lambda-function in bclasp."
 (defmethod eclector.parse-result:source-position
     ((client clasp-cst-client) stream)
   (cmp:compile-file-source-pos-info stream))
-
-(defparameter *additional-clasp-character-names*
-  (alexandria:alist-hash-table '(("NULL"   . #.(code-char 0))
-                                 ("NUL"    . #.(code-char 0))
-                                 ("SOH"    . #.(code-char 1))
-                                 ("STX"    . #.(code-char 2))
-                                 ("ETX"    . #.(code-char 3))
-                                 ("EOT"    . #.(code-char 4))
-                                 ("ENQ"    . #.(code-char 5))
-                                 ("ACK"    . #.(code-char 6))
-                                 ("BELL"   . #.(code-char 7))
-                                 ("BEL"    . #.(code-char 7))
-                                 ("BS"     . #.(code-char 8))
-                                 ("HT"     . #.(code-char 9))
-                                 ("LF"     . #.(code-char 10)) 
-                                 ("VT"     . #.(code-char 11))
-                                 ("FF"     . #.(code-char 12))
-                                 ("CR"     . #.(code-char 13))
-                                 ("SO"     . #.(code-char 14))
-                                 ("SI"     . #.(code-char 15))
-                                 ("DLE"    . #.(code-char 16))
-                                 ("DC1"    . #.(code-char 17))
-                                 ("DC2"    . #.(code-char 18))
-                                 ("DC3"    . #.(code-char 19))
-                                 ("DC4"    . #.(code-char 20))
-                                 ("NAK"    . #.(code-char 21))
-                                 ("SYN"    . #.(code-char 22))
-                                 ("ETB"    . #.(code-char 23))
-                                 ("CAN"    . #.(code-char 24))
-                                 ("EM"     . #.(code-char 25))
-                                 ("SUB"    . #.(code-char 26))
-                                 ("ESCAPE" . #.(code-char 27))
-                                 ("ESC"    . #.(code-char 27))
-                                 ("FS"     . #.(code-char 28))
-                                 ("GS"     . #.(code-char 29))
-                                 ("RS"     . #.(code-char 30))
-                                 ("US"     . #.(code-char 31))
-                                 ("SP"     . #.(code-char 32))
-                                 ("DEL"    . #.(code-char 127)))
-                               :test 'equal))
-
-(defun simple-unicode-name (name)
-  "Allow U00 - U10FFFF"
-  (and (>= (length name) 3)
-       (char= (char name 0) #\U)
-       (let ((number (parse-integer name :start 1 :radix 16 :junk-allowed t)))
-         (and (numberp number)
-              (<= #X00 number #X10FFFF)
-              (code-char number)))))
 
 (defmethod eclector.reader:find-character ((client clasp-cst-client) name)
   (or (call-next-method)

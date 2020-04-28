@@ -404,11 +404,24 @@ q (or Q):             quits the inspection.~%~
 		     (inspect-object val))
 	         hashtable))))
 
+(defun inspect-function (function)
+  ;; Can't inspect - just describe.
+  (format t "~&~s - ~s"
+          function (type-of function))
+  (terpri) (terpri)
+  (format t "~&Lambda-list: ~a" (ext:function-lambda-list function))
+  (let ((docstring (documentation function 'function)))
+    (when docstring
+      (format t "~&Documentation:~%  ~a" docstring)))
+  (when (core:instancep function) ; funcallable instance
+    (terpri) (terpri)
+    (clos::describe-slots function *standard-output*)))
+
 #+CLOS
 (defun inspect-instance (instance)
   (if *inspect-mode*
       (clos::inspect-obj instance)
-      (clos::describe-object instance *standard-output*)))
+      (describe-object instance *standard-output*)))
 
 (defun inspect-object (object &aux (*inspect-level* *inspect-level*))
   (inspect-indent)
@@ -430,6 +443,9 @@ q (or Q):             quits the inspection.~%~
                ((vectorp object) (inspect-vector object))
                ((arrayp object) (inspect-array object))
                ((hash-table-p object) (inspect-hashtable object))
+               ;; Note that this needs to get generic functions,
+               ;; so keep it before the instancep test.
+               ((functionp object) (inspect-function object))
 	       #+clos
 	       ((sys:instancep object) (inspect-instance object))
                ((sys:cxx-object-p object) (describe-object object *standard-output*))

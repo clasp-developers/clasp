@@ -1209,6 +1209,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_COMPILER = %s\n") % (debug_compiler ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_verify_modules = false;
+#ifdef DEBUG_VERIFY_MODULES
+  debug_verify_modules = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-VERIFY-MODULES"), features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_VERIFY_MODULES = %s\n") % (debug_verify_modules ? "**DEFINED**" : "undefined")).str();
+
   bool debug_assert_type_cast = false;
 #ifdef DEBUG_ASSERT_TYPE_CAST
   debug_assert_type_cast = true;

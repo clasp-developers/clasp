@@ -5,7 +5,25 @@
 (defmacro ext::lexical-var (name depth index)
   `(ext::lexical-var ,name ,depth ,index))
 
+;;; to work with fpe-exceptions
+(defun ext::get-fpe-parameters (traps all-traps)
+  (ext:with-current-source-form (traps)
+    (let ((result nil))
+      (dolist (trap all-traps)
+        (push trap result)
+        (push (if (find trap traps) nil t) result))
+      (reverse result))))
 
+(defmacro ext:with-float-traps-masked (traps &body body)
+  (let ((previous (gensym "PREVIOUS"))
+        (all-traps '(:underflow :overflow :inexact :invalid :divide-by-zero :denormalized-operand)))
+    `(let ((,previous (core::get-current-fpe-mask)))
+       (unwind-protect
+            (progn
+              (core::enable-fpe-masks
+               ,@(ext::get-fpe-parameters traps all-traps))
+               ,@body)
+              (core::set-current-fpe-mask ,previous)))))
 
 ;;
 ;; Some helper macros for working with iterators
@@ -16,12 +34,11 @@
 
 (defmacro do-c++-iterator ((i iterator &optional (cur (gensym)) (begin (gensym)) (end (gensym))) &rest body)
   `(multiple-value-bind (,begin ,end)
-                        ,iterator
-                        (do* ((,cur ,begin (core:iterator-step ,cur))
-                              (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
-                             ((core:iterator= ,cur ,end))
-                             ,@body)))
-
+       ,iterator
+     (do* ((,cur ,begin (core:iterator-step ,cur))
+           (,i (core:iterator-unsafe-element ,cur) (core:iterator-unsafe-element ,cur)))
+          ((core:iterator= ,cur ,end))
+       ,@body)))
 
 (defmacro map-c++-iterator (code iterator)
   (let ((val (gensym)))
@@ -49,15 +66,20 @@
 
 (in-package :core)
 
+;;; We use progn in these expansions so that the programmer can't DECLARE anything.
 (defmacro cl:unwind-protect (protected-form &rest cleanup-forms)
-  `(core:funwind-protect (lambda () ,protected-form) (lambda () ,@cleanup-forms)))
+  `(core:funwind-protect
+    (lambda () (declare (core:lambda-name unwind-protected-lambda)) (progn ,protected-form))
+    (lambda () (declare (core:lambda-name unwind-cleanup-lambda)) (progn ,@cleanup-forms))))
 
 (defmacro cl:catch (tag &rest forms)
-  `(core:catch-function ,tag (lambda () (declare (core:lambda-name catch-lambda)) ,@forms)))
+  `(core:catch-function
+    ,tag (lambda () (declare (core:lambda-name catch-lambda)) (progn ,@forms))))
 
 (defmacro cl:throw (tag result-form)
-  `(core:throw-function ,tag (lambda () (declare (core::lambda-name throw-result-lambda)) ,result-form)))
-  
+  `(core:throw-function
+    ,tag (lambda () (declare (core:lambda-name throw-lambda)) (progn ,result-form))))
+
 #+(or)
 (defmacro cl:progv (symbols values &rest forms)
   `(core:progv-function ,symbols ,values #'(lambda () ,@forms)))
@@ -230,4 +252,3 @@
               (error 'type-error :datum ,fun :expected-type '(or symbol function))))
       ,args)))
 |#
-

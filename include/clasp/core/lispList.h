@@ -45,6 +45,7 @@ namespace core {
 
   T_sp cl__last(List_sp list, Integer_sp in);
   List_sp cl__nbutlast(List_sp list, Integer_sp n);
+  List_sp remove_equal(T_sp element, List_sp alist);
 
 };
 

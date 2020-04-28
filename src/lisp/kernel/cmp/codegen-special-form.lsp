@@ -190,7 +190,10 @@
 ;;; PROGV
 
 (defmacro progv (symbols values &body forms)
-  `(core:progv-function ,symbols ,values (lambda () (progn ,@forms))))
+  `(core:progv-function ,symbols ,values
+                        (lambda ()
+                          (declare (core:lambda-name core::progv-lambda))
+                          (progn ,@forms))))
 
 ;;; MULTIPLE-VALUE-CALL
 
@@ -209,10 +212,15 @@
                                                (irc-load funcDesignator)
                                                (irc-load temp-mv-result))))
               (irc-tmv-result register-ret result)))
-          (codegen result `(core:multiple-value-funcall
-                            ,function-form
-                            ,@(mapcar (lambda (x) `#'(lambda () (progn ,x))) forms))
-                   env)))))   
+          (codegen result
+                   `(core:multiple-value-funcall
+                     ,function-form
+                     ,@(mapcar (lambda (x)
+                                 `#'(lambda ()
+                                      (declare (core:lambda-name core::mvc-argument-lambda))
+                                      (progn ,x)))
+                               forms))
+                   env)))))
 
 ;;; MULTIPLE-VALUE-PROG1
 

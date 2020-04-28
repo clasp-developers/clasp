@@ -31,16 +31,15 @@
 (in-package "SYSTEM")
 
 ;;; ----------------------------------------------------------------------
-;;; Unique Ids
-
-(defmacro unique-id (obj)
-  "Generates a unique integer ID for its argument."
-  `(sys:pointer ,obj))
 
 
 ;;; Restarts
 
+;;; Current restarts available. A list of lists of restarts.
+;;; Each RESTART-BIND adds another list of restarts to this list.
 (defparameter *restart-clusters* ())
+;;; Current condition-restarts associations, made by WITH-CONDITION-RESTARTS.
+;;; A list of (condition . restarts) lists.
 (defparameter *condition-restarts* ())
 
 (defun compute-restarts (&optional condition)
@@ -57,38 +56,63 @@
 	(when (and (or (not condition)
 		       (member restart assoc-restart)
 		       (not (member restart other)))
-		   (funcall (restart-test-function restart) condition))
+		   (funcall (ext:restart-test-function restart) condition))
 	  (push restart output))))
     (nreverse output)))
 
-(defun restart-print (restart stream depth)
-  (declare (ignore depth))
+;;; Not used here, but can be useful to debuggers
+(defun ext:restart-associated-conditions (restart)
+  (let ((conditions ()))
+    (dolist (i *condition-restarts* conditions)
+      (when (member restart (rest i))
+        (pushnew (first i) conditions :test #'eq)))))
+
+(defclass restart ()
+  ((%name :initarg :name :reader restart-name)
+   (%function :initarg :function :reader ext:restart-function
+              :type function)
+   (%report-function :initarg :report-function
+                     :reader ext:restart-report-function
+                     :type (function (stream)))
+   (%interactive-function :initarg :interactive-function
+                          :reader ext:restart-interactive-function
+                          :initform (constantly ())
+                          :type (function () list))
+   (%test-function :initarg :test-function
+                   :reader ext:restart-test-function
+                   :initform (constantly t)
+                   :type (function (condition) t))))
+
+;;; This is necessary for bootstrapping reasons: assert.lsp, at least,
+;;; uses restart-bind before CLOS and static-gfs are up.
+(defun make-restart (&key name function
+                       (report-function
+                        (lambda (stream) (prin1 name stream)))
+                       (interactive-function (constantly ()))
+                       (test-function (constantly t)))
+  (declare (notinline make-instance))
+  (make-instance 'restart
+    :name name :function function
+    :report-function report-function
+    :interactive-function interactive-function
+    :test-function test-function))
+
+(defun restart-p (object) (typep object 'restart))
+
+(defmethod print-object ((restart restart) stream)
   (if *print-escape*
-      (format stream "#<~s.~d>" (type-of restart) (unique-id restart))
-      (restart-report restart stream))
+      (print-unreadable-object (restart stream :type t :identity t)
+        (write (restart-name restart) :stream stream))
+      (funcall (ext:restart-report-function restart) stream))
   restart)
-
-(defstruct (restart (:print-function restart-print))
-  name
-  function
-  report-function
-  interactive-function
-  (test-function (constantly t)))
-
-
-(defun restart-report (restart stream)
-  (let ((fn (restart-report-function restart)))
-    (if fn
-	(funcall fn stream)
-        (prin1 (or (restart-name restart) restart) stream))))
 
 (defmacro restart-bind (bindings &body forms)
   `(let ((*restart-clusters*
 	  (cons (list ,@(mapcar #'(lambda (binding)
 				    `(make-restart
-				      :NAME     ',(car binding)
-				      :FUNCTION ,(cadr binding)
-				      ,@(cddr binding)))
+                                       :NAME     ',(car binding)
+                                       :FUNCTION ,(cadr binding)
+                                       ,@(cddr binding)))
 				bindings))
 		*restart-clusters*)))
      ,@forms))
@@ -123,50 +147,48 @@
 
 (defun invoke-restart (restart &rest values)
   (let ((real-restart (coerce-restart-designator restart)))
-    (apply (restart-function real-restart) values)))
+    (apply (ext:restart-function real-restart) values)))
 
 (defun invoke-restart-interactively (restart)
   (let ((real-restart (coerce-restart-designator restart)))
-    (apply (restart-function real-restart)
-	   (let ((interactive-function
-		   (restart-interactive-function real-restart)))
-	     (if interactive-function
-		 (funcall interactive-function)
-		 '())))))
+    (apply (ext:restart-function real-restart)
+           (funcall
+            (ext:restart-interactive-function real-restart)))))
 
 
 (defun munge-with-condition-restarts-form (original-form env)
-  (let ((form (macroexpand original-form env)))
-    (if (consp form)
-        (let* ((name (first form))
-               (condition-form
-                 (case name
-                   ((signal)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-condition 'signal))
-                   ((warn)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-warning 'warn))
-                   ((error)
-                    `(coerce-to-condition ,(second form)
-                                          (list ,@(cddr form))
-                                          'simple-error 'error))
-                   ((cerror)
-                    `(coerce-to-condition ,(third form)
-                                          (list ,@(cdddr form))
-                                          'simple-error 'cerror)))))
-          (if condition-form
-              (let ((condition-var (gensym "CONDITION")))
-                `(let ((,condition-var ,condition-form))
-                   (with-condition-restarts ,condition-var
-                       (first *restart-clusters*)
-                     ,(if (eq name 'cerror)
-                          `(cerror ,(second form) ,condition-var)
-                          `(,name ,condition-var)))))
-              original-form))
-        original-form)))
+  (ext:with-current-source-form (original-form)
+    (let ((form (macroexpand original-form env)))
+      (if (consp form)
+          (let* ((name (first form))
+                 (condition-form
+                   (case name
+                     ((signal)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-condition 'signal))
+                     ((warn)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-warning 'warn))
+                     ((error)
+                      `(coerce-to-condition ,(second form)
+                                            (list ,@(cddr form))
+                                            'simple-error 'error))
+                     ((cerror)
+                      `(coerce-to-condition ,(third form)
+                                            (list ,@(cdddr form))
+                                            'simple-error 'cerror)))))
+            (if condition-form
+                (let ((condition-var (gensym "CONDITION")))
+                  `(let ((,condition-var ,condition-form))
+                     (with-condition-restarts ,condition-var
+                         (first *restart-clusters*)
+                       ,(if (eq name 'cerror)
+                            `(cerror ,(second form) ,condition-var)
+                            `(,name ,condition-var)))))
+                original-form))
+          original-form))))
 
 (defmacro restart-case (expression &body clauses &environment env)
   (flet ((transform-keywords (&key report interactive test)
@@ -188,21 +210,22 @@
     (let* ((block-tag (gensym))
            (temp-var  (gensym))
            (data (mapcar #'(lambda (clause)
-                             (let (keywords (forms (cddr clause)))
-                               (do ()
-                                   ((null forms))
-                                 (if (keywordp (car forms))
-                                     (setq keywords (list* (car forms)
-                                                           (cadr forms)
-                                                           keywords)
-                                           forms (cddr forms))
-                                     (return)))
-                               (list (car clause) 		;Name=0
-                                     (gensym) 			;Tag=1
-                                     (apply #'transform-keywords ;Keywords=2
-                                            keywords)
-                                     (cadr clause)		;BVL=3
-                                     forms))) 			;Body=4
+                             (ext:with-current-source-form (clause)
+                               (let (keywords (forms (cddr clause)))
+                                 (do ()
+                                     ((null forms))
+                                   (if (keywordp (car forms))
+                                       (setq keywords (list* (car forms)
+                                                             (cadr forms)
+                                                             keywords)
+                                             forms (cddr forms))
+                                       (return)))
+                                 (list (car clause) 		;Name=0
+                                       (gensym) 			;Tag=1
+                                       (apply #'transform-keywords ;Keywords=2
+                                              keywords)
+                                       (cadr clause)		;BVL=3
+                                       forms)))) 			;Body=4
                          clauses))
            (expression (munge-with-condition-restarts-form expression env)))
       `(block ,block-tag
@@ -268,19 +291,20 @@
   ;; says the function is evaluated in the CURRENT lexical environment.
   (let* ((class-options nil))
     (dolist (option options)
-      (case (car option)
-	((:DEFAULT-INITARGS :DOCUMENTATION)
-	 (push option class-options))
-	(:REPORT
-         (let ((reporter (cadr option)))
-           (push `(reporter :initform #',(if (stringp reporter)
-                                             `(lambda (condition stream)
-                                                (declare (ignore condition))
-                                                (write-string ,reporter stream))
-                                             reporter))
-                 slot-specs)))
-	(otherwise (cerror "Ignore this DEFINE-CONDITION option."
-			   "Invalid DEFINE-CONDITION option: ~S" option))))
+      (ext:with-current-source-form (option)
+        (case (car option)
+          ((:DEFAULT-INITARGS :DOCUMENTATION)
+           (push option class-options))
+          (:REPORT
+           (let ((reporter (cadr option)))
+             (push `(reporter :initform #',(if (stringp reporter)
+                                               `(lambda (condition stream)
+                                                  (declare (ignore condition))
+                                                  (write-string ,reporter stream))
+                                               reporter))
+                   slot-specs)))
+          (otherwise (cerror "Ignore this DEFINE-CONDITION option."
+                             "Invalid DEFINE-CONDITION option: ~S" option)))))
     `(PROGN
       (DEFCLASS ,name ,(or parent-list '(CONDITION)) ,slot-specs ,@class-options)
       ',NAME)))
@@ -309,12 +333,15 @@
 (defparameter *handler-clusters* nil)
 
 (defmacro handler-bind (bindings &body forms)
-  (unless (every #'(lambda (x) (and (listp x) (= (length x) 2))) bindings)
-    (error "Ill-formed handler bindings."))
   `(let ((*handler-clusters*
-	  (cons (list ,@(mapcar #'(lambda (x) `(cons ',(car x) ,(cadr x)))
-				bindings))
-		*handler-clusters*)))
+           (cons (list ,@(mapcar #'(lambda (binding)
+                                     (ext:with-current-source-form (binding)
+                                       (unless (and (listp binding)
+                                                    (= (length binding) 2))
+                                         (error "Ill-formed handler binding."))
+                                       `(cons ',(car binding) ,(cadr binding))))
+                                 bindings))
+                 *handler-clusters*)))
      ,@forms))
 
 (defun %signal (condition)
@@ -414,19 +441,13 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil))
-    #+(or)(core:call-with-stack-top-hint
-           (lambda ()
-             (with-simple-restart (continue "Return from BREAK.")
-               (invoke-debugger
-                (make-condition 'SIMPLE-CONDITION
-                                :FORMAT-CONTROL format-control
-                                :FORMAT-ARGUMENTS format-arguments))))))
-  (with-simple-restart (continue "Return from BREAK.")
-    (invoke-debugger
-     (make-condition 'SIMPLE-CONDITION
-                     :FORMAT-CONTROL format-control
-                     :FORMAT-ARGUMENTS format-arguments)))
+  (clasp-debug:with-truncated-stack ()
+    (with-simple-restart (continue "Return from BREAK.")
+      (let ((*debugger-hook* nil))
+        (invoke-debugger
+         (make-condition 'SIMPLE-CONDITION
+                         :FORMAT-CONTROL format-control
+                         :FORMAT-ARGUMENTS format-arguments)))))
   nil)
 
 (defun warn (datum &rest arguments)
@@ -626,6 +647,38 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
 (define-condition core:out-of-extent-unwind (control-error)
   ()
   (:report "Attempted to return or go to an expired block or tagbody tag."))
+
+#+threads
+(define-condition mp:process-error (error)
+  ((process :initarg :process :reader mp:process-error-process))
+  (:documentation "Superclass of errors relating to processes."))
+
+#+threads
+(define-condition mp:process-join-error (mp:process-error)
+  ((original-condition :initarg :original-condition :initform nil
+                       :reader mp:process-join-error-original-condition))
+  (:report
+   (lambda (condition stream)
+     (format stream "Failed to join process: Process ~s aborted~:[.~; ~
+due to error:~%  ~:*~a~]"
+             (mp:process-error-process condition)
+             (mp:process-join-error-original-condition condition))))
+  (:documentation "PROCESS-JOIN signals a condition of this type when the thread being joined ended abnormally."))
+
+#+threads
+(progn
+  ;; Somewhat KLUDGE-y way to add an ABORT restart to every new thread.
+  ;; FIXME: Actually pass the damn condition to abort-thread.
+  ;; The normal ABORT restart doesn't work for this since it takes no
+  ;; arguments. Annoying.
+  (mp:push-default-special-binding
+   '*restart-clusters*
+   '(list (list (make-restart
+                  :name 'abort
+                  :function #'mp:abort-process
+                  :report-function (lambda (stream)
+                                     (format stream "Abort the process (~s)"
+                                             mp:*current-process*)))))))
 
 (define-condition stream-error (error)
   ((stream :initarg :stream :reader stream-error-stream)))
@@ -967,28 +1020,115 @@ error and NIL for a fatal error.  FUNCTION-NAME is the name of the function
 that caused the error.  CONTINUE-FORMAT-STRING and ERROR-FORMAT-STRING are the
 format strings of the error message.  ARGS are the arguments to the format
 bstrings."
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
-    (cond
-      ((eq t continue-string)
-       ; from CEerror; mostly allocation errors
-       (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((stringp continue-string)
-       (with-simple-restart (continue "~?" continue-string args)
-	 (%signal condition)
-	 (invoke-debugger condition)))
-      ((and continue-string (symbolp continue-string))
-       ; from CEerror
-       (with-simple-restart (accept "Accept the error, returning NIL")
-	 (multiple-value-bind (rv used-restart)
-	   (with-simple-restart (ignore "Ignore the error, and try the operation again")
-	     (multiple-value-bind (rv used-restart)
-	       (with-simple-restart (continue "Continue, using ~S" continue-string)
-		 (%signal condition)
-		 (invoke-debugger condition))
-	       (if used-restart continue-string rv)))
-	   (if used-restart t rv))))
-      (t
-       (%signal condition)
-       (invoke-debugger condition)))))
+  (clasp-debug:with-truncated-stack ()
+    (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
+      (cond
+        ((eq t continue-string)
+                                        ; from CEerror; mostly allocation errors
+         (with-simple-restart (ignore "Ignore the error, and try the operation again")
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((stringp continue-string)
+         (with-simple-restart (continue "~?" continue-string args)
+           (%signal condition)
+           (invoke-debugger condition)))
+        ((and continue-string (symbolp continue-string))
+                                        ; from CEerror
+         (with-simple-restart (accept "Accept the error, returning NIL")
+           (multiple-value-bind (rv used-restart)
+               (with-simple-restart (ignore "Ignore the error, and try the operation again")
+                 (multiple-value-bind (rv used-restart)
+                     (with-simple-restart (continue "Continue, using ~S" continue-string)
+                       (%signal condition)
+                       (invoke-debugger condition))
+                   (if used-restart continue-string rv)))
+             (if used-restart t rv))))
+        (t
+         (%signal condition)
+         (invoke-debugger condition))))))
+
+;;; Now that the condition system is up, define a few more things for
+;;; the sake of the debugger
+
+(in-package #:clasp-debug)
+
+(defun safe-prin1 (object &optional output-stream-designator)
+  "PRIN1 the OBJECT to the given stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled. If the object cannot be printed, an unreadable representation is returned instead."
+  (let ((string
+          (handler-case
+              ;; First just try it.
+              (prin1-to-string object)
+            (serious-condition ()
+              (handler-case
+                  ;; OK, print type.
+                  ;; FIXME: Should print a pointer too but I don't actually
+                  ;; know how to get that from Lisp.
+                  (let ((type (type-of object)))
+                    (concatenate 'string
+                                 "#<error printing "
+                                 (prin1-to-string type)
+                                 ">"))
+                (serious-condition ()
+                  ;; Couldn't print the type. Give up entirely.
+                  "#<error printing object>"))))))
+    (write-string string output-stream-designator)))
+
+(defun display-fname (fname &optional output-stream-designator)
+  (if (stringp fname) ; C/C++ frame
+      (write-string fname output-stream-designator)
+      (safe-prin1 fname output-stream-designator)))
+
+(defun prin1-frame-call (frame &optional output-stream-designator)
+  "PRIN1 a representation of the given frame's call to the stream (default *STANDARD-OUTPUT*).
+Extra care is taken to ensure no errors are signaled, using SAFE-PRIN1."
+  (let ((fname (clasp-debug:frame-function-name frame))
+        (args (clasp-debug:frame-arguments frame)))
+    (if (null args)
+        (display-fname fname output-stream-designator)
+        (progn (write-char #\( output-stream-designator)
+               (display-fname fname output-stream-designator)
+               (loop for arg in args
+                     do (write-char #\Space output-stream-designator)
+                        (safe-prin1 arg output-stream-designator))
+               (write-char #\) output-stream-designator))))
+  frame)
+
+(defun princ-code-source-line (code-source-line &optional output-stream-designator)
+  "Write a human-readable representation of the CODE-SOURCE-LINE to the stream."
+  (let ((string
+          (handler-case
+              (format nil "~a:~d"
+                      (clasp-debug:code-source-line-pathname code-source-line)
+                      (clasp-debug:code-source-line-line-number code-source-line))
+            (serious-condition () "error while printing code-source-line"))))
+    (write-string string output-stream-designator)))
+
+(defun print-stack (base &key (stream *standard-output*) count source-positions)
+  "Write a representation of the stack beginning at BASE to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed."
+  (map-indexed-stack
+   (lambda (frame i)
+     (format stream "~&~4d: " i)
+     (prin1-frame-call frame stream)
+     (when source-positions
+       (let ((fsp (frame-source-position frame)))
+         (when fsp
+           (fresh-line stream)
+           (write-string "    |---> " stream)
+           (princ-code-source-line fsp stream)))))
+   base
+   :count count)
+  (fresh-line stream)
+  (values))
+
+(defun print-backtrace (&key (stream *standard-output*) count source-positions
+                          (delimited t))
+  "Write a current backtrace to STREAM.
+If COUNT is provided and not NIL, at most COUNT frames are printed.
+If SOURCE-POSITIONS is true, a description of the source position of each frame's call will be printed.
+Other keyword arguments are passed to WITH-STACK."
+  (with-stack (stack :delimited delimited)
+    (print-stack stack :stream stream :count count
+                 :source-positions source-positions)))

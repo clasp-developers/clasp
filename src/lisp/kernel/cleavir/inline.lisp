@@ -351,17 +351,17 @@
           generic (return-from ,inlined-name ,@generic)))))
   (define-with-contagion primop:inlined-two-arg-+ nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-                                       (if (cleavir-primop:fixnum-add x y z)
-                                           z
-                                           (core:convert-overflow-result-to-bignum z))))
+       (if (cleavir-primop:fixnum-add x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-add single-float x y))
     ((cleavir-primop:float-add double-float x y))
     ((core:two-arg-+ x y)))
   (define-with-contagion primop:inlined-two-arg-- nil (x y)
     ((cleavir-primop:let-uninitialized (z)
-                                       (if (cleavir-primop:fixnum-sub x y z)
-                                           z
-                                           (core:convert-overflow-result-to-bignum z))))
+       (if (cleavir-primop:fixnum-sub x y z)
+           z
+           (core:convert-overflow-result-to-bignum z))))
     ((cleavir-primop:float-sub single-float x y))
     ((cleavir-primop:float-sub double-float x y))
     ((core:two-arg-- x y)))
@@ -967,11 +967,19 @@
 ;;; Written as a compiler macro to avoid confusing bclasp.
 (define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
   (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
-    `(cleavir-primop:let-uninitialized (,@syms)
+    ;; NOTE: We ought to be able to use LET-UNINITIALIZED here. However,
+    ;; Cleavir works badly with this in some situations. See bug #866.
+    `(let (,@syms)
        (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
        (let (,@(loop for var in vars for sym in syms
                      collecting `(,var ,sym)))
          ,@body))))
+
+;;; Ditto, a compiler macro to avoid confusing bclasp.
+#+cst
+(define-cleavir-compiler-macro ext:with-current-source-form
+    (&whole f (&rest forms) &body body)
+  `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))
 
 ;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
 ;;; for validity. However, they do rely on their efficiency being from

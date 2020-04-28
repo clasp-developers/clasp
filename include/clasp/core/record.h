@@ -12,7 +12,7 @@ namespace core {
 #define RECORD_LOG(abf)
 #endif
 
-  T_sp record_circle_subst(T_sp repl_table, T_sp tree);
+T_sp record_circle_subst(Record_sp record, T_sp tree);
 
 };
 
@@ -37,12 +37,12 @@ public:
 public:
   RecordStage _stage;
   List_sp _alist;
-  T_sp _replacement_table;
+  T_sp _patching_callback;
   T_sp _Seen; // Was List_sp
 public:       // Simple default ctor/dtor
   Record_O() : _stage(saving), _alist(_Nil<T_O>()), _Seen(_Nil<T_O>()){};
   Record_O(RecordStage stage, bool dummy, List_sp data);
-  Record_O(RecordStage stage, T_sp replacement_table) : _stage(stage), _replacement_table(replacement_table), _Seen(_Nil<T_O>()){};
+  Record_O(RecordStage stage, T_sp callback) : _stage(stage), _patching_callback(callback),  _Seen(_Nil<T_O>()){};
   virtual ~Record_O(){};
 
 public:
@@ -58,8 +58,8 @@ public:
     GC_ALLOCATE_VARIADIC( Record_O, record, loading, false, data);
     return record;
   }
-  static Record_sp create_patcher(HashTable_sp replacement_table) {
-    GC_ALLOCATE_VARIADIC( Record_O, record, patching, replacement_table);
+  static Record_sp create_patcher(T_sp patcher_callback) {
+    GC_ALLOCATE_VARIADIC( Record_O, record, patching, patcher_callback);
     return record;
   }
 
@@ -126,7 +126,7 @@ public:
     } break;
     case patching:
       gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-      T_sp patch = record_circle_subst(this->_replacement_table, orig);
+      T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
       if (patch != orig) {
         RECORD_LOG(BF("Patching orig@%p: %s --> new@%p: %s\n") % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
         value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
@@ -172,7 +172,7 @@ public:
       RECORD_LOG(BF("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value[i].raw_());
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
           RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
           value[i].rawRef_() = reinterpret_cast<OT *>(patch.raw_());
@@ -219,7 +219,7 @@ public:
       RECORD_LOG(BF("Patching"));
       for (size_t i(0), iEnd(value.size()); i < iEnd; ++i) {
         gc::smart_ptr<T_O> orig((gc::Tagged)translate::to_object<SC>::convert(value[i]).raw_());
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
           RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % _rep_(orig) % (void *)(orig.raw_()) % _rep_(patch) % (void *)(patch.raw_()));
           value[i] = translate::from_object<SC>(patch)._v;
@@ -268,7 +268,7 @@ public:
       size_t i = 0;
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig = pairi.second;
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig) {
           RECORD_LOG(BF("Patching vec0[%d] orig@%p: %s --> new@%p: %s\n") % i % (void *)(orig.raw_()) % _rep_(orig) % (void *)(patch.raw_()) % _rep_(patch) );
           pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch);
@@ -319,8 +319,8 @@ public:
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
-        T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
-        T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
+        T_sp patch_key = record_circle_subst( this->asSmartPtr(), orig_key);
+        T_sp patch_value = record_circle_subst( this->asSmartPtr(), orig_value);
         if (patch_key != orig_key) pairi.first = gc::As_unsafe<gctools::smart_ptr<SK>>(patch_key);
         if (patch_value != orig_value) pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch_value);
       }
@@ -368,8 +368,8 @@ public:
       for ( auto&& pairi : value ) {
         gc::smart_ptr<T_O> orig_key = pairi.first;
         gc::smart_ptr<T_O> orig_value = pairi.second;
-        T_sp patch_key = record_circle_subst(this->_replacement_table, orig_key);
-        T_sp patch_value = record_circle_subst(this->_replacement_table, orig_value);
+        T_sp patch_key = record_circle_subst( this->asSmartPtr(), orig_key);
+        T_sp patch_value = record_circle_subst( this->asSmartPtr(), orig_value);
         if (patch_key != orig_key) pairi.first = gc::As_unsafe<gctools::smart_ptr<SK>>(patch_key);
         if (patch_value != orig_value) pairi.second = gc::As_unsafe<gctools::smart_ptr<SV>>(patch_value);
       }
@@ -474,7 +474,7 @@ public:
     case patching: {
       if (value.notnilp()) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig)
           value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
       }
@@ -520,7 +520,7 @@ public:
     case patching: {
       if (!value.unboundp()) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig)
           value.setRaw_(reinterpret_cast<gc::Tagged>(patch.raw_()));
       }
@@ -558,7 +558,7 @@ public:
     case patching: {
       if (value.notnilp()) {
         gc::smart_ptr<T_O> orig((gc::Tagged)value.raw_());
-        T_sp patch = record_circle_subst(this->_replacement_table, orig);
+        T_sp patch = record_circle_subst( this->asSmartPtr(), orig);
         if (patch != orig)
           value.rawRef_() = reinterpret_cast<OT *>(patch.raw_());
       }

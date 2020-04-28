@@ -6,12 +6,9 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
-(setq *features* (cons :meister-hack *features*))
-
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read*
-          run-repl
           cons-car
           cons-cdr
           debug-break))
@@ -162,6 +159,8 @@
 
 ;;; Imports
 (import 'core:quit :ext)
+(import 'core:btcl :ext)
+(import 'core:ihs-argument :ext)
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
@@ -201,7 +200,12 @@
           stream-encoding-error
           stream-decoding-error
           generate-encoding-hashtable
-          quit))
+          quit
+          btcl
+          ihs-argument
+          with-float-traps-masked
+          enable-interrupt default-interrupt ignore-interrupt
+          get-signal-handler set-signal-handler))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -794,17 +798,13 @@ the stage, the +application-name+ and the +bitcode-name+"
 ;;
 
 (export 'core:top-level)
-(defun run-repl ()
-  (if (fboundp 'core:top-level)
-      (progn
-        (maybe-load-clasprc)
-        (core:top-level))
-      (core:low-level-repl)))
 
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
-  (bformat t "Low level repl - in init.lsp%N")
+  (if (core:noinform-p)
+      nil
+      (bformat t "Low level repl - in init.lsp%N"))
   (core:low-level-repl))
 
 #-(or bclasp cclasp)

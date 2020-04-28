@@ -155,8 +155,8 @@ Number_sp clasp_make_complex (Real_sp r, Real_sp i) {
 CL_LAMBDA(num);
 CL_DECLARE();
 CL_DOCSTRING("zerop");
-CL_DEFUN bool cl__zerop(T_sp num) {
-  return clasp_zerop(gc::As<Number_sp>(num));
+CL_DEFUN bool cl__zerop(Number_sp num) {
+  return clasp_zerop(num);
 }
 
 CL_LAMBDA(z);
@@ -3417,66 +3417,60 @@ LongFloat clasp_to_long_double(Number_sp x)
 
 CL_LAMBDA(singleFloat);
 CL_DECLARE();
-CL_DOCSTRING("Return the bit representation of a single float in a lisp Fixnum");
-CL_DEFUN Fixnum_sp core__single_float_bits(SingleFloat_sp singleFloat) {
-  union SingleFloatConversion {
-        float input;
-        long  output;
-  };
-  SingleFloatConversion converter;
-  converter.input = unbox_single_float(singleFloat);
-  return clasp_make_fixnum((gc::Fixnum) converter.output);
+CL_DOCSTRING("Return the IEEE754 binary32 (single) representation of a single float, as an integer.");
+CL_DEFUN Integer_sp ext__single_float_to_bits(SingleFloat_sp singleFloat) {
+  // NOTE: This and the later ones are probably undefined behavior,
+  // though Clang seems to support them fine.
+  // I don't know a conforming way to do this other than converting to
+  // bytes, but that's a pretty annoying way to go about this.
+  union {
+    float     f;
+    uint32_t  i;
+  } converter;
+  converter.f = unbox_single_float(singleFloat);
+  return Integer_O::create(converter.i);
 }
 
 CL_LAMBDA(bit-representation);
 CL_DECLARE();
-CL_DOCSTRING("Convert a bit representation in a lisp Fixnum to a single float");
-CL_DEFUN SingleFloat_sp core__single_float_from_unsigned_byte_32(Fixnum_sp fixnum) {
-  union SingleFloatConversion {
-        float input;
-        long  output;
-    };
-  SingleFloatConversion converter;
-  converter.output = unbox_fixnum(fixnum);
-  return make_single_float(converter.input);
+CL_DOCSTRING("Convert an IEEE754 binary32 (single) representation, an integer, to a single float.");
+CL_DEFUN SingleFloat_sp ext__bits_to_single_float(Fixnum_sp fixnum) {
+  union {
+    float     f;
+    uint32_t  i;
+  } converter;
+  converter.i = unbox_fixnum(fixnum);
+  return make_single_float(converter.f);
 };
 
 CL_LAMBDA(doubleFloat);
 CL_DECLARE();
-CL_DOCSTRING("Return the bit representation of a double float in a lisp Integer if possible a Fixnum");
-CL_DEFUN Integer_sp core__double_float_bits(DoubleFloat_sp doubleFloat) {
-  union DoubleFloatConversion {
-        double input;
-        long   output;
-  };
-  DoubleFloatConversion converter;
-  converter.input = doubleFloat->get();
-  long temp = converter.output;
-  if ((temp >= gc::most_negative_fixnum) && (temp <= gc::most_positive_fixnum))
-    return clasp_make_fixnum((gc::Fixnum) temp);
-  else return Bignum_O::create((gc::Fixnum) temp); // (int64_t)?
+CL_DOCSTRING("Return the IEEE754 binary64 (double) bit representation of a double float as an integer.");
+CL_DEFUN Integer_sp ext__double_float_to_bits(DoubleFloat_sp doubleFloat) {
+  union {
+    double     d;
+    uint64_t   i;
+  } converter;
+  converter.d = doubleFloat->get();
+  return Integer_O::create(converter.i);
 }
 
 CL_LAMBDA(bit-representation);
 CL_DECLARE();
-CL_DOCSTRING("Convert a bit representation in a lisp Integer to a double float");
-CL_DEFUN DoubleFloat_sp core__double_float_from_bits(Integer_sp integer) {
-  union DoubleFloatConversion {
-        double input;
-        long   output;
-    };
-  DoubleFloatConversion converter;
-  if (integer.fixnump()) {
-    converter.output = unbox_fixnum(integer);
-    return clasp_make_double_float(converter.input);
-  } else
-  {
-    converter.output = integer->as_long();
-    return clasp_make_double_float(converter.input);
-  }
-};
-
+CL_DOCSTRING("Convert an IEEE754 binary64 (double) representation, an integer, to a double float.");
+CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
+  union {
+    double     d;
+    uint64_t   i;
+  } converter;
+  if (integer.fixnump())
+    converter.i = unbox_fixnum(integer);
+  else // bignum
+    converter.i = integer->as_uint64_t();
+  return clasp_make_double_float(converter.d);
 }
+
+}; // namespace core
 
 namespace core {
 

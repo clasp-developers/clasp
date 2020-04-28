@@ -888,9 +888,8 @@ CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("Returns the macro expansion function for a symbol if it exists, or else NIL.");
 CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
-  if (sym.nilp())
-    return _Nil<T_O>();
-  if (env.notnilp()) {
+  if (env.nilp()) { // nothing
+  } else if (gc::IsA<Environment_sp>(env)) {
     int depth = 0;
     int level = 0;
     bool shadowed = false;
@@ -898,7 +897,11 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
     bool found = Environment_O::clasp_findSymbolMacro(env, sym, depth, level, shadowed, macro);
     if (found)
       return macro;
+  } else { // pass to cleavir (which also checks global environment)
+    SYMBOL_EXPORT_SC_(CorePkg, cleavirSymbolMacro);
+    return eval::funcall(core::_sym_cleavirSymbolMacro, sym, env);
   }
+  // check global environment
   SYMBOL_SC_(ExtPkg, symbolMacro);
   T_sp fn = _Nil<T_O>();
   T_mv result = core__get_sysprop(sym, ext::_sym_symbolMacro);

@@ -130,20 +130,21 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
-    ;; Any changes involving adding, removing, rearranging slots below
-    ;; need to be reflected in funcallableInstance.h. See +specializer-slots+ comment.
-    '((name :initarg :name :initform nil
-            :reader generic-function-name :location 0)
-      (spec-list :initform nil :accessor generic-function-spec-list :location 1)
+    '((spec-list :initform nil :accessor generic-function-spec-list)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
                   'standard nil)
        :accessor generic-function-method-combination)
-      (lambda-list :initarg :lambda-list :location 3
+      ;; NOTE about generic function lambda lists.
+      ;; AMOP says rather specifically that the original lambda list
+      ;; passed to ensure-generic-function can be read, and that the
+      ;; implementation can't alter it. That's this.
+      ;; But we use the underlying function lambda list as well, for
+      ;; display. That's what maybe-augment in method.lsp deals with,
+      ;; and what ext:function-lambda-list returns.
+      (lambda-list :initarg :lambda-list
                    :accessor generic-function-lambda-list)
-      ;; Any changes to the slots above need to be reflected in funcallableInstance.h
-      ;; (except method-combination)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
@@ -151,7 +152,6 @@
       (method-class
        :initarg :method-class
        :initform (find-class 'standard-method))
-      (docstring :initarg :documentation :initform nil)
       (methods :initform nil :accessor generic-function-methods)
       (a-p-o-function :initform nil :accessor generic-function-a-p-o-function)
       (declarations
@@ -173,6 +173,12 @@
       (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
       (the-function :initarg :function :accessor method-function)
       (docstring :initarg :documentation :initform nil)
+      ;; Usually we just use the function's source position, but
+      ;; sometimes this is inadequate, e.g. for accessors, which share
+      ;; a method-function.
+      ;; So for those we use this - but not normal DEFMETHOD.
+      (source-position :initform nil :initarg :source-position
+                       :accessor method-source-position)
       (plist :initform nil :initarg :plist :accessor method-plist)
       ;; these are the precomputed results of cl:function-keywords.
       (keywords :initform nil :initarg :keywords :accessor method-keywords)

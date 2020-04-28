@@ -113,7 +113,7 @@
     (dolist (option '(:DOCUMENTATION :SIZE)) ; could add more later.
       (when (<= 2 (count option options ':key #'car))
 	(simple-program-error "DEFPACKAGE option ~s specified more than once."
-				  option)))
+                              option)))
     (setq name (string name))
     (let* ((nicknames (option-values ':nicknames options))
 	   (documentation (option-values ':documentation options))

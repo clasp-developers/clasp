@@ -55,10 +55,6 @@
    #:hoist-load-time-value
    #:precalculated-value-ast
    #:make-precalc-vector-function-ast
-   #:named-function-ast
-   #:original-lambda-list
-   #:docstring
-   #:rest-alloc
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast
@@ -73,7 +69,6 @@
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
-   #:lambda-name
    #:debug-message
    #:debug-break
    #:precalc-value-reference-ast
@@ -94,7 +89,7 @@
    #:vaslist-length-ast
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
-   #:bind-va-list-ast #:make-bind-va-list-ast #:va-list-ast
+   #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
    #:cmp-ast
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:bind-ast
@@ -107,15 +102,11 @@
   (:use #:common-lisp)
   (:export 
    #:precalc-reference-instruction
-   #:named-enter-instruction
    #:frame-holder
    #:landing-pad
    #:jump-id
    #:lambda-list
-   #:original-lambda-list
-   #:docstring
    #:rest-alloc
-   #:make-named-enter-instruction
    #:debug-message-instruction
    #:debug-break-instruction
    #:save-values-instruction #:make-save-values-instruction
@@ -132,7 +123,6 @@
    #:invoke-instruction
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
-   #:lambda-name
    #:precalc-value-instruction #:precalc-value-instruction-p
    #:debug-message
    #:debug-break

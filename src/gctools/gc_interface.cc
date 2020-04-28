@@ -50,7 +50,6 @@ typedef bool _Bool;
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Transforms/Instrumentation.h>
-//#include <llvm/Transforms/InstCombine.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
@@ -136,6 +135,7 @@ typedef bool _Bool;
 #include <clasp/core/multiStringBuffer.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/debugger.h> // Frame_O
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/sharpEqualWrapper.h>

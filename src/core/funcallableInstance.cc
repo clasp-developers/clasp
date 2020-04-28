@@ -155,9 +155,11 @@ T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
   return val;
 }
 
+// Get the name of a generic function without calling any generic functions
+// (e.g., generic-function-name). Nice for debugging CLOS.
 CL_DEFUN T_sp core__low_level_standard_generic_function_name(FuncallableInstance_sp gfun)
 {
-  return gfun->GFUN_NAME();
+  return gfun->functionName();
 }
 
 string FuncallableInstance_O::__repr__() const {
@@ -168,7 +170,7 @@ string FuncallableInstance_O::__repr__() const {
   } else {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
-  ss << _rep_(this->GFUN_NAME());
+  ss << _rep_(this->functionName());
   if (this->_Rack)
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
@@ -177,10 +179,6 @@ string FuncallableInstance_O::__repr__() const {
   }
   ss << ")" ;
   return ss.str();
-}
-
-void FuncallableInstance_O::LISP_INVOKE() {
-  IMPLEMENT_ME();
 }
 
 LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {

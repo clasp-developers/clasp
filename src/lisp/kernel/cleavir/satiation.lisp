@@ -401,7 +401,7 @@
 
 ;;; cleavir-ast-to-hir
 (eval-when (:load-toplevel)
-  (clos:satiate #'cleavir-ast-to-hir:compile-function '(clasp-cleavir-ast:named-function-ast))
+  (clos:satiate #'cleavir-ast-to-hir:compile-function '(clasp-ast:function-ast))
   (clos:satiate #'cleavir-ast-to-hir:invocation '(cleavir-ast-to-hir:context))
   (macrolet ((satiate-compile-ast ()
                (let* ((methods (clos:generic-function-methods #'cleavir-ast-to-hir:compile-ast))
@@ -473,7 +473,7 @@
                      (loop for class
                              in (clos:subclasses* (find-class 'cleavir-ir:one-successor-mixin))
                            collect `'(cleavir-ir:enclose-instruction cleavir-ir:funcall-instruction
-                                      clasp-cleavir-hir:named-enter-instruction ,class
+                                      cleavir-ir:enter-instruction ,class
                                       hash-table)))))
 
 ;;; cleavir-hir-to-mir

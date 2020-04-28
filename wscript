@@ -191,6 +191,8 @@ VALID_OPTIONS = [
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
     "ADDRESS_SANITIZER",
+    # Turn on address sanitizer
+    "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
     "LINK_STATIC"
 ]
@@ -216,7 +218,6 @@ DEBUG_OPTIONS = [
     "DEBUG_DYNAMIC_BINDING_STACK",  # dynamic variable binding debugging
     "DEBUG_VALUES",   # turn on printing (values x y z) values when core:*debug-values* is not nil
     "DEBUG_IHS",
-    "DEBUG_STACKMAPS", # turn on logging for stackmap code
     "DEBUG_TRACK_UNWINDS",  # Count cc_unwind calls and report in TIME
     "DEBUG_NO_UNWIND",   # debug intrinsics that say they don't unwind but actually do
     "DEBUG_STARTUP",
@@ -230,6 +231,7 @@ DEBUG_OPTIONS = [
     "DISABLE_DEBUG_CCLASP_LISP", # turn OFF debugging frames for cclasp code
     "DEBUG_COUNT_ALLOCATIONS", # count per-thread allocations of instances of classes
     "DEBUG_COMPILER", # Turn on compiler debugging
+    "DEBUG_VERIFY_MODULES", # Verify LLVM modules before using them
     "DEBUG_LONG_CALL_HISTORY",   # The GF call histories used to blow up - this triggers an error if they get too long
     "DEBUG_BOUNDS_ASSERT",  # check bounds 
     "DEBUG_GFDISPATCH",  # debug call history manipulation
@@ -283,10 +285,10 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "a662d3761505a1d4c9b1fc71ebeebad641760b5c")
+                       "628ef27abda0588563c69fd883c653aae43a0552")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "28dbbdd70dcc222062dadb156d8af305746cc1a8")
+                       "f4100714fd90805ba30221dc8dafa5a99f3cf6a0")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -294,8 +296,9 @@ def update_dependencies(cfg):
                        "https://github.com/robert-strandh/Acclimation.git",
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
-                       "https://github.com/robert-strandh/Eclector.git",
-                       "66cf5e2370eef4be659212269272a5e79a82fa1c")
+                       "https://github.com/clasp-developers/Eclector.git",
+                       "363c495ea3c4dc11274cccb1964ab95ab53b3966")
+#"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
                        "https://github.com/clasp-developers/alexandria.git",
@@ -336,6 +339,17 @@ def analyze_clasp(cfg):
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
+def test(cfg):
+    log.debug("Execute regression tests\n")
+    run_program_echo("build/clasp",
+                     "--feature", "ignore-extensions",
+                     "--load",    "sys:regression-tests;run-all.lisp",
+                     "--eval",    "(progn (format t \"~%Test done~%\")(core:quit))")
+    log.debug("Done regression tests\n")
+
+def tests(cfg):
+    test(cfg)
+    
 def stage_value(ctx,s):
     if ( s == 'r' ):
         sval = -1
@@ -956,6 +970,8 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+    cfg.env.append_value('LINKFLAGS', "-L/opt/clasp-support/lib")
+    cfg.env.append_value('INCLUDES', "/opt/clasp-support/include")
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
@@ -1161,6 +1177,9 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.THREAD_SANITIZER):
+        cfg.env.append_value('CXXFLAGS', ['-fsanitize=thread'] )
+        cfg.env.append_value('LINKFLAGS', ['-fsanitize=thread'])
     if (cfg.env.DEBUG_GUARD):
         cfg.define("DEBUG_GUARD",1)
         cfg.define("DEBUG_GUARD_VALIDATE",1)
@@ -1589,6 +1608,10 @@ def build(bld):
 
             install('bin/%s' % bld.cclasp_executable.name, bld.cclasp_executable, chmod = Utils.O755)
             bld.symlink_as('${PREFIX}/bin/clasp', bld.cclasp_executable.name)
+            task = symlink_executable(env=bld.env)
+            task.set_inputs(bld.cclasp_executable)
+            task.set_outputs(clasp_symlink_node)
+            bld.add_to_group(task)
 #            os.symlink(bld.cclasp_executable.abspath(), clasp_symlink_node.abspath())
 #        else:
 #            os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())

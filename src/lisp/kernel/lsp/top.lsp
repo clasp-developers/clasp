@@ -22,25 +22,19 @@
 
 (in-package "SYSTEM")
 
-(export '(*break-readtable* *break-on-warnings*
-	  *tpl-evalhook* *tpl-prompt-hook*))
+(export '(*break-readtable* *tpl-prompt-hook*
+          *allow-recursive-debug*))
 
 (defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
 (defparameter *quit-tags* nil)
 (defparameter *break-level* 0)		; nesting level of error loops
 (defparameter *break-env* nil)
-(defparameter *ihs-base* 0)
-(defparameter *ihs-top* (ihs-top))
-(defparameter *ihs-current* 0)
-(defparameter *frs-base* 0)
-(defparameter *frs-top* 0)
-(defparameter *tpl-continuable* t)
 (defparameter *tpl-prompt-hook* nil)
 (defparameter *eof* (cons nil nil))
-(defvar *backtrace*)
-(defparameter *last-error* nil)
 
+
+(defparameter *allow-recursive-debug* nil)
 (defparameter *break-message* nil)
 (defparameter *break-condition* nil)
 
@@ -48,9 +42,10 @@
 (defparameter *tpl-level* -1)			; nesting level of top-level loops
 (defparameter *step-level* 0)			; repeated from trace.lsp
 
-(defparameter *break-hidden-functions* '(error cerror apply funcall invoke-debugger))
-(defparameter *break-hidden-packages* (list #-clasp-min (find-package 'system)))
+(defvar *break-base*) ; Lowest frame available to debugger.
+(defvar *break-frame*) ; Current frame being examined in debugger.
 
+;;; A command is a list (commands function nature short-help long-help).
 (defconstant-equal tpl-commands
   '(("Top level commands"
      ((:cf :compile-file) tpl-compile-command :string
@@ -153,8 +148,8 @@
 (defparameter *tpl-commands* tpl-commands)
 
 (defconstant-equal break-commands
-  '("Break commands"
-     ((:q :quit) tpl-quit-command nil
+    '("Break commands"
+      ((:q :quit) tpl-quit-command nil
        ":q(uit)		Return to some previous break level"
        ":quit &optional n				[Break command]~@
 	:q &optional n					[Abbreviation]~@
@@ -174,56 +169,59 @@
 	~@
 	Continue execution.  Return from current break level to the caller.~@
 	This command is only available when the break level is continuable~@
-	(e.g., called from a correctable error or the function break).~%")
+	(i.e., the CONTINUE restart is available).~%")
       ((:b :backtrace) tpl-backtrace nil
        ":b(acktrace)	Print backtrace"
-       ":backtrace &optional n				[Break command]~@
-	:b &optional n					[Abbreviation]~@
+       ":backtrace &optional count			[Break command]~@
+	:b &optional count				[Abbreviation]~@
 	~@
 	Show function call history.  Only those functions called since~@
 	the previous break level are shown.  In addition, functions compiled~@
-	in-line or explicitly hidden are not displayed.  Without an argument,~@
-	a concise backtrace is printed with the current function in upper~@
-	case.  With integer argument n, the n functions above and including~@
-	the current one are printed in a verbose format.~@
-	~@
+	in-line or explicitly hidden are not displayed.  If a count is~@
+        provided, only up to that many frames are displayed.~@
 	See also: :function, :previous, :next.~%")
-      ((:f :function) tpl-print-current nil
-       ":f(unction)	Show current function"
-       ":function					[Break command]~@
+      ((:r :restarts) tpl-restarts nil
+       ":r(estarts)   Print available restarts"
+       ":restarts                                       [Break command]~@
+        :r                                              [Abbreviation]~@
+        Display the list of available restarts again. A restart can be~@
+        invoked by using the :rN command, where N is the displayed~@
+        numerical identifier for that restart.~%")
+      ((:f :frame) tpl-print-current nil
+       ":f(rame)	Show current frame"
+       ":frame					[Break command]~@
 	:f						[Abbreviation]~@
 	~@
-	Show current function.  The current function is the implicit focus~@
-	of attention for several other commands.  When it is an interpreted~@
- 	function, its lexical environment is available for inspection and~@
-	becomes the environment for evaluating user input forms.~@
+	Show current frame.  The current frame is the implicit focus~@
+	of attention for several other commands.~@
 	~@
 	See also: :backtrace, :next, previous, :disassemble, :variables.~%")
-    ((:u :up) tpl-previous nil
-     ":u(p)	Go to previous frame"
-     ":up &optional (n 1)			[Break command]~@
+      ((:u :up) tpl-previous nil
+       ":u(p)	Go to previous frame"
+       ":up &optional (n 1)			[Break command]~@
 	:u &optional (n 1)				[Abbreviation]~@
 	~@
-	Move to the nth previous visible function in the backtrace.~@
- 	It becomes the new current function.~@
+	Move to the nth previous visible frame in the backtrace.~@
+ 	It becomes the new current frame.~@
 	~@
-	See also: :backtrace, :function, :go, :next.~%")
+	See also: :backtrace, :frame, :go, :next.~%")
       ((:d :down) tpl-next nil
        ":d(own)		Go to next frame"
        ":down &optional (n 1)				[Break command]~@
 	:d &optional (n 1)				[Abbreviation]~@
 	~@
-	Move to the nth next visible function in the backtrace.  It becomes~@
-	the new current function.~@
+	Move to the nth next visible frame in the backtrace.  It becomes~@
+	the new current frame.~@
 	~@
-	See also: :backtrace, :function, :go, :previous.~%")
+	See also: :backtrace, :frame, :go, :previous.~%")
       ((:g :go) tpl-go nil
-       ":g(o)		Go to next function"
+       ":g(o)		Go to frame"
        ":go &optional (n 1)				[Break command]~@
 	:g &optional (n 1)				[Abbreviation]~@
 	~@
-	Move to the function at IHS[i].~@
-	See also: :backtrace, :function, :next, :previous.~%")
+	Move to the i-th frame.~@
+	See also: :backtrace, :frame, :next, :previous.~%")
+      #+(or)
       ((:fs :forward-search) tpl-forward-search :string
        ":fs             Search forward for function"
        ":forward-search &string substring		[Break command]~@
@@ -233,6 +231,7 @@
 	The match is case insensitive.~@
 	~@
 	See also: :backtrace, :function, :next.~%")
+      #+(or)
       ((:bs :backward-search) tpl-backward-search :string
        ":bs             Search backward for function"
        ":backward-search &string substring		[Break command]~@
@@ -247,15 +246,14 @@
        ":disassemble					[Break command]~@
 	:disassemble					[Abbreviation]~@
 	~@
-	Disassemble the current function. Currently, only interpreted functions~@
-	can be disassembled.~%")
+	Disassemble the current frame's function, if possible.~%")
       ((:le :lambda-expression) tpl-lambda-expression-command nil
        ":l(ambda-)e(expression)	Show lisp code for current function"
        ":lambda-expression				[Break command]~@
 	:le						[Abbreviation]~@
 	~@
-	Show the lisp code of the current function. Only works for interpreted~@
-        functions.~%")
+	Show the lisp code of the current frame's function.~@
+        Only works for interpreted functions.~%")
       ((:v :variables) tpl-variables-command nil
        ":v(ariables)	Show local variables, functions, blocks, and tags"
        ":variables &optional no-values			[Break command]~@
@@ -265,16 +263,6 @@
 	to the current function.  The current function must be interpreted.~@
 	The values of local variables and functions are also shown,~@
 	unless the argument is non-null.~%")
-#|
-      ((:l :local) tpl-local-command nil
-       ":l(ocal)	Return the nth local value on the stack"
-       ":local &optional (n 0)				[Break command]~@
-	:l &optional (n 0)				[Abbreviation]
-	~@
-	For compiled functions, return the value of the nth lexical variable.~@
-	As is done normally, the returned value is both printed by the top~@
-	level as well as saved in the variable *.~%")
-|#
       ((:hide) tpl-hide nil
        ":hide		Hide function"
        ":hide function					[Break command]~@
@@ -316,31 +304,6 @@
 	in future backtraces.~@
 	~@
 	See also: :hide, :unhide, :hide-package, :unhide-package.~%")
-#|
-      ((:vs :value-stack) tpl-vs-command nil
-       ":vs             Show value stack"
-       ":value-stack &optional n			[Break command]~@
-	:vs &optional n					[Abbreviation]~@
-	~@
-	Without an argument, show the entire value stack since the previous~@
-	break level.  With an integer argument n, print nothing, but return~@
-	the nth value stack entry.~@
-	~@
-	See also: :local.~%")
-|#
-    #+(or)
-    ((:bds :binding-stack) tpl-bds-command nil
-       ":bds            Show binding stack"
-       ":binding-stack &optional variable		[Break command]~@
-	:bds &optional variable				[Abbreviation]~@
-	~@
-	Without an argument, show the entire binding stack since the previous~@
-	break level.  With a variable name, print nothing, but return the~@
-	value of the given variable on the binding stack.~%")
-    #+(or)((:frs :frame-stack) tpl-frs-command nil
-       ":frs            Show frame stack"
-       ""
-       )
       ((:m :message) tpl-print-message nil
        ":m(essage)      Show error message"
        ":message					[Break command]~@
@@ -352,7 +315,8 @@
        ":help-stack                                     [Break command]~@
         :hs                                             [Abbreviation]~@
         ~@
-        Lists the functions to access the LISP system stacks.~%")
+        Lists the functions to access backtrace information more directly.~%")
+      #+(or)
       ((:i :inspect) tpl-inspect-command nil
        ":i(nspect)      Inspect value of local variable"
        ":inspect var-name                               [Break command]~@
@@ -365,9 +329,7 @@
         See also: :variables.~%")
   ))
 
-(defparameter *lisp-initialized* nil)
-
-(defun top-level (&optional (process-command-line nil) (set-package nil))
+(defun top-level (&key set-package noprint)
   "Args: ()
 Clasp specific.
 The top-level loop of Clasp. It is called by default when Clasp is invoked."
@@ -378,10 +340,8 @@ The top-level loop of Clasp. It is called by default when Clasp is invoked."
       (when set-package
         (in-package "CL-USER"))
 
-      (setq *lisp-initialized* t)
-
       (let ((*tpl-level* -1))
-	(tpl))
+	(tpl :noprint noprint))
       0)))
 
 #+threads
@@ -433,9 +393,6 @@ The top-level loop of Clasp. It is called by default when Clasp is invoked."
           ,@body)
      (delete-from-waiting-list mp:*current-process*)
      (release-console mp:*current-process*)))
-
-(defparameter *allow-recursive-debug* nil)
-(defparameter *debug-status* nil)
 
 (defun simple-terminal-interrupt ()
   (error 'ext:interactive-interrupt))
@@ -513,20 +470,15 @@ Use special code 0 to cancel this operation.")
 
 (defun tpl (&key ((:commands *tpl-commands*) tpl-commands)
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
-	      (broken-at nil)
+	      noprint
 	      (quiet nil))
-  (let* (#+(or)(*ihs-base* *ihs-top*)
-           #+(or)(*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
-           #+(or)(*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
-	 (*quit-tags* (cons *quit-tag* *quit-tags*))
+  (let* ((*quit-tags* (cons *quit-tag* *quit-tags*))
 	 (*quit-tag* *quit-tags*)	; any unique new value
 	 (*tpl-level* (1+ *tpl-level*))
 	 (break-level *break-level*)
 	 values)
-    (set-break-env)
-    (set-current-ihs)
     (flet ((rep ()
-             ;; We let warnings pass by this way "warn" does the
+             ;; We let warnings pass by. This way "warn" does the
              ;; work.  It is conventional not to trap anything
              ;; that is not a SERIOUS-CONDITION. Otherwise we
              ;; would be interferring the behavior of code that relies
@@ -555,7 +507,8 @@ Use special code 0 to cancel this operation.")
                      (break-where)
                      (setf quiet t))
                  (setq - (locally (declare (notinline tpl-read))
-                           (tpl-prompt)
+                           (unless noprint
+                             (tpl-prompt))
                            (let ((expr (tpl-read)))
                              (when sys:*echo-repl-tpl-read*
                                (format t "#|REPL echo|# ~s~%" expr))
@@ -564,7 +517,8 @@ Use special code 0 to cancel this operation.")
                                (funcall core:*eval-with-env-hook* - *break-env*)
                                )
                        /// // // / / values *** ** ** * * (car /))
-                 (tpl-print values)))))
+                 (unless noprint
+                   (tpl-print values))))))
           (loop
            (setq +++ ++ ++ + + -)
            (when
@@ -625,6 +579,8 @@ Use special code 0 to cancel this operation.")
       (t
        (return (read))))))
 
+;;; Set to true if a command is signaling an error
+;;; and you want that to invoke the debugger so you can fix it.
 (defparameter *debug-tpl-commands* nil)
 
 (defun harden-command (cmd-form)
@@ -713,23 +669,36 @@ Use special code 0 to cancel this operation.")
   (tpl-print-current))
 
 (defun tpl-print-current ()
-  (let* ((idx core:*ihs-current*)
-         (frame (core:ihs-backtrace-frame idx)))
-    (sys:backtrace-frame-to-stream idx frame)))
+  (fresh-line)
+  (clasp-debug:prin1-frame-call *break-frame*)
+  (terpri)
+  (values))
+
+(defun ext:tpl-frame ()
+  "In Clasp's debugger, return the CLASP-DEBUG:FRAME object for the frame under examination."
+  *break-frame*)
+
+(defun ext:tpl-argument (n)
+  "In Clasp's debugger, return the nth argument in the current frame."
+  (nth n (clasp-debug:frame-arguments *break-frame*)))
+
+(defun ext:tpl-arguments ()
+  "In Clasp's debugger, return the list of arguments in the current frame."
+  (clasp-debug:frame-arguments *break-frame*))
 
 (defun tpl-previous (&optional (n 1))
-  (sys:goto-ihs-prev)
+  (setf *break-frame* (clasp-debug:up *break-frame* n))
   (tpl-print-current))
 
 (defun tpl-next (&optional (n 1))
-  (sys:goto-ihs-next)
+  (setf *break-frame* (clasp-debug:down *break-frame* n))
   (tpl-print-current))
 
 (defun tpl-go (ihs-index)
-  (setq *ihs-current* (core:ihs-bounded ihs-index))
-  (if (ihs-visible *ihs-current*)
-      (progn (set-break-env) (tpl-print-current))
-      (tpl-previous)))
+  (setf *break-frame*
+        (clasp-debug:visible
+         (clasp-debug:goto *break-base* ihs-index)))
+  (tpl-print-current))
 
 (defun tpl-print-message ()
   (when *break-message*
@@ -738,233 +707,63 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun tpl-disassemble-command ()
-  (let*((*print-level* 2)
-	(*print-length* 4)
-	(*print-pretty* t)
-	(*print-escape* nil)
-	(*print-readably* nil)
-	(functions) (blocks) (variables))
-    (unless (disassemble (ihs-fun *ihs-current*))
-      (tpl-print-current)
-      (format t " Function cannot be disassembled.~%"))
-    (values)))
+  (clasp-debug:disassemble-frame *break-frame*)
+  (values))
 
 (defun tpl-lambda-expression-command ()
-  (let*(;;(*print-level* 2)
-	;;(*print-length* 4)
-	;;(*print-pretty* t)
-	;;(*print-readably* nil)
-	(function (ihs-fun *ihs-current*))
-	(le (function-lambda-expression function)))
-    (if le
-	(pprint le)
-	(format t " No source code available for this function.~%"))
-    (values)))
-
-(defun reconstruct-bytecodes-lambda-list (data)
-  (let ((output '()))
-    (dotimes (n (pop data))	;; required values
-      (declare (fixnum n))
-      (push (pop data) output))
-    (let ((l (pop data)))	;; optional values
-      (declare (fixnum l))
-      (unless (zerop l)
-	(push '&optional output)
-	(dotimes (n l)
-	  (push (first data) output)
-	  (setf data (cdddr data)))))
-    (let ((rest (pop data)))	;; &rest value
-      (when rest
-	(push '&rest output)
-	(push rest output)))
-    (let* ((allow-other-keys (pop data))) ;; &keys and &allow-other-keys
-      (unless (eql allow-other-keys 0)
-	(push '&key output)
-	(let ((l (pop data)))
-	  (declare (fixnum l))
-	  (dotimes (n l)
-	    (let* ((key (first data))
-		   (var (second data)))
-	      (unless (and (keywordp key) (string= key var))
-		(setf var (list (list key var))))
-	      (push var output))))
-	(when allow-other-keys
-	  (push '&allow-other-keys output))))
-    (nreverse output)))
-
-(defun lambda-list-from-annotations (name)
-  (let ((args (core:get-annotation name :lambda-list nil)))
-    (values args (and args t))))
-
-(defun decode-ihs-env (*break-env*)
-  (let ((env *break-env*))
-    (if (vectorp env)
-        nil
-        env)))
-
-(defun tpl-print-variables (prefix variables no-values)
-  ;; This format is what was in the orignal code.
-  ;; It simply does not work when no-values is t.
-  ;; If you care to debug this kind of conundrum then have fun!
-  ;;(format t "Local variables: ~:[~:[none~;~:*~{~a~1*~:@{, ~a~1*~}~}~]~;~
-  ;;                            ~:[none~;~:*~{~%  ~a: ~s~}~]~]~%"
-  ;;          (not no-values) variables)
-  (format t prefix)
-  (if variables
-      (loop for (var . value) in variables
-         do (if no-values
-                (format t "~% ~S" var)
-                (format t "~% ~S: ~S" var value)))
-      (format t "none")))
+  (let ((form (clasp-debug:frame-function-form *break-frame*)))
+    (if form
+        (pprint form)
+        (format t " No source code available for this function.~%")))
+  (values))
 
 (defun tpl-variables-command (&optional no-values)
-  (let*((*print-level* 2)
-	(*print-length* 4)
-	(*print-pretty* t)
-	(*print-escape* nil)
-	(*print-readably* nil))
-    (core:print-current-ihs-frame-environment)
-    (terpri)
-    (values)))
-
-(defun tpl-inspect-command (var-name)
-  (when (symbolp var-name)
-    (setq var-name (symbol-name var-name)))
-  (let ((val-pair (assoc var-name (decode-ihs-env *break-env*)
-			 :test #'(lambda (s1 s2)
-				   (when (symbolp s2) (setq s2 (symbol-name s2)))
-				   (if (stringp s2)
-				       (string-equal s1 s2)
-				     nil)))))
-    (when val-pair
-      ;;(format t "~&In tpl-inspect-command: val-pair = ~S~%" val-pair)
-      (let ((val (cdr val-pair)))
-	(inspect val)))))
+  (let ((locals (clasp-debug:frame-locals *break-frame*)))
+    (if (null locals)
+        (format t "none")
+        (if no-values
+            (loop for (var) in locals
+                  do (format t "~& ~s" var))
+            (loop for (var . value) in locals
+                  do (format t "~& ~s: ~s" var value)))))
+  (terpri)
+  (values))
 
 (defun clasp-backtrace (&optional (n 99999999))
   (core:btcl))
 
-(defun tpl-backtrace (&optional n)
-  (core:dump-backtrace *backtrace*)
-  (values))
-
-(defun frs-bds (&rest args)
-  (error "This function frs-bds does nothing ~a" args))
-
-(defun frs-ihs (&rest args)
-  (error "This function frs-ihs does nothing ~a" args))
-
-(defun print-frs (i)
-  (format *debug-io* "    FRS[~d]: ---> IHS[~d],BDS[~d]~%"
-	  i (frs-ihs i) (frs-bds i)))
+(defun tpl-backtrace (&optional count)
+  (clasp-debug:print-stack *break-base* :count count))
 
 (defun break-where ()
   (if (<= *tpl-level* 0)
-      #-threads (format t "~&Top level.~%")
-      #+threads (format t "~&Top level in: ~A.~%" mp:*current-process*)
-    (tpl-print-current)))
+      (unless (core:noinform-p)
+        #-threads (format t "~&Top level.~%")
+        #+threads (format t "~&Top level in: ~A.~%" mp:*current-process*))
+      (tpl-print-current)))
 
-(defun tpl-print-current ()
-  (let ((*print-readably* nil)
-	(name (ihs-fname *ihs-current*)))
-    (format t "~&Broken at frame[~a] ~:@(~S~)." *ihs-current* name)
-    (when (eq name 'si::bytecodes)
-      (format t " [Evaluation of: ~S]"
-              (function-lambda-expression (ihs-fun *ihs-current*)))))
-  #-threads (terpri)
-  #+threads (format t " In: ~A.~%" mp:*current-process*)
-  (let ((fun (ihs-fun *ihs-current*)))
-    (when (and (symbolp fun) (fboundp fun))
-      (setf fun (fdefinition fun))
-      ;;; to avoid ;;; Warning: compiled-function-file expected a function as argument
-      ;;; - but it got NIL - there may not be any backtrace available
-      (multiple-value-bind (file position)
-          (ext:compiled-function-file fun)
-        (when file
-          (format t " File: ~S (Position #~D)~%" file position)))))
-  (values))
+(defun set-current-frame ()
+  (setf *break-frame* (clasp-debug:visible *break-frame*))
+  (tpl-print-current))
 
 (defun tpl-hide (fname)
-  (unless (member fname *break-hidden-functions* :test #'eq)
-    (push fname *break-hidden-functions*)
-    (unless (ihs-visible *ihs-current*)
-      (set-current-ihs)))
-  (values))
+  (clasp-debug:hide fname)
+  (set-current-frame))
 
 (defun tpl-unhide (fname)
-  (setq *break-hidden-functions*
-	(delete fname *break-hidden-functions* :test #'eq))
+  (clasp-debug:unhide fname)
   (values))
 
-(defun tpl-unhide-package (package)
-  (setq *break-hidden-packages*
-	(delete (find-package package) *break-hidden-packages* :test #'eq))
+(defun tpl-hide-package (package-designator)
+  (clasp-debug:hide-package package-designator)
+  (set-current-frame))
+
+(defun tpl-unhide-package (package-designator)
+  (clasp-debug:unhide-package package-designator)
   (values))
 
 (defun tpl-unhide-all ()
-  (setq *break-hidden-functions* nil)
-  (setq *break-hidden-packages* nil)
-  (values))
-
-(defun tpl-hide-package (package)
-  (setq package (find-package package))
-  (unless (member package *break-hidden-packages* :test #'eq)
-    (push package *break-hidden-packages*)
-    (unless (ihs-visible *ihs-current*)
-      (set-current-ihs)))
-  (values))
-
-(defun ihs-fname (i)
-  (let ((function (ihs-fun i)))
-    (cond ((null function) '#:unknown)
-          ((symbolp function) function)
-          ((compiled-function-p function)
-           (or (ext:compiled-function-name function) 'lambda))
-	  #+clos
-	  ((typep function 'generic-function) (ext:compiled-function-name function))
-	  #+clos
-	  ((si:instancep function) (slot-value function 'name))
-          (t :zombi))))
-
-(defun set-current-ihs ()
-  (do ((i *ihs-current* (si::ihs-prev i)))
-      ((or (and (ihs-visible i) (setq *ihs-current* i))
-	   (<= i *ihs-base*))))
-  (set-break-env))
-
-(defun set-break-env ()
-  (setq *break-env* (ihs-env *ihs-current*)))
-
-(defun ihs-search (string unrestricted &optional (start (si::ihs-top)))
-  (do ((ihs start (si::ihs-prev ihs)))
-      ((< ihs *ihs-base*)
-       (return nil))
-    (when (and (or unrestricted (ihs-visible ihs))
-	       (search (string string) (symbol-name (ihs-fname ihs))
-		       :test #'char-equal))
-      (return ihs))))
-
-(defun tpl-backward-search (string)
-  (let ((new-ihs (ihs-search string nil *ihs-current*)))
-    (cond (new-ihs
-	   (setf *ihs-current* new-ihs)
-	   (set-current-ihs)
-	   (tpl-print-current))
-	  (t
-	   (format *debug-io* "Search for ~a failed.~%" string)))
-    (values)))
-
-(defun tpl-forward-search (string)
-  (do ((ihs (si::ihs-next *ihs-current*) (si::ihs-next ihs)))
-      ((> ihs *ihs-top*)
-       (format *debug-io* "Search for ~a failed.~%" string))
-    (when (and (ihs-visible ihs)
-	       (search string (symbol-name (ihs-fname ihs))
-		       :test #'char-equal))
-      (setq *ihs-current* ihs)
-      (set-current-ihs)
-      (tpl-print-current)
-      (return)))
+  (clasp-debug:unhide-all)
   (values))
 
 (defun tpl-apropos-command (&optional string pkg)
@@ -1025,38 +824,23 @@ Use special code 0 to cancel this operation.")
   (values))
 
 (defun tpl-help-stack-command ()
-  (format t "
-Use the following functions to directly access ECL stacks.
+  (format t "Use the following functions to access backtrace info more directly.
 
-Invocation History Stack:
-(sys:IHS-TOP)	Returns the index of the TOP of the IHS.
-(SYS:IHS-FUN i)	Returns the function of the i-th entity in IHS.
-(SYS:IHS-ENV i)
-(SYS:IHS-PREV i)
-(SYS:IHS-NEXT i)
+(EXT:TPL-FRAME) Return the FRAME object for the current frame.
+(EXT:TPL-ARGUMENT n) Return the nth argument in the current frame.
+(EXT:TPL-ARGUMENTS) Return the list of arguments in the current frame.
 
-Frame (catch, block) Stack:
-(sys:FRS-TOP)	Returns the index of the TOP of the FRS.
-(SYS:FRS-BDS i)	Returns the BDS index of the i-th entity in FRS.
-(SYS:FRS-IHS i)	Returns the IHS index of the i-th entity in FRS.
-(SYS:FRS-TAG i)
-
-Binding Stack:
-(sys:BDS-TOP)	Returns the index of the TOP of the BDS.
-(SYS:BDS-VAR i)	Returns the symbol of the i-th entity in BDS.
-(SYS:BDS-VAL i)	Returns the value of the i-th entity in BDS.
-
-Note that these functions are named by external symbols in the SYSTEM
-package."
-))
+See the CLASP-DEBUG package for more information about FRAME objects.")
+  (values))
 
 (defun compute-restart-commands (condition &key display)
   (let ((restarts (compute-restarts condition))
 	(restart-commands (list "Restart commands")))
     (when display
-      (format display (if restarts
-			  "~&Available restarts:~&(use :r1 to invoke restart 1)~2%"
-			  "~&No restarts available.~%")))
+      (format display
+              (if restarts
+                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
+                  "~&No restarts available.~%")))
     (loop for restart in restarts
        and i from 1
        do (let ((user-command (format nil "r~D" i))
@@ -1077,12 +861,26 @@ package."
 (defun update-debug-commands (restart-commands)
   (let ((commands (copy-list *tpl-commands*)))
     (unless (member break-commands commands)
-      (setq commands (nconc commands (list break-commands)))
-      )
+      (setq commands (nconc commands (list break-commands))))
     (delete-if
      #'(lambda (x) (string= "Restart commands" (car x)))
      commands)
     (nconc commands (list restart-commands))))
+
+(defun tpl-restarts ()
+  ;; Make sure this displays consistently with compute-restart-commands.
+  (let ((restart-commands (cdr (assoc "Restart commands" *tpl-commands*
+                                      :test #'string=))))
+    (format t (if restart-commands
+                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
+                  "~&No restarts available.~%"))
+    (loop for command in restart-commands
+          for restart = (second command)
+          for i from 1
+          do (format t "~d. ~@[(~a)~] ~a~%"
+                     i (restart-name restart) restart)))
+  (terpri)
+  (values))
 
 (defparameter *default-debugger-maximum-depth* 16)
 
@@ -1173,13 +971,20 @@ package."
 	;; restarts.
 	(let* ((restart-commands (compute-restart-commands condition :display t))
 	       (debug-commands
-		 ;;(adjoin restart-commands (adjoin break-commands *tpl-commands*))
-		 (update-debug-commands restart-commands)
-		 ))
-          (core:call-with-backtrace
-           (lambda (backtrace)
-             (let ((*backtrace* backtrace))
-	       (tpl :commands debug-commands)))))))))
+		 (update-debug-commands restart-commands)))
+          (clasp-debug:with-stack (*break-base*)
+            (let ((*break-frame* (clasp-debug:visible *break-base*)))
+              (tpl :commands debug-commands))))))))
+
+(defun non-debugger (condition)
+  (format *error-output* "~&Condition of type: ~a~%~a~%"
+          (type-of condition) condition)
+  (let ((clasp-debug:*frame-filters* nil))
+    (clasp-debug:print-backtrace :stream *error-output*
+                                 :source-positions t
+                                 :delimited nil))
+  (format *error-output* "~&Unhandled condition with debugger disabled, quitting~%")
+  (core:quit 1))
 
 (defun invoke-debugger (condition)
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
@@ -1193,6 +998,9 @@ package."
     (when old-hook
       (let ((*debugger-hook* nil))
         (funcall old-hook condition old-hook))))
+  (when (core:debugger-disabled-p)
+    ;; Does not return.
+    (non-debugger condition))
   (locally
     (declare (notinline default-debugger))
     (if (<= 0 *tpl-level*) ;; Do we have a top-level REPL above us?
@@ -1201,23 +1009,8 @@ package."
                ;; so we have to provide the environment for interactive use.
                (ext:*invoke-debugger-hook* ext:*invoke-debugger-hook*)
                (*debugger-hook* *debugger-hook*)
-               (*ihs-top* *ihs-top*) ;; Or should it be 1?
                (*tpl-level* *tpl-level*) ;; Or should we simply say 0.
                (*tpl-commands* *tpl-commands*)
                + ++ +++ - * ** *** / // ///)
           (default-debugger condition))))
   (finish-output))
-
-(defun core::debugger-disabled-hook (condition old-hook)
-  (declare (ignore old-hook))
-  (format *error-output*
-          "~&Received error of type: ~A~%~A~%~
-             Debugger disabled - exiting.~%"
-          (type-of condition) condition)
-  (format *error-output* "~&------- Backtrace: ~%")
-  (core:btcl)
-  (core:quit 1))
-
-(eval-when (:execute :load-toplevel)
-  (when (null (core:is-interactive-lisp))
-    (setq ext:*invoke-debugger-hook* 'debugger-disabled-hook)))

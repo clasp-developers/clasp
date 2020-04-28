@@ -728,6 +728,10 @@ a list (EQL object) - just like DEFMETHOD."
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
        ,@(satiate-readers +standard-generic-function-slots+
                           '((standard-generic-function)))
+       (%early-satiate generic-function-name (standard-generic-function))
+       (%early-satiate (setf generic-function-name)
+                       (cons standard-generic-function)
+                       (symbol standard-generic-function))
        ;; Writers are done manually since the new-value classes are tricky to sort out
        (macrolet ((satiate-specializer-writer (name &rest types) ; i mean, the types are classes though.
                     `(%early-satiate

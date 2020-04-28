@@ -56,7 +56,7 @@ FORWARD(Rack);
     Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
 
     static Rack_sp make(size_t numberOfSlots, T_sp value);
-    size_t length() const { return this->_Slots._Length; };
+    size_t length() const { return this->_Slots.length(); };
         inline T_sp &operator[](size_t idx) {
       BOUNDS_ASSERT(idx<this->_Slots._Length);
       return this->_Slots[idx];

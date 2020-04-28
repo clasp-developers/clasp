@@ -1,16 +1,18 @@
 #+clasp-min
 (progn
-  (if (core:is-interactive-lisp)
+  (setq *features* (cons :clasp-min *features*))
+  (setq *features* (cons :aclasp *features*))
+  (if (core:noinform-p)
+      nil
       (progn
-        (setq *features* (cons :clasp-min *features*))
-        (setq *features* (cons :aclasp *features*))
         (format t "Starting ~a ... loading image...~%"
                  (lisp-implementation-version)))))
 #+bclasp
 (progn
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
   (setq *features* (cons :bclasp *features*))
-  (if (core:is-interactive-lisp)
+  (if (core:noinform-p)
+      nil
       (format t "Starting ~a ... loading image...~%"
                (lisp-implementation-version))))
 #+cclasp
@@ -21,6 +23,7 @@
   (setq *features* (cons :cclasp *features*))
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
   (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-  (if (core:is-interactive-lisp) 
+  (if (core:noinform-p)
+      nil
       (format t "Starting ~a ... loading image...~%"
                (lisp-implementation-version))))

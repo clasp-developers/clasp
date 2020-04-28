@@ -174,12 +174,12 @@ SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_hash_tableSTAR)
-SYMBOL_EXPORT_SC_(CorePkg,bt)
 SYMBOL_EXPORT_SC_(CorePkg,btcl)
 SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fastgfSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARcompile_file_parallelSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARgenerate_fasoSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARforce_global_ctorsSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
@@ -1198,6 +1198,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARgenerate_fasoSTAR->defparameter(_Nil<core::T_O>());
+  comp::_sym_STARforce_global_ctorsSTAR->defparameter(_Nil<core::T_O>());
   gctools::_sym_STARdebug_gcrootsSTAR->defparameter(_Nil<core::T_O>());
   int optimization_level = 3;
   const char* optLevel = getenv("CLASP_OPTIMIZATION_LEVEL");
@@ -1223,8 +1224,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_symbol_lookupSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
-  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
-  Symbol_sp address_model = kw::_sym_address_model_64;
+  SYMBOL_EXPORT_SC_(KeywordPkg, 64_bit);
+  Symbol_sp address_model = kw::_sym_64_bit;
 
 #if defined(__APPLE__) && defined(__MACH__)
 #include <TargetConditionals.h>
@@ -1256,8 +1257,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 
 #elif defined(__i386__)
 
-  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_32);
-  Symbol_sp address_model = kw::_sym_address_model_32;
+  SYMBOL_EXPORT_SC_(KeywordPkg, 32_bit);
+  Symbol_sp address_model = kw::_sym_32_bit;
 
 #if defined(__linux__)
 

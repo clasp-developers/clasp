@@ -56,6 +56,9 @@ struct CommandLineOptions {
   std::string _ImageFile;
   bool _GotRandomNumberSeed;
   long _RandomNumberSeed;
+  bool _NoInform;
+  bool _NoPrint;
+  bool _DebuggerDisabled;
   bool _Interactive;
   bool _Version;
   bool _SilentStartup;

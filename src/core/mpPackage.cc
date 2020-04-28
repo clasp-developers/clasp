@@ -161,6 +161,12 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
         // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
         // and may have been set by mp:exit-process.
         return;
+      } catch (AbortProcess& e) {
+        // Exiting specially for some weird reason. Mark this as an abort.
+        // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
+        // but that might be a problem for the main thread.
+        process->_Aborted = true;
+        return;
       }
     }
     ql::list return_values;
@@ -304,7 +310,24 @@ string SharedMutex_O::__repr__() const {
   return ss.str();
 }
 
-
+string Process_O::phase_as_string() const {
+  switch (this->_Phase) {
+  case Inactive:
+  case Booting:
+      return "(Not yet started)";
+  case Active:
+      return "(Running)";
+  case Suspended:
+      return "(Suspended)";
+  case Exiting:
+      if (this->_Aborted)
+        return "(Aborted)";
+      else
+        return "(Completed)";
+  default:
+      return "(Unknown Phase)";
+  }
+}
 
 string Process_O::__repr__() const {
   stringstream ss;
@@ -313,9 +336,20 @@ string Process_O::__repr__() const {
 #ifdef USE_BOEHM // things don't move in boehm
   ss << " @" << (void*)(this->asSmartPtr().raw_());
 #endif
+  ss << " " << this->phase_as_string();
   ss << ">";
   return ss.str();
 }
+
+CL_DOCSTRING("Current Phase of the process as String (Not yet started, Running, Suspended, Aborted, Completed)");
+CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) {
+   return core::SimpleBaseString_O::make(process->phase_as_string());
+};
+ 
+CL_DOCSTRING("Current Phase of the process Inactive=0,Booting=1,Active=2,Suspended=3,Exiting=4");
+CL_DEFUN int mp__process_phase(Process_sp process) {
+  return process->_Phase;
+};
 
 CL_DOCSTRING("Return the owner of the lock - this may be NIL if it's not locked.");
 CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
@@ -408,13 +442,24 @@ CL_DEFUN void mp__process_yield() {
 //  core::clasp_musleep(0.5,true);
 }
 
-CL_DOCSTRING("Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. Otherwise, the return values are undefined.");
+SYMBOL_EXPORT_SC_(MpPkg,process_error);
+SYMBOL_EXPORT_SC_(MpPkg,process_error_process);
+SYMBOL_EXPORT_SC_(MpPkg,process_join_error);
+SYMBOL_EXPORT_SC_(MpPkg,process_join_error_original_condition);
+SYMBOL_EXPORT_SC_(KeywordPkg,original_condition);
+
+CL_DOCSTRING("Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.");
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {
     pthread_join(process->_Thread,NULL);
   }
-  return cl__values_list(process->_ReturnValuesList);
+  if (process->_Aborted)
+    ERROR(_sym_process_join_error,
+          core::lisp_createList(kw::_sym_process, process,
+                                kw::_sym_original_condition,
+                                process->_AbortCondition));
+  else return cl__values_list(process->_ReturnValuesList);
 }
 
 CL_DOCSTRING("Interrupt the given process to make it call the given function with no arguments. Return no values.");
@@ -433,12 +478,22 @@ CL_DEFUN void mp__process_kill(Process_sp process)
 }
 
 CL_LAMBDA(&rest values);
-CL_DOCSTRING("Immediately end the current process abnormally. The arguments to this function are returned from any PROCESS-JOIN calls with the current process as argument. Does not return.");
+CL_DOCSTRING("Immediately end the current process. The arguments to this function are returned from any PROCESS-JOIN calls with the current process as argument. Does not return.");
 CL_DEFUN void mp__exit_process(core::List_sp values) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_ReturnValuesList = values;
   throw ExitProcess();
 };
+
+// See abort-process in mp.lisp
+CL_LISPIFY_NAME("mp:%abort-process");
+CL_LAMBDA(maybe-condition);
+CL_DOCSTRING("Internal function; use ABORT-PROCESS instead.\nImmediately end the current process abnormally. If PROCESS-JOIN is called on this process thereafter, it will signal an error of type PROCESS-JOIN-ERROR with the given condition (or NIL) attached.");
+CL_DEFUN void mp__PERCENTabort_process(core::T_sp maybe_condition) {
+  Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  this_process->_AbortCondition = maybe_condition;
+  throw AbortProcess();
+}
 
 CL_DOCSTRING("Return the name of the mutex, as provided at creation. The mutex may be normal or recursive.");
 CL_DEFUN core::T_sp mp__mutex_name(Mutex_sp m) {

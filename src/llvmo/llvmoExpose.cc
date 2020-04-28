@@ -87,6 +87,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/Mangler.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/Instrumentation/ThreadSanitizer.h>
 #include <llvm/Transforms/Utils/BasicBlockUtils.h>
 #include <llvm/Transforms/IPO.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
@@ -133,6 +134,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <clasp/core/compiler.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/fli.h>
 #include <clasp/core/array.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/llvmo/debugInfoExpose.h>
@@ -3372,6 +3374,8 @@ CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
   CL_LISPIFY_NAME(InitializeNativeTarget);
   CL_EXTERN_DEFUN( &llvm::InitializeNativeTarget);
 
+CL_LISPIFY_NAME(createThreadSanitizerLegacyPassPass);
+CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
   CL_LISPIFY_NAME(createAggressiveDCEPass);
   CL_EXTERN_DEFUN( &llvm::createAggressiveDCEPass);
   CL_LISPIFY_NAME(createCFGSimplificationPass);
@@ -4274,8 +4278,7 @@ ClaspJIT_O::~ClaspJIT_O()
   printf("%s:%d Shutdown the ClaspJIT\n", __FILE__, __LINE__);
 }
 
-
-CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::string& Name) {
+bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr) {
 //  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
@@ -4296,19 +4299,43 @@ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::str
   
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
-    llvm::handleAllErrors(symbol.takeError(), [](const llvm::ErrorInfoBase &E) {
-                                                errs() << "Symbolizer failed to get line: " << E.message() << "\n";
-                                              });
-#if 0
-    std::stringstream ss;
-    ss << __FILE__ <<":" <<__LINE__ << ":  " << symbol.takeError().message();
-    printf("%s\n", ss.str().c_str());
-    abort();
-#endif
+      return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
-  return core::Pointer_O::create((void*)symbol->getAddress());
+  ptr = (void*)symbol->getAddress();
+  return true;
 }
+
+ CL_DEFMETHOD core::Pointer_sp ClaspJIT_O::lookup(JITDylib& dylib, const std::string& Name) {
+     void* ptr;
+     bool found = this->do_lookup(dylib,Name,ptr);
+     if (!found) {
+         SIMPLE_ERROR(BF("Could not find pointer for name %s") % Name);
+     }
+     return core::Pointer_O::create(ptr);
+ }
+
+
+CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
+    core::T_sp jcur = _lisp->_Roots._JITDylibs.load();
+    void* ptr;
+    while (jcur.consp()) {
+        JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
+        JITDylib& jd = *jitdylib->wrappedPtr();
+        bool found = this->do_lookup(jd,name,ptr);
+        if (found) {
+            clasp_ffi::ForeignData_sp sp_sym = clasp_ffi::ForeignData_O::create(ptr);
+            sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
+            return sp_sym;
+        }
+        jcur = CONS_CDR(jcur);
+    }
+    return _Nil<core::T_O>();
+}
+            
+        
+    
+
 
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
@@ -4372,6 +4399,18 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
+#if 1
+  core::Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
+  core::T_sp expected;
+  core::T_sp current;
+  // Use CAS to push the new JITDylib into the list of JITDylibs.
+  do {
+    current = _lisp->_Roots._JITDylibs.load();
+    expected = current;
+    cell->rplacd(current);
+    _lisp->_Roots._JITDylibs.compare_exchange_strong(expected,gc::As_unsafe<core::T_sp>(cell));
+  } while (expected != current);
+#endif
   return dylib_sp;
 }
 

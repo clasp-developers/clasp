@@ -24,7 +24,6 @@
             maybe-load-clasprc
             process-command-line-load-eval-sequence
             top-level
-            run-repl
             *defun-inline-hook*
             *proclaim-hook*
             proper-list-p
@@ -49,8 +48,10 @@
   (core:select-package "GRAY"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '( fundamental-character-output-stream
-          )))
+  (export '(fundamental-character-input-stream
+            fundamental-character-output-stream
+            fundamental-binary-input-stream
+            fundamental-binary-output-stream)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -178,6 +179,12 @@
             remove-package-local-nickname
             package-locally-nicknamed-by-list
             keep-old change-nick ; restarts for add-package-local-nicknames
+            ;; Readers of RESTART objects
+            restart-function restart-report-function
+            restart-interactive-function restart-test-function
+            restart-associated-conditions
+            ;; Debugger
+            tpl-frame tpl-argument tpl-arguments
+            ;; Misc
+            with-current-source-form
             )))
-
-

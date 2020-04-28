@@ -173,16 +173,16 @@ names to offsets."
 
 (define-symbol-macro %i128% (llvm-sys:type-get-int128-ty (thread-local-llvm-context))) ;; -> NOT USED !!!
 
-(define-symbol-macro %fixnum% #+address-model-64 %i64%
-                              #+address-model-32 %i32%)
+(define-symbol-macro %fixnum% #+64-bit %i64%
+                              #+32-bit %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
 (define-symbol-macro %float% (llvm-sys:type-get-float-ty (thread-local-llvm-context)))
 (define-symbol-macro %double% (llvm-sys:type-get-double-ty (thread-local-llvm-context)))
 #+long-float (define-symbol-macro %long-float% (llvm-sys:type-get-long-float-ty (thread-local-llvm-context)))
 
-(define-symbol-macro %size_t% #+address-model-64 %i64%
-                              #+address-model-32 %i32%)
+(define-symbol-macro %size_t% #+64-bit %i64%
+                              #+32-bit %i32%)
 (define-symbol-macro %atomic<size_t>% %size_t%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
@@ -221,10 +221,10 @@ names to offsets."
 (define-symbol-macro %global-ctors-struct[1]% (llvm-sys:array-type-get %global-ctors-struct% 1))
 
 
-(define-symbol-macro %intptr_t% #+address-model-64 %i64%
-                                #+address-model-32 %i32%)
-(define-symbol-macro %uintptr_t% #+address-model-64 %i64%
-                                #+address-model-32 %i32%)
+(define-symbol-macro %intptr_t% #+64-bit %i64%
+                                #+32-bit %i32%)
+(define-symbol-macro %uintptr_t% #+64-bit %i64%
+                                 #+32-bit %i32%)
 (define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))

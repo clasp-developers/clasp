@@ -840,7 +840,7 @@ CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp pref
 #if 1
   linkage_type = llvmo::_sym_InternalLinkage;
 #else
-  if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp()) {
+  if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp() && !(comp::_sym_STARforce_global_ctorsSTAR->symbolValue().notnilp())) {
     linkage_type = llvmo::_sym_ExternalLinkage;
   } else {
     linkage_type = llvmo::_sym_InternalLinkage;

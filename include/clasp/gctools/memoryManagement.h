@@ -39,7 +39,6 @@ THE SOFTWARE.
   #define GC_THREADS
 #endif
 #include <gc/gc.h>
-#include <gc/gc_allocator.h>
 #endif // USE_BOEHM
 
 #ifdef USE_MPS

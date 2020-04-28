@@ -1,6 +1,6 @@
 (in-package #:static-gfs)
 
-;;; specifying slot-names is not supported.
+;;; specifying slot-names is not supported - only a T argument.
 ;;; (which is fine, how often are we going to be able to optimize
 ;;;  reinitialize-instance)
 
@@ -26,7 +26,7 @@
 (defun default-shared-initialize-form (iform keys params)
   `(locally
        (declare (notinline shared-initialize))
-     (shared-initialize ,iform ,@(reconstruct-arguments keys params))))
+     (shared-initialize ,iform t ,@(reconstruct-arguments keys params))))
 
 (defun initarg-position (initargs keys)
   (position-if (lambda (key) (member key initargs :test #'eq)) keys))

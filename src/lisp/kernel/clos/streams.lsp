@@ -684,7 +684,7 @@
 (defmethod stream-file-descriptor ((stream file-stream) &optional (direction
                                                                    :input))
   (declare (ignore direction))
-  (si:file-stream-fd stream))
+  (ext:file-stream-file-descriptor stream))
 
 
 ;;; Setup

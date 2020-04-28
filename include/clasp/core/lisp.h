@@ -236,12 +236,6 @@ class Lisp_O {
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex _PackagesMutex;
 #endif
-#if 0
-    HashTableEq_sp _SetfDefinitions;
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _SetfDefinitionsMutex;
-#endif
-#endif
     bool _MpiEnabled;
     int _MpiRank;
     int _MpiSize;
@@ -301,10 +295,8 @@ class Lisp_O {
     GCRoots();
   };
 
-  friend class IncrementTraceLevel;
   friend class MultipleValues;
   friend class CoreExposer;
-  friend class ConditionHandlerManager;
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
   friend List_sp core__all_source_files();
@@ -373,6 +365,9 @@ public:
 	*/
   bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
+  bool _NoInform;
+  bool _NoPrint;
+  bool _DebuggerDisabled;
   bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated

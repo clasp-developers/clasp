@@ -165,12 +165,14 @@ be used as a TYPE to specify the default case."
   (do ((l (reverse clauses) (cdr l))
        (form nil) (key (gensym)))
       ((endp l) `(let ((,key ,keyform)) ,form))
-      (if (or (eq (caar l) 't) (eq (caar l) 'otherwise))
-          (setq form `(progn ,@(cdar l)))
-          (setq form
-                `(if (typep ,key (quote ,(caar l)))
-                     (progn ,@(cdar l))
-                     ,form)))))
+    (let ((clause (first l)))
+      (ext:with-current-source-form (clause)
+        (if (or (eq (car clause) 't) (eq (car clause) 'otherwise))
+            (setq form `(progn ,@(cdr clause)))
+            (setq form
+                  `(if (typep ,key (quote ,(car clause)))
+                       (progn ,@(cdr clause))
+                       ,form)))))))
 
 (defun etypecase-error (value types)
   (error 'CASE-FAILURE :name 'ETYPECASE
@@ -187,9 +189,11 @@ the last FORM.  If not, signals an error."
    (do ((l (reverse clauses) (cdr l))	; Beppe
         (form `(etypecase-error ,key ',(accumulate-cases clauses t))))
        ((endp l) `(let ((,key ,keyform)) ,form))
-       (setq form `(if (typep ,key ',(caar l))
-                       (progn ,@(cdar l))
-                       ,form))))
+     (let ((clause (first l)))
+       (ext:with-current-source-form (clause)
+         (setq form `(if (typep ,key ',(car clause))
+                         (progn ,@(cdr clause))
+                         ,form))))))
 
 #-clasp-min
 (defun ctypecase-error (keyplace value types)
@@ -215,8 +219,9 @@ Repeats this process until the value of PLACE becomes of one of the TYPEs."
   `(loop
     (let ((,key ,keyplace))
       ,@(mapcar #'(lambda (l)
-		    `(when (typep ,key ',(car l))
-		      (return (progn ,@(cdr l)))))
+                    (ext:with-current-source-form (l)
+                      `(when (typep ,key ',(car l))
+                         (return (progn ,@(cdr l))))))
 		clauses)
       (setf ,keyplace (ctypecase-error ',keyplace ,key
 				       ',(accumulate-cases clauses t))))))

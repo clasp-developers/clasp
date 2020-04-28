@@ -1340,12 +1340,15 @@ if not possible."
 (defun fast-subtypep (t1 t2)
   (when (eq t1 t2)
     (return-from fast-subtypep (values t t)))
+  ;; running safe-canonical-type may update which types
+  ;; are registered. So we call for effect here so that
+  ;; the tags we then compute are consistent.
+  (safe-canonical-type t1)
+  (safe-canonical-type t2)
   (let* ((tag1 (safe-canonical-type t1))
 	 (tag2 (safe-canonical-type t2)))
     (cond ((and (numberp tag1) (numberp tag2))
-	   (values (zerop (logandc2 (safe-canonical-type t1)
-				    (safe-canonical-type t2)))
-		   t))
+	   (values (zerop (logandc2 tag1 tag2)) t))
 	  (t
 	   (values nil nil)))))
 
@@ -1376,11 +1379,13 @@ if not possible."
 (defun fast-type= (t1 t2)
   (when (eq t1 t2)
     (return-from fast-type= (values t t)))
+  ;; See note in fast-subtypep
+  (safe-canonical-type t1)
+  (safe-canonical-type t2)
   (let* ((tag1 (safe-canonical-type t1))
 	 (tag2 (safe-canonical-type t2)))
     (cond ((and (numberp tag1) (numberp tag2))
-	   (values (= (safe-canonical-type t1) (safe-canonical-type t2))
-		   t))
+	   (values (= tag1 tag2) t))
 	  (t
 	   (values nil nil)))))
 

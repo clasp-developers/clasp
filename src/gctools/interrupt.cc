@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <xmmintrin.h>
 #include <llvm/Support/ErrorHandling.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbol.h>
@@ -52,7 +53,10 @@ core::T_sp safe_signal_handler(int sig) {
   return key;
 }
 
-core::T_mv gctools__signal_info(int sig) {
+CL_LAMBDA(signal);
+CL_DECLARE();
+CL_DOCSTRING("return Current handler for signal");
+CL_DEFUN core::T_mv core__signal_info(int sig) {
   return Values(safe_signal_name(sig),safe_signal_handler(sig));
 }
 
@@ -216,6 +220,27 @@ CL_DEFUN void core__check_pending_interrupts() {
   handle_all_queued_interrupts();
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,call_lisp_symbol_handler);
+void lisp_signal_handler(int sig) {
+  core::eval::funcall(core::_sym_call_lisp_symbol_handler, core::clasp_make_fixnum(sig));
+}
+
+CL_DEFUN int core__enable_disable_signals(int signal, int mod) {
+  struct sigaction new_action;
+  if (mod == 0)
+    new_action.sa_handler = SIG_IGN;  
+  else if (mod == 1)
+   new_action.sa_handler = SIG_DFL; 
+  else
+    new_action.sa_handler = lisp_signal_handler;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = (SA_NODEFER | SA_RESTART);
+  if (sigaction (signal, &new_action, NULL) == 0)
+    return 0;
+  else
+    return -1;
+}
+
 // HANDLERS
 
 // This is both a signal handler and called by signal handlers.
@@ -253,17 +278,59 @@ int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 int global_signalTrap = 0;
 int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
 
+CL_DEFUN void core__disable_all_fpe_masks() {
+  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+}
+
+CL_LAMBDA(&key underflow overflow inexact invalid divide-by-zero denormalized-operand);
+CL_DECLARE();
+CL_DOCSTRING("core::enable-fpe-masks");
+CL_DEFUN void core__enable_fpe_masks(core::T_sp underflow, core::T_sp overflow, core::T_sp inexact, core::T_sp invalid, core::T_sp divide_by_zero, core::T_sp denormalized_operand) {
+  // See https://doc.rust-lang.org/stable/core/arch/x86_64/fn._mm_setcsr.html
+  // mask all -> no fpe-exceptions
+  _MM_SET_EXCEPTION_MASK(_MM_MASK_MASK);
+  if (underflow.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_UNDERFLOW));
+  if (overflow.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_OVERFLOW));
+  if (inexact.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_INEXACT));
+  if (invalid.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_INVALID));
+  if (divide_by_zero.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DIV_ZERO));
+  if (denormalized_operand.notnilp())
+    _mm_setcsr(_mm_getcsr() & (~ _MM_MASK_DENORM));
+}
+
+CL_DEFUN core::Fixnum_sp core__get_current_fpe_mask() {
+  unsigned int before = _MM_GET_EXCEPTION_MASK ();
+  return core::clasp_make_fixnum(before);
+}
+
+CL_DEFUN void core__set_current_fpe_mask(core::Fixnum_sp mask) {
+  Fixnum value = core::unbox_fixnum(mask);
+  _MM_SET_EXCEPTION_MASK(value);
+}
+  
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
-  init_float_traps(); // WHY
+  // printf("Enter handle_fpe Signo: %d Errno:%d Code:%d\n", (info->si_signo), (info->si_errno), (info->si_code));
+  // init_float_traps(); // WHY
   // TODO: Get operation and operands when possible.
   // Probably off the call stack.
   switch (info->si_code) {
+    #ifdef _TARGET_OS_DARWIN
+  case FPE_NOOP:   NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
+    #endif
+  case FPE_INTDIV: NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
+  case FPE_INTOVF: NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
   case FPE_FLTDIV: NO_INITIALIZERS_ERROR(cl::_sym_divisionByZero);
   case FPE_FLTOVF: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointOverflow);
   case FPE_FLTUND: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointUnderflow);
   case FPE_FLTRES: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInexact);
   case FPE_FLTINV: NO_INITIALIZERS_ERROR(cl::_sym_floatingPointInvalidOperation);
+  case FPE_FLTSUB: NO_INITIALIZERS_ERROR(cl::_sym_arithmeticError);
   default: // FIXME: signal a better error.
       // Can end up here with e.g. SI_USER if it originated from kill
       handle_signal_now(signo);
@@ -293,7 +360,7 @@ void fatal_error_handler(void *user_data, const std::string &reason, bool gen_cr
 
 void wake_up_thread(int sig)
 {
-  const char* msg = "In wake_up_thread interrupt.cc\n";
+  const char* msg = "In wake_up_thread interrupt.cc:296\n";
   int len = strlen(msg);
   write(1,msg,len);
 }
@@ -335,10 +402,24 @@ void initialize_signals(int clasp_signal) {
   if (!getenv("CLASP_DONT_HANDLE_CRASH_SIGNALS")) {
     INIT_SIGNAL(SIGABRT, (SA_NODEFER | SA_RESTART), handle_or_queue_signal);
     INIT_SIGNALI(SIGSEGV, (SA_NODEFER | SA_RESTART | SA_ONSTACK), handle_segv);
-    INIT_SIGNAL(SIGBUS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+    INIT_SIGNALI(SIGBUS, (SA_NODEFER | SA_RESTART), handle_bus);
   }
   INIT_SIGNALI(SIGFPE, (SA_NODEFER | SA_RESTART), handle_fpe);
+  // Handle all signals that would terminate clasp (and can be caught)
   INIT_SIGNAL(SIGILL, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPIPE, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTTIN, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTTOU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGPROF, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGSYS, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGTRAP, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#ifdef SIGVTALRM
+  INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#endif
+  INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
+  
   // FIXME: Move?
   init_float_traps();
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
@@ -353,9 +434,122 @@ void initialize_signals(int clasp_signal) {
     ADD_SIGNAL_SYMBOL(sig,sigsym,handler); \
   }
 
-void gctools__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Function_sp handler) {
+CL_LAMBDA(signal symbol function);
+CL_DECLARE();
+CL_DOCSTRING("Set current handler for signal");
+CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
   WITH_READ_WRITE_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
+}
+
+CL_LAMBDA();
+CL_DOCSTRING("Get alist of Signal-name . Signal-code alist of known signal (Posix + extra)");
+CL_DEFUN core::List_sp core__signal_code_alist() {
+  core::List_sp alist = _Nil<core::T_O>();
+/* these are all posix signals */
+#ifdef SIGHUP
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGHUP",KeywordPkg), core::clasp_make_fixnum(SIGHUP)), alist);
+#endif
+#ifdef SIGINT
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINT",KeywordPkg), core::clasp_make_fixnum(SIGINT)), alist);
+#endif
+#ifdef SIGQUIT
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGQUIT",KeywordPkg), core::clasp_make_fixnum(SIGQUIT)), alist);
+#endif
+#ifdef SIGILL
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGILL",KeywordPkg), core::clasp_make_fixnum(SIGILL)), alist);
+#endif
+#ifdef SIGTRAP
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTRAP",KeywordPkg), core::clasp_make_fixnum(SIGTRAP)), alist);
+#endif
+#ifdef SIGABRT
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGABRT",KeywordPkg), core::clasp_make_fixnum(SIGABRT)), alist);
+#endif
+#ifdef SIGPOLL
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPOLL",KeywordPkg), core::clasp_make_fixnum(SIGPOLL)), alist);
+#endif
+#ifdef SIGFPE
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGFPE",KeywordPkg), core::clasp_make_fixnum(SIGFPE)), alist);
+#endif
+#ifdef SIGKILL
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGKILL",KeywordPkg), core::clasp_make_fixnum(SIGKILL)), alist);      
+#endif
+#ifdef SIGBUS
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGBUS",KeywordPkg), core::clasp_make_fixnum(SIGBUS)), alist);
+#endif
+#ifdef SIGSEGV
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSEGV",KeywordPkg), core::clasp_make_fixnum(SIGSEGV)), alist);
+#endif
+#ifdef SIGSYS
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSYS",KeywordPkg), core::clasp_make_fixnum(SIGSYS)), alist);
+#endif
+#ifdef SIGPIPE
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPIPE",KeywordPkg), core::clasp_make_fixnum(SIGPIPE)), alist);
+#endif
+#ifdef SIGALRM
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGALRM",KeywordPkg), core::clasp_make_fixnum(SIGALRM)), alist);
+#endif
+#ifdef SIGTERM
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTERM",KeywordPkg), core::clasp_make_fixnum(SIGTERM)), alist);
+#endif
+#ifdef SIGURG
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGURG",KeywordPkg), core::clasp_make_fixnum(SIGURG)), alist);
+#endif
+#ifdef SIGSTOP
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGSTOP",KeywordPkg), core::clasp_make_fixnum(SIGSTOP)), alist);
+#endif
+#ifdef SIGTSTP
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTSTP",KeywordPkg), core::clasp_make_fixnum(SIGTSTP)), alist);
+#endif
+#ifdef SIGCONT
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCONT",KeywordPkg), core::clasp_make_fixnum(SIGCONT)), alist);
+#endif
+#ifdef SIGCHLD
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGCHLD",KeywordPkg), core::clasp_make_fixnum(SIGCHLD)), alist);
+#endif
+#ifdef SIGTTIN
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTIN",KeywordPkg), core::clasp_make_fixnum(SIGTTIN)), alist);
+#endif
+#ifdef SIGTTOU
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTOU",KeywordPkg), core::clasp_make_fixnum(SIGTTOU)), alist);
+#endif
+#ifdef SIGXCPU
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXCPU",KeywordPkg), core::clasp_make_fixnum(SIGXCPU)), alist);
+#endif
+#ifdef SIGXFSZ
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXFSZ",KeywordPkg), core::clasp_make_fixnum(SIGXFSZ)), alist);
+#endif
+#ifdef SIGVTALRM
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGVTALRM",KeywordPkg), core::clasp_make_fixnum(SIGVTALRM)), alist);
+#endif
+#ifdef SIGPROF
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGPROF",KeywordPkg), core::clasp_make_fixnum(SIGPROF)), alist);
+#endif
+#ifdef SIGUSR1
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR1",KeywordPkg), core::clasp_make_fixnum(SIGUSR1)), alist);
+#endif
+#ifdef SIGUSR2
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGUSR2",KeywordPkg), core::clasp_make_fixnum(SIGUSR2)), alist);
+#endif
+
+/* Additional Signals */
+
+#ifdef SIGEMT
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGEMT",KeywordPkg), core::clasp_make_fixnum(SIGEMT)), alist);
+#endif
+#ifdef SIGIO
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGIO",KeywordPkg), core::clasp_make_fixnum(SIGIO)), alist);
+#endif
+#ifdef SIGWINCH
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGWINCH",KeywordPkg), core::clasp_make_fixnum(SIGWINCH)), alist);
+#endif
+#ifdef SIGINFO
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGINFO",KeywordPkg), core::clasp_make_fixnum(SIGINFO)), alist);
+#endif
+#ifdef SIGTHR
+  alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTHR",KeywordPkg), core::clasp_make_fixnum(SIGTHR)), alist);
+#endif
+  return alist;
 }
 
 void initialize_unix_signal_handlers() {
@@ -380,18 +574,25 @@ void initialize_unix_signal_handlers() {
 #ifdef SIGEMT
         ADD_SIGNAL( SIGEMT, "SIGEMT", _Nil<core::T_O>());
 #endif
+/*
+// We do install a sigfpe handler in initialize_signals
 #ifdef SIGFPE
         ADD_SIGNAL( SIGFPE, "SIGFPE", _Nil<core::T_O>());
 #endif
+*/
 #ifdef SIGKILL
         ADD_SIGNAL( SIGKILL, "SIGKILL", _Nil<core::T_O>());
 #endif
+/*
+// These take a parameter, so will fail if called here, since handle_signal_now call with no parameters
+// We do install correct handlers in initialize_signals
 #ifdef SIGBUS
         ADD_SIGNAL( SIGBUS, "SIGBUS", ext::_sym_bus_error);
 #endif
 #ifdef SIGSEGV
         ADD_SIGNAL( SIGSEGV, "SIGSEGV", ext::_sym_segmentation_violation);
 #endif
+*/
 #ifdef SIGSYS
         ADD_SIGNAL( SIGSYS, "SIGSYS", _Nil<core::T_O>());
 #endif
@@ -416,9 +617,12 @@ void initialize_unix_signal_handlers() {
 #ifdef SIGCONT
         ADD_SIGNAL( SIGCONT, "SIGCONT", _Nil<core::T_O>());
 #endif
+/*
+// core::_sym_wait_for_all_processes is undefined
 #ifdef SIGCHLD
         ADD_SIGNAL( SIGCHLD, "SIGCHLD", core::_sym_wait_for_all_processes);
 #endif
+*/
 #ifdef SIGTTIN
         ADD_SIGNAL( SIGTTIN, "SIGTTIN", _Nil<core::T_O>());
 #endif

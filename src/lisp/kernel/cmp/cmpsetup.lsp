@@ -33,7 +33,7 @@
 (defvar *code-walking* nil)
 
 ;;; Turn these on to verify llvm modules and functions
-(defvar *verify-llvm-modules* nil)
+(defvar *verify-llvm-modules* #+debug-verify-modules t #-debug-verify-modules nil)
 (defvar *verify-llvm-functions* nil)
 
 ;; Turn on all sorts of debug printing within the compiler

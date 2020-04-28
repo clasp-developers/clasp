@@ -1213,6 +1213,8 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
   features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
+  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
+  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
 #ifdef _TARGET_OS_DARWIN
   features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
@@ -1302,6 +1304,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
 
+  this->_NoInform = options._NoInform;
+  this->_NoPrint = options._NoPrint;
+  this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
   if (this->_Interactive) {
     List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
@@ -1338,7 +1343,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname(options._Stage));
   }
-  LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }
 
 T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool prompt) {
@@ -1425,6 +1429,28 @@ CL_DEFUN void core__low_level_repl() {
     }
   }
 };
+
+CL_DEFUN bool core__noinform_p() {
+  return _lisp->_NoInform;
+}
+
+CL_DEFUN bool core__noprint_p() {
+  return _lisp->_NoPrint;
+}
+
+CL_DOCSTRING("Enable the system debugger if it has been disabled by disable-debugger.");
+CL_DEFUN void ext__enable_debugger() {
+  _lisp->_DebuggerDisabled = false;
+}
+
+CL_DOCSTRING("Disable the system debugger. If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.");
+CL_DEFUN void ext__disable_debugger() {
+  _lisp->_DebuggerDisabled = true;
+}
+
+CL_DEFUN bool core__debugger_disabled_p() {
+  return _lisp->_DebuggerDisabled;
+}
 
 CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
@@ -1823,70 +1849,22 @@ CL_DECLARE();
 CL_DOCSTRING("macroexpand_1");
 CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   T_sp expansionFunction = _Nil<T_O>();
-  if (form.nilp()) {
-    return form;
-  } else if (form.consp()) {
+  if (form.consp()) {
     Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.raw_()));
     T_sp head = cons_car(cform);
     if (cl__symbolp(head)) {
-      Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
-      if (env.nilp()) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-      } else if (gc::IsA<Environment_sp>(env)) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
-#if 0        
-      } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {
-        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, ce);
-#endif        
-      } else {
-        // It must be a Cleavir environment
-        if (cleavirEnv::_sym_macroFunction->fboundp()) {
-          expansionFunction = eval::funcall(cleavirEnv::_sym_macroFunction, headSymbol, env);
-        }
-      }
+      expansionFunction = cl__macro_function(gc::As_unsafe<Symbol_sp>(head), env);
     }
-    if (expansionFunction.notnilp()) {
-      T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-      T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
-      return (Values(expanded, _lisp->_true()));
-    }
-    return (Values(form, _Nil<T_O>()));
   } else if (Symbol_sp sform = form.asOrNull<Symbol_O>()) {
-    if (env.nilp()) {
-      expansionFunction = ext__symbol_macro(sform, env);
-    } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-      expansionFunction = ext__symbol_macro(sform, eenv);
-#if 0
-    } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
-      clcenv::Info_sp info = clcenv::variable_info(cenv,sform);
-      if (clcenv::SymbolMacroInfo_sp smi = info.asOrNull<clcenv::SymbolMacroInfo_O>() ) {
-        expansionFunction = smi->_Expansion;
-      }
-#endif
-    } else {
-      // It must be a Cleavir environment
-      if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
-        T_sp expanded = eval::funcall(cleavirEnv::_sym_symbolMacroExpansion, sform, env);
-        if (expanded == sform) {
-          return Values(sform, _Nil<T_O>());
-        }
-        return Values(expanded, _lisp->_true());
-      } else {
-        SIMPLE_ERROR(BF("Illegal environment for MACROEXPAND-1 of symbol-macro %s") % _rep_(sform));
-      }
-    }
-    if (expansionFunction.notnilp()) {
-      T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
-      T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
-      if (expanded != form) {
-        return (Values(expanded, _lisp->_true()));
-      }
-    }
-    return Values(form, _Nil<T_O>());
+    expansionFunction = ext__symbol_macro(sform, env);
   }
-  return Values(form, _Nil<T_O>());
+  if (expansionFunction.notnilp()) {
+    T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
+    Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+    T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
+    return (Values(expanded, _lisp->_true()));
+  } else
+    return Values(form, _Nil<T_O>());
 }
 
 CL_LAMBDA(form &optional env);
@@ -2543,6 +2521,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   this->_Lisp->startupLispEnvironment(bundle);
   mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
   this->_Lisp->add_process(my_thread->_Process);
+  my_thread->_Process->_Phase = mp::Active;
   gctools::initialize_unix_signal_handlers();
   _lisp->_Roots._Booted = true;
 #ifndef SCRAPING

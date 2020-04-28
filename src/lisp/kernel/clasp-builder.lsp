@@ -55,7 +55,7 @@ search for the string 'src', or 'generated' and return the rest of the list that
      top
        (if (>= index (length system)) (go done))
        (core:hash-table-setf-gethash file-order (elt system index) index)
-       (format t "Assigned build order ~a to ~s~%" index (elt system index))
+       (format t "Assigned build order ~a to ~s~%" (+ 1 index) (elt system index))
        (setq index (+ index 1))
        (go top)
      done
@@ -402,14 +402,14 @@ Return files."
                (let* ((filename (entry-filename entry))
                       (source-path (build-pathname filename :lisp))
                       (output-path (build-pathname filename output-type)))
-                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~a~%    to ~a ~a~%" (1+ (entry-position entry)) total child-pid source-path output-type output-path)))
+                 (format t "Compiling [~d of ~d (child-pid: ~d)] ~s~%    to ~s ~s~%" (1+ (entry-position entry)) total child-pid source-path output-type output-path)))
              (started-some (entries child-pid)
                (dolist (entry entries)
                  (started-one entry child-pid)))
              (finished-report-one (entry child-pid)
                (let* ((filename (entry-filename entry))
                       (source-path (build-pathname filename :lisp)))
-                 (format t "Finished [~d of ~d (child pid: ~d)] ~a output follows...~%" (1+ (entry-position entry)) total child-pid source-path)))
+                 (format t "Finished [~d of ~d (child pid: ~d)] ~s output follows...~%" (1+ (entry-position entry)) total child-pid source-path)))
              (read-fd-into-buffer (fd)
                (mmsg "in read-fd-into-buffer %s%N" fd)
                (let ((buffer (make-array 1024 :element-type 'base-char :adjustable nil))
@@ -523,8 +523,7 @@ Return files."
                                #+(or)(progn
                                        (core:bformat t "A child started up with pid %d - sleeping for 10 seconds%N" (core:getpid))
                                        (sleep 10))
-                               ;; Turn off interactive mode so that errors cause clasp to die with backtrace
-                               (core:set-interactive-lisp nil)
+                               (ext:disable-debugger)
                                (let ((new-sigset (core:make-cxx-object 'core:sigset))
                                      (old-sigset (core:make-cxx-object 'core:sigset)))
                                  (core:sigset-sigaddset new-sigset 'core:signal-sigint)

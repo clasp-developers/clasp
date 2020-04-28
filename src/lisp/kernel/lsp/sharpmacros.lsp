@@ -52,7 +52,8 @@
                ;; Do something for builtin objects
                ((core:cxx-object-p tree)
                 #+(or)(error "Handle cxx-object in circle-subst tree: ~s" tree)
-                (let ((record (make-record-patcher circle-table)))
+                (let ((record (make-record-patcher (lambda (object)
+                                                     (circle-subst circle-table object)))))
                   (patch-object tree record)))
                ;; These next two are #+cclasp since they need the classes to be defined, etc.
                ;; For structure objects use raw slots.

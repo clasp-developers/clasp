@@ -81,8 +81,10 @@
     ;; Finish setup
     (mlog "function-to-method: installed method%N")
     (setf-lambda-list f lambda-list) ; hook up the introspection
-    (setf (fdefinition name) f
-          (generic-function-name f) name)
+    ;; (setf generic-function-name) itself goes through here, so to minimize
+    ;; bootstrap headaches we use the underlying writer directly.
+    (setf-function-name f name)
+    (setf (fdefinition name) f)
     (when (boundp '*early-methods*)
       (push (cons name (list method)) *early-methods*)))
   (fmakunbound 'function-to-method-temp))
@@ -114,6 +116,14 @@
                     '(gf method-combination-type-name method-combination-options)
                     '(standard-generic-function t t)
                     '((standard-generic-function symbol null)))
+
+(function-to-method 'generic-function-name
+                    '(generic-function)
+                    '(standard-generic-function))
+
+(function-to-method '(setf generic-function-name)
+                    '(new-name generic-function)
+                    '(t standard-generic-function))
 
 (mlog "done with the first function-to-methods%N")
 

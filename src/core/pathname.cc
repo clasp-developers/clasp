@@ -2138,7 +2138,7 @@ string Pathname_O::__repr__() const {
   if (str.nilp()) {
     ss << "#P" << '"' << '"';
   } else {
-    ss << "#P" << '"' << _rep_(str) << '"';
+    ss << "#P" << _rep_(str);
   }
   return ss.str();
 }
