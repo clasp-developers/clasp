@@ -65,7 +65,8 @@
 (defun emf-make-method (form)
   (emf-maybe-compile
    `(lambda (.method-args. .next-methods.)
-      (declare (ignore .next-methods.))
+      (declare (core:lambda-name effective-method-function)
+               (ignore .next-methods.))
       ,form)))
 (defun make-method-form-p (form)
   (and (consp form)
