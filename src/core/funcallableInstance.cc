@@ -423,9 +423,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   }
   // Increment the call count, and if it's high enough, compile the thing
   size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
-  // Note we use ==. This ensures that if compilation of the dispatcher
-  // calls this function again, we won't initiate another compile.
-  if (calls == COMPILE_TRIGGER)
+  if (calls >= COMPILE_TRIGGER)
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
   // Regardless of whether we triggered the compile, we next
   // Dispatch
