@@ -378,8 +378,6 @@
          (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
          (generate-effective-method-call outcome))
-        ((custom-outcome-p outcome)
-         (generate-custom reqargs outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun class-cell-form (slot-name class)
@@ -436,13 +434,6 @@
                ,(effective-method-outcome-function outcome) .method-args. nil))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
 
-(defun generate-custom (reqargs outcome)
-  `(progn
-     ,@(when (custom-outcome-requires-vaslist-p outcome)
-         '((core:vaslist-rewind .method-args.)))
-     ,(funcall (custom-outcome-generator outcome)
-               reqargs (custom-outcome-data outcome))))
-
 ;;;
 
 (defun generate-discrimination (call-history specializer-profile
@@ -483,9 +474,7 @@
             ,@tbody)))))
 
 (defun outcome-requires-vaslist-p (outcome)
-  (cond ((custom-outcome-p outcome)
-         (custom-outcome-requires-vaslist-p outcome))
-        ((effective-method-outcome-p outcome) t)
+  (cond ((effective-method-outcome-p outcome) t)
         ((outcome-p outcome) nil)
         (t (error "BUG: Unknown outcome: ~a" outcome))))
 

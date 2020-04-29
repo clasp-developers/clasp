@@ -15,10 +15,6 @@
 ;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
   applicable-methods (form nil) (function nil))
-;;; Used for custom generation outside of CLOS per se. See cmpfastgf.
-;;; NOTE: These never take a vaslist at the moment.
-(defstruct (custom-outcome (:type vector) (:include outcome) :named)
-  generator (data nil) (requires-vaslist-p nil))
 
 (defun outcome= (outcome1 outcome2)
   (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching

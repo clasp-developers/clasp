@@ -149,7 +149,8 @@ namespace core {
 
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
-    size_t increment_calls () { return this->_InterpretedCalls++; };
+    size_t increment_calls () { return this->_InterpretedCalls++; }
+    size_t interpreted_calls () { return this->_InterpretedCalls; }
 
     void increment_compilations() { this->_Compilations++; };
     size_t compilations() const { return this->_Compilations.load(); };

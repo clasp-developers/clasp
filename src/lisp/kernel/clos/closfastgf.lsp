@@ -668,11 +668,11 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
          do (update-specializer-profile generic-function specializers)))))
 
 (defvar *fastgf-use-compiler* nil)
-(defun calculate-fastgf-dispatch-function (generic-function)
+(defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
-             (if *fastgf-use-compiler*
+             (if (or *fastgf-use-compiler* compile)
                  (cmp:bclasp-compile
                   nil (generate-discriminator generic-function))
                  (interpreted-discriminator generic-function))
@@ -695,6 +695,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (set-funcallable-instance-function generic-function
                                        (calculate-fastgf-dispatch-function
                                         generic-function))))
+
+;;; Used by interpret-dtree-program.
+(defun compile-discriminating-function (generic-function)
+  (set-funcallable-instance-function generic-function
+                                     (calculate-fastgf-dispatch-function
+                                      generic-function :compile t)))
 
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))

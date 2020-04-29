@@ -301,6 +301,10 @@ CL_DEFUN size_t clos__generic_function_compilations(FuncallableInstance_sp gf) {
   return gf->compilations();
 }
 
+CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
+  return gf->interpreted_calls();
+}
+
 CL_DEFUN T_sp clos__generic_function_specializer_profile(FuncallableInstance_sp gf) {
   return gf->GFUN_SPECIALIZER_PROFILE();
 }
@@ -404,7 +408,7 @@ std::string dtree_op_name(int dtree_op) {
 };
 
 SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
-SYMBOL_EXPORT_SC_(ClosPkg, force_dispatcher);
+SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 
 #define COMPILE_TRIGGER 1024 // completely arbitrary
 
@@ -422,7 +426,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   // Note we use ==. This ensures that if compilation of the dispatcher
   // calls this function again, we won't initiate another compile.
   if (calls == COMPILE_TRIGGER)
-    eval::funcall(clos::_sym_force_dispatcher, generic_function);
+    eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
   // Regardless of whether we triggered the compile, we next
   // Dispatch
   Vaslist valist_copy(*args);

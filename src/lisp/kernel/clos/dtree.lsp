@@ -334,8 +334,6 @@
                    (collect (opcode 'effective-method-outcome)
                             (effective-method-outcome-function tree))
                    (cont))
-                  ((custom-outcome-p tree)
-                   (error "BUG: Custom outcome ended up in the interpreter somehow."))
                   (t (error "BUG: Unknown dtree: ~a" tree)))))))
 
 ;;; SIMPLE ENTRY POINTS
