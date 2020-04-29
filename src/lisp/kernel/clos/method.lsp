@@ -403,6 +403,7 @@ have disappeared."
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
       (compute-g-f-spec-list gf)
+      (compute-a-p-o-function gf)
       (invalidate-discriminating-function gf)
       gf)))
 

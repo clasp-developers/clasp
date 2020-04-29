@@ -314,26 +314,29 @@
 			     spec-how-old
 			     spec-how))))
 	     spec-how-list))
-      (let* ((spec-how-list nil)
-	     (function nil)
-	     (a-p-o (generic-function-argument-precedence-order gf)))
+      (let* ((spec-how-list nil))
 	(dolist (method (generic-function-methods gf))
 	  (setf spec-how-list
 		(nupdate-spec-how-list spec-how-list (method-specializers method) gf)))
 	(setf (generic-function-spec-list gf)
 	      (loop for type in spec-how-list
 		 for i from 0
-		 when type collect (cons type i)))
-	(let* ((g-f-l-l (generic-function-lambda-list gf)))
-	  (when (consp g-f-l-l)
-	    (let ((required-arguments (rest (si::process-lambda-list g-f-l-l t))))
-	      (unless (equal a-p-o required-arguments)
-		(setf function
-		      (coerce `(lambda (%list)
-				 (destructuring-bind ,required-arguments %list
-				   (list ,@a-p-o)))
-			      'function))))))
-	(setf (generic-function-a-p-o-function gf) function)))))
+		 when type collect (cons type i)))))))
+
+(defun compute-a-p-o-function (gf)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (let ((a-p-o (generic-function-argument-precedence-order gf))
+          (gf-ll (generic-function-lambda-list gf)))
+      (setf (generic-function-a-p-o-function gf)
+            (if (consp gf-ll)
+                (let ((required-arguments (rest (core:process-lambda-list gf-ll t))))
+                  (if (equal a-p-o required-arguments)
+                      nil
+                      (coerce `(lambda (%list)
+                                 (destructuring-bind ,required-arguments %list
+                                   (list ,@a-p-o)))
+                              'function)))
+                nil)))))
 
 ;;; Will be upgraded to a method in fixup.
 (defun print-object (object stream)

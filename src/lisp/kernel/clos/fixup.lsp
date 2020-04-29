@@ -342,6 +342,7 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  ECL does not need the discriminating function because we always use
   ;;  the same one, we just update the spec-how list of the generic function.
   (compute-g-f-spec-list gf)
+  (compute-a-p-o-function gf)
   ;; Clasp must update the specializer-profile
   #+clasp
   (progn
@@ -361,6 +362,7 @@ and cannot be added to ~A." method other-gf gf)))
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
   (compute-g-f-spec-list gf)
+  (compute-a-p-o-function gf)
   #+clasp
   (progn
     (compute-and-set-specializer-profile gf)
