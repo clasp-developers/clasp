@@ -49,6 +49,15 @@
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
 
+(test
+ compile-file-serial-no-faso
+ (let ((cmp::*compile-file-parallel* nil)
+       (cmp::*generate-faso* nil)
+       (core:*clasp-build-mode* :faso)
+       (file "sys:regression-tests;framework.lisp"))
+   (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
+     (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
+
 ;;; there shoudn't be any output if verbose and print are nil
 (test
  COMPILE-FILE.1.simplified
@@ -56,7 +65,7 @@
           (with-output-to-string
               (*standard-output*)
             (compile-file "sys:regression-tests;framework.lisp" :verbose nil :print nil))))
-        
+
 
 
 
