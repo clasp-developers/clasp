@@ -49,6 +49,7 @@
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))
      (and (probe-file fasl) (string-equal (pathname-type fasl) "newfasl")))))
 
+;;; crosscompiling sbcl
 (test
  compile-file-serial-no-faso
  (let ((cmp::*compile-file-parallel* nil)

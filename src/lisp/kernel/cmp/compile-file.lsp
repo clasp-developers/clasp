@@ -83,13 +83,12 @@
 ;;;
 ;;; Compile-file pathnames
 
+;;; I wonder, why that doesn't take core:*clasp-build-mode* into account
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
     ((and *generate-faso* (or (eq output-type :object))) "faso")
     ((and *generate-faso* (or (eq output-type :fasl))) "fasp")
-    #+no ((and (eq core:*clasp-build-mode* :faso) (or (eq output-type :object)))"faso")
-    #+no ((and (eq core:*clasp-build-mode* :faso) (or (eq output-type :fasl))) "fasp")
     ((eq output-type :object) "o")
     ((eq output-type :fasl) "fasl")
     ((eq output-type :faso) "faso")
