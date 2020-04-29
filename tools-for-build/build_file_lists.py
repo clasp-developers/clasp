@@ -316,6 +316,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/kernel",
         "src/lisp/kernel/clos/dtree",
         "src/lisp/kernel/clos/cmpfastgf",
+        "src/lisp/kernel/clos/discriminate",
         "src/lisp/kernel/clos/closfastgf",
         "src/lisp/kernel/clos/satiation",
         "src/lisp/kernel/clos/method",

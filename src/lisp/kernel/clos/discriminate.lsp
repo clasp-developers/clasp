@@ -1,0 +1,461 @@
+(in-package #:clos)
+
+(defvar *insert-debug-code* nil)
+
+#+(or)
+(progn
+  (defclass node () ())
+  (defclass ntest (node)
+    ((%paths :initarg :paths :reader ntest-paths)))
+  (defun make-ntest (paths) (make-instance 'ntest :paths paths))
+  (defun ntest-p (object) (typep object 'ntest))
+  (defclass leaf (node)
+    ((%form :initarg :form :reader leaf-form)))
+  (defun make-leaf (form) (make-instance 'leaf :form form))
+  (defun leaf-p (object) (typep object 'leaf)))
+
+#-(or)
+(progn
+  (defstruct (ntest (:type vector) :named
+                    (:constructor make-ntest (paths)))
+    (paths nil :read-only t))
+  (defstruct (leaf (:type vector) :named
+                   (:constructor make-leaf (form)))
+    (form nil :read-only t)))
+
+(defun check-clause (clause spec-length seen-specs)
+  (unless (and (consp clause)
+               (typep (car clause) 'sequence)
+               (leaf-p (cdr clause)))
+    (error "Bad syntax for clause ~a" clause))
+  (let ((specs (car clause)))
+    (unless (= (length specs) spec-length)
+      (error "Mismatch in length of specializers ~a"
+             specs))
+    (when (find specs seen-specs :test #'equal)
+      (error "Duplicate specializer sequence ~a in ~a"
+             specs seen-specs))
+    specs))
+
+(defun basic-ntree (clauses default spec-length)
+  (if (null clauses)
+      default
+      ;; Verify things are hunky dory, then pass to %basic-tree.
+      (loop for clause in clauses
+            collect (check-clause clause spec-length seen-specs)
+              into seen-specs
+            finally (return (%basic-tree clauses spec-length)))))
+
+;; Each clause is a cons (specializer-sequence . leaf),
+;; where the sequences all have the same lengths and there are
+;; no duplicates.
+(defun %basic-tree (clauses spec-length)
+  (case spec-length
+    ((0) ; degenerate
+     ;; Just return the leaf. No dispatch.
+     (cdr (first clauses)))
+    ((1) ; nearly degenerate
+     (loop for (specializers . leaf) in clauses
+           for spec = (elt specializers 0)
+           collect (cons spec leaf) into paths
+           finally (return (make-ntest paths))))
+    (t
+     (loop for (specializers . leaf) in clauses
+           for this = (elt specializers 0)
+           for next = (subseq specializers 1)
+           for new-clause = (cons next leaf)
+           for existing-path = (assoc this paths)
+           if existing-path
+             ;; We checked for duplicates in basic-tree.
+             do (push new-clause (cdr existing-path))
+           else ; haven't seen this specializer yet.
+           collect (cons this (list new-clause)) into paths
+           finally
+              (return
+                (make-ntest
+                 (loop with new-spec-length = (1- spec-length)
+                       for (spec . clauses)
+                         in paths
+                       for test = (%basic-tree clauses
+                                               new-spec-length)
+                       collect (cons spec test))))))))
+
+(defvar *reduction-table*)
+
+(defun reduce-tree (tree)
+  (let ((*reduction-table* (make-hash-table :test #'equal)))
+    (reduce-node tree)))
+
+#+(or)
+(progn
+  (defgeneric reduce-node (node))
+  (defmethod reduce-node ((node leaf)) (reduce-leaf node))
+  (defmethod reduce-node ((node ntest)) (reduce-test node)))
+
+#-(or)
+(progn
+  (defun reduce-node (node)
+    (cond ((leaf-p node) (reduce-leaf node))
+          ((ntest-p node) (reduce-test node))
+          (t (error "BUG: Not a node: ~a" node)))))
+
+(defun reduce-leaf (leaf) leaf) ; nothing to be done.
+(defun reduce-test (node)
+  (loop for (spec . next) in (ntest-paths node)
+        for rnext = (reduce-node next)
+        collect (cons spec rnext) into new-paths
+        finally
+           (return
+             (or (gethash new-paths *reduction-table*)
+                 (setf (gethash new-paths *reduction-table*)
+                       (make-ntest new-paths))))))
+
+;;;
+
+(defun partition (sequence &key (test #'eql) (key #'identity) (getter #'identity))
+  (let ((test (core::coerce-fdesignator test))
+        (key (core::coerce-fdesignator key))
+        (getter (core::coerce-fdesignator getter)))
+    (loop with result = nil
+          for item in sequence
+          for k = (funcall key item)
+          for existing = (assoc k result :test test)
+          if existing
+            do (push (funcall getter item) (cdr existing))
+          else
+            do (push (list k (funcall getter item)) result)
+          finally (return result))))
+
+;;;
+
+(defun rangify (list)
+  (if (null list)
+      nil
+      (let ((list (sort (copy-list list) #'< :key #'car)))
+        (loop with this = (cdr (first list))
+              with this-left = (car (first list))
+              with this-rite = this-left
+              for (next . tag) in (rest list)
+              if (and (= (1+ this-rite) next) (eql tag this))
+                do (setf this-rite next)
+              else collect (cons (cons this-left this-rite) this) into res
+                   and do (setf this-left next
+                                this-rite next
+                                this tag)
+              finally (return
+                        (append res (list (cons (cons this-left this-rite)
+                                                this))))))))
+
+(defun gen-binary-search (form ranges default)
+  (cond
+    ((null ranges) `(go ,default))
+    ((null (rest ranges))
+     (let ((match (first ranges)))
+       (if (= (caar match) (cdar match))
+           `(if (cleavir-primop:fixnum-equal ,form ',(caar match))
+                (go ,(cdr match))
+                (go ,default))
+           `(if (cleavir-primop:fixnum-not-greater ,form ',(cdar match))
+                (if (cleavir-primop:fixnum-not-greater ',(caar match) ,form)
+                    (go ,(cdr match))
+                    (go ,default))
+                (go ,default)))))
+    (t (let* ((len-div-2 (floor (length ranges) 2))
+              (left-ranges (subseq ranges 0 len-div-2))
+              (right-ranges (subseq ranges len-div-2))
+              (right-head (first right-ranges))
+              (right-stamp (caar right-head)))
+         `(if (cleavir-primop:fixnum-less ,form ',right-stamp)
+              ,(gen-binary-search form left-ranges default)
+              ,(gen-binary-search form right-ranges default))))))
+
+(defmacro %fixnumcase (form default &rest clauses)
+  (loop with bname = (gensym "FIXNUM-CASE")
+        with default-tag = (gensym "DEFAULT")
+        for (keys . body) in clauses
+        for tag = (gensym)
+        nconcing (list tag `(return-from ,bname (progn ,@body)))
+          into tbody
+        nconcing (loop for key in keys
+                       collect (cons key tag))
+          into dispatch
+        finally
+           (return
+             `(core::local-block ,bname
+                (core::local-tagbody
+                   ,(gen-binary-search form (rangify dispatch)
+                                       default-tag)
+                   ,@tbody
+                   ,default-tag
+                   (return-from ,bname ,default))))))
+
+(defmacro fixnumcase (form default &rest clauses)
+  (let ((keyg (gensym "KEY")))
+    `(let ((,keyg ,form))
+       (%fixnumcase ,keyg ,default ,@clauses))))
+
+(defun tag-test (class)
+  (fourth (find (core:class-stamp-for-instances class)
+                clos::*tag-tests*
+                :key #'second)))
+
+;;; This is kind of a shitheap, but then, so is the underlying operation.
+(defmacro %speccase (form default &rest clauses)
+  (loop with bname = (gensym "SPECIALIZER-CASE")
+        with stamp = (gensym "STAMP")
+        with default-tag = (gensym "DEFAULT")
+        with eql-specs
+        with tag-specs
+        with c++-specs
+        with other-specs
+        for clause in clauses
+        for (specs . body) = clause
+        for tag = (gensym)
+        nconc (list tag `(return-from ,bname ,@body))
+          into tbody
+        do (loop for spec in specs
+                 for pair = (cons spec tag)
+                 do (cond #+(or)
+                          ((clos::eql-specializer-flag spec)
+                           (push (cons (clos::eql-specializer-object
+                                        spec)
+                                       tag)
+                                 eql-specs))
+                          ;; The fake eql specializers used by fastgf
+                          #-(or)
+                          ((listp spec)
+                           (push (cons (first spec) tag) eql-specs))
+                          ((clos::tag-spec-p spec)
+                           (push (cons (tag-test spec) tag) tag-specs))
+                          ((< (core:class-stamp-for-instances spec)
+                              cmp:+c++-stamp-max+)
+                           (push (cons (core:class-stamp-for-instances spec)
+                                       tag)
+                                 c++-specs))
+                          (t
+                           (push (cons (core:class-stamp-for-instances spec)
+                                       tag)
+                                 other-specs))))
+        finally
+           (return
+             `(core::local-block ,bname
+                (core::local-tagbody
+                   (case ,form
+                     ,@(loop for (tag . objects)
+                               in (partition eql-specs :key #'cdr :getter #'car)
+                             collect `((,@objects) (go ,tag)))
+                     (otherwise
+                      (cond ,@(loop for (test . tag) in tag-specs
+                                    collect `((,test ,form) (go ,tag)))
+                            ((cleavir-primop:typeq ,form core:general)
+                             (let ((,stamp (core::header-stamp ,form)))
+                               (let ((,stamp
+                                       (core::header-stamp-case ,stamp
+                                         (core::derivable-stamp ,form)
+                                         (core::rack-stamp ,form)
+                                         (core::wrapped-stamp ,form)
+                                         (%fixnumcase ,stamp
+                                             (go ,default-tag)
+                                           ,@(loop for (tag . pairs)
+                                                     in (partition c++-specs
+                                                                   :key #'cdr
+                                                                   :getter #'car)
+                                                   collect `((,@pairs) (go ,tag)))))))
+                                 (%fixnumcase ,stamp
+                                     (go ,default-tag)
+                                   ,@(loop for (tag . pairs)
+                                             in (partition other-specs :key #'cdr
+                                                           :getter #'car)
+                                           collect `((,@pairs) (go ,tag)))))))
+                            (t (go ,default-tag)))))
+                   ;; back in the tagbody
+                   ,@tbody
+                   ,default-tag
+                   (return-from ,bname ,default))))))
+
+(defmacro speccase (form default &rest clauses)
+  (let ((keyg (gensym "KEY")))
+    `(let ((,keyg ,form))
+       (%speccase ,keyg ,default ,@clauses))))
+
+;;;
+
+(defvar *codegen-map*)
+(defvar *block-name*)
+(defvar *default-tag*)
+
+#+(or)
+(progn
+  (defgeneric node-code (node syms))
+  (defmethod node-code ((node ntest) syms) (test-code node syms))
+  (defmethod node-code ((node leaf) syms) (leaf-code node syms)))
+
+#-(or)
+(progn
+  (defun node-code (node syms)
+    (cond ((leaf-p node) (leaf-code node syms))
+          ((ntest-p node) (test-code node syms))
+          (t (error "BUG: Not a node: ~a" node)))))
+
+(defun test-code (node syms)
+  `(%speccase ,(pop syms)
+     (go ,*default-tag*)
+     ,@(loop for (next . specs) in (partition (ntest-paths node)
+                                              :key #'cdr :getter #'car)
+             collect `((,@specs) (go ,(node-tag next syms))))))
+
+(defun leaf-code (node syms)
+  (declare (ignore syms))
+  `(return-from ,*block-name*
+     ,(leaf-form node)))
+
+(defun node-tag (node syms)
+  (let ((existing (gethash node *codegen-map*)))
+    (car
+     (or existing
+         (setf (gethash node *codegen-map*)
+               (cons (gensym) (node-code node syms)))))))
+
+(defun acycle-code (acycle default syms)
+  (let ((*codegen-map* (make-hash-table))
+        (*block-name* (gensym "DISCRIMINATION"))
+        (*default-tag* (gensym "DEFAULT")))
+    `(core::local-block ,*block-name*
+       (core::local-tagbody
+          (go ,(node-tag acycle syms))
+          ,@(loop for (tag . code)
+                    being each hash-value of *codegen-map*
+                  collect tag
+                  collect code)
+          ,*default-tag*
+          (return-from ,*block-name*
+            ,(leaf-form default))))))
+
+(defmacro discriminate ((&rest forms) default &rest clauses)
+  (let* ((syms (loop for form in forms collecting (gensym "OBJECT")))
+         (slength (length forms))
+         (default-leaf (make-leaf default))
+         (clauses (loop for (key . body) in clauses
+                        for leaf = (make-leaf `(progn ,@body))
+                        nconcing (loop for spec-seq in key
+                                       collect (cons spec-seq leaf))))
+         (tree (basic-ntree clauses default-leaf slength))
+         (acycle (reduce-tree tree))
+         (body (acycle-code acycle default-leaf syms)))
+    `(let (,@(mapcar #'list syms forms))
+       ,body)))
+
+;;;
+
+(defun generate-discrimination (call-history specializer-profile
+                                required-params miss)
+  (let* ((part (partition call-history :key #'cdr :getter #'car
+                                       :test #'clos::outcome=))
+         (bname (gensym "DISCRIMINATION"))
+         (map (loop for (outcome) in part
+                    collect (cons outcome (gensym "OUTCOME"))))
+         (tbody (loop for (outcome . tag) in map
+                      collect tag
+                      collect `(return-from ,bname
+                                 ,(clos::generate-outcome
+                                   required-params outcome)))))
+    (flet ((collect-list (list)
+             (loop for e in list for s across specializer-profile
+                   when s collect e))
+           (collect-vec (vec)
+             (loop for e across vec for s across specializer-profile
+                   when s collect e))
+           (outcome-tag (outcome)
+             (or (cdr (assoc outcome map))
+                 (error "BUG: Inconsistent outcome map"))))
+      `(core::local-block ,bname
+         (core::local-tagbody
+            (discriminate (,@(collect-list required-params))
+                (return-from ,bname ,miss)
+              ,@(loop for (outcome . specseqs) in part
+                      ;; We can end up with duplicates due to
+                      ;; the specializer profile cutting things out,
+                      ;; but DISCRIMINATE will reject them.
+                      collect `((,@(remove-duplicates
+                                    (mapcar #'collect-vec specseqs)
+                                    :test #'equal))
+                                ,@(when *insert-debug-code*
+                                    `((format t "~&Chose ~a~%" ',specseqs)))
+                                (go ,(outcome-tag outcome)))))
+            ,@tbody)))))
+
+(defun outcome-requires-vaslist-p (outcome)
+  (cond ((clos::custom-outcome-p outcome)
+         (clos::custom-outcome-requires-vaslist-p outcome))
+        ((clos::effective-method-outcome-p outcome) t)
+        ((clos::outcome-p outcome) nil)
+        (t (error "BUG: Unknown outcome: ~a" outcome))))
+
+(defun call-history-requires-vaslist-p (call-history)
+  (loop for (ignore . outcome) in call-history
+        thereis (outcome-requires-vaslist-p outcome)))
+
+(defun generate-discriminator-from-data
+    (call-history specializer-profile generic-function-form nreq
+     &key extra-bindings generic-function-name
+       max-nargs (miss-operator 'clos::dispatch-miss))
+  (let ((need-vaslist-p (call-history-requires-vaslist-p call-history))
+        (required-args (loop repeat nreq
+                             collect (gensym "DISCRIMINATION-ARG"))))
+    `(lambda ,(if need-vaslist-p
+                  `(core:&va-rest .method-args.)
+                  required-args)
+       ,@(when generic-function-name
+           `((declare (core:lambda-name ,generic-function-name))))
+       ,@(when *insert-debug-code*
+           `((format t "~&Entering ~a~%" ',generic-function-name)))
+       (let ((.generic-function. ,generic-function-form))
+         ,(when need-vaslist-p
+            ;; Our discriminating function ll is just (&va-rest r), so we need
+            ;; to check argument counts. What we really need to check is the minimum,
+            ;; since vaslist-pop has undefined behavior if there's nothing to pop,
+            ;; but we ought to do both, really.
+            ;; FIXME: Should be possible to not check, on low safety.
+            ;; Remember that argument checking by methods is disabled (see method.lsp)
+            `(let ((nargs (core:vaslist-length .method-args.)))
+               ;; stupid tagbody to avoid redundant error signaling code
+               (core::local-tagbody
+                (if (cleavir-primop:fixnum-less nargs ,nreq)
+                    (go err))
+                ,@(when max-nargs
+                    `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
+                          (go err))))
+                (go done)
+                err
+                (error 'core:wrong-number-of-arguments
+                       :called-function .generic-function.
+                       :given-nargs nargs
+                       :min-nargs ,nreq :max-nargs ,max-nargs)
+                done)))
+         (let (,@extra-bindings
+               ,@(if need-vaslist-p
+                     (mapcar (lambda (req)
+                               `(,req (core:vaslist-pop .method-args.)))
+                             required-args)
+                     nil))
+           ,(generate-discrimination
+             call-history specializer-profile
+             required-args
+             `(progn
+                ,@(when *insert-debug-code*
+                    `((format t "~&Dispatch miss~%")))
+                ,(if need-vaslist-p
+                     `(progn
+                        (core:vaslist-rewind .method-args.)
+                        (apply #',miss-operator .generic-function. .method-args.))
+                     `(,miss-operator .generic-function. ,@required-args)))))))))
+
+(defun generate-discriminator (generic-function)
+  (multiple-value-bind (min max)
+      (clos::generic-function-min-max-args generic-function)
+    (generate-discriminator-from-data
+     (clos:generic-function-call-history generic-function)
+     (clos:generic-function-specializer-profile generic-function)
+     generic-function min
+     :max-nargs max
+     :generic-function-name (core:function-name generic-function))))

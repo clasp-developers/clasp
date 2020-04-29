@@ -669,17 +669,16 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun calculate-fastgf-dispatch-function (generic-function &key output-path)
   (if (generic-function-call-history generic-function)
+      #+(or)
       (let ((call-history (generic-function-call-history generic-function))
             (specializer-profile (generic-function-specializer-profile generic-function)))
-        (gf-log "calculate-fastgf-dispatch-function generic-function: %s (core:function-name generic-function) -> %s%N"
-                generic-function
-                (core:function-name generic-function))
         (codegen-dispatcher call-history
                             specializer-profile
                             generic-function
-                            :generic-function-name (core:function-name generic-function)
-                            #+debug-fastgf :log-gf
-                            #+debug-fastgf (debug-fastgf-stream))) ;; the stream better be initialized
+                            :generic-function-name (core:function-name generic-function)))
+      #-(or)
+      (cmp:bclasp-compile nil
+                          (generate-discriminator generic-function))
       (invalidated-discriminating-function-closure generic-function)))
 
 (defun force-dispatcher (generic-function)
