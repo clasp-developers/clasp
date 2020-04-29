@@ -200,6 +200,29 @@
          (invalid-slot-location instance location)))
   val)
 
+;;; On Clasp, funcallable instances and regular instances store
+;;; their slots identically, at the moment.
+(defun funcallable-standard-instance-access (instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-ref instance (the fixnum location)))
+        ((consp location)
+         ;; shared slot
+         (car location))
+        (t
+         (invalid-slot-location instance location))))
+
+(defun (setf funcallable-standard-instance-access) (val instance location)
+  (cond ((si:fixnump location)
+         ;; local slot
+         (si:instance-set instance (the fixnum location) val))
+        ((consp location)
+         ;; shared slot
+         (setf (car location) val))
+        (t
+         (invalid-slot-location instance location)))
+  val)
+
 (defun slot-value (self slot-name)
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
