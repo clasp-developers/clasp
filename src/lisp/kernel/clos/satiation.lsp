@@ -431,14 +431,6 @@
     (multiple-value-bind (min max)
         (generic-function-min-max-args generic-function)
       (let ((name (generic-function-name generic-function)))
-        #+(or)
-        (generate-dispatcher-from-dtree
-         (calculate-dtree call-history (generic-function-specializer-profile generic-function))
-         :nreq min :max-nargs max
-         :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
-         :generic-function-name name
-         :generic-function-form `(load-time-value (fdefinition ',name) t))
-        #-(or)
         (generate-discriminator-from-data
          call-history (generic-function-specializer-profile generic-function)
          `(load-time-value (fdefinition ',name) t) min

@@ -37,6 +37,9 @@
              specs seen-specs))
     specs))
 
+;;; NOTE: We could probably store the unreduced tree
+;;; instead of the call history.
+
 (defun basic-ntree (clauses default spec-length)
   (if (null clauses)
       default
@@ -194,10 +197,28 @@
     `(let ((,keyg ,form))
        (%fixnumcase ,keyg ,default ,@clauses))))
 
-(defun tag-test (class)
-  (fourth (find (core:class-stamp-for-instances class)
-                clos::*tag-tests*
-                :key #'second)))
+(defvar *tag-tests* (llvm-sys:tag-tests))
+
+(defun tag-spec-p (class) ; is CLASS one that's manifested as a tag test?
+  (member (core:class-stamp-for-instances class) *tag-tests* :key #'second))
+
+(defun tag-type (class)
+  ;; This is essentially just class-name, but avoiding the generic function call.
+  (case (first (find (core:class-stamp-for-instances class)  *tag-tests*
+                     :key #'second))
+    ((:fixnum-tag) 'fixnum)
+    ((:single-float-tag) 'single-float)
+    ((:character-tag) 'character)
+    ((:cons-tag) 'cons)
+    (t (error "BUG: Unknown tag class ~a" class))))
+
+;;; These are fake eql specializers used throughout fastgf so that the
+;;; eql specializer object can be read without a generic function call.
+;;; (Note that a user could technically subclass eql-specializer and
+;;;  get the slot a different location, so we can't just use a direct
+;;;  instance reference.)
+(defun fake-eql-specializer-p (spec) (consp spec))
+(defun fake-eql-specializer-object (spec) (car spec))
 
 ;;; This is kind of a shitheap, but then, so is the underlying operation.
 (defmacro %speccase (form default &rest clauses)
@@ -216,17 +237,17 @@
         do (loop for spec in specs
                  for pair = (cons spec tag)
                  do (cond #+(or)
-                          ((clos::eql-specializer-flag spec)
-                           (push (cons (clos::eql-specializer-object
-                                        spec)
+                          ((eql-specializer-flag spec)
+                           (push (cons (eql-specializer-object spec)
                                        tag)
                                  eql-specs))
                           ;; The fake eql specializers used by fastgf
                           #-(or)
-                          ((listp spec)
-                           (push (cons (first spec) tag) eql-specs))
-                          ((clos::tag-spec-p spec)
-                           (push (cons (tag-test spec) tag) tag-specs))
+                          ((fake-eql-specializer-p spec)
+                           (push (cons (fake-eql-specializer-object spec) tag)
+                                 eql-specs))
+                          ((tag-spec-p spec)
+                           (push (cons (tag-type spec) tag) tag-specs))
                           ((< (core:class-stamp-for-instances spec)
                               cmp:+c++-stamp-max+)
                            (push (cons (core:class-stamp-for-instances spec)
@@ -245,8 +266,9 @@
                                in (partition eql-specs :key #'cdr :getter #'car)
                              collect `((,@objects) (go ,tag)))
                      (otherwise
-                      (cond ,@(loop for (test . tag) in tag-specs
-                                    collect `((,test ,form) (go ,tag)))
+                      (cond ,@(loop for (type . tag) in tag-specs
+                                    collect `((cleavir-primop:typeq ,form ,type)
+                                              (go ,tag)))
                             ((cleavir-primop:typeq ,form core:general)
                              (let ((,stamp (core::header-stamp ,form)))
                                (let ((,stamp
@@ -347,17 +369,93 @@
 
 ;;;
 
+(defun generate-outcome (reqargs outcome)
+  (cond ((optimized-slot-reader-p outcome)
+         (generate-slot-reader reqargs outcome))
+        ((optimized-slot-writer-p outcome)
+         (generate-slot-writer reqargs outcome))
+        ((fast-method-call-p outcome)
+         (generate-fast-method-call reqargs outcome))
+        ((effective-method-outcome-p outcome)
+         (generate-effective-method-call outcome))
+        ((custom-outcome-p outcome)
+         (generate-custom reqargs outcome))
+        (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
+
+(defun class-cell-form (slot-name class)
+  `(load-time-value
+    (slot-definition-location
+     (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+         (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                ',slot-name ,class)))))
+
+(defun generate-slot-reader (arguments outcome)
+  (let* ((location (optimized-slot-reader-index outcome))
+         (slot-name (optimized-slot-reader-slot-name outcome))
+         (class (optimized-slot-reader-class outcome))
+         (valuef
+           (cond ((fixnump location)
+                  ;; instance location- easy
+                  `(core:instance-ref ,(first arguments) ',location))
+                 ((consp location)
+                  ;; class location. we need to find the new cell at load time.
+                  `(car ,(class-cell-form slot-name class)))
+                 (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+    `(let ((value ,valuef))
+       (if (cleavir-primop:eq value (core:unbound))
+           (slot-unbound ,class ,(first arguments) ',slot-name)
+           value))))
+
+(defun generate-slot-writer (arguments outcome)
+  (let ((location (optimized-slot-writer-index outcome)))
+    (cond ((fixnump location)
+           `(si:instance-set ,(second arguments) ,location ,(first arguments)))
+          ((consp location)
+           ;; class location
+           ;; Note we don't actually need the instance.
+           `(rplaca ,(class-cell-form (optimized-slot-reader-slot-name outcome)
+                                      (optimized-slot-reader-class outcome))
+                    ,(first arguments)))
+          (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+
+(defun generate-fast-method-call (arguments outcome)
+  (let ((fmf (fast-method-call-function outcome)))
+    `(cleavir-primop:funcall ,fmf ,@arguments)))
+
+(defun generate-effective-method-call (outcome)
+  `(progn
+     (core:vaslist-rewind .method-args.)
+     ;; if a form was provided, just throw it in.
+     ;; Otherwise generate a function call.
+     ;; NOTE: We use NIL to mean "no form provided".
+     ;; Hypothetically the form could actually BE nil,
+     ;; but I'm not holding my breath here- the backup is probably fine.
+     ,(cond ((effective-method-outcome-form outcome))
+            ((effective-method-outcome-function outcome)
+             `(cleavir-primop:funcall
+               ,(effective-method-outcome-function outcome) .method-args. nil))
+            (t (error "BUG: Outcome ~a is messed up" outcome)))))
+
+(defun generate-custom (reqargs outcome)
+  `(progn
+     ,@(when (custom-outcome-requires-vaslist-p outcome)
+         '((core:vaslist-rewind .method-args.)))
+     ,(funcall (custom-outcome-generator outcome)
+               reqargs (custom-outcome-data outcome))))
+
+;;;
+
 (defun generate-discrimination (call-history specializer-profile
                                 required-params miss)
   (let* ((part (partition call-history :key #'cdr :getter #'car
-                                       :test #'clos::outcome=))
+                                       :test #'outcome=))
          (bname (gensym "DISCRIMINATION"))
          (map (loop for (outcome) in part
                     collect (cons outcome (gensym "OUTCOME"))))
          (tbody (loop for (outcome . tag) in map
                       collect tag
                       collect `(return-from ,bname
-                                 ,(clos::generate-outcome
+                                 ,(generate-outcome
                                    required-params outcome)))))
     (flet ((collect-list (list)
              (loop for e in list for s across specializer-profile
@@ -385,10 +483,10 @@
             ,@tbody)))))
 
 (defun outcome-requires-vaslist-p (outcome)
-  (cond ((clos::custom-outcome-p outcome)
-         (clos::custom-outcome-requires-vaslist-p outcome))
-        ((clos::effective-method-outcome-p outcome) t)
-        ((clos::outcome-p outcome) nil)
+  (cond ((custom-outcome-p outcome)
+         (custom-outcome-requires-vaslist-p outcome))
+        ((effective-method-outcome-p outcome) t)
+        ((outcome-p outcome) nil)
         (t (error "BUG: Unknown outcome: ~a" outcome))))
 
 (defun call-history-requires-vaslist-p (call-history)
@@ -398,7 +496,7 @@
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq
      &key extra-bindings generic-function-name
-       max-nargs (miss-operator 'clos::dispatch-miss))
+       max-nargs (miss-operator 'dispatch-miss))
   (let ((need-vaslist-p (call-history-requires-vaslist-p call-history))
         (required-args (loop repeat nreq
                              collect (gensym "DISCRIMINATION-ARG"))))
@@ -452,10 +550,10 @@
 
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)
-      (clos::generic-function-min-max-args generic-function)
+      (generic-function-min-max-args generic-function)
     (generate-discriminator-from-data
-     (clos:generic-function-call-history generic-function)
-     (clos:generic-function-specializer-profile generic-function)
+     (generic-function-call-history generic-function)
+     (generic-function-specializer-profile generic-function)
      generic-function min
      :max-nargs max
      :generic-function-name (core:function-name generic-function))))

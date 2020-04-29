@@ -667,18 +667,19 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
          for specializers = (method-specializers method)
          do (update-specializer-profile generic-function specializers)))))
 
-(defun calculate-fastgf-dispatch-function (generic-function &key output-path)
+(defvar *fastgf-use-compiler* nil)
+(defun calculate-fastgf-dispatch-function (generic-function)
   (if (generic-function-call-history generic-function)
-      #+(or)
-      (let ((call-history (generic-function-call-history generic-function))
-            (specializer-profile (generic-function-specializer-profile generic-function)))
-        (codegen-dispatcher call-history
-                            specializer-profile
-                            generic-function
-                            :generic-function-name (core:function-name generic-function)))
-      #-(or)
-      (cmp:bclasp-compile nil
-                          (generate-discriminator generic-function))
+      (let ((timer-start (get-internal-real-time)))
+        (unwind-protect
+             (if *fastgf-use-compiler*
+                 (cmp:bclasp-compile
+                  nil (generate-discriminator generic-function))
+                 (interpreted-discriminator generic-function))
+          (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
+                                  internal-time-units-per-second)))
+            (generic-function-increment-compilations generic-function)
+            (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds))))
       (invalidated-discriminating-function-closure generic-function)))
 
 (defun force-dispatcher (generic-function)
@@ -828,9 +829,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                      (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
                                  (incf-debug-fastgf-didx))
                  (if edited-call-history
-                     (let* ((specializer-profile (generic-function-specializer-profile gf))
-                            (discriminating-function (codegen-dispatcher edited-call-history specializer-profile gf :output-path log-output)))
-                       (set-funcallable-instance-function gf discriminating-function))
+                     (force-dispatcher gf)
                      (invalidate-discriminating-function gf)))))))
 
 ;;; This is called by the dtree interpreter when it doesn't get enough arguments,
