@@ -107,7 +107,8 @@
   (cond ((method-p method) (method-function method))
         ((make-method-form-p method)
          `(lambda (.method-args. .next-methods.)
-            (declare (ignore .next-methods.))
+            (declare (ignore .next-methods.)
+                     (core:lambda-name call-method-aux.lambda))
             ,(second method)))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
