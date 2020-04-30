@@ -5,7 +5,7 @@
       form ; error, leave it to runtime
       (let* ((fixed (butlast arguments))
              (last (first (last arguments)))
-             (fsym (gensym "FUNCTION-DESIGNATOR"))
+             (fsym (gensym "FUNCTION"))
              (syms (gensym-list fixed))
              (op (case (length fixed)
                    ((0) 'core:apply0)
@@ -15,8 +15,9 @@
                    (otherwise 'core:apply4))))
         ;; The LET is so that we evaluate the arguments to APPLY
         ;; in the correct order.
-        `(let ((,fsym ,function) ,@(mapcar #'list syms fixed))
-           (,op (core:coerce-fdesignator ,fsym) ,last ,@syms)))))
+        `(let ((,fsym (core:coerce-fdesignator ,function))
+               ,@(mapcar #'list syms fixed))
+           (,op ,fsym ,last ,@syms)))))
 
 (define-compiler-macro eql (&whole form x y &environment env)
   (if (constantp x env)
