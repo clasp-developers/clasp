@@ -150,8 +150,9 @@
 ;;; The complicated stuff is in the :load-toplevel.
 ;;; TODO: Figure out precompiled discriminating functions too.
 ;;; Main problem there is making sure the stamps are the same at compile and load.
-(eval-when (:execute)
+(eval-when (:execute #-(or) :load-toplevel)
   (satiate-minimal-generic-functions))
+#+(or)
 (eval-when (:load-toplevel)
   (macrolet ((find-method (&rest args)
                `(early-find-method ,@args)))

@@ -114,13 +114,15 @@
 
 (defmacro call-method (method &optional rest-methods)
   (cond ((method-p method)
-         `(funcall ,(method-function method)
-                   .method-args. ; will be bound in context
-                   ,(if (or (leaf-method-p method) (null rest-methods))
-                        nil
-                        `(load-time-value
-                          (list ,@(mapcar #'call-method-aux rest-methods))
-                          t))))
+         (let ((fmf (fast-method-function method)))
+           `(apply ,fmf .method-args.)
+           `(funcall ,(method-function method)
+                     .method-args. ; will be bound in context
+                     ,(if (or (leaf-method-p method) (null rest-methods))
+                          nil
+                          `(load-time-value
+                            (list ,@(mapcar #'call-method-aux rest-methods))
+                            t)))))
         ((make-method-form-p method) (second method))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 

@@ -326,6 +326,7 @@
                   (make-optimized-slot-writer :index (slot-definition-location slotd)
                                               :slot-name (slot-definition-name slotd)
                                               :method method :class class))
+                 #+(or)
                  (fmf
                   (gf-log "Using fast method %s function as emf%N" method)
                   (make-fast-method-call :function fmf))
@@ -334,10 +335,11 @@
                                            methods))
                   (gf-log "Using existing effective method function%N")
                   existing-emf)
+                 #+(or)
                  (leafp
                   (gf-log "Using method %s function as emf%N" method)
                   (make-effective-method-outcome
-                   :applicable-methods methods ;:form em
+                   :applicable-methods methods :form em
                    :function (method-function method)))
                  ;; NOTE: This case is not required if we always use :form and don't use the
                  ;; interpreter. See also, comment in combin.lsp.
@@ -355,7 +357,7 @@
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome
-                   :applicable-methods methods ;:form em
+                   :applicable-methods methods :form em
                    :function (effective-method-function em))))))
     #+debug-fastgf
     (when log
@@ -657,7 +659,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
-(defvar *fastgf-use-compiler* nil)
+(defvar *fastgf-use-compiler* t)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))
