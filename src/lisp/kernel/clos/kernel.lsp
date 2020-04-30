@@ -295,33 +295,27 @@
   (with-early-accessors (+standard-generic-function-slots+
 			 +eql-specializer-slots+
 			 +standard-method-slots+)
-    (flet ((nupdate-spec-how-list (spec-how-list specializers gf)
-	     ;; update the spec-how of the gfun 
-	     ;; computing the or of the previous value and the new one
-	     (setf spec-how-list (or spec-how-list
-				     (copy-list specializers)))
-	     (do* ((l specializers (cdr l))
-		   (l2 spec-how-list (cdr l2))
-		   (spec-how)
-		   (spec-how-old))
-		  ((null l))
-	       (setq spec-how (first l) spec-how-old (first l2))
-	       (setf (first l2)
-		     (if (eql-specializer-flag spec-how)
-			 (list* (eql-specializer-object spec-how)
-				(and (consp spec-how-old) spec-how-old))
-			 (if (consp spec-how-old)
-			     spec-how-old
-			     spec-how))))
-	     spec-how-list))
-      (let* ((spec-how-list nil))
-	(dolist (method (generic-function-methods gf))
-	  (setf spec-how-list
-		(nupdate-spec-how-list spec-how-list (method-specializers method) gf)))
-	(setf (generic-function-spec-list gf)
-	      (loop for type in spec-how-list
-		 for i from 0
-		 when type collect (cons type i)))))))
+    (setf (generic-function-spec-list gf)
+          (let ((spec-list nil))
+            (dolist (method (generic-function-methods gf))
+              (let ((specializers (method-specializers method)))
+                (when (null spec-list)
+                  (setf spec-list
+                        (make-list (length specializers))))
+                (loop for spec in specializers
+                      for sub on spec-list
+                      do (setf (car sub)
+                               (cond ((eql-specializer-flag spec)
+                                      (let ((o (eql-specializer-object spec)))
+                                        ;; Add to existing list of eql spec
+                                        ;; objects, or make a new one.
+                                        (if (consp (car sub))
+                                            (cons o (car sub))
+                                            (list o))))
+                                     ((eq spec (find-class 't))
+                                      (or (car sub) nil))
+                                     (t t))))))
+            spec-list))))
 
 (defun compute-a-p-o-function (gf)
   (with-early-accessors (+standard-generic-function-slots+)

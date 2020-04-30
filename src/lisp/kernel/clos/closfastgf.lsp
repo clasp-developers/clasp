@@ -514,9 +514,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   ;; Make sure that any argument in a position with eql-specializers is an eql specializer object.
   ;; If they all are, return a memoization key. If not, NIL.
   ;; See comment in do-dispatch-miss for rationale.
-  (loop for (spec . ignore) in spec-list
+  (loop for spec in spec-list
         for arg in arguments
-        collect (if (listp spec)
+        collect (if (consp spec) ; this parameter is eql-specialized by some method.
                     (if (member arg spec)
                         (list arg) ; list means eql specializer object.
                         (return-from all-eql-specialized-p nil))
