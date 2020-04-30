@@ -288,11 +288,6 @@ T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_
   return exchanged ? new_value : expected;
 }
 
-T_sp FuncallableInstance_O::GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value) {
-  bool exchanged = this->_SpecializerProfile.compare_exchange_strong(expected,new_value);
-  return exchanged ? new_value : expected;
-}
-
 CL_DEFUN void clos__generic_function_increment_compilations(FuncallableInstance_sp gf) {
   gf->increment_compilations();
 }
@@ -303,14 +298,6 @@ CL_DEFUN size_t clos__generic_function_compilations(FuncallableInstance_sp gf) {
 
 CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
   return gf->interpreted_calls();
-}
-
-CL_DEFUN T_sp clos__generic_function_specializer_profile(FuncallableInstance_sp gf) {
-  return gf->GFUN_SPECIALIZER_PROFILE();
-}
-
-CL_DEFUN T_sp clos__generic_function_specializer_profile_compare_exchange(FuncallableInstance_sp gf, T_sp expected, T_sp new_value) {
-  return gf->GFUN_SPECIALIZER_PROFILE_compare_exchange(expected,new_value);
 }
 
 CL_DEFUN T_sp clos__generic_function_call_history(FuncallableInstance_sp obj) {

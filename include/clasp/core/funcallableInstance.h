@@ -61,7 +61,6 @@ namespace core {
       , _Sig(_Nil<T_O>())
       , _FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
-      , _SpecializerProfile(_Nil<T_O>())
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
@@ -70,7 +69,6 @@ namespace core {
       ,_Sig(_Unbound<T_O>())
       ,_FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
-      ,_SpecializerProfile(_Nil<T_O>())
 //      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
       , _CompiledDispatchFunction(_Nil<T_O>())
     {};
@@ -87,12 +85,9 @@ namespace core {
     std::atomic<size_t>        _Compilations;
     std::atomic<size_t>        _InterpretedCalls;
     gc::atomic_wrapper<T_sp>   _CallHistory;
-    gc::atomic_wrapper<T_sp>   _SpecializerProfile;
 //    T_sp   _Lock;
     gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
   public:
-    T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile.load(); };
-    T_sp GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value);
     T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
     T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);
 
