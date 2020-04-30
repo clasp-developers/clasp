@@ -11,7 +11,6 @@
   index slot-name method class)
 (defstruct (optimized-slot-writer (:type vector) (:include outcome) :named)
   index slot-name method class)
-(defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
 ;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
   applicable-methods (form nil) (function nil))
@@ -32,8 +31,4 @@
                   (fixnump (optimized-slot-writer-index outcome2))
                   (= (optimized-slot-writer-index outcome1)
                      (optimized-slot-writer-index outcome2))))
-            ((fast-method-call-p outcome1)
-             (and (fast-method-call-p outcome2)
-                  (eq (fast-method-call-function outcome1)
-                      (fast-method-call-function outcome2))))
             (t nil))))

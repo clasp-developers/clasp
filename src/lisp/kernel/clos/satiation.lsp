@@ -100,15 +100,21 @@
                                            :method first
                                            :class class)))
             ((leaf-method-p first)
-             (if (fast-method-function first)
-                 (make-fast-method-call :function (fast-method-function first))
-                 (method-function first)))
+             (make-effective-method-outcome
+              :function (or (fast-method-function first)
+                            (emf-from-mfs (method-function first)))
+              :form `(call-method ,first ())
+              :applicable-methods methods))
             (t ; general effective method function
-             (combine-method-functions
-              (method-function first)
-              ;; with-early-accessors does macrolet, hence this awkwardness.
-              (mapcar (lambda (method) (method-function method))
-                      (rest methods))))))))
+             (let (;; with-early-accessors does macrolet, hence this awkwardness.
+                   (next-method-functions
+                     (mapcar (lambda (method) (method-function method))
+                             (rest methods)))
+                   (first-mf (method-function first)))
+               (make-effective-method-outcome
+                :function (emf-from-mfs first-mf next-method-functions)
+                :form `(call-method ,first (,@(rest methods)))
+                :applicable-methods methods)))))))
 
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
@@ -117,8 +123,16 @@
             (loop for specific-specializers in lists-of-specializers
                   for methods = (std-compute-applicable-methods-using-classes
                                  generic-function specific-specializers)
-                  ;; Everything should use standard method combination during satiation.
-                  for outcome = (early-compute-outcome methods specific-specializers)
+                  ;; Simple cache to avoid duplicate outcomes.
+                  for cached-outcome
+                    = (cdr (assoc methods outcome-cache :test #'equal))
+                  ;; Everything in early satiation uses standard method combination.
+                  for outcome = (or cached-outcome
+                                    (early-compute-outcome
+                                     methods specific-specializers))
+                  unless cached-outcome
+                    collect (cons methods outcome)
+                      into outcome-cache
                   collect (cons (coerce specific-specializers 'vector) outcome))))
       (append-generic-function-call-history generic-function new-entries))))
 

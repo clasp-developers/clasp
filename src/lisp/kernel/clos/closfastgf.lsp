@@ -288,15 +288,12 @@
       (make-effective-method-outcome
        :applicable-methods nil
        ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
-       :function (lambda (vaslist-args ignore)
-                   (declare (ignore ignore))
+       :function (lambda (core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))
          (method (and (consp em)
                       (eq (first em) 'call-method)
                       (second em)))
-         (leafp (when method (leaf-method-p method)))
-         (fmf (when leafp (fast-method-function method)))
          ;; In the future, we could use load-time-value instead of find-class every time,
          ;; but the system loading architecture makes this dicey at the moment.
          (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
@@ -326,21 +323,11 @@
                   (make-optimized-slot-writer :index (slot-definition-location slotd)
                                               :slot-name (slot-definition-name slotd)
                                               :method method :class class))
-                 #+(or)
-                 (fmf
-                  (gf-log "Using fast method %s function as emf%N" method)
-                  (make-fast-method-call :function fmf))
                  ((setf existing-emf
                         (find-existing-emf (generic-function-call-history generic-function)
                                            methods))
                   (gf-log "Using existing effective method function%N")
                   existing-emf)
-                 #+(or)
-                 (leafp
-                  (gf-log "Using method %s function as emf%N" method)
-                  (make-effective-method-outcome
-                   :applicable-methods methods :form em
-                   :function (method-function method)))
                  ;; NOTE: This case is not required if we always use :form and don't use the
                  ;; interpreter. See also, comment in combin.lsp.
                  ((and (consp em) (eq (first em) '%magic-no-required-method))
@@ -349,9 +336,9 @@
                   (let ((group-name (second em)))
                     (make-effective-method-outcome
                      :applicable-methods methods :form em
-                     :function (lambda (vaslist-args ignore)
-                                 (declare (ignore ignore))
-                                 (apply #'no-required-method generic-function group-name vaslist-args)))))
+                     :function (lambda (core:&va-rest vaslist-args)
+                                 (apply #'no-required-method
+                                        generic-function group-name vaslist-args)))))
                  (t
                   (gf-log "Using default effective method function%N")
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
@@ -512,12 +499,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      ;; Call is like ((setf name) new-value instance)
      (setf (standard-instance-access (second arguments) (optimized-slot-writer-index outcome))
            (first arguments)))
-    ((fast-method-call-p outcome)
-     (apply (fast-method-call-function outcome) arguments))
-    ;; Effective method functions take the same arguments as method functions - vasargs and next-methods
-    ;; for now, at least. Obviously they don't actually need the next-methods.
     ((effective-method-outcome-p outcome)
-     (funcall (effective-method-outcome-function outcome) vaslist-arguments nil))
+     (apply (effective-method-outcome-function outcome) vaslist-arguments))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
@@ -659,7 +642,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
-(defvar *fastgf-use-compiler* t)
+(defvar *fastgf-use-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))

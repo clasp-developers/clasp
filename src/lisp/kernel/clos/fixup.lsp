@@ -69,11 +69,11 @@
     (let ((*early-methods* nil))
       (add-method f method))
     ;; Put in a call history to speed things up a little.
-    (loop ;; either a fast method function, or just the method function.
-          with outcome = (if fmfp
-                             (make-fast-method-call :function function)
-                             (make-effective-method-outcome
-                              :applicable-methods (list method) :function mf))
+    (loop with outcome = (make-effective-method-outcome
+                          :applicable-methods (list method)
+                          :form `(call-method ,method)
+                          ;; Is a valid EMF.
+                          :function function)
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
@@ -414,6 +414,7 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore class direct-slot initargs))
   (find-class 'standard-writer-method))
 
+#+(or)
 (eval-when (:load-toplevel)
   (%satiate reader-method-class (standard-class standard-direct-slot-definition)
             (funcallable-standard-class standard-direct-slot-definition))
@@ -504,6 +505,7 @@ and cannot be added to ~A." method other-gf gf)))
     (funcall function d)))
 
 ;; FIXME: dependence on core:closure-with-slots is not super
+#+(or)
 (%satiate map-dependents (standard-generic-function core:closure-with-slots)
           (standard-class core:closure-with-slots))
 

@@ -23,29 +23,36 @@
                    (:constructor make-leaf (form)))
     (form nil :read-only t)))
 
-(defun check-clause (clause spec-length seen-specs)
+;;; Passed from above through symbol-macrolet so that I can
+;;; survive the debugging process.
+(define-symbol-macro +gf-being-compiled+ nil)
+(defun gf-being-compiled (&optional env)
+  (values (macroexpand-1 '+gf-being-compiled+ env)))
+
+(defun check-clause (clause spec-length seen-specs &optional name)
   (unless (and (consp clause)
                (typep (car clause) 'sequence)
                (leaf-p (cdr clause)))
-    (error "Bad syntax for clause ~a" clause))
+    (error "Bad syntax for clause ~a~@[ while compiling ~a~]"
+           clause name))
   (let ((specs (car clause)))
     (unless (= (length specs) spec-length)
-      (error "Mismatch in length of specializers ~a"
-             specs))
+      (error "Mismatch in length of specializers ~a~@[ while compiling ~a~]"
+             specs name))
     (when (find specs seen-specs :test #'equal)
-      (error "Duplicate specializer sequence ~a in ~a"
-             specs seen-specs))
+      (error "Duplicate specializer sequence ~a in ~a~@[ while compiling ~a~]"
+             specs seen-specs name))
     specs))
 
 ;;; NOTE: We could probably store the unreduced tree
 ;;; instead of the call history.
 
-(defun basic-ntree (clauses default spec-length)
+(defun basic-ntree (clauses default spec-length &optional name)
   (if (null clauses)
       default
       ;; Verify things are hunky dory, then pass to %basic-tree.
       (loop for clause in clauses
-            collect (check-clause clause spec-length seen-specs)
+            collect (check-clause clause spec-length seen-specs name)
               into seen-specs
             finally (return (%basic-tree clauses spec-length)))))
 
@@ -353,7 +360,8 @@
           (return-from ,*block-name*
             ,(leaf-form default))))))
 
-(defmacro discriminate ((&rest forms) default &rest clauses)
+(defmacro discriminate ((&rest forms) default &rest clauses
+                        &environment env)
   (let* ((syms (loop for form in forms collecting (gensym "OBJECT")))
          (slength (length forms))
          (default-leaf (make-leaf default))
@@ -361,7 +369,8 @@
                         for leaf = (make-leaf `(progn ,@body))
                         nconcing (loop for spec-seq in key
                                        collect (cons spec-seq leaf))))
-         (tree (basic-ntree clauses default-leaf slength))
+         (maybe-gf-name (gf-being-compiled env))
+         (tree (basic-ntree clauses default-leaf slength maybe-gf-name))
          (acycle (reduce-tree tree))
          (body (acycle-code acycle default-leaf syms)))
     `(let (,@(mapcar #'list syms forms))
@@ -374,8 +383,6 @@
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
          (generate-slot-writer reqargs outcome))
-        ((fast-method-call-p outcome)
-         (generate-fast-method-call reqargs outcome))
         ((effective-method-outcome-p outcome)
          (generate-effective-method-call outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
@@ -416,10 +423,6 @@
                     ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
-(defun generate-fast-method-call (arguments outcome)
-  (let ((fmf (fast-method-call-function outcome)))
-    `(cleavir-primop:funcall ,fmf ,@arguments)))
-
 (defun generate-effective-method-call (outcome)
   `(progn
      (core:vaslist-rewind .method-args.)
@@ -430,8 +433,8 @@
      ;; but I'm not holding my breath here- the backup is probably fine.
      ,(cond ((effective-method-outcome-form outcome))
             ((effective-method-outcome-function outcome)
-             `(cleavir-primop:funcall
-               ,(effective-method-outcome-function outcome) .method-args. nil))
+             `(apply
+               ,(effective-method-outcome-function outcome) .method-args.))
             (t (error "BUG: Outcome ~a is messed up" outcome)))))
 
 ;;;
@@ -507,7 +510,8 @@
        ,@(when *insert-debug-code*
            `((format t "~&Entering ~a~%" ',generic-function-name)))
        (symbol-macrolet ((+discriminator-required-arguments+
-                           (,@required-args)))
+                           (,@required-args))
+                         (+gf-being-compiled+ ,generic-function-name))
          (let ((.generic-function. ,generic-function-form))
            ,(when need-vaslist-p
               ;; Our discriminating function ll is just (&va-rest r), so we need
