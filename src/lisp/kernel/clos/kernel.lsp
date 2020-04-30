@@ -91,9 +91,8 @@
       ;; create a fake standard-generic-function object:
       (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
-	      :spec-list nil
-	      :method-combination (find-method-combination nil 'standard nil)
 	      :lambda-list lambda-list
+              :method-combination nil
 	      :argument-precedence-order
 	      (and l-l-p (rest (si::process-lambda-list lambda-list t)))
 	      :method-class (find-class 'standard-method)
@@ -102,8 +101,9 @@
 	      :a-p-o-function nil
 	      :declarations nil
 	      :dependents nil)
-	;; create a new gfun
         (setf-function-name gfun name)
+        (setf (generic-function-method-combination gfun)
+              (find-method-combination gfun 'standard nil))
         (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
@@ -291,9 +291,35 @@
 	    ;; This will force an error in the caller
 	    (t nil)))))
 
+;;; mutates the spec-vec to account for new specializers.
+(defun update-spec-vec (spec-vec specializers)
+  (with-early-accessors (+eql-specializer-slots+)
+    (loop for spec in specializers
+          for i from 0
+          for e = (svref spec-vec i)
+          do (setf (svref spec-vec i)
+                   (cond ((eql-specializer-flag spec)
+                          (let ((o (eql-specializer-object spec)))
+                            ;; Add to existing list of eql spec
+                            ;; objects, or make a new one.
+                            (if (consp e)
+                                (cons o e)
+                                (list o))))
+                         ((eql spec +the-t-class+) (or e nil))
+                         (t t)))))
+  spec-vec)
+
+;;; Add one method to the spec vec.
+(defun update-gf-spec-vec (gf specializers)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (let* ((sv (generic-function-spec-vec gf))
+           (to-update (or sv (make-array (length specializers)
+                                         :initial-element nil))))
+      (update-spec-vec to-update specializers))))
+
+;;; Recompute the spec vec entirely; needed if a method has been removed.
 (defun compute-g-f-spec-vec (gf)
   (with-early-accessors (+standard-generic-function-slots+
-			 +eql-specializer-slots+
 			 +standard-method-slots+)
     (setf (generic-function-spec-vec gf)
           (let ((spec-vec nil))
@@ -302,20 +328,7 @@
                 (when (null spec-vec)
                   (setf spec-vec
                         (make-array (length specializers))))
-                (loop for spec in specializers
-                      for i from 0
-                      for e = (aref spec-vec i)
-                      do (setf (aref spec-vec i)
-                               (cond ((eql-specializer-flag spec)
-                                      (let ((o (eql-specializer-object spec)))
-                                        ;; Add to existing list of eql spec
-                                        ;; objects, or make a new one.
-                                        (if (consp e)
-                                            (cons o e)
-                                            (list o))))
-                                     ((eq spec (find-class 't))
-                                      (or e nil))
-                                     (t t))))))
+                (update-spec-vec spec-vec specializers)))
             spec-vec))))
 
 (defun compute-a-p-o-function (gf)

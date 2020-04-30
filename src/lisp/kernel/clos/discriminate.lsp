@@ -537,12 +537,16 @@
                         (apply #',miss-operator .generic-function. .method-args.))
                      `(,miss-operator .generic-function. ,@required-args)))))))))
 
+(defun safe-gf-spec-vec (gf)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (generic-function-spec-vec gf)))
+
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)
       (generic-function-min-max-args generic-function)
     (generate-discriminator-from-data
      (generic-function-call-history generic-function)
-     (generic-function-specializer-profile generic-function)
+     (safe-gf-spec-vec generic-function)
      generic-function min
      :max-nargs max
      :generic-function-name (core:function-name generic-function))))

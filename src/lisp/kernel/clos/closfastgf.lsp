@@ -457,7 +457,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     (gf-log "Specializers key: %s%N" memoized-key)
     (gf-log "The specializer-profile: %s%N"
             (generic-function-specializer-profile generic-function))
-    (let ((specializer-profile (generic-function-specializer-profile generic-function)))
+    (let ((specializer-profile (safe-gf-spec-vec generic-function)))
       (unless (= (length memoized-key) (length specializer-profile))
         (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
                memoized-key specializer-profile generic-function))
@@ -560,7 +560,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                 nil)
                (ok ; classes are fine; use normal fastgf
                 (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
-                (let ((key-length (length (generic-function-specializer-profile generic-function))))
+                (let ((key-length (length (safe-gf-spec-vec generic-function))))
                   (cons (coerce (subseq argument-classes 0 key-length) 'simple-vector)
                         outcome)))
                ((eq (class-of generic-function) (find-class 'standard-generic-function))
@@ -584,9 +584,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                         (all-eql-specialized-p (generic-function-spec-vec generic-function)
                                                arguments)))
                   (cond (maybe-memo-key
-                         (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
-                         (unless (= (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)))
-                           (error "In do-dispatch-miss mismatch between (length maybe-memo-key) -> ~a and (length (generic-function-specializer-profile generic-function)) -> ~a for ~a" (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)) generic-function))
+                         (gf-log-dispatch-miss "Memoizing eql-specialized call"
+                                               generic-function vaslist-arguments)
                          (cons maybe-memo-key outcome))
                         (t
                          (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
@@ -647,44 +646,6 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 ;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
-
-;;; change-class requires removing call-history entries involving the class
-;;; and invalidating the generic functions
-(defun update-specializer-profile (generic-function specializers)
-  (if (vectorp (generic-function-specializer-profile generic-function))
-      (loop for vec = (generic-function-specializer-profile generic-function)
-            for new-vec = (let ((new-vec (copy-seq vec)))
-                            (loop for i from 0
-                                  for spec in specializers
-                                  for specialized = (not (eq spec clos:+the-t-class+))
-                                  when specialized
-                                    do (setf (elt new-vec i) t))
-                            new-vec)
-            for exchanged = (generic-function-specializer-profile-compare-exchange generic-function vec new-vec)
-            until (eq exchanged new-vec))
-      (warn "update-specializer-profile - Generic function ~a does not have a specializer-profile defined at this point" generic-function)))
-
-(defun compute-and-set-specializer-profile (generic-function)
-  ;; The profile is a simple vector with as many elements as the gf has
-  ;; required arguments. Each element is true iff the corresponding
-  ;; argument is specialized on (i.e., not T).
-  (gf-log "compute-and-set-specializer-profile%N")
-  ;; If the specializer profile doesn't yet exist, initialize it with a default
-  ;; (all NILs)
-  (unless (vectorp (generic-function-specializer-profile generic-function))
-    (gf-log "compute-and-set-specializer-profile2%N")
-    (initialize-generic-function-specializer-profile generic-function))
-  (gf-log "compute-and-set-specializer-profile1%N")
-  ;; Now do the actual computation.
-  (let ((vec (make-array (length (generic-function-specializer-profile generic-function))
-                         :initial-element nil))
-        (methods (clos:generic-function-methods generic-function)))
-    (gf-log "compute-and-set-specializer-profile1.5%N")
-    (force-generic-function-specializer-profile generic-function vec)
-    (when methods
-      (loop for method in methods
-         for specializers = (method-specializers method)
-         do (update-specializer-profile generic-function specializers)))))
 
 (defvar *fastgf-use-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)

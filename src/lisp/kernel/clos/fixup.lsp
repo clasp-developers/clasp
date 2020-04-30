@@ -136,8 +136,7 @@
 ;;; before calling add-direct-method below
 
 (dolist (method-info *early-methods*)
-  (setup-specializer-profile
-   (fdefinition (car method-info))))
+  (compute-g-f-spec-vec (fdefinition (car method-info))))
 
 (mlog "About to satiate%N")
 
@@ -335,24 +334,16 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  ii) Updating the specializers list of the generic function. Notice that
   ;;  we should call add-direct-method for each specializer but specializer
   ;;  objects are not yet implemented
-  #+(or)
-  (dolist (spec (method-specializers method))
-    (add-direct-method spec method))
+  (register-method-with-specializers method)
   ;;  iii) Computing a new discriminating function... Well, since the core
   ;;  ECL does not need the discriminating function because we always use
   ;;  the same one, we just update the spec-how list of the generic function.
-  (compute-g-f-spec-vec gf)
+  (update-gf-spec-vec gf (method-specializers method))
   (compute-a-p-o-function gf)
-  ;; Clasp must update the specializer-profile
-  #+clasp
-  (progn
-    (update-specializer-profile gf (method-specializers method))
-    (update-generic-function-call-history-for-add-method gf method))
+  (update-generic-function-call-history-for-add-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
-  ;;  v) Register with specializers
-  (register-method-with-specializers method)
   gf)
 
 (defun remove-method (gf method)
@@ -363,10 +354,7 @@ and cannot be added to ~A." method other-gf gf)))
      do (remove-direct-method spec method))
   (compute-g-f-spec-vec gf)
   (compute-a-p-o-function gf)
-  #+clasp
-  (progn
-    (compute-and-set-specializer-profile gf)
-    (update-generic-function-call-history-for-remove-method gf method))
+  (update-generic-function-call-history-for-remove-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)

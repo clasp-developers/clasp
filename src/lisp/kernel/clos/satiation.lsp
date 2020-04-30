@@ -199,40 +199,6 @@
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))))
 
-;;; This function sets up an initial specializer profile for a gf that doesn't have one.
-;;; It can only not have one if it was defined unnaturally, i.e. during boot.
-;;; We have to call this on all generic functions so defined, so more than the ones that
-;;; we satiate.
-;;; Furthermore, we have to do so before any generic functions are called. That's why
-;;; we use this separate function rather than compute-and-set-specializer-profile.
-;;; FIXME: Since this is only called during boot, we probably only need one compare-exchange.
-(defun setup-specializer-profile (proto-gf)
-  ;; proto-gf in that it's unnaturally defined. it's still a standard-generic-function object.
-  (with-early-accessors (+standard-generic-function-slots+
-                         +standard-method-slots+)
-    (unless (slot-boundp proto-gf 'lambda-list)
-      (error "In setup-specializer-profile - ~s has no lambda list!"
-             (core:low-level-standard-generic-function-name proto-gf)))
-    (let* ((ll (generic-function-lambda-list proto-gf))
-           ;; FIXME: l-l-r-a is defined in generic.lsp, which is after this, so we get a style warning.
-           ;; (this function is not actually called until fixup)
-           (new-profile (make-array (length (lambda-list-required-arguments ll))
-                                    :initial-element nil)))
-      (loop for old-profile = (generic-function-specializer-profile proto-gf)
-            for exchange = (generic-function-specializer-profile-compare-exchange proto-gf old-profile new-profile)
-            until (eq exchange new-profile)))
-    (let ((methods (generic-function-methods proto-gf)))
-      (if methods
-          (loop for method in methods
-                for specializers = (method-specializers method)
-                ;; in closfastgf. we rely on this function not calling gfs.
-                do (update-specializer-profile proto-gf specializers))
-          (error "In setup-specializer-profile - ~s has no methods!"
-                 (core:low-level-standard-generic-function-name proto-gf))))
-    (gf-log "Set initial specializer profile for satiated function %s to %s%N"
-            (core:low-level-standard-generic-function-name proto-gf)
-            (generic-function-specializer-profile proto-gf))))
-
 ;;; Used in fixup for the %satiate macroexpansions (below).
 (defun early-find-method (gf qualifiers specializers &optional (errorp t))
   (declare (notinline method-qualifiers))
@@ -432,7 +398,7 @@
         (generic-function-min-max-args generic-function)
       (let ((name (generic-function-name generic-function)))
         (generate-discriminator-from-data
-         call-history (generic-function-specializer-profile generic-function)
+         call-history (safe-gf-spec-vec generic-function)
          `(load-time-value (fdefinition ',name) t) min
          :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
          :max-nargs max

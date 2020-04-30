@@ -164,22 +164,12 @@ Not a valid documentation object ~A"
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
 			    gfun lambda-list))))
 
-(defun force-generic-function-specializer-profile (gfun vec)
-  ;; FIXME: This is dumb. Use an atomic set.
-  (loop for existing = (generic-function-specializer-profile gfun)
-        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
-        until (eq exchange vec)))
-
-(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
-  (cond ((slot-boundp gfun 'lambda-list)
-         (let ((lambda-list (generic-function-lambda-list gfun)))
-           (force-generic-function-specializer-profile
-            gfun
-            (make-array (length (lambda-list-required-arguments lambda-list))
-                        :initial-element nil))))
-        (errorp
-         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
-                gfun))))
+(defun initialize-gf-spec-vec (gfun)
+  (when (slot-boundp gfun 'lambda-list)
+    (let* ((lambda-list (generic-function-lambda-list gfun))
+           (nreq (length (lambda-list-required-arguments lambda-list))))
+      (setf (generic-function-spec-vec gfun)
+            (make-array nreq :initial-element nil)))))
 
 (defmethod shared-initialize :after
     ((gfun standard-generic-function) slot-names &rest initargs
@@ -226,12 +216,11 @@ Not a valid documentation object ~A"
      (1+ (core:source-pos-info-column spi))))
   ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
-  (when (generic-function-methods gfun)
-    (compute-g-f-spec-vec gfun)
-    (compute-a-p-o-function gfun))
-  (update-dependents gfun initargs)
-  (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun :errorp nil)))
+  (cond ((generic-function-methods gfun)
+         (compute-g-f-spec-vec gfun)
+         (compute-a-p-o-function gfun))
+        (t (initialize-gf-spec-vec gfun)))
+  (update-dependents gfun initargs))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
   ;; Check if the redefinition is trivial.
