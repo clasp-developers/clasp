@@ -510,11 +510,11 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)
 
-(defun all-eql-specialized-p (spec-list arguments)
+(defun all-eql-specialized-p (spec-vec arguments)
   ;; Make sure that any argument in a position with eql-specializers is an eql specializer object.
   ;; If they all are, return a memoization key. If not, NIL.
   ;; See comment in do-dispatch-miss for rationale.
-  (loop for spec in spec-list
+  (loop for spec across spec-vec
         for arg in arguments
         collect (if (consp spec) ; this parameter is eql-specialized by some method.
                     (if (member arg spec)
@@ -581,7 +581,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                ;; it's more involved, and probably not worth it, as most functions with eql specialization
                ;; only use that argument with eql specializer objects, or so I assume.
                (let ((maybe-memo-key
-                       (all-eql-specialized-p (generic-function-spec-list generic-function) arguments)))
+                       (all-eql-specialized-p (generic-function-spec-vec generic-function) arguments)))
                  (cond (maybe-memo-key
                         (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
                         (unless (= (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)))

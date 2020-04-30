@@ -131,14 +131,14 @@
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
     '(;; A description of how the methods on this generic function are
-      ;; specialized. It's a sequence with as many elements as the gf
+      ;; specialized. It's a simple-vector with as many elements as the gf
       ;; has required arguments. If a parameter is unspecialized (i.e.
       ;; all methods' specializers there are T), that element is NIL.
       ;; If one or more methods have an eql specializer at that position,
       ;; the element is a list of their eql specializer objects.
       ;; Otherwise (i.e. the parameter is specialized with non eql
       ;; specializers) the element is T.
-      (spec-list :initform nil :accessor generic-function-spec-list)
+      (spec-vec :initform nil :accessor generic-function-spec-vec)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))

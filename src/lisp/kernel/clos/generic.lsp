@@ -227,7 +227,7 @@ Not a valid documentation object ~A"
   ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (when (generic-function-methods gfun)
-    (compute-g-f-spec-list gfun)
+    (compute-g-f-spec-vec gfun)
     (compute-a-p-o-function gfun))
   (update-dependents gfun initargs)
   (unless (generic-function-specializer-profile gfun)

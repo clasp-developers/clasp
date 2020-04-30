@@ -402,7 +402,7 @@ have disappeared."
 	(setf (generic-function-argument-precedence-order gf)
 	      (rest (si::process-lambda-list (method-lambda-list method) t))))
       (maybe-augment-generic-function-lambda-list gf (method-lambda-list method))
-      (compute-g-f-spec-list gf)
+      (compute-g-f-spec-vec gf)
       (compute-a-p-o-function gf)
       (invalidate-discriminating-function gf)
       gf)))

@@ -291,31 +291,32 @@
 	    ;; This will force an error in the caller
 	    (t nil)))))
 
-(defun compute-g-f-spec-list (gf)
+(defun compute-g-f-spec-vec (gf)
   (with-early-accessors (+standard-generic-function-slots+
 			 +eql-specializer-slots+
 			 +standard-method-slots+)
-    (setf (generic-function-spec-list gf)
-          (let ((spec-list nil))
+    (setf (generic-function-spec-vec gf)
+          (let ((spec-vec nil))
             (dolist (method (generic-function-methods gf))
               (let ((specializers (method-specializers method)))
-                (when (null spec-list)
-                  (setf spec-list
-                        (make-list (length specializers))))
+                (when (null spec-vec)
+                  (setf spec-vec
+                        (make-array (length specializers))))
                 (loop for spec in specializers
-                      for sub on spec-list
-                      do (setf (car sub)
+                      for i from 0
+                      for e = (aref spec-vec i)
+                      do (setf (aref spec-vec i)
                                (cond ((eql-specializer-flag spec)
                                       (let ((o (eql-specializer-object spec)))
                                         ;; Add to existing list of eql spec
                                         ;; objects, or make a new one.
-                                        (if (consp (car sub))
-                                            (cons o (car sub))
+                                        (if (consp e)
+                                            (cons o e)
                                             (list o))))
                                      ((eq spec (find-class 't))
-                                      (or (car sub) nil))
+                                      (or e nil))
                                      (t t))))))
-            spec-list))))
+            spec-vec))))
 
 (defun compute-a-p-o-function (gf)
   (with-early-accessors (+standard-generic-function-slots+)
