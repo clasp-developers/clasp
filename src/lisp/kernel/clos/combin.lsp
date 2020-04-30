@@ -112,17 +112,23 @@
             ,(second method)))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
-(defmacro call-method (method &optional rest-methods)
+(defmacro call-method (method &optional rest-methods
+                       &environment env)
   (cond ((method-p method)
          (let ((fmf (fast-method-function method)))
-           `(apply ,fmf .method-args.)
-           `(funcall ,(method-function method)
-                     .method-args. ; will be bound in context
-                     ,(if (or (leaf-method-p method) (null rest-methods))
-                          nil
-                          `(load-time-value
-                            (list ,@(mapcar #'call-method-aux rest-methods))
-                            t)))))
+           (if fmf
+               (multiple-value-bind (required-arguments validp)
+                   (discriminator-required-arguments env)
+                 (if validp
+                     `(funcall ,fmf ,@required-arguments)
+                     `(apply ,fmf .method-args.)))
+               `(funcall ,(method-function method)
+                         .method-args. ; will be bound in context
+                         ,(if (or (leaf-method-p method) (null rest-methods))
+                              nil
+                              `(load-time-value
+                                (list ,@(mapcar #'call-method-aux rest-methods))
+                                t))))))
         ((make-method-form-p method) (second method))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 

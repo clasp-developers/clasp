@@ -480,7 +480,17 @@
 
 (defun call-history-requires-vaslist-p (call-history)
   (loop for (ignore . outcome) in call-history
-        thereis (outcome-requires-vaslist-p outcome)))
+          thereis (outcome-requires-vaslist-p outcome)))
+
+;;; We pass the list of required parameters to CALL-METHOD
+;;; in this fashion.
+(defun discriminator-required-arguments (&optional environment)
+  (multiple-value-bind (expansion expanded)
+      (macroexpand-1 '+discriminator-required-arguments+
+                     environment)
+    (if expanded
+        (values expansion expanded)
+        (values nil nil))))
 
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq
@@ -496,46 +506,48 @@
            `((declare (core:lambda-name ,generic-function-name))))
        ,@(when *insert-debug-code*
            `((format t "~&Entering ~a~%" ',generic-function-name)))
-       (let ((.generic-function. ,generic-function-form))
-         ,(when need-vaslist-p
-            ;; Our discriminating function ll is just (&va-rest r), so we need
-            ;; to check argument counts. What we really need to check is the minimum,
-            ;; since vaslist-pop has undefined behavior if there's nothing to pop,
-            ;; but we ought to do both, really.
-            ;; FIXME: Should be possible to not check, on low safety.
-            ;; Remember that argument checking by methods is disabled (see method.lsp)
-            `(let ((nargs (core:vaslist-length .method-args.)))
-               ;; stupid tagbody to avoid redundant error signaling code
-               (core::local-tagbody
-                (if (cleavir-primop:fixnum-less nargs ,nreq)
-                    (go err))
-                ,@(when max-nargs
-                    `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
-                          (go err))))
-                (go done)
-                err
-                (error 'core:wrong-number-of-arguments
-                       :called-function .generic-function.
-                       :given-nargs nargs
-                       :min-nargs ,nreq :max-nargs ,max-nargs)
-                done)))
-         (let (,@extra-bindings
-               ,@(if need-vaslist-p
-                     (mapcar (lambda (req)
-                               `(,req (core:vaslist-pop .method-args.)))
-                             required-args)
-                     nil))
-           ,(generate-discrimination
-             call-history specializer-profile
-             required-args
-             `(progn
-                ,@(when *insert-debug-code*
-                    `((format t "~&Dispatch miss~%")))
-                ,(if need-vaslist-p
-                     `(progn
-                        (core:vaslist-rewind .method-args.)
-                        (apply #',miss-operator .generic-function. .method-args.))
-                     `(,miss-operator .generic-function. ,@required-args)))))))))
+       (symbol-macrolet ((+discriminator-required-arguments+
+                           (,@required-args)))
+         (let ((.generic-function. ,generic-function-form))
+           ,(when need-vaslist-p
+              ;; Our discriminating function ll is just (&va-rest r), so we need
+              ;; to check argument counts. What we really need to check is the minimum,
+              ;; since vaslist-pop has undefined behavior if there's nothing to pop,
+              ;; but we ought to do both, really.
+              ;; FIXME: Should be possible to not check, on low safety.
+              ;; Remember that argument checking by methods is disabled (see method.lsp)
+              `(let ((nargs (core:vaslist-length .method-args.)))
+                 ;; stupid tagbody to avoid redundant error signaling code
+                 (core::local-tagbody
+                  (if (cleavir-primop:fixnum-less nargs ,nreq)
+                      (go err))
+                  ,@(when max-nargs
+                      `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
+                            (go err))))
+                  (go done)
+                  err
+                  (error 'core:wrong-number-of-arguments
+                         :called-function .generic-function.
+                         :given-nargs nargs
+                         :min-nargs ,nreq :max-nargs ,max-nargs)
+                  done)))
+           (let (,@extra-bindings
+                 ,@(if need-vaslist-p
+                       (mapcar (lambda (req)
+                                 `(,req (core:vaslist-pop .method-args.)))
+                               required-args)
+                       nil))
+             ,(generate-discrimination
+               call-history specializer-profile
+               required-args
+               `(progn
+                  ,@(when *insert-debug-code*
+                      `((format t "~&Dispatch miss~%")))
+                  ,(if need-vaslist-p
+                       `(progn
+                          (core:vaslist-rewind .method-args.)
+                          (apply #',miss-operator .generic-function. .method-args.))
+                       `(,miss-operator .generic-function. ,@required-args))))))))))
 
 (defun safe-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)
