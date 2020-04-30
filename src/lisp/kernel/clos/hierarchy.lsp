@@ -138,7 +138,8 @@
       ;; the element is a list of their eql specializer objects.
       ;; Otherwise (i.e. the parameter is specialized with non eql
       ;; specializers) the element is T.
-      (spec-vec :initform nil :accessor generic-function-spec-vec)
+      (specializer-profile :initform nil
+                           :accessor generic-function-specializer-profile)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))

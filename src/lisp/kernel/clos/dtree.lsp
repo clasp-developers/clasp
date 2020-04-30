@@ -351,7 +351,7 @@
 (defun interpreted-discriminator (generic-function)
   (let ((program (compute-dispatch-program
                   (generic-function-call-history generic-function)
-                  (safe-gf-spec-vec generic-function))))
+                  (safe-gf-specializer-profile generic-function))))
     (lambda (core:&va-rest args)
       (declare (core:lambda-name interpreted-discriminating-function))
       (clos:interpret-dtree-program program generic-function args))))

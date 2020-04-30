@@ -291,13 +291,13 @@
 	    ;; This will force an error in the caller
 	    (t nil)))))
 
-;;; mutates the spec-vec to account for new specializers.
-(defun update-spec-vec (spec-vec specializers)
+;;; mutates the specializer profile to account for new specializers.
+(defun update-specializer-profile (specializer-profile specializers)
   (with-early-accessors (+eql-specializer-slots+)
     (loop for spec in specializers
           for i from 0
-          for e = (svref spec-vec i)
-          do (setf (svref spec-vec i)
+          for e = (svref specializer-profile i)
+          do (setf (svref specializer-profile i)
                    (cond ((eql-specializer-flag spec)
                           (let ((o (eql-specializer-object spec)))
                             ;; Add to existing list of eql spec
@@ -307,29 +307,29 @@
                                 (list o))))
                          ((eql spec +the-t-class+) (or e nil))
                          (t t)))))
-  spec-vec)
+  specializer-profile)
 
-;;; Add one method to the spec vec.
-(defun update-gf-spec-vec (gf specializers)
+;;; Add one method to the specializer profile.
+(defun update-gf-specializer-profile (gf specializers)
   (with-early-accessors (+standard-generic-function-slots+)
-    (let* ((sv (generic-function-spec-vec gf))
+    (let* ((sv (generic-function-specializer-profile gf))
            (to-update (or sv (make-array (length specializers)
                                          :initial-element nil))))
-      (update-spec-vec to-update specializers))))
+      (update-specializer-profile to-update specializers))))
 
-;;; Recompute the spec vec entirely; needed if a method has been removed.
-(defun compute-g-f-spec-vec (gf)
+;;; Recompute the specializer profile entirely.
+;;; Needed if a method has been removed.
+(defun compute-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+
 			 +standard-method-slots+)
-    (setf (generic-function-spec-vec gf)
-          (let ((spec-vec nil))
+    (setf (generic-function-specializer-profile gf)
+          (let ((sp nil))
             (dolist (method (generic-function-methods gf))
               (let ((specializers (method-specializers method)))
-                (when (null spec-vec)
-                  (setf spec-vec
-                        (make-array (length specializers))))
-                (update-spec-vec spec-vec specializers)))
-            spec-vec))))
+                (when (null sp)
+                  (setf sp (make-array (length specializers))))
+                (update-specializer-profile sp specializers)))
+            sp))))
 
 (defun compute-a-p-o-function (gf)
   (with-early-accessors (+standard-generic-function-slots+)

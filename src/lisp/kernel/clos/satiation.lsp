@@ -398,7 +398,7 @@
         (generic-function-min-max-args generic-function)
       (let ((name (generic-function-name generic-function)))
         (generate-discriminator-from-data
-         call-history (safe-gf-spec-vec generic-function)
+         call-history (safe-gf-specializer-profile generic-function)
          `(load-time-value (fdefinition ',name) t) min
          :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
          :max-nargs max

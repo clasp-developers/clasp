@@ -130,30 +130,33 @@
            (dolist (,selector (coerce ,key 'list))
              (bformat-noindent " %s" (pretty-selector-as-string ,selector)))
            (bformat-noindent ")%N")))))
-  (defmacro gf-log-dispatch-miss (msg gf va-args)
-    `(progn
-       (incf-debug-fastgf-didx)
-       (incf-debug-fastgf-miss-count ,gf)
-       (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) ,msg)
-       (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count ,gf) (clos::generic-function-name ,gf))
-       (let* ((args-as-list (core:list-from-va-list ,va-args))
-              (call-history (clos::generic-function-call-history ,gf))
-              (specializer-profile (clos::generic-function-specializer-profile ,gf)))
-         (bformat-indent "    args (num args -> %d):  %N" (length args-as-list))
+  (defun %gf-log-dispatch-miss (msg gf args)
+    (incf-debug-fastgf-didx)
+    (incf-debug-fastgf-miss-count gf)
+    (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) msg)
+    (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count gf)
+                    (generic-function-name gf))
+       (let* ((call-history (generic-function-call-history gf))
+              (specializer-profile (safe-gf-specializer-profile gf)))
+         (bformat-indent "    args (num args -> %d):  %N" (length args))
          (let ((arg-index -1))
-           (dolist (arg args-as-list)
-             (bformat-indent "argument# %d: %s[%s/%d] %N" (incf arg-index) arg (class-of arg) (core:instance-stamp arg))))
+           (dolist (arg args)
+             (bformat-indent "argument# %d: %s[%s/%d] %N"
+                             (incf arg-index) arg (class-of arg)
+                             (core:instance-stamp arg))))
          (let ((index 0))
            (bformat-indent " raw call-history (length -> %d):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
-         (let* ((call-history (generic-function-call-history generic-function))
-                (specializer-profile (generic-function-specializer-profile generic-function))
+         (let* ((call-history (generic-function-call-history gf))
+                (specializer-profile (safe-gf-specializer-profile gf))
                 (index 0))
            (bformat-indent "    call-history (length -> %d):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry))))
-       (finish-output (debug-fastgf-stream))))
+       (finish-output (debug-fastgf-stream)))
+  (defmacro gf-log-dispatch-miss (msg gf args)
+    `(%gf-log-dispatch-miss ,msg ,gf ,args))
   (defmacro gf-log (fmt &rest fmt-args) `(bformat-indent ,fmt ,@fmt-args))
   (defmacro gf-log-noindent (fmt &rest fmt-args) `(bformat-noindent ,fmt ,@fmt-args))
   (defmacro gf-do (&body code) `(progn ,@code)))
@@ -162,7 +165,7 @@
 (eval-when (:execute :load-toplevel)
   (defmacro gf-log-sorted-roots (roots) nil)
   (defmacro gf-log-dispatch-graph (gf) nil)
-  (defmacro gf-log-dispatch-miss (msg gf va-args) nil)
+  (defmacro gf-log-dispatch-miss (msg gf args) nil)
   (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil)
   (defmacro gf-log-dispatch-miss-message (msg &rest args) nil)
   (defmacro gf-log (fmt &rest fmt-args) nil)
@@ -456,8 +459,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (let ((memoized-key (car new-entry)))
     (gf-log "Specializers key: %s%N" memoized-key)
     (gf-log "The specializer-profile: %s%N"
-            (generic-function-specializer-profile generic-function))
-    (let ((specializer-profile (safe-gf-spec-vec generic-function)))
+            (safe-gf-specializer-profile generic-function))
+    (let ((specializer-profile (safe-gf-specializer-profile generic-function)))
       (unless (= (length memoized-key) (length specializer-profile))
         (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
                memoized-key specializer-profile generic-function))
@@ -476,7 +479,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
             do (progn
                  #+debug-fastgf
                  (let ((specializer-profile
-                         (clos:generic-function-specializer-profile generic-function)))
+                         (safe-gf-specializer-profile generic-function)))
                    (when call-history
                      (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
                      (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
@@ -518,11 +521,12 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)
 
-(defun all-eql-specialized-p (spec-vec arguments)
-  ;; Make sure that any argument in a position with eql-specializers is an eql specializer object.
+(defun all-eql-specialized-p (specializer-profile arguments)
+  ;; Make sure that any argument in a position with eql-specializers
+  ;; is an eql specializer object.
   ;; If they all are, return a memoization key. If not, NIL.
   ;; See comment in do-dispatch-miss for rationale.
-  (loop for spec across spec-vec
+  (loop for spec across specializer-profile
         for arg in arguments
         collect (if (consp spec) ; this parameter is eql-specialized by some method.
                     (if (member arg spec)
@@ -556,11 +560,14 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                 ;; This assumption would be wrong if an application frequently called a gf
                 ;; wrong and relied on the signal behavior etc,
                 ;; but I find that possibility unlikely.
-                (gf-log-dispatch-miss "No applicable method" generic-function vaslist-arguments)
+                (gf-log-dispatch-miss "No applicable method"
+                                      generic-function arguments)
                 nil)
                (ok ; classes are fine; use normal fastgf
-                (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
-                (let ((key-length (length (safe-gf-spec-vec generic-function))))
+                (gf-log-dispatch-miss "Memoizing normal call"
+                                      generic-function arguments)
+                (let ((key-length
+                        (length (safe-gf-specializer-profile generic-function))))
                   (cons (coerce (subseq argument-classes 0 key-length) 'simple-vector)
                         outcome)))
                ((eq (class-of generic-function) (find-class 'standard-generic-function))
@@ -581,21 +588,22 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                 ;; as most functions with eql specialization
                 ;; only use that argument with eql specializer objects, or so I assume.
                 (let ((maybe-memo-key
-                        (all-eql-specialized-p (generic-function-spec-vec generic-function)
-                                               arguments)))
+                        (all-eql-specialized-p
+                         (generic-function-specializer-profile generic-function)
+                         arguments)))
                   (cond (maybe-memo-key
                          (gf-log-dispatch-miss "Memoizing eql-specialized call"
-                                               generic-function vaslist-arguments)
+                                               generic-function arguments)
                          (cons maybe-memo-key outcome))
                         (t
                          (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
-                                               generic-function vaslist-arguments)
+                                               generic-function arguments)
                          nil))))
                (t
                 ;; No more options: we just don't memoize.
                 ;; This only occurs with eql specializers,
                 ;; at least with the standard c-a-m/-u-c methods.
-                (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments)
+                (gf-log-dispatch-miss "Cannot memoize call" generic-function arguments)
                 nil)))))))
 
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
@@ -608,19 +616,21 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         (error 'core:wrong-number-of-arguments
                :called-function generic-function :given-nargs nargs
                :min-nargs min :max-nargs max))))
-  (multiple-value-bind (outcome new-ch-entry)
-      (dispatch-miss-info generic-function arguments)
-    (when new-ch-entry
-      (memoize-call generic-function new-ch-entry))
-    (gf-log "Performing outcome %s%N" outcome)
-    #+debug-fastgf
-    (let ((results (multiple-value-list
-                    (perform-outcome outcome arguments vaslist-arguments))))
-      (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-      (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
-      (values-list results))
-    #-debug-fastgf
-    (perform-outcome outcome arguments vaslist-arguments)))
+  (let (#+debug-fastgf
+        (*dispatch-miss-start-time* (get-internal-real-time)))
+    (multiple-value-bind (outcome new-ch-entry)
+        (dispatch-miss-info generic-function arguments)
+      (when new-ch-entry
+        (memoize-call generic-function new-ch-entry))
+      (gf-log "Performing outcome %s%N" outcome)
+      #+debug-fastgf
+      (let ((results (multiple-value-list
+                      (perform-outcome outcome arguments vaslist-arguments))))
+        (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+        (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
+        (values-list results))
+      #-debug-fastgf
+      (perform-outcome outcome arguments vaslist-arguments))))
 
 (defun dispatch-miss (generic-function core:&va-rest valist-args)
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
@@ -693,7 +703,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (gf-log "Entered invalidated-dispatch-function for %s - avoiding generic function calls until return!!!%N"
               (core:low-level-standard-generic-function-name generic-function))
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
-  (gf-log "Specializer profile is %s%N" (generic-function-specializer-profile generic-function))
+  (gf-log "Specializer profile is %s%N" (safe-gf-specializer-profile generic-function))
   (if (generic-function-call-history generic-function)
       (progn
         (force-dispatcher generic-function)

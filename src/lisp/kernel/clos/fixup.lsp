@@ -136,7 +136,7 @@
 ;;; before calling add-direct-method below
 
 (dolist (method-info *early-methods*)
-  (compute-g-f-spec-vec (fdefinition (car method-info))))
+  (compute-gf-specializer-profile (fdefinition (car method-info))))
 
 (mlog "About to satiate%N")
 
@@ -338,7 +338,7 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  iii) Computing a new discriminating function... Well, since the core
   ;;  ECL does not need the discriminating function because we always use
   ;;  the same one, we just update the spec-how list of the generic function.
-  (update-gf-spec-vec gf (method-specializers method))
+  (update-gf-specializer-profile gf (method-specializers method))
   (compute-a-p-o-function gf)
   (update-generic-function-call-history-for-add-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
@@ -352,7 +352,7 @@ and cannot be added to ~A." method other-gf gf)))
 	(method-generic-function method) nil)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
-  (compute-g-f-spec-vec gf)
+  (compute-gf-specializer-profile gf)
   (compute-a-p-o-function gf)
   (update-generic-function-call-history-for-remove-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))

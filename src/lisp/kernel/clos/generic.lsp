@@ -164,11 +164,11 @@ Not a valid documentation object ~A"
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
 			    gfun lambda-list))))
 
-(defun initialize-gf-spec-vec (gfun)
+(defun initialize-gf-specializer-profile (gfun)
   (when (slot-boundp gfun 'lambda-list)
     (let* ((lambda-list (generic-function-lambda-list gfun))
            (nreq (length (lambda-list-required-arguments lambda-list))))
-      (setf (generic-function-spec-vec gfun)
+      (setf (generic-function-specializer-profile gfun)
             (make-array nreq :initial-element nil)))))
 
 (defmethod shared-initialize :after
@@ -217,9 +217,9 @@ Not a valid documentation object ~A"
   ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (cond ((generic-function-methods gfun)
-         (compute-g-f-spec-vec gfun)
+         (compute-gf-specializer-profile gfun)
          (compute-a-p-o-function gfun))
-        (t (initialize-gf-spec-vec gfun)))
+        (t (initialize-gf-specializer-profile gfun)))
   (update-dependents gfun initargs))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
