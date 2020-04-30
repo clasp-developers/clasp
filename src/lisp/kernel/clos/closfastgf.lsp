@@ -451,40 +451,48 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         when (specializer-key-match key memoized-key) do (return-from call-history-find-key t))
   nil)
 
-(defun memoize-call (generic-function memoized-key effective-method-function)
+(defun memoize-call (generic-function new-entry)
   "Memoizes the call and installs a new discriminator function - returns nothing"
-  (gf-log "Specializers key: %s%N" memoized-key)
-  (gf-log "The specializer-profile: %s%N" (generic-function-specializer-profile generic-function))
-  (let ((specializer-profile (generic-function-specializer-profile generic-function)))
-    (unless (= (length memoized-key) (length specializer-profile))
-      (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a" memoized-key specializer-profile generic-function))
-    (loop for call-history = (generic-function-call-history generic-function)
-          for found-key = (call-history-find-key call-history memoized-key)
-          for new-call-history = (if found-key
-                                     (progn
-                                       (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
-                                               (generic-function-name generic-function))
-                                       call-history)
-                                     (progn
-                                       (gf-log "Pushing entry into call history%N")
-                                       (cons (cons memoized-key effective-method-function) call-history)))
-          for exchanged = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-          do (progn
-               #+debug-fastgf(let ((specializer-profile (clos:generic-function-specializer-profile generic-function)))
-                               (when call-history
-                                 (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
-                                 (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
-          when exchanged do (gf-log "Successfully exchanged call history%N")
+  (let ((memoized-key (car new-entry)))
+    (gf-log "Specializers key: %s%N" memoized-key)
+    (gf-log "The specializer-profile: %s%N"
+            (generic-function-specializer-profile generic-function))
+    (let ((specializer-profile (generic-function-specializer-profile generic-function)))
+      (unless (= (length memoized-key) (length specializer-profile))
+        (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
+               memoized-key specializer-profile generic-function))
+      (loop for call-history = (generic-function-call-history generic-function)
+            for found-key = (call-history-find-key call-history memoized-key)
+            for new-call-history = (if found-key
+                                       (progn
+                                         (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                                 (generic-function-name generic-function))
+                                         call-history)
+                                       (progn
+                                         (gf-log "Pushing entry into call history%N")
+                                         (cons new-entry call-history)))
+            for exchanged = (generic-function-call-history-compare-exchange
+                             generic-function call-history new-call-history)
+            do (progn
+                 #+debug-fastgf
+                 (let ((specializer-profile
+                         (clos:generic-function-specializer-profile generic-function)))
+                   (when call-history
+                     (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
+                     (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
+            when exchanged
+              do (gf-log "Successfully exchanged call history%N")
             until (eq exchanged new-call-history))
-    (loop for idx from 0 below (length memoized-key)
-          for specializer = (svref memoized-key idx)
-          unless (consp specializer)    ; eql specializer
-            do (core:specializer-call-history-generic-functions-push-new specializer generic-function))
-    #+debug-long-call-history
-    (when (> (length (generic-function-call-history generic-function)) 16384)
-      (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
-    (force-dispatcher generic-function)
-    (values)))
+      (loop for idx from 0 below (length memoized-key)
+            for specializer = (svref memoized-key idx)
+            unless (consp specializer)    ; eql specializer
+              do (core:specializer-call-history-generic-functions-push-new
+                  specializer generic-function))
+      #+debug-long-call-history
+      (when (> (length (generic-function-call-history generic-function)) 16384)
+        (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
+      (force-dispatcher generic-function)
+      (values))))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
@@ -524,6 +532,73 @@ FIXME!!!! This code will have problems with multithreading if a generic function
           into key
         finally (return (coerce key 'simple-vector))))
 
+;;; Returns two values: the outcome to perform, and a new call history entry,
+;;; or NIL if none should be added (e.g. due to eql specialization).
+;;; This function has no side effects. DO-DISPATCH-MISS is in charge of that.
+(defun dispatch-miss-info (generic-function arguments)
+  (let ((argument-classes (mapcar #'class-of arguments)))
+    (multiple-value-bind (method-list ok)
+        (compute-applicable-methods-using-classes generic-function argument-classes)
+      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s%N"
+              method-list ok)
+      (let* ((method-list (if ok
+                              method-list
+                              (compute-applicable-methods generic-function arguments)))
+             (outcome (compute-outcome
+                       generic-function
+                       (generic-function-method-combination generic-function)
+                       method-list argument-classes :log t)))
+        (values
+         outcome
+         ;; Can we memoize the call, i.e. add it to the call history?
+         (cond ((null method-list) ; we avoid memoizing no-applicable-methods,
+                ;; as it's probably just a mistake, and will just pollute the call history.
+                ;; This assumption would be wrong if an application frequently called a gf
+                ;; wrong and relied on the signal behavior etc,
+                ;; but I find that possibility unlikely.
+                (gf-log-dispatch-miss "No applicable method" generic-function vaslist-arguments)
+                nil)
+               (ok ; classes are fine; use normal fastgf
+                (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
+                (let ((key-length (length (generic-function-specializer-profile generic-function))))
+                  (cons (coerce (subseq argument-classes 0 key-length) 'simple-vector)
+                        outcome)))
+               ((eq (class-of generic-function) (find-class 'standard-generic-function))
+                ;; we have a call with eql specialized arguments.
+                ;; We can still memoize this sometimes, as long as the gf is standard.
+                ;; What we need to watch out for it the following situation-
+                ;; (defmethod foo ((x (eql 'x))) ...)
+                ;; (foo 'y)
+                ;; If we memoize this naively, we'll put in an entry for class SYMBOL,
+                ;; and then if we call (foo 'x) later, it will go to that instead of properly
+                ;; missing the cache.
+                ;; EQL specializers play merry hob hell with the assumption of fastgf that
+                ;; as long as you treat all classes distinctly there are no problems with
+                ;; inheritance, basically.
+                ;; So, we only memoize the (foo 'x) call, and leave the more general symbol
+                ;; specialization to slow path. We could fix it up further to have that
+                ;; fast-path as well, but I think it's more involved, and probably not worth it,
+                ;; as most functions with eql specialization
+                ;; only use that argument with eql specializer objects, or so I assume.
+                (let ((maybe-memo-key
+                        (all-eql-specialized-p (generic-function-spec-vec generic-function)
+                                               arguments)))
+                  (cond (maybe-memo-key
+                         (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
+                         (unless (= (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)))
+                           (error "In do-dispatch-miss mismatch between (length maybe-memo-key) -> ~a and (length (generic-function-specializer-profile generic-function)) -> ~a for ~a" (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)) generic-function))
+                         (cons maybe-memo-key outcome))
+                        (t
+                         (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
+                                               generic-function vaslist-arguments)
+                         nil))))
+               (t
+                ;; No more options: we just don't memoize.
+                ;; This only occurs with eql specializers,
+                ;; at least with the standard c-a-m/-u-c methods.
+                (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments)
+                nil)))))))
+
 (defun do-dispatch-miss (generic-function vaslist-arguments arguments)
   "This effectively does what compute-discriminating-function does and maybe memoizes the result
 and calls the effective-method-function that is calculated.
@@ -534,75 +609,19 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
         (error 'core:wrong-number-of-arguments
                :called-function generic-function :given-nargs nargs
                :min-nargs min :max-nargs max))))
-  (let ((argument-classes (mapcar #'class-of arguments))
-        #+debug-fastgf
-        (*dispatch-miss-start-time* (get-internal-real-time)))
-    ;; FIXME: What if another thread adds/removes method during c-a-m-u-c?
-    (multiple-value-bind (method-list ok)
-        (compute-applicable-methods-using-classes generic-function argument-classes)
-      (declare (core:lambda-name do-dispatch-miss.multiple-value-bind.lambda))
-      (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s%N" method-list ok)
-      (let* ((method-list (if ok
-                              method-list
-                              (compute-applicable-methods generic-function arguments)))
-             (outcome (compute-outcome
-                       generic-function
-                       (generic-function-method-combination generic-function)
-                       method-list
-                       argument-classes
-                       :log t)))
-        ;; Can we memoize the call, i.e. add it to the call history?
-        (gf-log "Done with compute-outcome%N")
-        (cond ((null method-list) ; we avoid memoizing no-applicable-methods, as it's probably just a mistake,
-               ;; and will just pollute the call history.
-               ;; This assumption would be wrong if an application frequently called a gf wrong and relied on
-               ;; the signal behavior etc, but I find that possibility unlikely.
-               (gf-log-dispatch-miss "No applicable method" generic-function vaslist-arguments))
-              (ok ; classes are fine; use normal fastgf
-               (gf-log-dispatch-miss "Memoizing normal call" generic-function vaslist-arguments)
-               (let ((key-length (length (generic-function-specializer-profile generic-function))))
-                 (memoize-call generic-function
-                               (coerce (subseq argument-classes 0 key-length) 'simple-vector)
-                               outcome)))
-              ((eq (class-of generic-function) (find-class 'standard-generic-function))
-               ;; we have a call with eql specialized arguments.
-               ;; We can still memoize this sometimes, as long as the gf is standard.
-               ;; What we need to watch out for it the following situation-
-               ;; (defmethod foo ((x (eql 'x))) ...)
-               ;; (foo 'y)
-               ;; If we memoize this naively, we'll put in an entry for class SYMBOL,
-               ;; and then if we call (foo 'x) later, it will go to that instead of properly
-               ;; missing the cache.
-               ;; EQL specializers play merry hob hell with the assumption of fastgf that
-               ;; as long as you treat all classes distinctly there are no problems with inheritance,
-               ;; basically.
-               ;; So, we only memoize the (foo 'x) call, and leave the more general symbol specialization
-               ;; to slow path. We could fix it up further to have that fast-path as well, but I think
-               ;; it's more involved, and probably not worth it, as most functions with eql specialization
-               ;; only use that argument with eql specializer objects, or so I assume.
-               (let ((maybe-memo-key
-                       (all-eql-specialized-p (generic-function-spec-vec generic-function) arguments)))
-                 (cond (maybe-memo-key
-                        (gf-log-dispatch-miss "Memoizing eql-specialized call" generic-function vaslist-arguments)
-                        (unless (= (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)))
-                          (error "In do-dispatch-miss mismatch between (length maybe-memo-key) -> ~a and (length (generic-function-specializer-profile generic-function)) -> ~a for ~a" (length maybe-memo-key) (length (generic-function-specializer-profile generic-function)) generic-function))
-                        (memoize-call generic-function maybe-memo-key outcome))
-                       (t
-                        (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
-                                              generic-function vaslist-arguments)))))
-              (t
-               ;; No more options: we just don't memoize.
-               ;; This only occurs with eql specializers, at least with the standard c-a-m/-u-c methods.
-               (gf-log-dispatch-miss "Cannot memoize call" generic-function vaslist-arguments)))
-        (gf-log "Performing outcome %s%N" outcome)
-        #+debug-fastgf
-        (let ((results (multiple-value-list
-                        (perform-outcome outcome arguments vaslist-arguments))))
-          (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-          (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
-          (values-list results))
-        #-debug-fastgf
-        (perform-outcome outcome arguments vaslist-arguments)))))
+  (multiple-value-bind (outcome new-ch-entry)
+      (dispatch-miss-info generic-function arguments)
+    (when new-ch-entry
+      (memoize-call generic-function new-ch-entry))
+    (gf-log "Performing outcome %s%N" outcome)
+    #+debug-fastgf
+    (let ((results (multiple-value-list
+                    (perform-outcome outcome arguments vaslist-arguments))))
+      (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+      (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
+      (values-list results))
+    #-debug-fastgf
+    (perform-outcome outcome arguments vaslist-arguments)))
 
 (defun dispatch-miss (generic-function core:&va-rest valist-args)
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
