@@ -2240,6 +2240,17 @@ CL_DEFUN T_mv ext__fstat(int filedescriptor) {
                                      
 };
 
+bool clasp_has_file_position (int filedescriptor) {
+  struct stat sb;
+  if (fstat(filedescriptor, &sb) == -1)
+    return false;
+  else
+    if (S_ISSOCK(sb.st_mode) || S_ISFIFO(sb.st_mode) || S_ISDIR(sb.st_mode))
+      return false;
+    else
+      return true;
+}
+
 CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("Returns data of the posix stat() function for pathname"
