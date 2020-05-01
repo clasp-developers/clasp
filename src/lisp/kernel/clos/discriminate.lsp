@@ -378,13 +378,14 @@
 
 ;;;
 
-(defun generate-outcome (reqargs need-vaslist-p outcome)
+(defun generate-outcome (reqargs need-vaslist-p more-args-p outcome)
   (cond ((optimized-slot-reader-p outcome)
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
          (generate-slot-writer reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call reqargs need-vaslist-p outcome))
+         (generate-effective-method-call
+          reqargs need-vaslist-p more-args-p outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun class-cell-form (slot-name class)
@@ -438,7 +439,8 @@
 ;;; Satiated generic functions have to inline so they can be dumped, though.
 (defvar *inline-effective-methods* nil)
 
-(defun generate-effective-method-call (arguments need-vaslist-p outcome)
+(defun generate-effective-method-call (arguments
+                                       need-vaslist-p more-args-p outcome)
   (let ((form (effective-method-outcome-form outcome))
         (function (effective-method-outcome-function outcome)))
     (when (and (eq *inline-effective-methods* 'cl:require)
@@ -459,12 +461,15 @@
             `(progn
                (core:vaslist-rewind .method-args.)
                (apply ,function .method-args.))
-            `(funcall ,function ,@arguments)))))
+            (if more-args-p
+                `(apply ,function ,@arguments more-args)
+                `(funcall ,function ,@arguments))))))
 
 ;;;
 
 (defun generate-discrimination (call-history specializer-profile
-                                need-vaslist-p required-params miss)
+                                need-vaslist-p more-args-p
+                                required-params miss)
   (let* ((part (partition call-history :key #'cdr :getter #'car
                                        :test #'outcome=))
          (bname (gensym "DISCRIMINATION"))
@@ -475,7 +480,7 @@
                       collect `(return-from ,bname
                                  ,(generate-outcome
                                    required-params need-vaslist-p
-                                   outcome)))))
+                                   more-args-p outcome)))))
     (flet ((collect-list (list)
              (loop for e in list for s across specializer-profile
                    when s collect e))
@@ -505,10 +510,11 @@
 ;;; and is therefore a bit KLUDGEy.
 (defun emo-requires-vaslist-p (outcome)
   (let ((form (effective-method-outcome-form outcome)))
-    (not (and (consp form)
-              (eq (car form) 'call-method)
-              (method-p (second form))
-              (fast-method-function (second form))))))
+    (and *inline-effective-methods*
+         (not (and (consp form)
+                   (eq (car form) 'call-method)
+                   (method-p (second form))
+                   (fast-method-function (second form)))))))
 
 (defun outcome-requires-vaslist-p (outcome)
   (cond ((effective-method-outcome-p outcome)
@@ -531,17 +537,19 @@
         (values nil nil))))
 
 (defun generate-discriminator-from-data
-    (call-history specializer-profile generic-function-form nreq
-     &key generic-function-name
-       max-nargs (miss-operator 'dispatch-miss)
+    (call-history specializer-profile generic-function-form nreq max-nargs
+     &key generic-function-name (miss-operator 'dispatch-miss)
        ((:inline-effective-methods *inline-effective-methods*)
         *inline-effective-methods*))
-  (let ((need-vaslist-p (call-history-requires-vaslist-p call-history))
-        (required-args (loop repeat nreq
-                             collect (gensym "DISCRIMINATION-ARG"))))
+  (let* ((need-vaslist-p (call-history-requires-vaslist-p call-history))
+         (more-args-p (and (not need-vaslist-p)
+                           (or (not max-nargs) (> max-nargs nreq))))
+         (required-args (loop repeat nreq
+                              collect (gensym "DISCRIMINATION-ARG"))))
     `(lambda ,(if need-vaslist-p
                   `(core:&va-rest .method-args.)
-                  required-args)
+                  `(,@required-args
+                    ,@(when more-args-p `(core:&va-rest more-args))))
        ,@(when generic-function-name
            `((declare (core:lambda-name ,generic-function-name))))
        ,@(when *insert-debug-code*
@@ -550,20 +558,25 @@
                            (,@required-args))
                          (+gf-being-compiled+ ,generic-function-name))
          (let ((.generic-function. ,generic-function-form))
-           ,(when need-vaslist-p
+           ,(when (or need-vaslist-p more-args-p)
               ;; Our discriminating function ll is just (&va-rest r), so we need
               ;; to check argument counts. What we really need to check is the minimum,
               ;; since vaslist-pop has undefined behavior if there's nothing to pop,
               ;; but we ought to do both, really.
               ;; FIXME: Should be possible to not check, on low safety.
               ;; Remember that argument checking by methods is disabled (see method.lsp)
-              `(let ((nargs (core:vaslist-length .method-args.)))
+              `(let ((nargs (core:vaslist-length
+                             ,(if need-vaslist-p '.method-args. 'more-args))))
                  ;; stupid tagbody to avoid redundant error signaling code
                  (core::local-tagbody
-                  (if (cleavir-primop:fixnum-less nargs ,nreq)
-                      (go err))
-                  ,@(when max-nargs
-                      `((if (cleavir-primop:fixnum-less ,max-nargs nargs)
+                  ,@(when need-vaslist-p
+                      `((if (cleavir-primop:fixnum-less nargs ,nreq)
+                            (go err))))
+                  ,@(when (and max-nargs (or need-vaslist-p (> max-nargs nreq)))
+                      `((if (cleavir-primop:fixnum-less ,(if need-vaslist-p
+                                                             max-nargs
+                                                             (- max-nargs nreq))
+                                                        nargs)
                             (go err))))
                   (go done)
                   err
@@ -579,7 +592,7 @@
                        nil))
              ,(generate-discrimination
                call-history specializer-profile
-               need-vaslist-p required-args
+               need-vaslist-p more-args-p required-args
                `(progn
                   ,@(when *insert-debug-code*
                       `((format t "~&Dispatch miss~%")))
@@ -587,7 +600,10 @@
                        `(progn
                           (core:vaslist-rewind .method-args.)
                           (apply #',miss-operator .generic-function. .method-args.))
-                       `(,miss-operator .generic-function. ,@required-args))))))))))
+                       (if more-args-p
+                           `(apply #',miss-operator .generic-function. ,@required-args
+                                   more-args)
+                           `(,miss-operator .generic-function. ,@required-args)))))))))))
 
 (defun safe-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)
@@ -599,6 +615,5 @@
     (generate-discriminator-from-data
      (generic-function-call-history generic-function)
      (safe-gf-specializer-profile generic-function)
-     generic-function min
-     :max-nargs max
+     generic-function min max
      :generic-function-name (core:function-name generic-function))))
