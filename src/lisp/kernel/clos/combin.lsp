@@ -27,7 +27,7 @@
 (defun emf-default (form)
   (emf-maybe-compile
    `(lambda (core:&va-rest .method-args.)
-      (declare (core:lambda-name effective-method-function))
+      (declare (core:lambda-name effective-method-function.lambda))
       ,form)))
 
 (defun make-method-form-p (form)

@@ -378,13 +378,13 @@
 
 ;;;
 
-(defun generate-outcome (reqargs outcome)
+(defun generate-outcome (reqargs need-vaslist-p outcome)
   (cond ((optimized-slot-reader-p outcome)
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
          (generate-slot-writer reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call outcome))
+         (generate-effective-method-call need-vaslist-p outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun class-cell-form (slot-name class)
@@ -423,24 +423,28 @@
                     ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
-(defun generate-effective-method-call (outcome)
-  `(progn
-     (core:vaslist-rewind .method-args.)
-     ;; if a form was provided, just throw it in.
-     ;; Otherwise generate a function call.
-     ;; NOTE: We use NIL to mean "no form provided".
-     ;; Hypothetically the form could actually BE nil,
-     ;; but I'm not holding my breath here- the backup is probably fine.
-     ,(cond ((effective-method-outcome-form outcome))
-            ((effective-method-outcome-function outcome)
-             `(apply
-               ,(effective-method-outcome-function outcome) .method-args.))
-            (t (error "BUG: Outcome ~a is messed up" outcome)))))
+(defun generate-effective-method-call (need-vaslist-p outcome)
+  (let ((form
+          ;; if a form was provided, just throw it in.
+          ;; Otherwise generate a function call.
+          ;; NOTE: We use NIL to mean "no form provided".
+          ;; Hypothetically the form could actually BE nil,
+          ;; but I'm not holding my breath here- the backup is probably fine.
+          (cond ((effective-method-outcome-form outcome))
+                ((effective-method-outcome-function outcome)
+                 `(apply
+                   ,(effective-method-outcome-function outcome) .method-args.))
+                (t (error "BUG: Outcome ~a is messed up" outcome)))))
+    (if need-vaslist-p
+        `(progn
+           (core:vaslist-rewind .method-args.)
+           ,form)
+        form)))
 
 ;;;
 
 (defun generate-discrimination (call-history specializer-profile
-                                required-params miss)
+                                need-vaslist-p required-params miss)
   (let* ((part (partition call-history :key #'cdr :getter #'car
                                        :test #'outcome=))
          (bname (gensym "DISCRIMINATION"))
@@ -450,7 +454,8 @@
                       collect tag
                       collect `(return-from ,bname
                                  ,(generate-outcome
-                                   required-params outcome)))))
+                                   required-params need-vaslist-p
+                                   outcome)))))
     (flet ((collect-list (list)
              (loop for e in list for s across specializer-profile
                    when s collect e))
@@ -476,8 +481,18 @@
                                 (go ,(outcome-tag outcome)))))
             ,@tbody)))))
 
+;;; This must stay coordinated with call-method in combin.lsp,
+;;; and is therefore a bit KLUDGEy.
+(defun emo-requires-vaslist-p (outcome)
+  (let ((form (effective-method-outcome-form outcome)))
+    (not (and (consp form)
+              (eq (car form) 'call-method)
+              (method-p (second form))
+              (fast-method-function (second form))))))
+
 (defun outcome-requires-vaslist-p (outcome)
-  (cond ((effective-method-outcome-p outcome) t)
+  (cond ((effective-method-outcome-p outcome)
+         (emo-requires-vaslist-p outcome))
         ((outcome-p outcome) nil)
         (t (error "BUG: Unknown outcome: ~a" outcome))))
 
@@ -543,7 +558,7 @@
                        nil))
              ,(generate-discrimination
                call-history specializer-profile
-               required-args
+               need-vaslist-p required-args
                `(progn
                   ,@(when *insert-debug-code*
                       `((format t "~&Dispatch miss~%")))
