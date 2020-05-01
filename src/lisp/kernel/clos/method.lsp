@@ -164,6 +164,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                ,(specializers-expression specializers)
                                ',lambda-list
                                ,(if (and (our-method-lambda-p fn-form)
+                                         #+(or)
                                          (lambda-list-fast-callable-p lambda-list)
                                          ;; FIXME: TEMPORARY, REDUNDANT
                                          (multiple-value-bind (cnm-p nmp-p)
@@ -200,6 +201,38 @@ in the generic function lambda-list to the generic function lambda-list"
                 spec))
           specializers))
 
+(defun fixup-method-lambda-list (lambda-list)
+  ;; According to CLHS 7.6.4.,
+  ;; "The use of &allow-other-keys need not be consistent across lambda lists.
+  ;;  If &allow-other-keys is mentioned in the lambda list of any applicable method
+  ;;   or of the generic function, any keyword arguments may be mentioned in the call
+  ;;   to the generic function."
+  ;; and "The checking of the validity of keyword names is done in the generic function,
+  ;;       not in each method."
+  ;; Conceptually, this means that effective methods have a set of valid keywords
+  ;; but the individual method _functions_ don't. Though the methods still have the
+  ;; lambda list provided to them.
+  ;; Long story short, we insert an &allow-other-keys if &key is present without it.
+  (multiple-value-bind (required optional restvar
+                        keyflag keys allow-other-keys aux va-rest-p)
+      (core:process-lambda-list lambda-list 'function)
+    (if (or (not keyflag) allow-other-keys) ; nothing to be done
+        lambda-list
+        ;; Reconstruct the lambda list.
+        `(,@(rest required)
+          ,@(unless (zerop (first optional)) '(&optional))
+          ,@(loop for (var default -p) on (rest optional) by #'cdddr
+                  collect `(,var ,default ,@(when -p (list -p))))
+          ,@(when restvar
+              `(,(if va-rest-p 'core:&va-rest '&rest) ,restvar))
+          &key
+          ,@(loop for (key var default -p) on (rest keys) by #'cddddr
+                  collect `((,key ,var) ,default ,@(when -p (list -p))))
+          &allow-other-keys
+          ,@(when aux '(&aux))
+          ,@(loop for (var default) on aux by #'cddr
+                  collect `(,var ,default))))))
+
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body)
@@ -215,6 +248,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                 (si::no-check-type ,name))))
                    (cdar declarations)))
            (block `(block ,(si::function-block-name name) ,@real-body))
+           (lambda-list (fixup-method-lambda-list lambda-list))
            (method-lambda
             ;; Remove the documentation string and insert the
             ;; appropriate class declarations.  The documentation
@@ -344,7 +378,7 @@ arguments, the list of specializers and a new lambda list where the specializer
 have disappeared."
     (ext:with-current-source-form (specialized-lambda-list)
       ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
-      ;; syntactically correct and will output as a first argument the
+      ;; syntactically correct and will output as a second value
       ;; list of required arguments. We use this list to extract the
       ;; specializers and build a lambda list without specializers.
       (do* ((arglist (rest (si::process-lambda-list specialized-lambda-list 'METHOD))
