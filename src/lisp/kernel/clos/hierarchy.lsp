@@ -194,8 +194,7 @@
       (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
       ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
       ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
-      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)
-      (fast-method-function :initform nil :initarg fast-method-function :reader fast-method-function)))
+      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+
@@ -220,6 +219,15 @@
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
       (location :initarg :location :initform nil :accessor slot-definition-location)
       )))
+
+;;; ----------------------------------------------------------------------
+;;; %METHOD-FUNCTION
+;;;
+;;; See method.lsp for use.
+
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
+  (core:defconstant-equal +%method-function-slots+
+    '((fast-method-function :initarg :fmf :reader %mf-fast-method-function))))
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
@@ -448,6 +456,10 @@
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
          :direct-superclasses (standard-object))
+        (%method-function
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots #.+%method-function-slots+)
         ))))
 
 (eval-when (:compile-toplevel :execute)

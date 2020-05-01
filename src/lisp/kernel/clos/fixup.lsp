@@ -49,12 +49,7 @@
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
   (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
-         (mf (lambda (.method-args. .next-methods.)
-               (declare (core:lambda-name function-to-method.lambda))
-               (mlog "In function-to-method.lambda  about to call %s with args %s%N"
-                     function (core:list-from-va-list .method-args.))
-               (apply function .method-args.)))
-         (fmfp (lambda-list-fast-callable-p lambda-list))
+         (mf (make-%method-function function))
          (method
            (make-method (find-class 'standard-method)
                         nil
@@ -62,8 +57,7 @@
                         lambda-list
                         mf
                         (list
-                         'leaf-method-p t
-                         'fast-method-function (if fmfp function nil)))))
+                         'leaf-method-p t))))
     ;; we're still using the old add-method, which adds things to *early-methods*.
     ;; We don't want to do that here, so we rebind *early-methods* and discard the value.
     (let ((*early-methods* nil))

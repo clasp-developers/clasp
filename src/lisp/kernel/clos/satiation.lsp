@@ -101,7 +101,7 @@
                                            :class class)))
             ((leaf-method-p first)
              (make-effective-method-outcome
-              :function (or (fast-method-function first)
+              :function (or (early-fast-method-function first)
                             (emf-from-mfs (method-function first)))
               :form `(call-method ,first ())
               :applicable-methods methods))
@@ -207,9 +207,6 @@
     (satiate-one generic-function-lambda-list
                  (standard-generic-function))
     (satiate-one leaf-method-p
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one fast-method-function
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))))
 

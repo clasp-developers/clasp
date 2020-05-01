@@ -33,6 +33,42 @@
   (defparameter *add-method-argument-declarations* nil)
 )
 
+;;; ----------------------------------------------------------------------
+;;; %METHOD-FUNCTIONs
+;;;
+;;; These are funcallable instances used as method functions.
+;;; The idea is we hang extra info, such as how to call the method with
+;;; our own faster convention, on the method function itself. This ensures
+;;; things don't get out of sync.
+;;; See pseudo class definition in hierarchy.lsp. Idea from SBCL. 
+
+(defun make-%method-function (fmf)
+  (with-early-make-funcallable-instance +%method-function-slots+
+    (%mf (find-class '%method-function)
+         :fmf fmf)
+    (setf-function-name %mf 'slow-method-function)
+    (set-funcallable-instance-function
+     %mf
+     (lambda (arguments next-methods)
+       (declare (core:lambda-name slow-method-function)
+                (ignore next-methods))
+       (apply fmf arguments)))
+    %mf))
+
+(defun fast-method-function (method)
+  (let ((mf (method-function method)))
+    ;; Internal class that is never subclassed, so just
+    (and (eq (class-of mf) (find-class '%method-function))
+         (with-early-accessors (+%method-function-slots+)
+           (%mf-fast-method-function mf)))))
+
+(defun early-fast-method-function (method)
+  (with-early-accessors (+standard-method-slots+
+                         +%method-function-slots+)
+    (let ((mf (method-function method)))
+      (and (eq (class-of mf) (find-class '%method-function))
+           (%mf-fast-method-function mf)))))
+
 
 ;;; ----------------------------------------------------------------------
 ;;; DEFMETHOD
@@ -85,6 +121,24 @@ in the generic function lambda-list to the generic function lambda-list"
                     (class-prototype (or (generic-function-method-class gf?)
                                          (find-class 'standard-method))))))))
 
+(defun lambda-list-fast-callable-p (lambda-list)
+  ;; We only put in an FMF if we have only required parameters.
+  (not (find-if (lambda (sym)
+                  (member sym lambda-list-keywords))
+                lambda-list)))
+
+;;; Is this lambda form one returned by our make-method-lambda method (below)?
+;;; If it is, we know what it does so we can kind of ignore it.
+;;; See %method-function above.
+(defun our-method-lambda-p (method-lambda)
+  ;; This is pretty KLUDGEy. But make-method-lambda pretty specifically has
+  ;; to return a lambda expression, so there's only so much we can do as far
+  ;; as magical indications go.
+  (and (consp method-lambda)
+       (eq (car method-lambda) 'lambda)
+       (consp (cdr method-lambda))
+       (equal (second method-lambda) '(.method-args. .next-methods.))))
+
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (let* ((qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
@@ -109,7 +163,14 @@ in the generic function lambda-list to the generic function lambda-list"
                (install-method ',name ',qualifiers
                                ,(specializers-expression specializers)
                                ',lambda-list
-                               ,fn-form
+                               ,(if (and (our-method-lambda-p fn-form)
+                                         (lambda-list-fast-callable-p lambda-list)
+                                         ;; FIXME: TEMPORARY, REDUNDANT
+                                         (multiple-value-bind (cnm-p nmp-p)
+                                             (walk-method-lambda lambda-form env)
+                                           (not (or cnm-p nmp-p))))
+                                    `(make-%method-function ,lambda-form)
+                                    fn-form)
                                ;; Note that we do not quote the options returned by make-method-lambda.
                                ;; This is essentially to make the fast method function easier.
                                ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
@@ -170,12 +231,6 @@ in the generic function lambda-list to the generic function lambda-list"
                      block))))
       (values method-lambda declarations documentation))))
 
-(defun lambda-list-fast-callable-p (lambda-list)
-  ;; We only put in an FMF if we have only required parameters.
-  (not (find-if (lambda (sym)
-                  (member sym lambda-list-keywords))
-                lambda-list)))
-
 (defun make-method-lambda (gf method method-lambda env)
   (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
@@ -199,16 +254,7 @@ in the generic function lambda-list to the generic function lambda-list"
                           (declare ,@declarations)
                           ,@body)))
                   ;; double quotes as per evaluation, explained above in defmethod.
-                  (list ''leaf-method-p `',leaf-method-p
-                        ;; FIXME: This is kind of a messy way of arranging things. Both the lambda list check
-                        ;; criterion, and the fmf initarg. But I'm not sure what would be preferable.
-                        ''fast-method-function (if (and leaf-method-p
-                                                        (lambda-list-fast-callable-p lambda-list))
-                                                  `(lambda ,lambda-list
-                                                     (declare ,@declarations)
-                                                     ,doc
-                                                     ,@body)
-                                                  nil))))))))
+                  (list ''leaf-method-p (not (not leaf-method-p)))))))))
 
 ;;; We want to avoid consing closures for call-next-method and next-method-p when possible,
 ;;; which is most of the time. We don't need a closure for just (call-next-method).
