@@ -349,6 +349,7 @@ GCPROTECTED:
 public: // Functions here
   virtual string __repr__() const;
   T_sp filename() const { return this->_Filename; };
+  virtual bool has_file_position() const;
 }; // FileStream class
 };
 
@@ -385,6 +386,7 @@ public: // Functions here
 
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
+  virtual bool has_file_position() const;
 };
 };
 

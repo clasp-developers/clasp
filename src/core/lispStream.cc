@@ -3034,8 +3034,9 @@ io_file_get_position(T_sp strm) {
   clasp_disable_interrupts();
   offset = lseek(f, 0, SEEK_CUR);
   clasp_enable_interrupts();
-  unlikely_if(offset < 0)
-      io_error(strm);
+  unlikely_if(offset < 0) {
+    io_error(strm);
+  }
   if (sizeof(clasp_off_t) == sizeof(long)) {
     output = Integer_O::create((gctools::Fixnum)offset);
   } else {
@@ -5654,13 +5655,24 @@ String_sp StringOutputStream_O::getAndReset() {
 
 namespace core {
 
+bool FileStream_O::has_file_position () const {
+  return false;
+}
+
+bool IOFileStream_O::has_file_position () const {
+  int fd = fileDescriptor();
+  return clasp_has_file_position(fd);
+}
+
 string FileStream_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
   ss << " " << _rep_(this->filename());
-  if (!this->_Closed) {
-    ss <<  " file-pos ";
-    ss << _rep_(clasp_file_position(this->asSmartPtr()));
+  if (this->has_file_position()) {
+    if (!this->_Closed) {
+      ss <<  " file-pos ";
+      ss << _rep_(clasp_file_position(this->asSmartPtr()));
+    }
   }
   ss << ">";
   return ss.str();
