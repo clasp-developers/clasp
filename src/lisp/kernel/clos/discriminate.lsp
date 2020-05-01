@@ -384,7 +384,7 @@
         ((optimized-slot-writer-p outcome)
          (generate-slot-writer reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call need-vaslist-p outcome))
+         (generate-effective-method-call reqargs need-vaslist-p outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun class-cell-form (slot-name class)
@@ -423,23 +423,43 @@
                     ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
 
-(defun generate-effective-method-call (need-vaslist-p outcome)
-  (let ((form
-          ;; if a form was provided, just throw it in.
-          ;; Otherwise generate a function call.
-          ;; NOTE: We use NIL to mean "no form provided".
-          ;; Hypothetically the form could actually BE nil,
-          ;; but I'm not holding my breath here- the backup is probably fine.
-          (cond ((effective-method-outcome-form outcome))
-                ((effective-method-outcome-function outcome)
-                 `(apply
-                   ,(effective-method-outcome-function outcome) .method-args.))
-                (t (error "BUG: Outcome ~a is messed up" outcome)))))
-    (if need-vaslist-p
-        `(progn
-           (core:vaslist-rewind .method-args.)
-           ,form)
-        form)))
+;;; This can be T, meaning prefer the form, NIL, meaning prefer the function,
+;;; or CL:REQUIRE, meaning use the form or signal an error if it's missing.
+;;; Inlining effective methods means putting the result of
+;;; compute-effective-method directly into the discriminating function.
+;;; Pros:
+;;; * No function call overhead
+;;; * With some trickiness, discriminating function becomes dumpable
+;;; Cons:
+;;; * Noticeably higher compilation time
+;;; The compilation time problem can be rather severe, as a dispatch miss
+;;; results in compiling all the effective methods again.
+;;; As such, we do not inline effective methods in the runtime.
+;;; Satiated generic functions have to inline so they can be dumped, though.
+(defvar *inline-effective-methods* nil)
+
+(defun generate-effective-method-call (arguments need-vaslist-p outcome)
+  (let ((form (effective-method-outcome-form outcome))
+        (function (effective-method-outcome-function outcome)))
+    (when (and (eq *inline-effective-methods* 'cl:require)
+               ;; NOTE: We use NIL to mean "no form provided".
+               ;; Hypothetically the form could actually BE nil,
+               ;; if the method combination returned it, but that's
+               ;; probably not actually going to happen?
+               (not form))
+      (error "BUG: No form provided to inline effective method"))
+    (if (or (and *inline-effective-methods* form)
+            (not function))
+        (if need-vaslist-p
+            `(progn
+               (core:vaslist-rewind .method-args.)
+               ,form)
+            form)
+        (if need-vaslist-p
+            `(progn
+               (core:vaslist-rewind .method-args.)
+               (apply ,function .method-args.))
+            `(funcall ,function ,@arguments)))))
 
 ;;;
 
@@ -513,7 +533,9 @@
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq
      &key generic-function-name
-       max-nargs (miss-operator 'dispatch-miss))
+       max-nargs (miss-operator 'dispatch-miss)
+       ((:inline-effective-methods *inline-effective-methods*)
+        *inline-effective-methods*))
   (let ((need-vaslist-p (call-history-requires-vaslist-p call-history))
         (required-args (loop repeat nreq
                              collect (gensym "DISCRIMINATION-ARG"))))

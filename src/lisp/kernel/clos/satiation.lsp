@@ -467,6 +467,7 @@
        (generate-discriminator-from-data
         call-history (safe-gf-specializer-profile generic-function)
         `(load-time-value (fdefinition ',name) t) min
+        :inline-effective-methods 'cl:require
         :max-nargs max :generic-function-name name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
