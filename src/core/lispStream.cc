@@ -3034,9 +3034,8 @@ io_file_get_position(T_sp strm) {
   clasp_disable_interrupts();
   offset = lseek(f, 0, SEEK_CUR);
   clasp_enable_interrupts();
-  unlikely_if(offset < 0) {
+  unlikely_if(offset < 0)
     io_error(strm);
-  }
   if (sizeof(clasp_off_t) == sizeof(long)) {
     output = Integer_O::create((gctools::Fixnum)offset);
   } else {
