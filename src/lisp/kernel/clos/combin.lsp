@@ -88,25 +88,51 @@
             ,(second method)))
         (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
 
+(defun expand-call-method (method rest-methods env
+                           &optional (method-function-map nil mfmp)
+                             (fast-method-function-map nil fmfmp))
+  ;; Alright so this map junk. What the fuck?
+  ;; Check satiation.lsp. Sometimes we want call-method to expand into
+  ;; something dumpable. (Normally it does not, because it expands into
+  ;; literal functions.) In this scenario, the maps are alists from
+  ;; methods to forms to use in place of an actual method function.
+  ;; This solution is a lot less goofier than the twisted nightmare
+  ;; that was my previous attempt, and makes it easier to ensure
+  ;; changes to this code are reflected both at runtime and in satiation.
+  (let ((get-mf
+          (if mfmp
+              (lambda (method)
+                (or (cdr (assoc method method-function-map))
+                    (error "BUG: method functions failed to coordinate")))
+              #'method-function))
+        (get-fmf
+          (if fmfmp
+              (lambda (method)
+                (or (cdr (assoc method fast-method-function-map))
+                    (error "BUG: fast method functions failed to coordinate")))
+              #'fast-method-function)))
+    (cond ((method-p method)
+           (let ((fmf (funcall get-fmf method)))
+             (if fmf
+                 (multiple-value-bind (required-arguments validp)
+                     (discriminator-required-arguments env)
+                   (if validp
+                       `(funcall ,fmf ,@required-arguments)
+                       `(apply ,fmf .method-args.)))
+                 `(funcall ,(funcall get-mf method)
+                           .method-args. ; will be bound in context
+                           ;; FIXME? Should leaf-method-p be abstracted too?
+                           ,(if (or (leaf-method-p method) (null rest-methods))
+                                nil
+                                `(load-time-value
+                                  (list ,@(mapcar #'call-method-aux rest-methods))
+                                  t))))))
+          ((make-method-form-p method) (second method))
+          (t `(error "Invalid argument to CALL-METHOD: ~a" ',method)))))
+
 (defmacro call-method (method &optional rest-methods
                        &environment env)
-  (cond ((method-p method)
-         (let ((fmf (fast-method-function method)))
-           (if fmf
-               (multiple-value-bind (required-arguments validp)
-                   (discriminator-required-arguments env)
-                 (if validp
-                     `(funcall ,fmf ,@required-arguments)
-                     `(apply ,fmf .method-args.)))
-               `(funcall ,(method-function method)
-                         .method-args. ; will be bound in context
-                         ,(if (or (leaf-method-p method) (null rest-methods))
-                              nil
-                              `(load-time-value
-                                (list ,@(mapcar #'call-method-aux rest-methods))
-                                t))))))
-        ((make-method-form-p method) (second method))
-        (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
+  (expand-call-method method rest-methods env))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION

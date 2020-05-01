@@ -265,6 +265,17 @@
                   (equal methods (effective-method-outcome-applicable-methods outcome)))
           return outcome))
 
+(defun optimizable-reader-method-p (method)
+  ;; In the future, we could use load-time-value instead of find-class every time,
+  ;; but the system loading architecture makes this dicey at the moment.
+  (eq (class-of method) (find-class 'standard-reader-method)))
+
+(defun optimizable-writer-method-p (method)
+  (eq (class-of method) (find-class 'standard-writer-method)))
+
+(defun standard-slotd-p (slotd)
+  (eq (class-of slotd) (find-class 'standard-effective-slot-definition)))
+
 (defun compute-outcome
     (generic-function method-combination methods actual-specializers &key log)
   ;; Calculate the effective-method-function as well as an optimized one
@@ -294,16 +305,14 @@
          (method (and (consp em)
                       (eq (first em) 'call-method)
                       (second em)))
-         ;; In the future, we could use load-time-value instead of find-class every time,
-         ;; but the system loading architecture makes this dicey at the moment.
-         (readerp (when method (eq (class-of method) (find-class 'standard-reader-method))))
-         (writerp (when method (eq (class-of method) (find-class 'standard-writer-method))))
+         (readerp (when method (optimizable-reader-method-p method)))
+         (writerp (when method (optimizable-writer-method-p method)))
          (class (cond ((not method) nil)
                       (readerp (first actual-specializers))
                       (writerp (second actual-specializers))
                       (t nil)))
          (slotd (when class (effective-slotd-from-accessor-method method class)))
-         (standard-slotd-p (when slotd (eq (class-of slotd) (find-class 'standard-effective-slot-definition))))
+         (standard-slotd-p (when slotd (standard-slotd-p slotd)))
          existing-emf
          (optimized
            (cond ((and standard-slotd-p readerp)

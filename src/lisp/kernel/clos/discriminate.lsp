@@ -512,7 +512,7 @@
 
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq
-     &key extra-bindings generic-function-name
+     &key generic-function-name
        max-nargs (miss-operator 'dispatch-miss))
   (let ((need-vaslist-p (call-history-requires-vaslist-p call-history))
         (required-args (loop repeat nreq
@@ -550,8 +550,7 @@
                          :given-nargs nargs
                          :min-nargs ,nreq :max-nargs ,max-nargs)
                   done)))
-           (let (,@extra-bindings
-                 ,@(if need-vaslist-p
+           (let (,@(if need-vaslist-p
                        (mapcar (lambda (req)
                                  `(,req (core:vaslist-pop .method-args.)))
                                required-args)
