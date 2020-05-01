@@ -79,8 +79,8 @@
         (otherwise (emf-default form)))
       (emf-default form)))
 
-(defun call-method-aux (method)
-  (cond ((method-p method) (method-function method))
+(defun call-method-aux (method &optional (get-mf #'method-function))
+  (cond ((method-p method) (funcall get-mf method))
         ((make-method-form-p method)
          `(lambda (.method-args. .next-methods.)
             (declare (ignore .next-methods.)
@@ -99,18 +99,20 @@
   ;; This solution is a lot less goofier than the twisted nightmare
   ;; that was my previous attempt, and makes it easier to ensure
   ;; changes to this code are reflected both at runtime and in satiation.
-  (let ((get-mf
-          (if mfmp
-              (lambda (method)
-                (or (cdr (assoc method method-function-map))
-                    (error "BUG: method functions failed to coordinate")))
-              #'method-function))
-        (get-fmf
-          (if fmfmp
-              (lambda (method)
-                (or (cdr (assoc method fast-method-function-map))
-                    (error "BUG: fast method functions failed to coordinate")))
-              #'fast-method-function)))
+  (let* ((maybe-gf-name (gf-being-compiled env))
+         (get-mf
+           (if mfmp
+               (lambda (method)
+                 (or (cdr (assoc method method-function-map))
+                     (error "BUG: method functions failed to coordinate~@[
+for generic function ~a~]"
+                            maybe-gf-name)))
+               #'method-function))
+         (get-fmf
+           (if fmfmp
+               (lambda (method)
+                 (cdr (assoc method fast-method-function-map)))
+               #'fast-method-function)))
     (cond ((method-p method)
            (let ((fmf (funcall get-fmf method)))
              (if fmf
@@ -124,9 +126,18 @@
                            ;; FIXME? Should leaf-method-p be abstracted too?
                            ,(if (or (leaf-method-p method) (null rest-methods))
                                 nil
-                                `(load-time-value
-                                  (list ,@(mapcar #'call-method-aux rest-methods))
-                                  t))))))
+                                (if mfmp
+                                    ;; If there's a method function map, we can't use
+                                    ;; load-time-value, since the "method functions"
+                                    ;; are lexical variables.
+                                    ;; This means we cons up a list every time, which
+                                    ;; is inefficient. Oh well.
+                                    `(list
+                                      ,@(loop for method in rest-methods
+                                              collect (call-method-aux method get-mf)))
+                                    `(load-time-value
+                                      (list ,@(mapcar #'call-method-aux rest-methods))
+                                      t)))))))
           ((make-method-form-p method) (second method))
           (t `(error "Invalid argument to CALL-METHOD: ~a" ',method)))))
 

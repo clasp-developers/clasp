@@ -352,6 +352,43 @@
           into entries
         finally (return (values entries all-methods))))
 
+;;; Given an outcome, return a form that, when evaluated, returns an outcome
+;;; similar to it.
+(defun outcome-producer (outcome get-method-form)
+  (cond ((optimized-slot-reader-p outcome)
+         `(make-optimized-slot-reader
+           ;; FIXME: Probably not correct for :allocation :class.
+           :index ',(optimized-slot-reader-index outcome)
+           :slot-name ',(optimized-slot-reader-slot-name outcome)
+           :method ,(funcall get-method-form
+                             (optimized-slot-reader-method outcome))
+           :class ,(optimized-slot-reader-class outcome)))
+        ((optimized-slot-writer-p outcome)
+         `(make-optimized-slot-writer
+           ;; FIXME: Probably not correct for :allocation :class.
+           :index ',(optimized-slot-writer-index outcome)
+           :slot-name ',(optimized-slot-writer-slot-name outcome)
+           :method ,(funcall get-method-form
+                             (optimized-slot-writer-method outcome))
+           :class ,(optimized-slot-writer-class outcome)))
+        ((effective-method-outcome-p outcome)
+         `(make-effective-method-outcome
+           :applicable-methods
+           (list
+            ,@(mapcar get-method-form
+                      (effective-method-outcome-applicable-methods
+                       outcome)))
+           ;; Can't use the form since it has literal methods in,
+           ;; but those can be macroexpanded out if evaluated.
+           ;; FIXME: We should use the fast method function as
+           ;; the EMF if available, and so on.
+           :function (lambda (core:&va-rest .method-args.)
+                       (declare (core:lambda-name
+                                 compile-time-effective-method))
+                       ,(effective-method-outcome-form outcome))))
+        (t (error "BUG: Don't know how to reconstruct outcome: ~a"
+                  outcome))))
+
 ;;; Given a call history and an alist of methods to forms,
 ;;; return a form that, when evaluated, returns a call history similar to the
 ;;; provided one, and furthermore is dumpable.
@@ -359,45 +396,22 @@
   (flet ((get-method-form (method)
            (or (cdr (assoc method method-map))
                (error "BUG: method-map inconsistency"))))
-    `(list
-      ,@(loop for (key . outcome) in call-history
-              for outcome-form
-                = (cond ((optimized-slot-reader-p outcome)
-                         `(make-optimized-slot-reader
-                           ;; FIXME: Probably not correct for :allocation :class.
-                           :index ',(optimized-slot-reader-index outcome)
-                           :slot-name ',(optimized-slot-reader-slot-name outcome)
-                           :method ,(get-method-form
-                                     (optimized-slot-reader-method outcome))
-                           :class ,(optimized-slot-reader-class outcome)))
-                        ((optimized-slot-writer-p outcome)
-                         `(make-optimized-slot-writer
-                           ;; FIXME: Probably not correct for :allocation :class.
-                           :index ',(optimized-slot-writer-index outcome)
-                           :slot-name ',(optimized-slot-writer-slot-name outcome)
-                           :method ,(get-method-form
-                                     (optimized-slot-writer-method outcome))
-                           :class ,(optimized-slot-writer-class outcome)))
-                        ((effective-method-outcome-p outcome)
-                         `(make-effective-method-outcome
-                           :applicable-methods
-                           (list
-                            ,@(mapcar #'get-method-form
-                                      (effective-method-outcome-applicable-methods
-                                       outcome)))
-                           ;; Can't use the form since it has literal methods in,
-                           ;; but those can be macroexpanded out if evaluated.
-                           ;; FIXME: We should use the fast method function as
-                           ;; the EMF if available, and so on.
-                           :function (lambda (core:&va-rest .method-args.)
-                                       (declare (core:lambda-name
-                                                 compile-time-effective-method))
-                                       ,(effective-method-outcome-form outcome))))
-                        (t (error "BUG: Don't know how to reconstruct outcome: ~a"
-                                  outcome)))
-              ;; Keys are vectors of classes and lists (representing eql specializers)
-              ;; and should therefore be dumpable.
-              collect `(cons ,key ,outcome-form)))))
+    (loop for (key . outcome) in call-history
+          for cached-outcome-info = (assoc outcome outcome-cache)
+          for name = (or (second cached-outcome-info) (gensym "OUTCOME"))
+          for outcome-form
+            = (or (third cached-outcome-info)
+                  (outcome-producer outcome #'get-method-form))
+          unless cached-outcome-info
+            collect (list outcome name outcome-form) into outcome-cache
+          ;; Keys are vectors of classes and lists (representing eql specializers)
+          ;; and should therefore be dumpable.
+          collect `(cons ,key ,name) into new-ch
+          finally
+             (return
+               `(let (,@(loop for (_ name form) in outcome-cache
+                              collect `(,name ,form)))
+                  (list ,@new-ch))))))
 
 (defun method-specializers-form (specializers)
   `(list ,@(loop for s in specializers

@@ -150,9 +150,8 @@
 ;;; The complicated stuff is in the :load-toplevel.
 ;;; TODO: Figure out precompiled discriminating functions too.
 ;;; Main problem there is making sure the stamps are the same at compile and load.
-(eval-when (:execute #-(or) :load-toplevel)
+(eval-when (:execute)
   (satiate-minimal-generic-functions))
-#+(or)
 (eval-when (:load-toplevel)
   (macrolet ((find-method (&rest args)
                `(early-find-method ,@args)))
@@ -414,7 +413,6 @@ and cannot be added to ~A." method other-gf gf)))
   (declare (ignore class direct-slot initargs))
   (find-class 'standard-writer-method))
 
-#+(or)
 (eval-when (:load-toplevel)
   (%satiate reader-method-class (standard-class standard-direct-slot-definition)
             (funcallable-standard-class standard-direct-slot-definition))
@@ -505,7 +503,6 @@ and cannot be added to ~A." method other-gf gf)))
     (funcall function d)))
 
 ;; FIXME: dependence on core:closure-with-slots is not super
-#+(or)
 (%satiate map-dependents (standard-generic-function core:closure-with-slots)
           (standard-class core:closure-with-slots))
 
