@@ -128,6 +128,7 @@
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
        (documentation nil) (method-class nil m-c-p)
+     &allow-other-keys
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   ;; Check the validity of several fields.
   (when a-o-p
@@ -177,7 +178,8 @@ Not a valid documentation object ~A"
        (documentation nil documentation-p)
        (argument-precedence-order nil a-o-p)
        ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
-       ((source-position spi) nil spi-p))
+       ((source-position spi) nil spi-p)
+       &allow-other-keys)
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
@@ -250,7 +252,8 @@ Not a valid documentation object ~A"
      &key
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun) gfcp)
-       (delete-methods nil))
+       (delete-methods nil)
+       &allow-other-keys)
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
@@ -258,9 +261,6 @@ Not a valid documentation object ~A"
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
-  ;; FIXME! We should check that the class GENERIC-FUNCTION-CLASS is compatible
-  ;; with the old one. In what sense "compatible" is ment, I do not know!
-  ;; (See ANSI DEFGENERIC entry)
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
   (when gfcp
@@ -286,7 +286,8 @@ Not a valid documentation object ~A"
     ((gfun null) name &rest args &key
                                    (method-class 'STANDARD-METHOD method-class-p)
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
-                                   (delete-methods nil))
+                                   (delete-methods nil)
+                                   &allow-other-keys)
   (declare (ignore delete-methods gfun))
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; else create a new generic function object
