@@ -211,12 +211,6 @@ in the generic function lambda-list to the generic function lambda-list"
                     (class-prototype (or (generic-function-method-class gf?)
                                          (find-class 'standard-method))))))))
 
-(defun lambda-list-fast-callable-p (lambda-list)
-  ;; We only put in an FMF if we have only required parameters.
-  (not (find-if (lambda (sym)
-                  (member sym lambda-list-keywords))
-                lambda-list)))
-
 ;;; Is this lambda form one returned by our make-method-lambda method (below)?
 ;;; If it is, we know what it does so we can kind of ignore it.
 ;;; See %method-function above.
@@ -254,8 +248,6 @@ in the generic function lambda-list to the generic function lambda-list"
                                ,(specializers-expression specializers)
                                ',lambda-list
                                ,(if (and (our-method-lambda-p fn-form)
-                                         #+(or)
-                                         (lambda-list-fast-callable-p lambda-list)
                                          ;; FIXME: TEMPORARY, REDUNDANT
                                          (multiple-value-bind (cnm-p nmp-p)
                                              (walk-method-lambda lambda-form env)
