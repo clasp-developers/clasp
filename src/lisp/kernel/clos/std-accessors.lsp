@@ -27,16 +27,14 @@
 ;;; 
 
 (defun std-class-accessors (slot-name)
-  (values #'(lambda (.method-args. .next-methods. #|self|#) ;; CHECKME
-              (declare (ignore .next-methods.)
-                       (core:lambda-name std-class-accessors.reader.lambda))
-              (core::bind-va-list (self) .method-args.
-                (slot-value self slot-name)))
-	  #'(lambda (.method-args. .next-methods. #|value self|#) ;; CHECKME
-              (declare (ignore .next-methods. )
-                       (core:lambda-name std-class-accessors.writer.lambda))
-              (core::bind-va-list (value self) .method-args.
-                (setf (slot-value self slot-name) value)))))
+  (values (make-%method-function
+           #'(lambda (self)
+               (declare (core:lambda-name std-class-accessors.reader.lambda))
+               (slot-value self slot-name)))
+          (make-%method-function
+           #'(lambda (new-value self)
+               (declare (core:lambda-name std-class-accessors.writer.lambda))
+               (setf (slot-value self slot-name) new-value)))))
 
 (defun safe-add-method (name method)
   ;; Adds a method to a function which might have been previously defined
