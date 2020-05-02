@@ -514,7 +514,8 @@
          (not (and (consp form)
                    (eq (car form) 'call-method)
                    (method-p (second form))
-                   (fast-method-function (second form)))))))
+                   (or (fast-method-function (second form))
+                       (contf-method-function (second form))))))))
 
 (defun outcome-requires-vaslist-p (outcome)
   (cond ((effective-method-outcome-p outcome)
