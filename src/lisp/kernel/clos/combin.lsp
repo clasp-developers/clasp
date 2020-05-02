@@ -128,30 +128,45 @@ for generic function ~a~]"
                  (cdr (assoc method fast-method-function-map)))
                #'fast-method-function)))
     (cond ((method-p method)
-           (let ((fmf (funcall get-fmf method)))
-             (if fmf
+           (let ((fmf (funcall get-fmf method))
+                 (contf (contf-method-function method)))
+             (when fmf
+               (return-from expand-call-method
                  (multiple-value-bind (required-arguments validp)
                      (discriminator-required-arguments env)
                    (if validp
                        `(funcall ,fmf ,@required-arguments)
-                       `(apply ,fmf .method-args.)))
-                 `(funcall ,(funcall get-mf method)
-                           .method-args. ; will be bound in context
-                           ;; FIXME? Should leaf-method-p be abstracted too?
-                           ,(if (or (leaf-method-p method) (null rest-methods))
-                                nil
-                                (if mfmp
-                                    ;; If there's a method function map, we can't use
-                                    ;; load-time-value, since the "method functions"
-                                    ;; are lexical variables.
-                                    ;; This means we cons up a list every time, which
-                                    ;; is inefficient. Oh well.
-                                    `(list
-                                      ,@(loop for method in rest-methods
-                                              collect (call-method-aux method get-mf)))
-                                    `(load-time-value
-                                      (list ,@(mapcar #'call-method-aux rest-methods))
-                                      t)))))))
+                       `(apply ,fmf .method-args.)))))
+             (when contf
+               (return-from expand-call-method
+                 (let ((next (if (null rest-methods)
+                                 (make-%no-next-method-continuation
+                                  method)
+                                 (emf-call-method
+                                  (first rest-methods)
+                                  (rest rest-methods)))))
+                   (multiple-value-bind (required-arguments validp)
+                       (discriminator-required-arguments env)
+                     (if validp
+                         `(funcall ,contf ,next ,@required-arguments)
+                         `(apply ,contf ,next .method-args.))))))
+             `(funcall ,(funcall get-mf method)
+                       .method-args. ; will be bound in context
+                       ;; FIXME? Should leaf-method-p be abstracted too?
+                       ,(if (or (leaf-method-p method) (null rest-methods))
+                            nil
+                            (if mfmp
+                                ;; If there's a method function map, we can't use
+                                ;; load-time-value, since the "method functions"
+                                ;; are lexical variables.
+                                ;; This means we cons up a list every time, which
+                                ;; is inefficient. Oh well.
+                                `(list
+                                  ,@(loop for method in rest-methods
+                                          collect (call-method-aux method get-mf)))
+                                `(load-time-value
+                                  (list ,@(mapcar #'call-method-aux rest-methods))
+                                  t))))))
           ((make-method-form-p method) (second method))
           (t `(error "Invalid argument to CALL-METHOD: ~a" ',method)))))
 

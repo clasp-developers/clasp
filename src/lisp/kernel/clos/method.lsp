@@ -87,15 +87,19 @@
 ;;; But it's its own class so that next-method-p can distinguish it.
 
 (defun make-%no-next-method-continuation (method)
-  (let ((gf (method-generic-function method)))
-    (with-early-make-funcallable-instance nil ; class has no slots.
-      (%nnmc (find-class '%no-next-method-continuation))
-      (set-funcallable-instance-function
-       %nnmc
-       (lambda (core:&va-rest args)
-         (core:lambda-name %no-next-method-continuation.lambda)
-         (apply #'no-next-method gf method args)))
-      %nnmc)))
+  (with-early-make-funcallable-instance nil ; class has no slots.
+    (%nnmc (find-class '%no-next-method-continuation))
+    (set-funcallable-instance-function
+     %nnmc
+     (if (null method)
+         (lambda (core:&va-rest args)
+           (declare (core:lambda-name %no-next-method-continuation.slow.bad))
+           (error "No next method"))
+         (let ((gf (method-generic-function method)))
+           (lambda (core:&va-rest args)
+             (declare (core:lambda-name %no-next-method-continuation.lambda))
+             (apply #'no-next-method gf method args)))))
+    %nnmc))
 
 (defun make-%method-function-contf (contf)
   (with-early-make-funcallable-instance +%method-function-slots+
@@ -104,17 +108,20 @@
     (setf-function-name %mf 'slow-method-function)
     (set-funcallable-instance-function
      %mf
-     (lambda (arguments next-methods)
-       (declare (core:lambda-name slow-method-function.contf))
-       ;; FIXME: Avoid coerce-fdesignator in apply here
-       (apply contf
-              (lambda (core:&va-rest .method-args.)
+     (let (;; FIXME: Method not available yet :(
+           (nnmc (make-%no-next-method-continuation nil)))
+       (lambda (.method-args. next-methods)
+         (declare (core:lambda-name slow-method-function.contf))
+         ;; FIXME: Avoid coerce-fdesignator in apply here
+         (apply contf
                 (if (null next-methods)
-                    (error "No next method") ; FIXME: Method not available yet :(
-                    (funcall (first next-methods)
-                             .method-args.
-                             (rest next-methods))))
-              arguments)))
+                    nnmc
+                    (lambda (core:&va-rest .method-args.)
+                      (declare (core:lambda-name slot-method-function.contf.lambda))
+                      (funcall (first next-methods)
+                               .method-args.
+                               (rest next-methods))))
+                .method-args.))))
     %mf))
 
 (defun contf-method-function (method)
@@ -129,13 +136,15 @@
                   `((call-next-method (&rest args)
                       (if (null args)
                           '(apply ,contsym .method-args.)
-                          (list* 'funcall ,contsym args)))))
+                          (list* 'funcall ',contsym args)))))
               ,@(when (eq nnmp-p 't)
                   `((next-method-p ()
                       '(typep ,contsym '(not %no-next-method-continuation))))))
      (flet (,@(when (eq cnm-p 'function)
-                `((call-next-method (core:&va-rest .method-args.)
-                    (apply ,contsym .method-args.))))
+                `((call-next-method (core:&va-rest cnm-args)
+                    (apply ,contsym (if (> (vaslist-length cnm-args) 0)
+                                        cnm-args
+                                        .method-args.)))))
             ,@(when (eq nnmp-p 'function)
                 `((next-method-p ()
                     (typep ,contsym '(not %no-next-method-continuation))))))
