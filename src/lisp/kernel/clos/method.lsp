@@ -150,10 +150,11 @@
                     (typep ,contsym '(not %no-next-method-continuation))))))
        ,form)))
 
-(defun contf-lambda (lambda-list decls doc body
+(defun contf-lambda (lambda-list lambda-name decls doc body
                      call-next-method-p no-next-method-p-p)
   (let ((contsym (gensym "METHOD-CONTINUATION")))
     `(lambda (,contsym core:&va-rest .method-args.)
+       (declare (core:lambda-name ,lambda-name))
        ,@(when doc (list doc))
        ,(wrap-contf-lexical-function-binds
          `(core::bind-va-list ,lambda-list .method-args. ,@decls ,@body)
@@ -233,9 +234,10 @@ in the generic function lambda-list to the generic function lambda-list"
 
 ;;; Does the work of calling make-method-lambda, and returns the same values.
 ;;; In the event the method lambda is the one returned by the standard method,
-;;; instead of a lambda expression, may return a form to create a
-;;; %method-function.
-(defun method-lambda (name lambda-expression env)
+;;; instead of a lambda expression, this will return a form to create a
+;;; %method-function with some quicker to use internal function (see above).
+(defun method-lambda (name lambda-expression env
+                      lambda-name lambda-list body declarations documentation)
   (multiple-value-bind (generic-function method)
       (prototypes-for-make-method-lambda name)
     (let ((*call-next-method-p* 'function)
@@ -243,9 +245,12 @@ in the generic function lambda-list to the generic function lambda-list"
       (multiple-value-bind (fn-form options)
           (make-method-lambda generic-function method lambda-expression env)
         (values
-         (if (and (our-method-lambda-p fn-form)
-                  (not (or *call-next-method-p* *next-method-p-p*)))
-             `(make-%method-function-fast ,lambda-expression)
+         (if (our-method-lambda-p fn-form)
+             (if (not (or *call-next-method-p* *next-method-p-p*))
+                 `(make-%method-function-fast ,lambda-expression)
+                 `(make-%method-function-contf
+                   ,(contf-lambda lambda-list lambda-name declarations documentation body
+                                  *call-next-method-p* *next-method-p-p*)))
              fn-form)
          options)))))
 
@@ -259,10 +264,13 @@ in the generic function lambda-list to the generic function lambda-list"
 	 (body args))
     (multiple-value-bind (lambda-list required-parameters specializers)
         (parse-specialized-lambda-list specialized-lambda-list)
-      (multiple-value-bind (lambda-expression declarations documentation)
+      (multiple-value-bind (lambda-expression lambda-name fn-lambda-list body
+                            declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
         (multiple-value-bind (fn-form options)
-            (method-lambda name lambda-expression env)
+            (method-lambda
+             name lambda-expression env
+             lambda-name fn-lambda-list body declarations documentation)
           `(progn
              (eval-when (:compile-toplevel)
                (cmp:register-global-function-def 'defmethod ',name))
@@ -334,9 +342,9 @@ in the generic function lambda-list to the generic function lambda-list"
 
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
-      (sys::find-declarations body)
-    (setf qualifiers (if qualifiers (list qualifiers)))
-    (let* ((copied-variables '())
+      (sys::find-declarations body t)
+    (let* ((qualifiers (if qualifiers (list qualifiers)))
+           (copied-variables '())
            (class-declarations
             (nconc (when *add-method-argument-declarations*
                      (loop for name in required-parameters
@@ -348,6 +356,7 @@ in the generic function lambda-list to the generic function lambda-list"
                    (cdar declarations)))
            (block `(block ,(si::function-block-name name) ,@real-body))
            (lambda-list (fixup-method-lambda-list lambda-list))
+           (lambda-name `(method ,name ,@qualifiers ,(fixup-specializers specializers)))
            (method-lambda
             ;; Remove the documentation string and insert the
             ;; appropriate class declarations.  The documentation
@@ -357,12 +366,12 @@ in the generic function lambda-list to the generic function lambda-list"
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
              `(lambda ,lambda-list
-                (declare (core:lambda-name (method ,name ,@qualifiers ,(fixup-specializers specializers))))
+                (declare (core:lambda-name ,lambda-name))
                 ,@(and class-declarations `((declare ,@class-declarations)))
                 ,(if copied-variables
                      `(let* ,copied-variables ,block)
                      block))))
-      (values method-lambda declarations documentation))))
+      (values method-lambda lambda-name lambda-list (list block) declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
   (declare (ignore gf method))
