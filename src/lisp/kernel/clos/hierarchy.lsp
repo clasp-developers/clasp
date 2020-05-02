@@ -227,7 +227,8 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (core:defconstant-equal +%method-function-slots+
-    '((fast-method-function :initarg :fmf :reader %mf-fast-method-function))))
+    '((fast-method-function :initarg :fmf :initform nil
+                            :reader %mf-fast-method-function))))
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
