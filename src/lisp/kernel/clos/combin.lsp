@@ -64,7 +64,7 @@
   (cond ((method-p method)
          (or (fast-method-function method) ; FMFs are valid EMFs
              (let ((contf (contf-method-function method)))
-               (and contf (emf-from-contf contf method next-methods)))
+               (when contf (emf-from-contf contf method next-methods)))
              (when (or (null next-methods)
                        (leaf-method-p method))
                (emf-from-mfs (method-function method)))
