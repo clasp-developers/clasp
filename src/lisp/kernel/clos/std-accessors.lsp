@@ -27,11 +27,11 @@
 ;;; 
 
 (defun std-class-accessors (slot-name)
-  (values (make-%method-function
+  (values (make-%method-function-fast
            #'(lambda (self)
                (declare (core:lambda-name std-class-accessors.reader.lambda))
                (slot-value self slot-name)))
-          (make-%method-function
+          (make-%method-function-fast
            #'(lambda (new-value self)
                (declare (core:lambda-name std-class-accessors.writer.lambda))
                (setf (slot-value self slot-name) new-value)))))

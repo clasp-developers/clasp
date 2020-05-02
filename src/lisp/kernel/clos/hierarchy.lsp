@@ -228,7 +228,9 @@
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (core:defconstant-equal +%method-function-slots+
     '((fast-method-function :initarg :fmf :initform nil
-                            :reader %mf-fast-method-function))))
+                            :reader %mf-fast-method-function)
+      (contf :initarg :contf :initform nil
+             :reader %mf-contf))))
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
@@ -461,6 +463,10 @@
          :metaclass funcallable-standard-class
          :direct-superclasses (funcallable-standard-object)
          :direct-slots #.+%method-function-slots+)
+        (%no-next-method-continuation
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots nil)
         ))))
 
 (eval-when (:compile-toplevel :execute)

@@ -40,6 +40,15 @@
     (declare (core:lambda-name combine-method-functions.lambda))
     (funcall first-mf va-args rest-mfs)))
 
+(defun emf-from-contf (contf method next-methods)
+  (let ((next (if (null next-methods)
+                  (make-%no-next-method-continuation method)
+                  (emf-call-method
+                   (first next-methods) (rest next-methods)))))
+    (lambda (core:&va-rest .method-args.)
+      (declare (core:lambda-name emf-from-contf.lambda))
+      (apply contf next .method-args.))))
+
 (defun emf-call-method-aux (method)
   (cond ((method-p method) (method-function method))
         ((make-method-form-p method)
@@ -49,6 +58,25 @@
                       (core:lambda-name emf-call-method-aux.lambda))
              ,(second method))))
         ;; Delay?
+        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
+
+(defun emf-call-method (method next-methods)
+  (cond ((method-p method)
+         (or (fast-method-function method) ; FMFs are valid EMFs
+             (let ((contf (contf-method-function method)))
+               (and contf (emf-from-contf contf method next-methods)))
+             (when (or (null next-methods)
+                       (leaf-method-p method))
+               (emf-from-mfs (method-function method)))
+             ;; NOTE: This is not strictly correct, for nonstandard
+             ;; methods that could have their own calling conventions.
+             (emf-from-mfs
+              (method-function method)
+              (mapcar #'emf-call-method-aux next-methods))))
+        ((make-method-form-p method)
+         ;; Weird but whatever. Next methods ignored.
+         (effective-method-function (second method)))
+        ;; Should this error be delayed?
         (t (error "Invalid argument to CALL-METHOD: ~a" method))))
 
 (defun effective-method-function (form)
@@ -61,21 +89,7 @@
         ((call-method)
          (let ((method (second form))
                (next-methods (third form)))
-           (cond ((method-p method)
-                  (or (fast-method-function method) ; FMFs are valid EMFs
-                      (when (or (null next-methods)
-                                (leaf-method-p method))
-                        (emf-from-mfs (method-function method)))
-                      ;; NOTE: This is not strictly correct, for nonstandard
-                      ;; methods that could have their own calling conventions.
-                      (emf-from-mfs
-                       (method-function method)
-                       (mapcar #'emf-call-method-aux next-methods))))
-                 ((make-method-form-p method)
-                  ;; Weird but whatever. Next methods ignored.
-                  (effective-method-function (second method)))
-                 ;; Should this error be delayed?
-                 (t (error "Invalid argument to CALL-METHOD: ~a" method)))))
+           (emf-call-method method next-methods)))
         (otherwise (emf-default form)))
       (emf-default form)))
 

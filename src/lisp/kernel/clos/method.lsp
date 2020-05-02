@@ -42,7 +42,12 @@
 ;;; things don't get out of sync.
 ;;; See pseudo class definition in hierarchy.lsp. Idea from SBCL. 
 
-(defun make-%method-function (fmf)
+;;; First, fast method functions: for leaf methods (i.e. methods that don't
+;;; use call-next-method or next-method-p). They are therefore just
+;;; functions, accepting the generic function's arguments. This means they
+;;; also double as effective method functions.
+
+(defun make-%method-function-fast (fmf)
   (with-early-make-funcallable-instance +%method-function-slots+
     (%mf (find-class '%method-function)
          :fmf fmf)
@@ -50,7 +55,7 @@
     (set-funcallable-instance-function
      %mf
      (lambda (arguments next-methods)
-       (declare (core:lambda-name slow-method-function)
+       (declare (core:lambda-name slow-method-function.fmf)
                 (ignore next-methods))
        ;; FIXME: Avoid coerce-fdesignator in apply here
        (apply fmf arguments)))
@@ -69,6 +74,81 @@
     (let ((mf (method-function method)))
       (and (eq (class-of mf) (find-class '%method-function))
            (%mf-fast-method-function mf)))))
+
+;;; Continuation method functions (contfs) can be put in place for
+;;; anything, unless there's a user make-method-lambda method.
+;;; A contf takes one argument, the continuation, and then the arguments
+;;; of the generic function as the rest. The continuation is the effective
+;;; method function executed by call-next-method.
+;;; So it's either a closure with another contf or method-function, or a
+;;; fast method function, or a special %no-next-method-continuation.
+;;; The %no-next-method-continuation is a somewhat magical funcallable
+;;; instance with an instance function that just calls no-next-method.
+;;; But it's its own class so that next-method-p can distinguish it.
+
+(defun make-%no-next-method-continuation (method)
+  (let ((gf (method-generic-function method)))
+    (with-early-make-funcallable-instance nil ; class has no slots.
+      (%nnmc (find-class '%no-next-method-continuation))
+      (set-funcallable-instance-function
+       %nnmc
+       (lambda (core:&va-rest args)
+         (core:lambda-name %no-next-method-continuation.lambda)
+         (apply #'no-next-method gf method args)))
+      %nnmc)))
+
+(defun make-%method-function-contf (contf)
+  (with-early-make-funcallable-instance +%method-function-slots+
+    (%mf (find-class '%method-function)
+         :contf contf)
+    (setf-function-name %mf 'slow-method-function)
+    (set-funcallable-instance-function
+     %mf
+     (lambda (arguments next-methods)
+       (declare (core:lambda-name slow-method-function.contf))
+       ;; FIXME: Avoid coerce-fdesignator in apply here
+       (apply contf
+              (lambda (core:&va-rest .method-args.)
+                (if (null next-methods)
+                    (error "No next method") ; FIXME: Method not available yet :(
+                    (funcall (first next-methods)
+                             .method-args.
+                             (rest next-methods))))
+              arguments)))
+    %mf))
+
+(defun contf-method-function (method)
+  (let ((mf (method-function method)))
+    ;; Internal class that is never subclassed, so just
+    (and (eq (class-of mf) (find-class '%method-function))
+         (with-early-accessors (+%method-function-slots+)
+           (%mf-contf mf)))))
+
+(defun wrap-contf-lexical-function-binds (form contsym cnm-p nnmp-p)
+  `(macrolet (,@(when (eq cnm-p 't)
+                  `((call-next-method (&rest args)
+                      (if (null args)
+                          '(apply ,contsym .method-args.)
+                          (list* 'funcall ,contsym args)))))
+              ,@(when (eq nnmp-p 't)
+                  `((next-method-p ()
+                      '(typep ,contsym '(not %no-next-method-continuation))))))
+     (flet (,@(when (eq cnm-p 'function)
+                `((call-next-method (core:&va-rest .method-args.)
+                    (apply ,contsym .method-args.))))
+            ,@(when (eq nnmp-p 'function)
+                `((next-method-p ()
+                    (typep ,contsym '(not %no-next-method-continuation))))))
+       ,form)))
+
+(defun contf-lambda (lambda-list decls doc body
+                     call-next-method-p no-next-method-p-p)
+  (let ((contsym (gensym "METHOD-CONTINUATION")))
+    `(lambda (,contsym core:&va-rest .method-args.)
+       ,@(when doc (list doc))
+       ,(wrap-contf-lexical-function-binds
+         `(core::bind-va-list ,lambda-list .method-args. ,@decls ,@body)
+         contsym call-next-method-p no-next-method-p-p))))
 
 
 ;;; ----------------------------------------------------------------------
@@ -171,7 +251,7 @@ in the generic function lambda-list to the generic function lambda-list"
                                          (multiple-value-bind (cnm-p nmp-p)
                                              (walk-method-lambda lambda-form env)
                                            (not (or cnm-p nmp-p))))
-                                    `(make-%method-function ,lambda-form)
+                                    `(make-%method-function-fast ,lambda-form)
                                     fn-form)
                                ;; Note that we do not quote the options returned by make-method-lambda.
                                ;; This is essentially to make the fast method function easier.

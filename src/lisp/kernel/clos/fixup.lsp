@@ -49,7 +49,7 @@
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
   (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
-         (mf (make-%method-function function))
+         (mf (make-%method-function-fast function))
          (method
            (make-method (find-class 'standard-method)
                         nil
