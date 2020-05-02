@@ -131,20 +131,21 @@
          (with-early-accessors (+%method-function-slots+)
            (%mf-contf mf)))))
 
-(defun wrap-contf-lexical-function-binds (form contsym cnm-p nnmp-p)
+(defun wrap-contf-lexical-function-binds (form contsym cnm-p nnmp-p
+                                          default-cnm-form)
   `(macrolet (,@(when (eq cnm-p 't)
                   `((call-next-method (&rest args)
                       (if (null args)
-                          '(apply ,contsym .method-args.)
+                          ',default-cnm-form
                           (list* 'funcall ',contsym args)))))
               ,@(when (eq nnmp-p 't)
                   `((next-method-p ()
                       '(typep ,contsym '(not %no-next-method-continuation))))))
      (flet (,@(when (eq cnm-p 'function)
                 `((call-next-method (core:&va-rest cnm-args)
-                    (apply ,contsym (if (> (vaslist-length cnm-args) 0)
-                                        cnm-args
-                                        .method-args.)))))
+                    (if (> (vaslist-length cnm-args) 0)
+                        (apply ,contsym cnm-args)
+                        ,default-cnm-form))))
             ,@(when (eq nnmp-p 'function)
                 `((next-method-p ()
                     (typep ,contsym '(not %no-next-method-continuation))))))
@@ -153,12 +154,35 @@
 (defun contf-lambda (lambda-list lambda-name decls doc body
                      call-next-method-p no-next-method-p-p)
   (let ((contsym (gensym "METHOD-CONTINUATION")))
-    `(lambda (,contsym core:&va-rest .method-args.)
-       (declare (core:lambda-name ,lambda-name))
-       ,@(when doc (list doc))
-       ,(wrap-contf-lexical-function-binds
-         `(core::bind-va-list ,lambda-list .method-args. ,@decls ,@body)
-         contsym call-next-method-p no-next-method-p-p))))
+    (multiple-value-bind (req opt rest keyf keys aok-p aux va-p)
+        (core:process-lambda-list lambda-list 'function)
+      (if (or (not (zerop (car opt))) rest keyf)
+          `(lambda (,contsym core:&va-rest .method-args.)
+             (declare (core:lambda-name ,lambda-name))
+             ,@(when doc (list doc))
+             ,(wrap-contf-lexical-function-binds
+               `(core::bind-va-list ,lambda-list .method-args. ,@decls ,@body)
+               contsym call-next-method-p no-next-method-p-p
+               `(apply ,contsym .method-args.)))
+          ;; We have only required parameters. This allows us to use a function
+          ;; that doesn't APPLY so much.
+          ;; We have to rebind the required parameters so that call-next-method
+          ;; can get at the originals, e.g. when the method body SETQs a param.
+          (let ((req-aliases (loop for r in (rest req)
+                                   collect (gensym (symbol-name r))))
+                (aux-binds
+                  (loop for (var init) on aux by #'cddr
+                        collect `(,var ,init))))
+            `(lambda (,contsym ,@req-aliases)
+               (declare (core:lambda-name ,lambda-name))
+               ,@(when doc (list doc))
+               ,(wrap-contf-lexical-function-binds
+                 `(let* (,@(mapcar #'list (rest req) req-aliases)
+                         ,@aux-binds)
+                    ,@decls
+                    ,@body)
+                 contsym call-next-method-p no-next-method-p-p
+                 `(funcall ,contsym ,@req-aliases))))))))
 
 
 ;;; ----------------------------------------------------------------------
