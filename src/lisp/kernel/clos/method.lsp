@@ -223,6 +223,32 @@ in the generic function lambda-list to the generic function lambda-list"
        (consp (cdr method-lambda))
        (equal (second method-lambda) '(.method-args. .next-methods.))))
 
+;;; These are used to pass information obtained from walking the method body
+;;; up to method-lambda. This is kind of ugly, but I think the walking really
+;;; has to be done in make-method-lambda to work properly with user methods,
+;;; and we don't want to pass it back as an option because they're not actual
+;;; options.
+(defvar *call-next-method-p*)
+(defvar *next-method-p-p*)
+
+;;; Does the work of calling make-method-lambda, and returns the same values.
+;;; In the event the method lambda is the one returned by the standard method,
+;;; instead of a lambda expression, may return a form to create a
+;;; %method-function.
+(defun method-lambda (name lambda-expression env)
+  (multiple-value-bind (generic-function method)
+      (prototypes-for-make-method-lambda name)
+    (let ((*call-next-method-p* 'function)
+          (*next-method-p-p* 'function))
+      (multiple-value-bind (fn-form options)
+          (make-method-lambda generic-function method lambda-expression env)
+        (values
+         (if (and (our-method-lambda-p fn-form)
+                  (not (or *call-next-method-p* *next-method-p-p*)))
+             `(make-%method-function-fast ,lambda-expression)
+             fn-form)
+         options)))))
+
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (let* ((qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
@@ -233,34 +259,25 @@ in the generic function lambda-list to the generic function lambda-list"
 	 (body args))
     (multiple-value-bind (lambda-list required-parameters specializers)
         (parse-specialized-lambda-list specialized-lambda-list)
-      (multiple-value-bind (lambda-form declarations documentation)
+      (multiple-value-bind (lambda-expression declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
-	(multiple-value-bind (generic-function method)
-            (prototypes-for-make-method-lambda name)
-	  (multiple-value-bind (fn-form options)
-	      (make-method-lambda generic-function method lambda-form env)
-	    (when documentation
-	      (setf options (list* :documentation documentation options)))
-            `(progn
-               (eval-when (:compile-toplevel)
-                 (cmp:register-global-function-def 'defmethod ',name))
-               (install-method ',name ',qualifiers
-                               ,(specializers-expression specializers)
-                               ',lambda-list
-                               ,(if (and (our-method-lambda-p fn-form)
-                                         ;; FIXME: TEMPORARY, REDUNDANT
-                                         (multiple-value-bind (cnm-p nmp-p)
-                                             (walk-method-lambda lambda-form env)
-                                           (not (or cnm-p nmp-p))))
-                                    `(make-%method-function-fast ,lambda-form)
-                                    fn-form)
-                               ;; Note that we do not quote the options returned by make-method-lambda.
-                               ;; This is essentially to make the fast method function easier.
-                               ;; MOP is in my view ambiguous about whether they're supposed to be quoted.
-                               ;; There's an example that sort of implies they are, but the extra
-                               ;; flexibility is pretty convenient, and matches that the primary value is
-                               ;; of course evaluated.
-                               ,@options))))))))
+        (multiple-value-bind (fn-form options)
+            (method-lambda name lambda-expression env)
+          `(progn
+             (eval-when (:compile-toplevel)
+               (cmp:register-global-function-def 'defmethod ',name))
+             (install-method ',name ',qualifiers
+                             ,(specializers-expression specializers)
+                             ',lambda-list
+                             ,fn-form
+                             ;; Note that we do not quote the options returned by
+                             ;; make-method-lambda. MOP is in my view ambiguous about whether
+                             ;; they're supposed to be quoted. There's an example that sort of
+                             ;; implies they are, but the extra flexibility is pretty convenient,
+                             ;; and matches that the primary value is of course evaluated.
+                             ,@(when documentation
+                                 `(:documentation ',documentation))
+                             ,@options)))))))
 
 (defun specializers-expression (specializers)
   `(list
@@ -351,6 +368,8 @@ in the generic function lambda-list to the generic function lambda-list"
   (declare (ignore gf method))
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
+    (setf *call-next-method-p* call-next-method-p
+          *next-method-p-p* next-method-p-p)
     (let ((leaf-method-p (null (or call-next-method-p next-method-p-p))))
       (multiple-value-bind (declarations body doc)
           (process-declarations (cddr method-lambda) t) ; We expect docstring
