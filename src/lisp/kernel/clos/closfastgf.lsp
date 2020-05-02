@@ -229,20 +229,23 @@
 
 (defun compute-applicable-methods-using-specializers (generic-function specializers)
   (check-type specializers list)
-  (sort-applicable-methods generic-function
-                           (applicable-method-list-using-specializers generic-function specializers)
-                           (mapcar (lambda (s) (if (consp s)
-                                                   (class-of (car s))
-                                                   s))
-                                   specializers)))
+  (sort-applicable-methods
+   generic-function
+   (applicable-method-list-using-specializers generic-function specializers)
+   (mapcar (lambda (s) (if (consp s)
+                           (class-of (car s))
+                           s))
+           specializers)))
 
 (defun effective-slotd-from-accessor-method (method class)
   (let* ((direct-slot (accessor-method-slot-definition method))
          (direct-slot-name (slot-definition-name direct-slot))
          (effective-slot-defs (class-slots class))
          (slot (loop for effective-slot in effective-slot-defs
-                     when (eq direct-slot-name (slot-definition-name effective-slot)) return effective-slot)))
-    (when (null slot) ; should be impossible. one way I hit it: abnormal slots from boot.lsp
+                     when (eq direct-slot-name (slot-definition-name effective-slot))
+                       return effective-slot)))
+    (when (null slot)
+      ;; should be impossible. one way I hit it: abnormal slots from boot.lsp
       (error "BUG: cannot find effective slot for optimized accessor! class ~s, slot name ~s"
              class direct-slot-name))
     slot))
