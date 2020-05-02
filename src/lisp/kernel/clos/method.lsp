@@ -52,6 +52,7 @@
      (lambda (arguments next-methods)
        (declare (core:lambda-name slow-method-function)
                 (ignore next-methods))
+       ;; FIXME: Avoid coerce-fdesignator in apply here
        (apply fmf arguments)))
     %mf))
 
