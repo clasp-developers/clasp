@@ -154,6 +154,7 @@
 (export '(invalidate-generic-functions-with-class-selector
           satiate
           satiate-initialization
+          apply-method
           ))
 
 #+clasp

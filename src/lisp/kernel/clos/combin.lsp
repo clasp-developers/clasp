@@ -169,7 +169,8 @@
                               (rest next-methods)))))
                `(apply ,contf ,next ,@arguments)))
             (t `(funcall ,(method-function method)
-                         (list* ,@arguments)
+                         ;; last element might be a valist
+                         (apply #'list ,@arguments)
                          (load-time-value
                           (list ,@(call-method-next-methods
                                    (method-generic-function method)
@@ -178,6 +179,10 @@
 
 (defmacro apply-method (method (&rest method-arguments) &rest arguments
                         &environment env)
+  "Call the given method. METHOD-ARGUMENTS are the unevaluated arguments
+passed in a CALL-METHOD form after the method.
+ARGUMENTS is a list of forms that will evaluate to a spreadable
+argument list designator."
   ;; Pick off the standard case without calling the generic function,
   ;; for metacircularity reasons.
   (if (std-method-p method)
