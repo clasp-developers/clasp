@@ -549,6 +549,13 @@ and cannot be added to ~A." method other-gf gf)))
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
 
+;; ditto
+(function-to-method 'expand-apply-method
+                    '(method method-arguments arguments env)
+                    '(standard-method t t t)
+                    nil
+                    #'std-expand-apply-method)
+
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)
                     '((standard-generic-function)))
