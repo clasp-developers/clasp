@@ -1619,6 +1619,16 @@ void ltvc_fill_list_varargs(gctools::GCRootsInModule* roots, T_O* list, size_t l
   }
 }
 
+
+void ltvc_mlf_basic_call_varargs(gctools::GCRootsInModule* holder,
+                                 T_O* fname, size_t len, Cons_O* varargs) {
+  (void)len; // don't need it.
+  T_sp tfname((gctools::Tagged)fname);
+  T_sp tvarargs((gctools::Tagged)varargs);
+  core__apply0(coerce::functionDesignator(tfname), tvarargs);
+}
+
+
 #define DEFINE_PARSERS
 #include "byte-code-interpreter.cc"
 #undef DEFINE_PARSERS
@@ -1637,7 +1647,10 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
 
     size_t byte_index = 0;
   while(1) {
-    if (log) printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
+    if (log) {
+      printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
+      printf("%s:%d byte_index = %zu\n",__FILE__, __LINE__,  byte_index);
+    }
     char c = ltvc_read_char(fin,log,byte_index);
     switch (c) {
     case 0: goto DONE;

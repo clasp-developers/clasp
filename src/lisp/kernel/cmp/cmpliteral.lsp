@@ -393,11 +393,31 @@ rewrite the slot in the literal table to store a closure."
           ;; General case
           (t (let* ((fn (compile-form create))
                     (name (llvm-sys:get-name fn)))
-               (add-creator "ltvc_set_mlf_creator_funcall" index object (register-function fn) name))))
+               (add-creator "ltvc_set_mlf_creator_funcall"
+                            index object (register-function fn) name))))
       (when initialize
-        (let* ((fn (compile-form initialize))
-               (name (llvm-sys:get-name fn)))
-          (add-side-effect-call "ltvc_mlf_init_funcall" (register-function fn) name))))))
+        ;; If the form is a call to a named function, with all constant arguments,
+        ;; special case that to avoid the compiler. This covers e.g. the
+        ;; initialize-instance calls ASTs have as initialization forms.
+        (if (and (consp initialize)
+                 (core:proper-list-p (rest initialize))
+                 (symbolp (first initialize))
+                 (fboundp (first initialize))
+                 (not (macro-function (first initialize)))
+                 (not (special-operator-p (first initialize)))
+                 (every #'constantp (rest initialize)))
+            (add-side-effect-call-arglist
+             "ltvc_mlf_basic_call"
+             (list* (load-time-reference-literal (first initialize) t :toplevelp nil)
+                    (length (rest initialize))
+                    (mapcar (lambda (form)
+                              (load-time-reference-literal
+                               (ext:constant-form-value form) t :toplevelp nil))
+                            (rest initialize))))
+            ;; General case.
+            (let* ((fn (compile-form initialize))
+                   (name (llvm-sys:get-name fn)))
+              (add-side-effect-call "ltvc_mlf_init_funcall" (register-function fn) name)))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   ;; Note: If an object has modifiable sub-parts, if we are not read-only-p
