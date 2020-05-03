@@ -131,6 +131,13 @@
          (with-early-accessors (+%method-function-slots+)
            (%mf-contf mf)))))
 
+(defun early-contf-method-function (method)
+  (with-early-accessors (+standard-method-slots+
+                         +%method-function-slots+)
+    (let ((mf (method-function method)))
+      (and (eq (class-of mf) (find-class '%method-function))
+           (%mf-contf mf)))))
+
 (defun wrap-contf-lexical-function-binds (form contsym cnm-p nnmp-p
                                           default-cnm-form)
   `(macrolet (,@(when (eq cnm-p 't)

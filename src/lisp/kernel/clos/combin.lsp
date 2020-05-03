@@ -81,8 +81,7 @@
          (or (fast-method-function method) ; FMFs are valid EMFs
              (let ((contf (contf-method-function method)))
                (when contf (emf-from-contf contf method next-methods)))
-             (when (or (null next-methods)
-                       (leaf-method-p method))
+             (when (leaf-method-p method)
                (emf-from-mfs (method-function method)))
              ;; NOTE: This is not strictly correct, for nonstandard
              ;; methods that could have their own calling conventions.
@@ -108,6 +107,36 @@
            (emf-call-method method next-methods)))
         (otherwise (emf-default form)))
       (emf-default form)))
+
+;;; Used for early satiation.
+
+(defun early-emf-from-contf (contf method next-methods)
+  (let ((next (if (null next-methods)
+                  (make-%no-next-method-continuation method)
+                  (early-emf-call-method
+                   (first next-methods) (rest next-methods)))))
+    (lambda (core:&va-rest .method-args.)
+      (declare (core:lambda-name emf-from-contf.lambda))
+      (apply contf next .method-args.))))
+
+(defun early-emf-call-method (method next-methods)
+  (cond ((method-p method)
+         (or (early-fast-method-function method)
+             (let ((contf (early-contf-method-function method)))
+               (when contf (early-emf-from-contf contf method next-methods)))
+             (error "BUG: early effective-method-function hit nonstandard method")))
+        ((make-method-form-p method)
+         ;; Weird but whatever. Next methods ignored.
+         (effective-method-function (second method)))
+        ;; Should this error be delayed?
+        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
+
+(defun early-effective-method-function (form)
+  (if (and (consp form) (eq (first form) 'call-method))
+      (let ((method (second form))
+            (next-methods (third form)))
+        (early-emf-call-method method next-methods))
+      (error "BUG: early effective-method-function hit unusual case")))
 
 ;; ----------------------------------------------------------------------
 ;; CALL-METHOD

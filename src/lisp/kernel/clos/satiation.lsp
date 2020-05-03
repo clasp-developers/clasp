@@ -99,21 +99,11 @@
                                            :slot-name (slot-definition-name slot)
                                            :method first
                                            :class class)))
-            ((leaf-method-p first)
-             (make-effective-method-outcome
-              :function (or (early-fast-method-function first)
-                            (emf-from-mfs (method-function first)))
-              :form `(call-method ,first ())
-              :applicable-methods methods))
             (t ; general effective method function
-             (let (;; with-early-accessors does macrolet, hence this awkwardness.
-                   (next-method-functions
-                     (mapcar (lambda (method) (method-function method))
-                             (rest methods)))
-                   (first-mf (method-function first)))
+             (let ((form `(call-method ,first (,@(rest methods)))))
                (make-effective-method-outcome
-                :function (emf-from-mfs first-mf next-method-functions)
-                :form `(call-method ,first (,@(rest methods)))
+                :function (early-effective-method-function form)
+                :form form
                 :applicable-methods methods)))))))
 
 ;;; Add fictitious call history entries.
