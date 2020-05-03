@@ -116,9 +116,9 @@
          (apply contf
                 (if (null next-methods)
                     nnmc
-                    (lambda (core:&va-rest .method-args.)
+                    (lambda (&rest .method-args.)
                       (declare (core:lambda-name slot-method-function.contf.lambda))
-                      (funcall (first next-methods)
+                      (funcall (method-function (first next-methods))
                                .method-args.
                                (rest next-methods))))
                 .method-args.))))
@@ -417,15 +417,16 @@ in the generic function lambda-list to the generic function lambda-list"
         (let ((lambda-list (second method-lambda))
               (lambda-name-declaration (or (find 'core::lambda-name declarations :key #'car)
                                            '(core:lambda-name make-method-lambda.lambda))))
+          ;; Note that this specific (.method-args. .next-methods.) lambda list is used
+          ;; above to identify our method lambdas, so be conscientious if you change it.
           (values `(lambda (.method-args. .next-methods.)
                      (declare ,lambda-name-declaration)
-                     ,doc
+                     ,@(when doc (list doc))
                      ,(gen-lexical-method-function-binds
                        call-next-method-p next-method-p-p
-                       ;; Per CLHS 7.6.4, methods do not do keyword argument checking- the gf does.
-                       ;; BIND-VA-LIST is therefore set up to pass :safep nil to the argument parser
-                       ;; generator, which essentially implies &allow-other-keys.
-                       `(core::bind-va-list ,lambda-list .method-args.
+                       ;; FIXME: This might not work if the user is perverse enough to
+                       ;; name a variable &whole, or something like that?
+                       `(destructuring-bind ,lambda-list .method-args.
                           (declare ,@declarations)
                           ,@body)))
                   ;; double quotes as per evaluation, explained above in defmethod.
@@ -441,31 +442,24 @@ in the generic function lambda-list to the generic function lambda-list"
 ;;; &va-rest works, so that's suboptimal.
 (defun gen-lexical-method-function-binds (call-next-method-p next-method-p-p form)
   (cond ((or (eq call-next-method-p 'function) (eq next-method-p-p 'function))
-         `(flet ((call-next-method (&va-rest args)
+         `(flet ((call-next-method (&rest args)
                    (if (null .next-methods.)
                        ;; FIXME: should call no-next-method.
                        ;; This is hard, because the method doesn't exist when this
                        ;; function is created.
                        (error "No next method")
-                       (let ((use-args (if (> (vaslist-length args) 0) args .method-args.)))
-                         (funcall (car .next-methods.)
-                                  use-args
-                                  (cdr .next-methods.)))))
+                       (funcall (method-function (car .next-methods.))
+                                (if (null args) .method-args. args)
+                                (cdr .next-methods.))))
                  (next-method-p () (and .next-methods. t)))
             ,form))
         ((or call-next-method-p next-method-p-p)
          `(macrolet ((call-next-method (&rest args)
                        `(if (null .next-methods.)
                             (error "No next method")
-                            ,(if args
-                                 `(let ((next (car .next-methods.))
-                                        (more (cdr .next-methods.)))
-                                    ((lambda (&va-rest args)
-                                       (funcall next args more))
-                                     ,@args))
-                                 `(funcall (car .next-methods.)
-                                           .method-args.
-                                           (cdr .next-methods.)))))
+                            `(funcall (method-function (car .next-methods.))
+                                      ,(if args (list ,@args) '.method-args.)
+                                      (cdr .next-methods.))))
                      (next-method-p () '(and .next-methods. t)))
             ,form))
         (t form)))
