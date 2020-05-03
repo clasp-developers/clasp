@@ -46,53 +46,72 @@
       (declare (core:lambda-name effective-method-function.lambda))
       ,form)))
 
+(defun std-method-p (method)
+  (let ((mc (class-of method)))
+    (or (eq mc (find-class 'standard-method))
+        (eq mc (find-class 'standard-reader-method))
+        (eq mc (find-class 'standard-writer-method)))))
+
 (defun make-method-form-p (form)
   (and (consp form)
        (eq (first form) 'make-method)
        (consp (cdr form))))
 
-(defun emf-from-mfs (first-mf &optional rest-mfs)
-  (lambda (core:&va-rest va-args)
-    (declare (core:lambda-name combine-method-functions.lambda))
-    (funcall first-mf va-args rest-mfs)))
-
 (defun emf-from-contf (contf method next-methods)
   (let ((next (if (null next-methods)
                   (make-%no-next-method-continuation method)
                   (emf-call-method
-                   (first next-methods) (rest next-methods)))))
+                   (first next-methods) (list (rest next-methods))))))
     (lambda (core:&va-rest .method-args.)
       (declare (core:lambda-name emf-from-contf.lambda))
       (apply contf next .method-args.))))
 
-(defun emf-call-method-aux (method)
-  (cond ((method-p method) (method-function method))
+;;; Convert an element of the second argument of a usual call-method
+;;; into a method.
+;;; Used by both effective-method-function and call-method.
+(defun call-method-aux (gf method)
+  (cond ((method-p method) method)
         ((make-method-form-p method)
-         (emf-maybe-compile
-          `(lambda (.method-args. _)
-             (declare (ignore _)
-                      (core:lambda-name emf-call-method-aux.lambda))
-             ,(second method))))
-        ;; Delay?
+         (make-instance (generic-function-method-class gf)
+           ;; FIXME?: These are of course lies.
+           ;; Our own method on shared-initialize will signal an error
+           ;; without these initargs, though.
+           :specializers '()
+           :qualifiers '()
+           :lambda-list '()
+           ;; FIXME: Should call-next-method etc be available?
+           :function (make-%method-function-fast
+                      (effective-method-function (second method)))))
+        ;; FIXME: Delay this?
         (t (error "Invalid argument to CALL-METHOD: ~a" method))))
 
-(defun emf-call-method (method next-methods)
-  (cond ((method-p method)
-         (or (fast-method-function method) ; FMFs are valid EMFs
-             (let ((contf (contf-method-function method)))
-               (when contf (emf-from-contf contf method next-methods)))
-             (when (leaf-method-p method)
-               (emf-from-mfs (method-function method)))
-             ;; NOTE: This is not strictly correct, for nonstandard
-             ;; methods that could have their own calling conventions.
-             (emf-from-mfs
-              (method-function method)
-              (mapcar #'emf-call-method-aux next-methods))))
+;;; Convert the second argument of a usual call-method into a list
+;;; of methods.
+;;; Used by both effective-method-function and call-method.
+(defun call-method-next-methods (gf next-methods)
+  (loop for nmethod in next-methods
+        collect (call-method-aux gf nmethod)))
+
+(defun emf-call-method (method rest)
+  (cond ((std-method-p method)
+         (destructuring-bind (&optional ((&rest next-methods))) rest
+           (or (fast-method-function method) ; FMFs are valid EMFs
+               (let ((contf (contf-method-function method)))
+                 (when contf (emf-from-contf contf method next-methods)))
+               ;; This can only happen if e.g. a user has manually
+               ;; constructed a standard-method with whatever function.
+               (let ((mf (method-function method))
+                     (next (call-method-next-methods
+                            (method-generic-function method)
+                            next-methods)))
+                 (lambda (core:&va-rest args)
+                   (declare (core:lambda-name emf-call-method.lambda))
+                   (funcall mf args next))))))
         ((make-method-form-p method)
-         ;; Weird but whatever. Next methods ignored.
+         ;; FIXME: Should call-next-method etc be bound
          (effective-method-function (second method)))
-        ;; Should this error be delayed?
-        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
+        ;; Could be a nonstandard method with its own EXPAND-APPLY-METHOD.
+        (t (emf-default `(call-method ,method ,@rest)))))
 
 (defun effective-method-function (form)
   ;; emf-default is always valid, but let's pick off a few cases
@@ -101,10 +120,7 @@
       (case (first form)
         ;; Note that MAKE-METHOD is not valid outside of a CALL-METHOD,
         ;; so form shouldn't be a MAKE-METHOD form.
-        ((call-method)
-         (let ((method (second form))
-               (next-methods (third form)))
-           (emf-call-method method next-methods)))
+        ((call-method) (emf-call-method (second form) (cddr form)))
         (otherwise (emf-default form)))
       (emf-default form)))
 
@@ -125,11 +141,7 @@
              (let ((contf (early-contf-method-function method)))
                (when contf (early-emf-from-contf contf method next-methods)))
              (error "BUG: early effective-method-function hit nonstandard method")))
-        ((make-method-form-p method)
-         ;; Weird but whatever. Next methods ignored.
-         (effective-method-function (second method)))
-        ;; Should this error be delayed?
-        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
+        (t (error "BUG: early CALL-METHOD hit unusual method: ~a" method))))
 
 (defun early-effective-method-function (form)
   (if (and (consp form) (eq (first form) 'call-method))
@@ -141,86 +153,46 @@
 ;; ----------------------------------------------------------------------
 ;; CALL-METHOD
 
-(defun call-method-aux (method &optional (get-mf #'method-function))
-  (cond ((method-p method) (funcall get-mf method))
-        ((make-method-form-p method)
-         `(lambda (.method-args. .next-methods.)
-            (declare (ignore .next-methods.)
-                     (core:lambda-name call-method-aux.lambda))
-            ,(second method)))
-        (t `(error "Invalid argument to CALL-METHOD: ~a" ',method))))
+;; TODO: Turn into a method in fixup.lsp.
+(defun std-expand-apply-method (method method-arguments arguments env)
+  (declare (ignore env))
+  (destructuring-bind (&optional ((&rest next-methods))) method-arguments
+    (let ((fmf (fast-method-function method))
+          (contf (contf-method-function method)))
+      (cond (fmf `(apply ,fmf ,@arguments))
+            (contf
+             (let ((next (if (null next-methods)
+                             (make-%no-next-method-continuation
+                              method)
+                             (emf-call-method
+                              (first next-methods)
+                              (rest next-methods)))))
+               `(apply ,contf ,next ,@arguments)))
+            (t `(funcall ,(method-function method)
+                         (list* ,@arguments)
+                         (load-time-value
+                          (list ,@(call-method-next-methods
+                                   (method-generic-function method)
+                                   next-methods))
+                          t)))))))
 
-(defun expand-call-method (method rest-methods env
-                           &optional (method-function-map nil mfmp)
-                             (fast-method-function-map nil fmfmp))
-  ;; Alright so this map junk. What the fuck?
-  ;; Check satiation.lsp. Sometimes we want call-method to expand into
-  ;; something dumpable. (Normally it does not, because it expands into
-  ;; literal functions.) In this scenario, the maps are alists from
-  ;; methods to forms to use in place of an actual method function.
-  ;; This solution is a lot less goofier than the twisted nightmare
-  ;; that was my previous attempt, and makes it easier to ensure
-  ;; changes to this code are reflected both at runtime and in satiation.
-  (let* ((maybe-gf-name (gf-being-compiled env))
-         (get-mf
-           (if mfmp
-               (lambda (method)
-                 (or (cdr (assoc method method-function-map))
-                     (error "BUG: method functions failed to coordinate~@[
-for generic function ~a~]"
-                            maybe-gf-name)))
-               #'method-function))
-         (get-fmf
-           (if fmfmp
-               (lambda (method)
-                 (cdr (assoc method fast-method-function-map)))
-               #'fast-method-function)))
-    (cond ((method-p method)
-           (let ((fmf (funcall get-fmf method))
-                 (contf (contf-method-function method)))
-             (when fmf
-               (return-from expand-call-method
-                 (multiple-value-bind (required-arguments validp)
-                     (discriminator-required-arguments env)
-                   (if validp
-                       `(funcall ,fmf ,@required-arguments)
-                       `(apply ,fmf .method-args.)))))
-             (when contf
-               (return-from expand-call-method
-                 (let ((next (if (null rest-methods)
-                                 (make-%no-next-method-continuation
-                                  method)
-                                 (emf-call-method
-                                  (first rest-methods)
-                                  (rest rest-methods)))))
-                   (multiple-value-bind (required-arguments validp)
-                       (discriminator-required-arguments env)
-                     (if validp
-                         `(funcall ,contf ,next ,@required-arguments)
-                         `(apply ,contf ,next .method-args.))))))
-             `(funcall ,(funcall get-mf method)
-                       .method-args. ; will be bound in context
-                       ;; FIXME? Should leaf-method-p be abstracted too?
-                       ,(if (or (leaf-method-p method) (null rest-methods))
-                            nil
-                            (if mfmp
-                                ;; If there's a method function map, we can't use
-                                ;; load-time-value, since the "method functions"
-                                ;; are lexical variables.
-                                ;; This means we cons up a list every time, which
-                                ;; is inefficient. Oh well.
-                                `(list
-                                  ,@(loop for method in rest-methods
-                                          collect (call-method-aux method get-mf)))
-                                `(load-time-value
-                                  (list ,@(mapcar #'call-method-aux rest-methods))
-                                  t))))))
-          ((make-method-form-p method) (second method))
-          (t `(error "Invalid argument to CALL-METHOD: ~a" ',method)))))
+(defmacro apply-method (method (&rest method-arguments) &rest arguments
+                        &environment env)
+  ;; Pick off the standard case without calling the generic function,
+  ;; for metacircularity reasons.
+  (if (std-method-p method)
+      (std-expand-apply-method method method-arguments arguments env)
+      (expand-apply-method method method-arguments arguments env)))
 
-(defmacro call-method (method &optional rest-methods
-                       &environment env)
-  (expand-call-method method rest-methods env))
+(defmacro call-method (method &rest method-arguments &environment env)
+  (if (make-method-form-p method)
+      (second method) ; FIXME: should we try to bind CALL-NEXT-METHOD etc?
+      (multiple-value-bind (required-arguments validp)
+          (discriminator-required-arguments env)
+        `(apply-method ,method (,@method-arguments)
+                       ,(if validp
+                            `(,@required-arguments nil)
+                            '.method-args.)))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
