@@ -535,9 +535,11 @@ and cannot be added to ~A." method other-gf gf)))
         (when (classp spec) ; sanity check against eql specialization
           (recursively-update-class-initargs-cache spec))))))
 
-;; KLUDGE: bclasp doesn't respect notinline, so we do this.
-;; (It needs to be notinline - we haven't booted static-gfs yet.)
-(let ((x (apply #'make-instance 'initargs-updater nil)))
+;; NOTE that we can't use MAKE-INSTANCE since the
+;; compiler macro in static-gfs will put in code
+;; that the loader can't handle yet.
+;; We can't just use NOTINLINE since bclasp ignores it (this is a bug).
+(let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
