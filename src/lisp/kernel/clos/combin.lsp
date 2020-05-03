@@ -13,6 +13,22 @@
 
 (in-package "CLOS")
 
+;; ----------------------------------------------------------------------
+;; EFFECTIVE METHOD FUNCTIONS
+;;
+;; Effective method functions are the functional version of effective
+;; methods (effective methods being the forms returned by
+;; compute-effective-method). On Clasp, they are functions that accept the
+;; same arguments as the generic function.
+;; In general we can simply compile the effective method, but the compiler
+;; is slow, so we go to some effort to special case common effective
+;; methods.
+;; Note that we more often go through this mechanism than putting the
+;; effective methods in the discriminating function directly. See
+;; *inline-effective-methods* in discriminate.lsp.
+;; The main entry to this section is EFFECTIVE-METHOD-FUNCTION, which
+;; returns a function for a given effective method.
+
 (defvar *avoid-compiling* nil)
 (defun emf-maybe-compile (form)
   (if *avoid-compiling*
@@ -92,6 +108,9 @@
            (emf-call-method method next-methods)))
         (otherwise (emf-default form)))
       (emf-default form)))
+
+;; ----------------------------------------------------------------------
+;; CALL-METHOD
 
 (defun call-method-aux (method &optional (get-mf #'method-function))
   (cond ((method-p method) (funcall get-mf method))
