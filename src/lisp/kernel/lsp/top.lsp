@@ -969,7 +969,8 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
 	;; Here we show a list of restarts and invoke the toplevel with
 	;; an extended set of commands which includes invoking the associated
 	;; restarts.
-	(let* ((restart-commands (compute-restart-commands condition :display t))
+	(let* ((restart-commands (compute-restart-commands
+                                  condition :display *error-output*))
 	       (debug-commands
 		 (update-debug-commands restart-commands)))
           (clasp-debug:with-stack (*break-base*)
