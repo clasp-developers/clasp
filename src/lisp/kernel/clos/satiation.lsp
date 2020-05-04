@@ -200,7 +200,7 @@
                  (standard-method)
                  (standard-reader-method) (standard-writer-method))))
 
-;;; Used in fixup for the %satiate macroexpansions (below).
+;;; Used in the make-load-form for METHOD.
 (defun early-find-method (gf qualifiers specializers &optional (errorp t))
   (declare (notinline method-qualifiers))
   (with-early-accessors (+eql-specializer-slots+
@@ -248,26 +248,6 @@
 ;;;
 ;;; DISCRIMINATING FUNCTIONS IN COMPILE-FILE
 ;;;
-
-(defun wrap-call-method (effective-method method-function-map)
-  `(macrolet ((call-method (method &optional nexts)
-                (if (consp method)
-                    (second method) ; (make-method form)
-                    (let ((mfs ',method-function-map))
-                      (flet ((mf (method)
-                               (or (cdr (assoc method mfs))
-                                   (error "BUG: Horrible things are occurring."))))
-                        `(funcall ,(mf method) .method-args.
-                                  ,(if (or (leaf-method-p method) (null nexts))
-                                       nil
-                                       `(list
-                                         ,@(loop for next in nexts
-                                                 collect (if (consp next) ; make-method
-                                                             `(lambda (.method-args. .next-methods.)
-                                                                (declare (ignore .next-methods.))
-                                                                ,(second next))
-                                                             (mf next)))))))))))
-     ,effective-method))
 
 ;; Given a list of specializer names or specializers, returns a list of specializers.
 (defun coerce-to-list-of-specializers (list-of-specializer-names)
@@ -341,110 +321,61 @@
 
 ;;; Given an outcome, return a form that, when evaluated, returns an outcome
 ;;; similar to it.
-(defun outcome-producer (outcome get-method-form)
+(defun outcome-producer (outcome)
+  ;; Note that this relies on methods being dumpable, which we
+  ;; establish with their MAKE-LOAD-FORM.
   (cond ((optimized-slot-reader-p outcome)
          `(make-optimized-slot-reader
            ;; FIXME: Probably not correct for :allocation :class.
            :index ',(optimized-slot-reader-index outcome)
            :slot-name ',(optimized-slot-reader-slot-name outcome)
-           :method ,(funcall get-method-form
-                             (optimized-slot-reader-method outcome))
+           :method ,(optimized-slot-reader-method outcome)
            :class ,(optimized-slot-reader-class outcome)))
         ((optimized-slot-writer-p outcome)
          `(make-optimized-slot-writer
            ;; FIXME: Probably not correct for :allocation :class.
            :index ',(optimized-slot-writer-index outcome)
            :slot-name ',(optimized-slot-writer-slot-name outcome)
-           :method ,(funcall get-method-form
-                             (optimized-slot-writer-method outcome))
+           :method ,(optimized-slot-writer-method outcome)
            :class ,(optimized-slot-writer-class outcome)))
         ((effective-method-outcome-p outcome)
-         `(make-effective-method-outcome
-           :applicable-methods
-           (list
-            ,@(mapcar get-method-form
-                      (effective-method-outcome-applicable-methods
-                       outcome)))
-           ;; Can't use the form since it has literal methods in,
-           ;; but those can be macroexpanded out if evaluated.
-           ;; FIXME: We should use the fast method function as
-           ;; the EMF if available, and so on.
-           :function (lambda (core:&va-rest .method-args.)
-                       (declare (core:lambda-name
-                                 compile-time-effective-method))
-                       ,(effective-method-outcome-form outcome))))
+         ;; Generate the function at load time. This difference is
+         ;; basically the only reason we don't just dump the call
+         ;; history and let the usual literal mechanisms handle it.
+         ;; TODO: Pass in the arginfo maybe.
+         ;; TODO: With some real cleverness we could probably dump
+         ;; an actual lambda expression for the function.
+         ;; But I've tried that before, and I'm starting to think
+         ;; that in reality I'm just not that clever.
+         (let ((gform (gensym "FORM")))
+           `(let ((,gform ',(effective-method-outcome-form outcome)))
+              (make-effective-method-outcome
+               :applicable-methods
+               ',(effective-method-outcome-applicable-methods outcome)
+               :form ,gform
+               :function (effective-method-function ,gform)))))
         (t (error "BUG: Don't know how to reconstruct outcome: ~a"
                   outcome))))
 
-;;; Given a call history and an alist of methods to forms,
-;;; return a form that, when evaluated, returns a call history similar to the
+;;; Given a call history, return a form that, when evaluated,
+;;; returns a call history similar to the
 ;;; provided one, and furthermore is dumpable.
-(defun call-history-producer (call-history method-map)
-  (flet ((get-method-form (method)
-           (or (cdr (assoc method method-map))
-               (error "BUG: method-map inconsistency"))))
-    (loop for (key . outcome) in call-history
-          for cached-outcome-info = (assoc outcome outcome-cache)
-          for name = (or (second cached-outcome-info) (gensym "OUTCOME"))
-          for outcome-form
-            = (or (third cached-outcome-info)
-                  (outcome-producer outcome #'get-method-form))
-          unless cached-outcome-info
-            collect (list outcome name outcome-form) into outcome-cache
-          ;; Keys are vectors of classes and lists (representing eql specializers)
-          ;; and should therefore be dumpable.
-          collect `(cons ,key ,name) into new-ch
-          finally
-             (return
-               `(let (,@(loop for (_ name form) in outcome-cache
-                              collect `(,name ,form)))
-                  (list ,@new-ch))))))
-
-(defun method-specializers-form (specializers)
-  `(list ,@(loop for s in specializers
-                 collect (etypecase s
-                           (eql-specializer
-                            `(intern-eql-specializer
-                             ',(eql-specializer-object s)))
-                           (class s)))))
-
-;; For satiation of CLOS, we need to use early-find-method and so on to prevent failures.
-;; If this is T, we use those. Otherwise we use the standard stuff.
-;; Note that this isn't complete - we also need those macro bindings in fixup.lsp.
-(defvar *early-satiation* nil)
-
-(defun find-method-form (method)
-  `(,(if *early-satiation* 'early-find-method 'find-method)
-    (fdefinition ',(generic-function-name (method-generic-function method)))
-    ',(method-qualifiers method)
-    ,(method-specializers-form (method-specializers method))))
-
-(defun compile-time-bindings-junk (all-methods)
-  (loop for method in all-methods
-        for method-sym = (gensym "METHOD")
-        for mf = (method-function method)
-        for mfsym = (gensym "METHOD-FUNCTION")
-        for fmf = (fast-method-function method)
-        for fmfsym = (gensym "FAST-METHOD-FUNCTION")
-        collect (list method-sym (find-method-form method))
-          into bindings
-        collect (cons method method-sym) into method-binds
-        collect (list mfsym
-                      (if *early-satiation*
-                          `(with-early-accessors (+standard-method-slots+)
-                             (method-function ,method-sym))
-                          `(method-function ,method-sym)))
-          into bindings
-        collect (cons method mfsym) into mfs
-        when fmf
-          collect (list fmfsym
-                        (if *early-satiation*
-                            `(with-early-accessors (+standard-method-slots+)
-                               (fast-method-function ,method-sym))
-                            `(fast-method-function ,method-sym)))
-            into bindings
-          and collect (cons method fmfsym) into fmfs
-        finally (return (values bindings method-binds mfs fmfs))))
+(defun call-history-producer (call-history)
+  (loop for (key . outcome) in call-history
+        for cached-outcome-info = (assoc outcome outcome-cache)
+        for name = (or (second cached-outcome-info) (gensym "OUTCOME"))
+        for outcome-form
+          = (or (third cached-outcome-info) (outcome-producer outcome))
+        unless cached-outcome-info
+          collect (list outcome name outcome-form) into outcome-cache
+        ;; Keys are vectors of classes and lists (representing eql specializers)
+        ;; and should therefore be dumpable.
+        collect `(cons ,key ,name) into new-ch
+        finally
+           (return
+             `(let (,@(loop for (_ name form) in outcome-cache
+                            collect `(,name ,form)))
+                (list ,@new-ch)))))
 
 (defun compile-time-discriminator (generic-function call-history)
   (multiple-value-bind (min max)
@@ -525,24 +456,11 @@ a list (EQL object) - just like DEFMETHOD."
   (let ((generic-function (fdefinition generic-function-name)))
     (multiple-value-bind (call-history all-methods)
         (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-      (multiple-value-bind (bindings method-binds method-functions fast-method-functions)
-          (compile-time-bindings-junk all-methods)
-        `(macrolet ((call-method (method &optional rest-methods
-                                         &environment env)
-                      ;; This will ensure call-method expands into dumpable
-                      ;; forms, using the bindings instead of literal functions.
-                      ;; Check the definition of expand-call-method.
-                      (expand-call-method method rest-methods env
-                                          ',method-functions
-                                          ',fast-method-functions)))
-           (let* (,@bindings
-                  (gf (fdefinition ',generic-function-name)))
-             (declare (ignorable ,@(mapcar #'first bindings)))
-             (append-generic-function-call-history
-              gf
-              ,(call-history-producer call-history method-binds))
-             (set-funcallable-instance-function
-              gf ,(compile-time-discriminator generic-function call-history))))))))
+      `(let* ((gf (fdefinition ',generic-function-name)))
+         (append-generic-function-call-history
+          gf ,(call-history-producer call-history))
+         (set-funcallable-instance-function
+          gf ,(compile-time-discriminator generic-function call-history))))))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
 ;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix
@@ -577,14 +495,12 @@ a list (EQL object) - just like DEFMETHOD."
 ;;;
 ;;; Used in boot
 
-;; Like %satiate, but also binds the thing so we get the non-gf expansions.
-;; (The binding must be at compile time, hence the weirdness here.)
-;; Note that this is finicky: We need the %satiate macroexpander specifically to use the variable.
-;; As of now this works, because the macroexpander calls compile-time-discriminator, which calls
-;; the things that use the variable. But if there was another layer of macrology there'd be a problem.
-(defmacro %early-satiate (generic-function-name &rest lists-of-specializer-names &environment env)
-  (let ((*early-satiation* t))
-    (macroexpand-1 `(%satiate ,generic-function-name ,@lists-of-specializer-names) env)))
+;;; This macro is a holdover from the older satiation mechanism, which had to do
+;;; more special things early on. I'm keeping it at least for now in case we
+;;; need to go back to doing that kind of thing.
+
+(defmacro %early-satiate (generic-function-name &rest lists-of-specializer-names)
+  `(%satiate ,generic-function-name ,@lists-of-specializer-names))
 
 (defmacro satiate-clos ()
   ;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.

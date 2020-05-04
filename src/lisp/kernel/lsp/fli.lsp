@@ -384,7 +384,6 @@
 (generate-mem-set-accessor-functions)
 (generate-foreign-type-size-functions)
 (generate-foreign-type-alignment-functions)
-#+(or)
 (generate-satiation)
 (init-translators)
 

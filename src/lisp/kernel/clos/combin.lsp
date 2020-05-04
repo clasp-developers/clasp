@@ -80,9 +80,12 @@
           ;; an FMF or CONTF, an unusual situation indicating the user
           ;; has manually made a method with whatever function.
           ;; In this scenario we go to the default case down there.
+          ;; NOTE that we use the early readers because we can call this
+          ;; very early due to satiation. And the early readers are valid
+          ;; because we just checked that this is a std method.
           (destructuring-bind (&optional ((&rest next-methods))) rest
-            (or (fast-method-function method) ; FMFs are valid EMFs
-                (let ((contf (contf-method-function method)))
+            (or (early-fast-method-function method) ; FMFs are valid EMFs
+                (let ((contf (early-contf-method-function method)))
                   (when contf
                     (emf-from-contf
                      contf method next-methods arg-info)))))))
@@ -173,11 +176,20 @@
     (let ((arg-info (argforms-to-arg-info arguments env)))
       (cond ((fast-method-function method)
              `(apply
-               (load-time-value (early-fast-method-function ,method) t)
+               ;; have to maybe do early- in case we're satiating early.
+               (load-time-value (,(if (std-method-p method)
+                                      'early-fast-method-function
+                                      'fast-method-function)
+                                 ,method)
+                                t)
                ,@arguments))
             ((contf-method-function method)
              `(apply
-               (load-time-value (early-contf-method-function ,method) t)
+               (load-time-value (,(if (std-method-p method)
+                                      'early-contf-method-function
+                                      'contf-method-function)
+                                 ,method)
+                                t)
                (load-time-value
                 ,(if (null next-methods)
                      `(make-%no-next-method-continuation

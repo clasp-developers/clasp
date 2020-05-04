@@ -527,7 +527,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      (setf (standard-instance-access (second arguments) (optimized-slot-writer-index outcome))
            (first arguments)))
     ((effective-method-outcome-p outcome)
-     (apply (effective-method-outcome-function outcome) vaslist-arguments))
+     (let ((function (effective-method-outcome-function outcome)))
+       (assert (not (null function))) ; FIXME: REMOVE
+       (apply function vaslist-arguments)))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
