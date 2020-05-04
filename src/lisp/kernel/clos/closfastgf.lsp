@@ -279,6 +279,70 @@
 (defun standard-slotd-p (slotd)
   (eq (class-of slotd) (find-class 'standard-effective-slot-definition)))
 
+(defun maybe-replace-method (method specializers)
+  (let ((mc (class-of method)))
+    (cond ((eq mc (find-class 'standard-reader-method))
+           (let* ((eslotd (effective-slotd-from-accessor-method
+                           method (first specializers)))
+                  (location (slot-definition-location eslotd))
+                  (function
+                    (make-%method-function-fast
+                     (if (consp location)
+                         (lambda (object)
+                           (declare (core:lambda-name
+                                     effective-class-reader)
+                                    (ignore object))
+                           (car location))
+                         (lambda (object)
+                           (declare (core:lambda-name
+                                     effective-instance-reader))
+                           (si:instance-ref object location))))))
+             (make-effective-accessor-method
+              (find-class 'effective-reader-method)
+              method location function)))
+          ((eq mc (find-class 'standard-writer-method))
+           (let* ((eslotd (effective-slotd-from-accessor-method
+                           method (second specializers)))
+                  (location (slot-definition-location eslotd))
+                  (function
+                    (make-%method-function-fast
+                     (if (consp location)
+                         (lambda (new object)
+                           (declare (core:lambda-name
+                                     effective-class-writer)
+                                    (ignore object))
+                           (setf (cdr location) new))
+                         (lambda (new object)
+                           (declare (core:lambda-name
+                                     effective-instance-writer)
+                           (si:instance-set object location new)))))))
+             (make-effective-accessor-method
+              (find-class 'effective-writer-method)
+              method location function)))
+          (t method))))
+
+(defun make-effective-accessor-method (class method location function)
+  ;; FIXME? Has to stay synced with hierarchy.lsp. Kinda kludgey...
+  (with-early-make-instance +effective-accessor-method-slots+
+    (dam class
+         :generic-function (method-generic-function method)
+         :lambda-list (method-lambda-list method)
+         :specializers (method-specializers method)
+         :qualifiers (method-qualifiers method)
+         :function function
+         ;; docstring
+         :source-position (method-source-position method)
+         :plist (method-plist method)
+         :keywords (method-keywords method)
+         :aok-p (method-allows-other-keys-p method)
+         :leaf-method-p (leaf-method-p method)
+         :location location)
+    dam))
+
+(defun final-methods (methods specializers)
+  (loop for method in methods
+        collect (maybe-replace-method method specializers)))
+
 ;;; the gf-arg-info of a generic-function is a cons (boolean . vars)
 ;;; where vars is a list of symbols. This is used by effective-method-function
 ;;; to squeeze out a bit more performance by avoiding &va-rest when possible,

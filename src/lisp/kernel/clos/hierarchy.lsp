@@ -200,7 +200,21 @@
     (append +standard-method-slots+
 	    '((slot-definition :initarg :slot-definition
                                :initform nil
-                               :reader accessor-method-slot-definition)))))
+                               :reader accessor-method-slot-definition))))
+
+  ;; This is for direct-reader-method and direct-writer-method, classes used
+  ;; internally to represent when an access method can be done directly
+  ;; (with standard-instance-access, basically) instead of through slot-value.
+  ;; These methods are never actually associated with a generic function
+  ;; through add-method generic-function-methods etc., though they do have
+  ;; the method-generic-function set.
+  (defparameter +effective-accessor-method-slots+
+    (append +standard-accessor-method-slots+
+            '((location :initarg :location
+               ;; NOTE that for metacircularity reasons, we never actually
+               ;; use this accessor - but it's available since it's more
+               ;; convenient than s-i-a if you want to take a look.
+                        :reader effective-accessor-method-location)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; SLOT-DEFINITION
@@ -444,6 +458,12 @@
         (standard-writer-method
          :direct-superclasses (standard-accessor-method)
          :direct-slots #2#)
+        (effective-reader-method
+         :direct-superclasses (standard-reader-method)
+         :direct-slots #4=#.+effective-accessor-method-slots+)
+        (effective-writer-method
+         :direct-superclasses (standard-writer-method)
+         :direct-slots #4#)
         (structure-class
          :direct-superclasses (class)
          :direct-slots #.+structure-class-slots+)
