@@ -132,18 +132,14 @@ printer and we should rather use MAKE-LOAD-FORM."
 
 ;;; Extension. (Allowed per CLHS 3.2.4.3.)
 ;;; This is required for a lot of satiation.lsp to function.
-;;; FIXME: Should do this better so it can handle user classes.
 (defmethod make-load-form ((method method) &optional environment)
   (declare (ignore environment))
-  ;; FIXME: Should (a) spruce up cmpliteral so it doesn't compile if forms
-  ;; have all constant arguments, and (b) define a function like
-  ;; find-method to use here that just takes the name, so that we can take
-  ;; advantage of that.
-  `(early-find-method
-    (fdefinition ',(generic-function-name (method-generic-function method)))
+  ;; FIXME: Should spruce up cmpliteral so it doesn't compile calls with
+  ;; all constant arguments.
+  `(load-method
+    ',(generic-function-name (method-generic-function method))
     ',(method-qualifiers method)
-    ',(method-specializers method)
-    t))
+    ',(method-specializers method)))
 
 ;;; Also an extension, to support the above.
 (defmethod make-load-form ((spec eql-specializer) &optional environment)

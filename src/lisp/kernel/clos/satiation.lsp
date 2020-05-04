@@ -201,48 +201,31 @@
                  (standard-reader-method) (standard-writer-method))))
 
 ;;; Used in the make-load-form for METHOD.
-(defun early-find-method (gf qualifiers specializers &optional (errorp t))
-  (declare (notinline method-qualifiers))
-  (with-early-accessors (+eql-specializer-slots+
-                         +standard-generic-function-slots+
-                         +standard-method-slots+)
-    (flet ((filter-specializer (name)
-             (cond ((typep name 'specializer)
-                    name)
-                   ((atom name)
-                    (let ((class (find-class name nil)))
-                      (unless class
-                        (error "~A is not a valid specializer name" name))
-                      class))
-                   ((and (eq (first name) 'EQL)
-                         (null (cddr name)))
-                    (cdr name))
-                   (t
-                    (error "~A is not a valid specializer name" name))))
-           (specializer= (cons-or-class specializer)
-             (if (consp cons-or-class)
-                 (and (eql-specializer-flag specializer)
-                      (eql (car cons-or-class)
-                           (eql-specializer-object specializer)))
-                 (eq cons-or-class specializer))))
-      (when (/= (length specializers)
-                (length (generic-function-argument-precedence-order gf)))
-        (error
-         "The specializers list~%~A~%does not match the number of required arguments in ~A"
-         specializers (core:low-level-standard-generic-function-name gf)))
-      (loop with specializers = (mapcar #'filter-specializer specializers)
-            for method in (generic-function-methods gf)
-            when (and (equal qualifiers (method-qualifiers method))
-                      (every #'specializer= specializers (method-specializers method)))
-              do (return-from early-find-method method))
-      ;; If we did not find any matching method, then the list of
-      ;; specializers might have the wrong size and we must signal
-      ;; an error.
-      (when errorp
-        (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
-               (core:low-level-standard-generic-function-name gf)
-               qualifiers specializers)))
-    nil))
+;;; It's like find-method, but always signals an error, and only accepts
+;;; actual specializers.
+(defun load-method (gf-name qualifiers specializers)
+  (let ((gf (fdefinition gf-name)))
+    (if (eq (class-of gf) (find-class 'standard-generic-function))
+        ;; Get method without calling generic functions, in case we're
+        ;; loading a CLOS satiated definition.
+        (with-early-accessors (+eql-specializer-slots+
+                               +standard-generic-function-slots+
+                               +standard-method-slots+)
+          (when (/= (length specializers)
+                    (length (generic-function-argument-precedence-order gf)))
+            (error
+             "The specializers list~%~A~%does not match the number of required arguments in ~A"
+             specializers (core:low-level-standard-generic-function-name gf)))
+          (loop for method in (generic-function-methods gf)
+                when (and (equal qualifiers (method-qualifiers method))
+                          ;; We can use EQ because it obviously works for classes,
+                          ;; and eql specializers have an internment mechanism.
+                          (every #'eq specializers (method-specializers method)))
+                  do (return-from load-method method))
+          (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
+                 (core:low-level-standard-generic-function-name gf)
+                 qualifiers specializers))
+        (find-method gf qualifiers specializers t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
