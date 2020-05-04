@@ -514,15 +514,16 @@
   (loop for (ignore . outcome) in call-history
           thereis (outcome-requires-arglist-p outcome)))
 
-;;; We pass the list of required parameters to CALL-METHOD
-;;; in this fashion.
-(defun discriminator-required-arguments (&optional environment)
+;;; We pass the parameters to CALL-METHOD in this fashion.
+;;; If we're not in a discriminator, the symbol macro isn't
+;;; bound. We return a banal response.
+(defun discriminator-arguments (&optional environment)
   (multiple-value-bind (expansion expanded)
-      (macroexpand-1 '+discriminator-required-arguments+
+      (macroexpand-1 '+discriminator-arguments+
                      environment)
     (if expanded
-        (values expansion expanded)
-        (values nil nil))))
+        (values (first expansion) (second expansion))
+        (values nil '.method-args.))))
 
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq max-nargs
@@ -539,8 +540,8 @@
            `((declare (core:lambda-name ,generic-function-name))))
        ,@(when *insert-debug-code*
            `((format t "~&Entering ~a~%" ',generic-function-name)))
-       (symbol-macrolet ((+discriminator-required-arguments+
-                           (,@required-args))
+       (symbol-macrolet ((+discriminator-arguments+
+                          ((,@required-args) ,(if more-args-p 'more-args nil)))
                          (+gf-being-compiled+ ,generic-function-name))
          (let ((.generic-function. ,generic-function-form))
            ,(when (and more-args-p max-nargs) ; Check argcount.
@@ -551,7 +552,8 @@
                             :called-function .generic-function.
                             :given-nargs (+ nmore ,nreq)
                             :min-nargs ,nreq :max-nargs ,max-nargs))))
-           (let (,@(when need-arglist
+           (let (#+(or)
+                 ,@(when need-arglist
                      `((.method-args.
                         (list* ,@required-args
                                ,(if more-args-p

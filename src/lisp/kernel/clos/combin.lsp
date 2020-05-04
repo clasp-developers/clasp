@@ -104,7 +104,7 @@
                      (next (call-method-next-methods
                             (method-generic-function method)
                             next-methods)))
-                 (lambda (core:&va-rest args)
+                 (lambda (&rest args)
                    (declare (core:lambda-name emf-call-method.lambda))
                    (funcall mf args next))))))
         ((make-method-form-p method)
@@ -192,12 +192,10 @@ argument list designator."
 (defmacro call-method (method &rest method-arguments &environment env)
   (if (make-method-form-p method)
       (second method) ; FIXME: should we try to bind CALL-NEXT-METHOD etc?
-      (multiple-value-bind (required-arguments validp)
-          (discriminator-required-arguments env)
+      (multiple-value-bind (required-arguments more-args)
+          (discriminator-arguments env)
         `(apply-method ,method (,@method-arguments)
-                       ,(if validp
-                            `(,@required-arguments nil)
-                            '.method-args.)))))
+                       ,@required-arguments ,more-args))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
