@@ -279,6 +279,20 @@
 (defun standard-slotd-p (slotd)
   (eq (class-of slotd) (find-class 'standard-effective-slot-definition)))
 
+;;; the gf-arg-info of a generic-function is a cons (boolean . vars)
+;;; where vars is a list of symbols. This is used by effective-method-function
+;;; to squeeze out a bit more performance by avoiding &va-rest when possible,
+;;; which in turn allows methods to be called without APPLY.
+;;; the boolean is whether a &rest is needed (so, whether there's an &optional,
+;;; &rest, or &key in the generic function lambda list) and the vars are
+;;; suggestions for the required parameters. The length has to be correct.
+;;; so e.g. (T a b c) means a lambda list of (a b c &rest more) or so.
+(defun gf-arg-info (gf)
+  (multiple-value-bind (nreq max) (generic-function-min-max-args gf)
+    (cons (or (not max) (> max nreq))
+          ;; TODO: Would be kind of nice to get something like variable names.
+          (loop repeat nreq collect (gensym "REQ-ARG")))))
+
 (defun compute-outcome
     (generic-function method-combination methods actual-specializers &key log)
   ;; Calculate the effective-method-function as well as an optimized one
@@ -357,7 +371,8 @@
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome
                    :applicable-methods methods :form em
-                   :function (effective-method-function em))))))
+                   :function (effective-method-function
+                              em (gf-arg-info generic-function)))))))
     #+debug-fastgf
     (when log
       (gf-log "vvv************************vvv%N")

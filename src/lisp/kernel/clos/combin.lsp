@@ -28,6 +28,8 @@
 ;; *inline-effective-methods* in discriminate.lsp.
 ;; The main entry to this section is EFFECTIVE-METHOD-FUNCTION, which
 ;; returns a function for a given effective method.
+;; The ARG-INFO threaded throughout here is used to skip some APPLYing.
+;; See closfastgf.lsp, gf-arg-info function.
 
 (defvar *avoid-compiling* nil)
 (defun emf-maybe-compile (form)
@@ -40,11 +42,14 @@
             (cmp:*cleavir-compile-hook* nil))
         (compile nil form))))
 
-(defun emf-default (form)
-  (emf-maybe-compile
-   `(lambda (core:&va-rest .method-args.)
-      (declare (core:lambda-name effective-method-function.lambda))
-      ,form)))
+(defun emf-default (form &optional (arg-info '(t)))
+  (let ((restp (car arg-info)) (vars (cdr arg-info)))
+    (emf-maybe-compile
+     `(lambda (,@vars ,@(when restp '(core:&va-rest emf-more)))
+        (declare (core:lambda-name effective-method-function.lambda))
+        (symbol-macrolet ((+discriminator-arguments+ ((,@vars)
+                                                      ,(if restp 'emf-more nil))))
+          ,form)))))
 
 (defun std-method-p (method)
   (let ((mc (class-of method)))
@@ -57,11 +62,13 @@
        (eq (first form) 'make-method)
        (consp (cdr form))))
 
-(defun emf-from-contf (contf method next-methods)
+(defun emf-from-contf (contf method next-methods
+                       &optional (arg-info '(t)))
   (let ((next (if (null next-methods)
                   (make-%no-next-method-continuation method)
                   (emf-call-method
-                   (first next-methods) (list (rest next-methods))))))
+                   (first next-methods) (list (rest next-methods))
+                   arg-info))))
     (lambda (core:&va-rest .method-args.)
       (declare (core:lambda-name emf-from-contf.lambda))
       (apply contf next .method-args.))))
@@ -69,7 +76,7 @@
 ;;; Convert an element of the second argument of a usual call-method
 ;;; into a method.
 ;;; Used by both effective-method-function and call-method.
-(defun call-method-aux (gf method)
+(defun call-method-aux (gf method &optional (arg-info '(t)))
   (cond ((method-p method) method)
         ((make-method-form-p method)
          (make-instance (generic-function-method-class gf)
@@ -81,48 +88,51 @@
            :lambda-list '()
            ;; FIXME: Should call-next-method etc be available?
            :function (make-%method-function-fast
-                      (effective-method-function (second method)))))
+                      (effective-method-function
+                       (second method) arg-info))))
         ;; FIXME: Delay this?
         (t (error "Invalid argument to CALL-METHOD: ~a" method))))
 
 ;;; Convert the second argument of a usual call-method into a list
 ;;; of methods.
 ;;; Used by both effective-method-function and call-method.
-(defun call-method-next-methods (gf next-methods)
+(defun call-method-next-methods (gf next-methods &optional (arg-info '(t)))
   (loop for nmethod in next-methods
         collect (call-method-aux gf nmethod)))
 
-(defun emf-call-method (method rest)
+(defun emf-call-method (method rest &optional (arg-info '(t)))
   (cond ((std-method-p method)
          (destructuring-bind (&optional ((&rest next-methods))) rest
            (or (fast-method-function method) ; FMFs are valid EMFs
                (let ((contf (contf-method-function method)))
-                 (when contf (emf-from-contf contf method next-methods)))
+                 (when contf (emf-from-contf
+                              contf method next-methods arg-info)))
                ;; This can only happen if e.g. a user has manually
                ;; constructed a standard-method with whatever function.
                (let ((mf (method-function method))
                      (next (call-method-next-methods
                             (method-generic-function method)
-                            next-methods)))
+                            next-methods arg-info)))
                  (lambda (&rest args)
                    (declare (core:lambda-name emf-call-method.lambda))
                    (funcall mf args next))))))
         ((make-method-form-p method)
          ;; FIXME: Should call-next-method etc be bound
-         (effective-method-function (second method)))
+         (effective-method-function (second method) arg-info))
         ;; Could be a nonstandard method with its own EXPAND-APPLY-METHOD.
-        (t (emf-default `(call-method ,method ,@rest)))))
+        (t (emf-default `(call-method ,method ,@rest) arg-info))))
 
-(defun effective-method-function (form)
+(defun effective-method-function (form &optional (arg-info '(t)))
   ;; emf-default is always valid, but let's pick off a few cases
   ;; so that we can avoid using the compiler, which is slow.
   (if (consp form)
       (case (first form)
         ;; Note that MAKE-METHOD is not valid outside of a CALL-METHOD,
         ;; so form shouldn't be a MAKE-METHOD form.
-        ((call-method) (emf-call-method (second form) (cddr form)))
-        (otherwise (emf-default form)))
-      (emf-default form)))
+        ((call-method) (emf-call-method (second form) (cddr form)
+                                        arg-info))
+        (otherwise (emf-default form arg-info)))
+      (emf-default form arg-info)))
 
 ;;; Used for early satiation.
 
@@ -153,12 +163,20 @@
 ;; ----------------------------------------------------------------------
 ;; CALL-METHOD
 
-;; TODO: Turn into a method in fixup.lsp.
+(defun argforms-to-arg-info (argforms &optional env)
+  (let* ((final (first (rest argforms)))
+         (butl (butlast argforms)))
+    (cons (and (constantp final env)
+               (null (ext:constant-form-value final env)))
+          (loop for s in butl
+                if (symbolp s) collect (make-symbol (symbol-name s))
+                  else collect (gensym "REQ-ARG")))))
+
 (defun std-expand-apply-method (method method-arguments arguments env)
-  (declare (ignore env))
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
     (let ((fmf (fast-method-function method))
-          (contf (contf-method-function method)))
+          (contf (contf-method-function method))
+          (arg-info (argforms-to-arg-info arguments env)))
       (cond (fmf `(apply ,fmf ,@arguments))
             (contf
              (let ((next (if (null next-methods)
@@ -166,7 +184,7 @@
                               method)
                              (emf-call-method
                               (first next-methods)
-                              (rest next-methods)))))
+                              (rest next-methods) arg-info))))
                `(apply ,contf ,next ,@arguments)))
             (t `(funcall ,(method-function method)
                          ;; last element might be a valist
@@ -174,7 +192,7 @@
                          (load-time-value
                           (list ,@(call-method-next-methods
                                    (method-generic-function method)
-                                   next-methods))
+                                   next-methods arg-info))
                           t)))))))
 
 (defmacro apply-method (method (&rest method-arguments) &rest arguments
