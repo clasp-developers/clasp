@@ -83,8 +83,9 @@
           (destructuring-bind (&optional ((&rest next-methods))) rest
             (or (fast-method-function method) ; FMFs are valid EMFs
                 (let ((contf (contf-method-function method)))
-                  (when contf (emf-from-contf
-                               contf method next-methods arg-info)))))))
+                  (when contf
+                    (emf-from-contf
+                     contf method next-methods arg-info)))))))
         ((make-method-form-p method)
          ;; FIXME: Should call-next-method etc be bound
          (effective-method-function (second method) arg-info))
@@ -183,7 +184,7 @@
                        ,method)
                      `(emf-call-method
                        ',(first next-methods)
-                       ',(rest next-methods) ',arg-info))
+                       '(,(rest next-methods)) ',arg-info))
                 t)
                ,@arguments))
             (t `(funcall (load-time-value (method-function ,method) t)
