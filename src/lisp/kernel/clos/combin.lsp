@@ -73,49 +73,18 @@
       (declare (core:lambda-name emf-from-contf.lambda))
       (apply contf next .method-args.))))
 
-;;; Convert an element of the second argument of a usual call-method
-;;; into a method.
-;;; Used by both effective-method-function and call-method.
-(defun call-method-aux (gf method &optional (arg-info '(t)))
-  (cond ((method-p method) method)
-        ((make-method-form-p method)
-         (make-instance (generic-function-method-class gf)
-           ;; FIXME?: These are of course lies.
-           ;; Our own method on shared-initialize will signal an error
-           ;; without these initargs, though.
-           :specializers '()
-           :qualifiers '()
-           :lambda-list '()
-           ;; FIXME: Should call-next-method etc be available?
-           :function (make-%method-function-fast
-                      (effective-method-function
-                       (second method) arg-info))))
-        ;; FIXME: Delay this?
-        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
-
-;;; Convert the second argument of a usual call-method into a list
-;;; of methods.
-;;; Used by both effective-method-function and call-method.
-(defun call-method-next-methods (gf next-methods &optional (arg-info '(t)))
-  (loop for nmethod in next-methods
-        collect (call-method-aux gf nmethod)))
-
 (defun emf-call-method (method rest &optional (arg-info '(t)))
-  (cond ((std-method-p method)
-         (destructuring-bind (&optional ((&rest next-methods))) rest
-           (or (fast-method-function method) ; FMFs are valid EMFs
-               (let ((contf (contf-method-function method)))
-                 (when contf (emf-from-contf
-                              contf method next-methods arg-info)))
-               ;; This can only happen if e.g. a user has manually
-               ;; constructed a standard-method with whatever function.
-               (let ((mf (method-function method))
-                     (next (call-method-next-methods
-                            (method-generic-function method)
-                            next-methods arg-info)))
-                 (lambda (&rest args)
-                   (declare (core:lambda-name emf-call-method.lambda))
-                   (funcall mf args next))))))
+  (cond ((and
+          (std-method-p method)
+          ;; This next form will return NIL if the method does not have
+          ;; an FMF or CONTF, an unusual situation indicating the user
+          ;; has manually made a method with whatever function.
+          ;; In this scenario we go to the default case down there.
+          (destructuring-bind (&optional ((&rest next-methods))) rest
+            (or (fast-method-function method) ; FMFs are valid EMFs
+                (let ((contf (contf-method-function method)))
+                  (when contf (emf-from-contf
+                               contf method next-methods arg-info)))))))
         ((make-method-form-p method)
          ;; FIXME: Should call-next-method etc be bound
          (effective-method-function (second method) arg-info))
@@ -172,21 +141,52 @@
                 if (symbolp s) collect (make-symbol (symbol-name s))
                   else collect (gensym "REQ-ARG")))))
 
+;;; Convert an element of the second argument of a usual call-method
+;;; into a method or form producing a method.
+(defun call-method-aux (gf method &optional (arg-info '(t)))
+  (cond ((method-p method) method)
+        ((make-method-form-p method)
+         `(make-instance ,(generic-function-method-class gf)
+            ;; FIXME?: These are of course lies.
+            ;; Our own method on shared-initialize will signal an error
+            ;; without these initargs, though.
+            :specializers '()
+            :qualifiers '()
+            :lambda-list '()
+            ;; FIXME: Should call-next-method etc be available?
+            :function (make-%method-function-fast
+                       (effective-method-function
+                        ',(second method) ',arg-info))))
+        ;; FIXME: Delay this? Right now this error occurs during
+        ;; macroexpansion of CALL- or APPLY-METHOD.
+        (t (error "Invalid argument to CALL-METHOD: ~a" method))))
+
+;;; Convert the second argument of a usual call-method into a list
+;;; of methods.
+(defun call-method-next-methods (gf next-methods &optional (arg-info '(t)))
+  (loop for nmethod in next-methods
+        collect (call-method-aux gf nmethod)))
+
 (defun std-expand-apply-method (method method-arguments arguments env)
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
-    (let ((fmf (fast-method-function method))
-          (contf (contf-method-function method))
-          (arg-info (argforms-to-arg-info arguments env)))
-      (cond (fmf `(apply ,fmf ,@arguments))
-            (contf
-             (let ((next (if (null next-methods)
-                             (make-%no-next-method-continuation
-                              method)
-                             (emf-call-method
-                              (first next-methods)
-                              (rest next-methods) arg-info))))
-               `(apply ,contf ,next ,@arguments)))
-            (t `(funcall ,(method-function method)
+    (let ((arg-info (argforms-to-arg-info arguments env)))
+      (cond ((fast-method-function method)
+             `(apply
+               (load-time-value (early-fast-method-function ,method) t)
+               ,@arguments))
+            ((contf-method-function method)
+             `(apply
+               (load-time-value (early-contf-method-function ,method) t)
+               (load-time-value
+                ,(if (null next-methods)
+                     `(make-%no-next-method-continuation
+                       ,method)
+                     `(emf-call-method
+                       ',(first next-methods)
+                       ',(rest next-methods) ',arg-info))
+                t)
+               ,@arguments))
+            (t `(funcall (load-time-value (method-function ,method) t)
                          ;; last element might be a valist
                          (apply #'list ,@arguments)
                          (load-time-value
