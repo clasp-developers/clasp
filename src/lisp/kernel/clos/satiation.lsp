@@ -256,9 +256,6 @@
               (symbol (find-class sname))))
           list-of-specializer-names))
 
-;; now write a function that, givne a call history and a list of bindings for the
-;; methods, returns a form that when evaluated will return the call history.
-;; You can shrare the bindings between the call history and the discriminator.
 (defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
   (loop with mc = (generic-function-method-combination generic-function)
         with all-methods = nil
@@ -301,12 +298,13 @@
                                          :class accessor-class))
                                (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
                                          generic-function list-of-specializer-names))))
-                        (t (or (cdr (assoc am outcome-cache :test #'equal))
+                        (t (or (find am outcome-cache :test #'equal
+                                     :key #'effective-method-outcome-applicable-methods)
                                (let ((new
                                        (make-effective-method-outcome
                                         :applicable-methods am
                                         :form em)))
-                                 (push (cons am new) outcome-cache)
+                                 (push new outcome-cache)
                                  new)))))
           into entries
         finally (return (values entries all-methods))))
