@@ -768,7 +768,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
-(defvar *fastgf-use-compiler* t)
+(defvar *fastgf-use-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))
