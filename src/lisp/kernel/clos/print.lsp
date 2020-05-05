@@ -159,36 +159,22 @@ printer and we should rather use MAKE-LOAD-FORM."
 
 (defmethod make-load-form ((method effective-reader-method)
                            &optional environment)
-  (let* ((slotd (accessor-method-slot-definition method))
-         (slot-name (slot-definition-name slotd))
-         (class (first (method-specializers method)))
-         (std-class-p (let ((cc (class-of class)))
-                        (or (eq cc (find-class 'standard-class))
-                            (eq cc (find-class 'funcallable-standard-class)))))
-         (std-slotd-p (eq (class-of slotd)
-                          (find-class 'standard-direct-slot-definition))))
-    `(intern-effective-reader
-      ;; slot definitions don't have a make-load-form, and giving them
-      ;; one would be a bit difficult since they don't know the class
-      ;; that they're in.
-      ,(class-slotd-form slot-name class (and std-class-p std-slotd-p))
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-reader-method))
+           'early-intern-effective-reader
+           'intern-effective-reader)
+      ',orig
       ',(effective-accessor-method-location method))))
 
 (defmethod make-load-form ((method effective-writer-method)
                            &optional environment)
-  (let* ((slotd (accessor-method-slot-definition method))
-         (slot-name (slot-definition-name slotd))
-         (class (second (method-specializers method)))
-         (std-class-p (let ((cc (class-of class)))
-                        (or (eq cc (find-class 'standard-class))
-                            (eq cc (find-class 'funcallable-standard-class)))))
-         (std-slotd-p (eq (class-of slotd)
-                          (find-class 'standard-direct-slot-definition))))
-    `(intern-effective-writer
-      ;; slot definitions don't have a make-load-form, and giving them
-      ;; one would be a bit difficult since they don't know the class
-      ;; that they're in.
-      ,(class-slotd-form slot-name class (and std-class-p std-slotd-p))
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-writer-method))
+           'early-intern-effective-writer
+           'intern-effective-writer)
+      ',orig
       ',(effective-accessor-method-location method))))
 
 ;;; ----------------------------------------------------------------------

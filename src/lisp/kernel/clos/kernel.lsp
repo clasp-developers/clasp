@@ -146,14 +146,28 @@
 
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
+(defun safe-method-specializers (method)
+  (let ((mc (class-of method)))
+    (cond ((or (eq mc (find-class 'standard-method))
+               (eq mc (find-class 'standard-reader-method))
+               (eq mc (find-class 'standard-writer-method)))
+           (with-early-accessors (+standard-method-slots+)
+             (method-specializers method)))
+          ((or (eq mc (find-class 'effective-reader-method))
+               (eq mc (find-class 'effective-writer-method)))
+           (with-early-accessors (+standard-method-slots+
+                                  +effective-accessor-method-slots+)
+             (method-specializers
+              (effective-accessor-method-original method))))
+          (t (method-specializers method)))))
+
 (defun applicable-method-list (gf args)
   (declare (optimize (speed 3)))
-  (with-early-accessors (+standard-method-slots+
-			 +standard-generic-function-slots+
+  (with-early-accessors (+standard-generic-function-slots+
 			 +eql-specializer-slots+
 			 +standard-class-slots+)
     (flet ((applicable-method-p (method args)
-	     (loop for spec in (method-specializers method)
+	     (loop for spec in (safe-method-specializers method)
 		for arg in args
 		always (if (eql-specializer-flag spec)
 			   (eql arg (eql-specializer-object spec))
@@ -166,9 +180,9 @@
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors
-      (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+      (+eql-specializer-slots+ +standard-generic-function-slots+)
     (flet ((applicable-method-p (method classes)
-             (loop for spec in (method-specializers method)
+             (loop for spec in (safe-method-specializers method)
                    for class in classes
                    always (cond ((eql-specializer-flag spec)
                                  ;; EQL specializer invalidate computation                       
@@ -191,10 +205,10 @@
 #-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
-  (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+  (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
     (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
     (flet ((applicable-method-p (method classes)
-	     (loop for spec in (method-specializers method)
+	     (loop for spec in (safe-method-specializers method)
 		for class in classes
 		always (cond ((eql-specializer-flag spec)
 			      ;; EQL specializer can invalidate computation
@@ -213,7 +227,7 @@
 
 (defun sort-applicable-methods (gf applicable-list args-specializers)
   (declare (optimize (safety 0) (speed 3)))
-  (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+)
+  (with-early-accessors (+standard-generic-function-slots+)
     (let ((f (generic-function-a-p-o-function gf)))
       ;; reorder args to match the precedence order
       (when f
@@ -236,12 +250,11 @@
         (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
-  (with-early-accessors (+standard-method-slots+)
-    (let* ((specializers-list-1 (method-specializers method-1))
-	   (specializers-list-2 (method-specializers method-2)))
-      (compare-specializers-lists (if f (funcall f specializers-list-1) specializers-list-1)
-				  (if f (funcall f specializers-list-2) specializers-list-2)
-				  args-specializers))))
+  (let* ((specializers-list-1 (safe-method-specializers method-1))
+         (specializers-list-2 (safe-method-specializers method-2)))
+    (compare-specializers-lists (if f (funcall f specializers-list-1) specializers-list-1)
+                                (if f (funcall f specializers-list-2) specializers-list-2)
+                                args-specializers)))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
   (when (or spec-list-1 spec-list-2)
@@ -320,12 +333,11 @@
 ;;; Recompute the specializer profile entirely.
 ;;; Needed if a method has been removed.
 (defun compute-gf-specializer-profile (gf)
-  (with-early-accessors (+standard-generic-function-slots+
-			 +standard-method-slots+)
+  (with-early-accessors (+standard-generic-function-slots+)
     (setf (generic-function-specializer-profile gf)
           (let ((sp nil))
             (dolist (method (generic-function-methods gf))
-              (let ((specializers (method-specializers method)))
+              (let ((specializers (safe-method-specializers method)))
                 (when (null sp)
                   (setf sp (make-array (length specializers))))
                 (update-specializer-profile sp specializers)))

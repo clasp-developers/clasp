@@ -193,7 +193,8 @@
                          `(core:instance-ref ,(first arguments) ',location))
                         ((consp location)
                          ;; class location. we need to find the new cell at load time.
-                         `(car ,(class-cell-form slot-name class)))
+                         `(car ,(class-cell-form sname
+                                                 (first (method-specializers method)))))
                         (t
                          (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
            `(let ((value ,valuef))

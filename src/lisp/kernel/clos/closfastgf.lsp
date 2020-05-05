@@ -225,7 +225,7 @@
 			 +standard-class-slots+)
     (loop for method in (generic-function-methods gf)
        when (applicable-method-p method specializers)
-       collect method)))
+       collect (maybe-replace-method method specializers))))
 
 (defun compute-applicable-methods-using-specializers (generic-function specializers)
   (check-type specializers list)
@@ -278,85 +278,6 @@
 
 (defun standard-slotd-p (slotd)
   (eq (class-of slotd) (find-class 'standard-effective-slot-definition)))
-
-(defun make-effective-accessor-method (class method location function)
-  ;; FIXME? Has to stay synced with hierarchy.lsp. Kinda kludgey...
-  (with-early-make-instance +effective-accessor-method-slots+
-    (dam class
-         :generic-function (method-generic-function method)
-         :lambda-list (method-lambda-list method)
-         :specializers (method-specializers method)
-         :qualifiers (method-qualifiers method)
-         :function function
-         ;; docstring
-         :source-position (method-source-position method)
-         :plist (method-plist method)
-         :keywords (method-keywords method)
-         :aok-p (method-allows-other-keys-p method)
-         :leaf-method-p (leaf-method-p method)
-         :slot-definition (accessor-method-slot-definition method)
-         :location location)
-    dam))
-
-(defun make-effective-reader-function (location slot-name)
-  (make-%method-function-fast
-   (if (consp location)
-       (lambda (object)
-         (declare (core:lambda-name
-                   effective-class-reader)
-                  (ignore object))
-         (let ((val (car location)))
-           (if (cleavir-primop:eq val (core:unbound))
-               (slot-unbound (class-of val) object slot-name)
-               val)))
-       (lambda (object)
-         (declare (core:lambda-name
-                   effective-instance-reader))
-         (let ((val (si:instance-ref object location)))
-           (if (cleavir-primop:eq val (core:unbound))
-               (slot-unbound (class-of val) object slot-name)
-               val))))))
-
-(defun make-effective-writer-function (location)
-  (make-%method-function-fast
-   (if (consp location)
-       (lambda (new object)
-         (declare (core:lambda-name
-                   effective-class-writer)
-                  (ignore object))
-         (setf (car location) new))
-       (lambda (new object)
-         (declare (core:lambda-name
-                   effective-instance-writer))
-         (si:instance-set object location new)))))
-
-;;; Hash tables from (direct-slotd . location) to methods.
-;;; This is important so that comparing methods to get identical
-;;; effective methods works.
-;;; FIXME: Should be weak-value.
-(defvar *cached-effective-readers* (make-hash-table :test #'equal))
-(defvar *cached-effective-writers* (make-hash-table :test #'equal))
-
-(defun intern-effective-reader (method location)
-  (let* ((direct-slotd (accessor-method-slot-definition method))
-         (key (cons direct-slotd location)))
-    (or (gethash key *cached-effective-readers*)
-        (setf (gethash key *cached-effective-readers*)
-              (make-effective-accessor-method
-               (find-class 'effective-reader-method)
-               method location
-               (make-effective-reader-function
-                location (slot-definition-name direct-slotd)))))))
-
-(defun intern-effective-writer (method location)
-  (let* ((direct-slotd (accessor-method-slot-definition method))
-         (key (cons direct-slotd location)))
-    (or (gethash key *cached-effective-writers*)
-        (setf (gethash key *cached-effective-writers*)
-              (make-effective-accessor-method
-               (find-class 'effective-writer-method)
-               method location
-               (make-effective-writer-function location))))))
 
 (defun maybe-replace-method (method specializers)
   (let ((mc (class-of method)))
@@ -419,8 +340,7 @@
        ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
        :function (lambda (core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
-  (let* ((methods (final-methods methods actual-specializers))
-         (em (compute-effective-method generic-function method-combination methods))
+  (let* ((em (compute-effective-method generic-function method-combination methods))
          ;; will be NIL unless em = (call-method METHOD ()) or (call-method METHOD)
          (method (and (consp em)
                       (eq (first em) 'call-method)
@@ -659,14 +579,15 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (let* ((method-list (if ok
                               method-list
                               (compute-applicable-methods generic-function arguments)))
+             (final-methods (final-methods method-list argument-classes))
              (outcome (compute-outcome
                        generic-function
                        (generic-function-method-combination generic-function)
-                       method-list argument-classes :log t)))
+                       final-methods argument-classes :log t)))
         (values
          outcome
          ;; Can we memoize the call, i.e. add it to the call history?
-         (cond ((null method-list) ; we avoid memoizing no-applicable-methods,
+         (cond ((null final-methods) ; we avoid memoizing no-applicable-methods,
                 ;; as it's probably just a mistake, and will just pollute the call history.
                 ;; This assumption would be wrong if an application frequently called a gf
                 ;; wrong and relied on the signal behavior etc,
@@ -803,8 +724,22 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                                      (calculate-fastgf-dispatch-function
                                       generic-function :compile t)))
 
+#+debug-fastgf
+(defvar *dispatch-miss-recursion-check* nil)
+
 (defun invalidated-dispatch-function (generic-function valist-args)
   (declare (optimize (debug 3)))
+  #+debug-fastgf
+  (when (find (cons generic-function (core:list-from-va-list valist-args)) *dispatch-miss-recursion-check*
+              :test #'equal)
+    (format t "~&Recursive dispatch miss detected~%")
+    (ext:btcl)
+    (ext:quit 1))
+  (let (#+debug-fastgf
+        (*dispatch-miss-recursion-check* (cons (cons generic-function
+                                                     (core:list-from-va-list valist-args))
+                                               *dispatch-miss-recursion-check*)))
+
   ;;; If there is a call history then compile a dispatch function
   ;;;   being extremely careful NOT to use any generic-function calls.
   ;;;   Then redo the call.
@@ -819,7 +754,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
-      (apply #'dispatch-miss generic-function valist-args)))
+      (apply #'dispatch-miss generic-function valist-args))))
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 

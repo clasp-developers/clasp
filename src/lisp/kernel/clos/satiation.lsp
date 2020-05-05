@@ -108,23 +108,22 @@
 
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
-  (with-early-accessors (+standard-generic-function-slots+) ; for -method-combination
-    (let ((new-entries
-            (loop for specific-specializers in lists-of-specializers
-                  for methods = (std-compute-applicable-methods-using-classes
-                                 generic-function specific-specializers)
-                  ;; Simple cache to avoid duplicate outcomes.
-                  for cached-outcome
-                    = (cdr (assoc methods outcome-cache :test #'equal))
-                  ;; Everything in early satiation uses standard method combination.
-                  for outcome = (or cached-outcome
-                                    (early-compute-outcome
-                                     methods specific-specializers))
-                  unless cached-outcome
-                    collect (cons methods outcome)
-                      into outcome-cache
-                  collect (cons (coerce specific-specializers 'vector) outcome))))
-      (append-generic-function-call-history generic-function new-entries))))
+  (let ((new-entries
+          (loop for specific-specializers in lists-of-specializers
+                for methods = (std-compute-applicable-methods-using-classes
+                               generic-function specific-specializers)
+                ;; Simple cache to avoid duplicate outcomes.
+                for cached-outcome
+                  = (cdr (assoc methods outcome-cache :test #'equal))
+                ;; Everything in early satiation uses standard method combination.
+                for outcome = (or cached-outcome
+                                  (early-compute-outcome
+                                   methods specific-specializers))
+                unless cached-outcome
+                  collect (cons methods outcome)
+                    into outcome-cache
+                collect (cons (coerce specific-specializers 'vector) outcome))))
+    (append-generic-function-call-history generic-function new-entries)))
 
 (defun early-satiate (generic-function &rest lists-of-specializers)
   ;; Many generic functions at startup will be missing specializer-profile at startup

@@ -69,7 +69,7 @@
            (%mf-fast-method-function mf)))))
 
 (defun early-fast-method-function (method)
-  (with-early-accessors (+standard-method-slots+
+  (with-early-accessors (+std-method-slots+
                          +%method-function-slots+)
     (let ((mf (method-function method)))
       (and (eq (class-of mf) (find-class '%method-function))
@@ -132,7 +132,7 @@
            (%mf-contf mf)))))
 
 (defun early-contf-method-function (method)
-  (with-early-accessors (+standard-method-slots+
+  (with-early-accessors (+std-method-slots+
                          +%method-function-slots+)
     (let ((mf (method-function method)))
       (and (eq (class-of mf) (find-class '%method-function))

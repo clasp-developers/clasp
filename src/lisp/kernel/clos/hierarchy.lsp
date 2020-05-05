@@ -173,28 +173,32 @@
 ;;; STANDARD-METHOD
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
+  ;;; Class to be a superclass of both standard-method and effective accessors.
+  (defparameter +std-method-slots+
+    '((the-function :initarg :function :accessor method-function)))
+  
   (defparameter +standard-method-slots+
-    '((the-generic-function :initarg :generic-function :initform nil
-       :accessor method-generic-function)
-      (lambda-list :initarg :lambda-list
-       :accessor method-lambda-list)
-      (specializers :initarg :specializers :accessor method-specializers)
-      (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
-      (the-function :initarg :function :accessor method-function)
-      (docstring :initarg :documentation :initform nil)
-      ;; Usually we just use the function's source position, but
-      ;; sometimes this is inadequate, e.g. for accessors, which share
-      ;; a method-function.
-      ;; So for those we use this - but not normal DEFMETHOD.
-      (source-position :initform nil :initarg :source-position
-                       :accessor method-source-position)
-      (plist :initform nil :initarg :plist :accessor method-plist)
-      ;; these are the precomputed results of cl:function-keywords.
-      (keywords :initform nil :initarg :keywords :accessor method-keywords)
-      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
-      ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
-      ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
-      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)))
+    (append +std-method-slots+
+            '((the-generic-function :initarg :generic-function :initform nil
+                                    :accessor method-generic-function)
+              (lambda-list :initarg :lambda-list
+                           :accessor method-lambda-list)
+              (specializers :initarg :specializers :accessor method-specializers)
+              (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
+              (docstring :initarg :documentation :initform nil)
+              ;; Usually we just use the function's source position, but
+              ;; sometimes this is inadequate, e.g. for accessors, which share
+              ;; a method-function.
+              ;; So for those we use this - but not normal DEFMETHOD.
+              (source-position :initform nil :initarg :source-position
+                               :accessor method-source-position)
+              (plist :initform nil :initarg :plist :accessor method-plist)
+              ;; these are the precomputed results of cl:function-keywords.
+              (keywords :initform nil :initarg :keywords :accessor method-keywords)
+              (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
+              ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
+              ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
+              (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p))))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+
@@ -208,9 +212,13 @@
   ;; These methods are never actually associated with a generic function
   ;; through add-method generic-function-methods etc., though they do have
   ;; the method-generic-function set.
+  ;; NOTE that they do not have their own slots, instead proxying through
+  ;; the original, except for the function.
   (defparameter +effective-accessor-method-slots+
-    (append +standard-accessor-method-slots+
-            '((location :initarg :location
+    (append +std-method-slots+
+            '((original :initarg :original ; the accessor method this is based on.
+                        :reader effective-accessor-method-original)
+              (location :initarg :location
                         :reader effective-accessor-method-location)))))
 
 ;;; ----------------------------------------------------------------------
@@ -443,8 +451,11 @@
          :metaclass funcallable-standard-class)
         (method
          :direct-superclasses (metaobject))
-        (standard-method
+        (std-method
          :direct-superclasses (method)
+         :direct-slots #.+std-method-slots+)
+        (standard-method
+         :direct-superclasses (std-method)
          :direct-slots #.+standard-method-slots+)
         (standard-accessor-method
          :direct-superclasses (standard-method)
@@ -456,10 +467,10 @@
          :direct-superclasses (standard-accessor-method)
          :direct-slots #2#)
         (effective-reader-method
-         :direct-superclasses (standard-reader-method)
+         :direct-superclasses (std-method)
          :direct-slots #4=#.+effective-accessor-method-slots+)
         (effective-writer-method
-         :direct-superclasses (standard-writer-method)
+         :direct-superclasses (std-method)
          :direct-slots #4#)
         (structure-class
          :direct-superclasses (class)

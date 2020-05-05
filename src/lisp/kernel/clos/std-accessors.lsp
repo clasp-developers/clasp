@@ -153,3 +153,23 @@
              (push class seen)
              (mapc #'generate-accessors (slot-value class 'direct-subclasses))))
     (generate-accessors +the-t-class+)))
+
+;;; Readers for effective accessor methods
+
+(macrolet ((defproxies (reader)
+             `(progn
+                (defmethod ,reader ((method effective-reader-method))
+                  (with-early-accessors (+effective-accessor-method-slots+)
+                    (,reader (effective-accessor-method-original method))))
+                (defmethod ,reader ((method effective-writer-method))
+                  (with-early-accessors (+effective-accessor-method-slots+)
+                    (,reader (effective-accessor-method-original method))))))
+           (def ()
+             `(progn
+                ,@(loop for (name . plist) in +standard-accessor-method-slots+
+                        for reader = (or (getf plist :accessor)
+                                         (getf plist :reader))
+                        ;; effective accessors have their own function slot.
+                        when (and reader (not (eq reader 'method-function)))
+                          collect `(defproxies ,reader)))))
+  (def))
