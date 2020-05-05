@@ -387,17 +387,12 @@
          (generate-effective-method-call reqargs more-args-p outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
-(defun class-cell-form (slot-name class &optional earlyp)
-  (let ((form
-          `(load-time-value
-            (slot-definition-location
-             (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
-                 (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
-                        ',slot-name ,class))))))
-    (if earlyp
-        `(with-early-accessors (+standard-class-slots+ +slot-definition-slots+)
-           (flet ((slot-definition-name (sd) (slot-definition-name sd)))
-             ,form)))))
+(defun class-cell-form (slot-name class)
+  `(load-time-value
+    (slot-definition-location
+     (or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+         (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                ',slot-name ,class)))))
 
 (defun generate-slot-reader (arguments outcome)
   (let* ((location (optimized-slot-reader-index outcome))

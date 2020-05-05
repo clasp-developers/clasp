@@ -178,39 +178,79 @@
 (defun std-expand-apply-method (method method-arguments arguments env)
   (destructuring-bind (&optional ((&rest next-methods))) method-arguments
     (let ((arg-info (argforms-to-arg-info arguments env)))
-      (cond ((fast-method-function method)
-             `(apply
-               ;; have to maybe do early- in case we're satiating early.
-               (load-time-value (,(if (std-method-p method)
-                                      'early-fast-method-function
-                                      'fast-method-function)
-                                 ,method)
-                                t)
-               ,@arguments))
-            ((contf-method-function method)
-             `(apply
-               (load-time-value (,(if (std-method-p method)
-                                      'early-contf-method-function
-                                      'contf-method-function)
-                                 ,method)
-                                t)
-               (load-time-value
-                ,(if (null next-methods)
-                     `(make-%no-next-method-continuation
-                       ,method)
-                     `(emf-call-method
-                       ',(first next-methods)
-                       '(,(rest next-methods)) ',arg-info))
-                t)
-               ,@arguments))
-            (t `(funcall (load-time-value (method-function ,method) t)
-                         ;; last element might be a valist
-                         (apply #'list ,@arguments)
-                         (load-time-value
-                          (list ,@(call-method-next-methods
-                                   (method-generic-function method)
-                                   next-methods arg-info))
-                          t)))))))
+      (cond
+        ;; Inline effective accessors.
+        ;; TODO: General inlining mechanism might be good.
+        ((and (eq (class-of method) (find-class 'effective-reader-method))
+              (> (length arguments) 1)) ; need the first argument.
+         (let* ((location (with-early-accessors (+effective-accessor-method-slots+)
+                            (effective-accessor-method-location method)))
+                (sname (slot-definition-name
+                        (accessor-method-slot-definition method)))
+                (valuef
+                  (cond ((fixnump location)
+                         ;; instance location- easy
+                         `(core:instance-ref ,(first arguments) ',location))
+                        ((consp location)
+                         ;; class location. we need to find the new cell at load time.
+                         `(car ,(class-cell-form slot-name class)))
+                        (t
+                         (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+           `(let ((value ,valuef))
+              (if (cleavir-primop:eq value (core:unbound))
+                  (slot-unbound (class-of ,(first arguments))
+                                ,(first arguments)
+                                ',sname)
+                  value))))
+        ((and (eq (class-of method) (find-class 'effective-writer-method))
+              (> (length arguments) 2))
+         (let ((location (with-early-accessors (+effective-accessor-method-slots+)
+                           (effective-accessor-method-location method)))
+               (sname (slot-definition-name
+                       (accessor-method-slot-definition method)))
+               (class (second (method-specializers method))))
+           (cond ((fixnump location)
+                  `(si:instance-set ,(second arguments) ,location ,(first arguments)))
+                 ((consp location)
+                  ;; class location
+                  ;; Note we don't actually need the instance.
+                  `(setf (car ,(class-cell-form sname class)) ,(first arguments)))
+                  (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+        ;; Standard methods
+        ((fast-method-function method)
+         `(apply
+           ;; have to maybe do early- in case we're satiating early.
+           (load-time-value (,(if (std-method-p method)
+                                  'early-fast-method-function
+                                  'fast-method-function)
+                             ,method)
+                            t)
+           ,@arguments))
+        ((contf-method-function method)
+         `(apply
+           (load-time-value (,(if (std-method-p method)
+                                  'early-contf-method-function
+                                  'contf-method-function)
+                             ,method)
+                            t)
+           (load-time-value
+            ,(if (null next-methods)
+                 `(make-%no-next-method-continuation
+                   ,method)
+                 `(emf-call-method
+                   ',(first next-methods)
+                   '(,(rest next-methods)) ',arg-info))
+            t)
+           ,@arguments))
+        ;; Default: AMOP protocol.
+        (t `(funcall (load-time-value (method-function ,method) t)
+                     ;; last element might be a valist
+                     (apply #'list ,@arguments)
+                     (load-time-value
+                      (list ,@(call-method-next-methods
+                               (method-generic-function method)
+                               next-methods arg-info))
+                      t)))))))
 
 (defmacro apply-method (method (&rest method-arguments) &rest arguments
                         &environment env)
