@@ -146,6 +146,40 @@ printer and we should rather use MAKE-LOAD-FORM."
   (declare (ignore environment))
   `(intern-eql-specializer ',(eql-specializer-object spec)))
 
+(defmethod make-load-form ((method effective-reader-method)
+                           &optional environment)
+  (let* ((slotd (accessor-method-slot-definition method))
+         (slot-name (slot-definition-name slotd))
+         (class (first (method-specializers method)))
+         (std-class-p (let ((cc (class-of class)))
+                        (or (eq cc (find-class 'standard-class))
+                            (eq cc (find-class 'funcallable-standard-class)))))
+         (std-slotd-p (eq (class-of slotd)
+                          (find-class 'standard-direct-slot-definition))))
+    `(intern-effective-reader
+      ;; slot definitions don't have a make-load-form, and giving them
+      ;; one would be a bit difficult since they don't know the class
+      ;; that they're in.
+      ,(class-cell-form slot-name class (and std-class-p std-slotd-p))
+      ',(effective-accessor-method-location method))))
+
+(defmethod make-load-form ((method effective-writer-method)
+                           &optional environment)
+  (let* ((slotd (accessor-method-slot-definition method))
+         (slot-name (slot-definition-name slotd))
+         (class (second (method-specializers method)))
+         (std-class-p (let ((cc (class-of class)))
+                        (or (eq cc (find-class 'standard-class))
+                            (eq cc (find-class 'funcallable-standard-class)))))
+         (std-slotd-p (eq (class-of slotd)
+                          (find-class 'standard-direct-slot-definition))))
+    `(intern-effective-writer
+      ;; slot definitions don't have a make-load-form, and giving them
+      ;; one would be a bit difficult since they don't know the class
+      ;; that they're in.
+      ,(class-cell-form slot-name class (and std-class-p std-slotd-p))
+      ',(effective-accessor-method-location method))))
+
 ;;; ----------------------------------------------------------------------
 ;;; Printing
 ;;; ----------------------------------------------------------------------

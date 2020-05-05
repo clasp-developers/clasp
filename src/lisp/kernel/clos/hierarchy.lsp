@@ -211,9 +211,6 @@
   (defparameter +effective-accessor-method-slots+
     (append +standard-accessor-method-slots+
             '((location :initarg :location
-               ;; NOTE that for metacircularity reasons, we never actually
-               ;; use this accessor - but it's available since it's more
-               ;; convenient than s-i-a if you want to take a look.
                         :reader effective-accessor-method-location)))))
 
 ;;; ----------------------------------------------------------------------

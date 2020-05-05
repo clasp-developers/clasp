@@ -279,48 +279,6 @@
 (defun standard-slotd-p (slotd)
   (eq (class-of slotd) (find-class 'standard-effective-slot-definition)))
 
-(defun maybe-replace-method (method specializers)
-  (let ((mc (class-of method)))
-    (cond ((eq mc (find-class 'standard-reader-method))
-           (let* ((eslotd (effective-slotd-from-accessor-method
-                           method (first specializers)))
-                  (location (slot-definition-location eslotd))
-                  (function
-                    (make-%method-function-fast
-                     (if (consp location)
-                         (lambda (object)
-                           (declare (core:lambda-name
-                                     effective-class-reader)
-                                    (ignore object))
-                           (car location))
-                         (lambda (object)
-                           (declare (core:lambda-name
-                                     effective-instance-reader))
-                           (si:instance-ref object location))))))
-             (make-effective-accessor-method
-              (find-class 'effective-reader-method)
-              method location function)))
-          ((eq mc (find-class 'standard-writer-method))
-           (let* ((eslotd (effective-slotd-from-accessor-method
-                           method (second specializers)))
-                  (location (slot-definition-location eslotd))
-                  (function
-                    (make-%method-function-fast
-                     (if (consp location)
-                         (lambda (new object)
-                           (declare (core:lambda-name
-                                     effective-class-writer)
-                                    (ignore object))
-                           (setf (cdr location) new))
-                         (lambda (new object)
-                           (declare (core:lambda-name
-                                     effective-instance-writer)
-                           (si:instance-set object location new)))))))
-             (make-effective-accessor-method
-              (find-class 'effective-writer-method)
-              method location function)))
-          (t method))))
-
 (defun make-effective-accessor-method (class method location function)
   ;; FIXME? Has to stay synced with hierarchy.lsp. Kinda kludgey...
   (with-early-make-instance +effective-accessor-method-slots+
@@ -336,8 +294,87 @@
          :keywords (method-keywords method)
          :aok-p (method-allows-other-keys-p method)
          :leaf-method-p (leaf-method-p method)
+         :slot-definition (accessor-method-slot-definition method)
          :location location)
     dam))
+
+(defun make-effective-reader-function (location slot-name)
+  (make-%method-function-fast
+   (if (consp location)
+       (lambda (object)
+         (declare (core:lambda-name
+                   effective-class-reader)
+                  (ignore object))
+         (let ((val (car location)))
+           (if (eq val (core:unbound))
+               (slot-unbound (class-of val) object slot-name)
+               val)))
+       (lambda (object)
+         (declare (core:lambda-name
+                   effective-instance-reader))
+         (let ((val (si:instance-ref object location)))
+           (if (eq val (core:unbound))
+               (slot-unbound (class-of val) object slot-name)
+               val))))))
+
+(defun make-effective-writer-function (location)
+  (make-%method-function-fast
+   (if (consp location)
+       (lambda (new object)
+         (declare (core:lambda-name
+                   effective-class-writer)
+                  (ignore object))
+         (setf (car location) new))
+       (lambda (new object)
+         (declare (core:lambda-name
+                   effective-instance-writer))
+         (si:instance-set object location new)))))
+
+;;; Hash tables from (direct-slotd . location) to methods.
+;;; This is important so that comparing methods to get identical
+;;; effective methods works.
+;;; FIXME: Should be weak-value.
+(defvar *cached-effective-readers* (make-hash-table :test #'equal))
+(defvar *cached-effective-writers* (make-hash-table :test #'equal))
+
+(defun intern-effective-reader (method location)
+  (let* ((direct-slotd (accessor-method-slot-definition method))
+         (key (cons direct-slotd location)))
+    (or (gethash key *cached-effective-readers*)
+        (setf (gethash key *cached-effective-readers*)
+              (make-effective-accessor-method
+               (find-class 'effective-reader-method)
+               method location
+               (make-effective-reader-function
+                location (slot-definition-name direct-slotd)))))))
+
+(defun intern-effective-writer (method location)
+  (let* ((direct-slotd (accessor-method-slot-definition method))
+         (key (cons direct-slotd location)))
+    (or (gethash key *cached-effective-writers*)
+        (setf (gethash key *cached-effective-writers*)
+              (make-effective-accessor-method
+               (find-class 'effective-writer-method)
+               method location
+               (make-effective-writer-function location))))))
+
+(defun maybe-replace-method (method specializers)
+  (let ((mc (class-of method)))
+    (cond ((and
+            (eq mc (find-class 'standard-reader-method))
+            (let ((eslotd (effective-slotd-from-accessor-method
+                           method (first specializers))))
+              (and (standard-slotd-p eslotd)
+                   (intern-effective-reader
+                    method (slot-definition-location eslotd))))))
+          ((and
+            (eq mc (find-class 'standard-writer-method))
+            (let ((eslotd (effective-slotd-from-accessor-method
+                           method (second specializers))))
+              (and (standard-slotd-p eslotd)
+                   (intern-effective-writer
+                    method (slot-definition-location eslotd))))))
+          (t method))))
 
 (defun final-methods (methods specializers)
   (loop for method in methods
@@ -382,42 +419,38 @@
        ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
        :function (lambda (core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
-  (let* ((em (compute-effective-method generic-function method-combination methods))
+  (let* ((methods (final-methods methods actual-specializers))
+         (em (compute-effective-method generic-function method-combination methods))
+         ;; will be NIL unless em = (call-method METHOD ()) or (call-method METHOD)
          (method (and (consp em)
                       (eq (first em) 'call-method)
+                      (consp (cdr em))
+                      (or (null (cddr em))
+                          (and (consp (cddr em))
+                               (null (cdddr em))
+                               (null (third em))))
                       (second em)))
-         (readerp (when method (optimizable-reader-method-p method)))
-         (writerp (when method (optimizable-writer-method-p method)))
-         (class (cond ((not method) nil)
-                      (readerp (first actual-specializers))
-                      (writerp (second actual-specializers))
-                      (t nil)))
-         (slotd (when class (effective-slotd-from-accessor-method method class)))
-         (standard-slotd-p (when slotd (standard-slotd-p slotd)))
-         existing-emf
          (optimized
-           (cond ((and standard-slotd-p readerp)
-                  (gf-log "About to invoke slot-definition-name in (cond ((and standard-slotd-p readerp)...))%N")
-                  (gf-log "make-optimized-slot-reader index: %s slot-name: %s class: %s%N"
-                          (slot-definition-location slotd)
-                          (slot-definition-name slotd)
-                          class)
-                  (make-optimized-slot-reader :index (slot-definition-location slotd)
-                                              :slot-name (slot-definition-name slotd)
-                                              :method method :class class))
-                 ((and standard-slotd-p writerp)
-                  (gf-log "make-optimized-slot-writer index: %s slot-name: %s class: %s%N"
-                          (slot-definition-location slotd)
-                          (slot-definition-name slotd)
-                          class)
-                  (make-optimized-slot-writer :index (slot-definition-location slotd)
-                                              :slot-name (slot-definition-name slotd)
-                                              :method method :class class))
-                 ((setf existing-emf
-                        (find-existing-emf (generic-function-call-history generic-function)
-                                           methods))
-                  (gf-log "Using existing effective method function%N")
-                  existing-emf)
+           (cond ((eq (class-of method) (find-class 'effective-reader-method))
+                  (let ((slotd (accessor-method-slot-definition method))
+                        (location
+                          (with-early-accessors (+effective-accessor-method-slots+)
+                            (effective-accessor-method-location method)))
+                        (class (first actual-specializers)))
+                    (make-optimized-slot-reader :index location :method method
+                                                :slot-name (slot-definition-name slotd)
+                                                :class class)))
+                 ((eq (class-of method) (find-class 'effective-writer-method))
+                  (let ((slotd (accessor-method-slot-definition method))
+                        (location
+                          (with-early-accessors (+effective-accessor-method-slots+)
+                            (effective-accessor-method-location method)))
+                        (class (second actual-specializers)))
+                    (make-optimized-slot-writer :index location :method method
+                                                :slot-name (slot-definition-name slotd)
+                                                :class class)))
+                 ((find-existing-emf (generic-function-call-history generic-function)
+                                     methods))
                  ;; NOTE: This case is not required if we always use :form and don't use the
                  ;; interpreter. See also, comment in combin.lsp.
                  ((and (consp em) (eq (first em) '%magic-no-required-method))
@@ -735,7 +768,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
-(defvar *fastgf-use-compiler* nil)
+(defvar *fastgf-use-compiler* t)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))

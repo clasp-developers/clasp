@@ -55,7 +55,11 @@
   (let ((mc (class-of method)))
     (or (eq mc (find-class 'standard-method))
         (eq mc (find-class 'standard-reader-method))
-        (eq mc (find-class 'standard-writer-method)))))
+        (eq mc (find-class 'standard-writer-method))
+        ;; Not remotely standard, but the same as standard-reader/writer
+        ;; for our purposes.
+        (eq mc (find-class 'effective-reader-method))
+        (eq mc (find-class 'effective-writer-method)))))
 
 (defun make-method-form-p (form)
   (and (consp form)

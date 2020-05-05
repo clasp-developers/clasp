@@ -83,7 +83,7 @@
     (let ((first (first methods)))
       ;; realistically, anything we satiate is going to be standard classes, but
       ;; paranoia doesn't hurt here.
-      (cond ((eq (class-of first) (find-class 'standard-reader-method))
+      (cond ((optimizable-reader-method-p first)
              (let* ((class (first specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
@@ -91,7 +91,7 @@
                                            :slot-name (slot-definition-name slot)
                                            :method first
                                            :class class)))
-            ((eq (class-of first) (find-class 'standard-writer-method))
+            ((optimizable-writer-method-p first)
              (let* ((class (second specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
@@ -168,15 +168,24 @@
                  (standard-generic-function method-combination null))
     ;; We should satiate the method combination accessors, but we actually
     ;; just use early accessors at the moment... which is probably wrong (FIXME?)
-    (satiate-one method-qualifiers     ; called by method combinations
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one method-specializers
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one method-function
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
+    ;; Method readers are used by make-effective-accessor-method.
+    (macrolet ((satiate-method-reader (name)
+                 `(satiate-one ,name
+                               (standard-method)
+                               (standard-reader-method)
+                               (standard-writer-method)
+                               (effective-reader-method)
+                               (effective-writer-method))))
+      (satiate-method-reader method-generic-function)
+      (satiate-method-reader method-lambda-list)
+      (satiate-method-reader method-specializers)
+      (satiate-method-reader method-qualifiers)
+      (satiate-method-reader method-function)
+      (satiate-method-reader method-source-position)
+      (satiate-method-reader method-plist)
+      (satiate-method-reader method-keywords)
+      (satiate-method-reader method-allows-other-keys-p)
+      (satiate-method-reader leaf-method-p))
     (satiate-one accessor-method-slot-definition
                  (standard-reader-method) (standard-writer-method))
     (satiate-one slot-definition-allocation
@@ -510,9 +519,11 @@ a list (EQL object) - just like DEFMETHOD."
                             (structure-class) (built-in-class) (core:cxx-class)
                             (core:derivable-cxx-class) (core:clbind-cxx-class)))
        ,@(satiate-readers +standard-method-slots+ '((standard-method)
-                                                    (standard-reader-method) (standard-writer-method)))
+                                                    (standard-reader-method) (standard-writer-method)
+                                                    (effective-reader-method) (effective-writer-method)))
        ,@(satiate-readers (set-difference +standard-accessor-method-slots+ +standard-method-slots+)
-                          '((standard-reader-method) (standard-writer-method)))
+                          '((standard-reader-method) (standard-writer-method)
+                            (effective-reader-method) (effective-writer-method)))
        ,@(satiate-readers +slot-definition-slots+
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
        ,@(satiate-readers +standard-generic-function-slots+
