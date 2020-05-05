@@ -146,6 +146,17 @@ printer and we should rather use MAKE-LOAD-FORM."
   (declare (ignore environment))
   `(intern-eql-specializer ',(eql-specializer-object spec)))
 
+(defun class-slotd-form (slot-name class &optional earlyp)
+  (let ((form
+          `(or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+               (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                      ',slot-name ,class))))
+    (if earlyp
+        `(with-early-accessors (+standard-class-slots+ +slot-definition-slots+)
+           (flet ((slot-definition-name (sd) (slot-definition-name sd))) ; macro, so.
+             ,form))
+        form)))
+
 (defmethod make-load-form ((method effective-reader-method)
                            &optional environment)
   (let* ((slotd (accessor-method-slot-definition method))
@@ -160,7 +171,7 @@ printer and we should rather use MAKE-LOAD-FORM."
       ;; slot definitions don't have a make-load-form, and giving them
       ;; one would be a bit difficult since they don't know the class
       ;; that they're in.
-      ,(class-cell-form slot-name class (and std-class-p std-slotd-p))
+      ,(class-slotd-form slot-name class (and std-class-p std-slotd-p))
       ',(effective-accessor-method-location method))))
 
 (defmethod make-load-form ((method effective-writer-method)
@@ -177,7 +188,7 @@ printer and we should rather use MAKE-LOAD-FORM."
       ;; slot definitions don't have a make-load-form, and giving them
       ;; one would be a bit difficult since they don't know the class
       ;; that they're in.
-      ,(class-cell-form slot-name class (and std-class-p std-slotd-p))
+      ,(class-slotd-form slot-name class (and std-class-p std-slotd-p))
       ',(effective-accessor-method-location method))))
 
 ;;; ----------------------------------------------------------------------
