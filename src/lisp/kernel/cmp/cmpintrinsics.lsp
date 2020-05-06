@@ -385,10 +385,8 @@ Boehm and MPS use a single pointer"
          %t*%      ; 3 _Rack
          %t*%      ; 4 _Sig
          %function-description*%   ; 5  FunctionDescription*
-         %atomic<size_t>%          ; 6  _Compilations
          %atomic<size_t>%          ; 7  _InterpretedCalls
          %atomic<tsp>%             ; 8  _CallHistory
-         %atomic<tsp>%             ; 9  _SpecializerProfile
          %atomic<tsp>%             ; 10 _CompiledDispatchFunction
          )
    nil))

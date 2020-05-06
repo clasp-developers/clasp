@@ -27,16 +27,14 @@
 ;;; 
 
 (defun std-class-accessors (slot-name)
-  (values #'(lambda (.method-args. .next-methods. #|self|#) ;; CHECKME
-              (declare (ignore .next-methods.)
-                       (core:lambda-name std-class-accessors.reader.lambda))
-              (core::bind-va-list (self) .method-args.
-                (slot-value self slot-name)))
-	  #'(lambda (.method-args. .next-methods. #|value self|#) ;; CHECKME
-              (declare (ignore .next-methods. )
-                       (core:lambda-name std-class-accessors.writer.lambda))
-              (core::bind-va-list (value self) .method-args.
-                (setf (slot-value self slot-name) value)))))
+  (values (make-%method-function-fast
+           #'(lambda (self)
+               (declare (core:lambda-name std-class-accessors.reader.lambda))
+               (slot-value self slot-name)))
+          (make-%method-function-fast
+           #'(lambda (new-value self)
+               (declare (core:lambda-name std-class-accessors.writer.lambda))
+               (setf (slot-value self slot-name) new-value)))))
 
 (defun safe-add-method (name method)
   ;; Adds a method to a function which might have been previously defined
@@ -155,3 +153,23 @@
              (push class seen)
              (mapc #'generate-accessors (slot-value class 'direct-subclasses))))
     (generate-accessors +the-t-class+)))
+
+;;; Readers for effective accessor methods
+
+(macrolet ((defproxies (reader)
+             `(progn
+                (defmethod ,reader ((method effective-reader-method))
+                  (with-early-accessors (+effective-accessor-method-slots+)
+                    (,reader (effective-accessor-method-original method))))
+                (defmethod ,reader ((method effective-writer-method))
+                  (with-early-accessors (+effective-accessor-method-slots+)
+                    (,reader (effective-accessor-method-original method))))))
+           (def ()
+             `(progn
+                ,@(loop for (name . plist) in +standard-accessor-method-slots+
+                        for reader = (or (getf plist :accessor)
+                                         (getf plist :reader))
+                        ;; effective accessors have their own function slot.
+                        when (and reader (not (eq reader 'method-function)))
+                          collect `(defproxies ,reader)))))
+  (def))

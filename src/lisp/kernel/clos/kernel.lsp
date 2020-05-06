@@ -91,9 +91,8 @@
       ;; create a fake standard-generic-function object:
       (with-early-make-funcallable-instance +standard-generic-function-slots+
 	(gfun (find-class 'standard-generic-function)
-	      :spec-list nil
-	      :method-combination (find-method-combination nil 'standard nil)
 	      :lambda-list lambda-list
+              :method-combination nil
 	      :argument-precedence-order
 	      (and l-l-p (rest (si::process-lambda-list lambda-list t)))
 	      :method-class (find-class 'standard-method)
@@ -102,8 +101,9 @@
 	      :a-p-o-function nil
 	      :declarations nil
 	      :dependents nil)
-	;; create a new gfun
         (setf-function-name gfun name)
+        (setf (generic-function-method-combination gfun)
+              (find-method-combination gfun 'standard nil))
         (invalidate-discriminating-function gfun)
 	(setf (fdefinition name) gfun)
 	gfun)))
@@ -146,14 +146,28 @@
 
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
+(defun safe-method-specializers (method)
+  (let ((mc (class-of method)))
+    (cond ((or (eq mc (find-class 'standard-method))
+               (eq mc (find-class 'standard-reader-method))
+               (eq mc (find-class 'standard-writer-method)))
+           (with-early-accessors (+standard-method-slots+)
+             (method-specializers method)))
+          ((or (eq mc (find-class 'effective-reader-method))
+               (eq mc (find-class 'effective-writer-method)))
+           (with-early-accessors (+standard-method-slots+
+                                  +effective-accessor-method-slots+)
+             (method-specializers
+              (effective-accessor-method-original method))))
+          (t (method-specializers method)))))
+
 (defun applicable-method-list (gf args)
   (declare (optimize (speed 3)))
-  (with-early-accessors (+standard-method-slots+
-			 +standard-generic-function-slots+
+  (with-early-accessors (+standard-generic-function-slots+
 			 +eql-specializer-slots+
 			 +standard-class-slots+)
     (flet ((applicable-method-p (method args)
-	     (loop for spec in (method-specializers method)
+	     (loop for spec in (safe-method-specializers method)
 		for arg in args
 		always (if (eql-specializer-flag spec)
 			   (eql arg (eql-specializer-object spec))
@@ -166,9 +180,9 @@
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
   (with-early-accessors
-      (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+      (+eql-specializer-slots+ +standard-generic-function-slots+)
     (flet ((applicable-method-p (method classes)
-             (loop for spec in (method-specializers method)
+             (loop for spec in (safe-method-specializers method)
                    for class in classes
                    always (cond ((eql-specializer-flag spec)
                                  ;; EQL specializer invalidate computation                       
@@ -191,10 +205,10 @@
 #-mlog
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
-  (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
+  (with-early-accessors (+eql-specializer-slots+ +standard-generic-function-slots+)
     (mlog "std-compute-applicable-methods-using-classes gf -> %s classes -> %s%N" gf classes)
     (flet ((applicable-method-p (method classes)
-	     (loop for spec in (method-specializers method)
+	     (loop for spec in (safe-method-specializers method)
 		for class in classes
 		always (cond ((eql-specializer-flag spec)
 			      ;; EQL specializer can invalidate computation
@@ -213,7 +227,7 @@
 
 (defun sort-applicable-methods (gf applicable-list args-specializers)
   (declare (optimize (safety 0) (speed 3)))
-  (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+)
+  (with-early-accessors (+standard-generic-function-slots+)
     (let ((f (generic-function-a-p-o-function gf)))
       ;; reorder args to match the precedence order
       (when f
@@ -236,12 +250,11 @@
         (push most-specific ordered-list)))))
 
 (defun compare-methods (method-1 method-2 args-specializers f)
-  (with-early-accessors (+standard-method-slots+)
-    (let* ((specializers-list-1 (method-specializers method-1))
-	   (specializers-list-2 (method-specializers method-2)))
-      (compare-specializers-lists (if f (funcall f specializers-list-1) specializers-list-1)
-				  (if f (funcall f specializers-list-2) specializers-list-2)
-				  args-specializers))))
+  (let* ((specializers-list-1 (safe-method-specializers method-1))
+         (specializers-list-2 (safe-method-specializers method-2)))
+    (compare-specializers-lists (if f (funcall f specializers-list-1) specializers-list-1)
+                                (if f (funcall f specializers-list-2) specializers-list-2)
+                                args-specializers)))
 
 (defun compare-specializers-lists (spec-list-1 spec-list-2 args-specializers)
   (when (or spec-list-1 spec-list-2)
@@ -291,49 +304,59 @@
 	    ;; This will force an error in the caller
 	    (t nil)))))
 
-(defun compute-g-f-spec-list (gf)
-  (with-early-accessors (+standard-generic-function-slots+
-			 +eql-specializer-slots+
-			 +standard-method-slots+)
-    (flet ((nupdate-spec-how-list (spec-how-list specializers gf)
-	     ;; update the spec-how of the gfun 
-	     ;; computing the or of the previous value and the new one
-	     (setf spec-how-list (or spec-how-list
-				     (copy-list specializers)))
-	     (do* ((l specializers (cdr l))
-		   (l2 spec-how-list (cdr l2))
-		   (spec-how)
-		   (spec-how-old))
-		  ((null l))
-	       (setq spec-how (first l) spec-how-old (first l2))
-	       (setf (first l2)
-		     (if (eql-specializer-flag spec-how)
-			 (list* (eql-specializer-object spec-how)
-				(and (consp spec-how-old) spec-how-old))
-			 (if (consp spec-how-old)
-			     spec-how-old
-			     spec-how))))
-	     spec-how-list))
-      (let* ((spec-how-list nil)
-	     (function nil)
-	     (a-p-o (generic-function-argument-precedence-order gf)))
-	(dolist (method (generic-function-methods gf))
-	  (setf spec-how-list
-		(nupdate-spec-how-list spec-how-list (method-specializers method) gf)))
-	(setf (generic-function-spec-list gf)
-	      (loop for type in spec-how-list
-		 for i from 0
-		 when type collect (cons type i)))
-	(let* ((g-f-l-l (generic-function-lambda-list gf)))
-	  (when (consp g-f-l-l)
-	    (let ((required-arguments (rest (si::process-lambda-list g-f-l-l t))))
-	      (unless (equal a-p-o required-arguments)
-		(setf function
-		      (coerce `(lambda (%list)
-				 (destructuring-bind ,required-arguments %list
-				   (list ,@a-p-o)))
-			      'function))))))
-	(setf (generic-function-a-p-o-function gf) function)))))
+;;; mutates the specializer profile to account for new specializers.
+(defun update-specializer-profile (specializer-profile specializers)
+  (with-early-accessors (+eql-specializer-slots+)
+    (loop for spec in specializers
+          for i from 0
+          for e = (svref specializer-profile i)
+          do (setf (svref specializer-profile i)
+                   (cond ((eql-specializer-flag spec)
+                          (let ((o (eql-specializer-object spec)))
+                            ;; Add to existing list of eql spec
+                            ;; objects, or make a new one.
+                            (if (consp e)
+                                (cons o e)
+                                (list o))))
+                         ((eql spec +the-t-class+) (or e nil))
+                         (t t)))))
+  specializer-profile)
+
+;;; Add one method to the specializer profile.
+(defun update-gf-specializer-profile (gf specializers)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (let* ((sv (generic-function-specializer-profile gf))
+           (to-update (or sv (make-array (length specializers)
+                                         :initial-element nil))))
+      (update-specializer-profile to-update specializers))))
+
+;;; Recompute the specializer profile entirely.
+;;; Needed if a method has been removed.
+(defun compute-gf-specializer-profile (gf)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (setf (generic-function-specializer-profile gf)
+          (let ((sp nil))
+            (dolist (method (generic-function-methods gf))
+              (let ((specializers (safe-method-specializers method)))
+                (when (null sp)
+                  (setf sp (make-array (length specializers))))
+                (update-specializer-profile sp specializers)))
+            sp))))
+
+(defun compute-a-p-o-function (gf)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (let ((a-p-o (generic-function-argument-precedence-order gf))
+          (gf-ll (generic-function-lambda-list gf)))
+      (setf (generic-function-a-p-o-function gf)
+            (if (consp gf-ll)
+                (let ((required-arguments (rest (core:process-lambda-list gf-ll t))))
+                  (if (equal a-p-o required-arguments)
+                      nil
+                      (coerce `(lambda (%list)
+                                 (destructuring-bind ,required-arguments %list
+                                   (list ,@a-p-o)))
+                              'function)))
+                nil)))))
 
 ;;; Will be upgraded to a method in fixup.
 (defun print-object (object stream)

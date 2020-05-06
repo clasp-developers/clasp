@@ -271,7 +271,7 @@ CL_DEFUN void core__backtrace_frame_to_stream(int idx, Frame_sp frame, T_sp stre
       info << thing_as_string(filename);
       info << ":";
       info << lineno.unsafe_fixnum();
-      clasp_write_string("    |---> ");
+      clasp_write_string("    |---> ",stream);
       clasp_write_string(info.str(),stream);
       clasp_write_string("\n",stream);
     }

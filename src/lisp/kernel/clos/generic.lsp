@@ -128,6 +128,7 @@
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
        (documentation nil) (method-class nil m-c-p)
+     &allow-other-keys
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
   ;; Check the validity of several fields.
   (when a-o-p
@@ -164,22 +165,12 @@ Not a valid documentation object ~A"
       (simple-program-error "Cannot replace the lambda list of ~A with ~A because it is incongruent with some of the methods"
 			    gfun lambda-list))))
 
-(defun force-generic-function-specializer-profile (gfun vec)
-  ;; FIXME: This is dumb. Use an atomic set.
-  (loop for existing = (generic-function-specializer-profile gfun)
-        for exchange = (generic-function-specializer-profile-compare-exchange gfun existing vec)
-        until (eq exchange vec)))
-
-(defun initialize-generic-function-specializer-profile (gfun &key (errorp t))
-  (cond ((slot-boundp gfun 'lambda-list)
-         (let ((lambda-list (generic-function-lambda-list gfun)))
-           (force-generic-function-specializer-profile
-            gfun
-            (make-array (length (lambda-list-required-arguments lambda-list))
-                        :initial-element nil))))
-        (errorp
-         (error "The specializer profile could not be initialized - lambda list of ~a was unbound"
-                gfun))))
+(defun initialize-gf-specializer-profile (gfun)
+  (when (slot-boundp gfun 'lambda-list)
+    (let* ((lambda-list (generic-function-lambda-list gfun))
+           (nreq (length (lambda-list-required-arguments lambda-list))))
+      (setf (generic-function-specializer-profile gfun)
+            (make-array nreq :initial-element nil)))))
 
 (defmethod shared-initialize :after
     ((gfun standard-generic-function) slot-names &rest initargs
@@ -187,7 +178,8 @@ Not a valid documentation object ~A"
        (documentation nil documentation-p)
        (argument-precedence-order nil a-o-p)
        ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
-       ((source-position spi) nil spi-p))
+       ((source-position spi) nil spi-p)
+       &allow-other-keys)
   (declare (ignore slot-names)
            (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
@@ -226,11 +218,11 @@ Not a valid documentation object ~A"
      (1+ (core:source-pos-info-column spi))))
   ;; Set up the actual function.
   (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
-  (when (generic-function-methods gfun)
-    (compute-g-f-spec-list gfun))
-  (update-dependents gfun initargs)
-  (unless (generic-function-specializer-profile gfun)
-    (initialize-generic-function-specializer-profile gfun :errorp nil)))
+  (cond ((generic-function-methods gfun)
+         (compute-gf-specializer-profile gfun)
+         (compute-a-p-o-function gfun))
+        (t (initialize-gf-specializer-profile gfun)))
+  (update-dependents gfun initargs))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
   ;; Check if the redefinition is trivial.
@@ -260,7 +252,8 @@ Not a valid documentation object ~A"
      &key
        (method-class 'STANDARD-METHOD method-class-p)
        (generic-function-class (class-of gfun) gfcp)
-       (delete-methods nil))
+       (delete-methods nil)
+       &allow-other-keys)
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; modify the existing object
   (setf args (copy-list args))
@@ -268,9 +261,6 @@ Not a valid documentation object ~A"
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
-  ;; FIXME! We should check that the class GENERIC-FUNCTION-CLASS is compatible
-  ;; with the old one. In what sense "compatible" is ment, I do not know!
-  ;; (See ANSI DEFGENERIC entry)
   (when (symbolp generic-function-class)
     (setf generic-function-class (find-class generic-function-class)))
   (when gfcp
@@ -296,7 +286,8 @@ Not a valid documentation object ~A"
     ((gfun null) name &rest args &key
                                    (method-class 'STANDARD-METHOD method-class-p)
                                    (generic-function-class 'STANDARD-GENERIC-FUNCTION)
-                                   (delete-methods nil))
+                                   (delete-methods nil)
+                                   &allow-other-keys)
   (declare (ignore delete-methods gfun))
   (mlog "In ensure-generic-function-using-class (gfun generic-function) gfun -> %s  name -> %s args -> %s%N" gfun name args)
   ;; else create a new generic function object

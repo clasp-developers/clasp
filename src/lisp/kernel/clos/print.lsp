@@ -130,6 +130,53 @@ printer and we should rather use MAKE-LOAD-FORM."
   (declare (ignore environment))
   `(find-package ,(package-name package)))
 
+;;; Extension. (Allowed per CLHS 3.2.4.3.)
+;;; This is required for a lot of satiation.lsp to function.
+(defmethod make-load-form ((method method) &optional environment)
+  (declare (ignore environment))
+  ;; FIXME: Should spruce up cmpliteral so it doesn't compile calls with
+  ;; all constant arguments.
+  `(load-method
+    ',(generic-function-name (method-generic-function method))
+    ',(method-qualifiers method)
+    ',(method-specializers method)))
+
+;;; Also an extension, to support the above.
+(defmethod make-load-form ((spec eql-specializer) &optional environment)
+  (declare (ignore environment))
+  `(intern-eql-specializer ',(eql-specializer-object spec)))
+
+(defun class-slotd-form (slot-name class &optional earlyp)
+  (let ((form
+          `(or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+               (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                      ',slot-name ,class))))
+    (if earlyp
+        `(with-early-accessors (+standard-class-slots+ +slot-definition-slots+)
+           (flet ((slot-definition-name (sd) (slot-definition-name sd))) ; macro, so.
+             ,form))
+        form)))
+
+(defmethod make-load-form ((method effective-reader-method)
+                           &optional environment)
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-reader-method))
+           'early-intern-effective-reader
+           'intern-effective-reader)
+      ',orig
+      ',(effective-accessor-method-location method))))
+
+(defmethod make-load-form ((method effective-writer-method)
+                           &optional environment)
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-writer-method))
+           'early-intern-effective-writer
+           'intern-effective-writer)
+      ',orig
+      ',(effective-accessor-method-location method))))
+
 ;;; ----------------------------------------------------------------------
 ;;; Printing
 ;;; ----------------------------------------------------------------------

@@ -83,44 +83,47 @@
     (let ((first (first methods)))
       ;; realistically, anything we satiate is going to be standard classes, but
       ;; paranoia doesn't hurt here.
-      (cond ((eq (class-of first) (find-class 'standard-reader-method))
+      (cond ((optimizable-reader-method-p first)
              (let* ((class (first specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (make-optimized-slot-reader :index (slot-definition-location slot)
                                            :slot-name (slot-definition-name slot)
-                                           :method first
+                                           :methods (list first)
                                            :class class)))
-            ((eq (class-of first) (find-class 'standard-writer-method))
+            ((optimizable-writer-method-p first)
              (let* ((class (second specializers))
                     (slot (early-effective-slot-from-accessor-method
                            first (first specializers))))
                (make-optimized-slot-writer :index (slot-definition-location slot)
                                            :slot-name (slot-definition-name slot)
-                                           :method first
+                                           :methods (list first)
                                            :class class)))
-            ((leaf-method-p first)
-             (if (fast-method-function first)
-                 (make-fast-method-call :function (fast-method-function first))
-                 (method-function first)))
             (t ; general effective method function
-             (combine-method-functions
-              (method-function first)
-              ;; with-early-accessors does macrolet, hence this awkwardness.
-              (mapcar (lambda (method) (method-function method))
-                      (rest methods))))))))
+             (let ((form `(call-method ,first (,@(rest methods)))))
+               (make-effective-method-outcome
+                :function (early-effective-method-function form)
+                :form form
+                :methods methods)))))))
 
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
-  (with-early-accessors (+standard-generic-function-slots+) ; for -method-combination
-    (let ((new-entries
-            (loop for specific-specializers in lists-of-specializers
-                  for methods = (std-compute-applicable-methods-using-classes
-                                 generic-function specific-specializers)
-                  ;; Everything should use standard method combination during satiation.
-                  for outcome = (early-compute-outcome methods specific-specializers)
-                  collect (cons (coerce specific-specializers 'vector) outcome))))
-      (append-generic-function-call-history generic-function new-entries))))
+  (let ((new-entries
+          (loop for specific-specializers in lists-of-specializers
+                for methods = (std-compute-applicable-methods-using-classes
+                               generic-function specific-specializers)
+                ;; Simple cache to avoid duplicate outcomes.
+                for cached-outcome
+                  = (cdr (assoc methods outcome-cache :test #'equal))
+                ;; Everything in early satiation uses standard method combination.
+                for outcome = (or cached-outcome
+                                  (early-compute-outcome
+                                   methods specific-specializers))
+                unless cached-outcome
+                  collect (cons methods outcome)
+                    into outcome-cache
+                collect (cons (coerce specific-specializers 'vector) outcome))))
+    (append-generic-function-call-history generic-function new-entries)))
 
 (defun early-satiate (generic-function &rest lists-of-specializers)
   ;; Many generic functions at startup will be missing specializer-profile at startup
@@ -164,15 +167,24 @@
                  (standard-generic-function method-combination null))
     ;; We should satiate the method combination accessors, but we actually
     ;; just use early accessors at the moment... which is probably wrong (FIXME?)
-    (satiate-one method-qualifiers     ; called by method combinations
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one method-specializers
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one method-function
-                 (standard-method)
-                 (standard-reader-method) (standard-writer-method))
+    ;; Method readers are used by make-effective-accessor-method.
+    (macrolet ((satiate-method-reader (name)
+                 `(satiate-one ,name
+                               (standard-method)
+                               (standard-reader-method)
+                               (standard-writer-method)
+                               (effective-reader-method)
+                               (effective-writer-method))))
+      (satiate-method-reader method-generic-function)
+      (satiate-method-reader method-lambda-list)
+      (satiate-method-reader method-specializers)
+      (satiate-method-reader method-qualifiers)
+      (satiate-method-reader method-function)
+      (satiate-method-reader method-source-position)
+      (satiate-method-reader method-plist)
+      (satiate-method-reader method-keywords)
+      (satiate-method-reader method-allows-other-keys-p)
+      (satiate-method-reader leaf-method-p))
     (satiate-one accessor-method-slot-definition
                  (standard-reader-method) (standard-writer-method))
     (satiate-one slot-definition-allocation
@@ -194,249 +206,145 @@
                  (standard-generic-function))
     (satiate-one leaf-method-p
                  (standard-method)
-                 (standard-reader-method) (standard-writer-method))
-    (satiate-one fast-method-function
-                 (standard-method)
                  (standard-reader-method) (standard-writer-method))))
 
-;;; This function sets up an initial specializer profile for a gf that doesn't have one.
-;;; It can only not have one if it was defined unnaturally, i.e. during boot.
-;;; We have to call this on all generic functions so defined, so more than the ones that
-;;; we satiate.
-;;; Furthermore, we have to do so before any generic functions are called. That's why
-;;; we use this separate function rather than compute-and-set-specializer-profile.
-;;; FIXME: Since this is only called during boot, we probably only need one compare-exchange.
-(defun setup-specializer-profile (proto-gf)
-  ;; proto-gf in that it's unnaturally defined. it's still a standard-generic-function object.
-  (with-early-accessors (+standard-generic-function-slots+
-                         +standard-method-slots+)
-    (unless (slot-boundp proto-gf 'lambda-list)
-      (error "In setup-specializer-profile - ~s has no lambda list!"
-             (core:low-level-standard-generic-function-name proto-gf)))
-    (let* ((ll (generic-function-lambda-list proto-gf))
-           ;; FIXME: l-l-r-a is defined in generic.lsp, which is after this, so we get a style warning.
-           ;; (this function is not actually called until fixup)
-           (new-profile (make-array (length (lambda-list-required-arguments ll))
-                                    :initial-element nil)))
-      (loop for old-profile = (generic-function-specializer-profile proto-gf)
-            for exchange = (generic-function-specializer-profile-compare-exchange proto-gf old-profile new-profile)
-            until (eq exchange new-profile)))
-    (let ((methods (generic-function-methods proto-gf)))
-      (if methods
-          (loop for method in methods
-                for specializers = (method-specializers method)
-                ;; in closfastgf. we rely on this function not calling gfs.
-                do (update-specializer-profile proto-gf specializers))
-          (error "In setup-specializer-profile - ~s has no methods!"
-                 (core:low-level-standard-generic-function-name proto-gf))))
-    (gf-log "Set initial specializer profile for satiated function %s to %s%N"
-            (core:low-level-standard-generic-function-name proto-gf)
-            (generic-function-specializer-profile proto-gf))))
-
-;;; Used in fixup for the %satiate macroexpansions (below).
-(defun early-find-method (gf qualifiers specializers &optional (errorp t))
-  (declare (notinline method-qualifiers))
-  (with-early-accessors (+eql-specializer-slots+
-                         +standard-generic-function-slots+
-                         +standard-method-slots+)
-    (flet ((filter-specializer (name)
-             (cond ((typep name 'specializer)
-                    name)
-                   ((atom name)
-                    (let ((class (find-class name nil)))
-                      (unless class
-                        (error "~A is not a valid specializer name" name))
-                      class))
-                   ((and (eq (first name) 'EQL)
-                         (null (cddr name)))
-                    (cdr name))
-                   (t
-                    (error "~A is not a valid specializer name" name))))
-           (specializer= (cons-or-class specializer)
-             (if (consp cons-or-class)
-                 (and (eql-specializer-flag specializer)
-                      (eql (car cons-or-class)
-                           (eql-specializer-object specializer)))
-                 (eq cons-or-class specializer))))
-      (when (/= (length specializers)
-                (length (generic-function-argument-precedence-order gf)))
-        (error
-         "The specializers list~%~A~%does not match the number of required arguments in ~A"
-         specializers (core:low-level-standard-generic-function-name gf)))
-      (loop with specializers = (mapcar #'filter-specializer specializers)
-            for method in (generic-function-methods gf)
-            when (and (equal qualifiers (method-qualifiers method))
-                      (every #'specializer= specializers (method-specializers method)))
-              do (return-from early-find-method method))
-      ;; If we did not find any matching method, then the list of
-      ;; specializers might have the wrong size and we must signal
-      ;; an error.
-      (when errorp
-        (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
-               (core:low-level-standard-generic-function-name gf)
-               qualifiers specializers)))
-    nil))
+;;; Used in the make-load-form for METHOD.
+;;; It's like find-method, but always signals an error, and only accepts
+;;; actual specializers.
+(defun load-method (gf-name qualifiers specializers)
+  (let ((gf (fdefinition gf-name)))
+    (if (eq (class-of gf) (find-class 'standard-generic-function))
+        ;; Get method without calling generic functions, in case we're
+        ;; loading a CLOS satiated definition.
+        (with-early-accessors (+eql-specializer-slots+
+                               +standard-generic-function-slots+
+                               +standard-method-slots+)
+          (when (/= (length specializers)
+                    (length (generic-function-argument-precedence-order gf)))
+            (error
+             "The specializers list~%~A~%does not match the number of required arguments in ~A"
+             specializers (core:low-level-standard-generic-function-name gf)))
+          (loop for method in (generic-function-methods gf)
+                when (and (equal qualifiers (method-qualifiers method))
+                          ;; We can use EQ because it obviously works for classes,
+                          ;; and eql specializers have an internment mechanism.
+                          (every #'eq specializers (method-specializers method)))
+                  do (return-from load-method method))
+          (error "There is no method on the generic function ~S that agrees on qualifiers ~S and specializers ~S"
+                 (core:low-level-standard-generic-function-name gf)
+                 qualifiers specializers))
+        (find-method gf qualifiers specializers t))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; DISCRIMINATING FUNCTIONS IN COMPILE-FILE
 ;;;
 
-(defun wrap-call-method (effective-method method-function-map)
-  `(macrolet ((call-method (method &optional nexts)
-                (if (consp method)
-                    (second method) ; (make-method form)
-                    (let ((mfs ',method-function-map))
-                      (flet ((mf (method)
-                               (or (cdr (assoc method mfs))
-                                   (error "BUG: Horrible things are occurring."))))
-                        `(funcall ,(mf method) .method-args.
-                                  ,(if (or (leaf-method-p method) (null nexts))
-                                       nil
-                                       `(list
-                                         ,@(loop for next in nexts
-                                                 collect (if (consp next) ; make-method
-                                                             `(lambda (.method-args. .next-methods.)
-                                                                (declare (ignore .next-methods.))
-                                                                ,(second next))
-                                                             (mf next)))))))))))
-     ,effective-method))
+;; Given a list of specializer names or specializers, returns a list of specializers.
+(defun coerce-to-list-of-specializers (list-of-specializer-names)
+  (mapcar (lambda (sname)
+            (etypecase sname
+              (class sname)
+              (eql-specializer
+               (list (eql-specializer-object sname)))
+              ;; (eql 'something)
+              ((cons (eql eql)
+                     (cons t null))
+               ;; The fake EQL specializers used by c-a-m-u-s
+               (list (second sname)))
+              (symbol (find-class sname))))
+          list-of-specializer-names))
 
-;;; FIXME: duplicates satiated-call-history heavily. not sure of the best way to fix it,
-;;; since this is a "runtime" history (for the compiler) and that's a "compile time" history.
 (defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
   (loop with mc = (generic-function-method-combination generic-function)
-        with fmf-binds = nil
-        with mf-binds = nil
-        with mfo-binds = nil
-        with emf-binds = nil
+        with all-methods = nil
         for list-of-specializer-names in lists-of-specializer-names
         for list-of-specializers
           = (coerce-to-list-of-specializers list-of-specializer-names)
         for am = (compute-applicable-methods-using-specializers
                   generic-function list-of-specializers)
-        for em = (compute-effective-method generic-function mc am)
-        for method = (and (consp em) (eq (first em) 'call-method) (second em))
-        for leafp = (when method (leaf-method-p method))
-        ;; this is just whether there is a fast method function, not the function
-        ;; itself, which is not required. Indicated with this booleanization.
-        for fmf = (when leafp
-                    (if (fast-method-function method) t nil))
-        for readerp = (when method (eq (class-of method) (find-class 'standard-reader-method)))
-        for writerp = (when method (eq (class-of method) (find-class 'standard-writer-method)))
-        for accessor-class = (cond ((not method) nil)
-                                   (readerp (first list-of-specializers))
-                                   (writerp (second list-of-specializers))
-                                   (t nil))
-        for slotd = (when accessor-class
-                      (effective-slotd-from-accessor-method method accessor-class))
-        for standard-slotd-p = (when slotd
-                                 (eq (class-of slotd)
-                                     (find-class 'standard-effective-slot-definition)))
-        do (when (null am)
-             (error "No applicable methods for SATIATE of ~a with ~a"
-                    generic-function list-of-specializer-names))
-        do (when (and (consp em) (eq (first em) 'no-required-method))
-             (error "No required methods for SATIATE of ~a with ~a"
-                    generic-function list-of-specializer-names))
-        collect (cons (coerce list-of-specializers 'vector)
-                      (cond
-                        (standard-slotd-p
-                         (cond (readerp (make-optimized-slot-reader
-                                         :index (slot-definition-location slotd)
-                                         :slot-name (slot-definition-name slotd)
-                                         :method method
-                                         :class accessor-class))
-                               (writerp (make-optimized-slot-writer
-                                         :index (slot-definition-location slotd)
-                                         :slot-name (slot-definition-name slotd)
-                                         :method method
-                                         :class accessor-class))
-                               (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
-                                         generic-function list-of-specializer-names))))
-                        (fmf (or (cdr (assoc method fmf-binds))
-                                 (let* ((sym (gensym "FAST-METHOD-FUNCTION"))
-                                        (outcome (make-fast-method-call :function sym)))
-                                   (push (cons method outcome) fmf-binds)
-                                   outcome)))
-                        (leafp (or (cdr (assoc method mfo-binds))
-                                   (let* ((mf (or (cdr (assoc method mf-binds))
-                                                  (let ((sym (gensym "METHOD-FUNCTION")))
-                                                    (push (cons method sym) mf-binds)
-                                                    sym)))
-                                          (outcome (make-effective-method-outcome
-                                                    :applicable-methods am :function mf)))
-                                     (push (cons method outcome) mfo-binds)
-                                     outcome)))
-                        (t (or (cdr (assoc am emf-binds :test #'equal))
-                               (let* ((sym (gensym "EFFECTIVE-METHOD-FUNCTION"))
-                                      (local-mf
-                                        (loop for m in am
-                                              collect (cons m
-                                                            (or (cdr (assoc m mf-binds))
-                                                                (let ((sym (gensym "METHOD-FUNCTION")))
-                                                                  (push (cons m sym) mf-binds)
-                                                                  sym)))))
-                                      (outcome (make-effective-method-outcome
-                                                :applicable-methods am
-                                                :form (wrap-call-method em local-mf))))
-                                 (push (cons am outcome) emf-binds)
-                                 outcome)))))
+        for cached-outcome = (find am outcome-cache :test #'equal
+                                   :key #'outcome-methods)
+        for outcome = (or cached-outcome
+                          (compute-outcome generic-function mc am list-of-specializers))
+        when (not cached-outcome)
+          collect outcome into outcome-cache
+        do (setf all-methods (union all-methods am))
+        collect (cons (coerce list-of-specializers 'vector) outcome)
           into entries
-        finally (return (values entries
-                                (loop for (key . val) in fmf-binds
-                                      collect (cons key (fast-method-call-function val)))
-                                mf-binds))))
+        finally (return (values entries all-methods))))
 
-(defun method-specializers-form (specializers)
-  `(list ,@(loop for s in specializers
-                 collect (etypecase s
-                           (eql-specializer
-                            `(intern-eql-specializer
-                             ',(eql-specializer-object s)))
-                           (class s)))))
+;;; Given an outcome, return a form that, when evaluated, returns an outcome
+;;; similar to it.
+(defun outcome-producer (outcome &optional (arg-info '(t)))
+  ;; Note that this relies on methods being dumpable, which we
+  ;; establish with their MAKE-LOAD-FORM.
+  (cond ((optimized-slot-reader-p outcome)
+         `(make-optimized-slot-reader
+           ;; FIXME: Probably not correct for :allocation :class.
+           :index ',(optimized-slot-reader-index outcome)
+           :slot-name ',(optimized-slot-reader-slot-name outcome)
+           :methods ',(outcome-methods outcome)
+           :class ,(optimized-slot-reader-class outcome)))
+        ((optimized-slot-writer-p outcome)
+         `(make-optimized-slot-writer
+           ;; FIXME: Probably not correct for :allocation :class.
+           :index ',(optimized-slot-writer-index outcome)
+           :slot-name ',(optimized-slot-writer-slot-name outcome)
+           :methods ',(outcome-methods outcome)
+           :class ,(optimized-slot-writer-class outcome)))
+        ((effective-method-outcome-p outcome)
+         ;; The handling of :function is basically the only reason
+         ;; we don't just dump the call history and let the usual
+         ;; literal mechanisms handle it.
+         ;; TODO: Pass in the arginfo maybe.
+         (let ((gform (gensym "FORM"))
+               (required (rest arg-info))
+               (rest (if (car arg-info) 'satiated-more nil)))
+           `(let ((,gform ',(effective-method-outcome-form outcome)))
+              (make-effective-method-outcome
+               :methods ',(outcome-methods outcome)
+               :form ,gform
+               :function (lambda (,@required
+                                  ,@(when rest `(core:&va-rest ,rest)))
+                           (with-effective-method-parameters
+                               ((,@required) ,rest)
+                             ,(effective-method-outcome-form
+                               outcome)))))))
+        (t (error "BUG: Don't know how to reconstruct outcome: ~a"
+                  outcome))))
 
-;; For satiation of CLOS, we need to use early-find-method and so on to prevent failures.
-;; If this is T, we use those. Otherwise we use the standard stuff.
-;; Note that this isn't complete - we also need those macro bindings in fixup.lsp.
-(defvar *early-satiation* nil)
+;;; Given a call history, return a form that, when evaluated,
+;;; returns a call history similar to the
+;;; provided one, and furthermore is dumpable.
+(defun call-history-producer (call-history &optional (arg-info '(t)))
+  (loop for (key . outcome) in call-history
+        for cached-outcome-info = (assoc outcome outcome-cache)
+        for name = (or (second cached-outcome-info) (gensym "OUTCOME"))
+        for outcome-form
+          = (or (third cached-outcome-info)
+                (outcome-producer outcome arg-info))
+        unless cached-outcome-info
+          collect (list outcome name outcome-form) into outcome-cache
+        ;; Keys are vectors of classes and lists (representing eql specializers)
+        ;; and should therefore be dumpable.
+        collect `(cons ,key ,name) into new-ch
+        finally
+           (return
+             `(let (,@(loop for (_ name form) in outcome-cache
+                            collect `(,name ,form)))
+                (list ,@new-ch)))))
 
-(defun find-method-form (method)
-  `(,(if *early-satiation* 'early-find-method 'find-method)
-    (fdefinition ',(generic-function-name (method-generic-function method)))
-    ',(method-qualifiers method)
-    ,(method-specializers-form (method-specializers method))))
-
-(defun compile-time-bindings-junk (fmf-binds mf-binds)
-  (append (loop for (method . name) in fmf-binds
-                collect (list name
-                              (if *early-satiation*
-                                  `(load-time-value
-                                    (with-early-accessors (+standard-method-slots+)
-                                      (fast-method-function ,(find-method-form method))))
-                                  `(load-time-value
-                                    (fast-method-function ,(find-method-form method))))))
-          (loop for (method . name) in mf-binds
-                collect (list name
-                              (if *early-satiation*
-                                  `(load-time-value
-                                    (with-early-accessors (+standard-method-slots+)
-                                      (method-function ,(find-method-form method))))
-                                  `(load-time-value
-                                    (method-function ,(find-method-form method))))))))
-
-(defun compile-time-discriminator (generic-function &rest lists-of-specializer-names)
-  (multiple-value-bind (call-history fmf-binds mf-binds)
-      (apply #'compile-time-call-history generic-function lists-of-specializer-names)
-    (multiple-value-bind (min max)
-        (generic-function-min-max-args generic-function)
-      (let ((name (generic-function-name generic-function)))
-        (generate-dispatcher-from-dtree
-         (calculate-dtree call-history (generic-function-specializer-profile generic-function))
-         :extra-bindings (compile-time-bindings-junk fmf-binds mf-binds)
-         :nreq min :max-nargs max
-         :generic-function-name name
-         :generic-function-form `(load-time-value (fdefinition ',name) t))))))
+(defun compile-time-discriminator (generic-function call-history)
+  (multiple-value-bind (min max)
+      (generic-function-min-max-args generic-function)
+    (let ((name (generic-function-name generic-function)))
+      (values
+       (generate-discriminator-from-data
+        call-history (safe-gf-specializer-profile generic-function)
+        `(load-time-value (fdefinition ',name) t) min max
+        :inline-effective-methods 'cl:require
+        :generic-function-name name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -474,21 +382,23 @@ a list (EQL object) - just like DEFMETHOD."
           finally (append-generic-function-call-history generic-function history))))
 
 ;;; The less simple part is doing things at compile-time.
-;;; We can't put discriminating functions into FASLs because they include the class stamps,
-;;; which are hard to synchronize between compile- and load-time.
+;;; We can't put discriminating functions into FASLs because they include the class
+;;; stamps, which are hard to synchronize between compile- and load-time.
 ;;; But we can dump (invented) call histories, including ones with functions in them.
 ;;; It's somewhat convoluted however.
 ;;; Anywho, we do that for SATIATE calls provided
 ;;; 1) the GENERIC-FUNCTION form is #'foo
 ;;; 2) all the lists of specializer designators are constant.
-;;; At the moment, it also requires that the generic function and all relevant methods are defined
-;;; at compile time. If we store information about DEFMETHODs in the environment at compile time,
-;;; though, that shouldn't be required. (EQL specializers will be a bit weird, though.)
-;;; NOTE: As of now we dump with class stamps anyway. This is okay for system code where the
-;;; stamps work out identically, but for library code it would be bad. Might want to make a
-;;; separate macro or something.
+;;; At the moment, it also requires that the generic function and all relevant methods
+;;; are defined at compile time. If we store information about DEFMETHODs in the
+;;; environment at compile time, though, that shouldn't be required.
+;;; (EQL specializers will be a bit weird, though.)
+;;; NOTE: As of now we dump with class stamps anyway. This is okay for system code
+;;; where the stamps work out identically, but for library code it would be bad.
+;;; Might want to make a separate macro or something.
 
-(define-compiler-macro satiate (&whole form generic-function &rest lists &environment env)
+(define-compiler-macro satiate
+    (&whole form generic-function &rest lists &environment env)
   (if (and (consp generic-function)
            (eq (car generic-function) 'function)
            (consp (cdr generic-function))
@@ -499,160 +409,16 @@ a list (EQL object) - just like DEFMETHOD."
                  ,@(mapcar (lambda (form) (ext:constant-form-value form env)) lists))
       form))
 
-;; Given a list of specializer names or specializers, returns a list of specializers.
-(defun coerce-to-list-of-specializers (list-of-specializer-names)
-  (mapcar (lambda (sname)
-            (etypecase sname
-              (class sname)
-              (eql-specializer
-               (list (eql-specializer-object sname)))
-              ;; (eql 'something)
-              ((cons (eql eql)
-                     (cons t null))
-               ;; The fake EQL specializers used by c-a-m-u-s
-               (list (second sname)))
-              (symbol (find-class sname))))
-          list-of-specializer-names))
-
-(defmacro satiated-call-history (generic-function-name &rest lists-of-specializer-names)
-  (let (method-binds method-function-binds method-function-outcome-binds emfo-binds fmf-binds)
-    ;;; Confusing and complicated macros.
-    ;;; Here's what they do: (ensure-method variable) expands into something that checks method-binds
-    ;;; for the value of variable. If it's there, that's returned. If not, a new gensym is made and put
-    ;;; there, along with the default form.
-    ;;; Basically it ensures that there's a binding of the value available for the expansion below.
-    (macrolet ((ensure (key var default namething)
-                 ;; EQUAL test for ensure-emfo
-                 `(let ((entry (assoc ,key ,var :test #'equal)))
-                    (if (consp entry)
-                        (second entry)
-                        (let ((name (gensym ,namething)))
-                          (push (list ,key name ,default) ,var)
-                          name))))
-               (ensure-method (method)
-                 `(ensure ,method method-binds
-                          ;; FIXME: We use DEFINITION instead of #' because we have local macros
-                          ;; for method-qualifiers etc., which are also satiated (and need to refer to)
-                          `(find-method (fdefinition ',generic-function-name)
-                                        ',(method-qualifiers ,method)
-                                        ,(method-specializers-form (method-specializers ,method)))
-                          "METHOD"))
-               (ensure-method-function (method)
-                 `(ensure ,method method-function-binds
-                          `(method-function ,(ensure-method ,method))
-                          "METHOD-FUNCTION"))
-               (ensure-method-function-outcome (method-list method)
-                 `(ensure ,method method-function-outcome-binds
-                          `(make-effective-method-outcome
-                            :applicable-methods (list ,@(loop for method in ,method-list
-                                                              collect (ensure-method method)))
-                            :function ,(ensure-method-function ,method))
-                          "METHOD-FUNCTION-OUTCOME"))
-               (ensure-emfo (method-list effective-method)
-                 `(ensure ,method-list emfo-binds
-                          `(make-effective-method-outcome
-                            :applicable-methods (list ,@(loop for method in ,method-list
-                                                              collect (ensure-method method)))
-                            :function (lambda (.method-args. .next-methods.)
-                                        (declare (ignore .next-methods.))
-                                        ,,effective-method))
-                          "EFFECTIVE-METHOD-OUTCOME"))
-               (ensure-fmf (method)
-                 `(ensure ,method fmf-binds
-                          `(make-fast-method-call
-                            :function (fast-method-function ,(ensure-method ,method)))
-                          "FAST-METHOD-FUNCTION")))
-      (let* ((generic-function (fdefinition generic-function-name))
-             (mc (generic-function-method-combination generic-function))
-             (entries
-               (loop for list-of-specializer-names in lists-of-specializer-names
-                     for list-of-specializers
-                       = (coerce-to-list-of-specializers list-of-specializer-names)
-                     for am = (compute-applicable-methods-using-specializers
-                               generic-function list-of-specializers)
-                     for em = (compute-effective-method generic-function mc am)
-                     ;; time to recapitulate compute-outcome.
-                     for method = (and (consp em) (eq (first em) 'call-method) (second em))
-                     for leafp = (when method (leaf-method-p method))
-                     for fmf = (when leafp (fast-method-function method))
-                     for readerp = (when method (eq (class-of method) (find-class 'standard-reader-method)))
-                     for writerp = (when method (eq (class-of method) (find-class 'standard-writer-method)))
-                     for accessor-class = (cond ((not method) nil)
-                                                (readerp (first list-of-specializers))
-                                                (writerp (second list-of-specializers))
-                                                (t nil))
-                     for slotd = (when accessor-class
-                                   (effective-slotd-from-accessor-method method accessor-class))
-                     for standard-slotd-p = (when slotd
-                                              (eq (class-of slotd)
-                                                  (find-class 'standard-effective-slot-definition)))
-                     ;; could alternately memoize a no-applicable-method call
-                     do (when (null am)
-                          (error "No applicable methods for SATIATE of ~a with ~a"
-                                 generic-function list-of-specializer-names))
-                     do (when (and (consp em) (eq (first em) 'no-required-method))
-                          (error "No required methods for SATIATE of ~a with ~a"
-                                 generic-function list-of-specializer-names))
-                     collect `(cons ,(coerce list-of-specializers 'vector)
-                                    ,(cond
-                                       (standard-slotd-p
-                                        (cond (readerp `(make-optimized-slot-reader
-                                                         :index ',(slot-definition-location slotd)
-                                                         :slot-name ',(slot-definition-name slotd)
-                                                         :method ,(ensure-method method)
-                                                         :class ,accessor-class))
-                                              (writerp `(make-optimized-slot-writer
-                                                         :index ',(slot-definition-location slotd)
-                                                         :slot-name ',(slot-definition-name slotd)
-                                                         :method ,(ensure-method method)
-                                                         :class ,accessor-class))
-                                              (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
-                                                        generic-function list-of-specializer-names))))
-                                       (fmf (ensure-fmf method))
-                                       (leafp (ensure-method-function-outcome am method))
-                                       (t
-                                        ;; Force method functions, so that call-method can use them.
-                                        (loop for method in am do (ensure-method-function method))
-                                        ;; Then the actual EMFO.
-                                        (ensure-emfo am em)))))))
-        `(let (,@(mapcar #'rest method-binds))
-           (let (,@(mapcar #'rest method-function-binds))
-             (macrolet ((call-method (method &optional nexts)
-                          (if (consp method)
-                              (second method) ; (make-method form)
-                              (let ((mfs '(,@(loop for (method name) in method-function-binds
-                                                   collect (cons method name)))))
-                                (flet ((ensure-mf (method)
-                                         (or (cdr (assoc method mfs))
-                                             (error "BUG: Horrible things are occurring."))))
-                                  `(funcall ,(ensure-mf method) .method-args.
-                                            (list
-                                             ,@(loop for next in nexts
-                                                     collect (if (consp next)
-                                                                 `(lambda (.method-args. .next-methods.)
-                                                                    (declare (ignore .next-methods.))
-                                                                    ,(second next))
-                                                                 (ensure-mf next))))))))))
-               (let (,@(mapcar #'rest fmf-binds))
-                 (let (,@(mapcar #'rest method-function-outcome-binds))
-                   (let (,@(mapcar #'rest emfo-binds))
-                     (list ,@entries)))))))))))
-
 ;;; Macro version of SATIATE, that the exported function sometimes expands into.
 (defmacro %satiate (generic-function-name &rest lists-of-specializer-names)
-  `(let ((gf (fdefinition ',generic-function-name)))
-     (append-generic-function-call-history
-      gf
-      (satiated-call-history ,generic-function-name ,@lists-of-specializer-names))
-;;;     #+(or)
-     (set-funcallable-instance-function
-      gf
-      ,(apply #'compile-time-discriminator
-              (fdefinition generic-function-name)
-              lists-of-specializer-names))
-     ;; put in the actual discriminator
-     #+(or)
-     (force-dispatcher gf)))
+  (let ((generic-function (fdefinition generic-function-name)))
+    (multiple-value-bind (call-history all-methods)
+        (apply #'compile-time-call-history generic-function lists-of-specializer-names)
+      `(let* ((gf (fdefinition ',generic-function-name)))
+         (append-generic-function-call-history
+          gf ,(call-history-producer call-history (gf-arg-info generic-function)))
+         (set-funcallable-instance-function
+          gf ,(compile-time-discriminator generic-function call-history))))))
 
 ;;; Exported auxiliary version for the common case of wanting to skip recompilations
 ;;; of shared-initialize etc. Just pass it a list of class designators and it'll fix
@@ -687,14 +453,12 @@ a list (EQL object) - just like DEFMETHOD."
 ;;;
 ;;; Used in boot
 
-;; Like %satiate, but also binds the thing so we get the non-gf expansions.
-;; (The binding must be at compile time, hence the weirdness here.)
-;; Note that this is finicky: We need the %satiate macroexpander specifically to use the variable.
-;; As of now this works, because the macroexpander calls compile-time-discriminator, which calls
-;; the things that use the variable. But if there was another layer of macrology there'd be a problem.
-(defmacro %early-satiate (generic-function-name &rest lists-of-specializer-names &environment env)
-  (let ((*early-satiation* t))
-    (macroexpand-1 `(%satiate ,generic-function-name ,@lists-of-specializer-names) env)))
+;;; This macro is a holdover from the older satiation mechanism, which had to do
+;;; more special things early on. I'm keeping it at least for now in case we
+;;; need to go back to doing that kind of thing.
+
+(defmacro %early-satiate (generic-function-name &rest lists-of-specializer-names)
+  `(%satiate ,generic-function-name ,@lists-of-specializer-names))
 
 (defmacro satiate-clos ()
   ;; This is the ahead-of-time satiation. If we get as much as possible we can speed startup a bit.
@@ -721,9 +485,11 @@ a list (EQL object) - just like DEFMETHOD."
                             (structure-class) (built-in-class) (core:cxx-class)
                             (core:derivable-cxx-class) (core:clbind-cxx-class)))
        ,@(satiate-readers +standard-method-slots+ '((standard-method)
-                                                    (standard-reader-method) (standard-writer-method)))
+                                                    (standard-reader-method) (standard-writer-method)
+                                                    (effective-reader-method) (effective-writer-method)))
        ,@(satiate-readers (set-difference +standard-accessor-method-slots+ +standard-method-slots+)
-                          '((standard-reader-method) (standard-writer-method)))
+                          '((standard-reader-method) (standard-writer-method)
+                            (effective-reader-method) (effective-writer-method)))
        ,@(satiate-readers +slot-definition-slots+
                           '((standard-direct-slot-definition) (standard-effective-slot-definition)))
        ,@(satiate-readers +standard-generic-function-slots+

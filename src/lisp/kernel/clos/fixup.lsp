@@ -49,12 +49,7 @@
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
   (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
-         (mf (lambda (.method-args. .next-methods.)
-               (declare (core:lambda-name function-to-method.lambda))
-               (mlog "In function-to-method.lambda  about to call %s with args %s%N"
-                     function (core:list-from-va-list .method-args.))
-               (apply function .method-args.)))
-         (fmfp (lambda-list-fast-callable-p lambda-list))
+         (mf (make-%method-function-fast function))
          (method
            (make-method (find-class 'standard-method)
                         nil
@@ -62,18 +57,17 @@
                         lambda-list
                         mf
                         (list
-                         'leaf-method-p t
-                         'fast-method-function (if fmfp function nil)))))
+                         'leaf-method-p t))))
     ;; we're still using the old add-method, which adds things to *early-methods*.
     ;; We don't want to do that here, so we rebind *early-methods* and discard the value.
     (let ((*early-methods* nil))
       (add-method f method))
     ;; Put in a call history to speed things up a little.
-    (loop ;; either a fast method function, or just the method function.
-          with outcome = (if fmfp
-                             (make-fast-method-call :function function)
-                             (make-effective-method-outcome
-                              :applicable-methods (list method) :function mf))
+    (loop with outcome = (make-effective-method-outcome
+                          :methods (list method)
+                          :form `(call-method ,method)
+                          ;; Is a valid EMF.
+                          :function function)
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
@@ -136,8 +130,7 @@
 ;;; before calling add-direct-method below
 
 (dolist (method-info *early-methods*)
-  (setup-specializer-profile
-   (fdefinition (car method-info))))
+  (compute-gf-specializer-profile (fdefinition (car method-info))))
 
 (mlog "About to satiate%N")
 
@@ -154,10 +147,7 @@
 (eval-when (:execute)
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
-  (macrolet ((find-method (&rest args)
-               `(early-find-method ,@args)))
-    (with-early-accessors (+standard-method-slots+)
-      (satiate-clos))))
+  (satiate-clos))
 
 (mlog "Done satiating%N")
 
@@ -335,23 +325,16 @@ and cannot be added to ~A." method other-gf gf)))
   ;;  ii) Updating the specializers list of the generic function. Notice that
   ;;  we should call add-direct-method for each specializer but specializer
   ;;  objects are not yet implemented
-  #+(or)
-  (dolist (spec (method-specializers method))
-    (add-direct-method spec method))
+  (register-method-with-specializers method)
   ;;  iii) Computing a new discriminating function... Well, since the core
   ;;  ECL does not need the discriminating function because we always use
   ;;  the same one, we just update the spec-how list of the generic function.
-  (compute-g-f-spec-list gf)
-  ;; Clasp must update the specializer-profile
-  #+clasp
-  (progn
-    (update-specializer-profile gf (method-specializers method))
-    (update-generic-function-call-history-for-add-method gf method))
+  (update-gf-specializer-profile gf (method-specializers method))
+  (compute-a-p-o-function gf)
+  (update-generic-function-call-history-for-add-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   ;;  iv) Update dependents.
   (update-dependents gf (list 'add-method method))
-  ;;  v) Register with specializers
-  (register-method-with-specializers method)
   gf)
 
 (defun remove-method (gf method)
@@ -360,11 +343,9 @@ and cannot be added to ~A." method other-gf gf)))
 	(method-generic-function method) nil)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
-  (compute-g-f-spec-list gf)
-  #+clasp
-  (progn
-    (compute-and-set-specializer-profile gf)
-    (update-generic-function-call-history-for-remove-method gf method))
+  (compute-gf-specializer-profile gf)
+  (compute-a-p-o-function gf)
+  (update-generic-function-call-history-for-remove-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)
@@ -548,9 +529,11 @@ and cannot be added to ~A." method other-gf gf)))
         (when (classp spec) ; sanity check against eql specialization
           (recursively-update-class-initargs-cache spec))))))
 
-;; KLUDGE: bclasp doesn't respect notinline, so we do this.
-;; (It needs to be notinline - we haven't booted static-gfs yet.)
-(let ((x (apply #'make-instance 'initargs-updater nil)))
+;; NOTE that we can't use MAKE-INSTANCE since the
+;; compiler macro in static-gfs will put in code
+;; that the loader can't handle yet.
+;; We can't just use NOTINLINE since bclasp ignores it (this is a bug).
+(let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
@@ -559,6 +542,13 @@ and cannot be added to ~A." method other-gf gf)))
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
+
+;; ditto
+(function-to-method 'expand-apply-method
+                    '(method method-arguments arguments env)
+                    '(standard-method t t t)
+                    nil
+                    #'std-expand-apply-method)
 
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)

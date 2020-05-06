@@ -222,7 +222,8 @@
   (invalidate-generic-functions-with-class-selector class)
   class)
 
-(defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
+(defmethod initialize-instance ((class class) &rest initargs &key direct-slots
+                                                               &allow-other-keys)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
@@ -236,7 +237,8 @@
   (core:class-new-stamp class)
   class)
 
-(defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
+(defmethod shared-initialize ((class class) slot-names
+                              &rest initargs &key direct-superclasses &allow-other-keys)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
@@ -493,7 +495,8 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
 (defmethod ensure-class-using-class ((class class) name core:&va-rest rest
-				     &key direct-slots direct-default-initargs)
+				     &key direct-slots direct-default-initargs
+                                       &allow-other-keys)
   (declare (ignore direct-default-initargs direct-slots))
   (clos::gf-log "In ensure-class-using-class (class class) %N")
   (clos::gf-log "     name -> %s%N" name)

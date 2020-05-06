@@ -130,7 +130,16 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
-    '((spec-list :initform nil :accessor generic-function-spec-list)
+    '(;; A description of how the methods on this generic function are
+      ;; specialized. It's a simple-vector with as many elements as the gf
+      ;; has required arguments. If a parameter is unspecialized (i.e.
+      ;; all methods' specializers there are T), that element is NIL.
+      ;; If one or more methods have an eql specializer at that position,
+      ;; the element is a list of their eql specializer objects.
+      ;; Otherwise (i.e. the parameter is specialized with non eql
+      ;; specializers) the element is T.
+      (specializer-profile :initform nil
+                           :accessor generic-function-specializer-profile)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
@@ -164,35 +173,53 @@
 ;;; STANDARD-METHOD
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
+  ;;; Class to be a superclass of both standard-method and effective accessors.
+  (defparameter +std-method-slots+
+    '((the-function :initarg :function :accessor method-function)))
+  
   (defparameter +standard-method-slots+
-    '((the-generic-function :initarg :generic-function :initform nil
-       :accessor method-generic-function)
-      (lambda-list :initarg :lambda-list
-       :accessor method-lambda-list)
-      (specializers :initarg :specializers :accessor method-specializers)
-      (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
-      (the-function :initarg :function :accessor method-function)
-      (docstring :initarg :documentation :initform nil)
-      ;; Usually we just use the function's source position, but
-      ;; sometimes this is inadequate, e.g. for accessors, which share
-      ;; a method-function.
-      ;; So for those we use this - but not normal DEFMETHOD.
-      (source-position :initform nil :initarg :source-position
-                       :accessor method-source-position)
-      (plist :initform nil :initarg :plist :accessor method-plist)
-      ;; these are the precomputed results of cl:function-keywords.
-      (keywords :initform nil :initarg :keywords :accessor method-keywords)
-      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
-      ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
-      ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
-      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)
-      (fast-method-function :initform nil :initarg fast-method-function :reader fast-method-function)))
+    (append +std-method-slots+
+            '((the-generic-function :initarg :generic-function :initform nil
+                                    :accessor method-generic-function)
+              (lambda-list :initarg :lambda-list
+                           :accessor method-lambda-list)
+              (specializers :initarg :specializers :accessor method-specializers)
+              (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
+              (docstring :initarg :documentation :initform nil)
+              ;; Usually we just use the function's source position, but
+              ;; sometimes this is inadequate, e.g. for accessors, which share
+              ;; a method-function.
+              ;; So for those we use this - but not normal DEFMETHOD.
+              (source-position :initform nil :initarg :source-position
+                               :accessor method-source-position)
+              (plist :initform nil :initarg :plist :accessor method-plist)
+              ;; these are the precomputed results of cl:function-keywords.
+              (keywords :initform nil :initarg :keywords :accessor method-keywords)
+              (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
+              ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
+              ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
+              (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p))))
 
   (defparameter +standard-accessor-method-slots+
     (append +standard-method-slots+
 	    '((slot-definition :initarg :slot-definition
                                :initform nil
-                               :reader accessor-method-slot-definition)))))
+                               :reader accessor-method-slot-definition))))
+
+  ;; This is for direct-reader-method and direct-writer-method, classes used
+  ;; internally to represent when an access method can be done directly
+  ;; (with standard-instance-access, basically) instead of through slot-value.
+  ;; These methods are never actually associated with a generic function
+  ;; through add-method generic-function-methods etc., though they do have
+  ;; the method-generic-function set.
+  ;; NOTE that they do not have their own slots, instead proxying through
+  ;; the original, except for the function.
+  (defparameter +effective-accessor-method-slots+
+    (append +std-method-slots+
+            '((original :initarg :original ; the accessor method this is based on.
+                        :reader effective-accessor-method-original)
+              (location :initarg :location
+                        :reader effective-accessor-method-location)))))
 
 ;;; ----------------------------------------------------------------------
 ;;; SLOT-DEFINITION
@@ -211,6 +238,18 @@
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
       (location :initarg :location :initform nil :accessor slot-definition-location)
       )))
+
+;;; ----------------------------------------------------------------------
+;;; %METHOD-FUNCTION
+;;;
+;;; See method.lsp for use.
+
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
+  (core:defconstant-equal +%method-function-slots+
+    '((fast-method-function :initarg :fmf :initform nil
+                            :reader %mf-fast-method-function)
+      (contf :initarg :contf :initform nil
+             :reader %mf-contf))))
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
@@ -412,8 +451,11 @@
          :metaclass funcallable-standard-class)
         (method
          :direct-superclasses (metaobject))
-        (standard-method
+        (std-method
          :direct-superclasses (method)
+         :direct-slots #.+std-method-slots+)
+        (standard-method
+         :direct-superclasses (std-method)
          :direct-slots #.+standard-method-slots+)
         (standard-accessor-method
          :direct-superclasses (standard-method)
@@ -424,6 +466,12 @@
         (standard-writer-method
          :direct-superclasses (standard-accessor-method)
          :direct-slots #2#)
+        (effective-reader-method
+         :direct-superclasses (std-method)
+         :direct-slots #4=#.+effective-accessor-method-slots+)
+        (effective-writer-method
+         :direct-superclasses (std-method)
+         :direct-slots #4#)
         (structure-class
          :direct-superclasses (class)
          :direct-slots #.+structure-class-slots+)
@@ -439,6 +487,14 @@
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
          :direct-superclasses (standard-object))
+        (%method-function
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots #.+%method-function-slots+)
+        (%no-next-method-continuation
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots nil)
         ))))
 
 (eval-when (:compile-toplevel :execute)

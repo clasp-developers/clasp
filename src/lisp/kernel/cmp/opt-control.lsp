@@ -1,11 +1,12 @@
 (in-package #:cmp)
 
-(define-compiler-macro apply (&whole form function &rest arguments)
+(define-compiler-macro apply (&whole form function &rest arguments
+                                     &environment env)
   (if (null arguments)
       form ; error, leave it to runtime
       (let* ((fixed (butlast arguments))
              (last (first (last arguments)))
-             (fsym (gensym "FUNCTION-DESIGNATOR"))
+             (fsym (gensym "FUNCTION"))
              (syms (gensym-list fixed))
              (op (case (length fixed)
                    ((0) 'core:apply0)
@@ -13,10 +14,16 @@
                    ((2) 'core:apply2)
                    ((3) 'core:apply3)
                    (otherwise 'core:apply4))))
-        ;; The LET is so that we evaluate the arguments to APPLY
-        ;; in the correct order.
-        `(let ((,fsym ,function) ,@(mapcar #'list syms fixed))
-           (,op (core:coerce-fdesignator ,fsym) ,last ,@syms)))))
+        ;; Pick off (apply ... nil), which could be generated
+        ;; (for example in CLOS).
+        (if (and (constantp last env)
+                 (null (ext:constant-form-value last env)))
+            `(funcall ,function ,@fixed)
+            ;; The LET is so that we evaluate the arguments to APPLY
+            ;; in the correct order.
+            `(let ((,fsym (core:coerce-fdesignator ,function))
+                   ,@(mapcar #'list syms fixed))
+               (,op ,fsym ,last ,@syms))))))
 
 (define-compiler-macro eql (&whole form x y &environment env)
   (if (constantp x env)

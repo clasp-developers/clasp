@@ -288,25 +288,8 @@ T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_
   return exchanged ? new_value : expected;
 }
 
-T_sp FuncallableInstance_O::GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value) {
-  bool exchanged = this->_SpecializerProfile.compare_exchange_strong(expected,new_value);
-  return exchanged ? new_value : expected;
-}
-
-CL_DEFUN void clos__generic_function_increment_compilations(FuncallableInstance_sp gf) {
-  gf->increment_compilations();
-}
-
-CL_DEFUN size_t clos__generic_function_compilations(FuncallableInstance_sp gf) {
-  return gf->compilations();
-}
-
-CL_DEFUN T_sp clos__generic_function_specializer_profile(FuncallableInstance_sp gf) {
-  return gf->GFUN_SPECIALIZER_PROFILE();
-}
-
-CL_DEFUN T_sp clos__generic_function_specializer_profile_compare_exchange(FuncallableInstance_sp gf, T_sp expected, T_sp new_value) {
-  return gf->GFUN_SPECIALIZER_PROFILE_compare_exchange(expected,new_value);
+CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
+  return gf->interpreted_calls();
 }
 
 CL_DEFUN T_sp clos__generic_function_call_history(FuncallableInstance_sp obj) {
@@ -347,8 +330,7 @@ namespace core {
 #define DTREE_OP_EQL 7
 #define DTREE_OP_SLOT_READ 8
 #define DTREE_OP_SLOT_WRITE 9
-#define DTREE_OP_FAST_METHOD_CALL 10
-#define DTREE_OP_EFFECTIVE_METHOD 11
+#define DTREE_OP_EFFECTIVE_METHOD 10
 
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
@@ -380,8 +362,6 @@ namespace core {
 
 #define DTREE_SLOT_WRITER_INDEX_OFFSET 1
 
-#define DTREE_FAST_METHOD_FUNCTION_OFFSET 1
-
 #define DTREE_EFFECTIVE_METHOD_OFFSET 1
 
 #define CASE_OP_NAME(op) case op: return #op;
@@ -397,14 +377,13 @@ std::string dtree_op_name(int dtree_op) {
     CASE_OP_NAME(DTREE_OP_EQL);
     CASE_OP_NAME(DTREE_OP_SLOT_READ);
     CASE_OP_NAME(DTREE_OP_SLOT_WRITE);
-    CASE_OP_NAME(DTREE_OP_FAST_METHOD_CALL);
     CASE_OP_NAME(DTREE_OP_EFFECTIVE_METHOD);
   default: return "UNKNOWN_OP";
   };
 };
 
 SYMBOL_EXPORT_SC_(ClosPkg,interp_wrong_nargs);
-SYMBOL_EXPORT_SC_(ClosPkg, force_dispatcher);
+SYMBOL_EXPORT_SC_(ClosPkg, compile_discriminating_function);
 
 #define COMPILE_TRIGGER 1024 // completely arbitrary
 
@@ -417,12 +396,12 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   for ( size_t i=0; i<program->length(); ++i ) {
     DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
   }
+#if 0 // Compilation disabled for now because it increases build time
   // Increment the call count, and if it's high enough, compile the thing
   size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
-  // Note we use ==. This ensures that if compilation of the dispatcher
-  // calls this function again, we won't initiate another compile.
-  if (calls == COMPILE_TRIGGER)
-    eval::funcall(clos::_sym_force_dispatcher, generic_function);
+  if (calls >= COMPILE_TRIGGER)
+    eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
+#endif
   // Regardless of whether we triggered the compile, we next
   // Dispatch
   Vaslist valist_copy(*args);
@@ -593,19 +572,12 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           return gctools::return_type(value.raw_(),1);
         }
       }
-    case DTREE_OP_FAST_METHOD_CALL:
-      {
-        DTILOG(BF("fast method call\n"));
-        T_sp tfunc = (*program)[ip+DTREE_FAST_METHOD_FUNCTION_OFFSET];
-        Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-        return funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
-      }
     case DTREE_OP_EFFECTIVE_METHOD:
       {
         DTILOG(BF("effective method call\n"));
         T_sp tfunc = (*program)[ip+DTREE_EFFECTIVE_METHOD_OFFSET];
         Function_sp func = gc::As_unsafe<Function_sp>(tfunc);
-        return core::eval::funcall(func,args,_Nil<T_O>());
+        return funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
       }
     default:
         SIMPLE_ERROR(BF("%zu is not a valid dtree opcode") % op);
