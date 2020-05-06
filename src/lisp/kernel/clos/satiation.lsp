@@ -294,20 +294,20 @@
            :methods ',(outcome-methods outcome)
            :class ,(optimized-slot-writer-class outcome)))
         ((effective-method-outcome-p outcome)
-         ;; Generate the function at load time. This difference is
-         ;; basically the only reason we don't just dump the call
-         ;; history and let the usual literal mechanisms handle it.
+         ;; The handling of :function is basically the only reason
+         ;; we don't just dump the call history and let the usual
+         ;; literal mechanisms handle it.
          ;; TODO: Pass in the arginfo maybe.
-         ;; TODO: With some real cleverness we could probably dump
-         ;; an actual lambda expression for the function.
-         ;; But I've tried that before, and I'm starting to think
-         ;; that in reality I'm just not that clever.
          (let ((gform (gensym "FORM")))
            `(let ((,gform ',(effective-method-outcome-form outcome)))
               (make-effective-method-outcome
                :methods ',(outcome-methods outcome)
                :form ,gform
-               :function (effective-method-function ,gform)))))
+               :function (lambda (core:&va-rest satiated-emf-args)
+                           (with-effective-method-parameters
+                               (() satiated-emf-args)
+                             ,(effective-method-outcome-form
+                               outcome)))))))
         (t (error "BUG: Don't know how to reconstruct outcome: ~a"
                   outcome))))
 
