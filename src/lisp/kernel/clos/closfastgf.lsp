@@ -705,7 +705,6 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                  (interpreted-discriminator generic-function))
           (let ((delta-seconds (/ (float (- (get-internal-real-time) timer-start) 1d0)
                                   internal-time-units-per-second)))
-            (generic-function-increment-compilations generic-function)
             (gctools:accumulate-discriminating-function-compilation-seconds delta-seconds))))
       (invalidated-discriminating-function-closure generic-function)))
 

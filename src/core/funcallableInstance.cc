@@ -288,14 +288,6 @@ T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_
   return exchanged ? new_value : expected;
 }
 
-CL_DEFUN void clos__generic_function_increment_compilations(FuncallableInstance_sp gf) {
-  gf->increment_compilations();
-}
-
-CL_DEFUN size_t clos__generic_function_compilations(FuncallableInstance_sp gf) {
-  return gf->compilations();
-}
-
 CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
   return gf->interpreted_calls();
 }

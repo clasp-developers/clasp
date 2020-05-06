@@ -82,7 +82,6 @@ namespace core {
     Rack_sp _Rack;
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
-    std::atomic<size_t>        _Compilations;
     std::atomic<size_t>        _InterpretedCalls;
     gc::atomic_wrapper<T_sp>   _CallHistory;
 //    T_sp   _Lock;
@@ -147,9 +146,6 @@ namespace core {
     size_t increment_calls () { return this->_InterpretedCalls++; }
     size_t interpreted_calls () { return this->_InterpretedCalls; }
 
-    void increment_compilations() { this->_Compilations++; };
-    size_t compilations() const { return this->_Compilations.load(); };
-    
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
