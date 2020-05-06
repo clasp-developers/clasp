@@ -357,22 +357,14 @@ rewrite the slot in the literal table to store a closure."
   (let* ((constant (make-double-float-datum :value double)))
     (add-creator "ltvc_make_double" index double constant)))
 
-;;; Should match the return value of make-load-form-saving-slots (in clos/print.lsp)
-(defun allocate-instance-form-p (form)
+(defun call-with-constant-arguments-p (form &optional env)
   (and (consp form)
-       (eq (car form) 'allocate-instance)
-       (consp (cdr form))
-       (constantp (cadr form))
-       (null (cddr form))))
-
-;;; Should match the return value of the primary m-l-f method on CLASS
-;;; (in clos/print.lsp)
-(defun find-class-form-p (form)
-  (and (consp form)
-       (eq (car form) 'find-class)
-       (consp (cdr form))
-       (constantp (cadr form))
-       (null (cddr form))))
+       (core:proper-list-p (rest form))
+       (symbolp (first form))
+       (when (fboundp (first form))
+         (and (not (macro-function (first form)))
+              (not (special-operator-p (first form)))))
+       (every (lambda (f) (constantp f env)) (rest form))))
 
 (defun ltv/mlf (object index read-only-p &key (toplevelp t))
   (multiple-value-bind (create initialize)
@@ -380,16 +372,14 @@ rewrite the slot in the literal table to store a closure."
     (prog1
         ;; The compiler is slow, so we try to avoid it for a few common cases.
         (cond
-          ;; Form like the one make-load-form-saving-slots returns.
-          ((allocate-instance-form-p create)
-           (add-creator "ltvc_allocate_instance" index object
-                        (load-time-reference-literal
-                         (ext:constant-form-value (second create)) t :toplevelp nil)))
-          ;; Form like the primary m-l-f method on CLASS returns.
-          ((find-class-form-p create)
-           (add-creator "ltvc_find_class" index object
-                        (load-time-reference-literal
-                         (ext:constant-form-value (second create)) t :toplevelp nil)))
+          ((call-with-constant-arguments-p create)
+           (apply #'add-creator "ltvc_mlf_create_basic_call" index object
+                  (load-time-reference-literal (first create) t :toplevelp nil)
+                  (length (rest create))
+                  (mapcar (lambda (form)
+                            (load-time-reference-literal
+                             (ext:constant-form-value form) t :toplevelp nil))
+                          (rest create))))
           ;; General case
           (t (let* ((fn (compile-form create))
                     (name (llvm-sys:get-name fn)))
@@ -399,15 +389,9 @@ rewrite the slot in the literal table to store a closure."
         ;; If the form is a call to a named function, with all constant arguments,
         ;; special case that to avoid the compiler. This covers e.g. the
         ;; initialize-instance calls ASTs have as initialization forms.
-        (if (and (consp initialize)
-                 (core:proper-list-p (rest initialize))
-                 (symbolp (first initialize))
-                 (fboundp (first initialize))
-                 (not (macro-function (first initialize)))
-                 (not (special-operator-p (first initialize)))
-                 (every #'constantp (rest initialize)))
+        (if (call-with-constant-arguments-p initialize)
             (add-side-effect-call-arglist
-             "ltvc_mlf_basic_call"
+             "ltvc_mlf_init_basic_call"
              (list* (load-time-reference-literal (first initialize) t :toplevelp nil)
                     (length (rest initialize))
                     (mapcar (lambda (form)

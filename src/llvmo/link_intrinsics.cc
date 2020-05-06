@@ -399,15 +399,6 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
   NO_UNWIND_END();
 }
 
-
-LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* class_name_t )
-{
-  core::Symbol_sp class_name((gctools::Tagged)class_name_t);
-  core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  LTVCRETURN holder->setTaggedIndex(tag,index,cl.tagged_());
-}
-
-
 LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f)
 {NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
@@ -438,12 +429,6 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
-}
-
-LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* klass) {
-  core::T_sp myklass((gctools::Tagged)klass);
-  core::T_sp object = core::eval::funcall(cl::_sym_allocate_instance, myklass);
-  LTVCRETURN holder->setTaggedIndex(tag,index, object.tagged_());
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {
