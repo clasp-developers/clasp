@@ -396,10 +396,12 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
   for ( size_t i=0; i<program->length(); ++i ) {
     DTILOG(BF("[%3d] : %s\n") % i % _safe_rep_((*program)[i]));
   }
+#if 0 // Compilation disabled for now because it increases build time
   // Increment the call count, and if it's high enough, compile the thing
   size_t calls = gc::As_unsafe<FuncallableInstance_sp>(generic_function)->increment_calls();
   if (calls >= COMPILE_TRIGGER)
     eval::funcall(clos::_sym_compile_discriminating_function, generic_function);
+#endif
   // Regardless of whether we triggered the compile, we next
   // Dispatch
   Vaslist valist_copy(*args);
