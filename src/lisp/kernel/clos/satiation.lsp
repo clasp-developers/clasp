@@ -276,7 +276,7 @@
 
 ;;; Given an outcome, return a form that, when evaluated, returns an outcome
 ;;; similar to it.
-(defun outcome-producer (outcome)
+(defun outcome-producer (outcome &optional (arg-info '(t)))
   ;; Note that this relies on methods being dumpable, which we
   ;; establish with their MAKE-LOAD-FORM.
   (cond ((optimized-slot-reader-p outcome)
@@ -298,14 +298,17 @@
          ;; we don't just dump the call history and let the usual
          ;; literal mechanisms handle it.
          ;; TODO: Pass in the arginfo maybe.
-         (let ((gform (gensym "FORM")))
+         (let ((gform (gensym "FORM"))
+               (required (rest arg-info))
+               (rest (if (car arg-info) 'satiated-more nil)))
            `(let ((,gform ',(effective-method-outcome-form outcome)))
               (make-effective-method-outcome
                :methods ',(outcome-methods outcome)
                :form ,gform
-               :function (lambda (core:&va-rest satiated-emf-args)
+               :function (lambda (,@required
+                                  ,@(when rest `(core:&va-rest ,rest)))
                            (with-effective-method-parameters
-                               (() satiated-emf-args)
+                               ((,@required) ,rest)
                              ,(effective-method-outcome-form
                                outcome)))))))
         (t (error "BUG: Don't know how to reconstruct outcome: ~a"
@@ -314,12 +317,13 @@
 ;;; Given a call history, return a form that, when evaluated,
 ;;; returns a call history similar to the
 ;;; provided one, and furthermore is dumpable.
-(defun call-history-producer (call-history)
+(defun call-history-producer (call-history &optional (arg-info '(t)))
   (loop for (key . outcome) in call-history
         for cached-outcome-info = (assoc outcome outcome-cache)
         for name = (or (second cached-outcome-info) (gensym "OUTCOME"))
         for outcome-form
-          = (or (third cached-outcome-info) (outcome-producer outcome))
+          = (or (third cached-outcome-info)
+                (outcome-producer outcome arg-info))
         unless cached-outcome-info
           collect (list outcome name outcome-form) into outcome-cache
         ;; Keys are vectors of classes and lists (representing eql specializers)
@@ -412,7 +416,7 @@ a list (EQL object) - just like DEFMETHOD."
         (apply #'compile-time-call-history generic-function lists-of-specializer-names)
       `(let* ((gf (fdefinition ',generic-function-name)))
          (append-generic-function-call-history
-          gf ,(call-history-producer call-history))
+          gf ,(call-history-producer call-history (gf-arg-info generic-function)))
          (set-funcallable-instance-function
           gf ,(compile-time-discriminator generic-function call-history))))))
 
