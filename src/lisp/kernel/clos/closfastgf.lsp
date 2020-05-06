@@ -694,12 +694,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
-(defvar *fastgf-use-compiler* nil)
+(defvar *fastgf-force-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
   (if (generic-function-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
-             (if (or *fastgf-use-compiler* compile)
+             (if (or *fastgf-force-compiler* compile)
                  (cmp:bclasp-compile
                   nil (generate-discriminator generic-function))
                  (interpreted-discriminator generic-function))
