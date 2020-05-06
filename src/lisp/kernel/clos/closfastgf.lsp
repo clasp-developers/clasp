@@ -262,10 +262,9 @@
 ;; Also, this is a max O(mn) search, where m is the number of methods and n the length of call
 ;; history. It could be more efficient, but that makes it more involved to remove old entries
 ;; (with this scheme they're just removed with the call history entries).
-(defun find-existing-emf (call-history methods)
+(defun find-existing-outcome (call-history methods)
   (loop for (ignore . outcome) in call-history
-        when (and (effective-method-outcome-p outcome)
-                  (equal methods (effective-method-outcome-applicable-methods outcome)))
+        when (equal methods (outcome-methods outcome))
           return outcome))
 
 (defun optimizable-reader-method-p (method)
@@ -336,7 +335,7 @@
     ;; Similarly to nrm below, we return a sort of fake emf.
     (return-from compute-outcome
       (make-effective-method-outcome
-       :applicable-methods nil
+       :methods nil
        ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
        :function (lambda (core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
@@ -357,7 +356,7 @@
                           (with-early-accessors (+effective-accessor-method-slots+)
                             (effective-accessor-method-location method)))
                         (class (first actual-specializers)))
-                    (make-optimized-slot-reader :index location :method method
+                    (make-optimized-slot-reader :index location :methods methods
                                                 :slot-name (slot-definition-name slotd)
                                                 :class class)))
                  ((eq (class-of method) (find-class 'effective-writer-method))
@@ -366,11 +365,9 @@
                           (with-early-accessors (+effective-accessor-method-slots+)
                             (effective-accessor-method-location method)))
                         (class (second actual-specializers)))
-                    (make-optimized-slot-writer :index location :method method
+                    (make-optimized-slot-writer :index location :methods methods
                                                 :slot-name (slot-definition-name slotd)
                                                 :class class)))
-                 ((find-existing-emf (generic-function-call-history generic-function)
-                                     methods))
                  ;; NOTE: This case is not required if we always use :form and don't use the
                  ;; interpreter. See also, comment in combin.lsp.
                  ((and (consp em) (eq (first em) '%magic-no-required-method))
@@ -378,7 +375,7 @@
                   (gf-log "em: %s%N" em)
                   (let ((group-name (second em)))
                     (make-effective-method-outcome
-                     :applicable-methods methods :form em
+                     :methods methods :form em
                      :function (lambda (core:&va-rest vaslist-args)
                                  (apply #'no-required-method
                                         generic-function group-name vaslist-args)))))
@@ -387,7 +384,7 @@
                   (gf-log "(compute-effective-method generic-function method-combination methods) -> %N")
                   (gf-log "%s%N" em)
                   (make-effective-method-outcome
-                   :applicable-methods methods :form em
+                   :methods methods :form em
                    :function (effective-method-function
                               em (gf-arg-info generic-function)))))))
     #+debug-fastgf
@@ -402,6 +399,13 @@
       (gf-log "^^^************************^^^%N"))
     optimized))
 
+(defun outcome
+    (generic-function method-combination methods actual-specializers)
+  (or (find-existing-outcome (generic-function-call-history generic-function)
+                             methods)
+      (compute-outcome
+       generic-function method-combination methods actual-specializers)))
+
 (defun update-call-history-for-add-method (generic-function orig-call-history method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to."
@@ -412,11 +416,12 @@
        do (let* ((methods (compute-applicable-methods-using-specializers
                            generic-function
                            specializers))
-                 (outcome (compute-outcome
+                 (outcome (outcome
                            generic-function
                            (generic-function-method-combination generic-function)
-                           methods
-                           specializers)))    ;;; I have actual specializers from the call history in specializers
+                           ;; I have actual specializers from the call history
+                           ;; in specializers
+                           methods specializers)))
             (rplacd entry outcome)))
     call-history))
 
@@ -438,11 +443,11 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                            generic-function
                            specializers))
                  (outcome (if methods
-                              (compute-outcome
+                              (outcome
                                generic-function
                                (generic-function-method-combination generic-function)
-                               methods
-                               specializers) ;; I have the actual specializers in specializers
+                               ;; I have the actual specializers in specializers
+                               methods specializers)
                               nil)))
             (when outcome
               (push (cons (car entry) outcome) new-call-history)))
@@ -580,10 +585,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                               method-list
                               (compute-applicable-methods generic-function arguments)))
              (final-methods (final-methods method-list argument-classes))
-             (outcome (compute-outcome
+             (outcome (outcome
                        generic-function
                        (generic-function-method-combination generic-function)
-                       final-methods argument-classes :log t)))
+                       final-methods argument-classes)))
         (values
          outcome
          ;; Can we memoize the call, i.e. add it to the call history?

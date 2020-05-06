@@ -6,14 +6,13 @@
 
 ;;; Outcomes
 
-(defstruct (outcome (:type vector) :named))
+(defstruct (outcome (:type vector) :named) methods)
 (defstruct (optimized-slot-reader (:type vector) (:include outcome) :named)
-  index slot-name method class)
+  index slot-name class)
 (defstruct (optimized-slot-writer (:type vector) (:include outcome) :named)
-  index slot-name method class)
-;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
+  index slot-name class)
 (defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
-  applicable-methods (form nil) (function nil))
+ (form nil) (function nil))
 
 (defun outcome= (outcome1 outcome2)
   (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching

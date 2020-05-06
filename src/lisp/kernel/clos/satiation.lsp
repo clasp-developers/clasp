@@ -89,7 +89,7 @@
                            first (first specializers))))
                (make-optimized-slot-reader :index (slot-definition-location slot)
                                            :slot-name (slot-definition-name slot)
-                                           :method first
+                                           :methods (list first)
                                            :class class)))
             ((optimizable-writer-method-p first)
              (let* ((class (second specializers))
@@ -97,14 +97,14 @@
                            first (first specializers))))
                (make-optimized-slot-writer :index (slot-definition-location slot)
                                            :slot-name (slot-definition-name slot)
-                                           :method first
+                                           :methods (list first)
                                            :class class)))
             (t ; general effective method function
              (let ((form `(call-method ,first (,@(rest methods)))))
                (make-effective-method-outcome
                 :function (early-effective-method-function form)
                 :form form
-                :applicable-methods methods)))))))
+                :methods methods)))))))
 
 ;;; Add fictitious call history entries.
 (defun add-satiation-entries (generic-function lists-of-specializers)
@@ -258,53 +258,19 @@
 (defun compile-time-call-history (generic-function &rest lists-of-specializer-names)
   (loop with mc = (generic-function-method-combination generic-function)
         with all-methods = nil
-        with outcome-cache = nil
         for list-of-specializer-names in lists-of-specializer-names
         for list-of-specializers
           = (coerce-to-list-of-specializers list-of-specializer-names)
         for am = (compute-applicable-methods-using-specializers
                   generic-function list-of-specializers)
-        for em = (compute-effective-method generic-function mc am)
-        for method = (and (consp em) (eq (first em) 'call-method) (second em))
-        for readerp = (when method (optimizable-reader-method-p method))
-        for writerp = (when method (optimizable-writer-method-p method))
-        for accessor-class = (cond ((not method) nil)
-                                   (readerp (first list-of-specializers))
-                                   (writerp (second list-of-specializers))
-                                   (t nil))
-        for slotd = (when accessor-class
-                      (effective-slotd-from-accessor-method method accessor-class))
-        for standard-slotd-p = (when slotd (standard-slotd-p slotd))
-        do (when (null am)
-             (error "No applicable methods for SATIATE of ~a with ~a"
-                    generic-function list-of-specializer-names))
-        do (when (and (consp em) (eq (first em) '%magic-no-required-method))
-             (error "No required methods for SATIATE of ~a with ~a"
-                    generic-function list-of-specializer-names))
+        for cached-outcome = (find am outcome-cache :test #'equal
+                                   :key #'outcome-methods)
+        for outcome = (or cached-outcome
+                          (compute-outcome generic-function mc am list-of-specializers))
+        when (not cached-outcome)
+          collect outcome into outcome-cache
         do (setf all-methods (union all-methods am))
-        collect (cons (coerce list-of-specializers 'vector)
-                      (cond
-                        (standard-slotd-p
-                         (cond (readerp (make-optimized-slot-reader
-                                         :index (slot-definition-location slotd)
-                                         :slot-name (slot-definition-name slotd)
-                                         :method method
-                                         :class accessor-class))
-                               (writerp (make-optimized-slot-writer
-                                         :index (slot-definition-location slotd)
-                                         :slot-name (slot-definition-name slotd)
-                                         :method method
-                                         :class accessor-class))
-                               (t (error "BUG: Unreachable weirdness in SATIATE for ~a, ~a"
-                                         generic-function list-of-specializer-names))))
-                        (t (or (find am outcome-cache :test #'equal
-                                     :key #'effective-method-outcome-applicable-methods)
-                               (let ((new
-                                       (make-effective-method-outcome
-                                        :applicable-methods am
-                                        :form em)))
-                                 (push new outcome-cache)
-                                 new)))))
+        collect (cons (coerce list-of-specializers 'vector) outcome)
           into entries
         finally (return (values entries all-methods))))
 
@@ -318,14 +284,14 @@
            ;; FIXME: Probably not correct for :allocation :class.
            :index ',(optimized-slot-reader-index outcome)
            :slot-name ',(optimized-slot-reader-slot-name outcome)
-           :method ,(optimized-slot-reader-method outcome)
+           :methods ',(outcome-methods outcome)
            :class ,(optimized-slot-reader-class outcome)))
         ((optimized-slot-writer-p outcome)
          `(make-optimized-slot-writer
            ;; FIXME: Probably not correct for :allocation :class.
            :index ',(optimized-slot-writer-index outcome)
            :slot-name ',(optimized-slot-writer-slot-name outcome)
-           :method ,(optimized-slot-writer-method outcome)
+           :methods ',(outcome-methods outcome)
            :class ,(optimized-slot-writer-class outcome)))
         ((effective-method-outcome-p outcome)
          ;; Generate the function at load time. This difference is
@@ -339,8 +305,7 @@
          (let ((gform (gensym "FORM")))
            `(let ((,gform ',(effective-method-outcome-form outcome)))
               (make-effective-method-outcome
-               :applicable-methods
-               ',(effective-method-outcome-applicable-methods outcome)
+               :methods ',(outcome-methods outcome)
                :form ,gform
                :function (effective-method-function ,gform)))))
         (t (error "BUG: Don't know how to reconstruct outcome: ~a"

@@ -64,7 +64,7 @@
       (add-method f method))
     ;; Put in a call history to speed things up a little.
     (loop with outcome = (make-effective-method-outcome
-                          :applicable-methods (list method)
+                          :methods (list method)
                           :form `(call-method ,method)
                           ;; Is a valid EMF.
                           :function function)
