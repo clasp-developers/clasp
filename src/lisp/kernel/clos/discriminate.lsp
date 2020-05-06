@@ -458,16 +458,8 @@
 
 (defun generate-discrimination (call-history specializer-profile
                                 more-args-p required-params miss)
-  (let* ((part (partition call-history :key #'cdr :getter #'car
-                                       :test #'outcome=))
-         (bname (gensym "DISCRIMINATION"))
-         (map (loop for (outcome) in part
-                    collect (cons outcome (gensym "OUTCOME"))))
-         (tbody (loop for (outcome . tag) in map
-                      collect tag
-                      collect `(return-from ,bname
-                                 ,(generate-outcome
-                                   required-params more-args-p outcome)))))
+  (let ((part (partition call-history :key #'cdr :getter #'car
+                                      :test #'outcome=)))
     (flet ((collect-list (list)
              (loop for e in list for s across specializer-profile
                    when s collect e))
@@ -477,21 +469,19 @@
            (outcome-tag (outcome)
              (or (cdr (assoc outcome map))
                  (error "BUG: Inconsistent outcome map"))))
-      `(core::local-block ,bname
-         (core::local-tagbody
-            (discriminate (,@(collect-list required-params))
-                (return-from ,bname ,miss)
-              ,@(loop for (outcome . specseqs) in part
-                      ;; We can end up with duplicates due to
-                      ;; the specializer profile cutting things out,
-                      ;; but DISCRIMINATE will reject them.
-                      collect `((,@(remove-duplicates
-                                    (mapcar #'collect-vec specseqs)
-                                    :test #'equal))
-                                ,@(when *insert-debug-code*
-                                    `((format t "~&Chose ~a~%" ',specseqs)))
-                                (go ,(outcome-tag outcome)))))
-            ,@tbody)))))
+      `(discriminate (,@(collect-list required-params))
+           ,miss
+         ,@(loop for (outcome . specseqs) in part
+                 ;; We can end up with duplicates due to
+                 ;; the specializer profile cutting things out,
+                 ;; but DISCRIMINATE will reject them.
+                 collect `((,@(remove-duplicates
+                               (mapcar #'collect-vec specseqs)
+                               :test #'equal))
+                           ,@(when *insert-debug-code*
+                               `((format t "~&Chose ~a~%" ',specseqs)))
+                           ,(generate-outcome
+                             required-params more-args-p outcome)))))))
 
 ;;; This must stay coordinated with call-method in combin.lsp,
 ;;; and is therefore a bit KLUDGEy.
