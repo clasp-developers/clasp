@@ -515,14 +515,19 @@
           thereis (outcome-requires-arglist-p outcome)))
 
 ;;; We pass the parameters to CALL-METHOD in this fashion.
-;;; If we're not in a discriminator, the symbol macro isn't
-;;; bound. We return a banal response.
-(defun discriminator-arguments (&optional environment)
+(defmacro with-effective-method-parameters ((required-params rest)
+                                            &body body)
+  `(symbol-macrolet ((+emf-params+
+                       ((,@required-params) ,rest)))
+     ,@body))
+
+(defun effective-method-parameters (&optional environment)
   (multiple-value-bind (expansion expanded)
-      (macroexpand-1 '+discriminator-arguments+
-                     environment)
+      (macroexpand-1 '+emf-params+ environment)
     (if expanded
         (values (first expansion) (second expansion))
+        ;; If we're not in a discriminator, and so the symbol macro
+        ;; isn't bound, we return a banal response.
         (values nil '.method-args.))))
 
 (defun generate-discriminator-from-data
@@ -540,35 +545,35 @@
            `((declare (core:lambda-name ,generic-function-name))))
        ,@(when *insert-debug-code*
            `((format t "~&Entering ~a~%" ',generic-function-name)))
-       (symbol-macrolet ((+discriminator-arguments+
-                          ((,@required-args) ,(if more-args-p 'more-args nil)))
-                         (+gf-being-compiled+ ,generic-function-name))
-         (let ((.generic-function. ,generic-function-form))
-           ,(when (and more-args-p max-nargs) ; Check argcount.
-              ;; FIXME: Should be possible to not check, on low safety.
-              `(let ((nmore (core:vaslist-length more-args)))
-                 (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
-                     (error 'core:wrong-number-of-arguments
-                            :called-function .generic-function.
-                            :given-nargs (+ nmore ,nreq)
-                            :min-nargs ,nreq :max-nargs ,max-nargs))))
-           (let (#+(or)
-                 ,@(when need-arglist
-                     `((.method-args.
-                        (list* ,@required-args
-                               ,(if more-args-p
-                                    '(core:list-from-va-list more-args)
-                                    'nil))))))
-             ,(generate-discrimination
-               call-history specializer-profile
-               more-args-p required-args
-               `(progn
-                  ,@(when *insert-debug-code*
-                      `((format t "~&Dispatch miss~%")))
-                  ,(if more-args-p
-                       `(apply #',miss-operator .generic-function. ,@required-args
-                               more-args)
-                       `(,miss-operator .generic-function. ,@required-args))))))))))
+       (with-effective-method-parameters ((,@required-args)
+                                          ,(if more-args-p 'more-args nil))
+         (symbol-macrolet ((+gf-being-compiled+ ,generic-function-name))
+           (let ((.generic-function. ,generic-function-form))
+             ,(when (and more-args-p max-nargs) ; Check argcount.
+                ;; FIXME: Should be possible to not check, on low safety.
+                `(let ((nmore (core:vaslist-length more-args)))
+                   (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
+                       (error 'core:wrong-number-of-arguments
+                              :called-function .generic-function.
+                              :given-nargs (+ nmore ,nreq)
+                              :min-nargs ,nreq :max-nargs ,max-nargs))))
+             (let (#+(or)
+                   ,@(when need-arglist
+                       `((.method-args.
+                          (list* ,@required-args
+                                 ,(if more-args-p
+                                      '(core:list-from-va-list more-args)
+                                      'nil))))))
+               ,(generate-discrimination
+                 call-history specializer-profile
+                 more-args-p required-args
+                 `(progn
+                    ,@(when *insert-debug-code*
+                        `((format t "~&Dispatch miss~%")))
+                    ,(if more-args-p
+                         `(apply #',miss-operator .generic-function. ,@required-args
+                                 more-args)
+                         `(,miss-operator .generic-function. ,@required-args)))))))))))
 
 (defun safe-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)

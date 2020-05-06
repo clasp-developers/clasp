@@ -47,8 +47,7 @@
     (emf-maybe-compile
      `(lambda (,@vars ,@(when restp '(core:&va-rest emf-more)))
         (declare (core:lambda-name effective-method-function.lambda))
-        (symbol-macrolet ((+discriminator-arguments+ ((,@vars)
-                                                      ,(if restp 'emf-more nil))))
+        (with-effective-method-parameters ((,@vars) ,(if restp 'emf-more nil))
           ,form)))))
 
 (defun std-method-p (method)
@@ -269,7 +268,7 @@ argument list designator."
   (if (make-method-form-p method)
       (second method) ; FIXME: should we try to bind CALL-NEXT-METHOD etc?
       (multiple-value-bind (required-arguments more-args)
-          (discriminator-arguments env)
+          (effective-method-parameters env)
         `(apply-method ,method (,@method-arguments)
                        ,@required-arguments ,more-args))))
 
