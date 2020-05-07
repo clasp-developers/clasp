@@ -437,11 +437,15 @@
          :direct-superclasses (std-class)
          :direct-slots #1#)
         ,@(loop for (name . rest) in +builtin-classes-list+
-             for index from 1
-             collect (list name :metaclass 'built-in-class
-                           :direct-superclasses (or rest '(core:general))))
+                for index from 1
+                collect (list name
+                              :metaclass 'built-in-class
+                              :direct-superclasses (or rest '(core:general))))
         (funcallable-standard-object
-         :direct-superclasses (standard-object function))
+         :direct-superclasses (standard-object function)
+         ;; MOP technically says the metaclass is standard-class,
+         ;; but that's probably a mistake.
+         :metaclass funcallable-standard-class)
         (generic-function
          :metaclass funcallable-standard-class
          :direct-superclasses (metaobject funcallable-standard-object))
