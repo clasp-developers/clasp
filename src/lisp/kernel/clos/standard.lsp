@@ -222,8 +222,7 @@
   (invalidate-generic-functions-with-class-selector class)
   class)
 
-(defmethod initialize-instance ((class class) &rest initargs &key direct-slots
-                                                               &allow-other-keys)
+(defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   (dbg-standard "standard.lsp:196  initialize-instance class->~a~%" class)
   ;; convert the slots from lists to direct slots
@@ -238,7 +237,7 @@
   class)
 
 (defmethod shared-initialize ((class class) slot-names
-                              &rest initargs &key direct-superclasses &allow-other-keys)
+                              &rest initargs &key direct-superclasses)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
