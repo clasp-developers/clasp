@@ -26,8 +26,7 @@
    (if (consp location)
        (lambda (object)
          (declare (core:lambda-name
-                   effective-class-reader)
-                  (ignore object))
+                   effective-class-reader))
          (let ((val (car location)))
            (if (cleavir-primop:eq val (core:unbound))
                (slot-unbound (class-of val) object slot-name)
