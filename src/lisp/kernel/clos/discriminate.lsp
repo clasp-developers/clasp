@@ -1,7 +1,5 @@
 (in-package #:clos)
 
-(defvar *insert-debug-code* nil)
-
 #+(or)
 (progn
   (defclass node () ())
@@ -330,15 +328,6 @@
         ;; .method-args. isn't as universal any more.
         (values nil '.method-args.))))
 
-(defun generate-outcome (reqargs outcome)
-  (cond ((optimized-slot-reader-p outcome)
-         (generate-slot-reader reqargs outcome))
-        ((optimized-slot-writer-p outcome)
-         (generate-slot-writer reqargs outcome))
-        ((effective-method-outcome-p outcome)
-         (generate-effective-method-call outcome))
-        (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
-
 (defun class-cell-form (slot-name class)
   `(load-time-value
     (slot-definition-location
@@ -346,34 +335,55 @@
          (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
                 ',slot-name ,class)))))
 
-(defun generate-slot-reader (arguments outcome)
-  (let* ((location (optimized-slot-reader-index outcome))
-         (slot-name (optimized-slot-reader-slot-name outcome))
-         (class (optimized-slot-reader-class outcome))
-         (valuef
-           (cond ((fixnump location)
-                  ;; instance location- easy
-                  `(core:instance-ref ,(first arguments) ',location))
-                 ((consp location)
-                  ;; class location. we need to find the new cell at load time.
-                  `(car ,(class-cell-form slot-name class)))
-                 (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
-    `(let ((value ,valuef))
-       (if (cleavir-primop:eq value (core:unbound))
-           (slot-unbound ,class ,(first arguments) ',slot-name)
-           value))))
+(defmacro em-slot-read (location slot-name class &environment env)
+  (multiple-value-bind (arguments rest) (effective-method-parameters env)
+    (declare (ignore rest))
+    (unless (>= (length arguments) 1)
+      (error "BUG: SLOT-READ effective method has insufficient required parameters"))
+    (let ((valuef
+            (cond ((fixnump location)
+                   ;; instance location- easy
+                   `(core:instance-ref ,(first arguments) ',location))
+                  ((consp location)
+                   ;; class location. we need to find the new cell at load time.
+                   `(car ,(class-cell-form slot-name class)))
+                  (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+      `(let ((value ,valuef))
+         (if (cleavir-primop:eq value (core:unbound))
+             (slot-unbound ,class ,(first arguments) ',slot-name)
+             value)))))
 
-(defun generate-slot-writer (arguments outcome)
-  (let ((location (optimized-slot-writer-index outcome)))
+(defun generate-slot-reader (outcome)
+  `(em-slot-read ,(optimized-slot-reader-index outcome)
+                 ,(optimized-slot-reader-slot-name outcome)
+                 ,(optimized-slot-reader-class outcome)))
+
+(defmacro em-slot-write (location slot-name class &environment env)
+  (multiple-value-bind (arguments rest) (effective-method-parameters env)
+    (declare (ignore rest))
+    (unless (>= (length arguments) 2)
+      (error "BUG: SLOT-WRITE effective method has insufficient required parameters"))
     (cond ((fixnump location)
            `(si:instance-set ,(second arguments) ,location ,(first arguments)))
           ((consp location)
            ;; class location
            ;; Note we don't actually need the instance.
-           `(rplaca ,(class-cell-form (optimized-slot-reader-slot-name outcome)
-                                      (optimized-slot-reader-class outcome))
-                    ,(first arguments)))
+           `(rplaca ,(class-cell-form slot-name class) ,(first arguments)))
           (t (error "BUG: Slot location ~a is not a fixnum or cons" location)))))
+
+(defun generate-slot-writer (outcome)
+  `(em-slot-write ,(optimized-slot-writer-index outcome)
+                  ,(optimized-slot-writer-slot-name outcome)
+                  ,(optimized-slot-writer-class outcome)))
+
+(defun generate-outcome (outcome)
+  (cond ((optimized-slot-reader-p outcome)
+         (generate-slot-reader outcome))
+        ((optimized-slot-writer-p outcome)
+         (generate-slot-writer outcome))
+        ((effective-method-outcome-p outcome)
+         (generate-effective-method-call outcome))
+        (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 ;;; This can be T, meaning prefer the form, NIL, meaning prefer the function,
 ;;; or CL:REQUIRE, meaning use the form or signal an error if it's missing.
@@ -432,46 +442,20 @@
                  collect `((,@(remove-duplicates
                                (mapcar #'collect-vec specseqs)
                                :test #'equal))
-                           ,@(when *insert-debug-code*
-                               `((format t "~&Chose ~a~%" ',specseqs)))
-                           ,(generate-outcome required-params outcome)))))))
-
-;;; This must stay coordinated with call-method in combin.lsp,
-;;; and is therefore a bit KLUDGEy.
-(defun emo-requires-arglist-p (outcome)
-  (let ((form (effective-method-outcome-form outcome)))
-    (and *inline-effective-methods*
-         (not (and (consp form)
-                   (eq (car form) 'call-method)
-                   (method-p (second form))
-                   (or (fast-method-function (second form))
-                       (contf-method-function (second form))))))))
-
-(defun outcome-requires-arglist-p (outcome)
-  (cond ((effective-method-outcome-p outcome)
-         (emo-requires-arglist-p outcome))
-        ((outcome-p outcome) nil)
-        (t (error "BUG: Unknown outcome: ~a" outcome))))
-
-(defun call-history-requires-arglist-p (call-history)
-  (loop for (ignore . outcome) in call-history
-          thereis (outcome-requires-arglist-p outcome)))
+                           ,(generate-outcome outcome)))))))
 
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq max-nargs
      &key generic-function-name (miss-operator 'dispatch-miss)
        ((:inline-effective-methods *inline-effective-methods*)
         *inline-effective-methods*))
-  (let* ((need-arglist (call-history-requires-arglist-p call-history))
-         (more-args (if (or (not max-nargs) (> max-nargs nreq)) 'more-args nil))
+  (let* ((more-args (if (or (not max-nargs) (> max-nargs nreq)) 'more-args nil))
          (required-args (loop repeat nreq
                               collect (gensym "DISCRIMINATION-ARG"))))
     `(lambda (,@required-args
               ,@(when more-args `(core:&va-rest ,more-args)))
        ,@(when generic-function-name
            `((declare (core:lambda-name ,generic-function-name))))
-       ,@(when *insert-debug-code*
-           `((format t "~&Entering ~a~%" ',generic-function-name)))
        (with-effective-method-parameters ((,@required-args) ,more-args)
          (symbol-macrolet ((+gf-being-compiled+ ,generic-function-name))
            (let ((.generic-function. ,generic-function-form))
@@ -483,20 +467,19 @@
                               :called-function .generic-function.
                               :given-nargs (+ nmore ,nreq)
                               :min-nargs ,nreq :max-nargs ,max-nargs))))
+             ;; TODO: In the future just bind this, so that a MOP method functions
+             ;; can use it without consing it themselves. Let the compiler delete
+             ;; it if it's not used (it can't do this yet)
              (let (#+(or)
-                   ,@(when need-arglist
-                       `((.method-args.
-                          (list* ,@required-args
-                                 ,(if more-args
-                                      '(core:list-from-va-list more-args)
-                                      'nil))))))
+                   (.method-args.
+                     (list* ,@required-args
+                            ,(if more-args
+                                 `(core:list-from-va-list ,more-args)
+                                 nil))))
                ,(generate-discrimination
                  call-history specializer-profile
                  required-args
-                 `(progn
-                    ,@(when *insert-debug-code*
-                        `((format t "~&Dispatch miss~%")))
-                    (apply #',miss-operator .generic-function. ,@required-args ,more-args))))))))))
+                 `(apply #',miss-operator .generic-function. ,@required-args ,more-args)))))))))
 
 (defun safe-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)
