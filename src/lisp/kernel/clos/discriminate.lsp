@@ -465,10 +465,7 @@
                    when s collect e))
            (collect-vec (vec)
              (loop for e across vec for s across specializer-profile
-                   when s collect e))
-           (outcome-tag (outcome)
-             (or (cdr (assoc outcome map))
-                 (error "BUG: Inconsistent outcome map"))))
+                   when s collect e)))
       `(discriminate (,@(collect-list required-params))
            ,miss
          ,@(loop for (outcome . specseqs) in part
