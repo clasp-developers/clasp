@@ -312,13 +312,31 @@
 
 ;;;
 
-(defun generate-outcome (reqargs more-args-p outcome)
+;;; We pass the parameters to CALL-METHOD and sundry in this fashion.
+(defmacro with-effective-method-parameters ((required-params rest)
+                                            &body body)
+  `(symbol-macrolet ((+emf-params+
+                       ((,@required-params) ,rest)))
+     ,@body))
+
+(defun effective-method-parameters (&optional environment)
+  (multiple-value-bind (expansion expanded)
+      (macroexpand-1 '+emf-params+ environment)
+    (if expanded
+        (values (first expansion) (second expansion))
+        ;; If we're not in a discriminator, and so the symbol macro
+        ;; isn't bound, we return a banal response.
+        ;; FIXME?: Might want to signal an error instead.
+        ;; .method-args. isn't as universal any more.
+        (values nil '.method-args.))))
+
+(defun generate-outcome (reqargs outcome)
   (cond ((optimized-slot-reader-p outcome)
          (generate-slot-reader reqargs outcome))
         ((optimized-slot-writer-p outcome)
          (generate-slot-writer reqargs outcome))
         ((effective-method-outcome-p outcome)
-         (generate-effective-method-call reqargs more-args-p outcome))
+         (generate-effective-method-call outcome))
         (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 (defun class-cell-form (slot-name class)
@@ -372,7 +390,13 @@
 ;;; Satiated generic functions have to inline so they can be dumped, though.
 (defvar *inline-effective-methods* nil)
 
-(defun generate-effective-method-call (arguments more-args-p outcome)
+;;; Apply a function to the effective method parameters.
+(defmacro em-apply (function &environment env)
+  (multiple-value-bind (required rest)
+      (effective-method-parameters env)
+    `(apply ,function ,@required ,rest)))
+
+(defun generate-effective-method-call (outcome)
   (let ((form (effective-method-outcome-form outcome))
         (function (effective-method-outcome-function outcome)))
     (when (and (eq *inline-effective-methods* 'cl:require)
@@ -382,16 +406,15 @@
                ;; probably not actually going to happen?
                (not form))
       (error "BUG: No form provided to inline effective method"))
-    (cond ((or (and *inline-effective-methods* form)
-               (not function))
-           form)
-          (more-args-p `(apply ,function ,@arguments more-args))
-          (t `(funcall ,function ,@arguments)))))
+    (if (or (and *inline-effective-methods* form)
+            (not function))
+        form
+        `(em-apply ,function))))
 
 ;;;
 
 (defun generate-discrimination (call-history specializer-profile
-                                more-args-p required-params miss)
+                                required-params miss)
   (let ((part (partition call-history :key #'cdr :getter #'car
                                       :test #'outcome=)))
     (flet ((collect-list (list)
@@ -411,8 +434,7 @@
                                :test #'equal))
                            ,@(when *insert-debug-code*
                                `((format t "~&Chose ~a~%" ',specseqs)))
-                           ,(generate-outcome
-                             required-params more-args-p outcome)))))))
+                           ,(generate-outcome required-params outcome)))))))
 
 ;;; This must stay coordinated with call-method in combin.lsp,
 ;;; and is therefore a bit KLUDGEy.
@@ -435,44 +457,27 @@
   (loop for (ignore . outcome) in call-history
           thereis (outcome-requires-arglist-p outcome)))
 
-;;; We pass the parameters to CALL-METHOD in this fashion.
-(defmacro with-effective-method-parameters ((required-params rest)
-                                            &body body)
-  `(symbol-macrolet ((+emf-params+
-                       ((,@required-params) ,rest)))
-     ,@body))
-
-(defun effective-method-parameters (&optional environment)
-  (multiple-value-bind (expansion expanded)
-      (macroexpand-1 '+emf-params+ environment)
-    (if expanded
-        (values (first expansion) (second expansion))
-        ;; If we're not in a discriminator, and so the symbol macro
-        ;; isn't bound, we return a banal response.
-        (values nil '.method-args.))))
-
 (defun generate-discriminator-from-data
     (call-history specializer-profile generic-function-form nreq max-nargs
      &key generic-function-name (miss-operator 'dispatch-miss)
        ((:inline-effective-methods *inline-effective-methods*)
         *inline-effective-methods*))
   (let* ((need-arglist (call-history-requires-arglist-p call-history))
-         (more-args-p (or (not max-nargs) (> max-nargs nreq)))
+         (more-args (if (or (not max-nargs) (> max-nargs nreq)) 'more-args nil))
          (required-args (loop repeat nreq
                               collect (gensym "DISCRIMINATION-ARG"))))
     `(lambda (,@required-args
-              ,@(when more-args-p `(core:&va-rest more-args)))
+              ,@(when more-args `(core:&va-rest ,more-args)))
        ,@(when generic-function-name
            `((declare (core:lambda-name ,generic-function-name))))
        ,@(when *insert-debug-code*
            `((format t "~&Entering ~a~%" ',generic-function-name)))
-       (with-effective-method-parameters ((,@required-args)
-                                          ,(if more-args-p 'more-args nil))
+       (with-effective-method-parameters ((,@required-args) ,more-args)
          (symbol-macrolet ((+gf-being-compiled+ ,generic-function-name))
            (let ((.generic-function. ,generic-function-form))
-             ,(when (and more-args-p max-nargs) ; Check argcount.
+             ,(when (and more-args max-nargs) ; Check argcount.
                 ;; FIXME: Should be possible to not check, on low safety.
-                `(let ((nmore (core:vaslist-length more-args)))
+                `(let ((nmore (core:vaslist-length ,more-args)))
                    (if (cleavir-primop:fixnum-less ,(- max-nargs nreq) nmore)
                        (error 'core:wrong-number-of-arguments
                               :called-function .generic-function.
@@ -482,19 +487,16 @@
                    ,@(when need-arglist
                        `((.method-args.
                           (list* ,@required-args
-                                 ,(if more-args-p
+                                 ,(if more-args
                                       '(core:list-from-va-list more-args)
                                       'nil))))))
                ,(generate-discrimination
                  call-history specializer-profile
-                 more-args-p required-args
+                 required-args
                  `(progn
                     ,@(when *insert-debug-code*
                         `((format t "~&Dispatch miss~%")))
-                    ,(if more-args-p
-                         `(apply #',miss-operator .generic-function. ,@required-args
-                                 more-args)
-                         `(,miss-operator .generic-function. ,@required-args)))))))))))
+                    (apply #',miss-operator .generic-function. ,@required-args ,more-args))))))))))
 
 (defun safe-gf-specializer-profile (gf)
   (with-early-accessors (+standard-generic-function-slots+)
