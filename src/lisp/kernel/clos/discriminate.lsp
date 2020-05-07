@@ -138,72 +138,6 @@
 
 ;;;
 
-(defun rangify (list)
-  (if (null list)
-      nil
-      (let ((list (sort (copy-list list) #'< :key #'car)))
-        (loop with this = (cdr (first list))
-              with this-left = (car (first list))
-              with this-rite = this-left
-              for (next . tag) in (rest list)
-              if (and (= (1+ this-rite) next) (eql tag this))
-                do (setf this-rite next)
-              else collect (cons (cons this-left this-rite) this) into res
-                   and do (setf this-left next
-                                this-rite next
-                                this tag)
-              finally (return
-                        (append res (list (cons (cons this-left this-rite)
-                                                this))))))))
-
-(defun gen-binary-search (form ranges default)
-  (cond
-    ((null ranges) `(go ,default))
-    ((null (rest ranges))
-     (let ((match (first ranges)))
-       (if (= (caar match) (cdar match))
-           `(if (cleavir-primop:fixnum-equal ,form ',(caar match))
-                (go ,(cdr match))
-                (go ,default))
-           `(if (cleavir-primop:fixnum-not-greater ,form ',(cdar match))
-                (if (cleavir-primop:fixnum-not-greater ',(caar match) ,form)
-                    (go ,(cdr match))
-                    (go ,default))
-                (go ,default)))))
-    (t (let* ((len-div-2 (floor (length ranges) 2))
-              (left-ranges (subseq ranges 0 len-div-2))
-              (right-ranges (subseq ranges len-div-2))
-              (right-head (first right-ranges))
-              (right-stamp (caar right-head)))
-         `(if (cleavir-primop:fixnum-less ,form ',right-stamp)
-              ,(gen-binary-search form left-ranges default)
-              ,(gen-binary-search form right-ranges default))))))
-
-(defmacro %fixnumcase (form default &rest clauses)
-  (loop with bname = (gensym "FIXNUM-CASE")
-        with default-tag = (gensym "DEFAULT")
-        for (keys . body) in clauses
-        for tag = (gensym)
-        nconcing (list tag `(return-from ,bname (progn ,@body)))
-          into tbody
-        nconcing (loop for key in keys
-                       collect (cons key tag))
-          into dispatch
-        finally
-           (return
-             `(core::local-block ,bname
-                (core::local-tagbody
-                   ,(gen-binary-search form (rangify dispatch)
-                                       default-tag)
-                   ,@tbody
-                   ,default-tag
-                   (return-from ,bname ,default))))))
-
-(defmacro fixnumcase (form default &rest clauses)
-  (let ((keyg (gensym "KEY")))
-    `(let ((,keyg ,form))
-       (%fixnumcase ,keyg ,default ,@clauses))))
-
 (defvar *tag-tests* (llvm-sys:tag-tests))
 
 (defun tag-spec-p (class) ; is CLASS one that's manifested as a tag test?
@@ -283,19 +217,19 @@
                                          (core::derivable-stamp ,form)
                                          (core::rack-stamp ,form)
                                          (core::wrapped-stamp ,form)
-                                         (%fixnumcase ,stamp
-                                             (go ,default-tag)
-                                           ,@(loop for (tag . pairs)
+                                         (case ,stamp
+                                           ,@(loop for (tag . keys)
                                                      in (partition c++-specs
                                                                    :key #'cdr
                                                                    :getter #'car)
-                                                   collect `((,@pairs) (go ,tag)))))))
-                                 (%fixnumcase ,stamp
-                                     (go ,default-tag)
-                                   ,@(loop for (tag . pairs)
+                                                   collect `((,@keys) (go ,tag)))
+                                           (otherwise (go ,default-tag))))))
+                                 (case ,stamp
+                                   ,@(loop for (tag . keys)
                                              in (partition other-specs :key #'cdr
                                                            :getter #'car)
-                                           collect `((,@pairs) (go ,tag)))))))
+                                           collect `((,@keys) (go ,tag)))
+                                   (otherwise (go ,default-tag))))))
                             (t (go ,default-tag)))))
                    ;; back in the tagbody
                    ,@tbody
