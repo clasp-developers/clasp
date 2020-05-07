@@ -15,19 +15,4 @@
  (form nil) (function nil))
 
 (defun outcome= (outcome1 outcome2)
-  (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching
-      (cond ((optimized-slot-reader-p outcome1)
-             (and (optimized-slot-reader-p outcome2)
-                  ;; could also do class slot locations somehow,
-                  ;; but it doesn't seem like a big priority.
-                  (fixnump (optimized-slot-reader-index outcome1))
-                  (fixnump (optimized-slot-reader-index outcome2))
-                  (= (optimized-slot-reader-index outcome1)
-                     (optimized-slot-reader-index outcome2))))
-            ((optimized-slot-writer-p outcome1)
-             (and (optimized-slot-writer-p outcome2)
-                  (fixnump (optimized-slot-writer-index outcome1))
-                  (fixnump (optimized-slot-writer-index outcome2))
-                  (= (optimized-slot-writer-index outcome1)
-                     (optimized-slot-writer-index outcome2))))
-            (t nil))))
+  (eq outcome1 outcome2)) ; thanks, caching! (in find-existing-outcome)
