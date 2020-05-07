@@ -738,6 +738,24 @@
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
+    ((instruction cleavir-ir:case-instruction) return-value successors abi function-info)
+  (assert (= (length successors) (length (cleavir-ir:successors instruction))
+             (1+ (length (cleavir-ir:comparees instruction)))))
+  (let* ((input (in (first (cleavir-ir:inputs instruction))))
+         (rinput #+(or) (cmp:irc-untag-fixnum input cmp:%i64%) (cmp:irc-ptr-to-int input cmp:%i64%))
+         (default (first (last successors)))
+         (dests (butlast successors))
+         (comparees (cleavir-ir:comparees instruction))
+         (ncases (loop for list in comparees summing (length list)))
+         (switch (cmp:irc-switch rinput default ncases)))
+    (loop for list in comparees
+          for dest in dests
+          do (loop for object in list
+                   for immediate = (core:create-tagged-immediate-value-or-nil object)
+                   do (assert (not (null immediate)))
+                      (cmp:irc-add-case switch (%i64 #+(or)(ash immediate -2) immediate) dest)))))
+
+(defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)
   (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
                          cmp:+immediate-mask+ cmp:+cons-tag+
