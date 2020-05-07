@@ -46,7 +46,7 @@
 ;;;
 ;;; This AST is used to represent a debugging message inserted into the generated code.
 
-(defclass debug-message-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass debug-message-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%debug-message :initarg :debug-message  :accessor debug-message)))
 
 (cleavir-io:define-save-info debug-message-ast
@@ -64,7 +64,7 @@
 ;;;
 ;;; This AST is used to represent a debugging break inserted into the generated code.
 
-(defclass debug-break-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+(defclass debug-break-ast (cleavir-ast:no-value-ast-mixin cleavir-ast:ast)
   ())
 
 (cleavir-io:define-save-info debug-break-ast
@@ -124,7 +124,7 @@
 ;;; This AST is used to represent a call to a named foreign function
 ;;;   inserted into the generated code.
 
-(defclass foreign-call-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
+(defclass foreign-call-ast (cleavir-ast:one-value-ast-mixin base-foreign-call-ast)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 (cleavir-io:define-save-info foreign-call-ast
@@ -143,7 +143,7 @@
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
 
-(defclass foreign-call-pointer-ast (base-foreign-call-ast cleavir-ast:one-value-ast-mixin)
+(defclass foreign-call-pointer-ast (cleavir-ast:one-value-ast-mixin base-foreign-call-ast)
   ())
 
 (defmethod cleavir-ast-graphviz::label ((ast foreign-call-pointer-ast))
@@ -159,7 +159,7 @@
 ;;;
 ;;; This AST is used to represent a callback definition.
 
-(defclass defcallback-ast (cleavir-ast:ast cleavir-ast:no-value-ast-mixin)
+(defclass defcallback-ast (cleavir-ast:no-value-ast-mixin cleavir-ast:ast)
   (;; None of these are evaluated and there's a ton of them
    ;; so why bother splitting them up
    (%args :initarg :args :reader defcallback-args)
@@ -198,7 +198,7 @@
 ;;; If the vector has a fill pointer it returns that,
 ;;; as the length and fill pointer have the same offset.
 
-(defclass vector-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass vector-length-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%vector :initarg :vector :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info vector-length-ast
@@ -216,7 +216,7 @@
 ;;;
 ;;; Gets the actual underlying array of any mdarray.
 
-(defclass displacement-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass displacement-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displacement-ast
@@ -234,7 +234,7 @@
 ;;;
 ;;; Gets the actual underlying DIO of any mdarray.
 
-(defclass displaced-index-offset-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass displaced-index-offset-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info displaced-index-offset-ast
@@ -252,7 +252,7 @@
 ;;;
 ;;; Gets the total size of any mdarray.
 
-(defclass array-total-size-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass array-total-size-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-total-size-ast
@@ -270,7 +270,7 @@
 ;;;
 ;;; Gets the rank of any mdarray.
 
-(defclass array-rank-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass array-rank-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info array-rank-ast
@@ -288,7 +288,7 @@
 ;;;
 ;;; Gets the dimensions of any mdarray.
 
-(defclass array-dimension-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass array-dimension-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%mdarray :initarg :mdarray :accessor cleavir-ast:arg1-ast)
    (%axis :initarg :axis :accessor cleavir-ast:arg2-ast)))
 
@@ -307,7 +307,7 @@
 ;;;
 ;;; Class HEADER-STAMP-AST
 
-(defclass header-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass header-stamp-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info header-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast header-stamp-ast)) "header-stamp")
@@ -318,7 +318,7 @@
 ;;;
 ;;; Class RACK-STAMP-AST
 
-(defclass rack-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass rack-stamp-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info rack-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast rack-stamp-ast)) "rack-stamp")
@@ -329,7 +329,7 @@
 ;;;
 ;;; Class WRAPPED-STAMP-AST
 
-(defclass wrapped-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass wrapped-stamp-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info wrapped-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast wrapped-stamp-ast)) "wrapped-stamp")
@@ -340,7 +340,7 @@
 ;;;
 ;;; Class DERIVABLE-STAMP-AST
 
-(defclass derivable-stamp-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass derivable-stamp-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg :initarg :arg :accessor cleavir-ast:arg-ast)))
 (cleavir-io:define-save-info derivable-stamp-ast (:arg cleavir-ast:arg-ast))
 (defmethod cleavir-ast-graphviz::label ((ast derivable-stamp-ast)) "derivable-stamp")
@@ -354,7 +354,7 @@
 ;;; Pops an element off a valist.
 ;;; Doesn't necessarily check that there is an element.
 
-(defclass vaslist-pop-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass vaslist-pop-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info vaslist-pop-ast
@@ -372,7 +372,7 @@
 ;;;
 ;;; Gets the remaining number of arguments of a vaslist.
 
-(defclass vaslist-length-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass vaslist-length-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   ((%arg-ast :initarg :vaslist :reader cleavir-ast:arg-ast)))
 
 (cleavir-io:define-save-info vaslist-length-ast
@@ -390,7 +390,7 @@
 ;;;
 ;;; Abstract. Class for compare-and-swap ASTs.
 
-(defclass cas-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass cas-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
   (;; The "old" value being compared to the loaded one.
    (%cmp-ast :initarg :cmp-ast :reader cmp-ast)
    ;; The "new" value that's maybe being stored.
@@ -582,7 +582,7 @@
 ;;; a LoadTimeValue object that is passed to the function.
 ;;;
 
-(defclass precalc-value-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
+(defclass precalc-value-reference-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin cleavir-ast:ast)
   ((%ref-index :initarg :index :accessor precalc-value-reference-ast-index)
    (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
 

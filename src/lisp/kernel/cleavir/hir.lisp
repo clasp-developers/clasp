@@ -6,8 +6,8 @@
 ;;;
 ;;; This instruction is an DEBUG-MESSAGE-INSTRUCTION that prints a message at runtime.
 
-(defclass debug-message-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                     cleavir-ir:side-effect-mixin)
+(defclass debug-message-instruction (cleavir-ir:one-successor-mixin
+                                     cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%debug-message :initarg :debug-message :accessor debug-message)))
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-message-instruction))
@@ -23,8 +23,8 @@
 ;;;
 ;;; This instruction is an DEBUG-BREAK-INSTRUCTION that invokes the debugger
 
-(defclass debug-break-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                   cleavir-ir:side-effect-mixin)
+(defclass debug-break-instruction (cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr debug-break-instruction))
@@ -44,7 +44,7 @@
 ;;; by LOAD-VALUES-INSTRUCTION, so if we want to change them later that's fine.
 ;;; More details in ast-to-hir.lisp for multiple-value-prog1-ast.
 
-(defclass save-values-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass save-values-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr save-values-instruction)) "save-values")
@@ -61,7 +61,7 @@
 ;;;
 ;;; See save-values.
 
-(defclass load-values-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass load-values-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr load-values-instruction)) "load-values")
@@ -78,8 +78,8 @@
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.
 
-(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                                   cleavir-ir:side-effect-mixin)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:one-successor-mixin
+                                                   cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 (defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
@@ -103,8 +103,8 @@
 ;;;
 ;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
-(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                    cleavir-ir:side-effect-mixin)
+(defclass foreign-call-instruction (cleavir-ir:one-successor-mixin
+                                    cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)
    (%function-name :initarg :function-name :accessor function-name)))
 
@@ -131,8 +131,8 @@
 ;;;
 ;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
-(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                            cleavir-ir:side-effect-mixin)
+(defclass foreign-call-pointer-instruction (cleavir-ir:one-successor-mixin
+                                            cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 (defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
@@ -155,8 +155,8 @@
 ;;; Instruction DEFCALLBACK-INSTRUCTION
 ;;;
 
-(defclass defcallback-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                   cleavir-ir:side-effect-mixin)
+(defclass defcallback-instruction (cleavir-ir:one-successor-mixin
+                                   cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%args :initarg :args :reader defcallback-args)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -164,8 +164,8 @@
 ;;; Instruction HEADER-STAMP-CASE-INSTRUCTION
 ;;;
 
-(defclass header-stamp-case-instruction (cleavir-ir:instruction
-                                         cleavir-ir:multiple-successors-mixin)
+(defclass header-stamp-case-instruction (cleavir-ir:multiple-successors-mixin
+                                         cleavir-ir:instruction)
   ())
 (defun make-header-stamp-case-instruction (stamp &rest successors)
   (make-instance 'header-stamp-case-instruction
@@ -179,7 +179,7 @@
 ;;;
 ;;; This instruction gets the length of a vector, as CL:LENGTH.
 
-(defclass vector-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass vector-length-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr vector-length-instruction))
@@ -197,7 +197,7 @@
 ;;;
 ;;; Get the actual _Data of an mdarray.
 
-(defclass displacement-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass displacement-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr displacement-instruction))
@@ -215,7 +215,7 @@
 ;;;
 ;;; Get the actual _DisplacedIndexOffset of an mdarray.
 
-(defclass displaced-index-offset-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass displaced-index-offset-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr displaced-index-offset-instruction))
@@ -233,7 +233,7 @@
 ;;;
 ;;; Get the _ArrayTotalSize of an mdarray.
 
-(defclass array-total-size-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass array-total-size-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr array-total-size-instruction))
@@ -251,7 +251,7 @@
 ;;;
 ;;; Get the rank of an mdarray.
 
-(defclass array-rank-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass array-rank-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr array-rank-instruction))
@@ -269,7 +269,7 @@
 ;;;
 ;;; Get a dimension of an mdarray.
 
-(defclass array-dimension-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass array-dimension-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr array-dimension-instruction))
@@ -286,7 +286,7 @@
 ;;; Instruction HEADER-STAMP-INSTRUCTION
 ;;;
 
-(defclass header-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass header-stamp-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 (defmethod cleavir-ir-graphviz:label ((instr header-stamp-instruction)) "header-stamp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -294,7 +294,7 @@
 ;;; Instruction RACK-STAMP-INSTRUCTION
 ;;;
 
-(defclass rack-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass rack-stamp-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 (defmethod cleavir-ir-graphviz:label ((instr rack-stamp-instruction)) "rack-stamp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -302,7 +302,7 @@
 ;;; Instruction WRAPPED-STAMP-INSTRUCTION
 ;;;
 
-(defclass wrapped-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass wrapped-stamp-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 (defmethod cleavir-ir-graphviz:label ((instr wrapped-stamp-instruction)) "wrapped-stamp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -310,7 +310,7 @@
 ;;; Instruction DERIVABLE-STAMP-INSTRUCTION
 ;;;
 
-(defclass derivable-stamp-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass derivable-stamp-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 (defmethod cleavir-ir-graphviz:label ((instr derivable-stamp-instruction)) "derivable-stamp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -318,7 +318,7 @@
 ;;; Instruction VASLIST-POP-INSTRUCTION
 ;;;
 
-(defclass vaslist-pop-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass vaslist-pop-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr vaslist-pop-instruction)) "vaslist-pop")
@@ -334,7 +334,7 @@
 ;;; Instruction VASLIST-LENGTH-INSTRUCTION
 ;;;
 
-(defclass vaslist-length-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass vaslist-length-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ())
 
 (defmethod cleavir-ir-graphviz:label ((instr vaslist-length-instruction)) "vaslist-length")
@@ -353,7 +353,7 @@
 ;;; instead of a list (thus why it's a special operator),
 ;;; and only allowing ordinary lambda lists.
 
-(defclass bind-va-list-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass bind-va-list-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ((%lambda-list :initarg :lambda-list :accessor cleavir-ir:lambda-list)
    (%rest-alloc :initarg :rest-alloc :reader rest-alloc)))
 
@@ -400,7 +400,7 @@
 ;;;
 ;;; Instruction CAS-CAR-INSTRUCTION
 
-(defclass cas-car-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass cas-car-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 
 (defmethod cleavir-ir-graphviz:label ((instr cas-car-instruction)) "cas-car")
 
@@ -408,7 +408,7 @@
 ;;;
 ;;; Instruction CAS-CDR-INSTRUCTION
 
-(defclass cas-cdr-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass cas-cdr-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 
 (defmethod cleavir-ir-graphviz:label ((instr cas-cdr-instruction)) "cas-cdr")
 
@@ -416,7 +416,7 @@
 ;;;
 ;;; Instruction SLOT-CAS-INSTRUCTION
 
-(defclass slot-cas-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass slot-cas-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 
 (defmethod cleavir-ir-graphviz:label ((instr slot-cas-instruction)) "slot-cas")
 
@@ -426,7 +426,7 @@
 ;;;
 ;;; Compare-and-swap an array.
 
-(defclass acas-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass acas-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ((%element-type :initarg :element-type :reader cleavir-ir:element-type)
    (%simple-p :initarg :simple-p :reader cleavir-ir:simple-p)
    (%boxed-p :initarg :boxed-p :reader cleavir-ir:boxed-p)))
@@ -458,7 +458,7 @@
 ;;; precalculated value.  
 ;;;
 
-(defclass precalc-value-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass precalc-value-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ((%index :initarg :index :accessor precalc-value-instruction-index)
    (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
 
@@ -492,7 +492,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction FDEFINITION-INSTRUCTION.
+;;; Instruction SETF-FDEFINITION-INSTRUCTION.
 
 (defclass setf-fdefinition-instruction (cleavir-ir:fdefinition-instruction)
   ())
@@ -512,8 +512,8 @@
 ;;; throw-instruction
 ;;;
 
-(defclass throw-instruction (cleavir-ir:instruction cleavir-ir:no-successors-mixin
-                             cleavir-ir:side-effect-mixin)
+(defclass throw-instruction (cleavir-ir:no-successors-mixin
+                             cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ((%throw-tag :initform nil :initarg :throw-tag :accessor throw-tag)))
 
 
@@ -540,8 +540,8 @@
 ;;; It doesn't read or write the global symbol value.
 ;;;
 
-(defclass bind-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                            cleavir-ir:side-effect-mixin)
+(defclass bind-instruction (cleavir-ir:one-successor-mixin
+                            cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -554,6 +554,6 @@
 ;;; The one output is the new dynamic environment.
 ;;;
 
-(defclass unwind-protect-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin
-                                      cleavir-ir:side-effect-mixin)
+(defclass unwind-protect-instruction (cleavir-ir:one-successor-mixin
+                                      cleavir-ir:side-effect-mixin cleavir-ir:instruction)
   ())
