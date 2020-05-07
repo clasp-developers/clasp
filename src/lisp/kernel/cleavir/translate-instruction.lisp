@@ -742,7 +742,7 @@
   (assert (= (length successors) (length (cleavir-ir:successors instruction))
              (1+ (length (cleavir-ir:comparees instruction)))))
   (let* ((input (in (first (cleavir-ir:inputs instruction))))
-         (rinput #+(or) (cmp:irc-untag-fixnum input cmp:%i64%) (cmp:irc-ptr-to-int input cmp:%i64%))
+         (rinput (cmp:irc-ptr-to-int input cmp:%i64%))
          (default (first (last successors)))
          (dests (butlast successors))
          (comparees (cleavir-ir:comparees instruction))
@@ -753,7 +753,7 @@
           do (loop for object in list
                    for immediate = (core:create-tagged-immediate-value-or-nil object)
                    do (assert (not (null immediate)))
-                      (cmp:irc-add-case switch (%i64 #+(or)(ash immediate -2) immediate) dest)))))
+                      (cmp:irc-add-case switch (%i64 immediate) dest)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)

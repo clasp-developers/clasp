@@ -274,6 +274,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'cleavir-primop:funcall) t)
          ((eq sym 'cleavir-primop:unreachable) t)
+         ((eq sym 'cleavir-primop:case) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:vaslist-length) t)
          ((eq sym 'core::local-block) t)
