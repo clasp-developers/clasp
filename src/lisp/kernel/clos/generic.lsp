@@ -216,15 +216,17 @@ Not a valid documentation object ~A"
      (core:source-pos-info-lineno spi)
      ;; 1+ copied from cmpir.lsp. Dunno why it's there.
      (1+ (core:source-pos-info-column spi))))
-  ;; Set up the actual function.
-  (set-funcallable-instance-function gfun (compute-discriminating-function gfun))
   (cond ((generic-function-methods gfun)
          (compute-gf-specializer-profile gfun)
          (compute-a-p-o-function gfun))
-        (t (initialize-gf-specializer-profile gfun)))
-  (update-dependents gfun initargs))
+        (t (initialize-gf-specializer-profile gfun))))
+
+(defmethod initialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (declare (ignore initargs))
+  (invalidate-discriminating-function gfun))
 
 (defmethod reinitialize-instance :after ((gfun standard-generic-function) &rest initargs)
+  (update-dependents gfun initargs)
   ;; Check if the redefinition is trivial.
   ;; I am not sure of the fine details here. What happens if you reinitialize-instance
   ;; and change the method-combination, but not the methods to have compatible qualifiers,

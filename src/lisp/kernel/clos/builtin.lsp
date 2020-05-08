@@ -25,7 +25,6 @@
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (setf class (apply #'make-instance metaclass :name name options))
-    (invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))))
