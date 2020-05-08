@@ -244,14 +244,11 @@
 (defun coerce-to-list-of-specializers (list-of-specializer-names)
   (mapcar (lambda (sname)
             (etypecase sname
-              (class sname)
-              (eql-specializer
-               (list (eql-specializer-object sname)))
+              (specializer sname)
               ;; (eql 'something)
               ((cons (eql eql)
                      (cons t null))
-               ;; The fake EQL specializers used by c-a-m-u-s
-               (list (second sname)))
+               (intern-eql-specializer (second sname)))
               (symbol (find-class sname))))
           list-of-specializer-names))
 
@@ -363,14 +360,11 @@ elements as the generic function has specializable (i.e. required) arguments.
 A specializer designator is either a specializer, or a symbol naming a class, or
 a list (EQL object) - just like DEFMETHOD."
   (flet ((coerce-specializer-designator (specializer-designator)
-           ;; The fake EQL specializers fastgf uses.
-           ;; (It's getting annoying. FIXME?)
            (etypecase specializer-designator
-             (eql-specializer (list (eql-specializer-object specializer-designator)))
              (specializer specializer-designator)
              (symbol (find-class specializer-designator))
              ((cons (eql eql) (cons t null)) ; (eql thing)
-              (list (second specializer-designator))))))
+              (intern-eql-specializer (second specializer-designator))))))
     (loop with method-combination = (generic-function-method-combination generic-function)
           for list in lists-of-specializer-designators
           for specializers = (mapcar #'coerce-specializer-designator list)

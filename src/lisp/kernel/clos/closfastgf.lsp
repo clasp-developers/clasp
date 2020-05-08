@@ -210,12 +210,15 @@
 ;;        So I think we 
 (defun applicable-method-p (method specializers)
   (loop for spec in (method-specializers method)
-     for argspec in specializers
-     always (if (eql-specializer-flag spec)
-                (and (consp argspec) (eql (car argspec) (eql-specializer-object spec)))
-                (if (consp argspec) ; eql specializer?
-                    (subclassp (class-of argspec) spec)
-                    (subclassp argspec spec)))))
+        for argspec in specializers
+        always (cond ((eql-specializer-flag spec)
+                      (and (eql-specializer-flag argspec)
+                           (eql (eql-specializer-object argspec)
+                                (eql-specializer-object spec))))
+                     ((eql-specializer-flag argspec)
+                      (subclassp (class-of (eql-specializer-object argspec))
+                                 spec))
+                     (t (subclassp argspec spec)))))
 
 (defun applicable-method-list-using-specializers (gf specializers)
   (declare (optimize (speed 3)))
@@ -232,10 +235,7 @@
   (sort-applicable-methods
    generic-function
    (applicable-method-list-using-specializers generic-function specializers)
-   (mapcar (lambda (s) (if (consp s)
-                           (class-of (car s))
-                           s))
-           specializers)))
+   specializers))
 
 (defun effective-slotd-from-accessor-method (method class)
   (let* ((direct-slot (accessor-method-slot-definition method))
@@ -411,18 +411,19 @@
    those call-history entries with specializers that the method would apply to."
   (let ((call-history (copy-list orig-call-history)))
     (loop for entry in call-history
-       for specializers = (coerce (car entry) 'list)
-       when (applicable-method-p method specializers)
-       do (let* ((methods (compute-applicable-methods-using-specializers
-                           generic-function
-                           specializers))
-                 (outcome (outcome
-                           generic-function
-                           (generic-function-method-combination generic-function)
-                           ;; I have actual specializers from the call history
-                           ;; in specializers
-                           methods specializers)))
-            (rplacd entry outcome)))
+          for specializers = (coerce (car entry) 'list)
+          when (applicable-method-p method specializers)
+            do (let* ((methods (compute-applicable-methods-using-specializers
+                                generic-function
+                                specializers))
+                      (outcome (outcome
+                                generic-function
+                                (generic-function-method-combination
+                                 generic-function)
+                                ;; I have actual specializers from the call history
+                                ;; in specializers
+                                methods specializers)))
+                 (rplacd entry outcome)))
     call-history))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
@@ -437,22 +438,22 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 (defun update-call-history-for-remove-method (generic-function call-history method)
   (let (new-call-history)
     (loop for entry in call-history
-       for specializers = (coerce (car entry) 'list)
-       if (applicable-method-p method specializers)
-       do (let* ((methods (compute-applicable-methods-using-specializers
-                           generic-function
-                           specializers))
-                 (outcome (if methods
-                              (outcome
-                               generic-function
-                               (generic-function-method-combination generic-function)
-                               ;; I have the actual specializers in specializers
-                               methods specializers)
-                              nil)))
-            (when outcome
-              (push (cons (car entry) outcome) new-call-history)))
-       else
-       do (push (cons (car entry) (cdr entry)) new-call-history))
+          for specializers = (coerce (car entry) 'list)
+          if (applicable-method-p method specializers)
+            do (let* ((methods (compute-applicable-methods-using-specializers
+                                generic-function
+                                specializers))
+                      (outcome (if methods
+                                   (outcome
+                                    generic-function
+                                    (generic-function-method-combination
+                                     generic-function)
+                                    methods specializers)
+                                   nil)))
+                 (when outcome
+                   (push (cons (car entry) outcome) new-call-history)))
+          else
+            do (push (cons (car entry) (cdr entry)) new-call-history))
     new-call-history))
 
 (defun update-generic-function-call-history-for-remove-method (generic-function method)
@@ -462,14 +463,14 @@ FIXME!!!! This code will have problems with multithreading if a generic function
      then remove the entry from the list.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
   (loop for call-history = (generic-function-call-history generic-function)
-     for new-call-history = (update-call-history-for-remove-method generic-function call-history method)
-     for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-     until (eq exchange new-call-history)))
+        for new-call-history = (update-call-history-for-remove-method generic-function call-history method)
+        for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
+        until (eq exchange new-call-history)))
 
 (defun erase-generic-function-call-history (generic-function)
   (loop for call-history = (generic-function-call-history generic-function)
-     for new-call-history = nil
-     for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
+        for new-call-history = nil
+        for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
         until (eq exchange new-call-history)))
 
 (defun specializer-key-match (key1 key2)
@@ -478,9 +479,10 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   ;; this latter representing an eql specializer.
   ;; We want to compare the former by eq and the latter by eql of the car.
   (loop for s1 across key1 for s2 across key2
-        always (if (consp s1) ; eql specializer
-                   (if (consp s2)
-                       (eql (car s1) (car s2))
+        always (if (eql-specializer-flag s1) ; eql specializer
+                   (if (eql-specializer-flag s2)
+                       (eql (eql-specializer-object s1)
+                            (eql-specializer-object s2))
                        ;; one is an eql specializer, the other is a class
                        nil)
                    ;; s1 is a class, so s2 must be an eq class
@@ -564,9 +566,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   ;; See comment in do-dispatch-miss for rationale.
   (loop for spec across specializer-profile
         for arg in arguments
-        collect (if (consp spec) ; this parameter is eql-specialized by some method.
+        collect (if (consp spec) ; this parameter is eql-specialized by some method
                     (if (member arg spec)
-                        (list arg) ; list means eql specializer object.
+                        (intern-eql-specializer arg)
                         (return-from all-eql-specialized-p nil))
                     (class-of arg))
           into key
@@ -762,6 +764,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 ;;; I don't believe the following few functions are called from anywhere, but they may be useful for debugging.
 
+#+(or)
 (defun method-spec-matches-entry-spec (method-spec entry-spec)
   (or
    (and (consp method-spec)
@@ -800,11 +803,12 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun call-history-entry-key-contains-specializers (key specializers)
   (loop for specializer in specializers
-        do (if (consp specializer)
-               (loop with object = (car specializer)
+        do (if (eql-specializer-flag specializer)
+               (loop with object = (eql-specializer-object specializer)
                      for s in key
-                     when (consp s)     ; eql specializer
-                       do (when (eql (car s) object) (return-from call-history-entry-key-contains-specializers t)))
+                     when (eql-specializer-flag s)     ; eql specializer
+                       do (when (eql (eql-specializer-object s) object)
+                            (return-from call-history-entry-key-contains-specializers t)))
                (when (find specializer key :test #'eq)
                  (return-from call-history-entry-key-contains-specializers t)))))
 

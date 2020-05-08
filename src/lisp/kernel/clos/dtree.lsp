@@ -19,10 +19,10 @@
 
 ;; note: if we used actual specializers, this could just be eq.
 (defun specializer= (s1 s2)
-  (if (fake-eql-specializer-p s1)
-      (and (fake-eql-specializer-p s2)
-           (eql (fake-eql-specializer-object s1)
-                (fake-eql-specializer-object s2)))
+  (if (safe-eql-specializer-p s1)
+      (and (safe-eql-specializer-p s2)
+           (eql (safe-eql-specializer-object s1)
+                (safe-eql-specializer-object s2)))
       ;; for classes:
       (eq s1 s2)))
 
@@ -148,7 +148,7 @@
         with other-classes = nil
         for pair in paths
         for spec = (car pair)
-        do (cond ((fake-eql-specializer-p spec) (push pair eqls))
+        do (cond ((safe-eql-specializer-p spec) (push pair eqls))
                  ((tag-spec-p spec)
                   (setf (svref tags-vector (class-tag spec)) (cdr pair)))
                  ((< (core:class-stamp-for-instances spec) cmp:+c++-stamp-max+)
@@ -224,7 +224,10 @@
 ;;; eql tests
 
 (defun compile-eql-search (eqls next)
-  (make-eql-search :objects (map 'simple-vector #'caar eqls)
+  (make-eql-search :objects (map 'simple-vector (lambda (pair)
+                                                  (eql-specializer-object
+                                                   (car pair)))
+                                 eqls)
                    :nexts (map 'simple-vector (lambda (pair)
                                                 (compile-tree (cdr pair)))
                                eqls)

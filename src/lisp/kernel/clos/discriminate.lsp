@@ -74,7 +74,7 @@
            for new-clause = (cons next leaf)
            ;; We have to use EQUAL because of the fake eql
            ;; specializers (FIXME)
-           for existing-path = (assoc this paths :test #'equal)
+           for existing-path = (assoc this paths)
            if existing-path
              ;; We checked for duplicates in basic-tree.
              do (push new-clause (cdr existing-path))
@@ -153,13 +153,18 @@
     ((:cons-tag) 'cons)
     (t (error "BUG: Unknown tag class ~a" class))))
 
-;;; These are fake eql specializers used throughout fastgf so that the
-;;; eql specializer object can be read without a generic function call.
-;;; (Note that a user could technically subclass eql-specializer and
-;;;  get the slot a different location, so we can't just use a direct
-;;;  instance reference.)
-(defun fake-eql-specializer-p (spec) (consp spec))
-(defun fake-eql-specializer-object (spec) (car spec))
+(defun safe-eql-specializer-p (specializer)
+  (let ((sc (class-of specializer)))
+    (cond ((eq sc (find-class 'eql-specializer)) t)
+          ((eq sc (find-class 'standard-class)) nil)
+          ((eq sc (find-class 'funcallable-standard-class)) nil)
+          (t (typep specializer 'eql-specializer)))))
+
+(defun safe-eql-specializer-object (eql-specializer)
+  (if (eq (class-of eql-specializer) (find-class 'eql-specializer))
+      (with-early-accessors (+eql-specializer-slots+)
+        (eql-specializer-object eql-specializer))
+      (eql-specializer-object eql-specializer)))
 
 ;;; This is kind of a shitheap, but then, so is the underlying operation.
 (defmacro %speccase (form default &rest clauses)
@@ -177,15 +182,9 @@
           into tbody
         do (loop for spec in specs
                  for pair = (cons spec tag)
-                 do (cond #+(or)
-                          ((eql-specializer-flag spec)
-                           (push (cons (eql-specializer-object spec)
+                 do (cond ((safe-eql-specializer-p spec)
+                           (push (cons (safe-eql-specializer-object spec)
                                        tag)
-                                 eql-specs))
-                          ;; The fake eql specializers used by fastgf
-                          #-(or)
-                          ((fake-eql-specializer-p spec)
-                           (push (cons (fake-eql-specializer-object spec) tag)
                                  eql-specs))
                           ((tag-spec-p spec)
                            (push (cons (tag-type spec) tag) tag-specs))
@@ -208,7 +207,7 @@
                              collect `((,@objects) (go ,tag)))
                      (otherwise
                       (cond ,@(loop for (type . tag) in tag-specs
-                                    collect `((cleavir-primop:typeq ,form ,type)
+                                     collect `((cleavir-primop:typeq ,form ,type)
                                               (go ,tag)))
                             ((cleavir-primop:typeq ,form core:general)
                              (let ((,stamp (core::header-stamp ,form)))
