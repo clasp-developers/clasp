@@ -324,7 +324,7 @@ struct gctools::GCInfo<core::TheNextBignum_O> {
 
 namespace core {
 class TheNextBignum_O : public Integer_O {
-  LISP_CLASS(core, ClPkg, TheNextBignum_O, "TheNextBignum",Integer_O);
+  LISP_CLASS(core, CorePkg, TheNextBignum_O, "TheNextBignum",Integer_O);
 public:
   typedef mp_limb_t limb_type;
   TheNextBignum_O(int64_t signed_length, limb_type initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const limb_type* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
