@@ -74,3 +74,9 @@
 (test build-sbcl-1 (setf (symbol-plist nil)(list 1 2)))
 (test build-sbcl-2 (setf (get nil 1) 2))
 
+(test 978-symbols-common-lisp-exported
+      (let ((sum 0))
+        (do-external-symbols (sym (find-package :cl))
+          (incf sum))
+        (= 978 sum)))
+
