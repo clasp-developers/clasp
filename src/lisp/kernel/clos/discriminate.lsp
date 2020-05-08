@@ -72,7 +72,9 @@
            for this = (elt specializers 0)
            for next = (subseq specializers 1)
            for new-clause = (cons next leaf)
-           for existing-path = (assoc this paths)
+           ;; We have to use EQUAL because of the fake eql
+           ;; specializers (FIXME)
+           for existing-path = (assoc this paths :test #'equal)
            if existing-path
              ;; We checked for duplicates in basic-tree.
              do (push new-clause (cdr existing-path))
