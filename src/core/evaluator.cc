@@ -698,28 +698,14 @@ CL_LAMBDA(form);
 CL_DECLARE();
 CL_DOCSTRING("eval");
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  form = cl__macroexpand(form, _Nil<T_O>());
-  if (form.generalp()) {
-    if (gc::IsA<Symbol_sp>(form)) {
-      Symbol_sp sform = gc::As_unsafe<Symbol_sp>(form);
-      if (sform.nilp()) return _Nil<T_O>();
-      return sform->symbolValue();
-    }
-    // Any other general object is an atom
-    return form;
+  if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
+      !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
+      core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
+      ) {
+    return eval::evaluate(form, _Nil<T_O>());
+  } else {
+    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
   }
-  if (form.consp()) {
-    if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
-        !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
-        core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
-        ) {
-      return eval::evaluate(form, _Nil<T_O>());
-    } else {
-      return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
-    }
-  }
-  // Anything else is an atom
-  return form;
 };
 
 CL_DECLARE();
@@ -1413,13 +1399,11 @@ namespace core {
                 T_sp tagOrForm = CONS_CAR(ip);
                 if ((tagOrForm).consp()) {
                     try {
-                        eval::evaluate(tagOrForm, tagbodyEnv);
+                      eval::evaluate(tagOrForm, tagbodyEnv);
                     } catch (DynamicGo &dgo) {
-                        if (dgo.getHandle() != handle) {
-                            throw dgo;
-                        }
-                        int index = dgo.index();
-                        ip = tagbodyEnv->codePos(index);
+                      if (dgo.getHandle() != handle) throw;
+                      int index = dgo.index();
+                      ip = tagbodyEnv->codePos(index);
                     }
                 }
                 ip = CONS_CDR(ip);
