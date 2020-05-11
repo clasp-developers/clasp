@@ -131,6 +131,7 @@ public:
   T_sp source_pos_info_inlined_at() const;
   T_sp setf_source_pos_info_function_scope(T_sp function_scope);
   T_sp source_pos_info_function_scope() const;
+  void setf_source_pos_info_extra(T_sp, T_sp);
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())

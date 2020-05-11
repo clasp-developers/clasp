@@ -449,22 +449,27 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; used in the expansion of the defclass below.
 ;;; Most MAKE-LOAD-FORMs are in print.lsp.
 
-(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+(defmethod make-load-form ((object core:file-scope) &optional env)
+  (declare (ignore env))
   (values
-   `(core:make-cxx-object 'core:source-pos-info
-                          :sfi (core:decode (core:make-cxx-object 'core:file-scope)
-                                            ',(core:encode (core:file-scope
-                                                            (core:source-pos-info-file-handle object))))
+   `(core:make-cxx-object ,(find-class 'core:file-scope))
+   `(core:decode
+     ,object
+     ',(core:encode object))))
+
+(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+  (declare (ignore environment))
+  (values
+   `(core:make-cxx-object ,(find-class 'core:source-pos-info)
+                          :sfi ,(core:file-scope
+                                 (core:source-pos-info-file-handle object))
                           :fp ,(core:source-pos-info-filepos object)
                           :l ,(core:source-pos-info-lineno object)
                           :c ,(core:source-pos-info-column object))
-   `(progn
-      (core:setf-source-pos-info-inlined-at
-       ',object
-       ',(core:source-pos-info-inlined-at object))
-      (core:setf-source-pos-info-function-scope
-       ',object
-       ',(core:source-pos-info-function-scope object)))))
+   `(core:setf-source-pos-info-extra
+     ',object
+     ',(core:source-pos-info-inlined-at object)
+     ',(core:source-pos-info-function-scope object))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -297,8 +297,6 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_inlined_at(T_sp inlinedA
   return inlinedAt;
 }
 
-
-
 CL_DEFMETHOD T_sp SourcePosInfo_O::source_pos_info_function_scope() const {
   return this->_FunctionScope;
 }
@@ -308,7 +306,12 @@ CL_DEFMETHOD T_sp SourcePosInfo_O::setf_source_pos_info_function_scope(T_sp func
   return function_scope;
 }
 
-
+// KLUDGEy. These parameters should be suppliable to make-cxx-object, probably.
+CL_DEFMETHOD void SourcePosInfo_O::setf_source_pos_info_extra(T_sp inlinedAt,
+                                                              T_sp functionScope) {
+  this->_InlinedAt = inlinedAt;
+  this->_FunctionScope = functionScope;
+}
 
 void SourcePosInfo_O::fields(Record_sp node)
 {
