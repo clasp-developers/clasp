@@ -205,17 +205,21 @@
       (declare (ignore _))
       (loop for dest in destinations
             for jump-id = (instruction-go-index dest)
-            #| Assertion
-            ;; For making sure no instructions are multiply present.
-            ;; (If they are, you get a switch with duplicate entries,
-            ;;  which kills the LLVM.)
-            do (when (member jump-id used-ids)
-                 (error "Duplicated ID!"))
-            collect jump-id into used-ids
-            |#
-            do (let ((tag-block (gethash dest tags)))
-                 (assert (not (null tag-block)))
-                 (llvm-sys:add-case sw (%size_t jump-id) tag-block)))
+            for tag-block = (gethash dest tags)
+            do (assert (not (null tag-block)))
+               ;; KLUDGE time. See bug #990.
+               ;; Basically, we sometimes have multiple tags ending up at
+               ;; the same basic-block, e.g. in (tagbody a b ...)
+               ;; In this case we get duplicate pairs and we need to avoid
+               ;; that.
+               ;; It might be better to avoid this at a higher level but
+               ;; i'm not completely sure.
+               (let ((existing (assoc jump-id used-ids)))
+                 (if (null existing)
+                     (llvm-sys:add-case sw (%size_t jump-id) tag-block)
+                     (unless (eq tag-block (cdr existing))
+                       (error "BUG: Duplicated ID in landing-pad.lisp"))))
+            collect (cons jump-id tag-block) into used-ids)
       bb)))
 
 (defmethod compute-maybe-entry-processor ((instruction clasp-cleavir-hir:bind-instruction)
