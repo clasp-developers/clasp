@@ -1357,7 +1357,7 @@ namespace core {
             TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
             Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-            vframe->operator[](0) = thandle;
+            (*vframe)[0] = thandle;
             T_O* handle = thandle.raw_();
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
@@ -1402,7 +1402,7 @@ namespace core {
                 SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
             }
             ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-            T_sp thandle = af->operator[](0);
+            T_sp thandle = (*af)[0];
             T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
             DynamicGo go(thandle.raw_(), index);
             throw go;
