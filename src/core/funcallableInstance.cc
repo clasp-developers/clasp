@@ -358,7 +358,6 @@ namespace core {
 
 #define DTREE_SLOT_READER_INDEX_OFFSET 1
 #define DTREE_SLOT_READER_SLOT_NAME_OFFSET 2
-#define DTREE_SLOT_READER_CLASS_OFFSET 3
 
 #define DTREE_SLOT_WRITER_INDEX_OFFSET 1
 
@@ -519,7 +518,6 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("reading slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-        T_sp class_ = (*program)[ip+DTREE_SLOT_READER_CLASS_OFFSET];
         if (location.fixnump()) {
           size_t index = location.unsafe_fixnum();
           DTILOG(BF("About to dump args Vaslist\n"));
@@ -532,7 +530,9 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
           T_sp value = instance->instanceRef(index);
           if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+            return core::eval::funcall(cl::_sym_slot_unbound,
+                                       lisp_instance_class(tinstance),
+                                       instance,slot_name);
           return gctools::return_type(value.raw_(),1);
         } else if (location.consp()) {
           DTILOG(BF("class cell\n"));
@@ -542,7 +542,9 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
           Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
           T_sp value = oCar(cell);
           if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
+            return core::eval::funcall(cl::_sym_slot_unbound,
+                                       lisp_instance_class(instance),
+                                       instance,slot_name);
           return gctools::return_type(value.raw_(),1);
         }
       }
