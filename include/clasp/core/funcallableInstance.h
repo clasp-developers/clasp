@@ -83,9 +83,8 @@ namespace core {
     T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>        _InterpretedCalls;
-    gc::atomic_wrapper<T_sp>   _CallHistory;
-//    T_sp   _Lock;
-    gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
+    std::atomic<T_sp>   _CallHistory;
+    std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
     T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
     T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);

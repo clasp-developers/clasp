@@ -1664,41 +1664,4 @@ std::ostream &operator<<(std::ostream &os, const gctools::smart_ptr<T> &obj) {
   return os;
 }
 
-
-namespace gctools {
-
-  template <typename SP>
-    struct atomic_wrapper {
-      typedef typename SP::Type Type;
-      SP _Contents;
-    atomic_wrapper(SP x) : _Contents(x) {};
-      SP load() {
-        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
-        Type* load = as_atomic.load();
-        return SP((gctools::Tagged)load);
-      }
-
-      SP load() const {
-        const std::atomic<Type*>& as_atomic = reinterpret_cast<const std::atomic<Type*>&>(this->_Contents.theObject);
-        Type* load = as_atomic.load();
-        return SP((gctools::Tagged)load);
-      }
-
-      void store(SP val) {
-        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
-        as_atomic.store(val.raw_());
-      }
-
-      bool compare_exchange_strong(SP expected, SP new_value) {
-        std::atomic<Type*>& as_atomic = reinterpret_cast<std::atomic<Type*>&>(this->_Contents.theObject);
-        return as_atomic.compare_exchange_strong(expected.theObject,new_value.theObject);
-      }
-    };
-  
-};
-
-namespace core {
-typedef gctools::atomic_wrapper<T_sp> T_asp;
-};
-
 #endif
