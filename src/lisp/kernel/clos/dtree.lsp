@@ -242,7 +242,8 @@
   '((miss 0) (advance 1) (tag-test 2) (stamp-read 3)
     (<-branch 4) (=-check 5) (range-check 6) (eql 7)
     (optimized-slot-reader 8) (optimized-slot-writer 9)
-    (effective-method-outcome 10)))
+    (car 10) (rplaca 11)
+    (effective-method-outcome 12)))
 
 (defun opcode (inst)
   (or (second (assoc inst *isa*))
@@ -320,13 +321,19 @@
                    (collect (opcode 'miss))
                    (cont))
                   ((optimized-slot-reader-p tree)
-                   (collect (opcode 'optimized-slot-reader)
-                            (optimized-slot-reader-index tree)
-                            (optimized-slot-reader-slot-name tree))
+                   (collect
+                    (if (core:fixnump (optimized-slot-reader-index tree))
+                        (opcode 'optimized-slot-reader) ; instance
+                        (opcode 'car)) ; class
+                    (optimized-slot-reader-index tree)
+                    (optimized-slot-reader-slot-name tree))
                    (cont))
                   ((optimized-slot-writer-p tree)
-                   (collect (opcode 'optimized-slot-writer)
-                            (optimized-slot-writer-index tree))
+                   (collect
+                    (if (core:fixnump (optimized-slot-writer-index tree))
+                        (opcode 'optimized-slot-writer) ; instance
+                        (opcode 'rplaca)) ; class
+                    (optimized-slot-writer-index tree))
                    (cont))
                   ((effective-method-outcome-p tree)
                    (collect (opcode 'effective-method-outcome)

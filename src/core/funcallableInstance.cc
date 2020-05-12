@@ -330,7 +330,9 @@ namespace core {
 #define DTREE_OP_EQL 7
 #define DTREE_OP_SLOT_READ 8
 #define DTREE_OP_SLOT_WRITE 9
-#define DTREE_OP_EFFECTIVE_METHOD 10
+#define DTREE_OP_CAR 10
+#define DTREE_OP_RPLACA 11
+#define DTREE_OP_EFFECTIVE_METHOD 12
 
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
@@ -518,61 +520,65 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("reading slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp tinstance = args->next_arg();
-          DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
-          DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          Instance_sp instance((gc::Tagged)tinstance.raw_());
-          DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
-          T_sp value = instance->instanceRef(index);
-          if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,
-                                       lisp_instance_class(tinstance),
-                                       instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          DTILOG(BF("class cell\n"));
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          Instance_sp instance((gc::Tagged)args->next_arg().raw_());
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          T_sp value = oCar(cell);
-          if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,
-                                       lisp_instance_class(instance),
-                                       instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
-        }
+        size_t index = location.unsafe_fixnum();
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp tinstance = args->next_arg();
+        DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
+        DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        Instance_sp instance((gc::Tagged)tinstance.raw_());
+        DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
+        T_sp value = instance->instanceRef(index);
+        if (value.unboundp())
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(tinstance),
+                                     instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
+      }
+    case DTREE_OP_CAR:
+      {
+        DTILOG(BF("class cell\n"));
+        T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
+        T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        Instance_sp instance((gc::Tagged)args->next_arg().raw_());
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value = oCar(cell);
+        if (value.unboundp())
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(instance),
+                                     instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_SLOT_WRITE:
       {
         DTILOG(BF("writing slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          DTILOG(BF("index %s\n") % index);
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp value((gc::Tagged)args->next_arg().raw_());
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp tinstance = args->next_arg();
-          Instance_sp instance((gc::Tagged)tinstance.raw_());
-          instance->instanceSet(index,value);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          DTILOG(BF("class cell\n"));
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp value((gc::Tagged)args->next_arg().raw_());
-          cell->rplaca(value);
-          return gctools::return_type(value.raw_(),1);
-        }
+        size_t index = location.unsafe_fixnum();
+        DTILOG(BF("index %s\n") % index);
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp value((gc::Tagged)args->next_arg().raw_());
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp tinstance = args->next_arg();
+        Instance_sp instance((gc::Tagged)tinstance.raw_());
+        instance->instanceSet(index,value);
+        return gctools::return_type(value.raw_(),1);
+      }
+    case DTREE_OP_RPLACA:
+      {
+        DTILOG(BF("class cell\n"));
+        T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
+        size_t index = location.unsafe_fixnum();
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp value((gc::Tagged)args->next_arg().raw_());
+        cell->rplaca(value);
+        return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_EFFECTIVE_METHOD:
       {
