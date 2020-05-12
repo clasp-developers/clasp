@@ -378,6 +378,8 @@ std::string dtree_op_name(int dtree_op) {
     CASE_OP_NAME(DTREE_OP_EQL);
     CASE_OP_NAME(DTREE_OP_SLOT_READ);
     CASE_OP_NAME(DTREE_OP_SLOT_WRITE);
+    CASE_OP_NAME(DTREE_OP_CAR);
+    CASE_OP_NAME(DTREE_OP_RPLACA);
     CASE_OP_NAME(DTREE_OP_EFFECTIVE_METHOD);
   default: return "UNKNOWN_OP";
   };
