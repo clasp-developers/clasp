@@ -265,14 +265,12 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 #endif
   return val;
 
-//  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
   low_level_instanceSet(this->_Rack,idx,val);
-  // (*this->_Rack)[idx+RACK_SLOT_START] = val;
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
@@ -294,7 +292,7 @@ string Instance_O::__repr__() const {
     //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
-      T_sp obj = this->_Rack[i];
+      T_sp obj = low_level_instanceRef(this->_Rack, i);
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
@@ -346,7 +344,9 @@ bool Instance_O::equalp(T_sp obj) const {
     if (this->_Class != iobj->_Class) return false;
     if (this->stamp() != iobj->stamp()) return false;
     for (size_t i(0), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-      if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
+      if (!cl__equalp(low_level_instanceRef(this->_Rack, i),
+                      low_level_instanceRef(iobj->_Rack, i)))
+        return false;
     }
     return true;
   }
@@ -372,7 +372,7 @@ void Instance_O::describe(T_sp stream) {
   ss << (BF("Instance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(0); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }

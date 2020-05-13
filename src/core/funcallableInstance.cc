@@ -140,7 +140,7 @@ T_sp FuncallableInstance_O::instanceRef(size_t idx) const {
   client_validate(this->_Rack);
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), low_level_instanceRef(this->_Rack, idx)->__repr__().c_str());
 #endif
   return low_level_instanceRef(this->_Rack,idx);
 }
@@ -254,7 +254,7 @@ void FuncallableInstance_O::describe(T_sp stream) {
   ss << (BF("FuncallableInstance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(1); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
