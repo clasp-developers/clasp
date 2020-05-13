@@ -58,7 +58,6 @@ namespace core {
   FuncallableInstance_O(FunctionDescription* fdesc) :
     Base(funcallable_entry_point)
       , _Class(_Nil<Instance_O>())
-      , _Sig(_Nil<T_O>())
       , _FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
@@ -66,7 +65,6 @@ namespace core {
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
-      ,_Sig(_Unbound<T_O>())
       ,_FunctionDescription(fdesc)
       , _CallHistory(_Nil<T_O>())
 //      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
@@ -80,7 +78,6 @@ namespace core {
     // _Rack    (matches offset of Instance_O)
     Instance_sp _Class;
     Rack_sp _Rack;
-    T_sp   _Sig;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>        _InterpretedCalls;
     std::atomic<T_sp>   _CallHistory;
@@ -115,7 +112,7 @@ namespace core {
     virtual int column() const { return 0; };
     virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();

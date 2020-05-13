@@ -59,9 +59,10 @@ THE SOFTWARE.
 namespace core {
 
 
-void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
+                                            T_sp sig, size_t numberOfSlots) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -80,8 +81,7 @@ CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t num
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   FuncallableInstance_sp obj = gc::As_unsafe<FuncallableInstance_sp>(creator->creator_allocate());
   obj->_Class = cl;
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), numberOfSlots);
-  obj->_Sig = cl->slots();
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), numberOfSlots);
   return obj;
 }
 
@@ -89,8 +89,8 @@ CL_DEFUN FuncallableInstance_sp core__reallocate_funcallable_instance(Funcallabl
                                                                       Instance_sp new_class,
                                                                       size_t new_size) {
   instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size);
-  instance->_Sig = new_class->slots();
+  instance->initializeSlots(new_class->CLASS_stamp_for_instances(),
+                            new_class->slots(), new_size);
   return instance;
 }
 
@@ -114,14 +114,14 @@ size_t FuncallableInstance_O::numberOfSlots() const {
 T_sp FuncallableInstance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Sig) {
-    ssig << this->_Sig->__repr__();
+  if (this->_Rack->_Sig) {
+    ssig << this->_Rack->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Sig));
+  return ((this->_Rack->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
@@ -204,7 +204,6 @@ T_sp FuncallableInstance_O::copyInstance() const {
   FuncallableInstance_sp copy = gc::As_unsafe<FuncallableInstance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
-  copy->_Sig = this->_Sig;
   return copy;
 }
 

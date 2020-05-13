@@ -50,12 +50,16 @@ FORWARD(Rack);
     LISP_CLASS(core,CorePkg,Rack_O,"Rack",core::General_O);
   public:
     gctools::ShiftedStamp     _ShiftedStamp;
+    T_sp _Sig; // A list of slotds, used in change-class.
     typedef core::T_sp value_type;
     gctools::GCArray_atomic<value_type> _Slots;
   public:
-    Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
+    Rack_O(size_t length, T_sp sig,
+           value_type initialElement=T_sp(), bool initialElementSupplied=true)
+      : _Sig(sig),
+        _Slots(length,initialElement,initialElementSupplied) {};
 
-    static Rack_sp make(size_t numberOfSlots, value_type value);
+    static Rack_sp make(size_t numberOfSlots, T_sp sig, value_type value);
     size_t length() const { return this->_Slots.length(); };
     inline value_type low_level_rackRef(size_t i) {
       return _Slots.load(i);
@@ -105,21 +109,18 @@ namespace core {
     bool fieldsp() const;
     void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+  Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
-      _Sig(_Unbound<T_O>())
-      ,_Class(metaClass)
-        ,_Rack(_Unbound<Rack_O>())
-      
-//    ,_NumberOfSlots(slots)
+      _Class(metaClass)
+      ,_Rack(_Unbound<Rack_O>())
     {};
     virtual ~Instance_O(){};
   public:
     // The order MUST be:
-    // _Sig
+    // _Spacer (accounts for inherited "entry" slot of FuncallableInstance_O)
     // _Class (matches offset of FuncallableInstance_O)
     // _Rack  (matches offset of FuncallableInstance_O)
-    T_sp _Sig;
+    std::atomic<claspFunction> _Spacer; // not actually used, just takes up space
     Instance_sp _Class;
     Rack_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
@@ -205,7 +206,11 @@ namespace core {
 
     void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
+    // Used by clbind
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots) {
+      initializeSlots(is, _Unbound<T_O>(), numberOfSlots);
+    }
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();
