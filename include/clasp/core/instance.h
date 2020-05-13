@@ -51,20 +51,18 @@ FORWARD(Rack);
   public:
     gctools::ShiftedStamp     _ShiftedStamp;
     typedef core::T_sp value_type;
-    gctools::GCArray_moveable<value_type> _Slots;
+    gctools::GCArray_atomic<value_type> _Slots;
   public:
     Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
 
-    static Rack_sp make(size_t numberOfSlots, T_sp value);
+    static Rack_sp make(size_t numberOfSlots, value_type value);
     size_t length() const { return this->_Slots.length(); };
-        inline T_sp &operator[](size_t idx) {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
-    inline const T_sp &operator[](size_t idx) const {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
+    inline value_type low_level_rackRef(size_t i) {
+      return _Slots.load(i);
+    }
+    inline void low_level_rackSet(size_t i, value_type value) {
+      _Slots.store(i, value);
+    }
     inline void stamp_set(gctools::ShiftedStamp stamp) {
       ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
       this->_ShiftedStamp = stamp;
@@ -245,12 +243,16 @@ namespace core {
 
   }; // Instance class
 
-  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+#define OPTIMIZED_SLOT_INDEX_INDEX 1
 
-    template <class RackType_sp>
-    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index]; }
-  template <class RackType_sp>
-    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index] = value; }
+template <class RackType_sp>
+inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) {
+  return rack->low_level_rackRef(index);
+}
+template <class RackType_sp>
+inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) {
+  rack->low_level_rackSet(index, value);
+}
 
 }; // core namespace
 

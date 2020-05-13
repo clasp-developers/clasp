@@ -27,6 +27,8 @@ THE SOFTWARE.
 #ifndef gc_gcarray_H
 #define gc_gcarray_H
 
+#include <atomic>
+
 namespace gctools {
 
 template <class T>
@@ -38,7 +40,7 @@ class GCArray_moveable : public GCContainer {
  typedef value_type container_value_type;
  typedef T *iterator;
  typedef T const *const_iterator;
- int64_t _Length; // Index one beyond the total number of elements allocated
+ uint64_t _Length; // Index one beyond the total number of elements allocated
  T _Data[0];      // Store _Length numbers of T structs/classes starting here
  // This is the deepest part of the array allocation machinery.
  // The arguments here don't exactly match make-array's, though. Having both is ok here.
@@ -80,6 +82,38 @@ class GCArray_moveable : public GCContainer {
   iterator end() { return &this->_Data[this->length()]; };
  const_iterator begin() const { return &this->_Data[0]; };
   const_iterator end() const { return &this->_Data[this->length()]; };
+};
+
+// Like _moveable, but with atomic access.
+// This rules out (I think) the data() operator, as well as operator[] due to
+// how C++ reference semantics work.
+template <class T>
+class GCArray_atomic : public GCContainer {
+public:
+  int64_t _Length; // Index one beyond the total number of elements allocated
+  std::atomic<T> _Data[0];
+  GCArray_atomic(size_t length, const T& initialElement, bool initialElementSupplied,
+                 size_t initialContentsSize=0, const T* initialContents=NULL)
+    : _Length(length) {
+    GCTOOLS_ASSERT(initialContentsSize<=length);
+    for (size_t h(0); h<initialContentsSize; ++h)
+      _Data[h].store(initialContents[h], std::memory_order_relaxed);
+    for (size_t i(initialContentsSize); i < length; ++i)
+      // Copy constructs, I think
+      _Data[i].store(initialElement, std::memory_order_relaxed);
+  }
+public:
+  inline uint64_t length() const { return _Length; }
+  // A default order of even less strength, unordered, would probably be fine,
+  // but C++ does not support it.
+  inline T load(size_t i,
+                std::memory_order order = std::memory_order_relaxed) {
+    return _Data[i].load(order);
+  }
+  inline void store(size_t i, T value,
+                    std::memory_order order = std::memory_order_relaxed) {
+    _Data[i].store(value, order);
+  }
 };
 
 template <typename Array>
