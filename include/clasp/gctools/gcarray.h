@@ -32,8 +32,6 @@ namespace gctools {
 template <class T>
 class GCArray_moveable : public GCContainer {
  public:
- template <class U, typename Allocator>
- friend class GCArray;
  typedef T value_type;
  typedef T *pointer_type;
  typedef value_type &reference;
@@ -63,8 +61,8 @@ class GCArray_moveable : public GCContainer {
    // I'm leaving it off until we have good reason to know it's worth the attendant weird bugs.
    // (Not that there are any specific known bugs- it's just that it's a bit dangerous.)
 
-   // initialElementSupplied must always be true if T involves pointers, for GC reasons.
-   // All code that uses GCArray must ensure this.
+   // An initial element must be supplied if T involves pointers, for GC reasons.
+   // All code that uses GCArray_moveable must ensure this.
    if (initialElementSupplied) {
      for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
        new(&(this->_Data[i])) value_type(initialElement);
@@ -94,8 +92,6 @@ void Array0_dump(const Array &v, const char *head = "") {
   }
   printf("\n");
 }
-
-
 
 template <class T>
 class GCSignedLengthArray_moveable : public GCArray_moveable<T> {
