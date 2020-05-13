@@ -742,18 +742,35 @@
   (assert (= (length successors) (length (cleavir-ir:successors instruction))
              (1+ (length (cleavir-ir:comparees instruction)))))
   (let* ((input (in (first (cleavir-ir:inputs instruction))))
-         (rinput (cmp:irc-ptr-to-int input cmp:%i64%))
          (default (first (last successors)))
          (dests (butlast successors))
          (comparees (cleavir-ir:comparees instruction))
          (ncases (loop for list in comparees summing (length list)))
+         (only-fixnums-p (loop for list in comparees
+                               always (every #'core:fixnump list)))
+         ;; LLVM does better with contiguous ranges. It's not smart enough to
+         ;; recognize that it could get a continuous range by shifting.
+         ;; (Or maybe it doesn't care. How often does that happen?)
+         (rinput (if only-fixnums-p
+                     (let ((fixnum-block (cmp:irc-basic-block-create "is-fixnum")))
+                       ;; same as fixnump, below
+                       (cmp:compile-tag-check input
+                                              cmp:+fixnum-mask+ cmp:+fixnum-tag+
+                                              fixnum-block default)
+                       (cmp:irc-begin-block fixnum-block)
+                       (cmp:irc-untag-fixnum input cmp:%i64% "switch-input"))
+                     (cmp:irc-ptr-to-int input cmp:%i64%)))
          (switch (cmp:irc-switch rinput default ncases)))
     (loop for list in comparees
           for dest in dests
           do (loop for object in list
                    for immediate = (core:create-tagged-immediate-value-or-nil object)
                    do (assert (not (null immediate)))
-                      (cmp:irc-add-case switch (%i64 immediate) dest)))))
+                      (cmp:irc-add-case switch
+                                        (%i64 (if only-fixnums-p
+                                                  (ash immediate -2)
+                                                  immediate))
+                                        dest)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:consp-instruction) return-value successors abi function-info)
