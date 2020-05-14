@@ -284,6 +284,7 @@
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/Partial-inlining/copy-function"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/Partial-inlining/inline-one-instruction"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/Partial-inlining/inline-function"
+ "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/Partial-inlining/contify"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/Partial-inlining/full-inlining-pass"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/MIR/utilities"
  "src/lisp/kernel/contrib/sicl/Code/Cleavir/Intermediate-representation/MIR/general"
