@@ -21,10 +21,9 @@
         ;;; LOGBITP-1
         ;;; CL-SYMBOLS-1
         ;;; loop this are all fixed using sicl loop
-        LOOP-COMPLEX-1
+        ;;; LOOP-COMPLEX-1
         ;;; LOOP-FLOAT-1 LOOP-FLOAT-2
-        LOOP-FIXNUM-1
-        LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
+        LOOP-FIXNUM-1 LOOP-FINALLY-1 LOOP-FINALLY-2 LOOP-FINALLY-3 LOOP-FINALLY-4
         ;;; print-5 
         PRINT-READ-1
         ;;; GENTEMP-1 SPECIAL-OPERATOR-P-1
