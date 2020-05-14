@@ -17,15 +17,6 @@
 (defstruct (test (:type vector) :named) (paths nil))
 (defstruct (skip (:type vector) :named) next)
 
-;; note: if we used actual specializers, this could just be eq.
-(defun specializer= (s1 s2)
-  (if (safe-eql-specializer-p s1)
-      (and (safe-eql-specializer-p s2)
-           (eql (safe-eql-specializer-object s1)
-                (safe-eql-specializer-object s2)))
-      ;; for classes:
-      (eq s1 s2)))
-
 ;;; Make a new subtree with only one path, starting with the ith specializer.
 (defun remaining-subtree (specializers outcome sprofile speclength i)
   (cond ((= i speclength) outcome)
@@ -51,8 +42,7 @@
        (add-entry (skip-next node) specializers outcome sprofile speclength (1+ i)))
       ((test-p node)
        (let* ((spec (svref specializers i))
-              (pair (assoc spec (test-paths node)
-                           :test #'specializer=)))
+              (pair (assoc spec (test-paths node))))
          (if pair
              ;; our entry is so far identical to an existing one;
              ;; continue the search.
