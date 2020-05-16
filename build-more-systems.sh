@@ -20,7 +20,7 @@ fi
 
 if [ "$1" = configure ] && ! [ "${CLASP_BUILD_NO_UPDATES-}" = 1 ] ; then
     if [ "${CLASP_WANT_CANDO}" = 1 ] ; then
-        do_git_tree extensions/cando https://github.com/cando-developers/cando.git "${CANDO_BRANCH_OR_REVISION-dev}"
+        do_git_tree extensions/cando https://github.com/cando-developers/cando.git "${CANDO_BRANCH_OR_REVISION-}"
         if [ "${CLASP_WANT_JUPYTER}" = 1 ] ; then
             get_quicklisp_jupyter
         else
