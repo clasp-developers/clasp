@@ -50,21 +50,23 @@ FORWARD(Rack);
     LISP_CLASS(core,CorePkg,Rack_O,"Rack",core::General_O);
   public:
     gctools::ShiftedStamp     _ShiftedStamp;
+    T_sp _Sig; // A list of slotds, used in change-class.
     typedef core::T_sp value_type;
-    gctools::GCArray_moveable<value_type> _Slots;
+    gctools::GCArray_atomic<value_type> _Slots;
   public:
-    Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
+    Rack_O(size_t length, T_sp sig,
+           value_type initialElement=T_sp(), bool initialElementSupplied=true)
+      : _Sig(sig),
+        _Slots(length,initialElement,initialElementSupplied) {};
 
-    static Rack_sp make(size_t numberOfSlots, T_sp value);
+    static Rack_sp make(size_t numberOfSlots, T_sp sig, value_type value);
     size_t length() const { return this->_Slots.length(); };
-        inline T_sp &operator[](size_t idx) {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
-    inline const T_sp &operator[](size_t idx) const {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
+    inline value_type low_level_rackRef(size_t i) {
+      return _Slots.load(i);
+    }
+    inline void low_level_rackSet(size_t i, value_type value) {
+      _Slots.store(i, value);
+    }
     inline void stamp_set(gctools::ShiftedStamp stamp) {
       ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
       this->_ShiftedStamp = stamp;
@@ -107,21 +109,18 @@ namespace core {
     bool fieldsp() const;
     void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+  Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
-      _Sig(_Unbound<T_O>())
-      ,_Class(metaClass)
-        ,_Rack(_Unbound<Rack_O>())
-      
-//    ,_NumberOfSlots(slots)
+      _Class(metaClass)
+      ,_Rack(_Unbound<Rack_O>())
     {};
     virtual ~Instance_O(){};
   public:
     // The order MUST be:
-    // _Sig
+    // _Spacer (accounts for inherited "entry" slot of FuncallableInstance_O)
     // _Class (matches offset of FuncallableInstance_O)
     // _Rack  (matches offset of FuncallableInstance_O)
-    T_sp _Sig;
+    std::atomic<claspFunction> _Spacer; // not actually used, just takes up space
     Instance_sp _Class;
     Rack_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
@@ -207,7 +206,11 @@ namespace core {
 
     void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
+    // Used by clbind
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots) {
+      initializeSlots(is, _Unbound<T_O>(), numberOfSlots);
+    }
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();
@@ -245,12 +248,16 @@ namespace core {
 
   }; // Instance class
 
-  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+#define OPTIMIZED_SLOT_INDEX_INDEX 1
 
-    template <class RackType_sp>
-    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index]; }
-  template <class RackType_sp>
-    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index] = value; }
+template <class RackType_sp>
+inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) {
+  return rack->low_level_rackRef(index);
+}
+template <class RackType_sp>
+inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) {
+  rack->low_level_rackSet(index, value);
+}
 
 }; // core namespace
 

@@ -198,9 +198,33 @@
                                        tag)
                                  other-specs))))
         finally
-           (return
-             `(core::local-block ,bname
-                (core::local-tagbody
+           (let* ((c++-case
+                    `(case ,stamp
+                       ,@(loop for (tag . keys)
+                                 in (partition c++-specs
+                                               :key #'cdr
+                                               :getter #'car)
+                               collect `((,@keys) (go ,tag)))
+                       (otherwise (go ,default-tag))))
+                  (header-case
+                    (if (null other-specs)
+                        c++-case
+                        `(let ((,stamp
+                                 (core::header-stamp-case ,stamp
+                                   (core::derivable-stamp ,form)
+                                   (core::rack-stamp ,form)
+                                   (core::wrapped-stamp ,form)
+                                   ,c++-case)))
+                           (case ,stamp
+                             ,@(loop for (tag . keys)
+                                       in (partition other-specs
+                                                     :key #'cdr
+                                                     :getter #'car)
+                                     collect `((,@keys) (go ,tag)))
+                             (otherwise (go ,default-tag)))))))
+             (return
+               `(core::local-block ,bname
+                  (core::local-tagbody
                    (case ,form
                      ,@(loop for (tag . objects)
                                in (partition eql-specs :key #'cdr :getter #'car)
@@ -208,32 +232,15 @@
                      (otherwise
                       (cond ,@(loop for (type . tag) in tag-specs
                                      collect `((cleavir-primop:typeq ,form ,type)
-                                              (go ,tag)))
+                                               (go ,tag)))
                             ((cleavir-primop:typeq ,form core:general)
                              (let ((,stamp (core::header-stamp ,form)))
-                               (let ((,stamp
-                                       (core::header-stamp-case ,stamp
-                                         (core::derivable-stamp ,form)
-                                         (core::rack-stamp ,form)
-                                         (core::wrapped-stamp ,form)
-                                         (case ,stamp
-                                           ,@(loop for (tag . keys)
-                                                     in (partition c++-specs
-                                                                   :key #'cdr
-                                                                   :getter #'car)
-                                                   collect `((,@keys) (go ,tag)))
-                                           (otherwise (go ,default-tag))))))
-                                 (case ,stamp
-                                   ,@(loop for (tag . keys)
-                                             in (partition other-specs :key #'cdr
-                                                           :getter #'car)
-                                           collect `((,@keys) (go ,tag)))
-                                   (otherwise (go ,default-tag))))))
+                               ,header-case))
                             (t (go ,default-tag)))))
                    ;; back in the tagbody
                    ,@tbody
                    ,default-tag
-                   (return-from ,bname ,default))))))
+                   (return-from ,bname ,default)))))))
 
 (defmacro speccase (form default &rest clauses)
   (let ((keyg (gensym "KEY")))

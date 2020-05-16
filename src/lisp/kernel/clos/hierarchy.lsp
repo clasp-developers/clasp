@@ -208,7 +208,7 @@
 
   ;; This is for direct-reader-method and direct-writer-method, classes used
   ;; internally to represent when an access method can be done directly
-  ;; (with standard-instance-access, basically) instead of through slot-value.
+  ;; (with standard-location-access, basically) instead of through slot-value.
   ;; These methods are never actually associated with a generic function
   ;; through add-method generic-function-methods etc., though they do have
   ;; the method-generic-function set.

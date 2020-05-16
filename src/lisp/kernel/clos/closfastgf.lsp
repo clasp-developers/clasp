@@ -541,14 +541,16 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (cond
     ((optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
-     (let ((value (standard-instance-access (first arguments) (optimized-slot-reader-index outcome))))
+     (let ((value (standard-location-access
+                   (first arguments) (optimized-slot-reader-index outcome))))
        (if (si:sl-boundp value)
            value
            (values (slot-unbound (optimized-slot-reader-class outcome) (first arguments)
                                  (optimized-slot-reader-slot-name outcome))))))
     ((optimized-slot-writer-p outcome)
      ;; Call is like ((setf name) new-value instance)
-     (setf (standard-instance-access (second arguments) (optimized-slot-writer-index outcome))
+     (setf (standard-location-access
+            (second arguments) (optimized-slot-writer-index outcome))
            (first arguments)))
     ((effective-method-outcome-p outcome)
      (let ((function (effective-method-outcome-function outcome)))

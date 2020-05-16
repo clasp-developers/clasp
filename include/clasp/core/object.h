@@ -524,9 +524,6 @@ namespace core {
 
     virtual T_sp instanceClassSet(Instance_sp mc);
 
-  /*! Allocate space for (slots) slots and initialize them */
-    virtual void initializeSlots(Fixnum stamp, size_t slots);
-
   /*! ECL slot handling, slots are indexed with integers */
     virtual T_sp instanceRef(size_t idx) const;
   /*! ECL slot handling, slots are indexed with integers */

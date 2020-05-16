@@ -180,48 +180,29 @@
 ;;; not deal with that, but we can.
 
 (defun standard-instance-access (instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-ref instance (the fixnum location)))
-        ((consp location)
-         ;; shared slot
-         (car location))
-        (t
-         (invalid-slot-location instance location))))
+  (si:instance-ref instance location))
 
 (defun (setf standard-instance-access) (val instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-set instance (the fixnum location) val))
-        ((consp location)
-         ;; shared slot
-         (setf (car location) val))
-        (t
-         (invalid-slot-location instance location)))
-  val)
+  (si:instance-set instance location val))
 
 ;;; On Clasp, funcallable instances and regular instances store
 ;;; their slots identically, at the moment.
 (defun funcallable-standard-instance-access (instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-ref instance (the fixnum location)))
-        ((consp location)
-         ;; shared slot
-         (car location))
-        (t
-         (invalid-slot-location instance location))))
+  (si:instance-ref instance location))
 
 (defun (setf funcallable-standard-instance-access) (val instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-set instance (the fixnum location) val))
-        ((consp location)
-         ;; shared slot
-         (setf (car location) val))
-        (t
-         (invalid-slot-location instance location)))
-  val)
+  (si:instance-set instance location val))
+
+;;; This works on both class locations (conses) and instance ones.
+(defun standard-location-access (instance location)
+  (if (core:fixnump location)
+      (si:instance-ref instance location)
+      (car location)))
+
+(defun (setf standard-location-access) (val instance location)
+  (if (core:fixnump location)
+      (si:instance-set instance location val)
+      (setf (car location) val)))
 
 (defun slot-value (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -231,7 +212,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(let ((value (standard-instance-access self location)))
+		(let ((value (standard-location-access self location)))
 		  (if (si:sl-boundp value)
 		      value
 		      (values (slot-unbound class self slot-name))))
@@ -263,7 +244,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(si:sl-boundp (standard-instance-access self location))
+		(si:sl-boundp (standard-location-access self location))
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))
 	  (let ((slotd
                   #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
@@ -290,24 +271,15 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-                (setf (standard-instance-access self location) value)
+                (setf (standard-location-access self location) value)
                 (slot-missing class self slot-name 'SETF value)))
 	  (let ((slotd
                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
                  (loop for prospect in (class-slots class)
-                    for prospect-name = (slot-definition-name prospect)
-                    when (eql slot-name prospect-name)
-                    return prospect)))
+                       for prospect-name = (slot-definition-name prospect)
+                       when (eql slot-name prospect-name)
+                         return prospect)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
 		(slot-missing class self slot-name 'SETF value))))))
   value)
-
-
-;;;
-;;; 2) Overloadable methods on which the previous functions are based
-;;;
-
-(defun invalid-slot-location (instance location)
-  (error "Invalid location ~A when accessing slot of class ~A"
-	 location (class-of location)))

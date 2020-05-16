@@ -59,9 +59,10 @@ THE SOFTWARE.
 namespace core {
 
 
-void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
+                                            T_sp sig, size_t numberOfSlots) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -80,8 +81,7 @@ CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t num
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   FuncallableInstance_sp obj = gc::As_unsafe<FuncallableInstance_sp>(creator->creator_allocate());
   obj->_Class = cl;
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), numberOfSlots);
-  obj->_Sig = cl->slots();
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), numberOfSlots);
   return obj;
 }
 
@@ -89,8 +89,8 @@ CL_DEFUN FuncallableInstance_sp core__reallocate_funcallable_instance(Funcallabl
                                                                       Instance_sp new_class,
                                                                       size_t new_size) {
   instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size);
-  instance->_Sig = new_class->slots();
+  instance->initializeSlots(new_class->CLASS_stamp_for_instances(),
+                            new_class->slots(), new_size);
   return instance;
 }
 
@@ -114,14 +114,14 @@ size_t FuncallableInstance_O::numberOfSlots() const {
 T_sp FuncallableInstance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Sig) {
-    ssig << this->_Sig->__repr__();
+  if (this->_Rack->_Sig) {
+    ssig << this->_Rack->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Sig));
+  return ((this->_Rack->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
@@ -140,7 +140,7 @@ T_sp FuncallableInstance_O::instanceRef(size_t idx) const {
   client_validate(this->_Rack);
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), low_level_instanceRef(this->_Rack, idx)->__repr__().c_str());
 #endif
   return low_level_instanceRef(this->_Rack,idx);
 }
@@ -204,7 +204,6 @@ T_sp FuncallableInstance_O::copyInstance() const {
   FuncallableInstance_sp copy = gc::As_unsafe<FuncallableInstance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
-  copy->_Sig = this->_Sig;
   return copy;
 }
 
@@ -254,7 +253,7 @@ void FuncallableInstance_O::describe(T_sp stream) {
   ss << (BF("FuncallableInstance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(1); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -330,7 +329,9 @@ namespace core {
 #define DTREE_OP_EQL 7
 #define DTREE_OP_SLOT_READ 8
 #define DTREE_OP_SLOT_WRITE 9
-#define DTREE_OP_EFFECTIVE_METHOD 10
+#define DTREE_OP_CAR 10
+#define DTREE_OP_RPLACA 11
+#define DTREE_OP_EFFECTIVE_METHOD 12
 
 #define DTREE_FIXNUM_TAG_OFFSET 1
 #define DTREE_SINGLE_FLOAT_TAG_OFFSET 2
@@ -358,7 +359,6 @@ namespace core {
 
 #define DTREE_SLOT_READER_INDEX_OFFSET 1
 #define DTREE_SLOT_READER_SLOT_NAME_OFFSET 2
-#define DTREE_SLOT_READER_CLASS_OFFSET 3
 
 #define DTREE_SLOT_WRITER_INDEX_OFFSET 1
 
@@ -377,6 +377,8 @@ std::string dtree_op_name(int dtree_op) {
     CASE_OP_NAME(DTREE_OP_EQL);
     CASE_OP_NAME(DTREE_OP_SLOT_READ);
     CASE_OP_NAME(DTREE_OP_SLOT_WRITE);
+    CASE_OP_NAME(DTREE_OP_CAR);
+    CASE_OP_NAME(DTREE_OP_RPLACA);
     CASE_OP_NAME(DTREE_OP_EFFECTIVE_METHOD);
   default: return "UNKNOWN_OP";
   };
@@ -519,58 +521,65 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTILOG(BF("reading slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
         T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
-        T_sp class_ = (*program)[ip+DTREE_SLOT_READER_CLASS_OFFSET];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp tinstance = args->next_arg();
-          DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
-          DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          Instance_sp instance((gc::Tagged)tinstance.raw_());
-          DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
-          T_sp value = instance->instanceRef(index);
-          if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          DTILOG(BF("class cell\n"));
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          Instance_sp instance((gc::Tagged)args->next_arg().raw_());
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          T_sp value = oCar(cell);
-          if (value.unboundp())
-            return core::eval::funcall(cl::_sym_slot_unbound,class_,instance,slot_name);
-          return gctools::return_type(value.raw_(),1);
-        }
+        size_t index = location.unsafe_fixnum();
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp tinstance = args->next_arg();
+        DTILOG(BF("tinstance.raw_() -> %p\n") % tinstance.raw_());
+        DTILOG(BF("About to dump args Vaslist AFTER next_arg\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        Instance_sp instance((gc::Tagged)tinstance.raw_());
+        DTILOG(BF("instance %p index %s\n") % instance.raw_() % index);
+        T_sp value = instance->instanceRef(index);
+        if (value.unboundp())
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(tinstance),
+                                     instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
+      }
+    case DTREE_OP_CAR:
+      {
+        DTILOG(BF("class cell\n"));
+        T_sp location = (*program)[ip+DTREE_SLOT_READER_INDEX_OFFSET];
+        T_sp slot_name = (*program)[ip+DTREE_SLOT_READER_SLOT_NAME_OFFSET];
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        Instance_sp instance((gc::Tagged)args->next_arg().raw_());
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        T_sp value = oCar(cell);
+        if (value.unboundp())
+          return core::eval::funcall(cl::_sym_slot_unbound,
+                                     lisp_instance_class(instance),
+                                     instance,slot_name);
+        return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_SLOT_WRITE:
       {
         DTILOG(BF("writing slot: "));
         T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
-        if (location.fixnump()) {
-          size_t index = location.unsafe_fixnum();
-          DTILOG(BF("index %s\n") % index);
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp value((gc::Tagged)args->next_arg().raw_());
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp tinstance = args->next_arg();
-          Instance_sp instance((gc::Tagged)tinstance.raw_());
-          instance->instanceSet(index,value);
-          return gctools::return_type(value.raw_(),1);
-        } else if (location.consp()) {
-          DTILOG(BF("class cell\n"));
-          Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-          DTILOG(BF("About to dump args Vaslist\n"));
-          DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
-          T_sp value((gc::Tagged)args->next_arg().raw_());
-          cell->rplaca(value);
-          return gctools::return_type(value.raw_(),1);
-        }
+        size_t index = location.unsafe_fixnum();
+        DTILOG(BF("index %s\n") % index);
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp value((gc::Tagged)args->next_arg().raw_());
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp tinstance = args->next_arg();
+        Instance_sp instance((gc::Tagged)tinstance.raw_());
+        instance->instanceSet(index,value);
+        return gctools::return_type(value.raw_(),1);
+      }
+    case DTREE_OP_RPLACA:
+      {
+        DTILOG(BF("class cell\n"));
+        T_sp location = (*program)[ip+DTREE_SLOT_WRITER_INDEX_OFFSET];
+        size_t index = location.unsafe_fixnum();
+        Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
+        DTILOG(BF("About to dump args Vaslist\n"));
+        DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
+        T_sp value((gc::Tagged)args->next_arg().raw_());
+        cell->rplaca(value);
+        return gctools::return_type(value.raw_(),1);
       }
     case DTREE_OP_EFFECTIVE_METHOD:
       {

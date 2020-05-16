@@ -25,7 +25,7 @@
   ;; compiler; see cmp/cmpliteral.lsp ALLOCATE-INSTANCE-FORM-P
   (declare (ignore environment))
   (do* ((class (class-of object))
-	(initialization (list 'progn))
+	(initialization (list object 'load-instance))
 	(slots (class-slots class) (cdr slots)))
       ((endp slots)
        (values `(allocate-instance ,class) (nreverse initialization)))
@@ -35,9 +35,16 @@
 		     (eq (slot-definition-allocation slot) :instance))
 		(member slot-name slot-names))
         (when (slot-boundp object slot-name)
-          (push `(setf (slot-value ,object ',slot-name)
-                       ',(slot-value object slot-name))
-                initialization))))))
+          (push slot-name initialization)
+          (push (slot-value object slot-name) initialization))))))
+
+;;; This function basically exists so that cmpliteral can handle
+;;; make-load-form-saving-slots forms without compiling them recursively.
+;;; We used to use a progn of setf slot-values, but that's more complex.
+(defun load-instance (instance &rest slot-names-values)
+  (loop for (name value) on slot-names-values by #'cddr
+        do (setf (slot-value instance name) value))
+  (values))
 
 (defun need-to-make-load-form-p (object env)
   "Return T if the object cannot be externalized using the lisp

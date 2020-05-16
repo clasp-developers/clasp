@@ -53,9 +53,9 @@ THE SOFTWARE.
 
 namespace core {
 
-Rack_sp Rack_O::make(size_t numSlots, T_sp initialValue )
+Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
 {
-  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,initialValue,true);
+  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,sig,initialValue,true);
   return bs;
 }
 
@@ -81,9 +81,10 @@ CL_DEFUN T_sp core__copy_instance(T_sp obj) {
   SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
 };
 
-void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
+                                 size_t numberOfSlots) {
   ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
@@ -164,22 +165,21 @@ CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   obj->_Class = cl;
   /* Unlike other slots, the stamp must be initialized in the allocator,
    * as it's required for dispatch. */
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), slot_count);
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
 #ifdef DEBUG_COUNT_ALLOCATIONS
   gctools::count_allocation(cl->CLASS_stamp_for_instances());
 #endif
-  obj->_Sig = cl->slots();
   return obj;
 }
 
 // Give an instance a new class and rack. Used by change-class.
 CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp new_class, size_t new_size) {
   instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size); // set the rack
+  instance->initializeSlots(new_class->CLASS_stamp_for_instances(),
+                            new_class->slots(), new_size); // set the rack
 #ifdef DEBUG_COUNT_ALLOCATIONS
   gctools::count_allocation(new_class->CLASS_stamp_for_instances());
 #endif
-  instance->_Sig = new_class->slots();
   return instance;
 }
 
@@ -220,24 +220,23 @@ size_t Instance_O::numberOfSlots() const {
 
 
 T_sp Instance_O::instanceSigSet() {
-  T_sp classSlots(_Nil<T_O>());
   Instance_sp mc = this->_instanceClass();
-  classSlots = mc->slots();
-  this->_Sig = classSlots;
+  T_sp classSlots = mc->slots();
+  this->_Rack->_Sig = classSlots;
   return ((classSlots));
 }
 
 T_sp Instance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Sig) {
-    ssig << this->_Sig->__repr__();
+  if (this->_Rack->_Sig) {
+    ssig << this->_Rack->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Sig));
+  return ((this->_Rack->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
@@ -265,14 +264,12 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 #endif
   return val;
 
-//  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
   low_level_instanceSet(this->_Rack,idx,val);
-  // (*this->_Rack)[idx+RACK_SLOT_START] = val;
 #ifdef DEBUG_GUARD_VALIDATE
   client_validate(this->_Rack);
 #endif
@@ -294,7 +291,7 @@ string Instance_O::__repr__() const {
     //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
-      T_sp obj = this->_Rack[i];
+      T_sp obj = low_level_instanceRef(this->_Rack, i);
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
@@ -328,7 +325,6 @@ T_sp Instance_O::copyInstance() const {
   Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
   copy->_Rack = this->_Rack;
-  copy->_Sig = this->_Sig;
   return copy;
 }
 
@@ -346,7 +342,9 @@ bool Instance_O::equalp(T_sp obj) const {
     if (this->_Class != iobj->_Class) return false;
     if (this->stamp() != iobj->stamp()) return false;
     for (size_t i(0), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-      if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
+      if (!cl__equalp(low_level_instanceRef(this->_Rack, i),
+                      low_level_instanceRef(iobj->_Rack, i)))
+        return false;
     }
     return true;
   }
@@ -372,7 +370,7 @@ void Instance_O::describe(T_sp stream) {
   ss << (BF("Instance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
   for (int i(0); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -395,12 +393,14 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
   gctools::ShiftedStamp class_stamp = 0;
+  T_sp sig = _Unbound<T_O>();
   if (!metaClass.unboundp()) {
     class_stamp = metaClass->CLASS_stamp_for_instances();
+    sig = metaClass->slots();
     ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(class_stamp));
   }
   // class_stamp may be 0 if metaClass.unboundp();
-  oclass->initializeSlots(class_stamp,number_of_slots);
+  oclass->initializeSlots(class_stamp,sig,number_of_slots);
   oclass->initializeClassSlots(creator,stamp);
   return oclass;
 };
@@ -734,7 +734,7 @@ CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
 
 CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
 {
-  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O)") % instance_size % sizeof(Instance_O));
+  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O) %lu") % instance_size % sizeof(Instance_O));
   if (instance_rack_offset!=offsetof(Instance_O,_Rack))
     SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
 }

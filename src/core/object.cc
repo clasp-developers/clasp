@@ -480,10 +480,6 @@ string General_O::description() const {
   return ss.str();
 };
 
-void General_O::initializeSlots(Fixnum stamp, size_t slots) {
-  SIMPLE_ERROR(BF("T_O::initializeSlots invoked - subclass must implement"));
-};
-
 T_sp General_O::instanceRef(size_t idx) const {
   SIMPLE_ERROR(BF("T_O::instanceRef(%d) invoked on object class[%s] val-->%s") % idx % this->_instanceClass()->_classNameAsString() % this->__repr__());
 }
