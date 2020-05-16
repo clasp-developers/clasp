@@ -35,8 +35,8 @@
 		     (eq (slot-definition-allocation slot) :instance))
 		(member slot-name slot-names))
         (when (slot-boundp object slot-name)
-          (push slot-name initialization)
-          (push (slot-value object slot-name) initialization))))))
+          (push `',slot-name initialization)
+          (push `',(slot-value object slot-name) initialization))))))
 
 ;;; This function basically exists so that cmpliteral can handle
 ;;; make-load-form-saving-slots forms without compiling them recursively.
