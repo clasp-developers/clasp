@@ -1,7 +1,7 @@
 #ifndef CLASP_CXX_INTEROP_H
 #define CLASP_CXX_INTEROP_H
 
-#include <clasp/core/foundation.h>
+#include <clasp/core/core.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
@@ -24,5 +24,10 @@ struct clasp_register_startup {
 };
 
 #define CLASP_REGISTER_STARTUP(fn) static clasp_register_startup dummy(fn);;
+
+#define CLASP_REGISTER_NAMED_STARTUP(named_fn,fn) \
+  extern "C" void named_fn() { \
+    fn(); \
+  }
 
 #endif

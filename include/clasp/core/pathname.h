@@ -115,8 +115,8 @@ public:
 public:
   /*! Returns either a Pathname_sp or LogicalPathname_sp depending on host */
   static Pathname_sp makePathname(T_sp host, T_sp device, T_sp directory,
-                                  T_sp name, T_sp type, T_sp version,
-                                  T_sp fromcase, bool logical = false);
+                                  T_sp name, T_sp type, T_sp version=_Nil<core::T_O>(),
+                                  T_sp fromcase=kw::_sym_local, bool logical = false);
 
 public:
   static Pathname_sp tilde_expand(Pathname_sp pathname);

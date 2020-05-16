@@ -410,7 +410,7 @@ namespace core {
 
 /*! Class registration code - each registered class gets a unique number associated with it */
 
-#include <boost/operators.hpp>
+//#include <boost/operators.hpp>
 
 namespace gctools {
 /*! Inheriting from this class indicates that the derived class
@@ -426,51 +426,63 @@ class StackBoundClass {};
 class GCIgnoreClass {};
 };
 
-namespace reg {
+namespace reg
+{
 
-  struct null_type : public gctools::GCIgnoreClass {};
-  class_id const unknown_class = (std::numeric_limits<class_id>::max)();
-  class type_id
-    : public boost::less_than_comparable<type_id> {
-  public:
+struct null_type : public gctools::GCIgnoreClass {};
+class_id const unknown_class = (std::numeric_limits<class_id>::max)();
+class type_id {
+public:
   type_id()
     : id(&typeid(null_type)) {}
 
   type_id(std::type_info const &id)
     : id(&id) {}
 
-    bool operator!=(type_id const &other) const {
-      return *id != *other.id;
-    }
+  bool operator!=(type_id const &other) const {
+    return *id != *other.id;
+  }
 
-    bool operator==(type_id const &other) const {
-        return *id == *other.id;
-    }
+  bool operator==(type_id const &other) const {
+    return *id == *other.id;
+  }
 
-    bool operator<(type_id const &other) const {
-      return id->before(*other.id);
-    }
+  bool operator<(type_id const &other) const {
+    return id->before(*other.id);
+  }
 
-    char const *name() const {
-      return id->name();
-    }
+  bool operator<=(type_id const& other) const {
+    return id->before(*other.id)||(*id == *other.id);
+  }
+    
+  bool operator>=(type_id const& other) const {
+    return !id->before(*other.id);
+  }
 
-    std::type_info const *get_type_info() const { return this->id; };
+  bool operator>(type_id const& other) const {
+    return (*id!=*other.id)&&!id->before(*other.id);
+  }
 
-  private:
-    std::type_info const *id;
-    };
+  char const *name() const {
+    return id->name();
+  }
 
-  class_id allocate_class_id(type_id const &cls);
-  template <class T>
-    struct registered_class {
-      static class_id const id;
-    };
-  template <class T>
-    class_id const registered_class<T>::id = allocate_class_id(typeid(T));
-  template <class T>
-    struct registered_class<T const>
-    : registered_class<T> {};
+  std::type_info const *get_type_info() const { return this->id; };
+
+private:
+  std::type_info const *id;
+};
+
+class_id allocate_class_id(type_id const &cls);
+template <class T>
+struct registered_class {
+  static class_id const id;
+};
+template <class T>
+class_id const registered_class<T>::id = allocate_class_id(typeid(T));
+template <class T>
+struct registered_class<T const>
+  : registered_class<T> {};
 };
 
 /*! This function is provided by the main.cc file */

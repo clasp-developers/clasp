@@ -3180,14 +3180,27 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
 }
 
 
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
     printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     finalizeEngineAndTime(engine);
-    engine->runStaticConstructorsDestructors(false);
+    if (gc::IsA<core::String_sp>(startup_name)) {
+      core::String_sp str = gc::As_unsafe<core::String_sp>(startup_name);
+      std::string sstr = str->get_std_string();
+      llvm::StringRef strref = sstr;
+      void* fn = engine->getPointerToNamedFunction(strref);
+      typedef void (*fptr)();
+      fptr ffn = (fptr)fn;
+      printf("%s:%d About to run function %s at %p\n", __FILE__, __LINE__, sstr.c_str(), fn);
+      ffn();
+    } else if (startup_name.nilp()) {
+      engine->runStaticConstructorsDestructors(false);
+    } else {
+      SIMPLE_ERROR(BF("Only NIL or a function name are allowed as the startup_name - you provided %s") % _rep_(startup_name));
+    }
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke(NULL);
     } else {

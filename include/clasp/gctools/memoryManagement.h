@@ -82,9 +82,9 @@ extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 };
 
-#define STAMP_MTAG   BOOST_BINARY(00)
-#define INVALID_MTAG        BOOST_BINARY(01)
-#define FWD_MTAG            BOOST_BINARY(10)
+#define STAMP_MTAG   0b00
+#define INVALID_MTAG        0b01
+#define FWD_MTAG            0b10
 #define STAMP_SHIFT  2
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<STAMP_SHIFT)|STAMP_MTAG)
 // ADJUST_STAMP values are left unshifted
@@ -308,31 +308,31 @@ namespace gctools {
 
   class Header_s {
   public:
-    static const tagged_stamp_t mtag_mask      =  BOOST_BINARY(0011);
+    static const tagged_stamp_t mtag_mask      =  0b0011;
       static const size_t mtag_width = 2;
-    static const tagged_stamp_t where_mask     =  BOOST_BINARY(1100);
+    static const tagged_stamp_t where_mask     =  0b1100;
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
     static const tagged_stamp_t where_tag_width=  4; 
     // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
-    static const tagged_stamp_t derivable_wtag =  BOOST_BINARY(0000);
-    static const tagged_stamp_t rack_wtag      =  BOOST_BINARY(0100);
-    static const tagged_stamp_t wrapped_wtag   =  BOOST_BINARY(1000);
-    static const tagged_stamp_t header_wtag    =  BOOST_BINARY(1100);
-    static const tagged_stamp_t max_wtag       =  BOOST_BINARY(1100);
+    static const tagged_stamp_t derivable_wtag =  0b0000;
+    static const tagged_stamp_t rack_wtag      =  0b0100;
+    static const tagged_stamp_t wrapped_wtag   =  0b1000;
+    static const tagged_stamp_t header_wtag    =  0b1100;
+    static const tagged_stamp_t max_wtag       =  0b1100;
     static const tagged_stamp_t wtag_width     = 2;
     
     static const tagged_stamp_t invalid_tag=  INVALID_MTAG; // indicates not header
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
     static const tagged_stamp_t stamp_tag  =  STAMP_MTAG;
     static const tagged_stamp_t fwd_tag    =  FWD_MTAG;
-    static const tagged_stamp_t pad_mask   = BOOST_BINARY(111);
-    static const tagged_stamp_t pad_test   = BOOST_BINARY(011);
+    static const tagged_stamp_t pad_mask   = 0b111;
+    static const tagged_stamp_t pad_test   = 0b011;
     static const int pad_shift = 3; // 3 bits for pad tag
-    static const tagged_stamp_t pad_tag    = BOOST_BINARY(011);
-    static const tagged_stamp_t pad1_tag   = BOOST_BINARY(111);
+    static const tagged_stamp_t pad_tag    = 0b011;
+    static const tagged_stamp_t pad1_tag   = 0b111;
     static const tagged_stamp_t fwd_ptr_mask = ~mtag_mask;
-    static const tagged_stamp_t stamp_mask    = ~mtag_mask; // BOOST_BINARY(11...11111111111100);
+    static const tagged_stamp_t stamp_mask    = ~mtag_mask; // 0b11...11111111111100;
     static const int stamp_shift = STAMP_SHIFT;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:

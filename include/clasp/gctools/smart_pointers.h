@@ -37,8 +37,6 @@
 #ifndef _core_smart_pointers_H
 #define _core_smart_pointers_H
 
-#include <boost/utility/binary.hpp>
-
 #include <iostream>
 #include <cstring>
 

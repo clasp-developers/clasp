@@ -38,7 +38,7 @@
 #ifndef _core__pointer_tagging_H
 #define _core__pointer_tagging_H
 
-#include <boost/utility/binary.hpp>
+//#include <boost/utility/binary.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -174,7 +174,7 @@ namespace gctools {
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
-  static const uintptr_t ptag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
+  static const uintptr_t ptag_mask    = ZERO_TAG_MASK; // 0b111;
   static const uintptr_t fixnum0_tag  = FIXNUM0_TAG; // x00 means fixnum
   static const uintptr_t fixnum1_tag  = FIXNUM1_TAG; // x100 means fixnum odd
   static const uintptr_t fixnum_mask =  FIXNUM_MASK;
@@ -190,7 +190,7 @@ for a CONS cell*/
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
-  static const uintptr_t gc_tag = ZERO_TAG_MASK; //BOOST_BINARY(111);
+  static const uintptr_t gc_tag = ZERO_TAG_MASK; //0b111;
 
 /*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to
 iterate over variable numbers of arguments passed to functions.
