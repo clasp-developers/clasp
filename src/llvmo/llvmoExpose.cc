@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
+#include <iomanip>
 #include <clasp/core/foundation.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
