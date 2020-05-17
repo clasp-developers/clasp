@@ -160,8 +160,11 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& 
   } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
     FILE *f = iostr->file();
     ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
+  } else if (core::SynonymStream_sp sstr = stream.asOrNull<core::SynonymStream_O>()) {
+    core::Symbol_sp sym = sstr->_SynonymSymbol;
+    return llvm_stream(sym->symbolValue(),stringOutput,stringOutputStream);
   } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
+    SIMPLE_ERROR(BF("Illegal file type %s for llvm_stream") % _rep_(stream));
   }
   return ostreamP;
 }
@@ -358,6 +361,8 @@ CL_DEFMETHOD void JITDylib_O::dump(core::T_sp stream) {
   this->wrappedPtr()->dump(*ostreamP);
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     sos->fill(stringOutput.c_str());
+  } else {
+    core::clasp_write_string(stringOutput.c_str(),stream);
   }
 };
 
@@ -4095,11 +4100,11 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData) {
   // Stuff to support MCJIT
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction replName-> %s\n") % replName);
+    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n") % startupName);
   }
 #endif
   // As of May 2019 we use a static ctor to register the startup function
@@ -4154,6 +4159,46 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
 #endif  
   return functoid;
 }
+
+
+
+CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp dylib, const string& cxxName) {
+#if 0
+  // Run the static constructors
+  // The static constructor should call the startup function
+  //  but ORC doesn't seem to do this as of llvm9
+  //    So use the code below
+  llvm::ExitOnError ExitOnErr;
+  ExitOnErr(jit->_Jit->runConstructors());
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
+  if (core::startup_functions_are_waiting()) {
+    core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
+    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
+    functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
+                                                              lisp_funcPtr,
+                                                              kw::_sym_function,
+                                                              _Nil<core::T_O>(),
+                                                              _Nil<core::T_O>() );
+  } else {
+    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
+    abort();
+  }
+#else
+  // So the cxxName is of an external linkage function that is
+  // always unique 
+  core::Pointer_sp startupPtr;
+  void* ptr;
+  bool found = jit->do_lookup(*dylib->wrappedPtr(),cxxName,ptr);
+  if (!found) {
+    SIMPLE_ERROR(BF("Could not find function %s") % cxxName );
+  }
+  voidStartUp startup = reinterpret_cast<voidStartUp>(ptr);
+//    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
+  startup();
+#endif  
+}
+
+
 };
 
 
@@ -4294,7 +4339,6 @@ ClaspJIT_O::~ClaspJIT_O()
 }
 
 bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr) {
-//  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
 #if defined(_TARGET_OS_DARWIN)
@@ -4308,11 +4352,13 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
 #error You need to decide here
 #endif
-
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true}}),
-                                                                     this->ES->intern(mangledName));   
+//  printf("%s:%d:%s mangledName = %s\n", __FILE__, __LINE__, __FUNCTION__, mangledName.c_str());
+  JITDylib& mainDylib = this->ES->getMainJITDylib();
+  llvm::orc::SymbolStringPtr ssptr = this->ES->intern(mangledName);
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true},{&mainDylib,true}}),ssptr);
   if (!symbol) {
-      return false;
+    printf("%s:%d could not find symbol\n", __FILE__, __LINE__ );
+    return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
   ptr = (void*)symbol->getAddress();
@@ -4350,10 +4396,11 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
     
 
 
-CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
+CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->CompileLayer->add(this->ES->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  JITDylib& jdl = *dylib->wrappedPtr();
+  ExitOnErr(this->CompileLayer->add(jdl,llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
 

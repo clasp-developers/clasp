@@ -4657,7 +4657,7 @@ class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
 public:
-  void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
+  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);

@@ -110,6 +110,8 @@ LLVMContext_sp getLLVMContext()
 
 void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
 {
+  SIMPLE_ERROR(BF("Deprecated"));
+#if 0
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(module);
   engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
   TargetOptions_sp targetOptions = TargetOptions_O::make();
@@ -119,11 +121,13 @@ void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
     SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
   }
   finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,startup_name);
+#endif
 }
   
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
+  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -144,6 +148,7 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
+  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -165,6 +170,7 @@ CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loade
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
+  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   loadModule(m,startup_name);
   return true;
