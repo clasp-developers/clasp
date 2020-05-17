@@ -211,3 +211,9 @@
       (block nil
         (mp:with-lock (lock)
           (apply (lambda (id) (return id)) (list 4)))))))
+
+(test flet-lambda-error
+      (functionp (lambda ()
+        (flet ((foo () 23))
+          (lambda (&key (a #'foo))
+            a)))))
