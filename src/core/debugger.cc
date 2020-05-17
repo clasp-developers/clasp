@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <csignal>
 #include <execinfo.h>
 #include <dlfcn.h>
+#include <iomanip>
 #include <clasp/core/foundation.h>
 #ifdef USE_LIBUNWIND
 #include <libunwind.h>

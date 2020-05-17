@@ -36,3 +36,39 @@
       (eq 'bar
           (let ((obj (make-instance 'slot-missing-class-01)))
             (setf (slot-value obj 'foo) 'bar))))
+
+(defstruct foo-make-load-form-saving-slots a b c)
+
+(test make-load-form-saving-slots-defstruct
+      (let ((object (make-foo-make-load-form-saving-slots :a 'foo :b '(1 2) :c 23)))
+        (multiple-value-bind
+              (form-allocation form-initialisation)
+            (make-load-form-saving-slots object)
+          (let ((new-object (eval form-allocation)))
+            (eval (subst new-object object form-initialisation))
+            (eq (class-of object) (class-of new-object))))))
+
+(defclass foo-make-load-form-saving-slots-class ()((a :initform :a)))
+
+(test make-load-form-saving-slots-class
+      (let ((object (make-instance 'foo-make-load-form-saving-slots-class)))
+        (multiple-value-bind
+              (form-allocation form-initialisation)
+            (make-load-form-saving-slots object)
+          (let ((new-object (eval form-allocation)))
+            (eval (subst new-object object form-initialisation))
+            (eq (class-of object) (class-of new-object))))))
+            
+(test-expect-error
+ defclass-error-options-1
+ (eval '(defclass erroneous-class.13 ()
+         (a b c)
+         (#.(gensym))))
+ :type program-error)
+
+(test-expect-error
+ defclass-error-options-2
+ (eval '(defclass erroneous-class.13 ()
+         (a b c)
+         (:illegal-option nil)))
+ :type program-error)
