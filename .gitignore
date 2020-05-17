@@ -19,6 +19,7 @@ GTAGS
 *.fasl
 *.fasp
 *.faso
+*.ll
 *.dwarf
 *.info
 *.bundle
