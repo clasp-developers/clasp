@@ -476,18 +476,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 
 (defun specializer-key-match (key1 key2)
   (declare (type simple-vector key1 key2))
-  ;; Keys are simple vectors of "specializers" where a "specializer" is either a class, or (cons object nil),
-  ;; this latter representing an eql specializer.
-  ;; We want to compare the former by eq and the latter by eql of the car.
-  (loop for s1 across key1 for s2 across key2
-        always (if (eql-specializer-flag s1) ; eql specializer
-                   (if (eql-specializer-flag s2)
-                       (eql (eql-specializer-object s1)
-                            (eql-specializer-object s2))
-                       ;; one is an eql specializer, the other is a class
-                       nil)
-                   ;; s1 is a class, so s2 must be an eq class
-                   (eq s1 s2))))
+  ;; Specializers can be compared by EQ, and so
+  (equal key1 key2))
 
 (defun call-history-find-key (call-history memoized-key)
   "Return true if the given key is already present in the history, or else nil."
