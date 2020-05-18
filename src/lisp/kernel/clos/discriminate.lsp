@@ -493,11 +493,22 @@
   (with-early-accessors (+standard-generic-function-slots+)
     (generic-function-specializer-profile gf)))
 
+(defun safe-gf-call-history (gf)
+  (with-early-accessors (+standard-generic-function-slots+)
+    (generic-function-call-history gf)))
+
+(defun safe-gf-call-history-cas (gf expected new)
+  #+(or)
+  (format t "~&CAS expected length ~a new length ~a~%"
+          (length expected) (length new))
+  ;; FIXME: Don't rely on location directly like this
+  (core::instance-cas expected new gf 1))
+
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)
       (generic-function-min-max-args generic-function)
     (generate-discriminator-from-data
-     (generic-function-call-history generic-function)
+     (safe-gf-call-history generic-function)
      (safe-gf-specializer-profile generic-function)
      generic-function min max
      :generic-function-name (core:function-name generic-function))))

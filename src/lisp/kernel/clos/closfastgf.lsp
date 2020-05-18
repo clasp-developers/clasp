@@ -136,7 +136,7 @@
     (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) msg)
     (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count gf)
                     (generic-function-name gf))
-       (let* ((call-history (generic-function-call-history gf))
+       (let* ((call-history (safe-gf-call-history gf))
               (specializer-profile (safe-gf-specializer-profile gf)))
          (bformat-indent "    args (num args -> %d):  %N" (length args))
          (let ((arg-index -1))
@@ -148,7 +148,7 @@
            (bformat-indent " raw call-history (length -> %d):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
-         (let* ((call-history (generic-function-call-history gf))
+         (let* ((call-history (safe-gf-call-history gf))
                 (specializer-profile (safe-gf-specializer-profile gf))
                 (index 0))
            (bformat-indent "    call-history (length -> %d):%N" (length call-history))
@@ -401,7 +401,7 @@
 
 (defun outcome
     (generic-function method-combination methods actual-specializers)
-  (or (find-existing-outcome (generic-function-call-history generic-function)
+  (or (find-existing-outcome (safe-gf-call-history generic-function)
                              methods)
       (compute-outcome
        generic-function method-combination methods actual-specializers)))
@@ -430,10 +430,10 @@
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (generic-function-call-history generic-function)
+  (loop for call-history = (safe-gf-call-history generic-function)
      for new-call-history = (update-call-history-for-add-method generic-function call-history method)
-     for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-     until (eq exchange new-call-history)))
+     for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
+     until (eq exchange call-history)))
 
 (defun update-call-history-for-remove-method (generic-function call-history method)
   (let (new-call-history)
@@ -462,16 +462,17 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     AND if that means there are no methods left that apply to the specializers
      then remove the entry from the list.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (generic-function-call-history generic-function)
+  (loop for call-history = (safe-gf-call-history generic-function)
         for new-call-history = (update-call-history-for-remove-method generic-function call-history method)
-        for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-        until (eq exchange new-call-history)))
+        for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
+        until (eq exchange call-history)))
 
+;;; FIXME: Replace with atomic setf
 (defun erase-generic-function-call-history (generic-function)
-  (loop for call-history = (generic-function-call-history generic-function)
+  (loop for call-history = (safe-gf-call-history generic-function)
         for new-call-history = nil
-        for exchange = (generic-function-call-history-compare-exchange generic-function call-history new-call-history)
-        until (eq exchange new-call-history)))
+        for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
+        until (eq exchange call-history)))
 
 (defun specializer-key-match (key1 key2)
   (declare (type simple-vector key1 key2))
@@ -504,7 +505,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (unless (= (length memoized-key) (length specializer-profile))
         (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
                memoized-key specializer-profile generic-function))
-      (loop for call-history = (generic-function-call-history generic-function)
+      (loop for call-history = (safe-gf-call-history generic-function)
             for found-key = (call-history-find-key call-history memoized-key)
             for new-call-history = (if found-key
                                        (progn
@@ -514,7 +515,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                        (progn
                                          (gf-log "Pushing entry into call history%N")
                                          (cons new-entry call-history)))
-            for exchanged = (generic-function-call-history-compare-exchange
+            for exchanged = (safe-gf-call-history-cas
                              generic-function call-history new-call-history)
             do (progn
                  #+debug-fastgf
@@ -525,7 +526,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                      (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
             when exchanged
               do (gf-log "Successfully exchanged call history%N")
-            until (eq exchanged new-call-history))
+            until (eq exchanged call-history))
       (loop for idx from 0 below (length memoized-key)
             for specializer = (svref memoized-key idx)
             unless (consp specializer)    ; eql specializer
@@ -700,7 +701,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defvar *fastgf-force-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
-  (if (generic-function-call-history generic-function)
+  (if (safe-gf-call-history generic-function)
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
              (if (or *fastgf-force-compiler* compile)
@@ -758,7 +759,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
               (core:low-level-standard-generic-function-name generic-function))
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
   (gf-log "Specializer profile is %s%N" (safe-gf-specializer-profile generic-function))
-  (if (generic-function-call-history generic-function)
+  (if (safe-gf-call-history generic-function)
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
@@ -785,14 +786,14 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 #+(or)
 (defun call-history-after-method-with-specializers-change (gf method-specializers)
-  (loop for entry in (generic-function-call-history gf)
+  (loop for entry in (safe-gf-call-history gf)
      unless (call-history-entry-involves-method-with-specializers entry method-specializers)
        collect entry))
 
 #+(or)
 (defun call-history-after-class-change (gf class)
 ;;;  (format t "call-history-after-class-change  start: gf->~a  call-history ->~a~%" gf (clos::generic-function-cal-history gf))
-  (loop for entry in (generic-function-call-history gf)
+  (loop for entry in (safe-gf-call-history gf)
      unless (loop for subclass in (subclasses* class)
                thereis (call-history-entry-key-contains-specializer (car entry) subclass))
      collect entry))
@@ -864,10 +865,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                (gf-log "generic function: %s%N" (clos:generic-function-name gf))
                (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N" (clos:get-funcallable-instance-function gf))
                (gf-log "   NOT  editing call history and invalidating dispatch function due to metastability issues%N")
-               (loop for call-history = (generic-function-call-history gf)
+               (loop for call-history = (safe-gf-call-history gf)
                      for new-call-history = (generic-function-call-history-separate-entries-with-specializers gf call-history all-subclasses)
-                     for exchange = (generic-function-call-history-compare-exchange gf call-history new-call-history)
-                     until (eq exchange new-call-history)
+                     for exchange = (safe-gf-call-history-cas gf call-history new-call-history)
+                     until (eq exchange call-history)
                      do (setf edited-call-history exchange))
                (gf-log "    edited call history%N")
                (gf-log "%s%N" edited-call-history)

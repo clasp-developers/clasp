@@ -25,7 +25,7 @@
 ;;; Add a portion of call history into a gf's existing call history.
 ;;; If any entry to be added duplicates an existing entry, the new entry prevails.
 (defun append-generic-function-call-history (generic-function new-entries)
-  (loop for call-history = (generic-function-call-history generic-function)
+  (loop for call-history = (safe-gf-call-history generic-function)
         ;; By keeping the new entry, remove-if will return immediately in the
         ;; usual case that the existing history is empty.
         for cleaned-call-history = (remove-if (lambda (entry)
@@ -33,9 +33,9 @@
                                                  new-entries (car entry)))
                                               call-history)
         for new-history = (append new-entries cleaned-call-history)
-        for exchange = (generic-function-call-history-compare-exchange
+        for exchange = (safe-gf-call-history-cas
                         generic-function call-history new-history)
-        until (eq exchange new-history)))
+        until (eq exchange call-history)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -43,9 +43,6 @@
 
 ;;; Satiation should occur before any generic function calls are performed, and
 ;;; involve no generic function calls.
-
-;;; Note that the accessors for call-history and specializer-profile are not accessors,
-;;; they are C++ functions. So they're okay to use without early-accessors.
 
 ;;; effective-slot-from-accessor-method, but without gfs
 (defun early-effective-slot-from-accessor-method (method class)

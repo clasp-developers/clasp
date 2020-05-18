@@ -140,6 +140,8 @@
       ;; specializers) the element is T.
       (specializer-profile :initform nil
                            :accessor generic-function-specializer-profile)
+      (call-history :initform nil :accessor generic-function-call-history
+                    :location 1)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
