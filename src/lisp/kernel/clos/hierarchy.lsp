@@ -140,6 +140,10 @@
       ;; specializers) the element is T.
       (specializer-profile :initform nil
                            :accessor generic-function-specializer-profile)
+      ;; An alist of (specializer-key . outcome) representing previously
+      ;; seen calls to this function. A specializer-key is a vector of
+      ;; the direct specializers of the required arguments in the call,
+      ;; and an outcome is as in outcome.lsp.
       (call-history :initform nil :accessor generic-function-call-history)
       (method-combination
        :initarg :method-combination
