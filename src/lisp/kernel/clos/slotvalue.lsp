@@ -37,6 +37,7 @@
   (declare (ignore class))
   (si:sl-boundp (standard-location-access self (slot-definition-location slotd))))
 
+;;; FIXME: argument precedence of class self slotd val would be preferred.
 (defmethod (setf slot-value-using-class) (val (class std-class) self slotd)
   (declare (ignore class))
   (setf (standard-location-access self (slot-definition-location slotd)) val))
@@ -45,6 +46,27 @@
   (declare (ignore class))
   (setf (standard-location-access instance (slot-definition-location slotd)) (si:unbound))
   instance)
+
+;;; FIXME: argument precedence of class object slotd old new would be preferred.
+;;; FIXME: (cas slot-value-using-class) would be a better name.
+#+threads
+(defmethod cas-slot-value-using-class
+    (old new (class std-class) object
+     (slotd standard-effective-slot-definition))
+  (let ((loc (slot-definition-location slotd)))
+    (ecase (slot-definition-allocation slotd)
+      ((:instance) (core::instance-cas old new object loc))
+      ((:class) (core::cas-car old new object loc)))))
+
+#+threads
+(mp::define-simple-cas-expander clos:slot-value-using-class
+  cas-slot-value-using-class
+  (class instance slotd)
+  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can
+have allocation :class.
+Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
+(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
+In the future, this may be customizable with a generic function.")
 
 ;;;
 ;;; 3) Error messages related to slot access

@@ -185,6 +185,15 @@
 (defun (setf standard-instance-access) (val instance location)
   (si:instance-set instance location val))
 
+#+threads
+(mp::define-simple-cas-expander clos:standard-instance-access core::instance-cas
+  (instance location)
+  "The requirements of the normal STANDARD-INSTANCE-ACCESS writer
+must be met, including that the slot has allocation :instance, and is
+bound before the operation.
+If there is a CHANGE-CLASS concurrent with this operation the
+consequences are not defined.")
+
 ;;; On Clasp, funcallable instances and regular instances store
 ;;; their slots identically, at the moment.
 (defun funcallable-standard-instance-access (instance location)
@@ -283,3 +292,29 @@
 		(setf (slot-value-using-class class self slotd) value)
 		(slot-missing class self slot-name 'SETF value))))))
   value)
+
+;;; FIXME: (cas slot-value) would be a better name.
+#+threads
+(defun cas-slot-value (old new object slot-name)
+  (let* ((class (class-of object))
+         (location-table (class-location-table class)))
+    (if location-table
+        (let ((location (gethash slot-name location-table)))
+          (if location
+              (core::instance-cas object location old new)
+              (slot-missing class object slot-name
+                            'cas (list old new))))
+        (let ((slotd (find slot-name (clos:class-slots class)
+                           :key #'clos:slot-definition-name)))
+          (if slotd
+              (cas (clos:slot-value-using-class class object slotd)
+                   old new)
+              (slot-missing class object slot-name
+                            'cas (list old new)))))))
+
+#+threads
+(mp::define-simple-cas-expander slot-value cas-slot-value (object slot-name)
+  "See SLOT-VALUE-USING-CLASS documentation for constraints.
+If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
+with operation = mp:cas, and new-value a list of OLD and NEW.
+If SLOT-MISSING returns, its primary value is returned.")

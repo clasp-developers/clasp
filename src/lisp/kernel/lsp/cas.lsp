@@ -139,21 +139,6 @@ Docstrings are accessible with doc-type MP:CAS."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Documentation support
-;;;
-
-(defmethod documentation ((object symbol) (doc-type (eql 'cas)))
-  (let ((exp (cas-expander object)))
-    (when exp (documentation exp t))))
-
-(defmethod (setf documentation) (new (object symbol) (doc-type (eql 'cas)))
-  (let ((exp (cas-expander object)))
-    (if exp
-        (setf (documentation exp t) new)
-        new)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Particular CAS expansions
 ;;;
 
@@ -195,64 +180,3 @@ are no bindings (in which case the global, thread-shared value is used.")
             `(core::acas ,vtemp2 ,itemp ,old ,new t t t)
             ;; Two colons is a KLUDGE to allow loading this earlier.
             `(cleavir-primop::aref ,vtemp2 ,itemp t t t))))
-
-(define-simple-cas-expander clos:standard-instance-access core::instance-cas
-  (instance location)
-  "The requirements of the normal STANDARD-INSTANCE-ACCESS writer
-must be met, including that the slot has allocation :instance, and is
-bound before the operation.
-If there is a CHANGE-CLASS concurrent with this operation the
-consequences are not defined.")
-
-;;; FIXME: When practical, these ought to be moved to clos/.
-;;; FIXME: (cas slot-value-using-class) would be a better name
-;;; and make the define-cas-expander unnecessary.
-;;; And we could expose it for customization.
-(defgeneric cas-slot-value-using-class (old new class object slotd)
-  (:argument-precedence-order class object slotd old new))
-
-(defmethod cas-slot-value-using-class
-    (old new
-     (class core:std-class) object
-     (slotd clos:standard-effective-slot-definition))
-  (let ((loc (clos:slot-definition-location slotd)))
-    (ecase (clos:slot-definition-allocation slotd)
-      ((:instance) (core::instance-cas old new object loc))
-      ((:class) (core::cas-car old new object loc)))))
-(defmethod cas-slot-value-using-class
-    (old new (class built-in-class) object slotd)
-  (error "Cannot modify slots of object with built-in-class"))
-
-(define-simple-cas-expander clos:slot-value-using-class
-  cas-slot-value-using-class
-  (class instance slotd)
-  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can
-have allocation :class.
-Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
-(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
-In the future, this may be customizable with a generic function.")
-
-;;; Largely copied from slot-value.
-;;; FIXME: Ditto above comment about CAS functions.
-(defun cas-slot-value (old new object slot-name)
-  (let* ((class (class-of object))
-         (location-table (clos::class-location-table class)))
-    (if location-table
-        (let ((location (gethash slot-name location-table)))
-          (if location
-              (core::instance-cas object location old new)
-              (slot-missing class object slot-name
-                            'cas (list old new))))
-        (let ((slotd (find slot-name (clos:class-slots class)
-                           :key #'clos:slot-definition-name)))
-          (if slotd
-              (cas (clos:slot-value-using-class class object slotd)
-                   old new)
-              (slot-missing class object slot-name
-                            'cas (list old new)))))))
-
-(define-simple-cas-expander slot-value cas-slot-value (object slot-name)
-  "See SLOT-VALUE-USING-CLASS documentation for constraints.
-If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
-with operation = mp:cas, and new-value a list of OLD and NEW.
-If SLOT-MISSING returns, its primary value is returned.")

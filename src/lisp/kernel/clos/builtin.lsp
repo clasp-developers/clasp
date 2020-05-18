@@ -59,6 +59,11 @@
   (declare (ignore class self slotd))
   nil)
 
+#+threads
+(defmethod cas-slot-value-using-class
+    (old new (class built-in-class) object slotd)
+  (error "Cannot modify slots of object with built-in-class"))
+
 ;;; ======================================================================
 ;;; STRUCTURES
 ;;;
