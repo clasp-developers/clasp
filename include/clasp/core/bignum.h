@@ -152,6 +152,7 @@ public: // Functions here
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
+  Number_sp log1_() const;
   Number_sp sqrt_() const;
   Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
@@ -243,8 +244,6 @@ public: // Functions here
 
   virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
   virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
-
-  Number_sp log1() const;
 
 }; // Bignum class
 

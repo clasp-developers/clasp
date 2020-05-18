@@ -1741,10 +1741,64 @@ float Ratio_O::as_float_() const {
   return d;
 }
 
+// translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
+static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *exponent) {
+  /* We have to cook our own routine because GMP does not round. The
+   * recipe is simple: we multiply the numerator by a large enough
+   * number so that the integer length of the division by the
+   * denominator is equal to the number of digits of the mantissa of
+   * the floating point number. The result is scaled back by the
+   * appropriate exponent.
+   */
+  bool negative = false;
+  if (num->minusp_()) {
+    negative = true;
+    num = gc::As<Bignum_sp>(num->negate_());
+  }
+  gc::Fixnum num_digits = clasp_integer_length(num);
+  gc::Fixnum den_digits = clasp_integer_length(den);
+  gc::Fixnum scale = digits+1 - (num_digits - den_digits);
+  /* Scale the numerator in the correct range so that the quotient
+   * truncated to an integer has a length of digits+1 or digits+2. If
+   * scale is negative, we simply shift out unnecessary digits of num,
+   * which don't affect the quotient. */
+  num = gc::As<Bignum_sp>(clasp_ash(num, scale));
+  Integer_sp quotient = clasp_integer_divide(num, den);
+  if (clasp_integer_length(quotient) > digits+1) {
+    /* quotient is too large, shift out an unnecessary digit */
+    scale--;
+    quotient = clasp_ash(quotient, -1);
+  }
+  /* round quotient */
+  if (clasp_oddp(quotient)) {
+    quotient = gc::As<Integer_sp>(clasp_one_plus(quotient));
+  }
+  /* shift out the remaining unnecessary digit of quotient */
+  quotient = clasp_ash(quotient, -1);
+  /* fix the sign */
+  if (negative) {
+    quotient = gc::As<Integer_sp>(clasp_negate(quotient));
+  }
+  *exponent = 1 - scale;
+  return quotient;
+}
+
 double Ratio_O::as_double_() const {
-  double d = clasp_to_double(this->_numerator);
-  d /= clasp_to_double(this->_denominator);
-  return d;
+  if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
+    gc::Fixnum exponent;
+    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &exponent);
+    double output;
+    if (mantissa.fixnump())
+      output = gc::As<Fixnum_sp>(mantissa).unsafe_fixnum();
+    else
+      output = mantissa->as_double_();
+    return ldexp(output, exponent);
+  }
+  else {
+    double d = clasp_to_double(this->_numerator);
+    d /= clasp_to_double(this->_denominator);
+    return d;
+  }
 }
 
 LongFloat Ratio_O::as_long_float_() const {
@@ -2713,13 +2767,15 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   return clasp_make_complex(a, p);
 }
 
-Number_sp Bignum_O::log1() const {
-  if (clasp_minusp(this->asSmartPtr())) {
-    return clasp_log1_complex_inner(this->const_sharedThis<Bignum_O>(), make_fixnum(0));
+Number_sp Bignum_O::log1_() const {
+  Bignum_sp bignum = this->asSmartPtr();
+  if (clasp_minusp(bignum)) {
+    return clasp_log1_complex_inner(bignum, make_fixnum(0));
   } else {
-    Fixnum l = clasp_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
-    Number_sp r = clasp_make_ratio(this->asSmartPtr(), clasp_ash(make_fixnum(1), l));
-    float d = logf(clasp_to_float(r)) + l * logf(2.0);
+    Fixnum length = clasp_integer_length(bignum) - 1;
+    Integer_sp ash = clasp_ash(make_fixnum(1), length);
+    Rational_sp rational = clasp_make_rational(bignum, ash);
+    float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
 }
@@ -2743,7 +2799,7 @@ Number_sp DoubleFloat_O::log1_() const {
 }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::log1() const {
+Number_sp LongFloat_O::log1_() const {
   LongFloat f = this->as_long_float();
   if (std::isnan(f))
     return this->asSmartPtr();
@@ -3302,7 +3358,7 @@ ssize_t clasp_to_ssize( core::T_sp x )
 
   // --- FLOAT ---
 
-float clasp_to_float( core::Number_sp x )
+float clasp_to_float(core::Number_sp x)
 {
   if (x.fixnump())
   {
@@ -3313,25 +3369,6 @@ float clasp_to_float( core::Number_sp x )
     return (float) x.unsafe_single_float();
   }
   return x->as_float_();
-}
-
-
-float clasp_to_float( core::T_sp x )
-{
-  if (x.fixnump()) return (float) x.unsafe_fixnum();
-  else if (x.single_floatp()) return (float) x.unsafe_single_float();
-  else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
-}
-
-float clasp_to_float( core::General_sp x )
-{
-  if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
 }
 
 // --- DOUBLE ---
