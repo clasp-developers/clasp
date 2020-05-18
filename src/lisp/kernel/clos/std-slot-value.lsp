@@ -72,7 +72,8 @@
                           for index from 0
                           for accessor = (or (getf slotd :accessor) (getf slotd :reader))
                           when accessor
-                            collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
+                            collect `(,accessor (object)
+                                       `(standard-instance-access ,object ,,index))))
      ,@body))
 
 ;;;
