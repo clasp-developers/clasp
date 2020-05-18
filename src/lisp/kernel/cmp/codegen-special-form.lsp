@@ -1220,8 +1220,8 @@ jump to blocks within this tagbody."
    old new))
 
 (defun codegen-instance-cas (result rest env)
-  (let ((instance (first rest)) (index (second rest))
-        (old (third rest)) (new (fourth rest))
+  (let ((old (first rest)) (new (second rest))
+        (instance (third rest)) (index (fourth rest))
         (instancet (alloca-t* "instance")) (indext (alloca-t* "index"))
         (oldt (alloca-t* "old")) (newt (alloca-t* "new")))
     (codegen instancet instance env)
