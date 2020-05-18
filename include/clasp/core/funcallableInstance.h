@@ -59,13 +59,11 @@ namespace core {
     Base(funcallable_entry_point)
       , _Class(_Nil<Instance_O>())
       , _FunctionDescription(fdesc)
-//      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
-      ,_FunctionDescription(fdesc)
-//      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
+      , _FunctionDescription(fdesc)
       , _CompiledDispatchFunction(_Nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
@@ -81,8 +79,6 @@ namespace core {
     std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
 
-//    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
-//    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
     T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction.load(); };
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
