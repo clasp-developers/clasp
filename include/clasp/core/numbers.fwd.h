@@ -48,16 +48,12 @@ FORWARD(Bool);
 
    Fixnum clasp_to_fixnum( core::Integer_sp );
    double clasp_to_double( core::Number_sp );
-   float clasp_to_float( core::Number_sp );
    double clasp_to_double( core::T_sp );
    double clasp_to_double( core::General_sp );
    double clasp_to_double( core::Number_sp );
    double clasp_to_double( core::Real_sp );
    double clasp_to_double( core::Integer_sp );
    double clasp_to_double( core::DoubleFloat_sp );
-   float clasp_to_float( core::SingleFloat_sp );
-   float clasp_to_float( core::T_sp );
-   float clasp_to_float( core::General_sp );
    Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
    Fixnum_sp make_fixnum(gc::Fixnum i);
    SingleFloat_sp clasp_make_single_float(float d);
@@ -67,7 +63,7 @@ FORWARD(Bool);
    Integer_sp clasp_make_integer(size_t i);
 
 
-     Fixnum              clasp_to_fixnum( core::T_sp );
+  Fixnum              clasp_to_fixnum( core::T_sp );
   short               clasp_to_short( core::T_sp );
   unsigned short      clasp_to_ushort( core::T_sp );
   int                 clasp_to_int( core::T_sp );
@@ -101,8 +97,6 @@ FORWARD(Bool);
   mpz_class           clasp_to_mpz( core::T_sp );
   cl_index            clasp_to_size( core::T_sp );
 
-  float               clasp_to_float( core::Number_sp );
-  double              clasp_to_double( core::Number_sp );
   LongFloat           clasp_to_long_float( core::Number_sp );
   LongFloat           clasp_to_long_double( core::Number_sp );
 

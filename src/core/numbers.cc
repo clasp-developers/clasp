@@ -2774,7 +2774,7 @@ Number_sp Bignum_O::log1_() const {
   } else {
     Fixnum length = clasp_integer_length(bignum) - 1;
     Integer_sp ash = clasp_ash(make_fixnum(1), length);
-    Number_sp rational = clasp_make_rational(bignum, ash);
+    Rational_sp rational = clasp_make_rational(bignum, ash);
     float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
