@@ -384,10 +384,9 @@ Boehm and MPS use a single pointer"
          %i8*%     ; 1 entry (From Function_O)
          %t*%      ; 2 _Class
          %t*%      ; 3 _Rack
-         %function-description*%   ; 5  FunctionDescription*
-         %atomic<size_t>%          ; 7  _InterpretedCalls
-         %atomic<tsp>%             ; 8  _CallHistory
-         %atomic<tsp>%             ; 10 _CompiledDispatchFunction
+         %function-description*%   ; 4  FunctionDescription*
+         %atomic<size_t>%          ; 5  _InterpretedCalls
+         %atomic<tsp>%             ; 6 _CompiledDispatchFunction
          )
    nil))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))

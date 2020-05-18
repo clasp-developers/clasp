@@ -275,28 +275,9 @@ CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
 
 
 namespace core {
-           
-T_sp FuncallableInstance_O::GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value) {
-#ifdef DEBUG_GFDISPATCH
-  if (_sym_STARdebug_dispatchSTAR->symbolValue().notnilp()) {
-    printf("%s:%d   GFUN_CALL_HISTORY_set gf: %s\n", __FILE__, __LINE__, this->__repr__().c_str());
-    printf("%s:%d                      history: %s\n", __FILE__, __LINE__, _rep_(h).c_str());
-  }
-#endif
-  bool exchanged = this->_CallHistory.compare_exchange_strong(expected,new_value);
-  return exchanged ? new_value : expected;
-}
 
 CL_DEFUN size_t clos__generic_function_interpreted_calls(FuncallableInstance_sp gf) {
   return gf->interpreted_calls();
-}
-
-CL_DEFUN T_sp clos__generic_function_call_history(FuncallableInstance_sp obj) {
-  return obj->GFUN_CALL_HISTORY();
-}
-
-CL_DEFUN T_sp clos__generic_function_call_history_compare_exchange(FuncallableInstance_sp gf, T_sp expected, T_sp new_value) {
-  return gf->GFUN_CALL_HISTORY_compare_exchange(expected,new_value);
 }
 
 CL_DEFUN T_sp clos__generic_function_compiled_dispatch_function(T_sp obj) {

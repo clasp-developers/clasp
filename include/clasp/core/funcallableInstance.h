@@ -59,14 +59,12 @@ namespace core {
     Base(funcallable_entry_point)
       , _Class(_Nil<Instance_O>())
       , _FunctionDescription(fdesc)
-      , _CallHistory(_Nil<T_O>())
 //      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
       ,_FunctionDescription(fdesc)
-      , _CallHistory(_Nil<T_O>())
 //      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
       , _CompiledDispatchFunction(_Nil<T_O>())
     {};
@@ -80,11 +78,8 @@ namespace core {
     Rack_sp _Rack;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>        _InterpretedCalls;
-    std::atomic<T_sp>   _CallHistory;
     std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
-    T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
-    T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);
 
 //    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
 //    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
