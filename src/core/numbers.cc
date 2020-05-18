@@ -1786,7 +1786,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
 double Ratio_O::as_double_() const {
   if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
     gc::Fixnum exponent;
-    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), FLT_MANT_DIG, &exponent);
+    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &exponent);
     double output;
     if (mantissa.fixnump())
       output = gc::As<Fixnum_sp>(mantissa).unsafe_fixnum();
@@ -2767,13 +2767,15 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   return clasp_make_complex(a, p);
 }
 
-Number_sp Bignum_O::log1() const {
-  if (clasp_minusp(this->asSmartPtr())) {
-    return clasp_log1_complex_inner(this->const_sharedThis<Bignum_O>(), make_fixnum(0));
+Number_sp Bignum_O::log1_() const {
+  Bignum_sp bignum = this->asSmartPtr();
+  if (clasp_minusp(bignum)) {
+    return clasp_log1_complex_inner(bignum, make_fixnum(0));
   } else {
-    Fixnum l = clasp_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
-    Number_sp r = clasp_make_ratio(this->asSmartPtr(), clasp_ash(make_fixnum(1), l));
-    float d = logf(clasp_to_float(r)) + l * logf(2.0);
+    Fixnum length = clasp_integer_length(bignum) - 1;
+    Integer_sp ash = clasp_ash(make_fixnum(1), length);
+    Number_sp rational = clasp_make_rational(bignum, ash);
+    float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
 }
@@ -2797,7 +2799,7 @@ Number_sp DoubleFloat_O::log1_() const {
 }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::log1() const {
+Number_sp LongFloat_O::log1_() const {
   LongFloat f = this->as_long_float();
   if (std::isnan(f))
     return this->asSmartPtr();
@@ -3356,7 +3358,7 @@ ssize_t clasp_to_ssize( core::T_sp x )
 
   // --- FLOAT ---
 
-float clasp_to_float( core::Number_sp x )
+float clasp_to_float(core::Number_sp x)
 {
   if (x.fixnump())
   {
@@ -3367,25 +3369,6 @@ float clasp_to_float( core::Number_sp x )
     return (float) x.unsafe_single_float();
   }
   return x->as_float_();
-}
-
-
-float clasp_to_float( core::T_sp x )
-{
-  if (x.fixnump()) return (float) x.unsafe_fixnum();
-  else if (x.single_floatp()) return (float) x.unsafe_single_float();
-  else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
-}
-
-float clasp_to_float( core::General_sp x )
-{
-  if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
 }
 
 // --- DOUBLE ---

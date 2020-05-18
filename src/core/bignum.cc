@@ -359,17 +359,6 @@ Number_sp Bignum_O::abs_() const {
   return ((cp));
 }
 
-Number_sp Bignum_O::log1_() const {
-  if (this->minusp_()) {
-    return clasp_log1_complex_inner(this->asSmartPtr(), clasp_make_fixnum(0));
-  } else {
-    gc::Fixnum l = clasp_integer_length(this->asSmartPtr()) - 1;
-    Ratio_sp r = clasp_make_ratio(this->asSmartPtr(), clasp_ash(clasp_make_fixnum(1), l));
-    float d = logf(r->as_float_()) + l * logf(2.0);
-    return clasp_make_single_float(d);
-  }
-}
-
 bool Bignum_O::eql_(T_sp o) const {
   if (o.fixnump()) {
     return (this->_value == clasp_to_mpz(gc::As<Fixnum_sp>(o)));

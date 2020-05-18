@@ -245,8 +245,6 @@ public: // Functions here
   virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
   virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
 
-  Number_sp log1() const;
-
 }; // Bignum class
 
 }; // core namespace
