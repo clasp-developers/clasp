@@ -498,11 +498,8 @@
     (generic-function-call-history gf)))
 
 (defun safe-gf-call-history-cas (gf expected new)
-  #+(or)
-  (format t "~&CAS expected length ~a new length ~a~%"
-          (length expected) (length new))
-  ;; FIXME: Don't rely on location directly like this
-  (core::instance-cas expected new gf 1))
+  (with-early-accessors (+standard-generic-function-slots+)
+    (mp:cas (generic-function-call-history gf) expected new)))
 
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)
