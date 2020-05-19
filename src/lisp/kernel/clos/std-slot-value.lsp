@@ -312,8 +312,7 @@ consequences are not defined.")
         (let ((slotd (find slot-name (clos:class-slots class)
                            :key #'clos:slot-definition-name)))
           (if slotd
-              (cas (clos:slot-value-using-class class object slotd)
-                   old new)
+              (cas-slot-value-using-class old new class object slotd)
               (slot-missing class object slot-name
                             'cas (list old new)))))))
 
