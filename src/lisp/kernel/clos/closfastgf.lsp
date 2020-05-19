@@ -786,14 +786,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun call-history-entry-key-contains-specializers (key specializers)
   (loop for specializer in specializers
-        do (if (eql-specializer-flag specializer)
-               (loop with object = (eql-specializer-object specializer)
-                     for s in key
-                     when (eql-specializer-flag s)     ; eql specializer
-                       do (when (eql (eql-specializer-object s) object)
-                            (return-from call-history-entry-key-contains-specializers t)))
-               (when (find specializer key :test #'eq)
-                 (return-from call-history-entry-key-contains-specializers t)))))
+        do (when (find specializer key :test #'eq)
+             (return-from call-history-entry-key-contains-specializers t))))
 
 (defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
   (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
@@ -841,29 +835,31 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (gf-log "   subclasses* -> %s%N" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions
-          do (let (edited-call-history)
-               (gf-log "generic function: %s%N" (clos:generic-function-name gf))
-               (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N" (clos:get-funcallable-instance-function gf))
-               (gf-log "   NOT  editing call history and invalidating dispatch function due to metastability issues%N")
-               (loop for call-history = (safe-gf-call-history gf)
-                     for new-call-history = (generic-function-call-history-separate-entries-with-specializers gf call-history all-subclasses)
-                     for exchange = (safe-gf-call-history-cas gf call-history new-call-history)
-                     until (eq exchange call-history)
-                     do (setf edited-call-history exchange))
-               (gf-log "    edited call history%N")
-               (gf-log "%s%N" edited-call-history)
-               (gf-log "Generating a new discriminating function%N")
-               (let (log-output)
-                 #+debug-fastgf(progn
-                                 (if (eq (class-of gf) (find-class 'standard-generic-function))
-                                     (let ((generic-function-name (core:low-level-standard-generic-function-name gf)))
-                                       (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
-                                       (gf-log "Writing dispatcher to %s%N" log-output))
-                                     (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
-                                 (incf-debug-fastgf-didx))
-                 (if edited-call-history
-                     (force-dispatcher gf)
-                     (invalidate-discriminating-function gf)))))))
+          do (gf-log "generic function: %s%N" (clos:generic-function-name gf))
+             (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N"
+                     (clos:get-funcallable-instance-function gf))
+             (loop for call-history = (safe-gf-call-history gf)
+                   for new-call-history
+                     = (generic-function-call-history-separate-entries-with-specializers
+                        gf call-history all-subclasses)
+                   for exchange
+                     = (safe-gf-call-history-cas gf call-history new-call-history)
+                   until (eq exchange call-history)
+                   finally (gf-log "    edited call history%N")
+                           (gf-log "%s%N" new-call-history)
+                           (gf-log "Generating a new discriminating function%N")
+                           (if new-call-history
+                               (force-dispatcher gf)
+                               (invalidate-discriminating-function gf)))
+          #+debug-fastgf
+           (let (log-output)  
+             (progn
+               (if (eq (class-of gf) (find-class 'standard-generic-function))
+                   (let ((generic-function-name (core:low-level-standard-generic-function-name gf)))
+                     (setf log-output (log-cmpgf-filename generic-function-name "func" "ll"))
+                     (gf-log "Writing dispatcher to %s%N" log-output))
+                   (setf log-output (log-cmpgf-filename (generic-function-name gf) "func" "ll")))
+               (incf-debug-fastgf-didx))))))
 
 ;;; This is called by the dtree interpreter when it doesn't get enough arguments,
 ;;; because computing this stuff in C++ would be needlessly annoying.
