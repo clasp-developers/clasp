@@ -469,7 +469,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 (defun specializer-key-match (key1 key2)
   (declare (type simple-vector key1 key2))
   ;; Specializers can be compared by EQ, and so
-  (equal key1 key2))
+  (and (= (length key1) (length key2))
+       (every #'eq key1 key2)))
 
 (defun call-history-find-key (call-history memoized-key)
   "Return true if the given key is already present in the history, or else nil."
