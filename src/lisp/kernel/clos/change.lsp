@@ -45,13 +45,11 @@
                                        :test #'eq)))
                   collect new-slotd-name)))
     (when initargs
-      (check-initargs (class-of new-data) initargs
-                      (valid-keywords-from-methods
-                       (compute-applicable-methods
-                        #'update-instance-for-different-class
-                        (list old-data new-data))
-                       (compute-applicable-methods
-                        #'shared-initialize (list new-data added-slots)))))
+      (check-initargs-uncached
+       (class-of new-data) initargs
+       (list (list #'update-instance-for-different-class
+                   (list old-data new-data))
+             (list #'shared-initialize (list new-data added-slots)))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
 (defmethod change-class ((instance standard-object) (new-class std-class)
@@ -114,14 +112,11 @@
     ((instance standard-object) added-slots discarded-slots property-list
      &rest initargs)
   (declare (dynamic-extent initargs))
-  (check-initargs (class-of instance) initargs
-		  (valid-keywords-from-methods
-                   (compute-applicable-methods
-                    #'update-instance-for-redefined-class
-                    (list instance added-slots discarded-slots property-list))
-                   (compute-applicable-methods
-                    #'shared-initialize
-                    (list instance added-slots))))
+  (check-initargs-uncached
+   (class-of instance) initargs
+   (list (list #'update-instance-for-redefined-class
+               (list instance added-slots discarded-slots property-list))
+         (list #'shared-initialize (list instance added-slots))))
   (apply #'shared-initialize instance added-slots initargs))
 
 (defun update-instance (instance)

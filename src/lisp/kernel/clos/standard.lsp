@@ -27,14 +27,14 @@
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
   (declare (dynamic-extent initargs))
-  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY does not reuse rest lists.
-  ;; If it did, a method on #'shared-initialize, or whatever, could potentially let the rest list escape.
-  (check-initargs (class-of instance) initargs
-		  (valid-keywords-from-methods
-                   (compute-applicable-methods
-                    #'reinitialize-instance (list instance))
-                   (compute-applicable-methods
-                    #'shared-initialize (list instance t))))
+  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
+  ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
+  ;; or whatever, could potentially let the rest list escape.
+  (when initargs
+    (check-initargs-uncached
+     (class-of instance) initargs
+     (list (list #'reinitialize-instance (list instance))
+           (list #'shared-initialize (list instance t)))))
   (apply #'shared-initialize instance '() initargs))
 
 (defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
@@ -686,6 +686,53 @@ because it contains a reference to the undefined class~%  ~A"
 	      ((and methods (member name methods :test #'member :key #'method-keywords)))
 	      (t
 	       (push name unknown-key-names)))))))
+
+(defun check-initargs-uncached (class initargs
+                                &optional calls (slots (class-slots class)))
+  ;; We try to avoid calling compute-applicable-methods since that's work.
+  ;; (In simple tests, avoiding it gave a speedup of 2-3 times.)
+  ;; So we first check if all the initargs correspond to slots. If they do,
+  ;; great. If not we compute-applicable-methods to get more valid keywords.
+  ;; This assumes that the likely case is all the initargs corresponding to
+  ;; slots, but it shouldn't really be any slower if they don't.
+  ;; CALLS is a list of (function arglist). These can be passed directly
+  ;; to compute-applicable-methods.
+  (do* ((name-loc initargs (cddr name-loc))
+        (allow-other-keys nil)
+        (allow-other-keys-found nil)
+        (unknown-key-names nil)
+        (methods nil)
+        (methods-initialized-p nil))
+       ((null name-loc)
+        (when (and (not allow-other-keys) unknown-key-names)
+          (simple-program-error "Unknown initialization options ~S for class ~A."
+                                (nreverse unknown-key-names) class)))
+    (let ((name (first name-loc)))
+      (cond ((null (cdr name-loc))
+             (simple-program-error "No value supplied for the init-name ~S." name))
+            ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
+            ;; slot-initarg.
+            ((and (eql name :ALLOW-OTHER-KEYS)
+                  (not allow-other-keys-found))
+             (setf allow-other-keys (second name-loc)
+                   allow-other-keys-found t))
+            ;; Check if the arguments is associated with a slot
+            ((member name slots :test #'member :key #'slot-definition-initargs))
+            ;; OK, doesn't correspond to a slot, so check the methods.
+            ((progn
+               (unless methods-initialized-p
+                 (setf methods-initialized-p t
+                       methods
+                       (loop for call in calls
+                             for methods
+                               = (apply #'compute-applicable-methods call)
+                             for methods2 = (valid-keywords-from-methods
+                                             methods)
+                             when (eq methods2 t) ; allow-other-keys
+                               do (return-from check-initargs-uncached)
+                             nconcing methods2)))
+               (member name methods :test #'member :key #'method-keywords)))
+            (t (push name unknown-key-names))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Methods
