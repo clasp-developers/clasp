@@ -152,6 +152,7 @@
 
 ;;; load this in ecl to generate generated-encodings.lsp
 ;;; e.g. (create-encodings-from-ecl "~/lisp/compiler/clasp-karsten/src/lisp/kernel/lsp/generated-encodings.lsp")
+#+ecl
 (defun create-encodings-from-ecl (path)
   (let ((encodings
          (list :iso-8859-2 :iso-8859-3 :iso-8859-4 :iso-8859-5
