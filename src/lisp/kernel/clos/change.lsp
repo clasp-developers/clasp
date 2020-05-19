@@ -34,19 +34,24 @@
 (defmethod update-instance-for-different-class
     ((old-data standard-object) (new-data standard-object) &rest initargs)
   (declare (dynamic-extent initargs))
-  (let ((old-local-slotds (si:instance-sig old-data))
-	(new-local-slotds (remove :instance (si:instance-sig new-data)
-				  :test-not #'eq :key #'slot-definition-allocation))
-	added-slots)
-    (setf added-slots (set-difference (mapcar #'slot-definition-name new-local-slotds)
-				      (mapcar #'slot-definition-name old-local-slotds)))
-    (check-initargs (class-of new-data) initargs
-		    (valid-keywords-from-methods
-                     (compute-applicable-methods
-                      #'update-instance-for-different-class
-                      (list old-data new-data))
-                     (compute-applicable-methods
-                      #'shared-initialize (list new-data added-slots))))
+  (let ((added-slots
+          (loop with old-slotds = (si:instance-sig old-data)
+                for new-slotd in (si:instance-sig new-data)
+                for new-slotd-name = (slot-definition-name new-slotd)
+                when (and (eq (slot-definition-allocation new-slotd)
+                              :instance)
+                          (not (member new-slotd-name old-slotds
+                                       :key #'slot-definition-name
+                                       :test #'eq)))
+                  collect new-slotd-name)))
+    (when initargs
+      (check-initargs (class-of new-data) initargs
+                      (valid-keywords-from-methods
+                       (compute-applicable-methods
+                        #'update-instance-for-different-class
+                        (list old-data new-data))
+                       (compute-applicable-methods
+                        #'shared-initialize (list new-data added-slots)))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
 (defmethod change-class ((instance standard-object) (new-class std-class)
