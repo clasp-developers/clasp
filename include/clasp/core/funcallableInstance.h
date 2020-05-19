@@ -69,11 +69,10 @@ namespace core {
     virtual ~FuncallableInstance_O(){};
   public:
     // The order MUST be
-    // entry (inherited from Function_O)
-    // _Class   (matches offset of Instance_O)
-    // _Rack    (matches offset of Instance_O)
-    Instance_sp _Class;
+    // entry (inherited from Function_O, matches offset)
+    // _Rack (matches offset in Instance_O)
     Rack_sp _Rack;
+    Instance_sp _Class;
     FunctionDescription* _FunctionDescription;
     std::atomic<size_t>        _InterpretedCalls;
     std::atomic<T_sp>   _CompiledDispatchFunction;

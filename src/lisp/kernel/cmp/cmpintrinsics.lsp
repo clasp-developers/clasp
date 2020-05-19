@@ -310,12 +310,11 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %i8*%     ; 1 spacer
-         %t*%      ; 2 _Class
-         %t*%      ; 3 _Rack
+         %t*%      ; 1 _Class
+         %t*%      ; 2 _Rack
          )
    nil))
-(defconstant +instance.rack-index+ 3)
+(defconstant +instance.rack-index+ 2)
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
 
 
@@ -382,15 +381,15 @@ Boehm and MPS use a single pointer"
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
          %i8*%     ; 1 entry (From Function_O)
-         %t*%      ; 2 _Class
-         %t*%      ; 3 _Rack
+         %t*%      ; 2 _Rack
+         %t*%      ; 3 _Class
          %function-description*%   ; 4  FunctionDescription*
          %atomic<size_t>%          ; 5  _InterpretedCalls
          %atomic<tsp>%             ; 6 _CompiledDispatchFunction
          )
    nil))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
-(defconstant +funcallable-instance.rack-index+ 3)
+(defconstant +funcallable-instance.rack-index+ 2)
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;;

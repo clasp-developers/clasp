@@ -461,11 +461,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }
-    if (offsetof(Instance_O,_Class)!=offsetof(FuncallableInstance_O,_Class)) {
-      printf("%s:%d  The offsetf(Function_O,_Class)/%lu!=offsetof(FuncallableInstance_O,_Class)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Class),offsetof(FuncallableInstance_O,_Class) );
-      printf("        These must match for Clasp to be able to function\n");
-      abort();
-    }
     stringstream sdebug;
     //gctools::get_immediate_info(); // discard result, just testing
 #ifdef DEBUG_PROGRESS

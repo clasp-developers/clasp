@@ -117,10 +117,8 @@ namespace core {
     virtual ~Instance_O(){};
   public:
     // The order MUST be:
-    // _Spacer (accounts for inherited "entry" slot of FuncallableInstance_O)
-    // _Class (matches offset of FuncallableInstance_O)
-    // _Rack  (matches offset of FuncallableInstance_O)
-    std::atomic<claspFunction> _Spacer; // not actually used, just takes up space
+    // _Class (as large as FuncallableInstance_O's entry slot)
+    // _Rack  (matches offset in FuncallableInstance_O)
     Instance_sp _Class;
     Rack_sp _Rack;
   /*! Mimicking ECL instance->sig generation signature
