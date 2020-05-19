@@ -18,14 +18,6 @@
     (setf (slot-value class 'prototype) (allocate-instance class)))
   (slot-value class 'prototype))
 
-(defun slot-makunbound (self slot-name)
-  (let* ((class (class-of self))
-	 (slotd (find-slot-definition class slot-name)))
-    (if slotd
-	(slot-makunbound-using-class class self slotd)
-	(slot-missing class self slot-name 'SLOT-MAKUNBOUND))
-    self))
-
 (defmethod slot-value-using-class ((class std-class) self slotd)
   (let* ((location (slot-definition-location slotd))
 	 (value (standard-location-access self location)))

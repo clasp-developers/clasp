@@ -153,21 +153,7 @@
 	(setf slot-table table
 	      location-table locations)))))
 
-(defun find-slot-definition (class slot-name)
-  (with-slots ((slots slots) (slot-table slot-table))
-      class
-    (if (or (eq (si:instance-class class)
-                #+clasp (let ((x (load-time-value (list nil))))
-                          (or (car x) (car (rplaca x (find-class 'clos:standard-class)))))
-                #+(or)(load-time-value (find-class 'clos:standard-class))
-                #+ecl +the-standard-class+)
-	    (eq (si:instance-class class)
-                #+clasp (let ((x (load-time-value (list nil))))
-                          (or (car x) (car (rplaca x (find-class 'clos:funcallable-standard-class)))))
-                #+(or)(load-time-value (find-class 'clos:funcallable-standard-class))
-                #+ecl +the-funcallable-standard-class+))
-	(gethash slot-name slot-table nil)
-	(find slot-name slots :key #'slot-definition-name))))
+(defun find-slot-definition (class slot-name))
 
 ;;;
 ;;; STANDARD-CLASS INTERFACE
@@ -243,8 +229,11 @@ consequences are not defined.")
 		(values (slot-missing class self slot-name 'SLOT-VALUE))))))))
 
 (defun slot-exists-p (self slot-name)
-  (and (find-slot-definition (class-of self) slot-name)
-       t))
+  (with-slots ((slots slots) (location-table location-table))
+      (class-of self)
+    (if location-table ; only for direct instances of standard-class, etc
+        (gethash slot-name location-table nil)
+        (find slot-name slots :key #'slot-definition-name))))
 
 (defun slot-boundp (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -268,6 +257,28 @@ consequences are not defined.")
 		(slot-boundp-using-class class self slotd)
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))))))
 
+(defun slot-makunbound (self slot-name)
+  (with-early-accessors (+standard-class-slots+
+                         +slot-definition-slots+)
+    (let* ((class (class-of self))
+	   (location-table (class-location-table class)))
+      (if location-table
+	  (let ((location (gethash slot-name location-table nil)))
+	    (if location
+		(setf (standard-location-access self location) (si:unbound))
+		(slot-missing class self slot-name 'slot-makunbound)))
+	  (let ((slotd
+                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                  ;; Can't break this out into a function because again, local macro.
+                  ;; FIXME
+                  (loop for prospect in (class-slots class)
+                        for prospect-name = (slot-definition-name prospect)
+                        when (eql slot-name prospect-name)
+                          return prospect)))
+	    (if slotd
+		(slot-makunbound-using-class class self slotd)
+		(slot-missing class self slot-name 'SLOT-BOUNDP))))))
+  self)
 
 ;;; 7.7.12 slot-missing
 ;;; If slot-missing returns, its values will be treated as follows:
