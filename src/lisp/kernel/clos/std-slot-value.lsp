@@ -128,21 +128,17 @@
        ,@body)))
 
 ;;;
-;;; ECL classes store slots in a hash table for faster access. The
+;;; Clasp classes store slots in a hash table for faster access. The
 ;;; following functions create the cache and allow us to locate the
 ;;; slots rapidly.
 ;;;
 (defun std-create-slots-table (class)
   (with-slots ((all-slots slots)
-	       (slot-table slot-table)
 	       (location-table location-table))
       class
-    (let* ((size (max 32 (* 2 (length all-slots))))
-	   (table (make-hash-table :size size)))
-      (dolist (slotd all-slots)
-	(setf (gethash (slot-definition-name slotd) table) slotd))
-      (let ((metaclass (si::instance-class class))
-	    (locations nil))
+    (let ((size (max 32 (* 2 (length all-slots))))
+          (metaclass (si::instance-class class))
+          (locations nil))
 	(when (or (eq metaclass (find-class 'standard-class))
 		  (eq metaclass (find-class 'funcallable-standard-class))
 		  (eq metaclass (find-class 'structure-class)))
@@ -150,8 +146,7 @@
 	  (dolist (slotd all-slots)
 	    (setf (gethash (slot-definition-name slotd) locations)
 		  (slot-definition-location slotd))))
-	(setf slot-table table
-	      location-table locations)))))
+	(setf location-table locations))))
 
 (defun find-slot-definition (class slot-name))
 

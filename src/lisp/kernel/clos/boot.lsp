@@ -111,8 +111,7 @@
   ;; because CANONICAL-SLOT-TO-DIRECT-SLOT will make simple slots.
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
-    (let* ((table (make-hash-table :size (if slots 24 0)))
-	   (location-table (make-hash-table :size (if slots 24 0)))
+    (let* ((location-table (make-hash-table :size (if slots 24 0)))
            (direct-slot-class (find-class 'standard-direct-slot-definition nil))
 	   (direct-slots (loop for slotd in slots
                                collect (apply #'make-simple-slotd direct-slot-class slotd)))
@@ -122,13 +121,11 @@
 			       for name = (getf slotd :name)
 			       for s = (apply #'make-simple-slotd effective-slot-class slotd)
 			       do (setf (slot-definition-location s) i
-					(gethash name location-table) i
-					(gethash name table) s)
+					(gethash name location-table) i)
 			       collect s)))
       (setf (class-slots class) effective-slots
 	    (class-direct-slots class) direct-slots
-	    (class-size class) (length slots)
-	    (slot-table class) table)
+	    (class-size class) (length slots))
       (setf (class-location-table class) location-table))))
 
 

@@ -97,10 +97,9 @@
       (prototype)
       (dependents :initform nil :accessor class-dependents :location 17)
       (valid-initargs :accessor class-valid-initargs)
-      (slot-table :accessor slot-table)
-      (location-table :initform nil :accessor class-location-table :location 20)
-      (stamp-for-instances :accessor stamp-for-instances :location 21)
-      (creator :accessor creator :location 22)
+      (location-table :initform nil :accessor class-location-table :location 19)
+      (stamp-for-instances :accessor stamp-for-instances :location 20)
+      (creator :accessor creator :location 21)
       (source-position :initform nil :initarg :source-position :accessor class-source-position)
       ;;; Any changes to the slots above need to be reflected in instance.h and metaClass.h
       )))
