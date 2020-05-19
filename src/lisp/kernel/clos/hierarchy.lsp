@@ -255,20 +255,14 @@
   (core:defconstant-equal +slot-definition-slots+
     '((name :initarg :name :initform nil :reader slot-definition-name)
       (initform :initarg :initform :initform +initform-unsupplied+
-                :reader slot-definition-initform
-                :accessor %slot-definition-initform)
+                :reader slot-definition-initform)
       (initfunction :initarg :initfunction :initform nil
-                    :reader slot-definition-initfunction
-                    :accessor %slot-definition-initfunction)
-      (declared-type :initarg :type :initform t :reader slot-definition-type
-                     :accessor %slot-definition-type)
+                    :reader slot-definition-initfunction)
+      (declared-type :initarg :type :initform t :reader slot-definition-type)
       (allocation :initarg :allocation :initform :instance :reader slot-definition-allocation)
-      (initargs :initarg :initargs :initform nil :reader slot-definition-initargs
-                :accessor %slot-definition-initargs)
-      (readers :initarg :readers :initform nil :reader slot-definition-readers
-               :accessor %slot-definition-readers)
-      (writers :initarg :writers :initform nil :reader slot-definition-writers
-               :accessor %slot-definition-writers)
+      (initargs :initarg :initargs :initform nil :reader slot-definition-initargs)
+      (readers :initarg :readers :initform nil :reader slot-definition-readers)
+      (writers :initarg :writers :initform nil :reader slot-definition-writers)
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
       (location :initarg :location :initform nil :reader slot-definition-location
                 :accessor %slot-definition-location)

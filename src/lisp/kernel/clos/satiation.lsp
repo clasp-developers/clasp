@@ -537,12 +537,6 @@ a list (EQL object) - just like DEFMETHOD."
                       ,@(loop for class in '(standard-direct-slot-definition
                                              standard-effective-slot-definition)
                               nconc (loop for type in types collect `(,type ,class))))))
-         (satiate-slotd-writer %slot-definition-initform null cons) ; guess at what a form is
-         (satiate-slotd-writer %slot-definition-initfunction function)
-         (satiate-slotd-writer %slot-definition-type symbol cons) ; type specifiers
-         (satiate-slotd-writer %slot-definition-initargs null cons)
-         (satiate-slotd-writer %slot-definition-readers null cons)
-         (satiate-slotd-writer %slot-definition-writers null cons)
          (satiate-slotd-writer %slot-definition-location fixnum cons))
        (macrolet ((satiate-gf-writer (name &rest types)
                     `(%early-satiate
@@ -585,6 +579,9 @@ a list (EQL object) - just like DEFMETHOD."
                               (%early-satiate effective-slot-definition-class ,@tail)))))
          (satiate-classdefs standard-class funcallable-standard-class structure-class
                             built-in-class core:derivable-cxx-class core:clbind-cxx-class))
+       (%early-satiate compute-effective-slot-definition-initargs
+                       (standard-class cons) (funcallable-standard-class cons)
+                       (structure-class cons))
        (%early-satiate compute-effective-slot-definition
                        (standard-class symbol cons) (funcallable-standard-class symbol cons)
                        (structure-class symbol cons))

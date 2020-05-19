@@ -432,56 +432,56 @@ because it contains a reference to the undefined class~%  ~A"
       (slot-definition-location slotd)
       default))
 
+(defmethod compute-effective-slot-definition-initargs ((class class) direct-slotds)
+  ;;; See CLHS 7.5.3 for the explanation of how slot options are inherited.
+  (let (name initform initfunction allocation documentation
+        (readers nil) (writers nil) (initargs nil) location
+        (type t)
+        (namep nil) (initp nil) (documentationp nil) (allocp nil))
+    (dolist (slotd direct-slotds)
+      (unless namep (setf name (slot-definition-name slotd)))
+      (unless initp
+        (let ((f (slot-definition-initfunction slotd)))
+          (when f
+            (setf initp t initfunction f
+                  initform (slot-definition-initform slotd)))))
+      (unless documentationp
+        (let ((doc (slot-definition-documentation slotd)))
+          (when doc
+            (setf documentationp t documentation doc))))
+      (unless allocp
+        (setf allocp t allocation (slot-definition-allocation slotd)))
+      (setf initargs (union (slot-definition-initargs slotd) initargs)
+            readers (union (slot-definition-readers slotd) readers)
+            writers (union (slot-definition-writers slotd) writers)
+            ;; FIXME! we should be more smart then this:
+            type (let ((new-type (slot-definition-type slotd)))
+                   (cond ((subtypep new-type type) new-type)
+                         ((subtypep type new-type) type)
+                         (T `(and ,new-type ,type)))))
+      ;;; Clasp extension: :location can be specified.
+      (let ((new-loc (safe-slot-definition-location slotd)))
+        (if location
+            (when new-loc
+              (unless (eql location new-loc)
+                (error 'simple-error
+                       :format-control "You have specified two conflicting slot locations:~%~D and ~F~%for slot ~A"
+                       :format-arguments (list location new-loc name)))))
+        (setf location new-loc)))
+    (list :name name
+          :initform initform
+          :initfunction initfunction
+          :type type
+          :allocation allocation
+          :initargs initargs
+          :readers readers :writers writers
+          :documentation documentation
+          :location location)))
+
 (defmethod compute-effective-slot-definition ((class class) name direct-slots)
-  (flet ((direct-to-effective (old-slot)
-	   (if (consp old-slot)
-	       (copy-list old-slot)
-	       (let ((initargs (slot-definition-to-plist old-slot)))
-		 (apply #'make-instance
-			(apply #'effective-slot-definition-class class initargs)
-			initargs))))
-	 (combine-slotds (new-slotd old-slotd)
-           ;; NOTE: This may be the only place slot definition objects are
-           ;; actually modified. Might want to change that, i.e. just
-           ;; accumulate the properties as we go...
-           ;; OK compute-slots does set the location also.
-	   (let* ((new-type (slot-definition-type new-slotd))
-		  (old-type (slot-definition-type old-slotd))
-		  (loc1 (safe-slot-definition-location new-slotd))
-		  (loc2 (safe-slot-definition-location old-slotd)))
-	     (when loc2
-	       (if loc1
-		   (unless (eql loc1 loc2)
-		     (error 'simple-error
-			    :format-control "You have specified two conflicting slot locations:~%~D and ~F~%for slot ~A"
-			    :format-arguments (list loc1 loc2 name)))
-		   (progn
-		     #+(or)
-		     (format t "~%Assigning a default location ~D for ~A in ~A."
-			     loc2 name (class-name class))
-		     (setf (%slot-definition-location new-slotd) loc2))))
-	     (setf (%slot-definition-initargs new-slotd)
-		   (union (slot-definition-initargs new-slotd)
-			  (slot-definition-initargs old-slotd)))
-	     (unless (slot-definition-initfunction new-slotd)
-	       (setf (%slot-definition-initform new-slotd)
-		     (slot-definition-initform old-slotd)
-		     (%slot-definition-initfunction new-slotd)
-		     (slot-definition-initfunction old-slotd)))
-	     (setf (%slot-definition-readers new-slotd)
-		   (union (slot-definition-readers new-slotd)
-			  (slot-definition-readers old-slotd))
-		   (%slot-definition-writers new-slotd)
-		   (union (slot-definition-writers new-slotd)
-			  (slot-definition-writers old-slotd))
-		   (%slot-definition-type new-slotd)
-		   ;; FIXME! we should be more smart then this:
-		   (cond ((subtypep new-type old-type) new-type)
-			 ((subtypep old-type new-type) old-type)
-			 (T `(and ,new-type ,old-type))))
-	     new-slotd)))
-    (reduce #'combine-slotds (rest direct-slots)
-	    :initial-value (direct-to-effective (first direct-slots)))))
+  (let* ((initargs (compute-effective-slot-definition-initargs class direct-slots))
+         (slotd-class (apply #'effective-slot-definition-class class initargs)))
+    (apply #'make-instance slotd-class initargs)))
 
 (defmethod compute-default-initargs ((class class))
   (let ((all-initargs (mapappend #'class-direct-default-initargs
