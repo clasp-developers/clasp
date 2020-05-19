@@ -204,25 +204,29 @@
                               :direction :output
                               :if-does-not-exist :create)
         (format stream "(in-package :ext)~2%")
-        (format stream
-                "(defun generate-encoding-hashtable (encoding)
-  (let ((mappings
-          (load-time-value
-           (list~%")
+        (format stream "(defvar *encoding-data* ~%  (list~%")
         (dolist (specs (reverse result-alist))
           (let ((name (first specs))
                 (mappings (second specs)))
-            (format stream "            (list ~s ~%            (list ~%" name)
+            (format stream "   (list ~s ~%         (list ~%" name)
             (dolist (mapping (reverse mappings))
-              (format stream "                   (list ~s (code-char ~s))~%" (first mapping)(char-code (second mapping))))
-            (format stream "                   ))~%")))
-        (format stream "            ))))
-    (let ((spec (assoc encoding mappings)))
-      (when spec
-        (let ((table (make-hash-table)))
-          (dolist (pair (second spec))
-            (let ((key (first pair))
-                  (value (second pair)))
-              (setf (gethash key table) value)
-              (setf (gethash value table) key)))
-          table)))))")))))
+              (format stream "          (cons ~s (code-char ~s))~%" (first mapping)(char-code (second mapping))))
+            (format stream "          ))~%")))
+        (format stream "  ))~2%")
+        (format stream
+                "(defvar *encoding-cache* (make-hash-table))
+
+(defun generate-encoding-hashtable (encoding)
+  (let ((hash (gethash encoding *encoding-cache*)))
+    (if hash
+        hash
+        (let ((spec (assoc encoding *encoding-data*)))
+          (when spec
+            (let ((table (make-hash-table)))
+              (dolist (pair (second spec))
+                (let ((key (first pair))
+                      (value (rest pair)))
+                  (setf (gethash key table) value)
+                  (setf (gethash value table) key)))
+              (setf (gethash encoding *encoding-cache*) table)
+              table))))))")))))
