@@ -148,8 +148,6 @@
 		  (slot-definition-location slotd))))
 	(setf location-table locations))))
 
-(defun find-slot-definition (class slot-name))
-
 ;;;
 ;;; STANDARD-CLASS INTERFACE
 ;;;
