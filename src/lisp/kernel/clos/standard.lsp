@@ -156,7 +156,7 @@
 			(class-valid-initargs class))
 		      (progn
 			(precompute-valid-initarg-keywords class)))))
-    (check-initargs class initargs nil (class-slots class) keywords))
+    (check-initargs class initargs keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
     #+mlog(or instance (error "allocate-instance returned NIL!!!!!!! class -> ~a initargs -> ~a" class initargs))
     (dbg-standard "standard.lsp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
@@ -655,13 +655,12 @@ because it contains a reference to the undefined class~%  ~A"
      return t
      nconc methods))
 
-(defun check-initargs (class initargs &optional methods
-		       (slots (class-slots class))
-                       cached-keywords)
+(defun check-initargs (class initargs cached-keywords
+		       &optional (slots (class-slots class)))
   ;; First get all initargs which have been declared in the given
   ;; methods, then check the list of initargs declared in the slots
   ;; of the class.
-  (unless (or (eq methods t) (eq cached-keywords t))
+  (unless (eq cached-keywords t)
     (do* ((name-loc initargs (cddr name-loc))
 	  (allow-other-keys nil)
 	  (allow-other-keys-found nil)
@@ -683,7 +682,6 @@ because it contains a reference to the undefined class~%  ~A"
 	      ((member name slots :test #'member :key #'slot-definition-initargs))
 	      ;; The initialization argument has been declared in some method
               ((member name cached-keywords))
-	      ((and methods (member name methods :test #'member :key #'method-keywords)))
 	      (t
 	       (push name unknown-key-names)))))))
 
