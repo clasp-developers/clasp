@@ -191,7 +191,7 @@
   (declare (dynamic-extent initargs))
   ;; the list of direct slots is converted to direct-slot-definitions
   (when direct-slots-p
-    (setf (class-direct-slots class)
+    (setf (%class-direct-slots class)
 	  (loop for s in direct-slots
 		collect (canonical-slot-to-direct-slot class s))))
 
@@ -202,7 +202,7 @@
     (dolist (l (class-direct-superclasses class))
       (unless (member l direct-superclasses)
         (remove-direct-subclass l class)))
-    (dolist (l (setf (class-direct-superclasses class)
+    (dolist (l (setf (%class-direct-superclasses class)
 		     direct-superclasses))
       (add-direct-subclass l class)))
 
@@ -218,7 +218,7 @@
          ;; this may not be so.
          (old-slots-p (slot-boundp class 'slots))
          (old-slots (when old-slots-p (class-slots class))))
-    (setf (class-finalized-p class) nil)
+    (setf (%class-finalized-p class) nil)
     (finalize-unless-forward class)
 
     (unless (and old-slots-p

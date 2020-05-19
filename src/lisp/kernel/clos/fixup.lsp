@@ -319,8 +319,8 @@ and cannot be added to ~A." method other-gf gf)))
   ;;
   ;; We install the method by:
   ;;  i) Adding it to the list of methods
-  (push method (generic-function-methods gf))
-  (setf (method-generic-function method) gf)
+  (push method (%generic-function-methods gf))
+  (setf (%method-generic-function method) gf)
   ;;  FIXME!!!  Method specializers should be implemented shouldn't they? meister
   ;;  ii) Updating the specializers list of the generic function. Notice that
   ;;  we should call add-direct-method for each specializer but specializer
@@ -338,9 +338,9 @@ and cannot be added to ~A." method other-gf gf)))
   gf)
 
 (defun remove-method (gf method)
-  (setf (generic-function-methods gf)
+  (setf (%generic-function-methods gf)
 	(delete method (generic-function-methods gf))
-	(method-generic-function method) nil)
+	(%method-generic-function method) nil)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
   (compute-gf-specializer-profile gf)

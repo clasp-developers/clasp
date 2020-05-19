@@ -475,6 +475,8 @@ a list (EQL object) - just like DEFMETHOD."
                           '((standard-class) (funcallable-standard-class)
                             (structure-class) (built-in-class) (core:cxx-class)
                             (core:derivable-cxx-class) (core:clbind-cxx-class)))
+       ;; This causes a bit of goofiness because the effective methods don't
+       ;; actually have the internal writers.
        ,@(satiate-readers +standard-method-slots+ '((standard-method)
                                                     (standard-reader-method) (standard-writer-method)
                                                     (effective-reader-method) (effective-writer-method)))
@@ -498,8 +500,8 @@ a list (EQL object) - just like DEFMETHOD."
                                              core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types
                                           collect `(,type ,class))))))
-         (satiate-specializer-writer specializer-direct-methods null cons)
-         (satiate-specializer-writer specializer-direct-generic-functions null cons))
+         (satiate-specializer-writer %specializer-direct-methods null cons)
+         (satiate-specializer-writer %specializer-direct-generic-functions null cons))
        (macrolet ((satiate-class-writer (name &rest types)
                     `(%early-satiate
                       (setf ,name)
@@ -508,14 +510,13 @@ a list (EQL object) - just like DEFMETHOD."
                                              core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types collect `(,type ,class))))))
          (satiate-class-writer class-id symbol)
-         (satiate-class-writer class-direct-superclasses null cons)
-         (satiate-class-writer class-direct-subclasses null cons)
-         (satiate-class-writer class-slots null cons)
-         (satiate-class-writer class-precedence-list null cons)
-         (satiate-class-writer class-direct-slots null cons)
-         (satiate-class-writer class-direct-default-initargs null cons)
-         (satiate-class-writer class-default-initargs null cons)
-         (satiate-class-writer class-finalized-p symbol) ; don't really "unfinalize", so no null
+         (satiate-class-writer %class-direct-superclasses null cons)
+         (satiate-class-writer %class-direct-subclasses null cons)
+         (satiate-class-writer %class-slots null cons)
+         (satiate-class-writer %class-precedence-list null cons)
+         (satiate-class-writer %class-direct-slots null cons)
+         (satiate-class-writer %class-default-initargs null cons)
+         (satiate-class-writer %class-finalized-p symbol) ; don't really "unfinalize", so no null
          (satiate-class-writer class-size fixnum)
          (satiate-class-writer class-dependents null cons)
          (satiate-class-writer class-valid-initargs null cons)
@@ -526,7 +527,7 @@ a list (EQL object) - just like DEFMETHOD."
                       ,@(loop for class in '(standard-method
                                              standard-writer-method standard-reader-method)
                               nconc (loop for type in types collect `(,type ,class))))))
-         (satiate-method-writer method-generic-function standard-generic-function)
+         (satiate-method-writer %method-generic-function standard-generic-function)
          (satiate-method-writer method-plist null cons)
          (satiate-method-writer method-keywords null cons) ; note: why is this being called?
          (satiate-method-writer method-allows-other-keys-p null cons))
@@ -536,22 +537,20 @@ a list (EQL object) - just like DEFMETHOD."
                       ,@(loop for class in '(standard-direct-slot-definition
                                              standard-effective-slot-definition)
                               nconc (loop for type in types collect `(,type ,class))))))
-         (satiate-slotd-writer slot-definition-name symbol)
-         (satiate-slotd-writer slot-definition-initform null cons) ; guess at what a form is
-         (satiate-slotd-writer slot-definition-initfunction function)
-         (satiate-slotd-writer slot-definition-type symbol cons) ; type specifiers
-         (satiate-slotd-writer slot-definition-allocation symbol)
-         (satiate-slotd-writer slot-definition-initargs null cons)
-         (satiate-slotd-writer slot-definition-readers null cons)
-         (satiate-slotd-writer slot-definition-writers null cons)
-         (satiate-slotd-writer slot-definition-location fixnum cons))
+         (satiate-slotd-writer %slot-definition-initform null cons) ; guess at what a form is
+         (satiate-slotd-writer %slot-definition-initfunction function)
+         (satiate-slotd-writer %slot-definition-type symbol cons) ; type specifiers
+         (satiate-slotd-writer %slot-definition-initargs null cons)
+         (satiate-slotd-writer %slot-definition-readers null cons)
+         (satiate-slotd-writer %slot-definition-writers null cons)
+         (satiate-slotd-writer %slot-definition-location fixnum cons))
        (macrolet ((satiate-gf-writer (name &rest types)
                     `(%early-satiate
                       (setf ,name)
                       ,@(loop for type in types collect `(,type standard-generic-function)))))
-         (satiate-gf-writer generic-function-method-combination method-combination)
-         (satiate-gf-writer generic-function-argument-precedence-order cons)
-         (satiate-gf-writer generic-function-methods null cons)
+         (satiate-gf-writer %generic-function-method-combination method-combination)
+         (satiate-gf-writer %generic-function-argument-precedence-order cons)
+         (satiate-gf-writer %generic-function-methods null cons)
          (satiate-gf-writer generic-function-dependents null cons))
        ;; also done in function-to-method
        (%early-satiate compute-applicable-methods-using-classes

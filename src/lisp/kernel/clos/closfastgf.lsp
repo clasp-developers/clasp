@@ -325,7 +325,7 @@
     (return-from compute-outcome
       (make-effective-method-outcome
        :methods nil
-       ;;:form '(apply #'no-applicable-method .generic-function. .method-args.)
+       :form '(apply #'no-applicable-method .generic-function. .method-args.)
        :function (lambda (core:&va-rest vaslist-args)
                    (apply #'no-applicable-method generic-function vaslist-args)))))
   (let* ((em (compute-effective-method generic-function method-combination methods))

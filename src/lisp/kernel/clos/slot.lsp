@@ -57,11 +57,6 @@
 	     slotd)
       (apply #'make-simple-slotd class slotd)))
 
-(defun direct-slot-to-canonical-slot (slotd)
-  (list . #.(loop for (name . rest) in +slot-definition-slots+
-	       collect (getf rest :initarg)
-	       collect `(,(getf rest :accessor) slotd))))
-
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; (PARSE-SLOTS slot-definition-form) => slot-definition-object

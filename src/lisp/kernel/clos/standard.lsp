@@ -251,7 +251,7 @@
     (loop for c in (class-direct-superclasses class)
           unless (member c direct-superclasses :test #'eq)
             do (remove-direct-subclass c class))
-    (setf (class-direct-superclasses class) direct-superclasses)
+    (setf (%class-direct-superclasses class) direct-superclasses)
     (loop for c in direct-superclasses
           do (add-direct-subclass c class))
 
@@ -285,11 +285,11 @@
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
 (defmethod add-direct-subclass ((parent class) child)
-  (pushnew child (class-direct-subclasses parent)))
+  (pushnew child (%class-direct-subclasses parent)))
 
 (defmethod remove-direct-subclass ((parent class) child)
-  (setf (class-direct-subclasses parent)
-	(remove child (class-direct-subclasses parent))))
+  (setf (%class-direct-subclasses parent)
+	(remove child (%class-direct-subclasses parent))))
 
 (defun check-direct-superclasses (class supplied-superclasses)
   (dbg-standard "check-direct-superclasses class -> ~a  supplied-superclasses->~a  (type-of ~a) -> ~a~%" class supplied-superclasses class (type-of class))
@@ -362,12 +362,12 @@ because it contains a reference to the undefined class~%  ~A"
       (unless (or (null x) (eq x class))
 	(return-from finalize-inheritance
 	  (finalize-inheritance x))))
-    (setf (class-precedence-list class) cpl)
+    (setf (%class-precedence-list class) cpl)
     (let ((slots (compute-slots class)))
-      (setf (class-slots class) slots
+      (setf (%class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
-	    (class-default-initargs class) (compute-default-initargs class)
-	    (class-finalized-p class) t)))
+	    (%class-default-initargs class) (compute-default-initargs class)
+	    (%class-finalized-p class) t)))
   ;;
   ;; We have to clear the different type caches
   ;; for type comparisons and so on.
@@ -441,6 +441,10 @@ because it contains a reference to the undefined class~%  ~A"
 			(apply #'effective-slot-definition-class class initargs)
 			initargs))))
 	 (combine-slotds (new-slotd old-slotd)
+           ;; NOTE: This may be the only place slot definition objects are
+           ;; actually modified. Might want to change that, i.e. just
+           ;; accumulate the properties as we go...
+           ;; OK compute-slots does set the location also.
 	   (let* ((new-type (slot-definition-type new-slotd))
 		  (old-type (slot-definition-type old-slotd))
 		  (loc1 (safe-slot-definition-location new-slotd))
@@ -455,22 +459,22 @@ because it contains a reference to the undefined class~%  ~A"
 		     #+(or)
 		     (format t "~%Assigning a default location ~D for ~A in ~A."
 			     loc2 name (class-name class))
-		     (setf (slot-definition-location new-slotd) loc2))))
-	     (setf (slot-definition-initargs new-slotd)
+		     (setf (%slot-definition-location new-slotd) loc2))))
+	     (setf (%slot-definition-initargs new-slotd)
 		   (union (slot-definition-initargs new-slotd)
 			  (slot-definition-initargs old-slotd)))
 	     (unless (slot-definition-initfunction new-slotd)
-	       (setf (slot-definition-initform new-slotd)
+	       (setf (%slot-definition-initform new-slotd)
 		     (slot-definition-initform old-slotd)
-		     (slot-definition-initfunction new-slotd)
+		     (%slot-definition-initfunction new-slotd)
 		     (slot-definition-initfunction old-slotd)))
-	     (setf (slot-definition-readers new-slotd)
+	     (setf (%slot-definition-readers new-slotd)
 		   (union (slot-definition-readers new-slotd)
 			  (slot-definition-readers old-slotd))
-		   (slot-definition-writers new-slotd)
+		   (%slot-definition-writers new-slotd)
 		   (union (slot-definition-writers new-slotd)
 			  (slot-definition-writers old-slotd))
-		   (slot-definition-type new-slotd)
+		   (%slot-definition-type new-slotd)
 		   ;; FIXME! we should be more smart then this:
 		   (cond ((subtypep new-type old-type) new-type)
 			 ((subtypep old-type new-type) old-type)
@@ -566,7 +570,7 @@ because it contains a reference to the undefined class~%  ~A"
           do (loop while (aref aux index)
                    do (incf index)
                    finally (setf (aref aux index) i
-                                 (slot-definition-location i) index)))
+                                 (%slot-definition-location i) index)))
     slots))
 
 (defmethod compute-slots :around ((class class))
@@ -581,7 +585,7 @@ because it contains a reference to the undefined class~%  ~A"
 	      ((find name direct-slots :key #'slot-definition-name) ; new shared slot
 	       (let* ((initfunc (slot-definition-initfunction slotd))
 	              (value (if initfunc (funcall initfunc) (unbound))))
-	         (setf (slot-definition-location slotd) (list value))))
+	         (setf (%slot-definition-location slotd) (list value))))
 	      (t			; inherited shared slot
 	       (dolist (c (class-precedence-list class))
 		 (unless (eql c class)
@@ -590,7 +594,7 @@ because it contains a reference to the undefined class~%  ~A"
 				      :key #'slot-definition-name)))
 		     (when (and other
 				(eq (slot-definition-allocation other) allocation)
-				(setf (slot-definition-location slotd)
+				(setf (%slot-definition-location slotd)
 				      (slot-definition-location other)))
 		       (return)))))))))
     slots))

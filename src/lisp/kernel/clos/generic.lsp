@@ -185,11 +185,11 @@ Not a valid documentation object ~A"
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))
     (unless (typep combination 'method-combination)
-      (setf (generic-function-method-combination gfun)
+      (setf (%generic-function-method-combination gfun)
 	    (find-method-combination gfun (first combination) (rest combination)))))
   ;; If we have a new lambda list but no argument precedence, default the latter.
   (when (and l-l-p (not a-o-p))
-    (setf (generic-function-argument-precedence-order gfun)
+    (setf (%generic-function-argument-precedence-order gfun)
 	  (lambda-list-required-arguments lambda-list)))
   ;; If we have a new name, set the internal name.
   ;; If there's no new name, but the old name isn't set, set it to the default LAMBDA.

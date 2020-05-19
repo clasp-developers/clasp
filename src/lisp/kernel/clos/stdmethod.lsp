@@ -63,17 +63,17 @@
       #-threads (get-it))))
 
 (defmethod add-direct-method ((spec specializer) (method method))
-  (pushnew method (specializer-direct-methods spec))
+  (pushnew method (%specializer-direct-methods spec))
   (let ((gf (method-generic-function method)))
-    (pushnew gf (specializer-direct-generic-functions spec)))
+    (pushnew gf (%specializer-direct-generic-functions spec)))
   (values))
 
 (defmethod remove-direct-method ((spec specializer) (method method))
   (let* ((gf (method-generic-function method))
 	 (methods (delete method (specializer-direct-methods spec))))
-    (setf (specializer-direct-methods spec) methods)
+    (setf (%specializer-direct-methods spec) methods)
     (unless (find gf methods :key #'method-generic-function)
-      (setf (specializer-direct-generic-functions spec)
+      (setf (%specializer-direct-generic-functions spec)
 	    (delete gf (specializer-direct-generic-functions spec))))
     (values)))
 

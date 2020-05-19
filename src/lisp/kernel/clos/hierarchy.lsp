@@ -41,10 +41,16 @@
     ;; Also note that boot.lsp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
     '((flag :initform nil :accessor eql-specializer-flag)
-      (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
-                                      :location 3)
+      (direct-methods :initform nil :reader specializer-direct-methods
+                      :accessor %specializer-direct-methods)
+      (direct-generic-functions :initform nil
+                                :reader specializer-direct-generic-functions
+                                :accessor %specializer-direct-generic-functions)
+      (call-history-generic-functions
+       :initform nil
+       :reader specializer-call-history-generic-functions
+       :accessor %specializer-call-history-generic-functions
+       :location 3)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
                          :accessor specializer-mutex :location 4)
       ;;; Any changes to the slots above need to be reflected in instance.h
@@ -55,13 +61,19 @@
     ;; We don't splice in +specializer-slots+ because we need the :initform t for flag.
     ;; Nonetheless, these slots should match those of specializer, plus the slot for the object.
     '((flag :initform t :accessor eql-specializer-flag)
-      (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
-                                      :location 3)
+      (direct-methods :initform nil :reader specializer-direct-methods
+                      :accessor %specializer-direct-methods)
+      (direct-generic-functions :initform nil
+                                :reader specializer-direct-generic-functions
+                                :accessor %specializer-direct-generic-functions)
+      (call-history-generic-functions
+       :initform nil
+       :reader specializer-call-history-generic-functions
+       :accessor %specializer-call-history-generic-functions
+       :location 3)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
                          :accessor specializer-mutex :location 4)
-      (object :initarg :object :accessor eql-specializer-object))))
+      (object :initarg :object :reader eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Class METHOD-COMBINATION
@@ -82,16 +94,22 @@
     `(,@+specializer-slots+
       (name :initarg :name :initform nil :accessor class-id :location 5)
       (direct-superclasses :initarg :direct-superclasses :initform nil
-			   :accessor class-direct-superclasses :location 6)
-      (direct-subclasses :initform nil :accessor class-direct-subclasses :location 7)
-      (slots :accessor class-slots :location 8)
-      (precedence-list :accessor class-precedence-list :location 9)
-      (direct-slots :initarg :direct-slots :accessor class-direct-slots :location 10)
+			   :reader class-direct-superclasses :location 6
+                           :accessor %class-direct-superclasses)
+      (direct-subclasses :initform nil  :location 7
+                         :reader class-direct-subclasses
+                         :accessor %class-direct-subclasses)
+      (slots :reader class-slots :accessor %class-slots :location 8)
+      (precedence-list :reader class-precedence-list
+                       :accessor %class-precedence-list :location 9)
+      (direct-slots :initarg :direct-slots :reader class-direct-slots :location 10
+                    :accessor %class-direct-slots)
       (direct-default-initargs :initarg :direct-default-initargs :location 11
-			       :initform nil :accessor class-direct-default-initargs)
-      (default-initargs :accessor class-default-initargs :location 12)
-      ;; FIXME: is the writer supposed to be exported? I don't think so!
-      (finalized :initform nil :accessor class-finalized-p :location 13)
+			       :initform nil :reader class-direct-default-initargs)
+      (default-initargs :reader class-default-initargs
+                        :accessor %class-default-initargs :location 12)
+      (finalized :initform nil :reader class-finalized-p
+                 :accessor %class-finalized-p :location 13)
       (docstring :initarg :documentation :initform nil :location 14)
       (size :accessor class-size)
       (prototype)
@@ -148,7 +166,8 @@
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
                   'standard nil)
-       :accessor generic-function-method-combination)
+       :reader generic-function-method-combination
+       :accessor %generic-function-method-combination)
       ;; NOTE about generic function lambda lists.
       ;; AMOP says rather specifically that the original lambda list
       ;; passed to ensure-generic-function can be read, and that the
@@ -157,20 +176,22 @@
       ;; display. That's what maybe-augment in method.lsp deals with,
       ;; and what ext:function-lambda-list returns.
       (lambda-list :initarg :lambda-list
-                   :accessor generic-function-lambda-list)
+                   :reader generic-function-lambda-list)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
-       :accessor generic-function-argument-precedence-order)
+       :reader generic-function-argument-precedence-order
+       :accessor %generic-function-argument-precedence-order)
       (method-class
        :initarg :method-class
        :initform (find-class 'standard-method))
-      (methods :initform nil :accessor generic-function-methods)
+      (methods :initform nil :reader generic-function-methods
+               :accessor %generic-function-methods)
       (a-p-o-function :initform nil :accessor generic-function-a-p-o-function)
       (declarations
        :initarg :declarations
        :initform nil
-       :accessor generic-function-declarations)
+       :reader generic-function-declarations)
       (dependents :initform nil :accessor generic-function-dependents))))
 
 ;;; ----------------------------------------------------------------------
@@ -179,16 +200,17 @@
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   ;;; Class to be a superclass of both standard-method and effective accessors.
   (defparameter +std-method-slots+
-    '((the-function :initarg :function :accessor method-function)))
+    '((the-function :initarg :function :reader method-function)))
   
   (defparameter +standard-method-slots+
     (append +std-method-slots+
             '((the-generic-function :initarg :generic-function :initform nil
-                                    :accessor method-generic-function)
+                                    :reader method-generic-function
+                                    :accessor %method-generic-function)
               (lambda-list :initarg :lambda-list
-                           :accessor method-lambda-list)
-              (specializers :initarg :specializers :accessor method-specializers)
-              (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
+                           :reader method-lambda-list)
+              (specializers :initarg :specializers :reader method-specializers)
+              (qualifiers :initform nil :initarg :qualifiers :reader method-qualifiers)
               (docstring :initarg :documentation :initform nil)
               ;; Usually we just use the function's source position, but
               ;; sometimes this is inadequate, e.g. for accessors, which share
@@ -231,16 +253,25 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (core:defconstant-equal +slot-definition-slots+
-    '((name :initarg :name :initform nil :accessor slot-definition-name)
-      (initform :initarg :initform :initform +initform-unsupplied+ :accessor slot-definition-initform)
-      (initfunction :initarg :initfunction :initform nil :accessor slot-definition-initfunction)
-      (declared-type :initarg :type :initform t :accessor slot-definition-type)
-      (allocation :initarg :allocation :initform :instance :accessor slot-definition-allocation)
-      (initargs :initarg :initargs :initform nil :accessor slot-definition-initargs)
-      (readers :initarg :readers :initform nil :accessor slot-definition-readers)
-      (writers :initarg :writers :initform nil :accessor slot-definition-writers)
+    '((name :initarg :name :initform nil :reader slot-definition-name)
+      (initform :initarg :initform :initform +initform-unsupplied+
+                :reader slot-definition-initform
+                :accessor %slot-definition-initform)
+      (initfunction :initarg :initfunction :initform nil
+                    :reader slot-definition-initfunction
+                    :accessor %slot-definition-initfunction)
+      (declared-type :initarg :type :initform t :reader slot-definition-type
+                     :accessor %slot-definition-type)
+      (allocation :initarg :allocation :initform :instance :reader slot-definition-allocation)
+      (initargs :initarg :initargs :initform nil :reader slot-definition-initargs
+                :accessor %slot-definition-initargs)
+      (readers :initarg :readers :initform nil :reader slot-definition-readers
+               :accessor %slot-definition-readers)
+      (writers :initarg :writers :initform nil :reader slot-definition-writers
+               :accessor %slot-definition-writers)
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
-      (location :initarg :location :initform nil :accessor slot-definition-location)
+      (location :initarg :location :initform nil :reader slot-definition-location
+                :accessor %slot-definition-location)
       )))
 
 ;;; ----------------------------------------------------------------------

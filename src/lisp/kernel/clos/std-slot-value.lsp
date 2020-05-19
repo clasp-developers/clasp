@@ -70,7 +70,11 @@
                                                     (symbol-value slots)
                                                     slots)
                           for index from 0
-                          for accessor = (or (getf slotd :accessor) (getf slotd :reader))
+                          ;; KLUDGE: The early slots sometimes have both readers and
+                          ;; accessors so that only one is exported. In this case the
+                          ;; reader usually has the name with no % and we use that in
+                          ;; the code, so we prefer the reader here.
+                          for accessor = (or (getf slotd :reader) (getf slotd :accessor))
                           when accessor
                             collect `(,accessor (object)
                                        `(standard-instance-access ,object ,,index))))

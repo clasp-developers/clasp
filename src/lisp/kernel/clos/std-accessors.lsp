@@ -167,8 +167,9 @@
            (def ()
              `(progn
                 ,@(loop for (name . plist) in +standard-accessor-method-slots+
-                        for reader = (or (getf plist :accessor)
-                                         (getf plist :reader))
+                        ;; See KLUDGE in WITH-EARLY-ACCESSORS
+                        for reader = (or (getf plist :reader)
+                                         (getf plist :accessor))
                         ;; effective accessors have their own function slot.
                         when (and reader (not (eq reader 'method-function)))
                           collect `(defproxies ,reader)))))
