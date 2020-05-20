@@ -359,25 +359,4 @@ CL_DEFUN Fixnum gctools__size_of_stamp_field_layout_table()
   }
 }
 
-CL_DEFUN core::T_mv gctools__stamp_field_layout_entry(size_t idx)
-{
-  core::SymbolToEnumConverter_sp conv = gctools::As<core::SymbolToEnumConverter_sp>(_sym_STARstamp_field_layout_table_cmdsSTAR->symbolValue());
-  // First pass through the global_stamp_layout_codes_table
-  // to count the number of stamps and the number of fields
-  Layout_code* codes = get_stamp_layout_codes();
-  Layout_code& code = codes[idx];
-  core::Symbol_sp cmd = conv->symbolForEnumIndex(code.cmd);
-  core::Fixnum_sp data0 = core::clasp_make_fixnum(code.data0);
-  core::Fixnum_sp data1 = core::clasp_make_fixnum(code.data1);
-  core::Fixnum_sp data2 = core::clasp_make_fixnum(code.data2);
-  core::Symbol_sp description = _Nil<core::T_O>();
-  if ( code.description ) {
-    core::SimpleBaseString_sp desc = core::SimpleBaseString_O::make(code.description);
-    core::Package_sp pkg = gctools::As<core::Package_sp>(core::_sym_STARclasp_packageSTAR->symbolValue());
-    description = pkg->intern(desc);
-  }
-  return Values(cmd,data0,data1,data2,description);
-}
-
-
 };

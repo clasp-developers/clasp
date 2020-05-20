@@ -285,7 +285,6 @@ SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call);
 SYMBOL_EXPORT_SC_(CorePkg, foreign_call_pointer);
-SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
 SYMBOL_EXPORT_SC_(CorePkg, debug_message);
@@ -1180,7 +1179,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARmodule_shutdown_function_nameSTAR->defparameter(SimpleBaseString_O::make(std::string(MODULE_SHUTDOWN_FUNCTION_NAME)));
   std::list<string> nicknames;
   std::list<string> use_packages;
-  _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_ignore_signal->defparameter(SimpleBaseString_O::make("Ignore signal"));
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
