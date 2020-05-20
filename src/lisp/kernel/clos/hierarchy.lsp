@@ -188,7 +188,11 @@
     (append +std-method-slots+
             '((the-generic-function :initarg :generic-function :initform nil
                                     :reader method-generic-function
-                                    :accessor %method-generic-function)
+               ;; Writer rather than accessor for the somewhat KLUDGEy
+               ;; reason that satiate-readers (in satiate.lsp) would try to
+               ;; satiate it for effective-*-method otherwise, and they don't
+               ;; have a method on it.
+                                    :writer (setf %method-generic-function))
               (lambda-list :initarg :lambda-list
                            :reader method-lambda-list)
               (specializers :initarg :specializers :reader method-specializers)

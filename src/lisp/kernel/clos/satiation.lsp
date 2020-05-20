@@ -472,8 +472,6 @@ a list (EQL object) - just like DEFMETHOD."
                           '((standard-class) (funcallable-standard-class)
                             (structure-class) (built-in-class) (core:cxx-class)
                             (core:derivable-cxx-class) (core:clbind-cxx-class)))
-       ;; This causes a bit of goofiness because the effective methods don't
-       ;; actually have the internal writers.
        ,@(satiate-readers +standard-method-slots+ '((standard-method)
                                                     (standard-reader-method) (standard-writer-method)
                                                     (effective-reader-method) (effective-writer-method)))
