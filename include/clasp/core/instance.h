@@ -150,7 +150,6 @@ namespace core {
     void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);
 
     void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
-    void CLASS_call_history_generic_functions_remove(T_sp list_ofgeneric_functions);
     
     string dumpInfo();
 
