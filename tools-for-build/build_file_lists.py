@@ -24,7 +24,6 @@ SRC_CORE_FILES = \
         'float_to_string',
         'primitives',
         'random',
-#        'cxxClass',
         'record',
         'debugger',
         'debug_unixes',
