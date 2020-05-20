@@ -74,12 +74,6 @@
 	   initargs)
     instance))
 
-(defmethod change-class ((instance class) new-class &rest initargs)
-  (declare (ignore new-class initargs))
-  (if (forward-referenced-class-p instance)
-      (call-next-method)
-      (error "The metaclass of a class metaobject cannot be changed.")))
-
 ;;;
 ;;; PART 2: UPDATING AN INSTANCE THAT BECAME OBSOLETE
 ;;;
@@ -271,3 +265,49 @@
               (remove-method gf-object found))
             (when (null (generic-function-methods gf-object))
               (fmakunbound writer))))))))
+
+;;; ----------------------------------------------------------------------
+;;; BANS
+;;; Some change operations AMOP expressly prohibits.
+;;; Specifically, reinitialize-instance HAS to signal an error, but for the
+;;; others the behavior doesn't seem to be defined: it just says portable
+;;; programs can't do this.
+;;; Relatedly, we don't signal an error if a metaobject class is redefined,
+;;; although AMOP says portable programs can't do so. We may be able to
+;;; support that kind of redefinition.
+;;; We also don't actually signal an error if an object is change-class'd
+;;; into a metaobject, but that's more because we can't check with just
+;;; discrimination as below, and we'd have to be more manual, and for
+;;; almost every call to change-class.
+
+(defmethod reinitialize-instance ((instance method) &rest initargs)
+  (declare (ignore initargs))
+  (error "Cannot reinitialize method metaobject ~a per AMOP Ch. 6"
+         instance))
+
+(defmethod reinitialize-instance ((instance slot-definition) &rest initargs)
+  (declare (ignore initargs))
+  (error "Cannot reinitialize slot definition metaobject ~a per AMOP Ch. 6"
+         instance))
+
+(defmethod change-class ((instance class) new-class &rest initargs)
+  (declare (ignore new-class initargs))
+  (if (forward-referenced-class-p instance)
+      (call-next-method)
+      (error "The metaclass of a class metaobject ~a cannot be changed per AMOP Ch. 6"
+             instance)))
+
+(defmethod change-class ((instance generic-function) new-class &rest initargs)
+  (declare (ignore new-class initargs))
+  (error "The metaclass of a generic function metaobject ~a cannot be changed per AMOP Ch. 6"
+         instance))
+
+(defmethod change-class ((instance method) new-class &rest initargs)
+  (declare (ignore new-class initargs))
+  (error "The metaclass of a method metaobject ~a cannot be changed per AMOP Ch. 6"
+         instance))
+
+(defmethod change-class ((instance slot-definition) new-class &rest initargs)
+  (declare (ignore new-class initargs))
+  (error "The metaclass of a slot definition metaobject ~a cannot be changed per AMOP Ch. 6"
+         instance))
