@@ -92,26 +92,6 @@ void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
 
-CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tclass_, T_sp generic_function)
-{
-  Instance_sp class_ = gc::As<Instance_sp>(tclass_);
-  class_->CLASS_call_history_generic_functions_push_new(generic_function);
-}
-
-void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
-  if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
-    SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
-    SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
-    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
-  }
-  ClassWriteLock(gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_SPECIALIZER_MUTEX)));
-  List_sp gflist = gc::As<List_sp>(this->instanceRef(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS));
-  if (gflist.consp()) {
-    if (gflist.unsafe_cons()->memberEq(generic_function).notnilp()) return;
-  }
-  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS,Cons_O::create(generic_function,gflist));
-}
-
 void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(s));
   T_sp stamp((gctools::Tagged)s);
@@ -122,6 +102,9 @@ void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
   // Should match clos/hierarchy.lsp
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+  SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
+  SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
+  this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());

@@ -476,6 +476,12 @@ FIXME!!!! This code will have problems with multithreading if a generic function
         when (specializer-key-match key memoized-key) do (return-from call-history-find-key t))
   nil)
 
+(defun specializer-call-history-generic-functions-push-new (specializer generic-function)
+  (with-early-accessors (+specializer-slots+)
+    (mp:with-rwlock ((specializer-mutex specializer) :write)
+      (pushnew generic-function (specializer-call-history-generic-functions specializer)
+               :test #'eq))))
+
 (defun memoize-call (generic-function new-entry)
   "Memoizes the call and installs a new discriminator function - returns nothing"
   (let ((memoized-key (car new-entry)))
@@ -511,7 +517,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       (loop for idx from 0 below (length memoized-key)
             for specializer = (svref memoized-key idx)
             unless (eql-specializer-p specializer)
-              do (core:specializer-call-history-generic-functions-push-new
+              do (specializer-call-history-generic-functions-push-new
                   specializer generic-function))
       #+debug-long-call-history
       (when (> (length (generic-function-call-history generic-function)) 16384)

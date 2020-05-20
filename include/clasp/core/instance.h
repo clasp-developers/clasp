@@ -149,8 +149,6 @@ namespace core {
     };
     void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);
 
-    void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
-    
     string dumpInfo();
 
   /*! Return the direct superclasses */
