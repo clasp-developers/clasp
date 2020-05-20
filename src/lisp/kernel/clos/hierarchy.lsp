@@ -45,7 +45,6 @@
       (call-history-generic-functions
        :initform nil
        :reader specializer-call-history-generic-functions
-       :accessor %specializer-call-history-generic-functions
        :location 3)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
                          :accessor specializer-mutex :location 4)
@@ -119,10 +118,10 @@
     ;; hypothetically reorganize things.
     ;; We also don't really need any of these slots, but it might be good to have
     ;; some kind of structure to represent descriptions of structures later.
-    (append +class-slots+
-	    '((slot-descriptions)
-	      (initial-offset)
-	      (constructors)))))
+    `(,@+class-slots+
+      (slot-descriptions)
+      (initial-offset)
+      (constructors))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-GENERIC-FUNCTION
@@ -185,38 +184,38 @@
     '((the-function :initarg :function :reader method-function)))
   
   (defparameter +standard-method-slots+
-    (append +std-method-slots+
-            '((the-generic-function :initarg :generic-function :initform nil
-                                    :reader method-generic-function
-               ;; Writer rather than accessor for the somewhat KLUDGEy
-               ;; reason that satiate-readers (in satiate.lsp) would try to
-               ;; satiate it for effective-*-method otherwise, and they don't
-               ;; have a method on it.
-                                    :writer (setf %method-generic-function))
-              (lambda-list :initarg :lambda-list
-                           :reader method-lambda-list)
-              (specializers :initarg :specializers :reader method-specializers)
-              (qualifiers :initform nil :initarg :qualifiers :reader method-qualifiers)
-              (docstring :initarg :documentation :initform nil)
-              ;; Usually we just use the function's source position, but
-              ;; sometimes this is inadequate, e.g. for accessors, which share
-              ;; a method-function.
-              ;; So for those we use this - but not normal DEFMETHOD.
-              (source-position :initform nil :initarg :source-position
-                               :accessor method-source-position)
-              (plist :initform nil :initarg :plist :accessor method-plist)
-              ;; these are the precomputed results of cl:function-keywords.
-              (keywords :initform nil :initarg :keywords :accessor method-keywords)
-              (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
-              ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
-              ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
-              (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p))))
+    `(,@+std-method-slots+
+      (the-generic-function :initarg :generic-function :initform nil
+                            :reader method-generic-function
+                            ;; Writer rather than accessor for the somewhat KLUDGEy
+                            ;; reason that satiate-readers (in satiate.lsp) would try to
+                            ;; satiate it for effective-*-method otherwise, and they don't
+                            ;; have a method on it.
+                            :writer (setf %method-generic-function))
+      (lambda-list :initarg :lambda-list
+                   :reader method-lambda-list)
+      (specializers :initarg :specializers :reader method-specializers)
+      (qualifiers :initform nil :initarg :qualifiers :reader method-qualifiers)
+      (docstring :initarg :documentation :initform nil)
+      ;; Usually we just use the function's source position, but
+      ;; sometimes this is inadequate, e.g. for accessors, which share
+      ;; a method-function.
+      ;; So for those we use this - but not normal DEFMETHOD.
+      (source-position :initform nil :initarg :source-position
+                       :accessor method-source-position)
+      (plist :initform nil :initarg :plist :accessor method-plist)
+      ;; these are the precomputed results of cl:function-keywords.
+      (keywords :initform nil :initarg :keywords :accessor method-keywords)
+      (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
+      ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
+      ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
+      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)))
 
   (defparameter +standard-accessor-method-slots+
-    (append +standard-method-slots+
-	    '((slot-definition :initarg :slot-definition
-                               :initform nil
-                               :reader accessor-method-slot-definition))))
+    `(,@+standard-method-slots+
+      (slot-definition :initarg :slot-definition
+                       :initform nil
+                       :reader accessor-method-slot-definition)))
 
   ;; This is for direct-reader-method and direct-writer-method, classes used
   ;; internally to represent when an access method can be done directly
@@ -227,11 +226,11 @@
   ;; NOTE that they do not have their own slots, instead proxying through
   ;; the original, except for the function.
   (defparameter +effective-accessor-method-slots+
-    (append +std-method-slots+
-            '((original :initarg :original ; the accessor method this is based on.
-                        :reader effective-accessor-method-original)
-              (location :initarg :location
-                        :reader effective-accessor-method-location)))))
+    `(,@+std-method-slots+
+      (original :initarg :original ; the accessor method this is based on.
+                :reader effective-accessor-method-original)
+      (location :initarg :location
+                :reader effective-accessor-method-location))))
 
 ;;; ----------------------------------------------------------------------
 ;;; SLOT-DEFINITION
