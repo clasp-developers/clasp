@@ -49,7 +49,7 @@
                   (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)
                       (allocate-boot-class the-metaclass #.(length +standard-class-slots+) name)))))
-    ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
+    ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-name                  class) name))))
     (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)
       (let ((existing-slots (class-slots class)))
@@ -59,14 +59,14 @@
                    (not (zerop (length existing-slots))))
           (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
                  'ensure-boot-class name (length direct-slots) (length existing-slots))))
-      ;;      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
-      (setf (class-id                  class) name)
-      (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
+      ;;      (debug-boot "  (get-setf-expansion '(class-name class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-name class))))
+      (setf (class-name                 class) name)
+      (debug-boot "    (class-name class) -> ~a    name -> ~a~%" (class-name class) name)
       ;; FIXME: This duplicates the :initform specifications in hierarchy.lsp.
       (setf (specializer-direct-methods class) nil
             (specializer-call-history-generic-functions class) nil
             (specializer-mutex class) (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-            (class-id                  class) name
+            (class-name                 class) name
             ;; superclasses below
             (class-direct-subclasses   class) nil
             ;; slots by add-slots below

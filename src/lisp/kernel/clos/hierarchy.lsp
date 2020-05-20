@@ -73,7 +73,7 @@
     ;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h.
     ;; See comment in +specializer-slots+ about locations.
     `(,@+specializer-slots+
-      (name :initarg :name :initform nil :accessor class-id :location 5)
+      (name :initarg :name :initform nil :reader class-name :location 5)
       (direct-superclasses :initarg :direct-superclasses :initform nil
 			   :reader class-direct-superclasses :location 6
                            :accessor %class-direct-superclasses)

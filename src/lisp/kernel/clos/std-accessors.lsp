@@ -44,13 +44,10 @@
 	     (si::instancep (fdefinition name)))
 	 (add-method (ensure-generic-function name) method))
 	(t
-	 (let* ((alt-name '#:foo-alt-name-in-safe-add-method)
-		(gf (ensure-generic-function alt-name)))
-           #+(or)(break (core:bformat nil "Where is this coming from?  name -> %s *clos-booted* -> %s  (not (fboundp name)) -> %s   (si::instancep (fdefinition name)) -> %s" name *clos-booted* (not (fboundp name)) (si::instancep (fdefinition name))))
-	   (add-method gf method)
-	   (setf (generic-function-name gf) name)
-	   (setf (fdefinition name) gf)
-	   (fmakunbound alt-name)))))
+         ;; NOTE: Using fmakunbound means there will be a problem if
+         ;; NAME is ADD-METHOD or ENSURE-GENERIC-FUNCTION.
+         (fmakunbound name)
+         (add-method (ensure-generic-function name) method))))
 
 (defun std-class-generate-accessors (standard-class)
   ;;

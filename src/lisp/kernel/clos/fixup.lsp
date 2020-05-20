@@ -317,23 +317,19 @@ and cannot be added to ~A." method other-gf gf)))
       (when found
 	(remove-method gf found))))
   ;;
-  ;; We install the method by:
-  ;;  i) Adding it to the list of methods
+  ;; Per AMOP's description of ADD-METHOD, we install the method by:
+  ;;  i) Adding it to the list of methods.
   (push method (%generic-function-methods gf))
   (setf (%method-generic-function method) gf)
-  ;;  FIXME!!!  Method specializers should be implemented shouldn't they? meister
-  ;;  ii) Updating the specializers list of the generic function. Notice that
-  ;;  we should call add-direct-method for each specializer but specializer
-  ;;  objects are not yet implemented
+  ;;  ii) Adding the method to each specializer's direct-methods.
   (register-method-with-specializers method)
-  ;;  iii) Computing a new discriminating function... Well, since the core
-  ;;  ECL does not need the discriminating function because we always use
-  ;;  the same one, we just update the spec-how list of the generic function.
+  ;;  iii) Computing a new discriminating function.
+  ;;       Though in this case it will be the invalidated function.
   (update-gf-specializer-profile gf (method-specializers method))
   (compute-a-p-o-function gf)
   (update-generic-function-call-history-for-add-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
-  ;;  iv) Update dependents.
+  ;;  iv) Updating dependents.
   (update-dependents gf (list 'add-method method))
   gf)
 

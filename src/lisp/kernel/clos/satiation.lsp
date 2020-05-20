@@ -503,7 +503,7 @@ a list (EQL object) - just like DEFMETHOD."
                                              structure-class built-in-class core:cxx-class
                                              core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types collect `(,type ,class))))))
-         (satiate-class-writer class-id symbol)
+         (satiate-class-writer class-name symbol)
          (satiate-class-writer %class-direct-superclasses null cons)
          (satiate-class-writer %class-direct-subclasses null cons)
          (satiate-class-writer %class-slots null cons)

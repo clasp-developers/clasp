@@ -82,13 +82,6 @@ In the future, this may be customizable with a generic function.")
 		      :key #'slot-definition-location)))
     (values (slot-unbound class object (slot-definition-name slotd)))))
 
-;;;
-;;; For the next accessor we define a method.
-;;;
-
-(defmethod class-name ((class class))
-  (class-id class))
-
 (defmethod (setf class-name) (new-value (class class))
   (reinitialize-instance class :name new-value)
   new-value)
