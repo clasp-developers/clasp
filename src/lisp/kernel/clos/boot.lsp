@@ -65,7 +65,6 @@
       ;; FIXME: This duplicates the :initform specifications in hierarchy.lsp.
       (setf (eql-specializer-flag       class) nil
             (specializer-direct-methods class) nil
-            (specializer-direct-generic-functions class) nil
             (specializer-call-history-generic-functions class) nil
             (specializer-mutex class) (mp:make-shared-mutex 'call-history-generic-functions-mutex)
             (class-id                  class) name

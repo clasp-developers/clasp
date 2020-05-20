@@ -64,18 +64,12 @@
 
 (defmethod add-direct-method ((spec specializer) (method method))
   (pushnew method (%specializer-direct-methods spec))
-  (let ((gf (method-generic-function method)))
-    (pushnew gf (%specializer-direct-generic-functions spec)))
   (values))
 
 (defmethod remove-direct-method ((spec specializer) (method method))
-  (let* ((gf (method-generic-function method))
-	 (methods (delete method (specializer-direct-methods spec))))
-    (setf (%specializer-direct-methods spec) methods)
-    (unless (find gf methods :key #'method-generic-function)
-      (setf (%specializer-direct-generic-functions spec)
-	    (delete gf (specializer-direct-generic-functions spec))))
-    (values)))
+  (setf (%specializer-direct-methods spec)
+        (delete method (specializer-direct-methods spec)))
+  (values))
 
 #+threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
@@ -92,3 +86,9 @@
       (remhash spec *eql-specializer-hash*))
   (values))
 
+(defmethod specializer-direct-generic-functions ((specializer specializer))
+  (loop with result = nil
+        for method in (specializer-direct-methods specializer)
+        for gf = (method-generic-function method)
+        do (pushnew gf result :test #'eq)
+        finally (return result)))

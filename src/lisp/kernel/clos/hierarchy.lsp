@@ -43,9 +43,6 @@
     '((flag :initform nil :accessor eql-specializer-flag)
       (direct-methods :initform nil :reader specializer-direct-methods
                       :accessor %specializer-direct-methods)
-      (direct-generic-functions :initform nil
-                                :reader specializer-direct-generic-functions
-                                :accessor %specializer-direct-generic-functions)
       (call-history-generic-functions
        :initform nil
        :reader specializer-call-history-generic-functions
@@ -63,9 +60,6 @@
     '((flag :initform t :accessor eql-specializer-flag)
       (direct-methods :initform nil :reader specializer-direct-methods
                       :accessor %specializer-direct-methods)
-      (direct-generic-functions :initform nil
-                                :reader specializer-direct-generic-functions
-                                :accessor %specializer-direct-generic-functions)
       (call-history-generic-functions
        :initform nil
        :reader specializer-call-history-generic-functions

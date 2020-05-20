@@ -500,8 +500,7 @@ a list (EQL object) - just like DEFMETHOD."
                                              core:clbind-cxx-class core:derivable-cxx-class)
                               nconc (loop for type in types
                                           collect `(,type ,class))))))
-         (satiate-specializer-writer %specializer-direct-methods null cons)
-         (satiate-specializer-writer %specializer-direct-generic-functions null cons))
+         (satiate-specializer-writer %specializer-direct-methods null cons))
        (macrolet ((satiate-class-writer (name &rest types)
                     `(%early-satiate
                       (setf ,name)
