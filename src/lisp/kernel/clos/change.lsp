@@ -290,6 +290,12 @@
   (error "Cannot reinitialize slot definition metaobject ~a per AMOP Ch. 6"
          instance))
 
+;;; Not mentioned by AMOP, but seems obvious
+(defmethod reinitialize-instance ((instance eql-specializer) &rest initargs)
+  (declare (ignore initargs))
+  (error "Cannot reinitialize eql specializer metaobject ~a per AMOP Ch. 6"
+         instance))
+
 (defmethod change-class ((instance class) new-class &rest initargs)
   (declare (ignore new-class initargs))
   (if (forward-referenced-class-p instance)
@@ -310,4 +316,10 @@
 (defmethod change-class ((instance slot-definition) new-class &rest initargs)
   (declare (ignore new-class initargs))
   (error "The metaclass of a slot definition metaobject ~a cannot be changed per AMOP Ch. 6"
+         instance))
+
+;;; Also not in AMOP
+(defmethod change-class ((instance eql-specializer) new-class &rest initargs)
+  (declare (ignore new-class initargs))
+  (error "The metaclass of an eql specializer metaobject ~a cannot be changed per AMOP Ch. 6"
          instance))
