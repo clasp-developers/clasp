@@ -161,6 +161,8 @@
               (effective-accessor-method-original method))))
           (t (method-specializers method)))))
 
+(defun eql-specializer-p (specializer) (typep specializer 'eql-specializer))
+
 (defun applicable-method-list (gf args)
   (declare (optimize (speed 3)))
   (with-early-accessors (+standard-generic-function-slots+
@@ -169,7 +171,7 @@
     (flet ((applicable-method-p (method args)
 	     (loop for spec in (safe-method-specializers method)
 		for arg in args
-		always (if (eql-specializer-flag spec)
+		always (if (eql-specializer-p spec)
 			   (eql arg (eql-specializer-object spec))
 			   (si::of-class-p arg spec)))))
       (loop for method in (generic-function-methods gf)
@@ -184,7 +186,7 @@
     (flet ((applicable-method-p (method classes)
              (loop for spec in (safe-method-specializers method)
                    for class in classes
-                   always (cond ((eql-specializer-flag spec)
+                   always (cond ((eql-specializer-p spec)
                                  ;; EQL specializer invalidate computation                       
                                  ;; we return NIL                                                
                                  (when (si::of-class-p (eql-specializer-object spec) class)
@@ -210,7 +212,7 @@
     (flet ((applicable-method-p (method classes)
 	     (loop for spec in (safe-method-specializers method)
 		for class in classes
-		always (cond ((eql-specializer-flag spec)
+		always (cond ((eql-specializer-p spec)
 			      ;; EQL specializer can invalidate computation
 			      (when (si::of-class-p (eql-specializer-object spec) class)
 				(return-from std-compute-applicable-methods-using-classes
@@ -279,12 +281,12 @@
   ;; Specialized version of subtypep which uses the fact that spec1
   ;; and spec2 are either classes or of the form (EQL x)
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
-    (if (eql-specializer-flag spec1)
-	(if (eql-specializer-flag spec2)
+    (if (eql-specializer-p spec1)
+	(if (eql-specializer-p spec2)
 	    (eql (eql-specializer-object spec1)
 		 (eql-specializer-object spec2))
 	    (si::of-class-p (eql-specializer-object spec1) spec2))
-	(if (eql-specializer-flag spec2)
+	(if (eql-specializer-p spec2)
 	    ;; There is only one class with a single element, which
 	    ;; is NULL = (MEMBER NIL).
 	    (and (null (eql-specializer-object spec2))
@@ -297,8 +299,8 @@
       (cond ((eq spec-1 spec-2) '=)
             ((fast-subtypep spec-1 spec-2) '1)
             ((fast-subtypep spec-2 spec-1) '2)
-            ((eql-specializer-flag spec-1) '1) ; is this engough?
-            ((eql-specializer-flag spec-2) '2) ; Beppe
+            ((eql-specializer-p spec-1) '1) ; is this engough?
+            ((eql-specializer-p spec-2) '2) ; Beppe
             ((member spec-1 (member spec-2 cpl)) '2)
             ((member spec-2 (member spec-1 cpl)) '1)
 	    ;; This will force an error in the caller
@@ -311,7 +313,7 @@
           for i from 0
           for e = (svref specializer-profile i)
           do (setf (svref specializer-profile i)
-                   (cond ((eql-specializer-flag spec)
+                   (cond ((eql-specializer-p spec)
                           (let ((o (eql-specializer-object spec)))
                             ;; Add to existing list of eql spec
                             ;; objects, or make a new one.

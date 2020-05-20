@@ -84,11 +84,11 @@ namespace core {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
     // Store the stamp in slot 0 - so offset all the other slots
   // These must be exposed in core__class_slot_sanity_check()
-#define NUMBER_OF_SPECIALIZER_SLOTS 4
+#define NUMBER_OF_SPECIALIZER_SLOTS 3
 #define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
     typedef enum {
-        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 2,
-        REF_SPECIALIZER_MUTEX = 3,
+        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 1,
+        REF_SPECIALIZER_MUTEX = 2,
         REF_CLASS_CLASS_NAME = (0 + CLASS_SLOT_OFFSET),
         REF_CLASS_DIRECT_SUPERCLASSES = (1+CLASS_SLOT_OFFSET),
         REF_CLASS_DIRECT_SUBCLASSES = (2+CLASS_SLOT_OFFSET),

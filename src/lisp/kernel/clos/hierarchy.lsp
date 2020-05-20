@@ -40,8 +40,7 @@
     ;; They need to have those locations, even in user subclasses of this class.
     ;; Also note that boot.lsp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
-    '((flag :initform nil :accessor eql-specializer-flag)
-      (direct-methods :initform nil :reader specializer-direct-methods
+    '((direct-methods :initform nil :reader specializer-direct-methods
                       :accessor %specializer-direct-methods)
       (call-history-generic-functions
        :initform nil
@@ -55,18 +54,7 @@
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
-    ;; We don't splice in +specializer-slots+ because we need the :initform t for flag.
-    ;; Nonetheless, these slots should match those of specializer, plus the slot for the object.
-    '((flag :initform t :accessor eql-specializer-flag)
-      (direct-methods :initform nil :reader specializer-direct-methods
-                      :accessor %specializer-direct-methods)
-      (call-history-generic-functions
-       :initform nil
-       :reader specializer-call-history-generic-functions
-       :accessor %specializer-call-history-generic-functions
-       :location 3)
-      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex :location 4)
+    `(,@+specializer-slots+
       (object :initarg :object :reader eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------

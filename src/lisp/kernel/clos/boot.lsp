@@ -63,8 +63,7 @@
       (setf (class-id                  class) name)
       (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
       ;; FIXME: This duplicates the :initform specifications in hierarchy.lsp.
-      (setf (eql-specializer-flag       class) nil
-            (specializer-direct-methods class) nil
+      (setf (specializer-direct-methods class) nil
             (specializer-call-history-generic-functions class) nil
             (specializer-mutex class) (mp:make-shared-mutex 'call-history-generic-functions-mutex)
             (class-id                  class) name

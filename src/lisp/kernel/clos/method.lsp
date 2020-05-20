@@ -640,7 +640,7 @@ have disappeared."
 		  (error "~A is not a valid specializer name" name))))
 	 (specializer= (cons-or-class specializer)
 	   (if (consp cons-or-class)
-	       (and (eql-specializer-flag specializer)
+	       (and (eql-specializer-p specializer)
 		    (eql (car cons-or-class)
 			 (eql-specializer-object specializer)))
 	       (eq cons-or-class specializer))))
