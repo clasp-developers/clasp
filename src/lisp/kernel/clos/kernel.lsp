@@ -283,8 +283,7 @@
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
     (if (eql-specializer-p spec1)
 	(if (eql-specializer-p spec2)
-	    (eql (eql-specializer-object spec1)
-		 (eql-specializer-object spec2))
+            (eq spec1 spec2) ; take advantage of internment
 	    (si::of-class-p (eql-specializer-object spec1) spec2))
 	(if (eql-specializer-p spec2)
 	    ;; There is only one class with a single element, which

@@ -639,11 +639,7 @@ have disappeared."
 		 (t
 		  (error "~A is not a valid specializer name" name))))
 	 (specializer= (cons-or-class specializer)
-	   (if (consp cons-or-class)
-	       (and (eql-specializer-p specializer)
-		    (eql (car cons-or-class)
-			 (eql-specializer-object specializer)))
-	       (eq cons-or-class specializer))))
+           (eq cons-or-class specializer)))
     (when (/= (length specializers)
 	      (length (generic-function-argument-precedence-order gf)))
       (error

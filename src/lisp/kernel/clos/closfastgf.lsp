@@ -104,8 +104,9 @@
                  (bformat-indent "  root[%d]: %s%N" (prog1 x (incf x)) root))))))
   (defun pretty-selector-as-string (selector)
     (cond
-      ((consp selector)
-       (core:bformat nil "(EQL %s)" (car selector))) ; for EQL specializer
+      ((eql-specializer-p selector)
+       (with-early-accessors (+eql-specializer-slots+)
+         (core:bformat nil "(EQL %s)" (eql-specializer-object selector))))
       ((null selector)
        (core:bformat nil "NULL/(not-specialized?)"))
       ((classp selector)               ; A class
@@ -509,7 +510,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
             until (eq exchanged call-history))
       (loop for idx from 0 below (length memoized-key)
             for specializer = (svref memoized-key idx)
-            unless (consp specializer)    ; eql specializer
+            unless (eql-specializer-p specializer)
               do (core:specializer-call-history-generic-functions-push-new
                   specializer generic-function))
       #+debug-long-call-history
