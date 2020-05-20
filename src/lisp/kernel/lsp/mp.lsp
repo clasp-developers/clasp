@@ -17,7 +17,7 @@
 (defpackage "MP"
   (:use "CL")
   (:import-from :CORE "WITH-UNIQUE-NAMES")
-  (:export "WITH-LOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
+  (:export "WITH-LOCK" "WITH-RWLOCK" "WITHOUT-INTERRUPTS" "WITH-INTERRUPTS"
            "WITH-LOCAL-INTERRUPTS" "WITH-RESTORED-INTERRUPTS" "ALLOW-WITH-INTERRUPTS"
            "ABORT-PROCESS"))
 
@@ -122,7 +122,7 @@ by ALLOW-WITH-INTERRUPTS."
               (locally ,@body))
          (mp:giveup-lock ,lock)))))
 
-#+ecl-read-write-lock
+#+threads
 (defmacro with-rwlock ((lock op) &body body)
   "Acquire rwlock for the dynamic scope of BODY for operation OP,
 which is executed with the lock held by current thread, and
@@ -134,14 +134,16 @@ Valid values of argument OP are :READ or :WRITE
     (let ((s-lock (gensym)))
       `(let ((,s-lock ,lock))
          (,(if (eq :read op)
-               'mp:get-rwlock-read
-             'mp:get-rwlock-write) ,s-lock t)
+               'mp:shared-lock
+               'mp:write-lock)
+          ,s-lock)
          (unwind-protect
              (progn
                ,@body)
            (,(if (eq :read op)
-                 'mp:giveup-rwlock-read
-               'mp:giveup-rwlock-write) ,s-lock)))))
+                 'mp:shared-unlock
+                 'mp:write-unlock)
+            ,s-lock)))))
 
 #+threads
 (defun abort-process (&optional datum &rest arguments)
