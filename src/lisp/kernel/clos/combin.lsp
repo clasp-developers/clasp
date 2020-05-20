@@ -346,7 +346,7 @@ argument list designator."
 
 ;;; See comment below.
 (defmacro %magic-no-required-method (group-name)
-  `(apply #'no-required-method .generic-function. ',group-name .method-args.))
+  `(em-apply #'no-required-method .generic-function. ',group-name))
 
 (defun define-complex-method-combination (form)
   (flet ((syntax-error ()
@@ -390,13 +390,14 @@ argument list designator."
 	    (push `(,condition (push .METHOD. ,group-name)) group-checks))
 	  (when required
 	    (push `(unless ,group-name
-                     ;; Effective methods can be computed in other situations than being about to call them.
-                     ;; As such, compute-effective-method should not signal an error unless the computation
-                     ;; is impossible. Lacking a required method is by contrast a problem that only needs to
-                     ;; be signaled when the function is actually being called. So we return an error form.
-                     ;; ...but because we want an independent function for the dtree interpreter, we return
-                     ;; something specially recognizable by compute-outcome, so the generic function etc.
-                     ;; can be hooked up.
+                     ;; Effective methods can be computed in other situations than being
+                     ;; about to call them. As such, compute-effective-method should not
+                     ;; signal an error unless the computation is impossible. Lacking a
+                     ;; required method is by contrast a problem that only needs to be
+                     ;; signaled when the function is actually being called. So we return
+                     ;; an error form. ...but because we want an independent function for
+                     ;; the dtree interpreter, we return something specially recognizable
+                     ;; by compute-outcome, so the generic function etc. can be hooked up.
                      (return-from ,name '(%magic-no-required-method ,group-name)))
 		  group-after))
 	  (case order

@@ -291,20 +291,17 @@
          ;; The handling of :function is basically the only reason
          ;; we don't just dump the call history and let the usual
          ;; literal mechanisms handle it.
-         ;; TODO: Pass in the arginfo maybe.
-         (let ((gform (gensym "FORM"))
+         (let ((form (effective-method-outcome-form outcome))
                (required (rest arg-info))
                (rest (if (car arg-info) 'satiated-more nil)))
-           `(let ((,gform ',(effective-method-outcome-form outcome)))
-              (make-effective-method-outcome
-               :methods ',(outcome-methods outcome)
-               :form ,gform
-               :function (lambda (,@required
-                                  ,@(when rest `(core:&va-rest ,rest)))
-                           (with-effective-method-parameters
-                               ((,@required) ,rest)
-                             ,(effective-method-outcome-form
-                               outcome)))))))
+           `(make-effective-method-outcome
+             :methods ',(outcome-methods outcome)
+             :form ',form
+             :function (lambda (,@required
+                                ,@(when rest `(core:&va-rest ,rest)))
+                         (with-effective-method-parameters
+                             ((,@required) ,rest)
+                           ,form)))))
         (t (error "BUG: Don't know how to reconstruct outcome: ~a"
                   outcome))))
 

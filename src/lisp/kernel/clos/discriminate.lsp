@@ -409,10 +409,11 @@
 (defvar *inline-effective-methods* nil)
 
 ;;; Apply a function to the effective method parameters.
-(defmacro em-apply (function &environment env)
+;;; The MORE forms are put in front.
+(defmacro em-apply (function &rest more &environment env)
   (multiple-value-bind (required rest)
       (effective-method-parameters env)
-    `(apply ,function ,@required ,rest)))
+    `(apply ,function ,@more ,@required ,rest)))
 
 (defun generate-effective-method-call (outcome)
   (let ((form (effective-method-outcome-form outcome))
