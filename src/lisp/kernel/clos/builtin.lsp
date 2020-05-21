@@ -19,6 +19,10 @@
   (declare (ignore initargs))
   (error "The built-in class (~A) cannot be instantiated" class))
 
+(defmethod allocate-instance ((class built-in-class) &rest initargs)
+  (declare (ignore initargs))
+  (error "The built-in class (~A) cannot be instantiated" class))
+
 (defmethod ensure-class-using-class ((class null) name core:&va-rest rest)
   (clos::gf-log "In ensure-class-using-class (class null)%N")
   (clos::gf-log "     class -> %s%N" name)
