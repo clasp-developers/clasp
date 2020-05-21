@@ -736,7 +736,7 @@ The passed module is modified as a side-effect."
                      (core:bformat t "Done dump module%N")
                      )
                    (mp:get-lock *jit-lock*)
-                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module *thread-safe-context*)
+                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context*)
                    (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
               (progn
                 (gctools:thread-local-cleanup)
