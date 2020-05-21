@@ -84,8 +84,8 @@
 ;;; returns NIL whenever the instance x is obsolete.
 ;;;
 ;;; There are two circumstances under which a instance may become obsolete:
-;;; either the class has been modified using REDEFINE-INSTANCE (and thus the
-;;; list of slots changed), or MAKE-INSTANCES-OBSOLETE has been used.
+;;; either the class has been modified using REINITIALIZE-INSTANCE (and thus
+;;; the list of slots changed), or MAKE-INSTANCES-OBSOLETE has been used.
 ;;;
 ;;; The function UPDATE-INSTANCE (hidden to the user) does the job of
 ;;; updating an instance that has become obsolete.
@@ -106,11 +106,17 @@
     ((instance standard-object) added-slots discarded-slots property-list
      &rest initargs)
   (declare (dynamic-extent initargs))
-  (check-initargs-uncached
-   (class-of instance) initargs
-   (list (list #'update-instance-for-redefined-class
-               (list instance added-slots discarded-slots property-list))
-         (list #'shared-initialize (list instance added-slots))))
+  ;; Since this function is "not intended to be called by programmers",
+  ;; and the instance updater doesn't pass it any initargs (CLHS 4.3.6.2),
+  ;; in practice the initargs will always be NIL.
+  ;; I guess they're there in case a programmer calls this function
+  ;; manually?
+  (when initargs
+    (check-initargs-uncached
+     (class-of instance) initargs
+     (list (list #'update-instance-for-redefined-class
+                 (list instance added-slots discarded-slots property-list))
+           (list #'shared-initialize (list instance added-slots)))))
   (apply #'shared-initialize instance added-slots initargs))
 
 (defun update-instance (instance)
@@ -120,29 +126,29 @@
 	 (old-instance (si::copy-instance instance))
 	 (discarded-slots '())
 	 (added-slots '())
-	 (property-list '()))
-    (setf instance (core:reallocate-instance instance class (class-size class)))
-    (let* ((new-i 0)
-           (old-local-slotds (remove :instance old-slotds :test-not #'eq
-                                     :key #'slot-definition-allocation))
-           (new-local-slotds (remove :instance new-slotds :test-not #'eq
-                                     :key #'slot-definition-allocation)))
-      (declare (fixnum new-i))
-      (setq discarded-slots
-            (set-difference (mapcar #'slot-definition-name old-local-slotds)
-                            (mapcar #'slot-definition-name new-local-slotds)))
-      (dolist (slot-name discarded-slots)
-        (let* ((ndx (position slot-name old-local-slotds :key #'slot-definition-name)))
-          (push (cons slot-name (si::instance-ref old-instance ndx))
-                property-list)))
-      (dolist (new-slot new-local-slotds)
-        (let* ((name (slot-definition-name new-slot))
-               (old-i (position name old-local-slotds :key #'slot-definition-name)))
-          (if old-i
-              (si::instance-set instance new-i
-                                (si::instance-ref old-instance old-i))
-              (push name added-slots))
-          (incf new-i))))
+	 (property-list '())
+         (instance (core:reallocate-instance instance class (class-size class)))
+         (old-local-slotds (remove :instance old-slotds :test-not #'eq
+                                   :key #'slot-definition-allocation))
+         (new-local-slotds (remove :instance new-slotds :test-not #'eq
+                                   :key #'slot-definition-allocation)))
+    (dolist (slotd old-local-slotds)
+      (let* ((name (slot-definition-name slotd))
+             (new (find name new-local-slotds :key #'slot-definition-name)))
+        (let ((val (si:instance-ref old-instance
+                                    (slot-definition-location slotd))))
+          (when (si:sl-boundp val)
+            (cond (new
+                   (si:instance-set instance (slot-definition-location new)
+                                    val))
+                  (t
+                   (push (cons name val) property-list)
+                   (push name discarded-slots)))))))
+    (dolist (new-slot new-local-slotds)
+      (let* ((name (slot-definition-name new-slot))
+             (old (find name old-local-slotds :key #'slot-definition-name)))
+        (unless old
+          (push name added-slots))))
     (update-instance-for-redefined-class instance added-slots
                                          discarded-slots property-list)))
 
