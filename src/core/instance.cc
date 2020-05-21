@@ -59,6 +59,23 @@ Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
   return bs;
 }
 
+CL_DEFUN T_sp core__rack_stamp(Rack_sp rack) {
+  core::T_sp stamp((gctools::Tagged)(uint64_t)(T_O*)(rack->_ShiftedStamp));
+  return stamp;
+}
+
+CL_DEFUN T_sp core__rack_sig(Rack_sp rack) {
+  return rack->_Sig;
+}
+
+CL_DEFUN T_sp core__rack_ref(Rack_sp rack, size_t i) {
+  return rack->low_level_rackRef(i);
+}
+
+CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
+  rack->low_level_rackSet(i, val);
+}
+
 CL_LAMBDA(instance func);
 CL_DECLARE();
 CL_DOCSTRING("instanceClassSet");
@@ -182,7 +199,9 @@ void Instance_O::fields(Record_sp node) {
   eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
 }
 
-
+CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
+  return instance->_Rack;
+}
 
 size_t Instance_O::rack_stamp_offset() {
   return offsetof(Rack_O,_ShiftedStamp);
