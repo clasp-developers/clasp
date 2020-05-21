@@ -358,6 +358,7 @@
          dynenv-out
          "sham-dynamic-environment")))
 
+
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
@@ -365,6 +366,8 @@
   (out (cleavir-ir:dynamic-environment instruction)
        (first (cleavir-ir:outputs instruction))
        "sham-dynamic-environment"))
+
+(defparameter *use-closurettes* t)
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value abi function-info)
@@ -381,6 +384,13 @@
          (result
            (progn
              (cond
+               ((and (zerop ninputs) *use-closurettes*)
+                #+(or)(format t "Create a closurette with function-description -> ~a  enclosed-function -> ~a~%"
+                        function-description enclosed-function)
+                (let ((result (%closurette-value enclosed-function function-description)))
+                  #+(or)(format t " closurete value -> ~a~%" result)
+                  #+(or)(%intrinsic-invoke-if-landing-pad-or-call "cc_enclose" enclose-args)
+                  result))
                (dx-p
                 ;; Closure is dynamic extent, so we can use stack storage.
                 (%intrinsic-call

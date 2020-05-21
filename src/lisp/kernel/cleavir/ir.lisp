@@ -20,28 +20,21 @@
 (defun %literal-value (value &optional (label "literal"))
   (cmp:irc-load (%literal-ref value)))
 
-#+(or)
-(defun %closurette-index (lambda-name function source-info-handle
-                          filepos lineno column)
-  (literal::reference-closure lambda-name function source-info-handle
-                              filepos lineno column))
+(defun %closurette-index (function function-description)
+  (unless (typep function 'llvm-sys:function)
+    (error "The first argument to %closurette-index must be a function - instead it is a ~s of class ~s" function (class-name (class-of function))))
+  (literal::reference-closure function function-description))
 
-#+(or)
-(defun %closurette-ref (lambda-name function source-info-handle
-                        filepos lineno column)
-  (let* ((index (%closurette-index lambda-name function source-info-handle
-                                   filepos lineno column))
+(defun %closurette-ref (function function-description)
+  (let* ((index (%closurette-index function function-description))
          (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder*
                                              (literal:ltv-global)
                                              0 index
                                              (bformat nil "values-table[%d]" index))))
     gep))
 
-#+(or)
-(defun %closurette-value (lambda-name function source-info-handle
-                          filepos lineno column)
-  (cmp:irc-load (%closurette-ref lambda-name function source-info-handle
-                                 filepos lineno column)))
+(defun %closurette-value (function function-description)
+  (cmp:irc-load (%closurette-ref function function-description)))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))

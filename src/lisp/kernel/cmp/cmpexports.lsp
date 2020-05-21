@@ -65,6 +65,7 @@
             +rack-where-tag+
             +wrapped-where-tag+
             +header-where-tag+
+            +literal-tag-char-code+
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -336,6 +337,7 @@
           literal-node-closure-p
           literal-node-creator-p
           literal-node-creator-index
+          literal-node-creator-object
           literal-node-creator-name
           literal-node-creator-arguments
           literal-node-side-effect-p

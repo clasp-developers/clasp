@@ -174,6 +174,30 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index)
+{NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
+  void* functionDescription = holder->lookup_function_description(function_index);
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
+                                                              llvm_func,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
+  LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
+  NO_UNWIND_END();
+}
+
+void ltvc_make_runtime_closurette(gctools::GCRootsInModule* holder, size_t index, void* function, void* functionDescription) {
+  core::write_bf_stream(BF("%s:%d ltvc_make_runtime_closurette\n") % __FILE__ % __LINE__ );
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
+                                                              (core::claspFunction)function,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
+  holder->setTaggedIndex( LITERAL_TAG_CHAR, index, functoid.tagged_());
+}
+
+  
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
@@ -419,7 +443,7 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
 
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName, size_t function_index)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+//  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
   void* functionDescription = holder->lookup_function_description(function_index);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =

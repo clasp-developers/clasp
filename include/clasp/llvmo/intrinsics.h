@@ -47,6 +47,7 @@ extern "C" {
 
 typedef void LtvcReturn;
 
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index);
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* num, core::T_O* denom );

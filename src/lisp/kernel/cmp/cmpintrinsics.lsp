@@ -1066,10 +1066,11 @@ and initialize it with an array consisting of one function pointer."
                                                         (cond
                                                           ((literal-node-runtime-p x)
                                                            (literal-node-runtime-object x))
-                                                          ((literal:literal-node-closure-p x)
-                                                           (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
+                                                          ((and (literal:literal-node-creator-p x)
+                                                                (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
+                                                           (literal:generate-run-time-code-for-closurette x)
                                                            nil)
-                                                          (t (error "Illegal object ~s in ordered-literals list" x))))
+                                                          (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
                                                       ordered-literals))) 
             (when gcroots-in-module
               (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))

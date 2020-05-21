@@ -53,6 +53,7 @@
 ;;;
 ;;; Don't thoughtlessly change a primitive-unwinds intrinsic to a primitive intrinsic.
 ;;; + primitive means that the intrinsic doesn't ever throw an exception
+;;;     and nothing that it calls throws an exception
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
 ;;; + unless it is cc_throw or cc_unwind - then it should be called with CALL.
 ;;;
@@ -64,6 +65,21 @@
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
   (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :ltvc ltvc))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; ltvc intrinsics are for initialization of memory at load time
+;;; ltvc stands for Load Time Virtual machine Call
+;;; They are used to construct the a byte-code machine
+;;; Each function takes arguments ( GCRootsInModule* gcroots, char tag, size_t targetIndex, ...args...)
+;;;   The gcroots, tag, targetIndex are used to get a reference to a cell in the gcroots
+;;;   and the ...args... are used to construct the object.
+;;; If you add a new ltvc_xxxx function then do the following to rebuild the virtual machine
+;;; To build the machine in the src/core/byte-code-interpreter.cc file use:
+;;; (0) Erase the code in byte-code-interpreter.cc
+;;; (1) ./waf build_rboehm
+;;; (2) (literal::build-c++-machine)
+;;; (3) copy the result into byte-code-interpreter.cc
+;;;
 (defvar *startup-primitives-as-list*
   '((primitive         "ltvc_make_nil" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t%) :ltvc t)
     (primitive         "ltvc_make_t" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t%) :ltvc t)
@@ -90,6 +106,7 @@
     (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %float%) :ltvc t)
     (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %double%) :ltvc t)
     (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %size_t% #|%fn-prototype*%|# #| %i32*% %size_t% %size_t% %size_t%|#) :ltvc t)
+    (primitive         "ltvc_make_closurette" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t%) :ltvc t)
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_basic_call" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t%) :varargs t :ltvc t)
@@ -104,6 +121,7 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
+         (primitive         "ltvc_make_runtime_closurette" %void% (list %gcroots-in-module*% %size_t% %i8*% %i8*%))
     
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description
@@ -164,7 +182,7 @@
          (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
          (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %function-description*%))
-    
+
          (primitive         "initializeBlockClosure" %t*% (list %t**%))
          (primitive         "initializeTagbodyClosure" %t*% (list %t**%))
     

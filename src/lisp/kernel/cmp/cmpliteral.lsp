@@ -56,7 +56,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) lambda-name-index function)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function function-description)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -107,10 +107,10 @@
       (error "The node ~a has a non-literal datum ~a" node datum))
     (datum-index datum)))
 
-(defparameter *run-all-objects* nil)
+(defparameter *literal-machine* nil)
 
 (defun run-all-add-node (node)
-  (push node *run-all-objects*)
+  (vector-push-extend node (literal-machine-run-all-objects *literal-machine*))
   node)
 
 (defun calculate-table-size (nodes)
@@ -139,51 +139,66 @@
         (make-immediate-datum :value immediate)
         nil)))
 
-(defvar *table-index*)
-(defvar *function-vector*)
-(defvar *function-description-vector*)
+
+
+(defun make-similarity-table (test)
+  (make-hash-table :test test))
+
+(defun find-similar (object kind table)
+  (gethash object table))
+
+(defun add-similar (object datum kind table)
+  (setf (gethash object table) datum))
+
+
+(defstruct (literal-machine (:type vector) :named)
+  (run-all-objects (make-array 64 :fill-pointer 0 :adjustable t))
+  (table-index 0)
+  (function-vector (make-array 16 :fill-pointer 0 :adjustable t))
+  (function-description-vector (make-array 16 :fill-pointer 0 :adjustable t))
+  (constant-datum-to-literal-node-creator (make-hash-table :test #'eql))
+  (identity-coalesce (make-similarity-table #'eq))
+  (ratio-coalesce (make-similarity-table #'eql))
+  (cons-coalesce (make-similarity-table #'eq))
+  (complex-coalesce (make-similarity-table #'eql))
+  (array-coalesce (make-similarity-table #'eq))
+  (hash-table-coalesce (make-similarity-table #'eq))
+  (bignum-coalesce (make-similarity-table #'eql))
+  (symbol-coalesce (make-similarity-table #'eq))
+  (base-string-coalesce (make-similarity-table #'equal))
+  (pathname-coalesce (make-similarity-table #'equal))
+  (package-coalesce (make-similarity-table #'eq))
+  (double-float-coalesce (make-similarity-table #'eql))
+  (llvm-values (make-hash-table))
+)
 
 
 ;;; ------------------------------------------------------------
 ;;;
 ;;;
 
-(defvar *ratio-coalesce*)
-(defvar *cons-coalesce*)
-(defvar *complex-coalesce*)
-(defvar *array-coalesce*)
-(defvar *hash-table-coalesce*)
-(defvar *bignum-coalesce*)
-(defvar *symbol-coalesce*)
-(defvar *base-string-coalesce*)
-(defvar *pathname-coalesce*)
-(defvar *package-coalesce*)
-(defvar *double-float-coalesce*)
-(defvar *identity-coalesce*)
-(defvar *constant-datum-to-literal-node-creator*)
-(defvar *llvm-values*)
-
 (defvar *with-ltv-depth* 0)
 
 (defun new-table-index (&optional (toplevelp t))
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
-  (prog1 *table-index*
-    (incf *table-index*)))
+  (prog1 (literal-machine-table-index *literal-machine*)
+    (incf (literal-machine-table-index *literal-machine*))))
 
-(defun finalize-transient-datum-indices (objects)
+(defun finalize-transient-datum-indices (literal-machine)
   "Give each datum a unique index"
   (let ((ht (make-hash-table))
         (index 0))
-    (dolist (obj objects)
-      (when (literal-dnode-p obj)
-        (let ((datum (literal-dnode-datum obj)))
-          (when (transient-datum-p datum)
-            (unless (gethash datum ht)
-              (setf (gethash datum ht) index)
-              (setf (datum-index datum) index)
+    (dotimes (lm-index (length (literal-machine-run-all-objects literal-machine)))
+      (let ((obj (elt (literal-machine-run-all-objects literal-machine) lm-index)))
+        (when (literal-dnode-p obj)
+          (let ((datum (literal-dnode-datum obj)))
+            (when (transient-datum-p datum)
+              (unless (gethash datum ht)
+                (setf (gethash datum ht) index)
+                (setf (datum-index datum) index)
 ;;;              (format t "obj -> ~s~%" obj)
-              (incf index))))))
+                (incf index)))))))
     index))
 
 (defun new-datum (toplevelp)
@@ -201,13 +216,13 @@ rewrite the slot in the literal table to store a closure."
                (unless (literal-datum-p datum)
                  (error "lookup-literal-index must passed an literal-datum - instead it got ~a" datum))
                (return-from lookup-literal-index (literal-datum-index datum))))
-           *constant-datum-to-literal-node-creator*)
+           (literal-machine-constant-datum-to-literal-node-creator *literal-machine*))
   (error "Could not find literal ~s" object))
 
 (defun add-named-creator (name index literal-name object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
   (let ((creator (make-literal-node-creator :datum index :name name :literal-name literal-name :object object :arguments args)))
-    (setf (gethash index *constant-datum-to-literal-node-creator*) creator)
+    (setf (gethash index (literal-machine-constant-datum-to-literal-node-creator *literal-machine*)) creator)
     (run-all-add-node creator)
     creator))
 
@@ -231,10 +246,11 @@ rewrite the slot in the literal table to store a closure."
     rase))
 
 (defun register-function (llvm-func &optional (func-desc (llvm-sys:constant-pointer-null-get cmp:%function-description*%)))
-  "Add a function to the *function-vector* and return its index"
-  (let ((function-index (length *function-vector*)))
-    (vector-push-extend llvm-func *function-vector*)
-    (vector-push-extend func-desc *function-description-vector*)
+  "Add a function to the (literal-machine-function-vector *literal-machine*) and a function description
+to (literal-machine-function-description-vector *literal-machine*) and return their index - the index will be the same for both."
+  (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
+    (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
+    (vector-push-extend func-desc (literal-machine-function-description-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
 ;;; Helper function: we write a few things out as base strings.
@@ -403,51 +419,42 @@ rewrite the slot in the literal table to store a closure."
                    (name (llvm-sys:get-name fn)))
               (add-side-effect-call "ltvc_mlf_init_funcall" (register-function fn) name)))))))
 
-(defun object-similarity-table-and-creator (object read-only-p)
+(defun object-similarity-table-and-creator (literal-machine object read-only-p)
   ;; Note: If an object has modifiable sub-parts, if we are not read-only-p
-  ;; we must use the *identity-coalesce* or else the user will see spooky action at a distance.
+  ;; we must use the (literal-machine-identity-coalesce literal-machine) or else the user will see spooky action at a distance.
   (cond
-    ((null object) (values *identity-coalesce* #'ltv/nil))
-    ((eq t object) (values *identity-coalesce* #'ltv/t))
-    ((consp object) (values *cons-coalesce* #'ltv/cons))
+    ((null object) (values (literal-machine-identity-coalesce literal-machine) #'ltv/nil))
+    ((eq t object) (values (literal-machine-identity-coalesce literal-machine) #'ltv/t))
+    ((consp object) (values (literal-machine-cons-coalesce *literal-machine*) #'ltv/cons))
     ((fixnump object) (values nil #'ltv/fixnum))
     ((characterp object) (values nil #'ltv/character))
     ((core:single-float-p  object) (values nil #'ltv/single-float))
-    ((symbolp object) (values *symbol-coalesce* #'ltv/symbol))
-    ((double-float-p object) (values *double-float-coalesce* #'ltv/double-float))
-    ((core:ratio-p object) (values *ratio-coalesce* #'ltv/ratio))
+    ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
+    ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
+    ((core:ratio-p object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
-     (values (if read-only-p *identity-coalesce* *base-string-coalesce*) #'ltv/base-string))
+     (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))
     ((arrayp object)
-     (values (if read-only-p *identity-coalesce* *array-coalesce*) #'ltv/array))
+     (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-array-coalesce literal-machine)) #'ltv/array))
     ((hash-table-p object)
-     (values (if read-only-p *identity-coalesce* *hash-table-coalesce*) #'ltv/hash-table))
-    ((bignump object) (values *bignum-coalesce* #'ltv/bignum))
-    ((pathnamep object) (values *pathname-coalesce* #'ltv/pathname))
-    ((packagep object) (values *package-coalesce* #'ltv/package))
-    ((complexp object) (values *complex-coalesce* #'ltv/complex))
-    ((random-state-p object) (values *identity-coalesce* #'ltv/random-state))
-    (t (values *identity-coalesce* #'ltv/mlf))))
-
-(defun make-similarity-table (test)
-  (make-hash-table :test test))
-
-(defun find-similar (object kind table)
-  (gethash object table))
-
-(defun add-similar (object datum kind table)
-  (setf (gethash object table) datum))
+     (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-hash-table-coalesce literal-machine)) #'ltv/hash-table))
+    ((bignump object) (values (literal-machine-bignum-coalesce literal-machine) #'ltv/bignum))
+    ((pathnamep object) (values (literal-machine-pathname-coalesce literal-machine) #'ltv/pathname))
+    ((packagep object) (values (literal-machine-package-coalesce literal-machine) #'ltv/package))
+    ((complexp object) (values (literal-machine-complex-coalesce literal-machine) #'ltv/complex))
+    ((random-state-p object) (values (literal-machine-identity-coalesce literal-machine) #'ltv/random-state))
+    (t (values (literal-machine-identity-coalesce literal-machine) #'ltv/mlf))))
 
 (defun ensure-creator-llvm-value (obj)
   "Lookup or create the llvm::Value for obj"
-  (let ((llvm-value (gethash obj *llvm-values*)))
+  (let ((llvm-value (gethash obj (literal-machine-llvm-values *literal-machine*))))
     (if llvm-value
         llvm-value
         (let* ((datum (literal-dnode-datum obj))
                (index (datum-index datum))
                (tag (datum-tag datum)))
-          (setf (gethash obj *llvm-values*)
+          (setf (gethash obj (literal-machine-llvm-values *literal-machine*))
                 (cmp:irc-intrinsic-call (literal-node-creator-name obj)
                                         (list*
                                          *gcroots-in-module*
@@ -556,68 +563,71 @@ rewrite the slot in the literal table to store a closure."
       (error "Could not find byte-code for ~a" name))
     code))
 
+(defun write-literal-node-byte-code (fout node byte-index)
+  (cond
+    ((literal-node-creator-p node)
+     (let* ((datum (literal-dnode-datum node))
+            (index (datum-index datum))
+            (tag (datum-tag datum)))
+       (setf byte-index (core:ltvc-write-char (lookup-byte-code (literal-node-creator-name node)) fout byte-index))
+       (setf byte-index (write-arguments-byte-code (list tag index) fout byte-index))
+       (setf byte-index (write-arguments-byte-code (literal-node-creator-arguments node) fout byte-index))))
+    ((literal-node-side-effect-p node)
+     (let* ((fn-name (literal-node-side-effect-name node))
+            (args (literal-node-side-effect-arguments node)))
+       (setf byte-index (core:ltvc-write-char (lookup-byte-code fn-name) fout byte-index))
+       (setf byte-index (write-arguments-byte-code args fout byte-index))))
+    ((literal-node-toplevel-funcall-p node)
+     (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_toplevel_funcall") fout byte-index))
+     (let ((arguments (cdr (literal-node-toplevel-funcall-arguments node))))
+       ;;           (format t "About to write arguments for literal-node-toplevel-funcall: ~s~%" arguments)
+       (setf byte-index (write-arguments-byte-code arguments fout byte-index))))
+    ((literal-node-closure-p node)
+     (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_enclose") fout byte-index))
+     (warn "What do I do with the arguments for ~s" node)
+     (core:exit 1)
+     #|         (write-arguments-byte-code (list (literal-node-closure-lambda-name-index node)
+     (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal" ; ; ; ; ; ; ; ;
+     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
+     (fix-arg (literal-node-closure-lambda-name-index node)))))) ; ; ; ; ; ; ; ;
+     (cmp:irc-intrinsic-call "ltvc_enclose" ; ; ; ; ; ; ; ;
+     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
+     (cmp:jit-constant-size_t (literal-node-index node)) ; ; ; ; ; ; ; ;
+     lambda-name                    ; ; ; ; ; ; ; ;
+     (fix-arg (register-function (literal-node-closure-function node))) ; ; ; ; ; ; ; ;
+     #|(literal-node-closure-source-info-handle node) ; ; ; ; ; ; ; ;
+     (literal-node-closure-filepos node) ; ; ; ; ; ; ; ;
+     (literal-node-closure-lineno node) ; ; ; ; ; ; ; ;
+     (literal-node-closure-column node)|#)))) |#
+     )
+    (t (warn "Add support for node ~s" node)))
+  byte-index)
+
+
 (defun write-literal-nodes-byte-code (nodes)
   (let ((fout (make-string-output-stream))
         (byte-index 0))
     (dolist (node nodes)
       (llog "node-> ~s~%" node)
-      (cond
-        ((literal-node-creator-p node)
-         (let* ((datum (literal-dnode-datum node))
-                (index (datum-index datum))
-                (tag (datum-tag datum)))
-           (setf byte-index (core:ltvc-write-char (lookup-byte-code (literal-node-creator-name node)) fout byte-index))
-           (setf byte-index (write-arguments-byte-code (list tag index) fout byte-index))
-           (setf byte-index (write-arguments-byte-code (literal-node-creator-arguments node) fout byte-index))))
-        ((literal-node-side-effect-p node)
-         (let* ((fn-name (literal-node-side-effect-name node))
-                (args (literal-node-side-effect-arguments node)))
-           (setf byte-index (core:ltvc-write-char (lookup-byte-code fn-name) fout byte-index))
-           (setf byte-index (write-arguments-byte-code args fout byte-index))))
-        ((literal-node-toplevel-funcall-p node)
-         (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_toplevel_funcall") fout byte-index))
-         (let ((arguments (cdr (literal-node-toplevel-funcall-arguments node))))
-           ;;           (format t "About to write arguments for literal-node-toplevel-funcall: ~s~%" arguments)
-           (setf byte-index (write-arguments-byte-code arguments fout byte-index))))
-        ((literal-node-closure-p node)
-         (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_enclose") fout byte-index))
-         (warn "What do I do with the arguments for ~s" node)
-         (core:exit 1)
-         #|         (write-arguments-byte-code (list (literal-node-closure-lambda-name-index node)
-         (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal" ; ; ; ; ;
-         (list *gcroots-in-module*      ; ; ; ; ;
-         (fix-arg (literal-node-closure-lambda-name-index node)))))) ; ; ; ; ;
-         (cmp:irc-intrinsic-call "ltvc_enclose" ; ; ; ; ;
-         (list *gcroots-in-module*      ; ; ; ; ;
-         (cmp:jit-constant-size_t (literal-node-index node)) ; ; ; ; ;
-         lambda-name                    ; ; ; ; ;
-         (fix-arg (register-function (literal-node-closure-function node))) ; ; ; ; ;
-         #|(literal-node-closure-source-info-handle node) ; ; ; ; ;
-         (literal-node-closure-filepos node) ; ; ; ; ;
-         (literal-node-closure-lineno node) ; ; ; ; ;
-         (literal-node-closure-column node)|#)))) |#
-         )
-        (t (warn "Add support for node ~s" node))))
+      (setf byte-index (write-literal-node-byte-code fout node byte-index)))
     (setf byte-index (core:ltvc-write-char (code-char 0) fout byte-index))
     (llog "----------------- done nodes~%")
     (get-output-stream-string fout)))
 
 
-(defun generate-run-time-code-for-closurette (node irbuilder-alloca array)
+(defun generate-run-time-code-for-closurette (node)
   ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
-  (declare (ignore array))
-  (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal"
-                                             (list *gcroots-in-module*
-                                                   (fix-arg (literal-node-closure-lambda-name-index node))))))
-    (cmp:irc-intrinsic-call "ltvc_enclose"
+  (let* ((closurette-object (literal-node-creator-object node))
+         (datum (literal-dnode-datum closurette-object))
+         (index (datum-index datum)))
+    (cmp:irc-intrinsic-call "ltvc_make_runtime_closurette"
                             (list *gcroots-in-module*
-                                  (cmp:jit-constant-size_t (literal-node-index node))
-                                  lambda-name
-                                  (fix-arg (register-function (literal-node-closure-function node)))
-                                  #|(literal-node-closure-source-info-handle node)
-                                  (literal-node-closure-filepos node)
-                                  (literal-node-closure-lineno node)
-                                  (literal-node-closure-column node)|#))))
+                                  (cmp:jit-constant-size_t index)
+                                  (literal-node-closure-function closurette-object)
+                                  (literal-node-closure-function-description closurette-object)))
+    ))
+
+(defparameter *ltv-trap* nil)
 
 (defun do-ltv (type body-fn)
   "Evaluate body-fn in an environment where load-time-values, literals and constants are
@@ -629,19 +639,15 @@ the constants-table."
   (let ((body-return-fn (funcall body-fn)))
     (or (llvm-sys:valuep body-return-fn)
         (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
-    (cond
-      ((eq type :toplevel)
-       (run-all-add-node (make-literal-node-toplevel-funcall
-                          :arguments (list *gcroots-in-module*
-                                           (register-function body-return-fn)
-                                           (llvm-sys:get-name body-return-fn)))))
-      ((eq type :ltv) body-return-fn)
-      (t (error "bad ltv type: ~a" type)))))
-
-#+(or)
-(defmacro with-ltv ( &body body)
-  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-ltv :ltv (lambda () ,@body))))
+    (let ((result (cond
+                    ((eq type :toplevel)
+                     (run-all-add-node (make-literal-node-toplevel-funcall
+                                        :arguments (list *gcroots-in-module*
+                                                         (register-function body-return-fn)
+                                                         (llvm-sys:get-name body-return-fn)))))
+                    ((eq type :ltv) body-return-fn)
+                    (t (error "bad ltv type: ~a" type)))))
+      result)))
 
 (defmacro with-load-time-value (&body body)
   "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
@@ -676,33 +682,18 @@ Return the index of the load-time-value"
                                          (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
                                          ;; nil ; initializer
                                          (next-value-table-holder-name "dummy")))
-        (*llvm-values* (make-hash-table))
         (cmp:*generate-compile-file-load-time-values* t)
-        (*identity-coalesce* (make-similarity-table #'eq))
-        (*ratio-coalesce* (make-similarity-table #'eql))
-        (*cons-coalesce* (make-similarity-table #'eq))
-        (*complex-coalesce* (make-similarity-table #'eql))
-        (*array-coalesce* (make-similarity-table #'eq))
-        (*hash-table-coalesce* (make-similarity-table #'eq))
-        (*bignum-coalesce* (make-similarity-table #'eql))
-        (*symbol-coalesce* (make-similarity-table #'eq))
-        (*base-string-coalesce* (make-similarity-table #'equal))
-        (*pathname-coalesce* (make-similarity-table #'equal))
-        (*package-coalesce* (make-similarity-table #'eq))
-        (*double-float-coalesce* (make-similarity-table #'eql))
-        (*constant-datum-to-literal-node-creator* (make-hash-table :test #'eql))
-        (*table-index* 0)
-        (*function-vector* (make-array 16 :fill-pointer 0 :adjustable t))
-        (*function-description-vector* (make-array 16 :fill-pointer 0 :adjustable t))
         (real-name (next-value-table-holder-name))
-        (*run-all-objects* nil))
+        (*literal-machine* (make-literal-machine)))
     (llog "About to evaluate body-fn~%")
     (funcall body-fn)
     ;; Generate the run-all function here
     (llog "About to generate run-all~%")
-    (let ((transient-entries (finalize-transient-datum-indices *run-all-objects*)))
+    (let ((transient-entries (finalize-transient-datum-indices *literal-machine*)))
       (cmp:with-run-all-body-codegen
-          (let ((ordered-run-all-nodes (nreverse *run-all-objects*)))
+          (let ((ordered-run-all-nodes (coerce (literal-machine-run-all-objects *literal-machine*) 'list)))
+            (when *ltv-trap*
+              (break "Look at *literal-machine* ~a" *literal-machine*))
             (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
@@ -713,7 +704,7 @@ Return the index of the load-time-value"
                                                               cmp:%i8*%)
                                             (cmp:jit-constant-size_t byte-code-length)))
               (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
-      (let ((literal-entries *table-index*))
+      (let ((literal-entries (literal-machine-table-index *literal-machine*)))
         (when (> literal-entries 0)
           ;; We have a new table, replace the old one and generate code to register the new one
           ;; and gc roots tabl
@@ -732,18 +723,18 @@ Return the index of the load-time-value"
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
             (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
-                                                                  (length *function-vector*)))
+                                                                  (length (literal-machine-function-vector *literal-machine*))))
                    (function-vector (llvm-sys:make-global-variable
                                      cmp:*the-module*
                                      function-vector-type
                                      nil
                                      'llvm-sys:internal-linkage
                                      (llvm-sys:constant-array-get function-vector-type
-                                                                  (coerce *function-vector* 'list))
+                                                                  (coerce (literal-machine-function-vector *literal-machine*) 'list))
                                      "function-vector"))
                    (function-descs-type (llvm-sys:array-type-get
                                          cmp:%function-description*%
-                                         (length *function-description-vector*)))
+                                         (length (literal-machine-function-description-vector *literal-machine*))))
                    (function-descs (llvm-sys:make-global-variable
                                     cmp:*the-module*
                                     function-descs-type
@@ -751,7 +742,7 @@ Return the index of the load-time-value"
                                     'llvm-sys:internal-linkage
                                     (llvm-sys:constant-array-get
                                      function-descs-type
-                                     (coerce *function-description-vector* 'list))
+                                     (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
                                     "function-descs")))
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
@@ -763,7 +754,7 @@ Return the index of the load-time-value"
                                                                       cmp:%t*%)
                                                   transient-vector
                                                   (cmp:jit-constant-size_t transient-entries)
-                                                  (cmp:jit-constant-size_t (length *function-vector*))
+                                                  (cmp:jit-constant-size_t (length (literal-machine-function-vector *literal-machine*)))
                                                   (cmp:irc-bit-cast
                                                    (cmp:irc-gep function-vector
                                                                 (list (cmp:jit-constant-size_t 0)
@@ -792,7 +783,6 @@ Return the index of the load-time-value"
                                          (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                          ;; nil ; initializer
                                          (core:bformat nil "constants-table*%d" (core:next-number))))
-        (*table-index* 0)
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[0]% ; type
@@ -801,9 +791,9 @@ Return the index of the load-time-value"
                                          nil
                                          (next-value-table-holder-name)))
         (*run-time-coalesce* (make-similarity-table #'eq))
-        (*run-all-objects* nil))
+        (*literal-machine* (make-literal-machine)))
     (let* ((THE-REPL-FUNCTION (funcall body-fn))
-           (run-time-values *run-all-objects*)
+           (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
            (constant-table nil))
       ;; Put the constants in order they will appear in the table.
@@ -826,7 +816,7 @@ Return the index of the load-time-value"
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
-starting from *table-index* into a constants table and the run-time values are accumulated in *run-all-objects*.
+starting from (literal-machine-table-index *literal-machine*) into a constants table and the run-time values are accumulated in *literal-machine*.
 References to the run-time values are relative to the *load-time-value-holder-global-var*.
 Once the body has evaluated, if there were run-time values accumulated then sort them by index and construct a new
 global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
@@ -847,7 +837,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
             (llog "immediate-datum value ~s~%" val)
             (values immediate-datum nil)))
         (multiple-value-bind (similarity creator)
-            (object-similarity-table-and-creator object read-only-p)
+            (object-similarity-table-and-creator *literal-machine* object read-only-p)
           (llog "non-immediate~%")
           (let ((existing (if similarity (find-similar object desired-kind similarity) nil)))
             (llog "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
@@ -857,7 +847,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                  (llog "    upgrading ~s~%" existing)
                  (upgrade-transient-datum-to-literal existing)
                  (llog "    after upgrade: ~s~%" existing))
-               (values (gethash existing *constant-datum-to-literal-node-creator*) t))
+               (values (gethash existing (literal-machine-constant-datum-to-literal-node-creator *literal-machine*)) t))
               ;; Otherwise create a new datum at the current level of transientness
               (t (let ((datum (new-datum toplevelp)))
                    (when similarity (add-similar object datum desired-kind similarity))
@@ -982,9 +972,15 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-#+(or)
-(defun reference-closure (lambda-name enclosed-function source-info-handle
-                          filepos lineno column)
+(defun reference-closure (function function-description)
+  (let* ((datum (new-datum t))
+         (creator (make-literal-node-closure :datum datum :function function :function-description function-description))
+         (function-index (register-function function function-description)))
+    (add-creator "ltvc_make_closurette" datum creator function-index)
+    (datum-index datum)))
+
+#|  (register-function function function-description))
+
   (if (cmp:generate-load-time-values)
       (multiple-value-bind (lambda-name-node in-array)
           (load-time-reference-literal lambda-name t)
@@ -1012,7 +1008,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                          :filepos filepos :lineno lineno :column column)))
           (run-all-add-node creator)
           index))))
-
+|#
 ;;; ------------------------------------------------------------
 ;;;
 ;;; functions that are called by bclasp and cclasp that might

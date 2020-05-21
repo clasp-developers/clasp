@@ -290,6 +290,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "WRAPPED-POINTER-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_WRAPPED_POINTER)));
   ENTRY(list, "DERIVABLE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_DERIVABLE)));
   ENTRY(list, "FUNCALLABLE-INSTANCE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_FUNCALLABLE_INSTANCE)));
+  ENTRY(list, "LITERAL-TAG-CHAR-CODE", make_fixnum(static_cast<Fixnum>(LITERAL_TAG_CHAR)));
 //  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_CLASS)));
   ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
   ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Length)));

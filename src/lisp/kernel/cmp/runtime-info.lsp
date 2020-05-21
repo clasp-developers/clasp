@@ -28,6 +28,7 @@
 (defvar +funcallable-instance-stamp+ (get-cxx-data-structure-info :funcallable-instance-stamp))
 (defvar +class-rep-stamp+ (get-cxx-data-structure-info :class-rep-stamp))
 (defvar +wrapped-pointer-stamp+ (get-cxx-data-structure-info :wrapped-pointer-stamp))
+(defvar +literal-tag-char-code+ (get-cxx-data-structure-info :literal-tag-char-code))
 (defvar +derivable-cxx-object-stamp+ (get-cxx-data-structure-info :derivable-stamp))
 (defvar +instance-stamp+ (get-cxx-data-structure-info :instance-stamp))
 (defvar +c++-stamp-max+ (get-cxx-data-structure-info :c++-stamp-max))
