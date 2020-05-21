@@ -157,6 +157,13 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
 }
 
 CL_LAMBDA(class slot-count);
+CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
+  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl);
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
+  return obj;
+}
+
+CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
   // cl is known to be a standard-class.
   ASSERT(cl->CLASS_has_creator());

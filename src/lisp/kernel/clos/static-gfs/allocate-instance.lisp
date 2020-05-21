@@ -21,7 +21,7 @@ there's no initarg checking or loops to elide.
            ;; But if it is resized that will trigger make-instance recompilation,
            ;; so there's no problem here.
            (let ((size (clos::class-size class)))
-             `(core:allocate-new-instance ,class ,size)))
+             `(core:allocate-standard-instance ,class ,size)))
           ((eq metaclass (find-class 'clos:funcallable-standard-class))
            (let ((size (clos::class-size class)))
              `(let ((instance (core:allocate-new-funcallable-instance ,class ,size)))

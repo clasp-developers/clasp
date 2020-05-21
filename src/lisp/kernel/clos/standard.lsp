@@ -111,7 +111,7 @@
   ;; before anything terrible can happen.
   ;; So we don't finalize here.
   (dbg-standard "About to allocate-new-instance class->~a~%" class)
-  (let ((x (core:allocate-new-instance class (class-size class))))
+  (let ((x (core:allocate-standard-instance class (class-size class))))
     (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
     (mlog "In allocate-instance  x -> %s\n" x)
     x))
