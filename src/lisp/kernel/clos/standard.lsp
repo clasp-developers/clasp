@@ -330,9 +330,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
       ;; Extensible sequences
       (eq superclass (find-class 'sequence))))
 
-;;; Should it be standard-class only?
-(defmethod validate-superclass ((class class) (superclass core:derivable-cxx-class)) t)
-
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
 ;;;
