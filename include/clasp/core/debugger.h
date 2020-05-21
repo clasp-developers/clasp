@@ -114,6 +114,7 @@ int core__ihs_current_frame();
       If the idx is out of bounds then return a valid value */
 void core__gdb(T_sp msg);
 int core__set_ihs_current_frame(int idx);
+void core__btcl(T_sp stream, bool all, bool args, bool source_info);
 
 
 }; // namespace core

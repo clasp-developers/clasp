@@ -1000,6 +1000,23 @@ SYMBOL_EXPORT_SC_(CorePkg,start_debugger_with_backtrace);
 CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {
   DynamicScopeManager scope(_sym_STARbacktraceSTAR,backtrace);
   LispDebugger dbg(_Nil<T_O>());
+  if (_lisp->_DebuggerDisabled) {
+    T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue();
+    if (std::getenv("CLASP_BACKTRACE_FILE")) {
+      std::string filename = std::getenv("CLASP_BACKTRACE_FILE");
+      T_sp sfilename = SimpleBaseString_O::make(filename);
+      strm = cl__open(sfilename,
+                      kw::_sym_output,
+                      cl::_sym_character,
+                      _Nil<T_O>(), false,
+                      _Nil<T_O>(), false,
+                      kw::_sym_default,
+                      _Nil<T_O>());
+    }
+    write_bf_stream(BF("%s:%d Debugger is disabled - dumping backtrace\n") % __FILE__ % __LINE__ );
+    core__btcl(strm,true,true,true);
+    abort();
+  }
   dbg.invoke();
 }
 
