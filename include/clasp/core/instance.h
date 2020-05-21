@@ -132,8 +132,6 @@ namespace core {
   //	void setupInstanceNil();
 
   public:
-    virtual bool isCallable() const { return false; };
-  public:
     // Functions from Instance_O
     string _classNameAsString() const;
     void _setClassName(Symbol_sp id) { this->instanceSet(REF_CLASS_CLASS_NAME, id); };
@@ -173,8 +171,6 @@ namespace core {
     string instanceClassName() const { return this->getPackagedName(); };
 
     T_sp make_instance();
-  /*! predicate if this is a BuiltInClass class */
-    virtual bool builtInClassP() const { return this == &*core::lisp_built_in_class(); };
 
   /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
@@ -183,10 +179,6 @@ namespace core {
   /*! cxxDerivableClass is a class that inherits from a raw C++ class and
           the clbind::Adapter class - this allows it to be derived from */
     virtual bool cxxDerivableClassP() const { return false; };
-
-  /*! primaryCxxDerivableClassP is a predicate that returns true if
-          this class is the primary derivable C++ class */
-    virtual bool primaryCxxDerivableClassP() const { return false; };
 
     void setInstanceBaseClasses(List_sp classes);
     void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
