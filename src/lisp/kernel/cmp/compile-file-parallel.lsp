@@ -379,7 +379,7 @@ Each bitcode filename will contain the form-index.")
                                 ((:source-debug-offset *compile-file-source-debug-offset*) 0)
                                 ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
-                                (output-type :fasl output-type-p)
+                                (output-type (if *generate-faso* :fasp :fasl) output-type-p)
                                 ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp
