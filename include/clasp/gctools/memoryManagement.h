@@ -585,8 +585,8 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
     if ( given != STAMP_null ) {
       return Header_s::StampWtagMtag::shift_unshifted_stamp(given)|where;
     }
-    if (global_NextUnshiftedStamp.load() < Header_s::largest_possible_stamp) {
-      UnshiftedStamp stamp = global_NextUnshiftedStamp.fetch_add(4);
+    UnshiftedStamp stamp = global_NextUnshiftedStamp.fetch_add(4);
+    if (stamp < Header_s::largest_possible_stamp) {
 #ifdef DEBUG_ASSERT
       if (!(Header_s::StampWtagMtag::is_unshifted_stamp(stamp)) && (stamp&3)!=0) {
         printf("%s:%d NextStampWtag is about to return a stamp that is illegal: stamp: %lu\n", __FILE__, __LINE__, stamp);
