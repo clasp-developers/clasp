@@ -367,8 +367,6 @@
        (first (cleavir-ir:outputs instruction))
        "sham-dynamic-environment"))
 
-(defparameter *use-closurettes* t)
-
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:enclose-instruction) return-value abi function-info)
   (let* ((enter-instruction (cleavir-ir:code instruction))
@@ -384,7 +382,7 @@
          (result
            (progn
              (cond
-               ((and (zerop ninputs) *use-closurettes*)
+               ((zerop ninputs)
                 #+(or)(format t "Create a closurette with function-description -> ~a  enclosed-function -> ~a~%"
                         function-description enclosed-function)
                 (let ((result (%closurette-value enclosed-function function-description)))

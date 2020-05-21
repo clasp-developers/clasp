@@ -188,7 +188,7 @@ LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size
 }
 
 void ltvc_make_runtime_closurette(gctools::GCRootsInModule* holder, size_t index, void* function, void* functionDescription) {
-  core::write_bf_stream(BF("%s:%d ltvc_make_runtime_closurette\n") % __FILE__ % __LINE__ );
+//  core::write_bf_stream(BF("%s:%d ltvc_make_runtime_closurette\n") % __FILE__ % __LINE__ );
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               (core::claspFunction)function,
