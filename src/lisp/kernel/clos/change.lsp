@@ -54,23 +54,26 @@
 
 (defmethod change-class ((instance standard-object) (new-class std-class)
 			 core:&va-rest initargs)
-  (let ((old-instance (si:copy-instance instance))
-        (instance (core:reallocate-instance instance new-class (class-size new-class))))
+  (let ((old-slotds (si:instance-sig instance))
+        (copy (si:copy-instance instance))
+        (instance (core:reallocate-instance instance new-class (class-size new-class)))
+        (new-slotds (si:instance-sig instance)))
     ;; "The values of local slots specified by both the class Cto and
     ;; Cfrom are retained.  If such a local slot was unbound, it remains
     ;; unbound."
     ;; "The values of slots specified as shared in the class Cfrom and
     ;; as local in the class Cto are retained."
-    (let* ((new-local-slotds (class-slots (class-of instance))))
-      (dolist (new-slot new-local-slotds)
-	;; CHANGE-CLASS can only operate on the value of local slots.
-	(when (eq (slot-definition-allocation new-slot) :INSTANCE)
-	  (let ((name (slot-definition-name new-slot)))
-	    (if (and (slot-exists-p old-instance name)
-		     (slot-boundp old-instance name))
-		(setf (slot-value instance name) (slot-value old-instance name))
-		(slot-makunbound instance name))))))
-    (apply #'update-instance-for-different-class old-instance instance
+    (dolist (new-slotd new-slotds)
+      ;; CHANGE-CLASS can only operate on the value of local slots.
+      (when (eq (slot-definition-allocation new-slotd) :INSTANCE)
+        (let* ((name (slot-definition-name new-slotd))
+               (old-slotd (find name old-slotds :key #'slot-definition-name)))
+          (when old-slotd
+            ;; Just copy over unbound markers too
+            (si:instance-set
+             instance (slot-definition-location new-slotd)
+             (si:instance-ref copy (slot-definition-location old-slotd)))))))
+    (apply #'update-instance-for-different-class copy instance
 	   initargs)
     instance))
 
