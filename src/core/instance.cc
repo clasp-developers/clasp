@@ -59,7 +59,7 @@ Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
   return bs;
 }
 
-CL_DEFUN T_sp core__rack_stamp(Rack_sp rack) {
+CL_DEFUN T_sp core__stamp_of_rack(Rack_sp rack) {
   core::T_sp stamp((gctools::Tagged)(uint64_t)(T_O*)(rack->_ShiftedStamp));
   return stamp;
 }
