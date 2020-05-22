@@ -51,6 +51,10 @@
     (core:instance-ref codegen-instance-ref convert-instance-ref)
     (core:instance-set codegen-instance-set convert-instance-set)
     (core::instance-cas codegen-instance-cas convert-instance-cas)
+    (core:instance-rack codegen-instance-rack convert-instance-rack)
+    (core:instance-rack-set codegen-instance-rack-set convert-instance-rack-set)
+    (core:rack-ref codegen-rack-ref convert-rack-rev)
+    (core:rack-set codegen-rack-set convert-rack-set)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -1180,8 +1184,7 @@ jump to blocks within this tagbody."
     (irc-t*-result (irc-derivable-stamp (irc-load object)) result)))
 
 ;;; CORE:INSTANCE-REF
-;;; the gen- are for cclasp. At the moment they're unused, but that's just because
-;;; the runtime fastgf compiler uses bclasp so it's a bit lower priority.
+
 (defun gen-instance-ref (instance index)
   (irc-read-slot instance (irc-untag-fixnum index %size_t% "slot-location")))
 
@@ -1231,6 +1234,63 @@ jump to blocks within this tagbody."
     (irc-t*-result
      (gen-instance-cas (irc-load instancet) (irc-load indext)
                        (irc-load oldt) (irc-load newt))
+     result)))
+
+;;; CORE:INSTANCE-RACK
+
+(defun gen-instance-rack (instance) (irc-rack instance))
+
+(defun codegen-instance-rack (result rest env)
+  (let ((instance (first rest))
+        (instancet (alloca-t* "instance-rack-instance")))
+    (codegen instancet instance env)
+    (irc-t*-result (gen-instance-rack (irc-load instancet)) result)))
+
+;;; CORE:INSTANCE-RACK-SET
+
+(defun gen-instance-rack-set (instance rack)
+  (irc-rack-set instance rack)
+  rack)
+
+(defun codegen-instance-rack-set (result rest env)
+  (let ((instance (first rest)) (rack (first rest))
+        (instancet (alloca-t* "instance"))
+        (rackt (alloca-t* "rack")))
+    (codegen instancet instance env)
+    (codegen rackt instance env)
+    (irc-t*-result
+     (gen-instance-rack-set (irc-load instancet) (irc-load rackt))
+     result)))
+
+;;; CORE:RACK-REF
+
+(defun gen-rack-ref (rack index)
+  (irc-rack-read rack (irc-untag-fixnum index %size_t% "slot-location")))
+
+(defun codegen-rack-ref (result rest env)
+  (let ((rack (first rest)) (index (second rest))
+        (rackt (alloca-t* "rack-ref-rack"))
+        (indext (alloca-t* "rack-ref-index")))
+    (codegen rackt instance env)
+    (codegen indext index env)
+    (irc-t*-result (gen-rack-ref (irc-load rackt) (irc-load indext))
+                   result)))
+
+;;; CORE:RACK-SET
+
+(defun gen-rack-set (rack index value)
+  (irc-write-slot rack (irc-untag-fixnum index %size_t% "slot-location") value))
+
+(defun codegen-rack-set (result rest env)
+  (let ((rack (first rest)) (index (second rest)) (value (third rest))
+        (rackt (alloca-t* "rack-set-rack"))
+        (indext (alloca-t* "rack-set-index"))
+        (valuet (alloca-t* "rack-set-value")))
+    (codegen rackt rack env)
+    (codegen indext index env)
+    (codegen valuet value env)
+    (irc-t*-result
+     (gen-rack-set (irc-load rackt) (irc-load indext) (irc-load valuet))
      result)))
 
 ;;; DBG-i32

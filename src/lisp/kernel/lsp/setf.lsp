@@ -258,6 +258,8 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 (defsetf gethash (k h &optional d) (v) (declare (ignore d)) `(core::hash-table-setf-gethash ,h ,k ,v))
 #+clos
 (defsetf instance-ref instance-set)
+#+clos
+(defsetf rack-ref (rack index) (value) `(progn (rack-set ,rack ,index ,value) ,value))
 
 (define-setf-expander getf (&environment env place indicator
                             &optional (default nil default-p))

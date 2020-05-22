@@ -91,6 +91,10 @@ when this is t a lot of graphs will be generated.")
 
 (defun treat-as-special-operator-p (name)
   (cond
+    ((eq name 'core:instance-rack) nil)
+    ((eq name 'core:instance-rack-set) nil)
+    ((eq name 'core:rack-ref) nil)
+    ((eq name 'core:rack-set) nil)
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop::call-with-variable-bound) nil)
     ((eq name 'unwind-protect) t)
