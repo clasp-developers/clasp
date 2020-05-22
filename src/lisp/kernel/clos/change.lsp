@@ -52,29 +52,40 @@
              (list #'shared-initialize (list new-data added-slots)))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
-(defmethod change-class ((instance standard-object) (new-class std-class)
-			 core:&va-rest initargs)
-  (let ((old-slotds (si:instance-sig instance))
-        (copy (si:copy-instance instance))
-        (instance (core:reallocate-instance instance new-class (class-size new-class)))
-        (new-slotds (si:instance-sig instance)))
+(defun change-class-aux (old-rack new-stamp new-slotds)
+  (let ((old-slotds (si:rack-sig old-rack))
+        (new-rack (core:make-rack (length new-slotds) new-slotds new-stamp
+                                  (core:unbound))))
     ;; "The values of local slots specified by both the class Cto and
     ;; Cfrom are retained.  If such a local slot was unbound, it remains
     ;; unbound."
     ;; "The values of slots specified as shared in the class Cfrom and
     ;; as local in the class Cto are retained."
     (dolist (new-slotd new-slotds)
-      ;; CHANGE-CLASS can only operate on the value of local slots.
-      (when (eq (slot-definition-allocation new-slotd) :INSTANCE)
+      (when (eq (slot-definition-allocation new-slotd) :instance)
         (let* ((name (slot-definition-name new-slotd))
-               (old-slotd (find name old-slotds :key #'slot-definition-name)))
-          (when old-slotd
-            ;; Just copy over unbound markers too
-            (si:instance-set
-             instance (slot-definition-location new-slotd)
-             (si:instance-ref copy (slot-definition-location old-slotd)))))))
-    (apply #'update-instance-for-different-class copy instance
-	   initargs)
+               (old-slotd (find name old-slotds
+                                :key #'slot-definition-name)))
+          (when (and old-slotd
+                     (eq (slot-definition-allocation old-slotd) :instance))
+            ;; We just copy over values,
+            ;; whether they're unbound markers or not.
+            (setf (si:rack-ref new-rack (slot-definition-location new-slotd))
+                  (si:rack-ref old-rack (slot-definition-location old-slotd)))))))
+    new-rack))
+
+(defmethod change-class ((instance standard-object) (new-class standard-class)
+                         core:&va-rest initargs)
+  (let* ((old-rack (core:instance-rack instance))
+         (old-class (class-of instance))
+         (copy (core:allocate-raw-instance old-class old-rack))
+         (new-slotds (class-slots new-class))
+         (new-stamp (core:class-stamp-for-instances new-class))
+         (new-rack (change-class-aux old-rack new-stamp new-slotds)))
+    (setf (core:instance-rack instance) new-rack
+          (core:instance-class instance) new-class)
+    (apply #'update-instance-for-different-class
+           copy instance initargs)
     instance))
 
 ;;;
