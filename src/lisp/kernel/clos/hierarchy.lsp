@@ -40,14 +40,15 @@
     ;; They need to have those locations, even in user subclasses of this class.
     ;; Also note that boot.lsp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
+    ;; It checks this.
     '((direct-methods :initform nil :reader specializer-direct-methods
                       :accessor %specializer-direct-methods)
       (call-history-generic-functions
        :initform nil
        :reader specializer-call-history-generic-functions
-       :location 3)
+       :location 1)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex :location 4)
+                         :accessor specializer-mutex :location 2)
       ;;; Any changes to the slots above need to be reflected in instance.h
       )))
 
@@ -73,32 +74,32 @@
     ;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h.
     ;; See comment in +specializer-slots+ about locations.
     `(,@+specializer-slots+
-      (name :initarg :name :initform nil :reader class-name :location 5)
+      (name :initarg :name :initform nil :reader class-name :location 3)
       (direct-superclasses :initarg :direct-superclasses :initform nil
-			   :reader class-direct-superclasses :location 6
+			   :reader class-direct-superclasses :location 4
                            :accessor %class-direct-superclasses)
-      (direct-subclasses :initform nil  :location 7
+      (direct-subclasses :initform nil  :location 5
                          :reader class-direct-subclasses
                          :accessor %class-direct-subclasses)
-      (slots :reader class-slots :accessor %class-slots :location 8)
+      (slots :reader class-slots :accessor %class-slots :location 6)
       (precedence-list :reader class-precedence-list
-                       :accessor %class-precedence-list :location 9)
-      (direct-slots :initarg :direct-slots :reader class-direct-slots :location 10
+                       :accessor %class-precedence-list :location 7)
+      (direct-slots :initarg :direct-slots :reader class-direct-slots :location 8
                     :accessor %class-direct-slots)
-      (direct-default-initargs :initarg :direct-default-initargs :location 11
+      (direct-default-initargs :initarg :direct-default-initargs :location 9
 			       :initform nil :reader class-direct-default-initargs)
       (default-initargs :reader class-default-initargs
-                        :accessor %class-default-initargs :location 12)
+                        :accessor %class-default-initargs :location 10)
       (finalized :initform nil :reader class-finalized-p
-                 :accessor %class-finalized-p :location 13)
-      (docstring :initarg :documentation :initform nil :location 14)
+                 :accessor %class-finalized-p :location 11)
+      (docstring :initarg :documentation :initform nil :location 12)
       (size :accessor class-size)
       (prototype)
-      (dependents :initform nil :accessor class-dependents :location 17)
+      (dependents :initform nil :accessor class-dependents :location 15)
       (valid-initargs :accessor class-valid-initargs)
-      (location-table :initform nil :accessor class-location-table :location 19)
-      (stamp-for-instances :accessor stamp-for-instances :location 20)
-      (creator :accessor creator :location 21)
+      (location-table :initform nil :accessor class-location-table :location 17)
+      (stamp-for-instances :accessor stamp-for-instances :location 18)
+      (creator :accessor creator :location 19)
       (source-position :initform nil :initarg :source-position :accessor class-source-position)
       ;;; Any changes to the slots above need to be reflected in instance.h and metaClass.h
       )))

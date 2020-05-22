@@ -115,12 +115,18 @@
                                collect (apply #'make-simple-slotd direct-slot-class slotd)))
            (effective-slot-class (find-class 'standard-effective-slot-definition nil))
 	   (effective-slots (loop for i from 0
-			       for slotd in slots
-			       for name = (getf slotd :name)
-			       for s = (apply #'make-simple-slotd effective-slot-class slotd)
-			       do (setf (slot-definition-location s) i
-					(gethash name location-table) i)
-			       collect s)))
+                                  for slotd in slots
+                                  for name = (getf slotd :name)
+                                  for declared-location = (getf slotd :location)
+                                  for s = (apply #'make-simple-slotd effective-slot-class slotd)
+                                  do (setf (slot-definition-location s) i
+                                           (gethash name location-table) i)
+                                  ;; do a sanity check on :location
+                                  when (and declared-location
+                                            (/= i declared-location))
+                                    do (error "BUG: Primitive slot ~a has incorrect :location"
+                                              name)
+                                  collect s)))
       (setf (class-slots class) effective-slots
 	    (class-direct-slots class) direct-slots
 	    (class-size class) (length slots))
