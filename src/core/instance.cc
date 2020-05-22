@@ -216,9 +216,8 @@ CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
   return instance->_Rack;
 }
 
-CL_DEFUN Rack_sp core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
+CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
   instance->_Rack = rack;
-  return rack;
 }
 
 size_t Instance_O::rack_stamp_offset() {

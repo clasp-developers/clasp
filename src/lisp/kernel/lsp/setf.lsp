@@ -259,6 +259,8 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
 #+clos
 (defsetf instance-ref instance-set)
 #+clos
+(defsetf instance-rack (instance) (new) `(progn (instance-rack-set ,instance ,new) ,new))
+#+clos
 (defsetf rack-ref (rack index) (value) `(progn (rack-set ,rack ,index ,value) ,value))
 
 (define-setf-expander getf (&environment env place indicator
