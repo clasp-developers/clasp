@@ -109,11 +109,12 @@ namespace core {
     bool fieldsp() const;
     void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+    Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Class(metaClass)
       ,_Rack(_Unbound<Rack_O>())
     {};
+    Instance_O(Instance_sp cl, Rack_sp rack) : _Class(cl), _Rack(rack) {};
     virtual ~Instance_O(){};
   public:
     // The order MUST be:

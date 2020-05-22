@@ -82,7 +82,7 @@ CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
   rack->low_level_rackSet(i, val);
 }
 
-CL_LAMBDA(instance func);
+CL_LAMBDA(instance class);
 CL_DECLARE();
 CL_DOCSTRING("instanceClassSet");
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
@@ -166,6 +166,12 @@ CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
   GC_ALLOCATE_VARIADIC(Instance_O, obj, cl);
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
+  return obj;
+}
+
+CL_LAMBDA(class rack);
+CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
+  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl, rack);
   return obj;
 }
 
