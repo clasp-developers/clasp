@@ -349,6 +349,85 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class INSTANCE-RACK-AST
+;;;
+
+(defclass instance-rack-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
+  ((%object :initarg :object-ast :accessor cleavir-ast:object-ast)))
+
+(cleavir-io:define-save-info instance-rack-ast
+    (:object-ast cleavir-ast:object-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast instance-rack-ast))
+  "instance-rack")
+
+(defmethod cleavir-ast:children ((ast instance-rack-ast))
+  (list (cleavir-ast:object-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class INSTANCE-RACK-SET-AST
+;;;
+
+(defclass instance-rack-set-ast (cleavir-ast:no-value-ast-mixin cleavir-ast:ast)
+  ((%object :initarg :object-ast :accessor cleavir-ast:object-ast)
+   (%value :initarg :value-ast :accessor cleavir-ast:value-ast)))
+
+(cleavir-io:define-save-info instance-rack-set-ast
+    (:object-ast cleavir-ast:object-ast)
+  (:value-ast cleavir-ast:value-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast instance-rack-set-ast))
+  "instance-rack-set")
+
+(defmethod cleavir-ast:children ((ast instance-rack-set-ast))
+  (list (cleavir-ast:object-ast ast) (cleavir-ast:value-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class RACK-READ-AST
+;;;
+
+(defclass rack-read-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
+  ((%object :initarg :object-ast :accessor cleavir-ast:object-ast)
+   (%slot-number :initarg :slot-number-ast
+                 :accessor cleavir-ast:slot-number-ast)))
+
+(cleavir-io:define-save-info rack-read-ast
+    (:object-ast cleavir-ast:object-ast)
+  (:slot-number-ast cleavir-ast:slot-number-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast rack-read-ast))
+  "rack-read")
+
+(defmethod cleavir-ast:children ((ast rack-read-ast))
+  (list (cleavir-ast:object-ast ast) (cleavir-ast:slot-number-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class RACK-WRITE-AST
+;;;
+
+(defclass rack-write-ast (cleavir-ast:no-value-ast-mixin cleavir-ast:ast)
+  ((%object :initarg :object-ast :accessor cleavir-ast:object-ast)
+   (%slot-number :initarg :slot-number-ast
+                 :accessor cleavir-ast:slot-number-ast)
+   (%value :initarg :value-ast :accessor cleavir-ast:value-ast)))
+
+(cleavir-io:define-save-info rack-write-ast
+    (:object-ast cleavir-ast:object-ast)
+  (:slot-number-ast cleavir-ast:slot-number-ast)
+  (:value-ast cleavir-ast:value-ast))
+
+(defmethod cleavir-ast-graphviz::label ((ast rack-write-ast))
+  "rack-write")
+
+(defmethod cleavir-ast:children ((ast rack-write-ast))
+  (list (cleavir-ast:object-ast ast) (cleavir-ast:slot-number-ast ast)
+        (cleavir-ast:value-ast ast)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class VASLIST-POP-AST
 ;;;
 ;;; Pops an element off a valist.

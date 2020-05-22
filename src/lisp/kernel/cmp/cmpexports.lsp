@@ -233,6 +233,10 @@
             gen-%array-dimension
             irc-vaslist-va_list-address
             irc-vaslist-remaining-nargs-address
+            gen-instance-rack
+            gen-instance-rack-set
+            gen-rack-ref
+            gen-rack-set
             gen-vaslist-pop
             gen-vaslist-length
             jit-constant-i1

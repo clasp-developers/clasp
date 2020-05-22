@@ -315,6 +315,40 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction INSTANCE-RACK-INSTRUCTION
+;;;
+
+(defclass instance-rack-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction INSTANCE-RACK-SET-INSTRUCTION
+;;;
+
+(defclass instance-rack-set-instruction
+    (cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin cleavir-ir:instruction)
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction RACK-READ-INSTRUCTION
+;;;
+
+(defclass rack-read-instruction
+    (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction RACK-WRITE-INSTRUCTION
+;;;
+
+(defclass rack-write-instruction
+    (cleavir-ir:one-successor-mixin cleavir-ir:side-effect-mixin cleavir-ir:instruction)
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction VASLIST-POP-INSTRUCTION
 ;;;
 
