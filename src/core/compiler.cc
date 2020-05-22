@@ -1637,6 +1637,30 @@ void ltvc_mlf_init_basic_call_varargs(gctools::GCRootsInModule* holder,
 }
 
 
+void dump_byte_code(T_sp fin, size_t length, bool useFrom=false, size_t from=0) {
+  StringInputStream_sp sis = gc::As<StringInputStream_sp>(fin);
+  string peer;
+  if (useFrom) {
+    peer = sis->peerFrom(from,length);
+  } else {
+    from = sis->_InputPosition;
+    peer = sis->peer(length);
+  }
+  write_bf_stream(BF("%8lu: ") % from);
+  for (int i=0; i<peer.size(); ++i ) {
+    unsigned char cc = (unsigned char)peer[i];
+    if ( cc<32 ) {
+      write_bf_stream(BF("(\\%d)") % (int)cc);
+    } else if (cc>=128) {
+      write_bf_stream(BF("(\\%d)") % (int)cc);
+    } else {
+      write_bf_stream(BF("(%c\\%d)") % (char)cc % (int)cc);
+    }
+  }
+  write_bf_stream(BF("\n"));
+}
+
+
 #define DEFINE_PARSERS
 #include "byte-code-interpreter.cc"
 #undef DEFINE_PARSERS
@@ -1659,6 +1683,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp fin, bool log)
       printf("%s:%d ------- top of byte-code interpreter\n", __FILE__, __LINE__ );
       printf("%s:%d byte_index = %zu\n",__FILE__, __LINE__,  byte_index);
     }
+    // dump_byte_code(fin,32);
     char c = ltvc_read_char(fin,log,byte_index);
     switch (c) {
     case 0: goto DONE;

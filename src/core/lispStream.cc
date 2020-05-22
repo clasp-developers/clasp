@@ -5689,6 +5689,19 @@ T_sp StringInputStream_O::make(const string &str) {
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
 
+string StringInputStream_O::peerFrom(size_t start, size_t len)
+{
+  if (start>=this->_InputLimit) {
+    SIMPLE_ERROR(BF("Cannot peer beyond the input limit at %lu") % this->_InputLimit);
+  }
+  size_t remaining = this->_InputLimit-start;
+  len = MIN(len,remaining);
+  stringstream ss;
+  for (size_t i=0; i<len; ++i ) {
+    ss << (char)(this->_Contents->rowMajorAref(start+i).unsafe_character()&0xFF);
+  }
+  return ss.str();
+}  
 string StringInputStream_O::peer(size_t len)
 {
   size_t remaining = this->_InputLimit-this->_InputPosition;

@@ -495,6 +495,7 @@ public: // instance variables here
 public: // Functions here
   static T_sp make(const string &str);
   string peer(size_t len);
+  string peerFrom(size_t start,size_t len);
 }; // StringStream class
 };
 
