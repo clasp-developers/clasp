@@ -72,3 +72,24 @@
          (a b c)
          (:illegal-option nil)))
  :type program-error)
+
+(test slot-exists-p-gives-single-value-slot-exists
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (make-instance 'test) 'foo)))))
+
+(test slot-exists-p-gives-single-value-slot-not-exists
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (make-instance 'test) 'fooasdasdasd)))))
+
+(test slot-exists-p-gives-single-value-slot-not-exists-build-in-class
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (find-class 'test) 'fooasdasdasd)))))
+
+(test slot-exists-p-other-arguments
+      (notany  #'(lambda(object)
+                   (slot-exists-p object 'foo))
+               (list 42 42.0 'c "324789" (code-char 65)
+                     (vector 1 2 3) (make-hash-table))))
