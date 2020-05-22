@@ -1271,7 +1271,7 @@ jump to blocks within this tagbody."
   (let ((rack (first rest)) (index (second rest))
         (rackt (alloca-t* "rack-ref-rack"))
         (indext (alloca-t* "rack-ref-index")))
-    (codegen rackt instance env)
+    (codegen rackt rack env)
     (codegen indext index env)
     (irc-t*-result (gen-rack-ref (irc-load rackt) (irc-load indext))
                    result)))
@@ -1279,7 +1279,8 @@ jump to blocks within this tagbody."
 ;;; CORE:RACK-SET
 
 (defun gen-rack-set (rack index value)
-  (irc-write-slot rack (irc-untag-fixnum index %size_t% "slot-location") value))
+  (irc-rack-write rack (irc-untag-fixnum index %size_t% "slot-location") value)
+  value)
 
 (defun codegen-rack-set (result rest env)
   (let ((rack (first rest)) (index (second rest)) (value (third rest))
