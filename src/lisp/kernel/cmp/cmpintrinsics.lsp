@@ -1049,17 +1049,27 @@ and initialize it with an array consisting of one function pointer."
                                     (list (jit-constant-size_t 0)
                                           (jit-constant-size_t 0)))
                            (llvm-sys:constant-pointer-null-get %t**%))))
-            (when gcroots-in-module
-              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
-                                                                          start ; root_address
-                                                                          (jit-constant-size_t number-of-roots) ; num_roots
-                                                                          values ; initial_data
-                                                                          (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                                                                          (jit-constant-size_t 0) ; transient_entries
-                                                                          (jit-constant-size_t 0) ; function_pointer_count
-                                                                          (irc-bit-cast (llvm-sys:constant-pointer-null-get %fn-prototype*%) %i8**%) ; fptrs
-                                                                          (irc-bit-cast (llvm-sys:constant-pointer-null-get %function-description*%) %i8**%) ; fdescs
-                                                                          )))
+            (multiple-value-bind (function-vector-length function-vector function-descs)
+                (literal:setup-literal-machine-function-vectors cmp:*the-module*)
+              (when gcroots-in-module
+                (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
+                                                                            start ; root_address
+                                                                            (jit-constant-size_t number-of-roots) ; num_roots
+                                                                            values ; initial_data
+                                                                            (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                                                                            (jit-constant-size_t 0) ; transient_entries
+                                                                            (jit-constant-size_t function-vector-length) ; function_pointer_count
+                                                                            (irc-bit-cast
+                                                                             (cmp:irc-gep function-vector
+                                                                                          (list (cmp:jit-constant-size_t 0)
+                                                                                                (cmp:jit-constant-size_t 0)))
+                                                                             %i8**%) ; fptrs
+                                                                            (irc-bit-cast
+                                                                             (cmp:irc-gep function-descs
+                                                                                          (list (cmp:jit-constant-size_t 0)
+                                                                                                (cmp:jit-constant-size_t 0)))
+                                                                             %i8**%) ; fdescs
+                                                                            ))))
             ;; If the constant/literal list is provided - then we may need to generate code for closurettes
             (when ordered-literals
               (setf ordered-raw-literals-list (mapcar (lambda (x)

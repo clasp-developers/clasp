@@ -121,7 +121,7 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-         (primitive         "ltvc_make_runtime_closurette" %void% (list %gcroots-in-module*% %size_t% %i8*% %i8*%))
+;;;         (primitive         "ltvc_make_runtime_closurette" %void% (list %gcroots-in-module*% %size_t% %i8*% %i8*%))
     
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description

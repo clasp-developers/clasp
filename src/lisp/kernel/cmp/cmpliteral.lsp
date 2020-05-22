@@ -56,7 +56,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function function-description)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-description)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -221,7 +221,13 @@ rewrite the slot in the literal table to store a closure."
 
 (defun add-named-creator (name index literal-name object &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((creator (make-literal-node-creator :datum index :name name :literal-name literal-name :object object :arguments args)))
+  (let* ((creator (make-literal-node-creator :datum index :name name :literal-name literal-name :object object :arguments args))
+         (primitive (gethash name cmp:*primitives*))
+         (varargs (cmp:primitive-varargs primitive))
+         (argument-types (cmp:primitive-argument-types primitive)))
+    (when (and (not varargs) (/= (length args) (- (length argument-types) 3)))
+      (error "You did not provide correct arguments for the primitive ~a~%  varargs: ~a~%  passed arguments: ~a~%  needs arguments after third: ~a"
+             name varargs args argument-types))
     (setf (gethash index (literal-machine-constant-datum-to-literal-node-creator *literal-machine*)) creator)
     (run-all-add-node creator)
     creator))
@@ -618,14 +624,15 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 (defun generate-run-time-code-for-closurette (node)
   ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
   (let* ((closurette-object (literal-node-creator-object node))
+         (function-datum (literal-node-closure-function-index closurette-object))
+         (function-index (function-datum-index function-datum))
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum)))
-    (cmp:irc-intrinsic-call "ltvc_make_runtime_closurette"
+    (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
+                                  (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (literal-node-closure-function closurette-object)
-                                  (literal-node-closure-function-description closurette-object)))
-    ))
+                                  (cmp:jit-constant-size_t function-index)))))
 
 (defparameter *ltv-trap* nil)
 
@@ -663,6 +670,37 @@ Return the index of the load-time-value"
 (defmacro with-top-level-form (&body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-ltv :toplevel (lambda () ,@body))))
+
+
+
+(defun setup-literal-machine-function-vectors (the-module)
+  (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
+                                                        (length (literal-machine-function-vector *literal-machine*))))
+         (function-vector (llvm-sys:make-global-variable
+                           the-module
+                           function-vector-type
+                           nil
+                           'llvm-sys:internal-linkage
+                           (llvm-sys:constant-array-get function-vector-type
+                                                        (coerce (literal-machine-function-vector *literal-machine*) 'list))
+                           "function-vector"))
+         (function-descs-type (llvm-sys:array-type-get
+                               cmp:%function-description*%
+                               (length (literal-machine-function-description-vector *literal-machine*))))
+         (function-descs (llvm-sys:make-global-variable
+                          the-module
+                          function-descs-type
+                          nil
+                          'llvm-sys:internal-linkage
+                          (llvm-sys:constant-array-get
+                           function-descs-type
+                           (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
+                          "function-descs")))
+    (values (length (literal-machine-function-vector *literal-machine*)) function-vector function-descs)))
+
+
+
+
 
 (defun do-literal-table (body-fn)
   (llog "do-literal-table~%")
@@ -722,28 +760,8 @@ Return the index of the load-time-value"
                                                              (cmp:jit-constant-size_t 0)) "table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
-                                                                  (length (literal-machine-function-vector *literal-machine*))))
-                   (function-vector (llvm-sys:make-global-variable
-                                     cmp:*the-module*
-                                     function-vector-type
-                                     nil
-                                     'llvm-sys:internal-linkage
-                                     (llvm-sys:constant-array-get function-vector-type
-                                                                  (coerce (literal-machine-function-vector *literal-machine*) 'list))
-                                     "function-vector"))
-                   (function-descs-type (llvm-sys:array-type-get
-                                         cmp:%function-description*%
-                                         (length (literal-machine-function-description-vector *literal-machine*))))
-                   (function-descs (llvm-sys:make-global-variable
-                                    cmp:*the-module*
-                                    function-descs-type
-                                    nil
-                                    'llvm-sys:internal-linkage
-                                    (llvm-sys:constant-array-get
-                                     function-descs-type
-                                     (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
-                                    "function-descs")))
+            (multiple-value-bind (function-vector-length function-vector function-descs)
+                (setup-literal-machine-function-vectors cmp:*the-module*)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
                     (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
@@ -754,7 +772,7 @@ Return the index of the load-time-value"
                                                                       cmp:%t*%)
                                                   transient-vector
                                                   (cmp:jit-constant-size_t transient-entries)
-                                                  (cmp:jit-constant-size_t (length (literal-machine-function-vector *literal-machine*)))
+                                                  (cmp:jit-constant-size_t function-vector-length)
                                                   (cmp:irc-bit-cast
                                                    (cmp:irc-gep function-vector
                                                                 (list (cmp:jit-constant-size_t 0)
@@ -974,8 +992,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
 
 (defun reference-closure (function function-description)
   (let* ((datum (new-datum t))
-         (creator (make-literal-node-closure :datum datum :function function :function-description function-description))
-         (function-index (register-function function function-description)))
+         (function-index (register-function function function-description))
+         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-description function-description)))
     (add-creator "ltvc_make_closurette" datum creator function-index)
     (datum-index datum)))
 

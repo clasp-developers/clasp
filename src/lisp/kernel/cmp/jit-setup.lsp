@@ -702,6 +702,11 @@ The passed module is modified as a side-effect."
         (progn
           #+threads(mp:giveup-lock *jit-log-lock*)))))
 
+;;; It's too early for (in-package :cmp) to work but if we want slime to compile
+;;; the code below we need it - so uncomment this as needed...
+
+;;;(in-package :cmp)
+(defparameter *dump-compile-module* nil)
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
@@ -723,18 +728,13 @@ The passed module is modified as a side-effect."
         (with-track-llvm-time
             (unwind-protect
                  (progn
-                   #+(or)
-                   (progn
-                     #+(or)(core:bformat t "*jit-lock* -> %s    jit-engine -> %s   module -> %s   *thread-safe-context* -> %s%N"
-                                         *jit-lock*
-                                         jit-engine
-                                         module
-                                         *thread-safe-context*)
-                     (core:bformat t "About to dump module%N")
-                     (llvm-sys:dump-module module)
-                     (core:bformat t "startup-name |%s|%N" startup-name)
-                     (core:bformat t "Done dump module%N")
-                     )
+                   (if *dump-compile-module*
+                       (progn
+                         (core:bformat t "About to dump module%N")
+                         (llvm-sys:dump-module module)
+                         (core:bformat t "startup-name |%s|%N" startup-name)
+                         (core:bformat t "Done dump module%N")
+                         ))
                    (mp:get-lock *jit-lock*)
                    (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context*)
                    (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))

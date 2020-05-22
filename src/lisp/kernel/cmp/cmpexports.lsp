@@ -4,6 +4,12 @@
             with-debug-info-source-position
             with-interpreter
             module-report
+            codegen-startup-shutdown
+            jit-startup-function-name
+            irc-simple-function-create
+            *primitives*
+            primitive-argument-types
+            primitive-varargs
             *track-inlined-functions*
             *track-inlinee-name*
             *debug-link-options* ;; A list of strings to inject into link commands
@@ -297,7 +303,6 @@
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
-            codegen-startup-shutdown
             compute-rest-alloc
             compile-tag-check
             compile-header-check
@@ -330,6 +335,7 @@
           next-value-table-holder-name
           make-literal-node-call
           make-literal-node-creator
+          setup-literal-machine-function-vectors
           run-all-add-node
           literal-node-runtime-p
           literal-node-runtime-index
