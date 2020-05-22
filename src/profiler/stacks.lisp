@@ -267,7 +267,6 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
 (defun invert-frames (fin fout &key (depth nil))
   (let ((header (read-dtrace-header fin))
         (backtraces nil))
-    (declare (ignore header))
     (loop named read-backtraces
           for raw-backtrace = (let ((bt (read-dtrace-backtrace fin nil :eof)))
                                 (when (eq bt :eof) (return-from read-backtraces nil))
@@ -386,8 +385,8 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
                      (terpri fout)))))))
 
 (defun fraction (fin stop-at)
-  (let ((header (read-dtrace-header fin)))
-    (declare (ignore header))
+  (let (#+(or)(header (read-dtrace-header fin)))
+    #+(or)(declare (ignore header))
     (let ((counts (make-hash-table :test #'equal))
           (num-backtraces 0))
       (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
@@ -471,7 +470,7 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
 
 (defun perf-to-dtrace-backtrace (backtrace-lines)
   ;(format t (first backtrace-lines))
-  (let* ((count (parse-integer (second (reverse
+  (let* (#+(or)(count (parse-integer (second (reverse
                                         (uiop:split-string
                                          (string-right-trim " " (first backtrace-lines)))))))
          (raw-frames (cdr backtrace-lines))
