@@ -122,28 +122,30 @@
            (list #'shared-initialize (list instance added-slots)))))
   (apply #'shared-initialize instance added-slots initargs))
 
-(defun update-instance (instance)
-  (let* ((class (class-of instance))
-	 (old-slotds (si:instance-sig instance))
-	 (new-slotds (class-slots class))
-	 (old-instance (si::copy-instance instance))
-	 (discarded-slots '())
-	 (added-slots '())
-	 (property-list '())
-         (instance (core:reallocate-instance instance class (class-size class)))
+;;; This function works on racks directly rather than instances,
+;;; and implements the behavior that's independent of the location of
+;;; the rack in the instance. Which is almost all of it.
+(defun update-instance-aux (old-rack new-stamp new-slotds)
+  (let* ((old-slotds (si:rack-sig old-rack))
+         (new-rack (core:make-rack (length new-slotds) new-slotds new-stamp
+                                   ;; FIXME: Use a freakin constant
+                                   (core:unbound)))
          (old-local-slotds (remove :instance old-slotds :test-not #'eq
                                    :key #'slot-definition-allocation))
          (new-local-slotds (remove :instance new-slotds :test-not #'eq
-                                   :key #'slot-definition-allocation)))
+                                   :key #'slot-definition-allocation))
+         (discarded-slots '())
+         (added-slots '())
+         (property-list '()))
     (dolist (slotd old-local-slotds)
       (let* ((name (slot-definition-name slotd))
              (new (find name new-local-slotds :key #'slot-definition-name)))
-        (let ((val (si:instance-ref old-instance
-                                    (slot-definition-location slotd))))
+        (let ((val (si:rack-ref old-rack
+                                (slot-definition-location slotd))))
           (when (si:sl-boundp val)
             (cond (new
-                   (si:instance-set instance (slot-definition-location new)
-                                    val))
+                   (setf (si:rack-ref new-rack (slot-definition-location new))
+                         val))
                   (t
                    (push (cons name val) property-list)
                    (push name discarded-slots)))))))
@@ -152,8 +154,19 @@
              (old (find name old-local-slotds :key #'slot-definition-name)))
         (unless old
           (push name added-slots))))
-    (update-instance-for-redefined-class instance added-slots
-                                         discarded-slots property-list)))
+    (values new-rack added-slots discarded-slots property-list)))
+
+(defun update-instance (instance)
+  ;;; FIXME: class should only be read from once, and atomically, to ensure
+  ;;; that the slots and stamp are coherent in the presence of multithreading.
+  (let ((class (class-of instance)))
+    (multiple-value-bind (new-rack added-slots discarded-slots property-list)
+        (update-instance-aux (si:instance-rack instance)
+                             (core:class-stamp-for-instances class)
+                             (class-slots class))
+      (setf (si:instance-rack instance) new-rack)
+      (update-instance-for-redefined-class instance added-slots
+                                           discarded-slots property-list))))
 
 ;;; ----------------------------------------------------------------------
 ;;; CLASS REDEFINITION PROTOCOL
