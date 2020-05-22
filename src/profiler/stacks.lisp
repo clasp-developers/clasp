@@ -385,8 +385,8 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
                      (terpri fout)))))))
 
 (defun fraction (fin stop-at)
-  (let (#+(or)(header (read-dtrace-header fin)))
-    #+(or)(declare (ignore header))
+  (let ((header (read-dtrace-header fin)))
+       (declare (ignore header))
     (let ((counts (make-hash-table :test #'equal))
           (num-backtraces 0))
       (loop for backtrace = (read-dtrace-backtrace-raw fin nil :eof)
