@@ -235,7 +235,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
-  double rehash_threshold = maybeFixRehashThreshold(clasp_to_double(orehash_threshold));
+  double rehash_threshold = maybeFixRehashThreshold(clasp_to_double(gc::As<Number_sp>(orehash_threshold)));
   HashTable_sp table = _Nil<HashTable_O>();
   size_t isize = clasp_to_int(size);
   if (isize==0) isize = 16;

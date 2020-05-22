@@ -694,13 +694,13 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_Bignum_v_Complex : {
       Complex_sp cb = gc::As<Complex_sp>(nb);
       return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
     }
   case_Complex_v_Complex : {
       Complex_sp ca = gc::As<Complex_sp>(na);
       Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(ca->real()), clasp_to_double(ca->imaginary()),
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+      return complex_divide(clasp_to_double(gc::As<Number_sp>(ca->real())), clasp_to_double(gc::As<Number_sp>(ca->imaginary())),
+                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
     }
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
@@ -708,7 +708,7 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_LongFloat_v_Complex : {
       Complex_sp cb = gc::As<Complex_sp>(nb);
       return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
     }
   }
   MATH_DISPATCH_END();
@@ -1795,8 +1795,8 @@ double Ratio_O::as_double_() const {
     return ldexp(output, exponent);
   }
   else {
-    double d = clasp_to_double(this->_numerator);
-    d /= clasp_to_double(this->_denominator);
+    double d = clasp_to_double(gc::As<Number_sp>(this->_numerator));
+    d /= clasp_to_double(gc::As<Number_sp>(this->_denominator));
     return d;
   }
 }
@@ -3385,15 +3385,6 @@ double clasp_to_double(core::Number_sp x)
   return x->as_double_();
 };
 
-double clasp_to_double( core::Integer_sp x )
-{
-  if (x.fixnump()) {
-    double d = x.unsafe_fixnum();
-    return d;
-  }
-  return x->as_double_();
-};
-
 double clasp_to_double( core::T_sp x )
 {
   if (x.fixnump()) {
@@ -3407,38 +3398,6 @@ double clasp_to_double( core::T_sp x )
   }
   TYPE_ERROR(x,cl::_sym_Number_O);
 }
-
-double clasp_to_double( core::Real_sp x )
-{
-  if (x.fixnump()) {
-    double d = x.unsafe_fixnum();
-    return d;
-  } else if (x.single_floatp()) {
-    double d = x.unsafe_single_float();
-    return d;
-  } else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_double_();
-  }
-  TYPE_ERROR(x,Cons_O::createList(cl::_sym_Real_O));
-}
-
-double clasp_to_double( core::General_sp x )
-{
-  if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_double_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
-};
-
-
-double clasp_to_double( core::DoubleFloat_sp x )
-{
-  return x->get();
-};
-
-
-
-
 
 LongFloat clasp_to_long_float(Number_sp x)
 {

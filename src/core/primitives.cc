@@ -115,7 +115,7 @@ CL_DOCSTRING("sleep");
 CL_DEFUN T_sp cl__sleep(Real_sp oseconds) {
   // seconds - a non-negative real.
   SYMBOL_EXPORT_SC_(ClPkg, sleep);
-  double dsec = clasp_to_double(oseconds);
+  double dsec = clasp_to_double(gc::As<Number_sp>(oseconds));
   if (dsec < 0.0) {
     TYPE_ERROR(oseconds,Cons_O::createList(cl::_sym_float,clasp_make_single_float(0.0)));
   }

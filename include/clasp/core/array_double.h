@@ -24,8 +24,8 @@ namespace core {
     typedef specialized_SimpleVector_double TemplatedBase;
   public:
     static value_type default_initial_element(void) {return 0.0;}
-    static value_type from_object(T_sp obj) { return clasp_to_double(obj);};
-    static T_sp to_object(const value_type& v) { return core::clasp_make_double_float(v); };
+    static value_type from_object(T_sp obj) { return clasp_to_double(gc::As<Number_sp>(obj));};
+    static T_sp to_object(const value_type& v) { return clasp_make_double_float(v); };
   public:
   SimpleVector_double_O(size_t length, value_type initialElement=value_type(),
                           bool initialElementSupplied=false,

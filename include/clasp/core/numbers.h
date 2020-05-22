@@ -159,11 +159,11 @@ namespace core
   DoubleFloat_sp clasp_make_double_float(double d);
   Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
   void clasp_report_divide_by_zero(Number_sp x);
+  Integer_sp clasp_make_integer(size_t i);
+
 };
 
 namespace core {
-
-  typedef double LongFloat;
 
   Number_sp contagen_add(Number_sp na, Number_sp nb);
   Number_sp contagen_sub(Number_sp na, Number_sp nb);
@@ -323,16 +323,6 @@ namespace core {
 #endif
     static Integer_sp create( uint64_t v );
 
-    // THOSE ARE ALREADY DEFINED ABOVE
-    // static Integer_sp create( short v );
-    // static Integer_sp create( unsigned short v );
-    //
-    // static Integer_sp create( int v );
-    // static Integer_sp create( unsigned int v );
-    //
-    // static Integer_sp create( long v );
-    // static Integer_sp create( unsigned long v );
-    //
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
     static Integer_sp create( long long v );
 #endif
@@ -397,8 +387,7 @@ namespace core {
 namespace core {
 
   Fixnum_sp make_fixnum(gc::Fixnum x);
-  gc::Fixnum get_fixnum(Fixnum_sp x);
-
+  
   class Fixnum_dummy_O : public Integer_O {
     LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
   };
@@ -734,8 +723,6 @@ namespace core {
     Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
     virtual ~Ratio_O() {};
   };
-
-  void clasp_deliver_fpe(int status);
 
   inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagen_add(na, nb); };
   inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagen_sub(na, nb); };
@@ -1098,22 +1085,10 @@ namespace core {
   uint16_t            clasp_to_uint16_t( core::T_sp );
   int32_t             clasp_to_int32_t( core::T_sp );
   uint32_t            clasp_to_uint32_t( core::T_sp );
-  int64_t             clasp_to_int64_t( core::T_sp );
-  uint64_t            clasp_to_uint64_t( core::T_sp );
-
-  // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
-  // frgo, 2017-01-21
-
-
-  uintptr_t         clasp_to_uintptr_t( core::T_sp );
-  mpz_class           clasp_to_mpz( core::T_sp );
-  cl_index            clasp_to_size( core::T_sp );
-
+  
   float               clasp_to_float( core::Number_sp );
   double              clasp_to_double( core::Number_sp );
-  LongFloat           clasp_to_long_float( core::Number_sp );
-  LongFloat           clasp_to_long_double( core::Number_sp );
-
+  
   // END OF CLASP_TO_... FUNCTIONS
 
   inline Number_sp clasp_sqrt( Number_sp z )

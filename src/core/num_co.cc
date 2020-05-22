@@ -113,10 +113,10 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
   case number_Ratio:
     switch (ty) {
     case number_SingleFloat:
-      x = gc::As<Real_sp>(clasp_make_single_float(clasp_to_double(x)));
+        x = gc::As<Real_sp>(clasp_make_single_float(clasp_to_double(gc::As<Number_sp>(x))));
       break;
     case number_DoubleFloat:
-      x = gc::As<Real_sp>(clasp_make_double_float(clasp_to_double(x)));
+        x = gc::As<Real_sp>(clasp_make_double_float(clasp_to_double(gc::As<Number_sp>(x))));
       break;
 #ifdef CLASP_LONG_FLOAT
     case number_LongFloat:
@@ -399,7 +399,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
     }
     break;
   case number_SingleFloat: { /* SF / ANY */
-    float n = clasp_to_double(y);
+    float n = clasp_to_double(gc::As<Number_sp>(y));
     float p = x.unsafe_single_float() / n;
     float q = floorf(p);
     v0 = _clasp_float_to_integer(q);
@@ -410,7 +410,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
     break;
   }
   case number_DoubleFloat: { /* DF / ANY */
-    double n = clasp_to_double(y);
+    double n = clasp_to_double(gc::As<Number_sp>(y));
     double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
     double q = floor(p);
     v0 = _clasp_double_to_integer(q);
@@ -643,7 +643,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
     break;
   }
   case number_SingleFloat: { /* SF / ANY */
-    float n = clasp_to_double(y);
+    float n = clasp_to_double(gc::As<Number_sp>(y));
     float p = x.unsafe_single_float() / n;
     float q = ceilf(p);
     v0 = _clasp_float_to_integer(q);
@@ -651,7 +651,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
     break;
   }
   case number_DoubleFloat: { /* DF / ANY */
-    double n = clasp_to_double(y);
+    double n = clasp_to_double(gc::As<Number_sp>(y));
     double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
     double q = ceil(p);
     v0 = _clasp_double_to_integer(q);

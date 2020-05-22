@@ -3168,7 +3168,7 @@ CL_DEFUN void llvm_sys__accumulate_llvm_usage_seconds(double time)
 {
   core::DoubleFloat_sp df = core::DoubleFloat_O::create(time);
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->setf_symbolValue(df);
-  double accTime = clasp_to_double(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue());
+  double accTime = clasp_to_double(gc::As<core::Number_sp>(_sym_STARaccumulatedLlvmFinalizationTimeSTAR->symbolValue()));
   accTime += time;
   _sym_STARaccumulatedLlvmFinalizationTimeSTAR->setf_symbolValue(core::DoubleFloat_O::create(accTime));
   int num = unbox_fixnum(gc::As<core::Fixnum_sp>(_sym_STARnumberOfLlvmFinalizationsSTAR->symbolValue()));
