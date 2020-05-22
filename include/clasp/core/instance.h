@@ -202,6 +202,7 @@ namespace core {
   public:
     static size_t rack_stamp_offset();
   public: // Functions here
+    Rack_sp rack() const { return this->_Rack; };
     Fixnum stamp() const;
     void stamp_set(gctools::ShiftedStamp s);
     size_t numberOfSlots() const;

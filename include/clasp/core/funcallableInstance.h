@@ -108,6 +108,7 @@ namespace core {
     static size_t rack_stamp_offset();
 
   public: // Functions here
+    Rack_sp rack() const { return this->_Rack; }
     Fixnum stamp() const;
     void stamp_set(Fixnum s);
     size_t numberOfSlots() const;

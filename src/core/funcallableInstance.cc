@@ -65,7 +65,7 @@ void FuncallableInstance_O::initializeSlots(gctools::ShiftedStamp stamp,
   this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 }
 
@@ -100,28 +100,28 @@ size_t FuncallableInstance_O::rack_stamp_offset() {
 }
 
 Fixnum FuncallableInstance_O::stamp() const {
-  return this->_Rack->stamp_get();
+  return rack()->stamp_get();
 };
 
 void FuncallableInstance_O::stamp_set(Fixnum s) {
-  this->_Rack->stamp_set(s);
+  rack()->stamp_set(s);
 };
 
 size_t FuncallableInstance_O::numberOfSlots() const {
-  return this->_Rack->length();
+  return rack()->length();
 };
 
 T_sp FuncallableInstance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Rack->_Sig) {
-    ssig << this->_Rack->_Sig->__repr__();
+  if (rack()->_Sig) {
+    ssig << rack()->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Rack->_Sig));
+  return ((rack()->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
@@ -130,27 +130,27 @@ SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 T_sp FuncallableInstance_O::instanceClassSet(Instance_sp mc) {
   this->_Class = mc;
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
   return (this->sharedThis<FuncallableInstance_O>());
 }
 
 T_sp FuncallableInstance_O::instanceRef(size_t idx) const {
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), low_level_instanceRef(this->_Rack, idx)->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), low_level_instanceRef(rack(), idx)->__repr__().c_str());
 #endif
-  return low_level_instanceRef(this->_Rack,idx);
+  return low_level_instanceRef(rack(),idx);
 }
 T_sp FuncallableInstance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  low_level_instanceSet(this->_Rack,idx,val);
+  low_level_instanceSet(rack(),idx,val);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
   return val;
 }
@@ -171,7 +171,7 @@ string FuncallableInstance_O::__repr__() const {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
   ss << _rep_(this->functionName());
-  if (this->_Rack)
+  if (rack())
   {
     ss << " #slots[" << this->numberOfSlots() << "]";
   } else {
@@ -203,7 +203,7 @@ T_sp FuncallableInstance_O::copyInstance() const {
   Instance_sp cl = this->_Class;
   FuncallableInstance_sp copy = gc::As_unsafe<FuncallableInstance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
-  copy->_Rack = this->_Rack;
+  copy->_Rack = rack();
   return copy;
 }
 
@@ -252,8 +252,8 @@ void FuncallableInstance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("FuncallableInstance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
-  for (int i(1); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
+  for (int i(1); i < rack()->length(); ++i) {
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(rack(), i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }

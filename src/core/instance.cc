@@ -110,7 +110,7 @@ void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
   this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
 }
@@ -213,7 +213,7 @@ void Instance_O::fields(Record_sp node) {
 }
 
 CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
-  return instance->_Rack;
+  return instance->rack();
 }
 
 CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
@@ -225,37 +225,37 @@ size_t Instance_O::rack_stamp_offset() {
 }
 
 Fixnum Instance_O::stamp() const {
-  return this->_Rack->stamp_get();
+  return rack()->stamp_get();
 };
 
 void Instance_O::stamp_set(gctools::ShiftedStamp s) {
   ASSERT(s==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(s));
-  this->_Rack->stamp_set(s);
+  rack()->stamp_set(s);
 };
 
 size_t Instance_O::numberOfSlots() const {
-  return this->_Rack->length();
+  return rack()->length();
 };
 
 
 T_sp Instance_O::instanceSigSet() {
   Instance_sp mc = this->_instanceClass();
   T_sp classSlots = mc->slots();
-  this->_Rack->_Sig = classSlots;
+  rack()->_Sig = classSlots;
   return ((classSlots));
 }
 
 T_sp Instance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Rack->_Sig) {
-    ssig << this->_Rack->_Sig->__repr__();
+  if (rack()->_Sig) {
+    ssig << rack()->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Rack->_Sig));
+  return ((rack()->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
@@ -264,18 +264,18 @@ T_sp Instance_O::instanceClassSet(Instance_sp mc) {
   this->_Class = mc;
   return (this->sharedThis<Instance_O>());
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 }
 
 T_sp Instance_O::instanceRef(size_t idx) const {
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), rack()[idx]->__repr__().c_str());
 #endif
-  T_sp val = low_level_instanceRef(this->_Rack,idx);
+  T_sp val = low_level_instanceRef(rack(),idx);
 #if 0
   if (idx==5) {
     printf("%s:%d Read slot 5 with %s\n", __FILE__, __LINE__, _safe_rep_(val).c_str());
@@ -288,9 +288,9 @@ T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  low_level_instanceSet(this->_Rack,idx,val);
+  low_level_instanceSet(rack(),idx,val);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
   return val;
 }
@@ -310,7 +310,7 @@ string Instance_O::__repr__() const {
     //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
-      T_sp obj = low_level_instanceRef(this->_Rack, i);
+      T_sp obj = low_level_instanceRef(rack(), i);
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
@@ -343,7 +343,7 @@ T_sp Instance_O::copyInstance() const {
   Instance_sp cl = this->_Class;
   Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
   copy->_Class = cl;
-  copy->_Rack = this->_Rack;
+  copy->_Rack = rack();
   return copy;
 }
 
@@ -360,9 +360,9 @@ bool Instance_O::equalp(T_sp obj) const {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class) return false;
     if (this->stamp() != iobj->stamp()) return false;
-    for (size_t i(0), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-      if (!cl__equalp(low_level_instanceRef(this->_Rack, i),
-                      low_level_instanceRef(iobj->_Rack, i)))
+    for (size_t i(0), iEnd(rack()->length()); i < iEnd; ++i) {
+      if (!cl__equalp(low_level_instanceRef(rack(), i),
+                      low_level_instanceRef(iobj->rack(), i)))
         return false;
     }
     return true;
@@ -388,8 +388,8 @@ void Instance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("Instance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
-  for (int i(0); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(this->_Rack, i)).c_str()).str();
+  for (int i(0); i < rack()->length(); ++i) {
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(rack(), i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
