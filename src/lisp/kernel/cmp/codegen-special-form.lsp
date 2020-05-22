@@ -1253,11 +1253,11 @@ jump to blocks within this tagbody."
   rack)
 
 (defun codegen-instance-rack-set (result rest env)
-  (let ((instance (first rest)) (rack (first rest))
+  (let ((instance (first rest)) (rack (second rest))
         (instancet (alloca-t* "instance"))
         (rackt (alloca-t* "rack")))
     (codegen instancet instance env)
-    (codegen rackt instance env)
+    (codegen rackt rack env)
     (irc-t*-result
      (gen-instance-rack-set (irc-load instancet) (irc-load rackt))
      result)))
