@@ -229,7 +229,7 @@ consequences are not defined.")
   (with-slots ((slots slots) (location-table location-table))
       (class-of self)
     (if location-table ; only for direct instances of standard-class, etc
-        (gethash slot-name location-table nil)
+        (values (gethash slot-name location-table nil))
         (find slot-name slots :key #'slot-definition-name))))
 
 (defun slot-boundp (self slot-name)
