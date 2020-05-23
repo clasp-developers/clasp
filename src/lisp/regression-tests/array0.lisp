@@ -44,6 +44,19 @@
         (setf (aref array) 23)
         array))
 
-;;; gave segmentation violation print the error
+;;; gave segmentation violation printing the error
 (test-expect-error fill-pointer-nil-array (fill-pointer #0anil) :type type-error)
+
+;;; used to give off by 1 wrong error message about the upper bound of the limit
+;;; Right message is Invalid index 5 for axis 0 of array: expected 0-2
+(test
+ simple-array-out-of-bounds-message
+ (search "expected 0-2"
+         (let ()
+           (handler-case 
+               (locally (declare (optimize (speed 0)(safety 3)))
+                 (aref (make-array 3 :initial-element 5) 5)
+                 "nada")
+             (error (e)
+               (princ-to-string e))))))
                    

@@ -296,7 +296,7 @@ CL_LISPIFY_NAME("core:check-index");
 CL_DEFUN T_mv core__check_index (size_t index, size_t max, size_t axis) {
   if (!((index >= 0) && (index < max)))
     SIMPLE_ERROR(BF("Invalid index %d for axis %d of array: expected 0-%d")
-                 % index % axis % max);
+                 % index % axis % (max-1));
   return Values0<T_O>();
 }
 
