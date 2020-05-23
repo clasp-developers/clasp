@@ -66,6 +66,13 @@ namespace core {
       , _FunctionDescription(fdesc)
       , _CompiledDispatchFunction(_Nil<T_O>())
     {};
+    FuncallableInstance_O(FunctionDescription* fdesc, Instance_sp cl, Rack_sp rack)
+      : Base(funcallable_entry_point),
+        _Class(cl),
+        _Rack(rack),
+        _FunctionDescription(fdesc),
+        _CompiledDispatchFunction(_Nil<T_O>())
+    {};
     virtual ~FuncallableInstance_O(){};
   public:
     // The order MUST be
