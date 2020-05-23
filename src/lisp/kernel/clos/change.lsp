@@ -31,6 +31,9 @@
 ;;;	   extra processing.
 ;;;
 
+;;; NOTE: Right now this works for funcallable instances,
+;;; but if funcallable instances e.g. had the rack in a different place,
+;;; it would be n.g.
 (defmethod update-instance-for-different-class
     ((old-data standard-object) (new-data standard-object) &rest initargs)
   (declare (dynamic-extent initargs))
@@ -52,10 +55,11 @@
              (list #'shared-initialize (list new-data added-slots)))))
     (apply #'shared-initialize new-data added-slots initargs)))
 
-(defun change-class-aux (old-rack new-stamp new-slotds)
+;;; Mutate new-rack based on old-rack, for change-class.
+;;; Abstracted out so it can be used regardless of instance structure.
+(defun change-class-aux (old-rack new-rack)
   (let ((old-slotds (si:rack-sig old-rack))
-        (new-rack (core:make-rack (length new-slotds) new-slotds new-stamp
-                                  (core:unbound))))
+        (new-slotds (si:rack-sig new-rack)))
     ;; "The values of local slots specified by both the class Cto and
     ;; Cfrom are retained.  If such a local slot was unbound, it remains
     ;; unbound."
@@ -66,22 +70,34 @@
         (let* ((name (slot-definition-name new-slotd))
                (old-slotd (find name old-slotds
                                 :key #'slot-definition-name)))
-          (when (and old-slotd
-                     (eq (slot-definition-allocation old-slotd) :instance))
+          (when old-slotd
             ;; We just copy over values,
             ;; whether they're unbound markers or not.
             (setf (si:rack-ref new-rack (slot-definition-location new-slotd))
-                  (si:rack-ref old-rack (slot-definition-location old-slotd)))))))
-    new-rack))
+                  (si:rack-ref old-rack (slot-definition-location old-slotd))))))))
+  (values))
 
 (defmethod change-class ((instance standard-object) (new-class standard-class)
                          core:&va-rest initargs)
   (let* ((old-rack (core:instance-rack instance))
          (old-class (class-of instance))
          (copy (core:allocate-raw-instance old-class old-rack))
-         (new-slotds (class-slots new-class))
-         (new-stamp (core:class-stamp-for-instances new-class))
-         (new-rack (change-class-aux old-rack new-stamp new-slotds)))
+         (new-rack (make-rack-for-class new-class)))
+    (change-class-aux old-rack new-rack)
+    (setf (core:instance-rack instance) new-rack
+          (core:instance-class instance) new-class)
+    (apply #'update-instance-for-different-class
+           copy instance initargs)
+    instance))
+
+(defmethod change-class ((instance funcallable-standard-object)
+                         (new-class funcallable-standard-class)
+                         core:&va-rest initargs)
+  (let* ((old-rack (core:instance-rack instance))
+         (old-class (class-of instance))
+         (copy (core:allocate-raw-funcallable-instance old-class old-rack))
+         (new-rack (make-rack-for-class new-class)))
+    (change-class-aux old-rack new-rack)
     (setf (core:instance-rack instance) new-rack
           (core:instance-class instance) new-class)
     (apply #'update-instance-for-different-class
@@ -136,11 +152,9 @@
 ;;; This function works on racks directly rather than instances,
 ;;; and implements the behavior that's independent of the location of
 ;;; the rack in the instance. Which is almost all of it.
-(defun update-instance-aux (old-rack new-stamp new-slotds)
+(defun update-instance-aux (old-rack new-rack)
   (let* ((old-slotds (si:rack-sig old-rack))
-         (new-rack (core:make-rack (length new-slotds) new-slotds new-stamp
-                                   ;; FIXME: Use a freakin constant
-                                   (core:unbound)))
+         (new-slotds (si:rack-sig new-rack))
          (old-local-slotds (remove :instance old-slotds :test-not #'eq
                                    :key #'slot-definition-allocation))
          (new-local-slotds (remove :instance new-slotds :test-not #'eq
@@ -165,16 +179,12 @@
              (old (find name old-local-slotds :key #'slot-definition-name)))
         (unless old
           (push name added-slots))))
-    (values new-rack added-slots discarded-slots property-list)))
+    (values added-slots discarded-slots property-list)))
 
 (defun update-instance (instance)
-  ;;; FIXME: class should only be read from once, and atomically, to ensure
-  ;;; that the slots and stamp are coherent in the presence of multithreading.
-  (let ((class (class-of instance)))
-    (multiple-value-bind (new-rack added-slots discarded-slots property-list)
-        (update-instance-aux (si:instance-rack instance)
-                             (core:class-stamp-for-instances class)
-                             (class-slots class))
+  (let ((new-rack (make-rack-for-class (class-of instance))))
+    (multiple-value-bind (added-slots discarded-slots property-list)
+        (update-instance-aux (si:instance-rack instance) new-rack)
       (setf (si:instance-rack instance) new-rack)
       (update-instance-for-redefined-class instance added-slots
                                            discarded-slots property-list))))
@@ -356,3 +366,19 @@
   (declare (ignore new-class initargs))
   (error "The metaclass of an eql specializer metaobject ~a cannot be changed per AMOP Ch. 6"
          instance))
+
+;;; Not specified by AMOP, as far as I can tell, but required by the fact that
+;;; they have different underlying layouts in Clasp.
+(defmethod change-class ((instance standard-object)
+                         (class funcallable-standard-class)
+                         &rest initargs)
+  (declare (ignore initargs))
+  (error "The standard instance ~s cannot be transmuted into a funcallable standard instance of class ~s."
+         instance class))
+
+(defmethod change-class ((instance funcallable-standard-object)
+                         (class standard-class)
+                         &rest initargs)
+  (declare (ignore initargs))
+  (error "The funcallable standard instance ~s cannot be transmuted into a standard instance of class ~s."
+         instance class))

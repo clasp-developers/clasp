@@ -99,6 +99,12 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
+(defun make-rack-for-class (class)
+  (let (;; FIXME: Read these two in one go, atomically.
+        (slotds (class-slots class))
+        (stamp (core:class-stamp-for-instances class)))
+    (core:make-rack (length slotds) slotds stamp (core:unbound))))
+
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first.
@@ -110,11 +116,7 @@
   ;; class-size (also computed during finalization) will be unbound and error
   ;; before anything terrible can happen.
   ;; So we don't finalize here.
-  (let* (;; FIXME: Read these two in one go, atomically.
-         (slotds (class-slots class))
-         (stamp (core:class-stamp-for-instances class))
-         (rack (core:make-rack (length slotds) slotds stamp (core:unbound))))
-    (core:allocate-raw-instance class rack)))
+  (core:allocate-raw-instance class (make-rack-for-class class)))
 
 (defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
@@ -131,10 +133,8 @@
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
-  (let* ((slotds (class-slots class))
-         (stamp (core:class-stamp-for-instances class))
-         (rack (core:make-rack (length slotds) slotds stamp (core:unbound)))
-         (instance (core:allocate-raw-funcallable-instance class rack)))
+  (let ((instance (core:allocate-raw-funcallable-instance
+                   class (make-rack-for-class class))))
     ;; MOP says if you call a funcallable instance before setting its function,
     ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
     ;; But we can be nice.
