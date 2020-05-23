@@ -110,11 +110,11 @@
   ;; class-size (also computed during finalization) will be unbound and error
   ;; before anything terrible can happen.
   ;; So we don't finalize here.
-  (dbg-standard "About to allocate-new-instance class->~a~%" class)
-  (let ((x (core:allocate-standard-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
-    x))
+  (let* (;; FIXME: Read these two in one go, atomically.
+         (slotds (class-slots class))
+         (stamp (core:class-stamp-for-instances class))
+         (rack (core:make-rack (length slotds) slotds stamp (core:unbound))))
+    (core:allocate-raw-instance class rack)))
 
 (defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
@@ -131,15 +131,16 @@
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
-  (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
-  (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
+  (let* ((slotds (class-slots class))
+         (stamp (core:class-stamp-for-instances class))
+         (rack (core:make-rack (length slotds) slotds stamp (core:unbound)))
+         (instance (core:allocate-raw-funcallable-instance class rack)))
     ;; MOP says if you call a funcallable instance before setting its function,
     ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
     ;; But we can be nice.
-    (set-funcallable-instance-function x (uninitialized-funcallable-instance-closure x))
-    x))
+    (set-funcallable-instance-function
+     instance (uninitialized-funcallable-instance-closure instance))
+    instance))
 
 (defmethod make-instance ((class class) &rest initargs)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
