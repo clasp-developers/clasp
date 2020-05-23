@@ -100,10 +100,11 @@
           sum 1))
 
 (defun make-rack-for-class (class)
-  (let (;; FIXME: Read these two in one go, atomically.
+  (let (;; FIXME: Read this information from the class in one go, atomically.
         (slotds (class-slots class))
+        (size (class-size class))
         (stamp (core:class-stamp-for-instances class)))
-    (core:make-rack (length slotds) slotds stamp (core:unbound))))
+    (core:make-rack size slotds stamp (core:unbound))))
 
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
