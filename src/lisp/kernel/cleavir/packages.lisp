@@ -66,6 +66,8 @@
    #:defcallback-ast #:defcallback-args
    #:header-stamp-case-ast #:make-header-stamp-case-ast
    #:stamp-ast #:derivable-ast #:rack-ast #:wrapped-ast #:header-ast
+   #:instance-rack-ast #:instance-rack-set-ast
+   #:rack-read-ast #:rack-write-ast
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -139,6 +141,8 @@
    #:array-dimension-instruction
    #:header-stamp-instruction #:rack-stamp-instruction
    #:wrapped-stamp-instruction #:derivable-stamp-instruction
+   #:instance-rack-instruction #:instance-rack-set-instruction
+   #:rack-read-instruction #:rack-write-instruction
    #:vaslist-pop-instruction #:make-vaslist-pop-instruction
    #:vaslist-length-instruction #:make-vaslist-length-instruction
    #:bind-va-list-instruction #:make-bind-va-list-instruction

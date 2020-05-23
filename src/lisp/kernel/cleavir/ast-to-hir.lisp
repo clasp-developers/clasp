@@ -228,6 +228,19 @@
   (clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast
                              cleavir-ast:object-ast cleavir-ast:slot-number-ast))
 
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:instance-rack-ast clasp-cleavir-hir:instance-rack-instruction
+  (cleavir-ast:object-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:instance-rack-set-ast clasp-cleavir-hir:instance-rack-set-instruction
+  (cleavir-ast:object-ast cleavir-ast:value-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:rack-read-ast clasp-cleavir-hir:rack-read-instruction
+  (cleavir-ast:object-ast cleavir-ast:slot-number-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:rack-write-ast clasp-cleavir-hir:rack-write-instruction
+  (cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast))
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast

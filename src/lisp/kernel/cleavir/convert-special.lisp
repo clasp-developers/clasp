@@ -304,6 +304,14 @@
   (:cmp-ast :value-ast :cons-ast))
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
+(define-functionlike-special-form core:instance-rack cc-ast:instance-rack-ast
+  (:object-ast))
+(define-functionlike-special-form core:instance-rack-set cc-ast:instance-rack-set-ast
+  (:object-ast :value-ast))
+(define-functionlike-special-form core:rack-ref cc-ast:rack-read-ast
+  (:object-ast :slot-number-ast))
+(define-functionlike-special-form core:rack-set cc-ast:rack-write-ast
+  (:object-ast :slot-number-ast :value-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

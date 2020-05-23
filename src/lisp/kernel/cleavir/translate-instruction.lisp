@@ -565,6 +565,38 @@
        (first (cleavir-ir:outputs instruction))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:instance-rack-instruction)
+     return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:gen-instance-rack (in (first (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:instance-rack-set-instruction)
+     return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (cmp:gen-instance-rack-set
+   (in (first (cleavir-ir:inputs instruction)))
+   (in (second (cleavir-ir:inputs instruction)))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:rack-read-instruction)
+     return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (out (cmp:gen-rack-ref (in (first (cleavir-ir:inputs instruction)))
+                         (in (second (cleavir-ir:inputs instruction))))
+       (first (cleavir-ir:outputs instruction))))
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:rack-write-instruction)
+     return-value abi function-info)
+  (declare (ignore return-value abi function-info))
+  (cmp:gen-rack-set
+   (in (first (cleavir-ir:inputs instruction)))
+   (in (second (cleavir-ir:inputs instruction)))
+   (in (third (cleavir-ir:inputs instruction)))))
+
+(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:vaslist-pop-instruction) return-value abi function-info)
   (declare (ignore return-value function-info))
   (out (cmp:gen-vaslist-pop (in (first (cleavir-ir:inputs instruction))))

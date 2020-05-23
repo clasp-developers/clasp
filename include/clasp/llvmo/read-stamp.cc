@@ -22,7 +22,7 @@ core::T_O* template_read_stamp(TTT* obj)
         stamp == DO_SHIFT_STAMP(gctools::STAMP_core__FuncallableInstance_O) ||
         stamp == DO_SHIFT_STAMP(gctools::STAMP_clbind__ClassRep_O)) {
       core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
-      core::Rack_O* rack = reinterpret_cast<core::Rack_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
+      core::Rack_O* rack = reinterpret_cast<core::Rack_O*>(gctools::untag_general<core::T_O*>(instance_ptr->rack().raw_()));
       return (core::T_O*)rack->_ShiftedStamp;
     } else if ( stamp == DO_SHIFT_STAMP(gctools::STAMP_core__WrappedPointer_O) ) {
       core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(client_ptr);
@@ -65,7 +65,7 @@ inline core::T_O* template_read_general_stamp(core::General_O* client_ptr) {
 
 inline core::T_O* template_read_rack_stamp(core::General_O* client_ptr) {
   core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
-  core::Rack_O* rack = reinterpret_cast<core::Rack_O*>(gctools::untag_general<core::T_O*>(instance_ptr->_Rack.raw_()));
+  core::Rack_O* rack = reinterpret_cast<core::Rack_O*>(gctools::untag_general<core::T_O*>(instance_ptr->rack().raw_()));
   return (core::T_O*)rack->_ShiftedStamp;
 }
 

@@ -99,6 +99,13 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
+(defun make-rack-for-class (class)
+  (let (;; FIXME: Read this information from the class in one go, atomically.
+        (slotds (class-slots class))
+        (size (class-size class))
+        (stamp (core:class-stamp-for-instances class)))
+    (core:make-rack size slotds stamp (core:unbound))))
+
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first.
@@ -110,17 +117,11 @@
   ;; class-size (also computed during finalization) will be unbound and error
   ;; before anything terrible can happen.
   ;; So we don't finalize here.
-  (dbg-standard "About to allocate-new-instance class->~a~%" class)
-  (let ((x (core:allocate-new-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
-    x))
+  (core:allocate-raw-instance class (make-rack-for-class class)))
 
 (defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
-  ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
-  ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
-  (core:allocate-new-instance class (class-size class)))
+  (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
 (defun uninitialized-funcallable-instance-closure (funcallable-instance)
   (lambda (core:&va-rest args)
@@ -131,15 +132,14 @@
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
-  (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
-  (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
+  (let ((instance (core:allocate-raw-funcallable-instance
+                   class (make-rack-for-class class))))
     ;; MOP says if you call a funcallable instance before setting its function,
     ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
     ;; But we can be nice.
-    (set-funcallable-instance-function x (uninitialized-funcallable-instance-closure x))
-    x))
+    (set-funcallable-instance-function
+     instance (uninitialized-funcallable-instance-closure instance))
+    instance))
 
 (defmethod make-instance ((class class) &rest initargs)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
@@ -329,9 +329,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
       ;; FIXME: Should gray streams go here?
       ;; Extensible sequences
       (eq superclass (find-class 'sequence))))
-
-;;; Should it be standard-class only?
-(defmethod validate-superclass ((class class) (superclass core:derivable-cxx-class)) t)
 
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE

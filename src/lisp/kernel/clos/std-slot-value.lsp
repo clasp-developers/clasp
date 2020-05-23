@@ -89,7 +89,7 @@
   (when (symbolp slots)
     (setf slots (symbol-value slots)))
   `(let* ((%class ,class)
-          (,object (core:allocate-new-instance %class ,(length slots))))
+          (,object (core:allocate-standard-instance %class ,(length slots))))
      (declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
@@ -113,7 +113,7 @@
     (setf slots (symbol-value slots)))
   `(let* ((%class ,class)
           ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
-          (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
+          (,object (core:allocate-funcallable-standard-instance %class ,(length slots))))
      (declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
@@ -164,10 +164,10 @@
 ;;; not deal with that, but we can.
 
 (defun standard-instance-access (instance location)
-  (si:instance-ref instance location))
+  (core:rack-ref (core:instance-rack instance) location))
 
 (defun (setf standard-instance-access) (val instance location)
-  (si:instance-set instance location val))
+  (setf (core:rack-ref (core:instance-rack instance) location) val))
 
 #+threads
 (mp::define-simple-cas-expander clos:standard-instance-access core::instance-cas
@@ -181,20 +181,20 @@ consequences are not defined.")
 ;;; On Clasp, funcallable instances and regular instances store
 ;;; their slots identically, at the moment.
 (defun funcallable-standard-instance-access (instance location)
-  (si:instance-ref instance location))
+  (core:rack-ref (core:instance-rack instance) location))
 
 (defun (setf funcallable-standard-instance-access) (val instance location)
-  (si:instance-set instance location val))
+  (setf (core:rack-ref (core:instance-rack instance) location) val))
 
 ;;; This works on both class locations (conses) and instance ones.
 (defun standard-location-access (instance location)
   (if (core:fixnump location)
-      (si:instance-ref instance location)
+      (core:rack-ref (core:instance-rack instance) location)
       (car location)))
 
 (defun (setf standard-location-access) (val instance location)
   (if (core:fixnump location)
-      (si:instance-set instance location val)
+      (setf (core:rack-ref (core:instance-rack instance) location) val)
       (setf (car location) val)))
 
 (defun slot-value (self slot-name)
