@@ -20,12 +20,17 @@
 ;;;
 ;;; The method CHANGE-CLASS performs most of the work.
 ;;;
-;;;	a) The structure of the instance is changed to match the new
-;;;	   number of local slots.
-;;;	b) The new local slots are filled with the value of the old
-;;;	   slots. Only the name is used, so that a new local slot may
-;;;	   get the value of old slots that were eithe local or shared.
-;;;	c) Finally, UPDATE-INSTANCE-FOR-DIFFERENT-CLASS is invoked
+;;;     a) A copy of the instance, sharing its class and rack, is
+;;;        created, along with a new rack.
+;;;     b) The new rack's slots are filled from the old rack's slots.
+;;;        Only the name is used, so that a new local slot may get the
+;;;        value of old slots regardless of those slots' allocation.
+;;;     c) The instance's rack is atomically set to the new rack,
+;;;        ensuring that instance racks are always self consistent.
+;;;        The class of the instance is also changed; it's likely
+;;;        some problems are possible if CHANGE-CLASS is called on
+;;;        the same object in multiple threads simultaneously (FIXME).
+;;;	d) Finally, UPDATE-INSTANCE-FOR-DIFFERENT-CLASS is invoked
 ;;;	   with a copy of the instance as it looked before the change,
 ;;;	   the changed instance and enough information to perform any
 ;;;	   extra processing.
@@ -107,11 +112,12 @@
 ;;;
 ;;; PART 2: UPDATING AN INSTANCE THAT BECAME OBSOLETE
 ;;;
-;;; Each instance has a hidden field (readable with SI:INSTANCE-SIG), which
-;;; contains the list of slots of its class. This field must be updated every
-;;; time the class is initialized or reinitialized. Generally
-;;;	(EQ (SI:INSTANCE-SIG x) (CLASS-SLOTS (CLASS-OF x)))
-;;; returns NIL whenever the instance x is obsolete.
+;;; Each instance's rack contains a "sig", which is a list of the slotds its
+;;; class had when that rack was allocated. When an instance is updated, its
+;;; rack is replaced with a new rack based on the new definition of the class
+;;; and its new stamp and slotds.
+;;; An instance is obsolete if it's rack's stamp is out of sync with its
+;;; class's stamp.
 ;;;
 ;;; There are two circumstances under which a instance may become obsolete:
 ;;; either the class has been modified using REINITIALIZE-INSTANCE (and thus
@@ -120,11 +126,12 @@
 ;;; The function UPDATE-INSTANCE (hidden to the user) does the job of
 ;;; updating an instance that has become obsolete.
 ;;;
-;;;	a) A copy of the instance is saved to check the old values.
-;;;	b) The structure of the instance is changed to match the new
-;;;	   number of local slots.
-;;;	c) The new local slots are filled with the value of the old
-;;;	   local slots.
+;;;     a) A new rack is allocated based on the new class definition.
+;;;     b) The new rack's slots are filled in from the old rack's slots;
+;;;        also, the lists of added slots, discarded slots, and the
+;;;        property list of discarded values are computed based on the
+;;;        two racks' sigs.
+;;;     c) The instance's rack is atomically replaced with the new one.
 ;;;	d) Finally, UPDATE-INSTANCE-FOR-REDEFINED-CLASS is invoked
 ;;;	   with enough information to perform any extra initialization,
 ;;;	   for instance of new slots.
@@ -181,6 +188,8 @@
           (push name added-slots))))
     (values added-slots discarded-slots property-list)))
 
+;;; Used for both instances and funcallable instances due to their
+;;; identical rack locations.
 (defun update-instance (instance)
   (let ((new-rack (make-rack-for-class (class-of instance))))
     (multiple-value-bind (added-slots discarded-slots property-list)
