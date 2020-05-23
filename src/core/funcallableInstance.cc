@@ -74,31 +74,22 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Sh
   DEPRECATED();
 }
 
+// FIXME: Exists solely for cases where the list of slotds is hard to get.
+CL_LAMBDA(class slot-count);
+CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
+                                                           size_t slot_count) {
+  FunctionDescription* fdesc = makeFunctionDescription(cl::_sym_lambda);
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc);
+  obj->_Class = cl;
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
+  return obj;
+}
+
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
   FunctionDescription* fdesc = makeFunctionDescription(cl::_sym_lambda);
   GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc, cl, rack);
   return obj;
-}
-
-// Identical to allocate_new_instance in instance.cc, except for the type.
-CL_DEFUN T_sp core__allocate_new_funcallable_instance(Instance_sp cl, size_t numberOfSlots) {
-  // cl is known to be a funcallable-standard-class.
-  ASSERT(cl->CLASS_has_creator());
-  Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
-  FuncallableInstance_sp obj = gc::As_unsafe<FuncallableInstance_sp>(creator->creator_allocate());
-  obj->_Class = cl;
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), numberOfSlots);
-  return obj;
-}
-
-CL_DEFUN FuncallableInstance_sp core__reallocate_funcallable_instance(FuncallableInstance_sp instance,
-                                                                      Instance_sp new_class,
-                                                                      size_t new_size) {
-  instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(),
-                            new_class->slots(), new_size);
-  return instance;
 }
 
 size_t FuncallableInstance_O::rack_stamp_offset() {
@@ -203,15 +194,6 @@ LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
 //  printf("%s:%d:%s About to call %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->functionName()).c_str());
   return funcall_consume_valist_<core::Function_O>(funcallable_closure.tagged_(),lcc_vargs);
-}
-
-T_sp FuncallableInstance_O::copyInstance() const {
-  DEPRECATED();
-  Instance_sp cl = this->_Class;
-  FuncallableInstance_sp copy = gc::As_unsafe<FuncallableInstance_sp>(cl->CLASS_get_creator()->creator_allocate());
-  copy->_Class = cl;
-  copy->_Rack = rack();
-  return copy;
 }
 
 T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {

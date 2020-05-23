@@ -92,18 +92,6 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Instance_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
-CL_DEFUN T_sp core__copy_instance(T_sp obj) {
-  if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    Instance_sp cp = gc::As_unsafe<Instance_sp>(iobj->copyInstance());
-    return cp;
-  }
-  SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
-};
-
 void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
                                  size_t numberOfSlots) {
   ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
@@ -162,6 +150,7 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
   return sanity;
 }
 
+// FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
   GC_ALLOCATE_VARIADIC(Instance_O, obj, cl);
@@ -175,31 +164,15 @@ CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
   return obj;
 }
 
-CL_LAMBDA(class slot-count);
-CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
-  // cl is known to be a standard-class.
+CL_LAMBDA(class rack);
+CL_DEFUN Instance_sp core__allocate_raw_general_instance(Instance_sp cl, Rack_sp rack) {
+  // This function allocates using the creator.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   Instance_sp obj = gc::As_unsafe<Instance_sp>(creator->creator_allocate());
   obj->_Class = cl;
-  /* Unlike other slots, the stamp must be initialized in the allocator,
-   * as it's required for dispatch. */
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  gctools::count_allocation(cl->CLASS_stamp_for_instances());
-#endif
+  obj->_Rack = rack;
   return obj;
-}
-
-// Give an instance a new class and rack. Used by change-class.
-CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp new_class, size_t new_size) {
-  instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(),
-                            new_class->slots(), new_size); // set the rack
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  gctools::count_allocation(new_class->CLASS_stamp_for_instances());
-#endif
-  return instance;
 }
 
 SYMBOL_EXPORT_SC_(ExtPkg,fieldsp);
@@ -343,14 +316,6 @@ string Instance_O::__repr__() const {
   }
   ss << ")" ;
   return ss.str();
-}
-
-T_sp Instance_O::copyInstance() const {
-  Instance_sp cl = this->_Class;
-  Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
-  copy->_Class = cl;
-  copy->_Rack = rack();
-  return copy;
 }
 
 SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);

@@ -74,7 +74,7 @@
 
 (defmethod allocate-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
-  (core:allocate-new-instance class (class-size class)))
+  (core:allocate-raw-instance class (make-rack-for-class class)))
 
 ;;; structure-classes cannot be instantiated (but could be, as an extension)
 (defmethod make-instance ((class structure-class) &rest initargs)

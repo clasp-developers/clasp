@@ -24,7 +24,7 @@ there's no initarg checking or loops to elide.
              `(core:allocate-standard-instance ,class ,size)))
           ((eq metaclass (find-class 'clos:funcallable-standard-class))
            (let ((size (clos::class-size class)))
-             `(let ((instance (core:allocate-new-funcallable-instance ,class ,size)))
+             `(let ((instance (core:allocate-funcallable-standard-instance ,class ,size)))
                 (clos:set-funcallable-instance-function
                  instance (clos::uninitialized-funcallable-instance-closure instance))
                 instance)))

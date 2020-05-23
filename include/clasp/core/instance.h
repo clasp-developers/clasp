@@ -122,9 +122,6 @@ namespace core {
     // _Rack  (matches offset in FuncallableInstance_O)
     Instance_sp _Class;
     Rack_sp _Rack;
-  /*! Mimicking ECL instance->sig generation signature
-        This is pointed to the class slots in case they change 
-        - then the instances can be updated*/
   public:
     static Instance_sp createClassUncollectable(gctools::ShiftedStamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
@@ -227,8 +224,6 @@ namespace core {
 
     string __repr__() const;
 
-    virtual T_sp copyInstance() const;
-
     virtual void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc
@@ -281,10 +276,6 @@ namespace gctools {
       return NULL;
     }
   };
-};
-
-namespace core {
-  T_sp core__allocate_new_instance(Instance_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

@@ -133,8 +133,6 @@ namespace core {
 
     string __repr__() const;
 
-    T_sp copyInstance() const;
-
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
     size_t increment_calls () { return this->_InterpretedCalls++; }

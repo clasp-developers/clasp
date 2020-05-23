@@ -34,7 +34,7 @@
 ;; (Because if ensure-boot-class is called again with the same name,
 ;;  it'll just find-class the existing one.)
 (defun allocate-boot-class (metaclass slot-count name)
-  (let ((class (core:allocate-new-instance metaclass slot-count)))
+  (let ((class (core:allocate-standard-instance metaclass slot-count)))
     (core:class-new-stamp class name)
     class))
 
