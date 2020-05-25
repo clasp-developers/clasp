@@ -1324,6 +1324,8 @@ public:
       _ptr = NULL;
     };
   }
+  LLVMContext_sp getContext() const;
+
   bool llvm_sys_value_p() const { return true; };
   string __repr__() const;
   bool valid() const;
@@ -2106,6 +2108,8 @@ public:
 public:
   /*! Return a list of all functions as a cons */
   core::List_sp getFunctionList() const;
+
+  LLVMContext_sp getContext() const;
 
   /*! Wrap the Module::getFunction function */
   llvm::Function *getFunction(core::String_sp dispatchName);
@@ -3933,6 +3937,8 @@ public:
   ~Function_O() {}
 
   bool Function_equal(core::T_sp obj) const;
+
+  LLVMContext_sp getContext() const;
 
   void addReturnAttr(typename llvm::Attribute::AttrKind);
   core::List_sp getArgumentList();

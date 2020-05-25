@@ -1416,14 +1416,14 @@ jump to blocks within this tagbody."
 ;;; to a Lisp closure, then translates the primary return value of that function
 ;;; back to C and returns it (or if the C function is return type void, doesn't).
 (defun gen-defcallback (c-name convention
-                        return-type return-translator-name
-                        argument-types argument-translator-names
+                        return-type-name return-translator-name
+                        argument-type-names argument-translator-names
                         parameters place-holder closure-value)
   (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
-  (unless (= (length argument-types) (length parameters) (length argument-translator-names))
+  (unless (= (length argument-type-names) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
-  ;;; Generate a variable and put the closure in it.
+;;; Generate a variable and put the closure in it.
   (let* ((closure-literal-slot-index (literal:lookup-literal-index place-holder))
          (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
     (irc-t*-result closure-value (literal:constants-table-reference closure-literal-slot-index))
@@ -1431,6 +1431,8 @@ jump to blocks within this tagbody."
     ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
     (with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
       (let* ((c-argument-names (mapcar #'string parameters))
+             (return-type (clasp-ffi:safe-translator-type return-type-name))
+             (argument-types (mapcar #'clasp-ffi:safe-translator-type argument-type-names))
              (c-function-type (llvm-sys:function-type-get return-type argument-types))
              (new-func (llvm-sys:function-create c-function-type
                                                  'llvm-sys:external-linkage
@@ -1438,6 +1440,15 @@ jump to blocks within this tagbody."
                                                  *the-module*))
              (*current-function* new-func)
              (*current-function-name* c-name))
+        (unless (llvm-sys:llvmcontext-equal (llvm-sys:get-context *the-module*)
+                                            (llvm-sys:get-context new-func))
+          (error "The llvm-context for the~%module ~s~%the thread LLVMContext is ~s~% doesn't match the one for the new-func ~s~%the c-function-type context is ~s~% The function return-type context is: ~s~% The argument types are ~s~%"
+                 (llvm-sys:get-context *the-module*)
+                 (cmp:thread-local-llvm-context)
+                 (llvm-sys:get-context new-func)
+                 (llvm-sys:get-context c-function-type)
+                 (llvm-sys:get-context return-type)
+                 (mapcar #'llvm-sys:get-context argument-types)))
         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
           (let ((bb (irc-basic-block-create "entry" new-func)))
             (irc-set-insert-point-basic-block bb)
@@ -1470,7 +1481,8 @@ jump to blocks within this tagbody."
                                    ;; get the 0th value.
                                    (list (irc-tmv-primary cl-result))
                                    "c-result")))
-                    (irc-ret c-result))))))))))
+                    (irc-ret c-result)))
+              )))))))
 
 (defun codegen-defcallback (result form env)
   (declare (ignore result))             ; no return value

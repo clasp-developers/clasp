@@ -892,6 +892,11 @@ namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
 };
+
+CL_DEFMETHOD LLVMContext_sp Value_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
+}
+
 }
 
 namespace llvmo {
@@ -1206,6 +1211,10 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
   return self;
 };
+
+CL_DEFMETHOD LLVMContext_sp Module_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
+}
 
 std::string Module_O::__repr__() const {
   stringstream ss;
@@ -2818,6 +2827,10 @@ CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::DISubprogram*))&
 CL_LISPIFY_NAME("addReturnAttr");
 CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {
   this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
+}
+
+CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
 }
 
 CL_LISPIFY_NAME("getArgumentList");

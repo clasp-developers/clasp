@@ -374,4 +374,23 @@
           with-literal-table
           generate-run-time-code-for-closurette))
 
+(in-package :clasp-ffi)
+(export '(with-foreign-object
+          with-foreign-objects
+          %foreign-alloc
+          %foreign-free
+          %mem-ref
+          %mem-set
+          %foreign-funcall
+          %foreign-funcall-pointer
+          %load-foreign-library
+          %close-foreign-library
+          %foreign-symbol-pointer
+          %foreign-type-size
+          %foreign-type-alignment
+          %defcallback
+          %callback
+          %get-callback
+          safe-translator-type))
+
 (use-package :literal :cmp)

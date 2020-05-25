@@ -402,9 +402,9 @@
           (destructuring-bind (name &key convention) name-and-options
             (values name convention))
           (values name-and-options :cdecl))
-    (let ((return-type (safe-translator-type return-type-kw))
+    (let ((return-type return-type-kw #+(or)(safe-translator-type return-type-kw))
           (return-translator (from-translator-name return-type-kw))
-          (argument-types (mapcar #'safe-translator-type argument-type-kws))
+          (argument-types argument-type-kws #+(or)(mapcar #'safe-translator-type argument-type-kws))
           (argument-translators (mapcar #'to-translator-name argument-type-kws))
           (place-holder (gensym)))
       `(let ((cell ',place-holder)
@@ -453,4 +453,5 @@
             %foreign-type-alignment
             %defcallback
             %callback
-            %get-callback)))
+            %get-callback
+            safe-translator-type)))
