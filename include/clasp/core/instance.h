@@ -109,11 +109,12 @@ namespace core {
     bool fieldsp() const;
     void fields(Record_sp node);
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+    Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
       _Class(metaClass)
       ,_Rack(_Unbound<Rack_O>())
     {};
+    Instance_O(Instance_sp cl, Rack_sp rack) : _Class(cl), _Rack(rack) {};
     virtual ~Instance_O(){};
   public:
     // The order MUST be:
@@ -121,9 +122,6 @@ namespace core {
     // _Rack  (matches offset in FuncallableInstance_O)
     Instance_sp _Class;
     Rack_sp _Rack;
-  /*! Mimicking ECL instance->sig generation signature
-        This is pointed to the class slots in case they change 
-        - then the instances can be updated*/
   public:
     static Instance_sp createClassUncollectable(gctools::ShiftedStamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
@@ -131,8 +129,6 @@ namespace core {
   /*! Setup the instance nil value */
   //	void setupInstanceNil();
 
-  public:
-    virtual bool isCallable() const { return false; };
   public:
     // Functions from Instance_O
     string _classNameAsString() const;
@@ -173,8 +169,6 @@ namespace core {
     string instanceClassName() const { return this->getPackagedName(); };
 
     T_sp make_instance();
-  /*! predicate if this is a BuiltInClass class */
-    virtual bool builtInClassP() const { return this == &*core::lisp_built_in_class(); };
 
   /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
@@ -183,10 +177,6 @@ namespace core {
   /*! cxxDerivableClass is a class that inherits from a raw C++ class and
           the clbind::Adapter class - this allows it to be derived from */
     virtual bool cxxDerivableClassP() const { return false; };
-
-  /*! primaryCxxDerivableClassP is a predicate that returns true if
-          this class is the primary derivable C++ class */
-    virtual bool primaryCxxDerivableClassP() const { return false; };
 
     void setInstanceBaseClasses(List_sp classes);
     void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
@@ -210,6 +200,7 @@ namespace core {
   public:
     static size_t rack_stamp_offset();
   public: // Functions here
+    Rack_sp rack() const { return this->_Rack; };
     Fixnum stamp() const;
     void stamp_set(gctools::ShiftedStamp s);
     size_t numberOfSlots() const;
@@ -232,8 +223,6 @@ namespace core {
     T_sp instanceSet(size_t idx, T_sp val);
 
     string __repr__() const;
-
-    virtual T_sp copyInstance() const;
 
     virtual void describe(T_sp stream);
 
@@ -287,10 +276,6 @@ namespace gctools {
       return NULL;
     }
   };
-};
-
-namespace core {
-  T_sp core__allocate_new_instance(Instance_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

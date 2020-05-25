@@ -975,13 +975,6 @@ void initialize_raw_translators( void )
 
 void initialize_intrinsics( void )
 {
-  // FuncallableInstance and Instance have the rack pointer at the same place
-  if ((offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack))) {
-    printf("%s:%d  The Instance_O._Rack offset %lu and FuncallableInstance_O._Rack offset %lu are not at the same\n", __FILE__, __LINE__,
-           offsetof(Instance_O,_Rack), offsetof(FuncallableInstance_O,_Rack));
-    abort();
-  }
-
   return;
 }
 

@@ -285,7 +285,7 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "8aa81006a8aa3cb920ebff6231f9e10e1d76dafc")
+                       "3b3fc06c0461e54222a7f6791d2e4776cf3ad2a9")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "f4100714fd90805ba30221dc8dafa5a99f3cf6a0")
@@ -297,7 +297,7 @@ def update_dependencies(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/clasp-developers/Eclector.git",
-                       "363c495ea3c4dc11274cccb1964ab95ab53b3966")
+                       "7e9561c410897d499b581f6a8e98cbbd17cd7a81")
 #"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",

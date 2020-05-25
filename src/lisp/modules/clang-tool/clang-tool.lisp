@@ -662,7 +662,8 @@ Select a subset (or all) source file names from the compilation database and ret
 
 
 (defparameter *match-dump-tag* nil)
-(defclass good-dump-match-callback (ast-tooling:match-callback) () )
+(defclass good-dump-match-callback (ast-tooling:match-callback) ()
+  (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self good-dump-match-callback) match)
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
@@ -684,7 +685,8 @@ Select a subset (or all) source file names from the compilation database and ret
       (cast:dump node)
       (advance-match-counter))))
 
-(defclass dump-match-callback (ast-tooling:match-callback) () )
+(defclass dump-match-callback (ast-tooling:match-callback) ()
+  (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self dump-match-callback) match)
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
@@ -695,7 +697,8 @@ Select a subset (or all) source file names from the compilation database and ret
 
 
 
-(defclass count-match-callback (ast-tooling:match-callback) () )
+(defclass count-match-callback (ast-tooling:match-callback) ()
+  (:metaclass core:derivable-cxx-class))
 (core:defvirtual ast-tooling:run ((self count-match-callback) match)
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
@@ -717,7 +720,8 @@ Select a subset (or all) source file names from the compilation database and ret
           :initform (make-instance 'code-match-timer :name (gensym))
           :accessor timer)
    (match-code :initarg :match-code :accessor match-code)
-   (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
+   (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code))
+  (:metaclass core:derivable-cxx-class))
 
 (defparameter *on-start-translation-unit-depth* 0)
 (defparameter *on-end-translation-unit-depth* 0)
@@ -755,7 +759,8 @@ Select a subset (or all) source file names from the compilation database and ret
 
 
 (defclass source-loc-match-callback (code-match-callback)
-  ((comments-substring-list :accessor comments-substring-list :initarg :comments-substring-list)))
+  ((comments-substring-list :accessor comments-substring-list :initarg :comments-substring-list))
+  (:metaclass core:derivable-cxx-class))
 
 
 (defun source-loc-equal (match-info source-loc-match-callback node)

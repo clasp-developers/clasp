@@ -73,15 +73,6 @@ In the future, this may be customizable with a generic function.")
   (declare (ignore class))
   (error 'unbound-slot :instance object :name slot-name))
 
-;;; This method is non-standard. It is used by clos:safe-instance-ref to
-;;; signal an unbound slot error when only the index is known.
-(defmethod slot-unbound ((class null) object slot-index)
-  (declare (ignore class))
-  (let* ((class (class-of object))
-	 (slotd (find slot-index (slot-value class 'slots)
-		      :key #'slot-definition-location)))
-    (values (slot-unbound class object (slot-definition-name slotd)))))
-
 (defmethod (setf class-name) (new-value (class class))
   (reinitialize-instance class :name new-value)
   new-value)

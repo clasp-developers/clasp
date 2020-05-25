@@ -487,20 +487,31 @@ representing a tagged fixnum."
           (error "The val ~s type ~s is not a t* or fixnum " val (type-of val)))))
 
 
+(defun irc-rack-address (instance-tagged)
+  (let ((instance* (irc-untag-general instance-tagged %instance*%)))
+    (irc-struct-gep %instance% instance* +instance.rack-index+)))
+
 (defun irc-rack (instance-tagged)
-  (let* ((instance* (irc-untag-general instance-tagged %instance*%))
-         (rack (irc-load-atomic (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
-    rack))
+  (irc-load-atomic (irc-rack-address instance-tagged) "rack-tagged"))
+
+(defun irc-rack-set (instance-tagged rack)
+  (irc-store-atomic rack (irc-rack-address instance-tagged)))
+
+(defun irc-rack-slot-address (rack-tagged index)
+  (let* ((rack* (irc-untag-general rack-tagged %rack*%))
+         ;; Address of the start of the data vector.
+         (data0* (irc-struct-gep %rack% rack* +rack.data-index+)))
+    (irc-gep data0* (list 0 index))))
 
 (defun irc-instance-slot-address (instance index)
   "Return a %t**% a pointer to a slot in the rack of an instance"
-  (let* ((rack-tagged (irc-rack instance))
-         (rack* (irc-untag-general rack-tagged %rack*%))
-         (data0* (irc-struct-gep %rack% rack* +rack.data-index+))
-         (dataN* (irc-gep data0* (list 0 index))))
-    dataN*))
+  (irc-rack-slot-address (irc-rack instance) index))
 
+(defun irc-rack-read (rack index)
+  (irc-load-atomic (irc-rack-slot-address rack index)))
 
+(defun irc-rack-write (rack index value)
+  (irc-store-atomic value (irc-rack-slot-address rack index)))
 
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
