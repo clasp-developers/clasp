@@ -17,8 +17,8 @@ a constructor ought to be computed, before make-instance.
 
 (defvar *constructor-cells* (make-hash-table :test #'eq))
 
-(defun make-invalid-cell (class-name keys)
-  (let ((cell (make-constructor-cell class-name keys)))
+(defun make-invalid-cell (class-designator keys)
+  (let ((cell (make-constructor-cell class-designator keys)))
     (setf (cell-function cell) (invalidated-constructor cell))
     cell))
 
@@ -34,49 +34,49 @@ a constructor ought to be computed, before make-instance.
              ,valueg
              (setf (gethash ,keyo ,tableo) ,default))))))
 
-(defun ensure-name-table (class-name)
-  (ensure-gethash class-name *constructor-cells*
+(defun ensure-designator-table (class-designator)
+  (ensure-gethash class-designator *constructor-cells*
                   (make-hash-table :test #'equal)))
 
-(defun ensure-constructor-cell (class-name keys)
-  (ensure-gethash keys (ensure-name-table class-name)
-                  (make-invalid-cell class-name keys)))
+(defun ensure-constructor-cell (class-designator keys)
+  (ensure-gethash keys (ensure-designator-table class-designator)
+                  (make-invalid-cell class-designator keys)))
 
 ;;; used in precompile
-(defun force-constructor (class-name keys function)
+(defun force-constructor (class-designator keys function)
   (setf (cell-function
-         (ensure-constructor-cell class-name keys))
+         (ensure-constructor-cell class-designator keys))
         function))
 
 ;;; debug
-(defun find-constructor-cell (class-name keys)
+(defun find-constructor-cell (class-designator keys)
   (multiple-value-bind (table presentp)
-      (gethash class-name *constructor-cells*)
+      (gethash class-designator *constructor-cells*)
     (if presentp
         (gethash keys table)
         (values nil nil))))
 
 ;;; debug
-(defun named-constructors ()
-  (let (names)
-    (maphash (lambda (name table)
+(defun designated-constructors ()
+  (let (designators)
+    (maphash (lambda (designator table)
                (declare (ignore table))
-               (push name names))
+               (push designator names))
              *constructor-cells*)
-    names))
+    designators))
 
 ;;; debug
-(defun constructor-cells (name)
+(defun constructor-cells (designator)
   (let ((cells nil))
     (maphash (lambda (key cell)
                (declare (ignore key))
                (push cell cells))
-             (or (gethash name *constructor-cells*)
+             (or (gethash designator *constructor-cells*)
                  (return-from constructor-cells nil)))
     cells))
 
-(defun map-constructor-cells (function name)
-  (let ((table (gethash name *constructor-cells*)))
+(defun map-constructor-cells (function designator)
+  (let ((table (gethash designator *constructor-cells*)))
     (when table
       (maphash (lambda (key value)
                  (declare (ignore key))
@@ -91,12 +91,13 @@ a constructor ought to be computed, before make-instance.
 (defun invalidate-cell (cell)
   (setf (cell-function cell) (invalidated-constructor cell)))
 
-(defun invalidate-named-constructors (name)
-  (map-constructor-cells #'invalidate-cell name))
+(defun invalidate-designated-constructors (designator)
+  (map-constructor-cells #'invalidate-cell designator))
 
 (defun invalidate-class-constructors (class)
+  (invalidate-designated-constructors class)
   (let ((name (proper-class-name class)))
-    (when name (invalidate-named-constructors name))))
+    (when name (invalidate-designated-constructors name))))
 
 ;;; CONSTRUCTORS
 ;;; These are no-compile ones- "constructing" them is just allocating a closure,
@@ -115,11 +116,11 @@ a constructor ought to be computed, before make-instance.
 ;;; calling make-instance (e.g. in the compiler).
 ;;; Obviously it's strictly worse than not inlining would have been, but
 ;;; it's temporary.
-(defun fallback-constructor (name keys)
+(defun fallback-constructor (designator keys)
   (lambda (&rest args)
     (declare (core:lambda-name fallback-constructor))
     (declare (notinline make-instance))
-    (apply #'make-instance name
+    (apply #'make-instance designator
            (loop for key in keys for arg in args
                  collect key collect arg))))
 
