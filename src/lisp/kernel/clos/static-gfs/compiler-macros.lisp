@@ -60,28 +60,28 @@
   (let ((class-designator
           (and (constantp class-designatorf env)
                (ext:constant-form-value class-designatorf env))))
-    (unless class-designator
-      (return-from make-instance form))
-    ;; We don't handle the constant class case correctly, since
-    ;; we don't need to worry about redefining the name there...
-    ;; So we skip it. It's rare anyway.
-    (unless (symbolp class-designator)
-      (return-from make-instance form))
     (multiple-value-bind (keys syms bindings validp)
         (extract initargs env)
       (if validp
-          ;; keeping binding in case we do handle literal classes later.
-          (let ((classn class-designator)
-                (cellg (gensym "CONSTRUCTOR-CELL")))
-            (when (boundp '*constructors-during-build*)
-              (pushnew (cons classn keys) *constructors-during-build*
-                       :test #'equal))
-            `(let ((,cellg
-                     (load-time-value
-                      (ensure-constructor-cell ',classn ',keys)))
-                   ,@bindings)
-               (funcall ,cellg ,@syms)))
-          ;; We have non constant arguments, but we can still do just a bit.
-          ;; (Compiler macro expansion won't recurse, as (find-class ...) is
-          ;;  not a constant.)
-          `(make-instance (find-class ',class-designator) ,@initargs)))))
+          (if class-designator
+              ;; Class is constant: get cell at load time
+              (let ((cellg (gensym "CONSTRUCTOR-CELL")))
+                (when (boundp '*constructors-during-build*)
+                  (pushnew (cons class-designator keys)
+                           *constructors-during-build*
+                           :test #'equal))
+                `(let ((,cellg
+                         (load-time-value
+                          (ensure-constructor-cell ',class-designator ',keys)))
+                       ,@bindings)
+                   (funcall ,cellg ,@syms)))
+              ;; Non-constant class: Get cell at runtime
+              `(let (,@bindings)
+                 (funcall
+                  (ensure-constructor-cell ,class-designatorf ',keys)
+                  ,@syms)))
+          ;; Non-constant initargs, but maybe we can do just a bit.
+          (if (and class-designator (symbolp class-designator))
+              `(locally (declare (notinline make-instance))
+                 (make-instance (find-class ',class-designator) ,@initargs))
+              form)))))
