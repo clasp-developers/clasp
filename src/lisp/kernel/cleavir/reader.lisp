@@ -35,10 +35,10 @@
      (cst:? cst:aux-parameter-group))))
 
 (defparameter *clasp-ordinary-lambda-list-grammar*
-  (cl:cons '(cst:target cst:<- clasp-ordinary-lambda-list)
-           (append *clasp-ordinary-lambda-list*
-                   *clasp-ordinary-rest-parameter-group*
-                   cst:*standard-grammar*)))
+  (cst::generate-grammar 'clasp-ordinary-lambda-list
+                         (append *clasp-ordinary-lambda-list*
+                                 *clasp-ordinary-rest-parameter-group*
+                                 cst:*standard-grammar*)))
 
 (cst::define-top-level-parser parse-clasp-ordinary-lambda-list
   *clasp-ordinary-lambda-list-grammar*
