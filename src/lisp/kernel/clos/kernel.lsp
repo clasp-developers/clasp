@@ -320,7 +320,7 @@
                                 (cons o e)
                                 (list o))))
                          ((eql spec +the-t-class+) (or e nil))
-                         (t t)))))
+                         (t (or e t))))))
   specializer-profile)
 
 ;;; Add one method to the specializer profile.
