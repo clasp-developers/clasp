@@ -1,6 +1,6 @@
 (in-package #:static-gfs)
 
-(defclass constructor-cell (clos:funcallable-standard-object)
+(defclass constructor-cell ()
   ((name :accessor cell-name) (keys :accessor cell-keys))
   (:metaclass clos:funcallable-standard-class))
 
