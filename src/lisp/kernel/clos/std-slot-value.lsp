@@ -310,7 +310,7 @@ consequences are not defined.")
     (if location-table
         (let ((location (gethash slot-name location-table)))
           (if location
-              (core::instance-cas object location old new)
+              (core::instance-cas old new object location)
               (slot-missing class object slot-name
                             'cas (list old new))))
         (let ((slotd (find slot-name (clos:class-slots class)
