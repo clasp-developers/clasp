@@ -752,6 +752,29 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   ;; a reorganization at a higher level.
   (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
 
+(defun translate-rmw-op (op)
+  (cond ((eq op :xchg) 'llvm-sys:xchg)
+        ((eq op :add)  'llvm-sys:add)
+        ((eq op :sub)  'llvm-sys:sub)
+        ((eq op :and)  'llvm-sys:and)
+        ((eq op :nand) 'llvm-sys:nand)
+        ((eq op :or)   'llvm-sys:or)
+        ((eq op :xor)  'llvm-sys:xor)
+        ((eq op :max)  'llvm-sys:max)
+        ((eq op :min)  'llvm-sys:min)
+        ((eq op :umax) 'llvm-sys:umax)
+        ((eq op :umin) 'llvm-sys:umin)
+        ((eq op :fadd) 'llvm-sys:fadd)
+        ((eq op :fsub) 'llvm-sys:fsub)
+        (t (error "Unknown atomic RMW operation: ~s" op))))
+
+(defun irc-atomicrmw (pointer value operation &optional (label "old"))
+  (llvm-sys:create-atomic-rmw *irbuilder*
+                              (translate-rmw-op operation)
+                              pointer value
+                              'llvm-sys:sequentially-consistent
+                              1 #+(or)'llvm-sys:system))
+
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
 
