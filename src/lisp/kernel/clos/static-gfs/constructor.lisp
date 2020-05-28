@@ -61,7 +61,7 @@ a constructor ought to be computed, before make-instance.
   (let (designators)
     (maphash (lambda (designator table)
                (declare (ignore table))
-               (push designator names))
+               (push designator designators))
              *constructor-cells*)
     designators))
 
