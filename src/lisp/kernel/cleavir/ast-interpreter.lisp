@@ -489,22 +489,24 @@
 ;; KLUDGE: If the closure has ASTs we can't interpret, we have
 ;; to give up immediately, because of inner closures.
 ;; We check proactively.
+(defun can-interpret-ast-p (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (unless (interpret-ast:can-interpret-p ast)
+       (return-from can-interpret-ast-p nil)))
+   ast)
+  t)
+
 (defun ast-interpret-form (form env)
   (let ((ast #+cst(cst->ast (cst:cst-from-expression form) env)
              #-cst(generate-ast form env)))
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (unless (interpret-ast:can-interpret-p ast)
-         (error 'interpret-ast:cannot-interpret :ast ast)))
-     ast)
-    (interpret-ast:interpret ast)))
+    (if (can-interpret-ast-p ast)
+        (interpret-ast:interpret ast)
+        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
 
 (defun ast-interpret-cst (cst env)
   (let ((ast #+cst(cst->ast cst env)
              #-cst(generate-ast (cst:raw cst) env)))
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (unless (interpret-ast:can-interpret-p ast)
-         (error 'interpret-ast:cannot-interpret :ast ast)))
-     ast)
-    (interpret-ast:interpret ast)))
+    (if (can-interpret-ast-p ast)
+        (interpret-ast:interpret ast)
+        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
