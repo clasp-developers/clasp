@@ -806,6 +806,30 @@ This works like compile-lambda-function in bclasp."
              function startup-fn shutdown-fn ordered-raw-constants-list)))
       (funcall setup-function))))
 
+(defun cclasp-compile-ast (ast env pathname &key (linkage 'llvm-sys:internal-linkage))
+  (let* (function lambda-name
+         ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+    (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
+      (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+        (literal:with-rtv
+            (let* ((ast (hoist-ast ast env))
+                   (hir (ast->hir ast)))
+              (multiple-value-bind (mir function-info-map go-indices)
+                  (hir->mir hir env)
+                (multiple-value-setq (function lambda-name)
+                  (translate mir function-info-map go-indices
+                             :abi *abi-x86-64*
+                             :linkage linkage)))))))
+    (unless function
+      (error "There was no function returned by translate-ast"))
+    (cmp:cmp-log "fn --> %s%N" fn)
+    (cmp:quick-module-dump cmp:*the-module* "cclasp-compile-module-pre-optimize")
+    (let ((setup-function
+            (cmp:jit-add-module-return-function
+             cmp:*the-module*
+             function startup-fn shutdown-fn ordered-raw-constants-list)))
+      (funcall setup-function))))
+
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
@@ -897,6 +921,14 @@ This works like compile-lambda-function in bclasp."
               (when *compile-print* (cmp::describe-form form))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (cleavir-compile-file-form form))))))))
+
+;;; The ENV is still needed for evaluating load time value forms and stuff.
+;;; It's not great.
+(defun cclasp-compile-ast-in-env (ast &optional env)
+  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+        (core:*use-cleavir-compiler* t))
+    (cmp:compile-in-env
+     ast env #'cclasp-compile-ast cmp:*default-compile-linkage*)))
 
 (defun cclasp-compile-in-env (form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
