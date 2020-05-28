@@ -2,7 +2,7 @@
   (:use #:cl)
   (:export #:interpret)
   (:export #:cannot-interpret #:cannot-interpret-ast)
-  (:export #:can-interpret-p)
+  (:export #:can-interpret-ast-p)
   (:shadow #:variable))
 
 ;;;; NOTE: Some methods in this file must be compiled with cleavir,
@@ -73,13 +73,21 @@
 (defgeneric can-interpret-p (ast))
 (defmethod can-interpret-p (ast) nil)
 
+(defun can-interpret-ast-p (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (unless (can-interpret-p ast)
+       (return-from can-interpret-ast-p nil)))
+   ast)
+  t)
+
 (defmacro defcan (name)
   `(defmethod can-interpret-p ((ast ,name)) t))
 
 (defun can-interpret-ast-p (ast)
   (cleavir-ast:map-ast-depth-first-preorder
    (lambda (ast)
-     (unless (can-interpret-ast ast)
+     (unless (can-interpret-p ast)
        (return-from can-interpret-ast-p nil)))
    ast)
   t)
@@ -489,24 +497,17 @@
 ;; KLUDGE: If the closure has ASTs we can't interpret, we have
 ;; to give up immediately, because of inner closures.
 ;; We check proactively.
-(defun can-interpret-ast-p (ast)
-  (cleavir-ast:map-ast-depth-first-preorder
-   (lambda (ast)
-     (unless (interpret-ast:can-interpret-p ast)
-       (return-from can-interpret-ast-p nil)))
-   ast)
-  t)
 
 (defun ast-interpret-form (form env)
   (let ((ast #+cst(cst->ast (cst:cst-from-expression form) env)
              #-cst(generate-ast form env)))
-    (if (can-interpret-ast-p ast)
+    (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
 
 (defun ast-interpret-cst (cst env)
   (let ((ast #+cst(cst->ast cst env)
              #-cst(generate-ast (cst:raw cst) env)))
-    (if (can-interpret-ast-p ast)
+    (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
