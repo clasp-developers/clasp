@@ -197,11 +197,6 @@
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
-    (cleavir-ast:map-local-ast-depth-first-preorder
-     (lambda (ast)
-       (unless (can-interpret-p ast)
-         (error 'interpret-ast:cannot-interpret :ast ast)))
-     body)
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
