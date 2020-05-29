@@ -5,7 +5,7 @@
 
 (defvar *encoding-cache* nil)
 
-(defun enconding-strong-to-encoding-symbol (encoding-string)
+(defun encoding-string-to-encoding-symbol (encoding-string)
   (cond ((STRING= ":DOS-CP857" encoding-string) :DOS-CP857)
         ((STRING= ":ISO-8859-9" encoding-string) :ISO-8859-9)
         ((STRING= ":ISO-8859-8" encoding-string) :ISO-8859-8) 
@@ -79,7 +79,7 @@
             (return))
           (let* ((pos-semicolon-1 (position #\; line :test #'char=))
                  (encoding-string (subseq line 0 pos-semicolon-1))
-                 (encoding (enconding-strong-to-encoding-symbol encoding-string))
+                 (encoding (encoding-string-to-encoding-symbol encoding-string))
                  (pos-semicolon-2 (position #\; line :test #'char= :start (1+ pos-semicolon-1)))
                  (index (parse-integer (subseq line (1+ pos-semicolon-1) pos-semicolon-2)))
                  (pos-semicolon-3 (position #\; line :test #'char= :start (1+ pos-semicolon-2)))
