@@ -333,12 +333,7 @@ when this is t a lot of graphs will be generated.")
                (cond (core:*use-interpreter-for-eval*
                       (lambda (form env)
                         (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter*
-                      (lambda (form env)
-                        (handler-case
-                            (ast-interpret-form form env)
-                          (interpret-ast:cannot-interpret ()
-                            (cclasp-eval-with-env form env)))))
+                     (*use-ast-interpreter* #'ast-interpret-form)
                      (t #'cclasp-eval-with-env))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
@@ -359,21 +354,12 @@ when this is t a lot of graphs will be generated.")
                        (cond (core:*use-interpreter-for-eval*
                               (lambda (cst env)
                                 (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
-                             (*use-ast-interpreter*
-                              (lambda (cst env)
-                                (handler-case
-                                    (ast-interpret-cst cst env)
-                              (interpret-ast:cannot-interpret ()
-                                (cclasp-eval-with-env (cst:raw cst) env)))))
+                             (*use-ast-interpreter* #'ast-interpret-cst)
                              (t (lambda (cst env)
                                   (cclasp-eval-with-env (cst:raw cst) env)))))
       (cond (core:*use-interpreter-for-eval*
              (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-            (*use-ast-interpreter*
-             (handler-case
-                 (ast-interpret-cst cst env)
-               (interpret-ast:cannot-interpret ()
-                 (cclasp-eval-with-env (cst:raw cst) env))))
+            (*use-ast-interpreter* (ast-interpret-cst cst env))
             (t (cclasp-eval-with-env (cst:raw cst) env)))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)

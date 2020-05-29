@@ -2,6 +2,7 @@
   (:use #:cl)
   (:export #:interpret)
   (:export #:cannot-interpret #:cannot-interpret-ast)
+  (:export #:can-interpret-ast-p)
   (:shadow #:variable))
 
 ;;;; NOTE: Some methods in this file must be compiled with cleavir,
@@ -72,8 +73,24 @@
 (defgeneric can-interpret-p (ast))
 (defmethod can-interpret-p (ast) nil)
 
+(defun can-interpret-ast-p (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (unless (can-interpret-p ast)
+       (return-from can-interpret-ast-p nil)))
+   ast)
+  t)
+
 (defmacro defcan (name)
   `(defmethod can-interpret-p ((ast ,name)) t))
+
+(defun can-interpret-ast-p (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (unless (can-interpret-p ast)
+       (return-from can-interpret-ast-p nil)))
+   ast)
+  t)
 
 (defcan cleavir-ast:immediate-ast)
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
@@ -180,14 +197,6 @@
 (defmethod interpret-ast ((ast cleavir-ast:function-ast) env)
   (let ((body (cleavir-ast:body-ast ast))
         (ll (cleavir-ast:lambda-list ast)))
-    ;; KLUDGE: If the closure has ASTs we can't interpret, we have
-    ;; to give up now, and there's no way to only compile this
-    ;; possibly-a-closure. We have to check proactively.
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (unless (can-interpret-p ast)
-         (error 'interpret-ast:cannot-interpret :ast ast)))
-     body)
     (multiple-value-bind (required optional rest va-rest-p keyp key aok-p)
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
@@ -480,45 +489,20 @@
 
 (in-package #:clasp-cleavir)
 
+;; KLUDGE: If the closure has ASTs we can't interpret, we have
+;; to give up immediately, because of inner closures.
+;; We check proactively.
+
 (defun ast-interpret-form (form env)
-  (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-     (handler-bind
-         ((cleavir-env:no-variable-info
-            (lambda (condition)
-              (declare (ignore condition))
-              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                              #-cst 'cleavir-generate-ast:consider-special)))
-          (cleavir-env:no-function-info
-            (lambda (condition)
-              (declare (ignore condition))
-              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                              #-cst 'cleavir-generate-ast:consider-global))))
-       #-cst
-       (cleavir-generate-ast:generate-ast
-        form env clasp-cleavir:*clasp-system*)
-       #+cst
-       (cleavir-cst-to-ast:cst-to-ast
-        (cst:cst-from-expression form)
-        env clasp-cleavir:*clasp-system*)))))
+  (let ((ast #+cst(cst->ast (cst:cst-from-expression form) env)
+             #-cst(generate-ast form env)))
+    (if (interpret-ast:can-interpret-ast-p ast)
+        (interpret-ast:interpret ast)
+        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
 
 (defun ast-interpret-cst (cst env)
-  (interpret-ast:interpret
-   (let ((cleavir-generate-ast:*compiler* 'cl:eval))
-     (handler-bind
-         ((cleavir-env:no-variable-info
-            (lambda (condition)
-              (declare (ignore condition))
-              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                              #-cst 'cleavir-generate-ast:consider-special)))
-          (cleavir-env:no-function-info
-            (lambda (condition)
-              (declare (ignore condition))
-              (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                              #-cst 'cleavir-generate-ast:consider-global))))
-       #-cst
-       (cleavir-generate-ast:generate-ast
-        (cst:raw cst) env clasp-cleavir:*clasp-system*)
-       #+cst
-       (cleavir-cst-to-ast:cst-to-ast
-        cst env clasp-cleavir:*clasp-system*)))))
+  (let ((ast #+cst(cst->ast cst env)
+             #-cst(generate-ast (cst:raw cst) env)))
+    (if (interpret-ast:can-interpret-ast-p ast)
+        (interpret-ast:interpret ast)
+        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))

@@ -20,6 +20,7 @@
        (cmp-log "About to optimize-module%N")
        (when (and ,optimize ,optimize-level (null ,dry-run)) (funcall ,optimize ,module ,optimize-level )))))
 
+;;; See NOTE on compile-in-env below.
 (defun compile-with-hook (compile-hook definition env pathname &key (linkage 'llvm-sys:internal-linkage))
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
@@ -28,11 +29,11 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
         (funcall compile-hook definition env pathname :linkage linkage)
         (bclasp-compile* definition env pathname :linkage linkage))))
 
+;;; NOTE: cclasp may pass a definition that is a CST or AST.
+;;; As such, this function should probably not examine the definition at all.
 (defun compile-in-env (definition env &optional (compile-hook *cleavir-compile-hook*)
                                         (linkage 'llvm-sys:internal-linkage))
   "Compile in the given environment"
-  (when core:*debug-startup*
-    (core:monitor-write (core:bformat nil "startup compile-in-env form: %s%N" definition)))
   (with-compiler-env ()
     (let* ((module (create-run-time-module-for-compile)))
       ;; Link the C++ intrinsics into the module
