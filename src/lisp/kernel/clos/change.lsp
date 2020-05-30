@@ -62,7 +62,7 @@
 
 ;;; Mutate new-rack based on old-rack, for change-class.
 ;;; Abstracted out so it can be used regardless of instance structure.
-(defun change-class-aux (old-rack new-rack)
+(defun change-class-aux (old-rack new-rack old-class old-instance)
   (let ((old-slotds (si:rack-sig old-rack))
         (new-slotds (si:rack-sig new-rack)))
     ;; "The values of local slots specified by both the class Cto and
@@ -76,10 +76,17 @@
                (old-slotd (find name old-slotds
                                 :key #'slot-definition-name)))
           (when old-slotd
-            ;; We just copy over values,
-            ;; whether they're unbound markers or not.
-            (setf (si:rack-ref new-rack (slot-definition-location new-slotd))
-                  (si:rack-ref old-rack (slot-definition-location old-slotd))))))))
+            (if (eq (slot-definition-allocation old-slotd) :instance)
+                ;; We just copy over values,
+                ;; whether they're unbound markers or not.
+                (setf (si:rack-ref new-rack (slot-definition-location new-slotd))
+                      (si:rack-ref old-rack (slot-definition-location old-slotd)))
+                ;; Use a slow path for custom or class allocation.
+                ;; We could consult the location directly for class allocation,
+                ;; but speed shouldn't be super concerning.
+                (when (slot-boundp-using-class old-class old-instance old-slotd)
+                  (setf (si:rack-ref new-rack (slot-definition-location new-slotd))
+                        (slot-value-using-class old-class old-instance old-slotd)))))))))
   (values))
 
 (defmethod change-class ((instance standard-object) (new-class standard-class)
@@ -88,7 +95,7 @@
          (old-class (class-of instance))
          (copy (core:allocate-raw-instance old-class old-rack))
          (new-rack (make-rack-for-class new-class)))
-    (change-class-aux old-rack new-rack)
+    (change-class-aux old-rack new-rack old-class copy)
     (setf (core:instance-rack instance) new-rack
           (core:instance-class instance) new-class)
     (apply #'update-instance-for-different-class
@@ -102,7 +109,7 @@
          (old-class (class-of instance))
          (copy (core:allocate-raw-funcallable-instance old-class old-rack))
          (new-rack (make-rack-for-class new-class)))
-    (change-class-aux old-rack new-rack)
+    (change-class-aux old-rack new-rack old-class copy)
     (setf (core:instance-rack instance) new-rack
           (core:instance-class instance) new-class)
     (apply #'update-instance-for-different-class
