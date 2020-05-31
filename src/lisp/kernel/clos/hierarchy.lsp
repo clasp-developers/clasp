@@ -501,7 +501,7 @@
          :direct-superclasses (class)
          :direct-slots #.+standard-class-slots+)
         (core:derivable-cxx-class
-         :direct-superclasses (class)
+         :direct-superclasses (std-class)
          :direct-slots #.+standard-class-slots+)
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
