@@ -128,9 +128,9 @@ void Array0_dump(const Array &v, const char *head = "") {
 }
 
 template <class T>
-class GCSignedLengthArray_moveable : public GCArray_moveable<T> {
+class GCArraySignedLength_moveable : public GCArray_moveable<T> {
 public:
-  GCSignedLengthArray_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
+  GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
                                size_t initialContentsSize=0, const T* initialContents=NULL) : GCArray_moveable<T>(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {}
   inline int64_t signedLength() const { return this->_Length; };
   inline size_t length() const { return std::abs(this->_Length); };

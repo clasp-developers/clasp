@@ -2210,6 +2210,8 @@ so that they don't have to be constantly recalculated"
   (push species (manager-species manager))
   species)
 
+(defparameter *unknown-aclass* nil)
+(defparameter *manager* nil)
 (defun identify-species (manager aclass)
   (let (hits)
     (dolist (species (manager-species manager))
@@ -2217,7 +2219,7 @@ so that they don't have to be constantly recalculated"
         (push species hits)))
     (cond
       ((> (length hits) 1)
-       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))p
+       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))
        (error "The class ~a could not be uniquely distinguished between the species: ~a" aclass hits))
       ((eql (length hits) 1)
        (car hits))
@@ -2225,8 +2227,11 @@ so that they don't have to be constantly recalculated"
         (manager-ignore-discriminator manager)
         (funcall (manager-ignore-discriminator manager) aclass))
        nil)
-      (t (error " Could not identify species for ~a" aclass)
-         nil))))
+      (t
+       (setf *unknown-aclass* aclass
+             *manager* manager)
+       (error " Could not identify species for ~a~%Check *unknown-aclass* and *manager*~%Species:~%~{~s~%~}" aclass (manager-species manager))
+       nil))))
 
 (defun alloc-template-specializer-p (alloc analysis)
   (let ((alloc-class (gethash (alloc-key alloc) (project-classes (analysis-project analysis)))))

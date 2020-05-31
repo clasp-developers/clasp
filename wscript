@@ -333,6 +333,7 @@ def analyze_clasp(cfg):
     output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
     run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
+                     "-N", "-D",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "--eval", run_search,
