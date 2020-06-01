@@ -43,6 +43,11 @@
 (test-expect-error FBOUNDP.ERROR.4 (FBOUNDP '(SETF dummy . BAR)) :type type-error)
 (test-expect-error FBOUNDP.ERROR.5 (FBOUNDP '(SETF dummy BAR)) :type type-error)
 (test-expect-error FBOUNDP.ERROR.9 (FBOUNDP '(SETF . dummy)) :type type-error)
+(test-expect-error FBOUNDP.ERROR.10 (FBOUNDP '(SETF nil nil)) :type type-error)
+(test FBOUNDP.11 (null (FBOUNDP '(SETF nil))))
+(test FBOUNDP.12 (core:valid-function-name-p '(SETF nil)))
+(test FBOUNDP.13 (null (core:function-block-name '(SETF nil))))
+
 
 (test-expect-error fmakunbound.1 (fmakunbound '(setf)) :type type-error)
 (test-expect-error fmakunbound.2 (fmakunbound '(SETF dummy . BAR)) :type type-error)
