@@ -34,7 +34,7 @@
            ;; we needn't worry? Not sure.
            (compute-constructor-for-class
             class `(find-class ',class-designator) keys)
-           (undefined-constructor class-name))))
+           (undefined-constructor class-designator))))
     (class (compute-constructor-for-class
             class-designator class-designator keys))
     (t

@@ -329,7 +329,7 @@ public:
   TheNextBignum_O(int64_t signed_length, limb_type initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const limb_type* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
   }
 private: // instance variables here
-  gctools::GCSignedLengthArray_moveable<limb_type> _limbs;
+  gctools::GCArraySignedLength_moveable<limb_type> _limbs;
 
 public: // Functions here
   static TheNextBignum_sp create( int64_t signed_number_of_limbs, limb_type initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const limb_type* initialContents=NULL)

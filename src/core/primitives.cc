@@ -511,15 +511,19 @@ CL_DEFUN T_mv cl__values_list(List_sp list) {
   return ValuesFromCons(list);
 }
 
-Symbol_sp functionBlockName(T_sp functionName) {
+// Need to distinguish between nil as invalid-input and nil as the symbol found
+// correctp indicates correctness of input
+Symbol_sp functionBlockName(T_sp functionName, bool * correctp) {
+  *correctp = true;
   if (cl__symbolp(functionName))
     return gc::As<Symbol_sp>(functionName);
-  if ((functionName).consp()) {
+  if (functionName.consp()) {
     List_sp cfn = functionName;
-    if (oCar(cfn) == cl::_sym_setf && oCdr(cfn).consp() && oCadr(cfn).notnilp() && cl__symbolp(oCadr(cfn)) && oCddr(cfn).nilp())  {
+    if (oCar(cfn) == cl::_sym_setf && oCdr(cfn).consp() && cl__symbolp(oCadr(cfn)) && oCddr(cfn).nilp())  {
       return gc::As<Symbol_sp>(oCadr(cfn));
     }
   }
+  *correctp = false;
   return _Nil<Symbol_O>();
 }
 
@@ -527,8 +531,9 @@ CL_LAMBDA(functionName);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
 CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
-  Symbol_sp output = functionBlockName(functionName);
-  if (output.nilp()) {
+  bool correct;
+  Symbol_sp output = functionBlockName(functionName, &correct);
+  if (!correct) {
     SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName));
   }
   return output;
@@ -538,8 +543,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("validFunctionNameP");
 CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
-  T_sp name = functionBlockName(arg);
-  if (name.nilp())
+  bool correct;
+  Symbol_sp name = functionBlockName(arg, &correct);
+  if (!correct)
     return _Nil<T_O>();
   return _lisp->_true();
 };
@@ -555,7 +561,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
     if (cl__atom(element)) {
       firsts << element;
       seconds << _Nil<T_O>();
-    } else if ((element).consp()) {
+    } else if (element.consp()) {
       List_sp pair = element;
       size_t pairlen = cl__length(pair);
       if (pairlen == 2 || pairlen == 1) {
@@ -836,7 +842,7 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
     if (cl__keywordp(obj)) return true;
     return gc::As<Symbol_sp>(obj)->getReadOnly();
   }
-  if ((obj).consp()) {
+  if (obj.consp()) {
     if (oCar(obj) == cl::_sym_quote)
       // more analysis could be done here.
       return true;
@@ -894,7 +900,7 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
     symbol->setf_macroP(is_macro.isTrue());
     symbol->setf_symbolFunction(functor);
     return functor;
-  } else if ((functionName).consp()) {
+  } else if (functionName.consp()) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
@@ -910,7 +916,7 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fdefinition");
 CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
-  if ((functionName).consp()) {
+  if (functionName.consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
      // take care of (setf . bar) or (setf bar foo) or (setf bar .foo)
@@ -976,14 +982,15 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fboundp");
 CL_DEFUN bool cl__fboundp(T_sp functionName) {
-  if ((functionName).consp()) {
+  if (functionName.consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       T_sp dname = oCdr(cname);
       if (dname.consp()) {
         Symbol_sp name = gc::As<Symbol_sp>(oCar(dname));
         // (setf function <whatever>) is also a type error
-        if (name.notnilp() && oCdr(dname).nilp())
+        // (setf nil) is ok (setf) and (setf nil nil) not
+        if (oCdr(dname).nilp())
           return name->fboundp_setf();
       // else is a type_error, so continue execution
       }
@@ -1000,7 +1007,7 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fmakunbound");
 CL_DEFUN T_sp cl__fmakunbound(T_sp functionName) {
-  if ((functionName).consp()) {
+  if (functionName.consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       T_sp dname = oCdr(cname);

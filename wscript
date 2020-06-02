@@ -333,6 +333,7 @@ def analyze_clasp(cfg):
     output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
     run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
+                     "-N", "-D",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "--eval", run_search,
@@ -789,9 +790,9 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_paths = glob.glob("/usr/local/Cellar/llvm/%s*" % LLVM_VERSION)
+                llvm_paths = glob.glob("/usr/local/Cellar/llvm@%s/*/bin/llvm-config" % LLVM_VERSION)
                 if (len(llvm_paths) >= 1):
-                    llvm_config_binary = "%s/bin/llvm-config" % llvm_paths[0]
+                    llvm_config_binary = llvm_paths[0]
                 else:
                     raise Exception("You need to install llvm@%s" % LLVM_VERSION)
                 log.info("On darwin looking for %s" % llvm_config_binary)

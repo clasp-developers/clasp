@@ -746,9 +746,9 @@ to expose."
                   (layout-offset-field-names array)
                   (layout-offset-field-names array))          
           (format stream " {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
-              (offset-base-ctype array)
-              (layout-offset-field-names array)
-              (layout-offset-field-names array)))
+                  (offset-base-ctype array)
+                  (layout-offset-field-names array)
+                  (layout-offset-field-names array)))
       (format stream " {  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
               (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
               (offset-base-ctype array)
@@ -756,37 +756,51 @@ to expose."
               (offset-base-ctype array)
               (layout-offset-field-names length))
       (dolist (one (elements array))
-        (let ((field-names (layout-offset-field-names one)))
-          (if field-names
-              (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                     (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
-                     (is-std-atomic (is-atomic one stream))
-                     (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-                     (expose-it (and fixable good-name))
-                     (*print-pretty* nil))
-      (dolist (iv (fields one))
-        (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
-                (instance-field-access iv)
-                (instance-field-ctype iv)))
-                (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
-                        (if expose-it "" "// not-exposed-yet ")
-                        (offset-type-c++-identifier one)
-                        (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                        (ctype-key (base one))
-                        (layout-offset-field-names one :drop-last is-std-atomic)
-                        (layout-offset-field-names one :drop-last is-std-atomic)
-                        is-std-atomic
-                        public
-                        fixable
-                        good-name))
-              (progn
-                (let ((*print-pretty* nil))
-                  (format stream "// one -> ~s~%" one))
-                (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
-                        (offset-type-c++-identifier one)
-                        (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                        ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                        #+(or)(ctype-key (base one))))))))))
+        (let* ((field-names (layout-offset-field-names one))
+               (ctype-key (ctype-key (base one)))
+               (atomic-smart-ptr-p (let* ((atomic-smart-ptr-string "std::atomic<gctools::smart_ptr<")
+                                          (atomic-smart-ptr-string-length #.(length "std::atomic<gctools::smart_ptr<")))
+                                     (string= atomic-smart-ptr-string ctype-key :start2 0 :end2 atomic-smart-ptr-string-length)))) 
+          (format stream "/* (base one) -> ~s~%*/~%" (base one))
+          (format stream "/* (ctype-key (base one)) -> ~s~%*/~%" (ctype-key (base one)))
+          (format stream "// atomic-smart-ptr-p -> ~s~%" atomic-smart-ptr-p)
+          (cond
+            (atomic-smart-ptr-p
+             (let ((*print-pretty* nil))
+               (format stream "// one -> ~s~%" one))
+             (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                     (offset-type-c++-identifier one)
+                     (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                     ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                     #+(or)(ctype-key (base one))))
+            (field-names
+             (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+                    (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
+                    (is-std-atomic (is-atomic one stream))
+                    (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
+                    (expose-it (and fixable good-name))
+                    (*print-pretty* nil))
+               (dolist (iv (fields one))
+                 (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%" (instance-field-access iv) (instance-field-ctype iv)))
+               (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+                       (if expose-it "" "// not-exposed-yet ")
+                       (offset-type-c++-identifier one)
+                       (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                       (ctype-key (base one))
+                       (layout-offset-field-names one :drop-last is-std-atomic)
+                       (layout-offset-field-names one :drop-last is-std-atomic)
+                       is-std-atomic
+                       public
+                       fixable
+                       good-name)))
+            (t (progn
+                 (let ((*print-pretty* nil))
+                   (format stream "// one -> ~s~%" one))
+                 (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                         (offset-type-c++-identifier one)
+                         (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                         ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                         #+(or)(ctype-key (base one)))))))))))
 
 
 (defun expose-fixed-field-type (type-name)
@@ -2210,6 +2224,8 @@ so that they don't have to be constantly recalculated"
   (push species (manager-species manager))
   species)
 
+(defparameter *unknown-aclass* nil)
+(defparameter *manager* nil)
 (defun identify-species (manager aclass)
   (let (hits)
     (dolist (species (manager-species manager))
@@ -2217,7 +2233,7 @@ so that they don't have to be constantly recalculated"
         (push species hits)))
     (cond
       ((> (length hits) 1)
-       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))p
+       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))
        (error "The class ~a could not be uniquely distinguished between the species: ~a" aclass hits))
       ((eql (length hits) 1)
        (car hits))
@@ -2225,8 +2241,11 @@ so that they don't have to be constantly recalculated"
         (manager-ignore-discriminator manager)
         (funcall (manager-ignore-discriminator manager) aclass))
        nil)
-      (t (error " Could not identify species for ~a" aclass)
-         nil))))
+      (t
+       (setf *unknown-aclass* aclass
+             *manager* manager)
+       (error " Could not identify species for ~a~%Check *unknown-aclass* and *manager*~%Species:~%~{~s~%~}" aclass (manager-species manager))
+       nil))))
 
 (defun alloc-template-specializer-p (alloc analysis)
   (let ((alloc-class (gethash (alloc-key alloc) (project-classes (analysis-project analysis)))))

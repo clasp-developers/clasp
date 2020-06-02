@@ -121,6 +121,8 @@
     ;; OK no good, so try it as an address from a library.
     (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
         (core:lookup-address address)
-      (multiple-value-bind (source-pathname line-number column)
-          (run-llvm-dwarfdump offset-from-start-of-library library-name)
-        (values source-pathname line-number column)))))
+      (if library-name
+          (multiple-value-bind (source-pathname line-number column)
+              (run-llvm-dwarfdump offset-from-start-of-library library-name)
+            (values source-pathname line-number column))
+          (values "-unknown-" 0 0)))))

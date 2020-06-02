@@ -635,7 +635,7 @@ have disappeared."
 		    class))
 		 ((and (eq (first name) 'EQL)
 		       (null (cddr name)))
-		  (cdr name))
+                  (intern-eql-specializer (second name)))
 		 (t
 		  (error "~A is not a valid specializer name" name))))
 	 (specializer= (cons-or-class specializer)

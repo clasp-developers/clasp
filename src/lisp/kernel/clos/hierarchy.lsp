@@ -501,11 +501,11 @@
          :direct-superclasses (class)
          :direct-slots #.+standard-class-slots+)
         (core:derivable-cxx-class
-         :direct-superclasses (class)
+         :direct-superclasses (std-class)
          :direct-slots #.+standard-class-slots+)
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
-         :direct-superclasses (t))
+         :direct-superclasses (standard-object))
         (%method-function
          :metaclass funcallable-standard-class
          :direct-superclasses (funcallable-standard-object)
