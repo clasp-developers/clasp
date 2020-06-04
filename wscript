@@ -790,7 +790,7 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_paths = glob.glob("/usr/local/Cellar/llvm@%s/*/bin/llvm-config" % LLVM_VERSION)
+                llvm_paths = glob.glob("/usr/local/opt/llvm@%s/*/bin/llvm-config" % LLVM_VERSION)
                 if (len(llvm_paths) >= 1):
                     llvm_config_binary = llvm_paths[0]
                 else:
