@@ -10,13 +10,10 @@ FRAMES=${4:-6000}
 #else
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
-if [[ "$OSTYPE" == "darwin"* ]]; then
-
-./do-dtrace $PID $TIME $RATE $FRAMES
-
-elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-
-exec ./do-perf $PID $TIME $RATE $FRAMES
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    exec ./do-perf $PID $TIME $RATE $FRAMES
+else
+    ./do-dtrace $PID $TIME $RATE $FRAMES
 fi
 
 ./collapse -i /tmp/out-$1.stacks -o /tmp/out-$1.folded -m 400
