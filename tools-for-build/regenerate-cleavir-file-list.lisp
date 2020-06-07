@@ -51,7 +51,10 @@
    (:tree ,(translate-logical-pathname #P"sys:"))
    :ignore-inherited-configuration))
 
-(load "source-dir:tools-for-build;asdf-system-groveler.lisp")
+(load (make-pathname
+       :name "asdf-system-groveler"
+       :type "lisp"
+       :defaults (or *load-truename* *compile-file-truename*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
