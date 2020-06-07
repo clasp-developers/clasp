@@ -140,4 +140,39 @@
               (gethash key-2 ht))
           (and value present-p))))
 
+(test test-issue-946
+      (and
+       (hash-table-p (make-hash-table))
+       (hash-table-p (make-hash-table :test #'eq :weakness :key))
+       (every #'(lambda(object)
+                  (not (hash-table-p object)))
+              (list 1 1.0 "weruz" #\a #'car (find-class 'number)))))
+
+(test test-issue-950
+      (let ((hash-table (make-hash-table :test #'eq :weakness :key))
+            (result nil)
+            (store-keys nil))
+        (let ((key (cons 1 2)))
+          (setf (gethash key hash-table) 23)
+          (push key store-keys))
+        (let ((key (cons 3 4)))
+          (setf (gethash key hash-table) 24)
+          (push key store-keys))
+        (let ((key (cons 4 5)))
+          (setf (gethash key hash-table) 25)
+          (push key store-keys))
+        (with-hash-table-iterator (it hash-table)
+          (loop
+            (multiple-value-bind (more-p key value)
+                (it)
+              (if more-p
+                  (push (list value key) result)
+                  (return)))))
+        (equalp
+         (sort result #'< :key #'first)
+         '((23 (1 . 2)) (24 (3 . 4)) (25 (4 . 5))))))
+
+
+
+
 
