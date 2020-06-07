@@ -179,7 +179,7 @@
     core:double-float-p double-float
     floatp float
     functionp function
-    hash-table-p hash-table
+    hash-table-p core:hash-table-base
     integerp integer
     listp list
     ;; null null ; defined with EQ below
