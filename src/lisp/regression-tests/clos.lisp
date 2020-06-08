@@ -93,3 +93,8 @@
                    (slot-exists-p object 'foo))
                (list 42 42.0 'c "324789" (code-char 65)
                      (vector 1 2 3) (make-hash-table))))
+
+(defgeneric find-method-gf-02 (x))
+(defmethod find-method-gf-02 ((x (eql 1234567890))) 'a)
+(test find-method-eql
+      (find-method #'find-method-gf-02 nil (list '(eql 1234567890))))
