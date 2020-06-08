@@ -288,7 +288,7 @@ def update_dependencies(cfg):
                        "3b3fc06c0461e54222a7f6791d2e4776cf3ad2a9")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "f4100714fd90805ba30221dc8dafa5a99f3cf6a0")
+                       "3524caff0894cb5bf6ea51abac53b520cc5580c3")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")

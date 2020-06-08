@@ -183,7 +183,13 @@ represented with N bits in 2's complement representation."
 can be represented with N bits."
   (if (or (null s) (eq s '*))
       '(INTEGER 0 *)
-      `(INTEGER 0 ,(1- (expt 2 s)))))
+      `(INTEGER 0 ,(case s
+                     ;; FIXME: Due to absurdly slow bignum consing we
+                     ;; cache common values for unsigned-byte
+                     ;; specifiers.
+                     (63 (load-time-value (1- (expt 2 63))))
+                     (64 (load-time-value (1- (expt 2 64))))
+                     (otherwise (1- (expt 2 s)))))))
 
 (deftype null ()
   "The type to which only NIL belongs."
