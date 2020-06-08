@@ -1059,6 +1059,25 @@ namespace core {
         }
         return immediate_fixnum<Integer_O>(y);
       } else {
+        Fixnum y = (uint64_t)n.raw_();
+        if (y>0) {
+          int clz = word_clz(y);
+          if (clz>bits) {
+            y <<= bits;
+            Integer_sp result((gctools::Tagged)y);
+            return result;
+          }
+        } else if (y<0) {
+          int clrsb = word_clrsb(y);
+          if (clrsb>bits) {
+            y <<= bits;
+            Integer_sp result((gctools::Tagged)y);
+            return result;
+          }
+        } else if (y==0) {
+            Integer_sp result((gctools::Tagged)0);
+            return result;
+        }
         Bignum val(static_cast<signed long>(n.unsafe_fixnum()));
         Bignum res;
         mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
