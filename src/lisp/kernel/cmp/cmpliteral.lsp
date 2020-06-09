@@ -62,7 +62,7 @@
 (defstruct (single-float-datum (:type vector) :named) value)
 (defstruct (double-float-datum (:type vector) :named) value)
 (defstruct (immediate-datum (:type vector) :named) value)
-(defstruct (datum (:type vector) :named) kind index)
+(defstruct (datum (:type vector) :named) kind index literal-node-creator)
 
 (defun literal-datum-p (datum)
   (eq (datum-kind datum) :literal))
@@ -156,7 +156,7 @@
   (table-index 0)
   (function-vector (make-array 16 :fill-pointer 0 :adjustable t))
   (function-description-vector (make-array 16 :fill-pointer 0 :adjustable t))
-  (constant-datum-to-literal-node-creator (make-hash-table :test #'eql))
+  (constant-data '())
   (identity-coalesce (make-similarity-table #'eq))
   (ratio-coalesce (make-similarity-table #'eql))
   (cons-coalesce (make-similarity-table #'eq))
@@ -212,12 +212,11 @@ the value is put into *default-load-time-value-vector* and its index is returned
   "Given a literal object that has already been added to the literal table and will be recreated at load-time,
 return the index in the literal table for that object.  This is used in special cases like defcallback to
 rewrite the slot in the literal table to store a closure."
-  (maphash (lambda (datum literal)
-             (when (eq (literal-node-creator-object literal) object)
-               (unless (literal-datum-p datum)
-                 (error "lookup-literal-index must passed an literal-datum - instead it got ~a" datum))
-               (return-from lookup-literal-index (literal-datum-index datum))))
-           (literal-machine-constant-datum-to-literal-node-creator *literal-machine*))
+  (dolist (datum (literal-machine-constant-data *literal-machine*))
+    (when (eq (literal-node-creator-object (datum-literal-node-creator datum)) object)
+      (unless (literal-datum-p datum)
+        (error "lookup-literal-index must passed an literal-datum - instead it got ~a" datum))
+      (return-from lookup-literal-index (literal-datum-index datum))))
   (error "Could not find literal ~s" object))
 
 (defun add-named-creator (name index literal-name object &rest args)
@@ -229,7 +228,8 @@ rewrite the slot in the literal table to store a closure."
     (when (and (not varargs) (/= (length args) (- (length argument-types) 3)))
       (error "You did not provide correct arguments for the primitive ~a~%  varargs: ~a~%  passed arguments: ~a~%  needs arguments after third: ~a"
              name varargs args argument-types))
-    (setf (gethash index (literal-machine-constant-datum-to-literal-node-creator *literal-machine*)) creator)
+    (setf (datum-literal-node-creator index) creator)
+    (push index (literal-machine-constant-data *literal-machine*))
     (run-all-add-node creator)
     creator))
 
@@ -866,7 +866,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                  (llog "    upgrading ~s~%" existing)
                  (upgrade-transient-datum-to-literal existing)
                  (llog "    after upgrade: ~s~%" existing))
-               (values (gethash existing (literal-machine-constant-datum-to-literal-node-creator *literal-machine*)) t))
+               (values (datum-literal-node-creator existing) t))
               ;; Otherwise create a new datum at the current level of transientness
               (t (let ((datum (new-datum toplevelp)))
                    (when similarity (add-similar object datum desired-kind similarity))
