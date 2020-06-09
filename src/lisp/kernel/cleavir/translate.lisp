@@ -552,10 +552,17 @@ when this is t a lot of graphs will be generated.")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   (cleavir-hir-transformations:eliminate-catches init-instr)
-  ;; delete the-instruction and the-values-instruction
-  (cleavir-kildall-type-inference:delete-the init-instr)
-  (setf *ct-delete-the* (compiler-timer-elapsed))
-  (quick-draw-hir init-instr "hir-after-delete-the")
+  ;; Disabled at the moment because deleting these instructions does
+  ;; not help with anything at the moment, and only serve to blow up
+  ;; compilation times in cases with many THEs produced, since Cleavir
+  ;; at the moment produces many. We might want to restore this when
+  ;; there is added value in cleaning up the flow graph at this point.
+  #+(or)
+  (progn
+    ;; delete the-instruction and the-values-instruction
+    (cleavir-kildall-type-inference:delete-the init-instr)
+    (setf *ct-delete-the* (compiler-timer-elapsed))
+    (quick-draw-hir init-instr "hir-after-delete-the"))
   (cc-hir-to-mir:reduce-typeqs init-instr)
   (setf *ct-eliminate-typeq* (compiler-timer-elapsed))
   (quick-draw-hir init-instr "hir-after-eliminate-typeq")
