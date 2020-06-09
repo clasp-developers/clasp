@@ -187,9 +187,10 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 (defun finalize-transient-datum-indices (literal-machine)
   "Give each datum a unique index"
-  (let ((ht (make-hash-table))
-        (index 0))
-    (dotimes (lm-index (length (literal-machine-run-all-objects literal-machine)))
+  (let* ((count (length (literal-machine-run-all-objects literal-machine)))
+         (ht (make-hash-table :size count))
+         (index 0))
+    (dotimes (lm-index count)
       (let ((obj (elt (literal-machine-run-all-objects literal-machine) lm-index)))
         (when (literal-dnode-p obj)
           (let ((datum (literal-dnode-datum obj)))
