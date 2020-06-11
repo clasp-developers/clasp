@@ -14,8 +14,7 @@
 
 (cleavir-io:define-save-info setf-fdefinition-ast)
 
-(defmethod cleavir-ast:children ((ast setf-fdefinition-ast))
-  (list (cleavir-ast:name-ast ast)))
+(defmethod cleavir-ast:children ((ast setf-fdefinition-ast)) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
