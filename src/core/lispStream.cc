@@ -3276,7 +3276,7 @@ io_file_read_vector(T_sp tstrm, T_sp data, cl_index start, cl_index end) {
     while (start < end) {
       claspCharacter c = buffer.decode_char_from_buffer((end-start) * (strm->_ByteSize / 8));
       if (c != EOF)
-        vec->rowMajorAset(start, clasp_make_character(c));
+        vec->rowMajorAset(start++, clasp_make_character(c));
       else
         break;
     }
@@ -5059,7 +5059,8 @@ CL_DEFUN T_sp cl__read_sequence(T_sp sequence, T_sp stream, T_sp start, T_sp oen
   if (!AnsiStreamP(stream)) {
     return eval::funcall(gray::_sym_stream_read_sequence, stream, sequence, start, oend);
   }
-  return si_do_read_sequence(sequence, stream, start, oend);
+  T_sp result = si_do_read_sequence(sequence, stream, start, oend);
+  return result;
 }
 
 CL_LAMBDA(sequence stream start end);
