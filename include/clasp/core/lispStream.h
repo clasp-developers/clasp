@@ -199,7 +199,7 @@ namespace core {
 #define CLASP_LISTEN_AVAILABLE 1
 #define CLASP_LISTEN_EOF -1
 
-typedef claspCharacter (*cl_eformat_decoder)(T_sp stream);
+typedef claspCharacter (*cl_eformat_decoder)(T_sp stream,unsigned char **buffer,unsigned char *buffer_end);
 typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char *buffer, claspCharacter c);
 typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char *buffer, cl_index n);
 
