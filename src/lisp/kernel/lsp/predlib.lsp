@@ -174,14 +174,14 @@ Clasp-specific, internal. Used in optimizations of EQL."
 (deftype signed-byte (&optional s)
   "As a type specifier, (SIGNED-BYTE n) specifies those integers that can be
 represented with N bits in 2's complement representation."
-  (if (or (null s) (eq s '*))
+  (if (eq s '*)
       '(INTEGER * *)
       `(INTEGER ,(- (expt 2 (1- s))) ,(1- (expt 2 (1- s))))))
 
 (deftype unsigned-byte (&optional s)
   "As a type specifier, (UNSIGNED-BYTE n) specifies non-negative integers that
 can be represented with N bits."
-  (if (or (null s) (eq s '*))
+  (if (eq s '*)
       '(INTEGER 0 *)
       `(INTEGER 0 ,(case s
                      ;; FIXME: Due to absurdly slow bignum consing we
@@ -278,23 +278,23 @@ fill-pointer, is not adjustable, and can hold any objects."
   "A simple-string is a string that is not displaced to another array, has no
 fill-pointer, and is not adjustable."
   #-unicode
-  (if size
-    `(simple-array character (,size))
-    '(simple-array character (*)))
+  (if (eq size '*)
+    '(simple-array character (*))
+    `(simple-array character (,size)))
   #+unicode
-  (if size
+  (if (eq size '*)
+      '(or (simple-array base-char (*)) (simple-array character (*)))
       `(or (simple-array base-char (,size))
-	   (simple-array character (,size)))
-      '(or (simple-array base-char (*)) (simple-array character (*)))))
+	   (simple-array character (,size)))))
 
 (deftype simple-base-string (&optional size)
   "A base-string which cannot be adjusted nor displaced."
-  (if size `(simple-array base-char (,size)) '(simple-array base-char (*))))
+  (if (eq size '*) '(simple-array base-char (*)) `(simple-array base-char (,size))))
 
 (deftype simple-bit-vector (&optional size)
   "A bit-vector that is not displaced to another array, has no fill-pointer,
 and is not adjustable."
-  (if size `(simple-array bit (,size)) '(simple-array bit (*))))
+  (if (eq size '*) '(simple-array bit (*)) `(simple-array bit (,size))))
 
 (deftype ext:array-index ()
   '(integer 0 #.(1- array-dimension-limit)))
