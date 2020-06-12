@@ -12,9 +12,6 @@
 
 (in-package "GRAY")
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setq *echo-repl-read* t))
-
 (import 'ext:ansi-stream)
 
 ;;;
