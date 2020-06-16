@@ -95,31 +95,48 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting THE.
+;;; Dealing with type checks.
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((head (eql 'the)) cst env (system clasp-cleavir:clasp))
+#+(or)
+(defmethod cleavir-cst-to-ast:type-wrap
+    (ast ctype origin env (system clasp-cleavir:clasp))
   (if (cleavir-policy:policy-value
-       cleavir-ast:*POLICY*
+       (cleavir-env:policy (cleavir-env:optimize-info env))
        'cleavir-kildall-type-inference:insert-type-checks)
+      ;; Insert type check.
       (cleavir-cst-to-ast:convert
-       (destructuring-bind (type form) (cst:raw (cst:rest cst))
-         (let* ((vt (cleavir-env:parse-values-type-specifier type env system))
-                ;; For now we don't check optional or rest since our operators
-                ;; don't really work for that
-                (required (cleavir-ctype:required vt system))
-                (vars (loop repeat (length required) collect (gensym "CHECKED"))))
-           (cst:reconstruct
-            `(let (,@vars)
-               (cleavir-primop:multiple-value-extract (,@vars) ,form
-                 ,@(loop for var in vars
-                         for ty in required
-                         collect `(unless (typep ,var ',ty)
-                                    (error 'type-error
-                                           :datum ,var :expected-type ',ty)))))
-            cst system)))
+       (cst:reconstruct
+        (if (and (consp ctype) (eql (first ctype) 'values))
+            (let* (;; For now we don't check optional or rest since our operators
+                   ;; don't really work for that
+                   (required (cleavir-ctype:required ctype system))
+                   (vars (loop repeat (length required) collect (gensym "CHECKED"))))
+              `(let (,@vars)
+                 (cleavir-primop:multiple-value-extract (,@vars)
+                      (cleavir-primop:ast ,ast)
+                   ,@(loop for var in vars
+                           for ty in required
+                           collect `(unless (typep ,var ',ty)
+                                      (error 'type-error
+                                             :datum ,var :expected-type ',ty))))))
+            (let ((temp (gensym "CHECKED")))
+              `(let ((,temp (cleavir-primop:ast ,ast)))
+                 (if (typep ,temp ',ctype)
+                     ,temp
+                     (error 'type-error
+                            :datum ,temp :expected-type ',ctype)))))
+        cst system :default-source origin)
        env system)
-      (call-next-method)))
+      ;; Leave it as a declaration.
+      (if (and (consp ctype) (eql (first ctype) 'values))
+          (cleavir-ast:make-the-ast
+           ast
+           (cleavir-ctype:required ctype system)
+           (cleavir-ctype:optional ctype system)
+           (cleavir-ctype:rest ctype system)
+           :origin origin)
+          (cleavir-ast:make-the-ast
+           ast (list ctype) nil nil :origin origin))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
