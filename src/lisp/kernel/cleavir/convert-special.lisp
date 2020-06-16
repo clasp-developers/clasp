@@ -95,6 +95,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting THE.
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((head (eql 'the)) cst env (system clasp-cleavir:clasp))
+  (if (cleavir-policy:policy-value
+       cleavir-ast:*POLICY*
+       'cleavir-kildall-type-inference:insert-type-checks)
+      (cleavir-cst-to-ast:convert
+       (destructuring-bind (type form) (cst:raw (cst:rest cst))
+         (let* ((vt (cleavir-env:parse-values-type-specifier type env system))
+                ;; For now we don't check optional or rest since our operators
+                ;; don't really work for that
+                (required (cleavir-ctype:required vt system))
+                (vars (loop repeat (length required) collect (gensym "CHECKED"))))
+           (cst:reconstruct
+            `(let (,@vars)
+               (cleavir-primop:multiple-value-extract (,@vars) ,form
+                 ,@(loop for var in vars
+                         for ty in required
+                         collect `(unless (typep ,var ',ty)
+                                    (error 'type-error
+                                           :datum ,var :expected-type ',ty)))))
+            cst system)))
+       env system)
+      (call-next-method)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CORE:DEBUG-MESSAGE
 ;;;
 ;;; This is converted into a call to print a message
