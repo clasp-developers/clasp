@@ -529,9 +529,6 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-pcv")
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
-  (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
-  (quick-draw-hir init-instr "hir-after-thes-typeqs")
-  (setf *ct-thes->typeqs* (compiler-timer-elapsed))
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
   #+(or)
   (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
