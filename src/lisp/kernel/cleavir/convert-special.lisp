@@ -97,7 +97,6 @@
 ;;;
 ;;; Dealing with type checks.
 
-#+(or)
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   (if (cleavir-policy:policy-value
@@ -105,7 +104,7 @@
        'cleavir-kildall-type-inference:insert-type-checks)
       ;; Insert type check.
       (cleavir-cst-to-ast:convert
-       (cst:reconstruct
+       (cst:cst-from-expression
         (if (and (consp ctype) (eql (first ctype) 'values))
             (let* (;; For now we don't check optional or rest since our operators
                    ;; don't really work for that
@@ -116,16 +115,18 @@
                       (cleavir-primop:ast ,ast)
                    ,@(loop for var in vars
                            for ty in required
-                           collect `(unless (typep ,var ',ty)
-                                      (error 'type-error
-                                             :datum ,var :expected-type ',ty))))))
+                           unless (cleavir-ctype:top-p ty system)
+                             collect `(unless (typep ,var ',ty)
+                                        (error 'type-error
+                                               :datum ,var :expected-type ',ty))))))
             (let ((temp (gensym "CHECKED")))
-              `(let ((,temp (cleavir-primop:ast ,ast)))
-                 (if (typep ,temp ',ctype)
-                     ,temp
-                     (error 'type-error
-                            :datum ,temp :expected-type ',ctype)))))
-        cst system :default-source origin)
+              (if (cleavir-ctype:top-p ctype system)
+                  `(cleavir-primop:ast ,ast) ; FIXME: kinda dumb.
+                  `(let ((,temp (cleavir-primop:ast ,ast)))
+                     (if (typep ,temp ',ctype)
+                         ,temp
+                         (error 'type-error
+                                :datum ,temp :expected-type ',ctype)))))))
        env system)
       ;; Leave it as a declaration.
       (if (and (consp ctype) (eql (first ctype) 'values))
