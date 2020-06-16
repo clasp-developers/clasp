@@ -61,6 +61,47 @@
             (t ; simple case - results are just lexical locations - no special effort needed
              (call-next-method))))))
 
+(defmethod cleavir-ast-to-hir:compile-ast
+    :around ((ast cleavir-ast:multiple-value-extract-ast) context)
+  (let ((results (cleavir-ast-to-hir::results context)))
+    (if (typep results 'cleavir-ir:values-location)
+        (let* ((cleavir-ir:*policy* (cleavir-ast:policy ast))
+               (cleavir-ir:*origin* (cleavir-ast:origin ast))
+               (cleavir-ir:*dynamic-environment*
+                 (cleavir-ast-to-hir::dynamic-environment context))
+               (locations
+                 (mapcar #'cleavir-ast-to-hir::find-or-create-location
+                         (cleavir-ast:lhs-asts ast)))
+               (successors (cleavir-ast-to-hir::successors context))
+               (mv (cleavir-ir:make-values-location))
+               (nvals-temp (cleavir-ir:new-temporary))
+               (values-temp (cleavir-ir:new-temporary))
+               (load (clasp-cleavir-hir:make-load-values-instruction
+                      (list nvals-temp values-temp) results (first successors)))
+               (successor
+                 (loop with successor = load
+                       for form-ast in (reverse (cleavir-ast:form-asts ast))
+                       do (setf successor
+                                (cleavir-ast-to-hir:compile-ast
+                                 form-ast
+                                 (cleavir-ast-to-hir:clone-context
+                                  context
+                                  :results '()
+                                  :successors (list successor))))
+                       finally (return successor)))
+               (mtf (cleavir-ir:make-multiple-to-fixed-instruction
+                     results locations successor))
+               (store (clasp-cleavir-hir:make-save-values-instruction
+                       mv (list nvals-temp values-temp) mtf)))
+          ;; Finally, we can compile the first form.
+          (cleavir-ast-to-hir:compile-ast
+           (cleavir-ast:first-form-ast ast)
+           (cleavir-ast-to-hir:clone-context
+            context
+            :results mv
+            :successors (list store))))
+        (call-next-method))))
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
