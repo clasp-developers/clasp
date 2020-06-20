@@ -46,15 +46,25 @@
 ;;;
 ;;; Generate the current list of Cleavir files 
 
-(asdf:initialize-source-registry
- `(:source-registry
-   (:tree ,(translate-logical-pathname #P"sys:"))
-   :ignore-inherited-configuration))
-
-(load (make-pathname
-       :name "asdf-system-groveler"
-       :type "lisp"
-       :defaults (or *load-truename* *compile-file-truename*)))
+(let* ((here (or *load-truename* *compile-file-truename*))
+       (root-clasp (make-pathname :directory
+                        (butlast (pathname-directory here))))
+       (root-sys
+         (make-pathname :directory
+                        (append (butlast (pathname-directory here)) (list "src" "lisp")))))
+  (format t "Root for clearvir-files is ~a ~%" root-sys)
+  (asdf:initialize-source-registry
+   `(:source-registry
+     (:tree ,root-sys)
+     :ignore-inherited-configuration))
+  (setf (logical-pathname-translations "source-dir")
+        `((#P"SOURCE-DIR:**;*.*"
+             ,(pathname (concatenate 'string (namestring root-clasp) "**/*.*")))))
+  (format t "Sourcedir is  ~a ~%" (translate-logical-pathname "source-dir:"))
+  (load (make-pathname
+         :name "asdf-system-groveler"
+         :type "lisp"
+         :defaults here)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
