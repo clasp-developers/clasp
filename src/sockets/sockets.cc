@@ -584,13 +584,13 @@ CL_DEFUN core::T_sp sockets_internal__ll_makeStreamFromFd(const string &name,  /
   core::StreamMode direction;
   switch (streamMode) {
   case core::clasp_stream_mode_input:
-      direction = core::clasp_smm_input_file;
+      direction = core::clasp_smm_input;
     break;
   case core::clasp_stream_mode_output:
-      direction = core::clasp_smm_output_file;
+      direction = core::clasp_smm_output;
     break;
   case core::clasp_stream_mode_io:
-      direction = core::clasp_smm_io_file;
+      direction = core::clasp_smm_io;
     break;
   default: {
     SIMPLE_ERROR(BF("Illegal stream mode %d") % streamMode);
