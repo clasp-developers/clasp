@@ -116,7 +116,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
         x = gc::As<Real_sp>(clasp_make_single_float(clasp_to_double(gc::As<Number_sp>(x))));
       break;
     case number_DoubleFloat:
-        x = gc::As<Real_sp>(clasp_make_double_float(clasp_to_double(gc::As<Number_sp>(x))));
+        x = gc::As<Real_sp>(clasp_make_double_float(clasp_to_double(gc::As_unsafe<Number_sp>(x))));
       break;
 #ifdef CLASP_LONG_FLOAT
     case number_LongFloat:

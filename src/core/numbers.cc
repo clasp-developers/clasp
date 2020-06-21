@@ -694,13 +694,13 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_Bignum_v_Complex : {
       Complex_sp cb = gc::As<Complex_sp>(nb);
       return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
+                            clasp_to_double(gc::As_unsafe<Number_sp>(cb->real())), clasp_to_double(gc::As_unsafe<Number_sp>(cb->imaginary())));
     }
   case_Complex_v_Complex : {
       Complex_sp ca = gc::As<Complex_sp>(na);
       Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(gc::As<Number_sp>(ca->real())), clasp_to_double(gc::As<Number_sp>(ca->imaginary())),
-                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
+      return complex_divide(clasp_to_double(gc::As_unsafe<Number_sp>(ca->real())), clasp_to_double(gc::As_unsafe<Number_sp>(ca->imaginary())),
+                            clasp_to_double(gc::As_unsafe<Number_sp>(cb->real())), clasp_to_double(gc::As_unsafe<Number_sp>(cb->imaginary())));
     }
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
@@ -708,7 +708,7 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_LongFloat_v_Complex : {
       Complex_sp cb = gc::As<Complex_sp>(nb);
       return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(gc::As<Number_sp>(cb->real())), clasp_to_double(gc::As<Number_sp>(cb->imaginary())));
+                            clasp_to_double(gc::As_unsafe<Number_sp>(cb->real())), clasp_to_double(gc::As_unsafe<Number_sp>(cb->imaginary())));
     }
   }
   MATH_DISPATCH_END();
