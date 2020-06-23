@@ -183,6 +183,7 @@
    #:make-headerq-instruction
    #:save-frame-instruction
    #:make-save-frame-instruction
+   #:clasp-save-values-instruction
    #:memcas2-instruction
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type

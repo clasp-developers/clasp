@@ -418,19 +418,17 @@
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
-(defmethod cleavir-hir-to-mir:specialize ((instruction clasp-cleavir-hir:save-values-instruction)
+(defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:save-values-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
-  (let ((outputs (cleavir-ir:outputs instruction)))
-    (convert-to-tll (first outputs) cmp:%size_t%)
-    (convert-to-tll (second outputs) cmp:%t**%)
-    instruction))
-
-(defmethod cleavir-hir-to-mir:specialize ((instruction clasp-cleavir-hir:load-values-instruction)
-                                          (impl clasp-cleavir:clasp) proc os)
-  (let ((inputs (cleavir-ir:inputs instruction)))
-    (convert-to-tll (first inputs) cmp:%size_t%)
-    (convert-to-tll (second inputs) cmp:%t**%)
-    instruction))
+  (let ((sp-loc (cleavir-ir:new-temporary))
+        (nvals-loc (cleavir-ir:new-temporary))
+        (vals-loc (cleavir-ir:new-temporary)))
+    (convert-to-tll sp-loc cmp:%i8*%)
+    (convert-to-tll nvals-loc cmp:%size_t%)
+    (convert-to-tll vals-loc cmp:%t**%)
+    (change-class instruction 'cc-mir:clasp-save-values-instruction
+                  :outputs (list (first (cleavir-ir:outputs instruction)) ; dynenv
+                                 sp-loc nvals-loc vals-loc))))
 
 (defmacro define-float-specializer (instruction-class-name)
   `(defmethod cleavir-hir-to-mir:specialize ((instruction ,instruction-class-name)

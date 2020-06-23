@@ -87,6 +87,21 @@
   (make-instance 'save-frame-instruction
                  :successors (if successor-p (list successor) nil)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction CLASP-SAVE-VALUES-INSTRUCTION
+;;;
+;;; Allocate storage for the current return values and put em in.
+;;; The values can be restored by a local unwind.
+;;; Has four outputs: The dynamic environment (a nothingburger),
+;;;  the stack pointer (from llvm.stacksave),
+;;;  the number of values, and a variable array for storing those values.
+;;; Note that the last three will not be T*-typed in LLVM, so be cautious.
+;;; Lowered from CLEAVIR-IR:SAVE-VALUES-INSTRUCTION.
+
+(defclass clasp-save-values-instruction (cleavir-ir:save-values-instruction)
+  ())
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; MEMCAS2-INSTRUCTION

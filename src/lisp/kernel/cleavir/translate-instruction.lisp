@@ -147,33 +147,28 @@
                   do (out phi out))))))))
 
 (defmethod translate-simple-instruction
-    ((instr clasp-cleavir-hir:save-values-instruction) return-value abi function-info)
+    ((instr cc-mir:clasp-save-values-instruction) return-value abi function-info)
   (declare (ignore function-info))
   (with-return-values (return-value abi nvalsl return-regs)
     (let* ((outputs (cleavir-ir:outputs instr))
+           (de-loc (first outputs))
+           (sp-loc (second outputs))
+           (nvals-loc (third outputs))
+           (vals-loc (fourth outputs))
+           ;; NOTE that the stacksave must be done BEFORE the alloca.
+           (save (%intrinsic-call "llvm.stacksave" nil))
            (nvals (cmp:irc-load nvalsl))
-           (temp-nvals-loc (first outputs))
-           (temp-vals-loc (second outputs))
-           ;; Get the part we need.
            (primary (cmp:irc-load (return-value-elt return-regs 0)))
-           ;; Allocate storage. Note this is in-line, not in the alloca-irbuilder,
-           ;; of course because it's of variable size.
+           ;; In-line, variable alloca.
            (mv-temp (cmp:alloca-temp-values nvals)))
-      ;; Do the actual storing into mv-temp
+      ;; Copy dynenv
+      (out (in (cleavir-ir:dynamic-environment instr)) de-loc)
+      ;; Do actual storage
       (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
-      ;; Put the stuff in the outputs
-      (out nvals temp-nvals-loc)
-      (out mv-temp temp-vals-loc))))
-
-(defmethod translate-simple-instruction
-    ((instr clasp-cleavir-hir:load-values-instruction) return-value abi function-info)
-  (declare (ignore abi function-info))
-  (let* ((inputs (cleavir-ir:inputs instr))
-         (nvals-loc (first inputs))
-         (vals-loc (second inputs))
-         (loaded
-           (%intrinsic-call "cc_load_values" (list (in nvals-loc) (in vals-loc)))))
-    (store-tmv loaded return-value)))
+      ;; Output important stuff
+      (out save sp-loc)
+      (out nvals nvals-loc)
+      (out mv-temp vals-loc))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
@@ -274,6 +269,18 @@
                       ;; See more extensive note in lp-generate-protect (landing-pad.lisp).
                       (protection-dynenv (cleavir-ir:dynamic-environment definer)))
                   (gen-protect thunk protection-dynenv return-value function-info)))
+               (cc-mir:clasp-save-values-instruction
+                (let* ((outs (cleavir-ir:outputs definer))
+                       (sp-loc (second outs))
+                       (nvals-loc (third outs))
+                       (vals-loc (fourth outs))
+                       (loaded
+                         (%intrinsic-call "cc_load_values"
+                                          (list (in nvals-loc) (in vals-loc)))))
+                  ;; Unwind stack storage. Note that this must be done AFTER load values.
+                  (%intrinsic-call "llvm.stackrestore" (list (in sp-loc)))
+                  ;; Save return value.
+                  (store-tmv loaded return-value)))
                (cleavir-ir:enter-instruction
                 (unless (eq dynenv outer-dynenv)
                   (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ)))))))
