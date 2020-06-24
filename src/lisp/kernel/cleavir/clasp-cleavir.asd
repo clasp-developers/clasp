@@ -14,7 +14,6 @@
                :cleavir-compilation-policy
                :cleavir-ast-to-hir
                :cleavir-ast-transformations
-               :cleavir-kildall-type-inference
                :cleavir-escape
                :cleavir-hir-transformations
                :cleavir-partial-inlining

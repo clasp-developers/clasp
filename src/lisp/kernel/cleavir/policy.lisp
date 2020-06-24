@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
+    ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)

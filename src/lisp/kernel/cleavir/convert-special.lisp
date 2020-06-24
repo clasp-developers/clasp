@@ -105,7 +105,7 @@
   (let ((value-ast
           (if (cleavir-policy:policy-value
                (cleavir-env:policy (cleavir-env:optimize-info env))
-               'cleavir-kildall-type-inference:insert-type-checks)
+               'clasp-cleavir::insert-type-checks)
               ;; Insert type check.
               (cleavir-cst-to-ast:convert
                (cst:cst-from-expression

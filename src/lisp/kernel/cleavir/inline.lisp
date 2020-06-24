@@ -772,8 +772,7 @@
             (index0 (gensym "INDEX0")))
         `(let ((,sarray ,array)
                (,index0 ,(first subscripts)))
-           ,@(when-policy
-              env 'cleavir-kildall-type-inference:insert-type-checks
+           ,@(when-policy env 'insert-type-checks
               `(if (cleavir-primop:typeq ,sarray array)
                    nil
                    (error 'type-error :datum ,sarray :expected-type '(array * 1))))
