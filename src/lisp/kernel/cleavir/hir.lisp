@@ -36,44 +36,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction SAVE-VALUES-INSTRUCTION
-;;;
-;;; Allocate storage for the current return values and put em in.
-;;; The values can be restored by LOAD-VALUES-INSTRUCTION.
-;;; Has two outputs, which represent the storage. These outputs are only used
-;;; by LOAD-VALUES-INSTRUCTION, so if we want to change them later that's fine.
-;;; More details in ast-to-hir.lisp for multiple-value-prog1-ast.
-
-(defclass save-values-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
-  ())
-
-(defmethod cleavir-ir-graphviz:label ((instr save-values-instruction)) "save-values")
-
-(defun make-save-values-instruction (input outputs &optional (successor nil successor-p))
-  (make-instance 'save-values-instruction
-                 :inputs (list input)
-                 :outputs outputs
-                 :successors (if successor-p (list successor) nil)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction LOAD-VALUES-INSTRUCTION
-;;;
-;;; See save-values.
-
-(defclass load-values-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
-  ())
-
-(defmethod cleavir-ir-graphviz:label ((instr load-values-instruction)) "load-values")
-
-(defun make-load-values-instruction (inputs output &optional (successor nil successor-p))
-  (make-instance 'load-values-instruction
-                 :inputs inputs
-                 :outputs (list output)
-                 :successors (if successor-p (list successor) nil)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
 ;;; Calls a foreign function (designated by its name, a string) and receives its result as values.

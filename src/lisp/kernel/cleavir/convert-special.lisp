@@ -95,6 +95,45 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Dealing with type checks.
+
+(defmethod cleavir-cst-to-ast:type-wrap
+    (ast ctype origin env (system clasp-cleavir:clasp))
+  ;; We unconditionally insert a declaration,
+  ;; and insert a type check as well on high safety.
+  ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
+  (let ((value-ast
+          (if (cleavir-policy:policy-value
+               (cleavir-env:policy (cleavir-env:optimize-info env))
+               'cleavir-kildall-type-inference:insert-type-checks)
+              ;; Insert type check.
+              (cleavir-cst-to-ast:convert
+               (cst:cst-from-expression
+                (let* (;; For now we don't check optional or rest since our operators
+                       ;; don't really work for that
+                       (required (cleavir-ctype:required ctype system))
+                       (vars (loop repeat (length required) collect (gensym "CHECKED"))))
+                  `(let (,@vars)
+                     (cleavir-primop:multiple-value-extract (,@vars)
+                         (cleavir-primop:ast ,ast)
+                         ,@(loop for var in vars
+                                 for ty in required
+                                 unless (cleavir-ctype:top-p ty system)
+                                   collect `(unless (typep ,var ',ty)
+                                              (error 'type-error
+                                                     :datum ,var :expected-type ',ty)))))))
+               env system)
+              ;; Leave as declaration.
+              ast)))
+      (cleavir-ast:make-the-ast
+       value-ast
+       (cleavir-ctype:required ctype system)
+       (cleavir-ctype:optional ctype system)
+       (cleavir-ctype:rest ctype system)
+       :origin origin)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CORE:DEBUG-MESSAGE
 ;;;
 ;;; This is converted into a call to print a message
