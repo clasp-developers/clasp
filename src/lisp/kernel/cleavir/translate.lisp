@@ -27,7 +27,9 @@ when this is t a lot of graphs will be generated.")
     (instruction return-value abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq cleavir-generate-ast:*compiler* 'compile-file))
+               (eq 'compile-file
+                   #-cst cleavir-generate-ast:*compiler*
+                   #+cst cleavir-cst-to-ast:*compiler*))
 ;;;    (error "translate-simple-instruction :around")
       (unless (and (typep instruction 'cleavir-ir:assignment-instruction)
                    (ssablep (first (cleavir-ir:inputs instruction)))
@@ -46,7 +48,9 @@ when this is t a lot of graphs will be generated.")
     (instruction return-value successors abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq cleavir-generate-ast:*compiler* 'compile-file))
+               (eq 'compile-file
+                   #-cst cleavir-generate-ast:*compiler*
+                   #+cst cleavir-cst-to-ast:*compiler*))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
       (cmp:with-landing-pad (maybe-entry-landing-pad
@@ -932,7 +936,8 @@ This works like compile-lambda-function in bclasp."
 ;;; The ENV is still needed for evaluating load time value forms and stuff.
 ;;; It's not great.
 (defun cclasp-compile-ast-in-env (ast &optional env)
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env
      ast env #'cclasp-compile-ast cmp:*default-compile-linkage*)))
