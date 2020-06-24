@@ -8,7 +8,6 @@
   :depends-on (:concrete-syntax-tree
                :eclector-concrete-syntax-tree
                :eclector
-               :cleavir-generate-ast
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy

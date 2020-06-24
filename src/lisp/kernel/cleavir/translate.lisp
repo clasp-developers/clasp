@@ -782,6 +782,9 @@ This works like compile-lambda-function in bclasp."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* (function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
+         #+cst
+         (cleavir-cst-to-ast:*compiler* 'cl:compile)
+         #-cst
          (cleavir-generate-ast:*compiler* 'cl:compile)
          #+cst
          (cst (cst:cst-from-expression form))
@@ -899,7 +902,7 @@ This works like compile-lambda-function in bclasp."
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
         (eclector.readtable:*readtable* cl:*readtable*)
-        (cleavir-generate-ast:*compiler* 'cl:compile-file)
+        (cleavir-cst-to-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -935,7 +938,8 @@ This works like compile-lambda-function in bclasp."
      ast env #'cclasp-compile-ast cmp:*default-compile-linkage*)))
 
 (defun cclasp-compile-in-env (form &optional env)
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (compiler-time

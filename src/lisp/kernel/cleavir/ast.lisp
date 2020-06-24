@@ -748,7 +748,8 @@ precalculated-vector and returns the index."
     ;; COMPLE-FILE will generate a function for the form in the Module
     ;; and arrange for it's evaluation at load time
     ;; and to make its result available as a value
-    ((eq cleavir-generate-ast:*compiler* 'cl:compile-file)
+    ((eq #-cst cleavir-generate-ast:*compiler* #+cst cleavir-cst-to-ast:*compiler*
+         'cl:compile-file)
      (values (literal:with-load-time-value
                  (clasp-cleavir::compile-form form env))
              nil))

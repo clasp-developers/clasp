@@ -492,6 +492,7 @@
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
 
+#+cst
 (defun ast-interpret-cst (cst env)
   (let ((ast #+cst(cst->ast cst env)
              #-cst(generate-ast (cst:raw cst) env)))
