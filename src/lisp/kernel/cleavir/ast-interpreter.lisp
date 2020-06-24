@@ -84,14 +84,6 @@
 (defmacro defcan (name)
   `(defmethod can-interpret-p ((ast ,name)) t))
 
-(defun can-interpret-ast-p (ast)
-  (cleavir-ast:map-ast-depth-first-preorder
-   (lambda (ast)
-     (unless (can-interpret-p ast)
-       (return-from can-interpret-ast-p nil)))
-   ast)
-  t)
-
 (defcan cleavir-ast:immediate-ast)
 (defmethod interpret-ast ((ast cleavir-ast:immediate-ast) env)
   (declare (ignore env))
