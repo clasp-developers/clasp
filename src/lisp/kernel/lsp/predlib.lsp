@@ -85,6 +85,9 @@ by (documentation 'NAME 'type)."
 
 ;;; Some DEFTYPE definitions.
 
+(deftype eql (object)
+  `(member ,object))
+
 (deftype boolean ()
   "A BOOLEAN is an object which is either NIL or T."
   '(member nil t))
