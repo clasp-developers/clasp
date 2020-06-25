@@ -215,7 +215,10 @@
 
          (primitive         "llvm.lifetime.start" %void% (list %i64% %i8*%))
          (primitive         "llvm.lifetime.end" %void% (list %i64% %i8*%))
-    
+
+         (primitive         "llvm.stacksave" %i8*% nil)
+         (primitive         "llvm.stackrestore" %void% (list %i8*%))
+
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return-type% nil)
          (primitive         "cc_save_values" %void% (list %size_t% %t*% %t**%))

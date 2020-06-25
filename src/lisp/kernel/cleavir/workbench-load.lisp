@@ -32,17 +32,3 @@
 
 ;;; Start cleavir with no inline
 (load-cleavir-no-inline)
-
-
-(let ((clasp-cleavir::*use-closurettes* t))
-  (clasp-cleavir:cleavir-compile 'foo '(lambda () (lambda () (list 1 2 3 4)))))
-
-
-(let ((clasp-cleavir::*use-closurettes* t))
-  (compile 'foo '(lambda () (lambda () (list 1 2 3 4)))))
-
-
-
-;;; Start cleavir
-(start-cleavir)
-

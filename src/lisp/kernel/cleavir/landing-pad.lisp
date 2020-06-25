@@ -239,6 +239,22 @@
                         return-value tags function-info)
                        return-value function-info))
 
+(defmethod compute-maybe-entry-processor
+    ((instruction cc-mir:clasp-save-values-instruction)
+     return-value tags function-info)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (let ((sp-loc (second (cleavir-ir:outputs instruction)))
+          (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+      (cmp:irc-begin-block bb)
+      ;; Lose the saved values alloca.
+      (%intrinsic-call "llvm.stackrestore" (list (in sp-loc)))
+      ;; Continue
+      (cmp:irc-br
+       (maybe-entry-processor
+        (dynenv-definer (cleavir-ir:dynamic-environment instruction))
+        return-value tags function-info))
+      bb)))
+
 (defmethod compute-maybe-entry-processor ((instruction cleavir-ir:enter-instruction)
                                           return-value tags function-info)
   (declare (ignore return-value function-info))
@@ -263,7 +279,8 @@
       (cleavir-ir:assignment-instruction
        (location-may-enter-p (first (cleavir-ir:inputs definer))))
       ((or clasp-cleavir-hir:bind-instruction
-           clasp-cleavir-hir:unwind-protect-instruction)
+           clasp-cleavir-hir:unwind-protect-instruction
+           cc-mir:clasp-save-values-instruction)
        (location-may-enter-p (cleavir-ir:dynamic-environment definer)))
       (cleavir-ir:catch-instruction t))))
 
@@ -283,6 +300,7 @@
           ((or cleavir-ir:catch-instruction
                clasp-cleavir-hir:bind-instruction
                clasp-cleavir-hir:unwind-protect-instruction
+               cc-mir:clasp-save-values-instruction
                cleavir-ir:enter-instruction)
            (generate-maybe-entry-landing-pad
             (maybe-entry-processor definer return-value tags function-info)
@@ -326,6 +344,11 @@
   (c-n-e-p-next (first (cleavir-ir:inputs instruction)) return-value function-info))
 
 (defmethod compute-never-entry-processor
+    ((instruction cc-mir:clasp-save-values-instruction) return-value function-info)
+  ;; This whole frame is being discarded, so no smaller stack unwinding is necessary.
+  (c-n-e-p-next (cleavir-ir:dynamic-environment instruction) return-value function-info))
+
+(defmethod compute-never-entry-processor
     ((instruction cleavir-ir:catch-instruction) return-value function-info)
   (c-n-e-p-next (cleavir-ir:dynamic-environment instruction) return-value function-info))
 
@@ -350,7 +373,9 @@
      (definer-needs-cleanup-p
       (dynenv-definer (first (cleavir-ir:inputs definer)))))
     ;; Next might need a cleanup
-    (cleavir-ir:catch-instruction
+    ((or cleavir-ir:catch-instruction
+         ;; Cleanup only required for local exit.
+         cc-mir:clasp-save-values-instruction)
      (definer-needs-cleanup-p
       (dynenv-definer (cleavir-ir:dynamic-environment definer))))
     ;; Definitive answers
@@ -368,7 +393,8 @@
        ;; We never catch, so just keep going up.
        (never-entry-landing-pad (cleavir-ir:dynamic-environment definer)
                                 return-value function-info))
-      ((or clasp-cleavir-hir:bind-instruction clasp-cleavir-hir:unwind-protect-instruction)
+      ((or clasp-cleavir-hir:bind-instruction clasp-cleavir-hir:unwind-protect-instruction
+           cc-mir:clasp-save-values-instruction)
        (generate-never-entry-landing-pad
         (never-entry-processor definer return-value function-info)))
       (cleavir-ir:enter-instruction

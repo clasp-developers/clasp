@@ -8,13 +8,11 @@
   :depends-on (:concrete-syntax-tree
                :eclector-concrete-syntax-tree
                :eclector
-               :cleavir-generate-ast
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
                :cleavir-ast-to-hir
                :cleavir-ast-transformations
-               :cleavir-kildall-type-inference
                :cleavir-escape
                :cleavir-hir-transformations
                :cleavir-partial-inlining

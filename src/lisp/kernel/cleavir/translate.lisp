@@ -27,7 +27,9 @@ when this is t a lot of graphs will be generated.")
     (instruction return-value abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq cleavir-generate-ast:*compiler* 'compile-file))
+               (eq 'compile-file
+                   #-cst cleavir-generate-ast:*compiler*
+                   #+cst cleavir-cst-to-ast:*compiler*))
 ;;;    (error "translate-simple-instruction :around")
       (unless (and (typep instruction 'cleavir-ir:assignment-instruction)
                    (ssablep (first (cleavir-ir:inputs instruction)))
@@ -46,7 +48,9 @@ when this is t a lot of graphs will be generated.")
     (instruction return-value successors abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
     (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq cleavir-generate-ast:*compiler* 'compile-file))
+               (eq 'compile-file
+                   #-cst cleavir-generate-ast:*compiler*
+                   #+cst cleavir-cst-to-ast:*compiler*))
       (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 9995))
       (cmp:with-landing-pad (maybe-entry-landing-pad
@@ -529,9 +533,6 @@ when this is t a lot of graphs will be generated.")
   (quick-draw-hir init-instr "hir-after-pcv")
   (clasp-cleavir:optimize-stack-enclose init-instr) ; see FIXME at definition
   (setf *ct-optimize-stack-enclose* (compiler-timer-elapsed))
-  (cleavir-kildall-type-inference:thes->typeqs init-instr clasp-cleavir:*clasp-env*)
-  (quick-draw-hir init-instr "hir-after-thes-typeqs")
-  (setf *ct-thes->typeqs* (compiler-timer-elapsed))
   ;;; See comment in policy.lisp. tl;dr these analyses are slow.
   #+(or)
   (let ((do-dx (policy-anywhere-p init-instr 'do-dx-analysis))
@@ -785,6 +786,9 @@ This works like compile-lambda-function in bclasp."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* (function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
+         #+cst
+         (cleavir-cst-to-ast:*compiler* 'cl:compile)
+         #-cst
          (cleavir-generate-ast:*compiler* 'cl:compile)
          #+cst
          (cst (cst:cst-from-expression form))
@@ -902,7 +906,7 @@ This works like compile-lambda-function in bclasp."
   (let ((eof-value (gensym))
         (eclector.reader:*client* *cst-client*)
         (eclector.readtable:*readtable* cl:*readtable*)
-        (cleavir-generate-ast:*compiler* 'cl:compile-file)
+        (cleavir-cst-to-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -932,13 +936,15 @@ This works like compile-lambda-function in bclasp."
 ;;; The ENV is still needed for evaluating load time value forms and stuff.
 ;;; It's not great.
 (defun cclasp-compile-ast-in-env (ast &optional env)
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env
      ast env #'cclasp-compile-ast cmp:*default-compile-linkage*)))
 
 (defun cclasp-compile-in-env (form &optional env)
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (if cmp::*debug-compile-file*
         (compiler-time
