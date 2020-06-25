@@ -226,6 +226,10 @@
     ((instruction cleavir-ir:nop-instruction) return-value abi function-info)
   (declare (ignore return-value inputs outputs abi function-info)))
 
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:choke-instruction) return-value abi function-info)
+  (declare (ignore return-value inputs outputs abi function-info)))
+
 ;;; FIXME: Hey this is confusing with generate-unbind existing and all.
 (defun gen-unbind (symbol old-value)
   ;; This function cannot throw, so no landing pad needed
@@ -856,6 +860,14 @@
   (cmp:compile-header-check
    (cc-mir:header-value-min-max instruction)
    (in (first (cleavir-ir:inputs instruction))) (first successors) (second successors)))
+
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:typew-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
+  ;; Per the semantics, the actual branching, if any,
+  ;; is done in the third successor:
+  (cmp:irc-br (third successors)))
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:header-stamp-case-instruction)
