@@ -285,6 +285,13 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-env:type-expand ((environment null) type-specifier)
   (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
 
+;;; Needed because the default method ends up with classes,
+;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier symbol) environment (system clasp))
+  (declare (ignore environment))
+  type-specifier)
+
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
 (defmethod cleavir-env:has-extended-char-p ((environment null))
