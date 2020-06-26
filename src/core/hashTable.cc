@@ -295,9 +295,13 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   return ht;
 }
 
+// FIXME: contents read could just be atomic maybe?
 #define HASH_TABLE_ITER(tablep, key, value) \
   gctools::tagged_pointer<gctools::GCVector_moveable<Cons_O>> iter_datap;\
-  iter_datap = tablep->_Table._Vector._Contents;\
+  {\
+    HT_READ_LOCK(tablep);\
+    iter_datap = tablep->_Table._Vector._Contents;\
+  }\
   for (size_t it(0), itEnd(iter_datap->_End); it < itEnd; ++it) {\
   Cons_O& entry = (*iter_datap)[it];\
   T_sp key = entry.ocar();\
@@ -317,8 +321,6 @@ CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
-  //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
-  Function_sp func = coerce::functionDesignator(function_desig);
   if (hash_table.nilp()) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }
