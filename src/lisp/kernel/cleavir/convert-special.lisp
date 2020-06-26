@@ -123,15 +123,19 @@
              ,@(loop for var in vars
                      for ty in required
                      unless (cleavir-ctype:top-p ty system)
-                       collect `(if (cleavir-primop:typew
+                       collect (if insert-type-checks
+                                   `(if (cleavir-primop:typew
+                                         ,var ,ty
+                                         (typep ,var ',ty))
+                                        nil
+                                        (error 'type-error
+                                               :datum ,var
+                                               :expected-type ',ty))
+                                   `(cleavir-primop:the-typew
                                      ,var ,ty
-                                     ,(if insert-type-checks
-                                          `(typep ,var ',ty)
-                                          't))
-                                    nil
-                                    (error 'type-error
-                                           :datum ,var
-                                           :expected-type ',ty)))))))
+                                     (error 'type-error
+                                            :datum ,var
+                                            :expected-type ',ty))))))))
      env system)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
