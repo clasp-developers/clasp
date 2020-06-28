@@ -157,7 +157,7 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-    : scope(std::unique_ptr<registration>(
+    : scope_(std::unique_ptr<registration>(
           m_registration = new class_registration(name))) {
 }
 
@@ -181,12 +181,12 @@ void class_base::set_default_constructor(registration *member) {
 
 void class_base::add_member(registration *member) {
   std::unique_ptr<registration> ptr(member);
-  m_registration->m_members.operator, (scope(std::move(ptr)));
+  m_registration->m_members.operator, (scope_(std::move(ptr)));
 }
 
 void class_base::add_default_member(registration *member) {
   std::unique_ptr<registration> ptr(member);
-  m_registration->m_default_members.operator, (scope(std::move(ptr)));
+  m_registration->m_default_members.operator, (scope_(std::move(ptr)));
 }
 
 string class_base::name() const {
@@ -197,7 +197,7 @@ void class_base::add_static_constant(const char *name, int val) {
   m_registration->m_static_constants[name] = val;
 }
 
-void class_base::add_inner_scope(scope &s) {
+void class_base::add_inner_scope(scope_ &s) {
   m_registration->m_scope.operator, (s);
 }
 

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
 #include <clasp/clbind/scope.h>
+#include <clasp/core/arguments.h>
 
 namespace clbind {
 
@@ -105,14 +106,13 @@ struct function_registration : registration {
 } // namespace detail
 
 template <typename F, class Policies>
-scope def(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  return scope(std::unique_ptr<detail::registration>(
-      new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+void fndef(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring);
 }
 
 template <class F>
-scope def(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  return def(name, f, policies<>(), lambdalist, declares, docstring);
+void fndef(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  fndef(name, f, policies<>(), lambdalist, declares, docstring);
 }
 
 } // namespace clbind

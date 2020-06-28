@@ -56,7 +56,7 @@ THE SOFTWARE.
 
 namespace clbind {
 
-struct scope;
+struct scope_;
 
 } // namespace clbind
 
@@ -74,41 +74,81 @@ protected:
   virtual void register_() const = 0;
 
 private:
-  friend struct ::clbind::scope;
+  friend struct ::clbind::scope_;
   registration *m_next;
 };
 }
 } // namespace clbind::detail
 
+#include <clasp/clbind/function.h>
+
+
 namespace clbind {
 
-struct CLBIND_API scope {
-  scope();
-  explicit scope(std::unique_ptr<detail::registration> reg);
-  scope(scope const &other_);
-  ~scope();
+struct CLBIND_API scope_ {
+    scope_();
+    explicit scope_(std::unique_ptr<detail::registration> reg);
+    scope_(scope_ const &other_);
+    ~scope_();
 
-  scope &operator=(scope const &other_);
+    scope_ &operator=(scope_ const &other_);
 
-  scope &operator, (scope s);
+    scope_ &operator, (scope_ s);
 
-  void register_() const;
+    void register_() const;
 
-private:
-  detail::registration *m_chain;
+ private:
+    detail::registration *m_chain;
+
+
+ public:
+    template <typename F, class Policies>
+    scope_& def(char const *name, F f, Policies const &policies, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+      std::string docstring = "";
+      std::string lambdalist;
+      std::string declares;
+      if (cdocstring) docstring = cdocstring;
+      if (clambdalist) lambdalist = clambdalist;
+      if (cdeclares) declares = cdeclares;
+      fndef(name,f,
+            policies,
+            lambdalist,
+            declares,
+            docstring);
+      return *this;
+    }
+
+    template <class F>
+    scope_& def(char const *name, F f, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+      std::string docstring = "";
+      std::string lambdalist;
+      std::string declares;
+      if (cdocstring) docstring = cdocstring;
+      if (clambdalist) lambdalist = clambdalist;
+      if (cdeclares) declares = cdeclares;
+      fndef(name,f,
+            lambdalist,
+            declares,
+            docstring);
+      return *this;
+    }
+      
+
 };
 
 /*! Declare a package - provide the package name (which will be lispified) and a list
       of nicknames and a list of usePackageNames */
 class CLBIND_API package_ {
-public:
-  package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
-  void operator[](scope s);
-
-private:
-  string m_name;
-  list<std::string> m_nicknames;
-  list<std::string> m_usePackageNames;
+ public:
+ package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
+ ~package_();
+ scope_& scope() { return this->_Scope; }
+ private:
+ string m_name;
+ list<std::string> m_nicknames;
+ list<std::string> m_usePackageNames;
+ core::DynamicScopeManager* _PackageDynamicVariable;
+ scope_ _Scope;
 };
 
 inline package_ package(string const &name, std::list<std::string> nicknames = {}, std::list<std::string> usePackageNames = {}) {

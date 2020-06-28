@@ -72,31 +72,32 @@ registration::~registration() {
 
 } // namespace detail
 
-scope::scope()
+scope_::scope_()
     : m_chain(0) {
 }
 
-scope::scope(std::unique_ptr<detail::registration> reg)
+scope_::scope_(std::unique_ptr<detail::registration> reg)
     : m_chain(reg.release()) {
 }
 
-scope::scope(scope const &other)
+scope_::scope_(scope_ const &other)
     : m_chain(other.m_chain) {
-  const_cast<scope &>(other).m_chain = 0;
+  const_cast<scope_ &>(other).m_chain = 0;
 }
 
-scope &scope::operator=(scope const &other_) {
+scope_ &scope_::operator=(scope_ const &other_) {
   delete m_chain;
   m_chain = other_.m_chain;
-  const_cast<scope &>(other_).m_chain = 0;
+  const_cast<scope_ &>(other_).m_chain = 0;
   return *this;
 }
 
-scope::~scope() {
+scope_::~scope_() {
   delete m_chain;
 }
 
-scope &scope::operator, (scope s) {
+
+scope_ &scope_::operator, (scope_ s) {
   if (!m_chain) {
     m_chain = s.m_chain;
     s.m_chain = 0;
@@ -114,7 +115,8 @@ scope &scope::operator, (scope s) {
   return *this;
 }
 
-void scope::register_() const {
+
+void scope_::register_() const {
   for (detail::registration *r = m_chain; r != 0; r = r->m_next) {
     r->register_();
   }
@@ -126,9 +128,6 @@ namespace clbind {
 
 package_::package_(string const &name, std::list<std::string> nicknames, std::list<string> usePackageNames)
     : m_name(name), m_nicknames(nicknames), m_usePackageNames(usePackageNames) {
-}
-
-void package_::operator[](scope s) {
   string packageName = m_name;
   core::T_sp pkg = _lisp->findPackage(packageName);
   if (pkg.nilp()) {
@@ -152,8 +151,12 @@ void package_::operator[](scope s) {
       }
     }
   }
-  core::DynamicScopeManager lispScope(cl::_sym_STARpackageSTAR, pkg);
-  s.register_();
+  this->_PackageDynamicVariable = new core::DynamicScopeManager(cl::_sym_STARpackageSTAR, pkg);
 }
+
+package_::~package_() {
+  _Scope.register_();
+  delete this->_PackageDynamicVariable;
+};
 
 } // namespace clbind

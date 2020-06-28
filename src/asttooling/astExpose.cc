@@ -731,9 +731,6 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 }
 
 
-#define ARGS_af_constant_array_get_size "(constant-array)"
-#define DECL_af_constant_array_get_size ""
-#define DOCS_af_constant_array_get_size "constant_array_get_size - returns the size of the constant array"
 core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
     llvm::APInt size = cat->getSize();
   string s = size.toString(10,true);
@@ -752,9 +749,6 @@ core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_af_getAsCXXRecordDecl "(arg)"
-#define DECL_af_getAsCXXRecordDecl ""
-#define DOCS_af_getAsCXXRecordDecl "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL"
 core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
   if (declp) {
@@ -763,9 +757,6 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_af_getNameForDiagnostic "(decl stream lang-opts qualified)"
-#define DECL_af_getNameForDiagnostic ""
-#define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, LangOptions &langOps, bool qualified) {
   string str;
   llvm::raw_string_ostream ostr(str);
@@ -794,434 +785,425 @@ namespace asttooling {
 void initialize_astExpose() {
   core::Package_sp pkg = gc::As<core::Package_sp>(_lisp->findPackage(ClangAstPkg)); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::SimpleBaseString_O::make("TYPE"));
-  package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
-    class_<clang::Decl>("Decl", no_default_constructor)
-     .def("getGlobalID", &clang::Decl::getGlobalID)
-     .def("isImplicit", &clang::Decl::isImplicit)
-     .def("setImplicit", &clang::Decl::setImplicit)
-     .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-     .def("getBeginLoc", &clang::Decl::getBeginLoc)
-     .def("getEndLoc", &clang::Decl::getEndLoc)
-     .def("getAccess",&clang::Decl::getAccess)
+  package_ pkgg(ClangAstPkg);
+  scope_& m = pkgg.scope();
+  class_<clang::Decl> cl(m,"Decl");
+  cl.def("getGlobalID", &clang::Decl::getGlobalID)
+    .def("isImplicit", &clang::Decl::isImplicit)
+    .def("setImplicit", &clang::Decl::setImplicit)
+    .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
+    .def("getBeginLoc", &clang::Decl::getBeginLoc)
+    .def("getEndLoc", &clang::Decl::getEndLoc)
+    .def("getAccess",&clang::Decl::getAccess)
     .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
-      value("AS_public", clang::AS_public),
-      value("AS_protected", clang::AS_protected),
-      value("AS_private", clang::AS_private),
-      value("AS_none", clang::AS_none)
-      ]
-#define CLASS_DECL(_Class_, _Base_) class_<_Class_##Decl, _Base_>(#_Class_ "Decl", no_default_constructor)
-    ,
-    CLASS_DECL(AccessSpec, Decl),
-    CLASS_DECL(Block, Decl),
-    CLASS_DECL(Captured, Decl),
-    CLASS_DECL(ClassScopeFunctionSpecialization, Decl),
-    CLASS_DECL(Empty, Decl),
-    CLASS_DECL(FileScopeAsm, Decl),
-    CLASS_DECL(Friend, Decl),
-    CLASS_DECL(FriendTemplate, Decl),
-    CLASS_DECL(Import, Decl),
-    CLASS_DECL(LinkageSpec, Decl),
-    CLASS_DECL(Named, Decl)
-        .def("getIdentifier", &NamedDecl::getIdentifier)
-        .def("getName", &NamedDecl::getName)
-        .def("getNameAsString", &NamedDecl::getNameAsString)
-        .def("getQualifiedNameAsString", (std::string (NamedDecl::*)() const) & NamedDecl::getQualifiedNameAsString),
-    CLASS_DECL(Label, NamedDecl),
-    CLASS_DECL(Namespace, NamedDecl),
-    CLASS_DECL(NamespaceAlias, NamedDecl),
-    CLASS_DECL(ObjCCompatibleAlias, NamedDecl),
-    CLASS_DECL(ObjCContainer, NamedDecl),
-    CLASS_DECL(ObjCCategory, ObjCContainerDecl),
-    CLASS_DECL(ObjCImpl, ObjCContainerDecl),
-    CLASS_DECL(ObjCCategoryImpl, ObjCImplDecl),
-    CLASS_DECL(ObjCImplementation, ObjCImplDecl),
-    CLASS_DECL(ObjCInterface, ObjCContainerDecl),
-    CLASS_DECL(ObjCProtocol, ObjCContainerDecl),
-    CLASS_DECL(ObjCMethod, NamedDecl),
-    CLASS_DECL(ObjCProperty, NamedDecl),
-    CLASS_DECL(Template, NamedDecl),
-    CLASS_DECL(RedeclarableTemplate, TemplateDecl),
-    CLASS_DECL(ClassTemplate, RedeclarableTemplateDecl),
-    CLASS_DECL(FunctionTemplate, RedeclarableTemplateDecl),
-    CLASS_DECL(TypeAliasTemplate, RedeclarableTemplateDecl),
-    CLASS_DECL(VarTemplate, RedeclarableTemplateDecl),
-    CLASS_DECL(TemplateTemplateParm, TemplateDecl),
-    CLASS_DECL(Type, NamedDecl),
-    CLASS_DECL(Tag, TypeDecl),
-    CLASS_DECL(Enum, TagDecl),
-    CLASS_DECL(Record, TagDecl),
-    CLASS_DECL(CXXRecord, RecordDecl)
-        .iterator("bases-iterator",
-                  (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::bases_begin,
-                  (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::bases_end)
-        .iterator("vbases-iterator",
-                  (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_begin,
-                  (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_end)
-        .def("hasDefinition", &clang::CXXRecordDecl::hasDefinition),
-    CLASS_DECL(ClassTemplateSpecialization, CXXRecordDecl)
-        //            .   def("desugar",&clang::ClassTemplateSpecializationDecl::desugar)
-        .def("getTemplateArgs", &clang::ClassTemplateSpecializationDecl::getTemplateArgs)
-        .def("getTypeAsWritten", &clang::ClassTemplateSpecializationDecl::getTypeAsWritten)
-        .def("getPointOfInstantiation", &clang::ClassTemplateSpecializationDecl::getPointOfInstantiation)
-        .def("getSpecializedTemplate", &clang::ClassTemplateSpecializationDecl::getSpecializedTemplate)
-        .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind)
-        .enum_<clang::TemplateSpecializationKind>(asttooling::_sym_STARclangTemplateSpecializationKindSTAR)[
-      value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
-      value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
-      value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
-      value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
-      value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
-    ],
-    /* af_fn */ def("getNameForDiagnostic", &af_getNameForDiagnostic, policies<>(),
-                    ARGS_af_getNameForDiagnostic,
-                    DECL_af_getNameForDiagnostic,
-                    DOCS_af_getNameForDiagnostic),
-    CLASS_DECL(ClassTemplatePartialSpecialization, ClassTemplateSpecializationDecl),
-    CLASS_DECL(TemplateTypeParm, TypeDecl),
-    CLASS_DECL(TypedefName, TypeDecl)
-        .def("getUnderlyingType", &clang::TypedefNameDecl::getUnderlyingType)
-        .def("getCanonicalDecl", (TypedefNameDecl * (clang::TypedefNameDecl::*)()) & clang::TypedefNameDecl::getCanonicalDecl),
-    CLASS_DECL(TypeAlias, TypedefNameDecl),
-    CLASS_DECL(Typedef, TypedefNameDecl),
-    CLASS_DECL(UnresolvedUsingTypename, TypeDecl),
-    CLASS_DECL(Using, NamedDecl),
-    CLASS_DECL(UsingDirective, NamedDecl),
-    CLASS_DECL(UsingShadow, NamedDecl),
-    CLASS_DECL(Value, NamedDecl)
-        .def("getType", &clang::ValueDecl::getType),
-    CLASS_DECL(Declarator, ValueDecl),
-    CLASS_DECL(Field, DeclaratorDecl)
-    .def("getFieldIndex",&clang::FieldDecl::getFieldIndex) ,
-    CLASS_DECL(ObjCAtDefsField, FieldDecl),
-    CLASS_DECL(ObjCIvar, FieldDecl) ,
-    CLASS_DECL(Function, DeclaratorDecl)
-        .def("hasBody", (bool (clang::FunctionDecl::*)() const) & clang::FunctionDecl::hasBody)
-        .def("isThisDeclarationADefinition", &clang::FunctionDecl::isThisDeclarationADefinition)
-        .def("doesThisDeclarationHaveABody", &clang::FunctionDecl::doesThisDeclarationHaveABody),
-    CLASS_DECL(CXXMethod, FunctionDecl),
-    CLASS_DECL(CXXConstructor, CXXMethodDecl),
-    CLASS_DECL(CXXConversion, CXXMethodDecl),
-    CLASS_DECL(CXXDestructor, CXXMethodDecl),
-    CLASS_DECL(MSProperty, DeclaratorDecl),
-    CLASS_DECL(NonTypeTemplateParm, DeclaratorDecl),
-    CLASS_DECL(Var, DeclaratorDecl)
-        .def("getSourceRange", &clang::VarDecl::getSourceRange)
-        .def("isStaticLocal", &clang::VarDecl::isStaticLocal)
-        .def("isLocalVarDecl", &clang::VarDecl::isLocalVarDecl)
-        .def("hasGlobalStorage", &clang::VarDecl::hasGlobalStorage),
-    CLASS_DECL(ImplicitParam, VarDecl),
-    CLASS_DECL(ParmVar, VarDecl),
-    CLASS_DECL(VarTemplateSpecialization, VarDecl),
-    CLASS_DECL(VarTemplatePartialSpecialization, VarTemplateSpecializationDecl),
-    CLASS_DECL(EnumConstant, ValueDecl),
-    CLASS_DECL(IndirectField, ValueDecl),
-    CLASS_DECL(UnresolvedUsingValue, ValueDecl),
-    CLASS_DECL(OMPThreadPrivate, Decl),
-    CLASS_DECL(ObjCPropertyImpl, Decl),
-    CLASS_DECL(StaticAssert, Decl),
-    CLASS_DECL(TranslationUnit, Decl)
-#undef DECL
-    ,
-    class_<Stmt>("Stmt", no_default_constructor)
-        .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
-        .def("getBeginLoc", &clang::Stmt::getBeginLoc)
-        .def("getEndLoc", &clang::Stmt::getEndLoc)
-#define CLASS_STMT(_Class_, _Base_) class_<_Class_, _Base_>(#_Class_, no_default_constructor)
-    ,
-    CLASS_STMT(AsmStmt, Stmt),
-    CLASS_STMT(GCCAsmStmt, AsmStmt),
-    CLASS_STMT(MSAsmStmt, AsmStmt),
-    CLASS_STMT(AttributedStmt, Stmt),
-    CLASS_STMT(BreakStmt, Stmt),
-    CLASS_STMT(CXXCatchStmt, Stmt),
-    CLASS_STMT(CXXForRangeStmt, Stmt),
-    CLASS_STMT(CXXTryStmt, Stmt),
-    CLASS_STMT(CapturedStmt, Stmt),
-    CLASS_STMT(CompoundStmt, Stmt),
-    CLASS_STMT(ContinueStmt, Stmt),
-    CLASS_STMT(DeclStmt, Stmt),
-    CLASS_STMT(DoStmt, Stmt),
-    CLASS_STMT(Expr, Stmt)
-        .def("getType", &Expr::getType)
-        .def("getBestDynamicClassType", &clang::Expr::getBestDynamicClassType),
-    CLASS_STMT(AbstractConditionalOperator, Expr),
-    CLASS_STMT(BinaryConditionalOperator, AbstractConditionalOperator),
-    CLASS_STMT(ConditionalOperator, AbstractConditionalOperator),
-    CLASS_STMT(AddrLabelExpr, Expr),
-    CLASS_STMT(ArraySubscriptExpr, Expr),
-    CLASS_STMT(ArrayTypeTraitExpr, Expr),
-    CLASS_STMT(AsTypeExpr, Expr),
-    CLASS_STMT(AtomicExpr, Expr),
-    CLASS_STMT(BinaryOperator, Expr),
-    CLASS_STMT(CompoundAssignOperator, BinaryOperator),
-    CLASS_STMT(BlockExpr, Expr),
-    CLASS_STMT(CXXBindTemporaryExpr, Expr),
-    CLASS_STMT(CXXBoolLiteralExpr, Expr),
-    CLASS_STMT(CXXConstructExpr, Expr),
-    CLASS_STMT(CXXTemporaryObjectExpr, CXXConstructExpr),
-    CLASS_STMT(CXXDefaultArgExpr, Expr),
-    CLASS_STMT(CXXDefaultInitExpr, Expr),
-    CLASS_STMT(CXXDeleteExpr, Expr),
-    CLASS_STMT(CXXDependentScopeMemberExpr, Expr),
-    CLASS_STMT(CXXNewExpr, Expr)
-        .def("getNumPlacementArgs", &clang::CXXNewExpr::getNumPlacementArgs),
-    CLASS_STMT(CXXNoexceptExpr, Expr),
-    CLASS_STMT(CXXNullPtrLiteralExpr, Expr),
-    CLASS_STMT(CXXPseudoDestructorExpr, Expr),
-    CLASS_STMT(CXXScalarValueInitExpr, Expr),
-    CLASS_STMT(CXXStdInitializerListExpr, Expr),
-    CLASS_STMT(CXXThisExpr, Expr),
-    CLASS_STMT(CXXThrowExpr, Expr),
-    CLASS_STMT(CXXTypeidExpr, Expr),
-    CLASS_STMT(CXXUnresolvedConstructExpr, Expr),
-    CLASS_STMT(CXXUuidofExpr, Expr),
-    CLASS_STMT(CallExpr, Expr),
-    CLASS_STMT(CUDAKernelCallExpr, CallExpr),
-    CLASS_STMT(CXXMemberCallExpr, CallExpr)
-        .def("getMethodDecl", &clang::CXXMemberCallExpr::getMethodDecl)
-        .def("getImplicitObjectArgument", &clang::CXXMemberCallExpr::getImplicitObjectArgument),
-    CLASS_STMT(CXXOperatorCallExpr, CallExpr),
-    CLASS_STMT(UserDefinedLiteral, CallExpr),
-    CLASS_STMT(CastExpr, Expr),
-    CLASS_STMT(ExplicitCastExpr, CastExpr),
-    CLASS_STMT(CStyleCastExpr, ExplicitCastExpr),
-    CLASS_STMT(CXXFunctionalCastExpr, ExplicitCastExpr),
-    CLASS_STMT(CXXNamedCastExpr, ExplicitCastExpr),
-    CLASS_STMT(CXXConstCastExpr, CXXNamedCastExpr),
-    CLASS_STMT(CXXDynamicCastExpr, CXXNamedCastExpr),
-    CLASS_STMT(CXXReinterpretCastExpr, CXXNamedCastExpr),
-    CLASS_STMT(CXXStaticCastExpr, CXXNamedCastExpr),
-    CLASS_STMT(ObjCBridgedCastExpr, ExplicitCastExpr),
-    CLASS_STMT(ImplicitCastExpr, CastExpr),
-    CLASS_STMT(CharacterLiteral, Expr),
-    CLASS_STMT(ChooseExpr, Expr),
-    CLASS_STMT(CompoundLiteralExpr, Expr),
-    CLASS_STMT(ConvertVectorExpr, Expr),
-    CLASS_STMT(DeclRefExpr, Expr),
-    CLASS_STMT(DependentScopeDeclRefExpr, Expr),
-    CLASS_STMT(DesignatedInitExpr, Expr),
-    CLASS_STMT(ExprWithCleanups, Expr),
-    CLASS_STMT(ExpressionTraitExpr, Expr),
-    CLASS_STMT(ExtVectorElementExpr, Expr),
-    CLASS_STMT(FloatingLiteral, Expr),
-    CLASS_STMT(FunctionParmPackExpr, Expr),
-    CLASS_STMT(GNUNullExpr, Expr),
-    CLASS_STMT(GenericSelectionExpr, Expr),
-    CLASS_STMT(ImaginaryLiteral, Expr),
-    CLASS_STMT(ImplicitValueInitExpr, Expr),
-    CLASS_STMT(InitListExpr, Expr),
-    CLASS_STMT(IntegerLiteral, Expr),
-    CLASS_STMT(LambdaExpr, Expr),
-    CLASS_STMT(MSPropertyRefExpr, Expr),
-    CLASS_STMT(MaterializeTemporaryExpr, Expr),
-    CLASS_STMT(MemberExpr, Expr),
-    CLASS_STMT(ObjCArrayLiteral, Expr),
-    CLASS_STMT(ObjCBoolLiteralExpr, Expr),
-    CLASS_STMT(ObjCBoxedExpr, Expr),
-    CLASS_STMT(ObjCDictionaryLiteral, Expr),
-    CLASS_STMT(ObjCEncodeExpr, Expr),
-    CLASS_STMT(ObjCIndirectCopyRestoreExpr, Expr),
-    CLASS_STMT(ObjCIsaExpr, Expr),
-    CLASS_STMT(ObjCIvarRefExpr, Expr),
-    CLASS_STMT(ObjCMessageExpr, Expr),
-    CLASS_STMT(ObjCPropertyRefExpr, Expr),
-    CLASS_STMT(ObjCProtocolExpr, Expr),
-    CLASS_STMT(ObjCSelectorExpr, Expr),
-    CLASS_STMT(ObjCStringLiteral, Expr),
-    CLASS_STMT(ObjCSubscriptRefExpr, Expr),
-    CLASS_STMT(OffsetOfExpr, Expr),
-    CLASS_STMT(OpaqueValueExpr, Expr),
-    CLASS_STMT(OverloadExpr, Expr),
-    CLASS_STMT(UnresolvedLookupExpr, OverloadExpr),
-    CLASS_STMT(UnresolvedMemberExpr, OverloadExpr),
-    CLASS_STMT(PackExpansionExpr, Expr),
-    CLASS_STMT(ParenExpr, Expr),
-    CLASS_STMT(ParenListExpr, Expr),
-    CLASS_STMT(PredefinedExpr, Expr),
-    CLASS_STMT(PseudoObjectExpr, Expr),
-    CLASS_STMT(ShuffleVectorExpr, Expr),
-    CLASS_STMT(SizeOfPackExpr, Expr),
-    CLASS_STMT(StmtExpr, Expr),
-    CLASS_STMT(StringLiteral, Expr)
-    .def("getString",&clang::StringLiteral::getString)
-    ,
-    CLASS_STMT(SubstNonTypeTemplateParmExpr, Expr),
-    CLASS_STMT(SubstNonTypeTemplateParmPackExpr, Expr),
-    CLASS_STMT(TypeTraitExpr, Expr),
-    CLASS_STMT(UnaryExprOrTypeTraitExpr, Expr),
-    CLASS_STMT(UnaryOperator, Expr),
-    CLASS_STMT(VAArgExpr, Expr),
-    CLASS_STMT(ForStmt, Stmt),
-    CLASS_STMT(GotoStmt, Stmt),
-    CLASS_STMT(IfStmt, Stmt),
-    CLASS_STMT(IndirectGotoStmt, Stmt),
-    CLASS_STMT(LabelStmt, Stmt),
-    CLASS_STMT(MSDependentExistsStmt, Stmt),
-    CLASS_STMT(NullStmt, Stmt),
-    CLASS_STMT(OMPExecutableDirective, Stmt),
-    CLASS_STMT(OMPSimdDirective, OMPExecutableDirective),
-    CLASS_STMT(OMPForDirective, OMPExecutableDirective),
-    CLASS_STMT(OMPParallelDirective, OMPExecutableDirective),
-    CLASS_STMT(OMPSectionDirective, OMPExecutableDirective),
-    CLASS_STMT(OMPSectionsDirective, OMPExecutableDirective),
-    CLASS_STMT(OMPSingleDirective, OMPExecutableDirective),
-    CLASS_STMT(ObjCAtCatchStmt, Stmt),
-    CLASS_STMT(ObjCAtFinallyStmt, Stmt),
-    CLASS_STMT(ObjCAtSynchronizedStmt, Stmt),
-    CLASS_STMT(ObjCAtThrowStmt, Stmt),
-    CLASS_STMT(ObjCAtTryStmt, Stmt),
-    CLASS_STMT(ObjCAutoreleasePoolStmt, Stmt),
-    CLASS_STMT(ObjCForCollectionStmt, Stmt),
-    CLASS_STMT(ReturnStmt, Stmt),
-    CLASS_STMT(SEHExceptStmt, Stmt),
-    CLASS_STMT(SEHFinallyStmt, Stmt),
-    CLASS_STMT(SEHTryStmt, Stmt),
-    CLASS_STMT(SwitchCase, Stmt),
-    CLASS_STMT(CaseStmt, SwitchCase),
-    CLASS_STMT(DefaultStmt, SwitchCase),
-    CLASS_STMT(SwitchStmt, Stmt),
-    CLASS_STMT(WhileStmt, Stmt)
+                                                                                  value("AS_public", clang::AS_public),
+                                                                                  value("AS_protected", clang::AS_protected),
+                                                                                  value("AS_private", clang::AS_private),
+                                                                                  value("AS_none", clang::AS_none) ];
 
-    ,
-    class_<Type>("Type", no_default_constructor)
+  
+#define CLASS_DECL(_m_,_Class_, _Base_) class_<_Class_##Decl, _Base_>(_m_,#_Class_ "Decl")
+  CLASS_DECL(m,AccessSpec, Decl);
+  CLASS_DECL(m,Block, Decl);
+  CLASS_DECL(m,Captured, Decl);
+  CLASS_DECL(m,ClassScopeFunctionSpecialization, Decl);
+  CLASS_DECL(m,Empty, Decl);
+  CLASS_DECL(m,FileScopeAsm, Decl);
+  CLASS_DECL(m,Friend, Decl);
+  CLASS_DECL(m,FriendTemplate, Decl);
+  CLASS_DECL(m,Import, Decl);
+  CLASS_DECL(m,LinkageSpec, Decl);
+  CLASS_DECL(m,Named, Decl)
+    .def("getIdentifier", &NamedDecl::getIdentifier)
+    .def("getName", &NamedDecl::getName)
+    .def("getNameAsString", &NamedDecl::getNameAsString)
+    .def("getQualifiedNameAsString", (std::string (NamedDecl::*)() const) & NamedDecl::getQualifiedNameAsString);
+  CLASS_DECL(m,Label, NamedDecl);
+  CLASS_DECL(m,Namespace, NamedDecl);
+  CLASS_DECL(m,NamespaceAlias, NamedDecl);
+  CLASS_DECL(m,ObjCCompatibleAlias, NamedDecl);
+  CLASS_DECL(m,ObjCContainer, NamedDecl);
+  CLASS_DECL(m,ObjCCategory, ObjCContainerDecl);
+  CLASS_DECL(m,ObjCImpl, ObjCContainerDecl);
+  CLASS_DECL(m,ObjCCategoryImpl, ObjCImplDecl);
+  CLASS_DECL(m,ObjCImplementation, ObjCImplDecl);
+  CLASS_DECL(m,ObjCInterface, ObjCContainerDecl);
+  CLASS_DECL(m,ObjCProtocol, ObjCContainerDecl);
+  CLASS_DECL(m,ObjCMethod, NamedDecl);
+  CLASS_DECL(m,ObjCProperty, NamedDecl);
+  CLASS_DECL(m,Template, NamedDecl);
+  CLASS_DECL(m,RedeclarableTemplate, TemplateDecl);
+  CLASS_DECL(m,ClassTemplate, RedeclarableTemplateDecl);
+  CLASS_DECL(m,FunctionTemplate, RedeclarableTemplateDecl);
+  CLASS_DECL(m,TypeAliasTemplate, RedeclarableTemplateDecl);
+  CLASS_DECL(m,VarTemplate, RedeclarableTemplateDecl);
+  CLASS_DECL(m,TemplateTemplateParm, TemplateDecl);
+  CLASS_DECL(m,Type, NamedDecl);
+  CLASS_DECL(m,Tag, TypeDecl);
+  CLASS_DECL(m,Enum, TagDecl);
+  CLASS_DECL(m,Record, TagDecl);
+  CLASS_DECL(m,CXXRecord, RecordDecl)
+    .iterator("bases-iterator",
+              (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::bases_begin,
+              (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::bases_end)
+    .iterator("vbases-iterator",
+              (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_begin,
+              (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_end)
+    .def("hasDefinition", &clang::CXXRecordDecl::hasDefinition),
+    CLASS_DECL(m,ClassTemplateSpecialization, CXXRecordDecl)
+        //            .   def("desugar",&clang::ClassTemplateSpecializationDecl::desugar)
+    .def("getTemplateArgs", &clang::ClassTemplateSpecializationDecl::getTemplateArgs)
+    .def("getTypeAsWritten", &clang::ClassTemplateSpecializationDecl::getTypeAsWritten)
+    .def("getPointOfInstantiation", &clang::ClassTemplateSpecializationDecl::getPointOfInstantiation)
+    .def("getSpecializedTemplate", &clang::ClassTemplateSpecializationDecl::getSpecializedTemplate)
+    .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind)
+    .enum_<clang::TemplateSpecializationKind>(asttooling::_sym_STARclangTemplateSpecializationKindSTAR)[
+                                                                                                        value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
+                                                                                                        value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
+                                                                                                        value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
+                                                                                                        value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
+                                                                                                        value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
+                                                                                                        ],
+    m.def("getNameForDiagnostic", &af_getNameForDiagnostic, "docstring", "(decl stream lang-opts qualified)");
+  CLASS_DECL(m,ClassTemplatePartialSpecialization, ClassTemplateSpecializationDecl);
+  CLASS_DECL(m,TemplateTypeParm, TypeDecl);
+  CLASS_DECL(m,TypedefName, TypeDecl)
+    .def("getUnderlyingType", &clang::TypedefNameDecl::getUnderlyingType)
+    .def("getCanonicalDecl", (TypedefNameDecl * (clang::TypedefNameDecl::*)()) & clang::TypedefNameDecl::getCanonicalDecl);
+  CLASS_DECL(m,TypeAlias, TypedefNameDecl);
+  CLASS_DECL(m,Typedef, TypedefNameDecl);
+  CLASS_DECL(m,UnresolvedUsingTypename, TypeDecl);
+  CLASS_DECL(m,Using, NamedDecl);
+  CLASS_DECL(m,UsingDirective, NamedDecl);
+  CLASS_DECL(m,UsingShadow, NamedDecl);
+  CLASS_DECL(m,Value, NamedDecl)
+    .def("getType", &clang::ValueDecl::getType);
+  CLASS_DECL(m,Declarator, ValueDecl);
+  CLASS_DECL(m,Field, DeclaratorDecl)
+    .def("getFieldIndex",&clang::FieldDecl::getFieldIndex);
+  CLASS_DECL(m,ObjCAtDefsField, FieldDecl);
+  CLASS_DECL(m,ObjCIvar, FieldDecl);
+  CLASS_DECL(m,Function, DeclaratorDecl)
+    .def("hasBody", (bool (clang::FunctionDecl::*)() const) & clang::FunctionDecl::hasBody)
+    .def("isThisDeclarationADefinition", &clang::FunctionDecl::isThisDeclarationADefinition)
+    .def("doesThisDeclarationHaveABody", &clang::FunctionDecl::doesThisDeclarationHaveABody);
+  CLASS_DECL(m,CXXMethod, FunctionDecl);
+  CLASS_DECL(m,CXXConstructor, CXXMethodDecl);
+  CLASS_DECL(m,CXXConversion, CXXMethodDecl);
+  CLASS_DECL(m,CXXDestructor, CXXMethodDecl);
+  CLASS_DECL(m,MSProperty, DeclaratorDecl);
+  CLASS_DECL(m,NonTypeTemplateParm, DeclaratorDecl);
+  CLASS_DECL(m,Var, DeclaratorDecl)
+    .def("getSourceRange", &clang::VarDecl::getSourceRange)
+    .def("isStaticLocal", &clang::VarDecl::isStaticLocal)
+    .def("isLocalVarDecl", &clang::VarDecl::isLocalVarDecl)
+    .def("hasGlobalStorage", &clang::VarDecl::hasGlobalStorage);
+  CLASS_DECL(m,ImplicitParam, VarDecl);
+  CLASS_DECL(m,ParmVar, VarDecl);
+  CLASS_DECL(m,VarTemplateSpecialization, VarDecl);
+  CLASS_DECL(m,VarTemplatePartialSpecialization, VarTemplateSpecializationDecl);
+  CLASS_DECL(m,EnumConstant, ValueDecl);
+  CLASS_DECL(m,IndirectField, ValueDecl);
+  CLASS_DECL(m,UnresolvedUsingValue, ValueDecl);
+  CLASS_DECL(m,OMPThreadPrivate, Decl);
+  CLASS_DECL(m,ObjCPropertyImpl, Decl);
+  CLASS_DECL(m,StaticAssert, Decl);
+  CLASS_DECL(m,TranslationUnit, Decl);
+#undef DECL
+  class_<Stmt>(m,"Stmt")
+    .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
+    .def("getBeginLoc", &clang::Stmt::getBeginLoc)
+    .def("getEndLoc", &clang::Stmt::getEndLoc);
+#define CLASS_STMT(_m_,_Class_, _Base_) class_<_Class_, _Base_>(_m_,#_Class_)
+  CLASS_STMT(m,AsmStmt, Stmt);
+  CLASS_STMT(m,GCCAsmStmt, AsmStmt);
+  CLASS_STMT(m,MSAsmStmt, AsmStmt);
+  CLASS_STMT(m,AttributedStmt, Stmt);
+  CLASS_STMT(m,BreakStmt, Stmt);
+  CLASS_STMT(m,CXXCatchStmt, Stmt);
+  CLASS_STMT(m,CXXForRangeStmt, Stmt);
+  CLASS_STMT(m,CXXTryStmt, Stmt);
+  CLASS_STMT(m,CapturedStmt, Stmt);
+  CLASS_STMT(m,CompoundStmt, Stmt);
+  CLASS_STMT(m,ContinueStmt, Stmt);
+  CLASS_STMT(m,DeclStmt, Stmt);
+  CLASS_STMT(m,DoStmt, Stmt);
+  CLASS_STMT(m,Expr, Stmt)
+    .def("getType", &Expr::getType)
+    .def("getBestDynamicClassType", &clang::Expr::getBestDynamicClassType);
+  CLASS_STMT(m,AbstractConditionalOperator, Expr);
+  CLASS_STMT(m,BinaryConditionalOperator, AbstractConditionalOperator);
+  CLASS_STMT(m,ConditionalOperator, AbstractConditionalOperator);
+  CLASS_STMT(m,AddrLabelExpr, Expr);
+  CLASS_STMT(m,ArraySubscriptExpr, Expr);
+  CLASS_STMT(m,ArrayTypeTraitExpr, Expr);
+  CLASS_STMT(m,AsTypeExpr, Expr);
+  CLASS_STMT(m,AtomicExpr, Expr);
+  CLASS_STMT(m,BinaryOperator, Expr);
+  CLASS_STMT(m,CompoundAssignOperator, BinaryOperator);
+  CLASS_STMT(m,BlockExpr, Expr);
+  CLASS_STMT(m,CXXBindTemporaryExpr, Expr);
+  CLASS_STMT(m,CXXBoolLiteralExpr, Expr);
+  CLASS_STMT(m,CXXConstructExpr, Expr);
+  CLASS_STMT(m,CXXTemporaryObjectExpr, CXXConstructExpr);
+  CLASS_STMT(m,CXXDefaultArgExpr, Expr);
+  CLASS_STMT(m,CXXDefaultInitExpr, Expr);
+  CLASS_STMT(m,CXXDeleteExpr, Expr);
+  CLASS_STMT(m,CXXDependentScopeMemberExpr, Expr);
+  CLASS_STMT(m,CXXNewExpr, Expr)
+    .def("getNumPlacementArgs", &clang::CXXNewExpr::getNumPlacementArgs);
+  CLASS_STMT(m,CXXNoexceptExpr, Expr);
+  CLASS_STMT(m,CXXNullPtrLiteralExpr, Expr);
+  CLASS_STMT(m,CXXPseudoDestructorExpr, Expr);
+  CLASS_STMT(m,CXXScalarValueInitExpr, Expr);
+  CLASS_STMT(m,CXXStdInitializerListExpr, Expr);
+  CLASS_STMT(m,CXXThisExpr, Expr);
+  CLASS_STMT(m,CXXThrowExpr, Expr);
+  CLASS_STMT(m,CXXTypeidExpr, Expr);
+  CLASS_STMT(m,CXXUnresolvedConstructExpr, Expr);
+  CLASS_STMT(m,CXXUuidofExpr, Expr);
+  CLASS_STMT(m,CallExpr, Expr);
+  CLASS_STMT(m,CUDAKernelCallExpr, CallExpr);
+  CLASS_STMT(m,CXXMemberCallExpr, CallExpr)
+    .def("getMethodDecl", &clang::CXXMemberCallExpr::getMethodDecl)
+    .def("getImplicitObjectArgument", &clang::CXXMemberCallExpr::getImplicitObjectArgument);
+  CLASS_STMT(m,CXXOperatorCallExpr, CallExpr);
+  CLASS_STMT(m,UserDefinedLiteral, CallExpr);
+  CLASS_STMT(m,CastExpr, Expr);
+  CLASS_STMT(m,ExplicitCastExpr, CastExpr);
+  CLASS_STMT(m,CStyleCastExpr, ExplicitCastExpr);
+  CLASS_STMT(m,CXXFunctionalCastExpr, ExplicitCastExpr);
+  CLASS_STMT(m,CXXNamedCastExpr, ExplicitCastExpr);
+  CLASS_STMT(m,CXXConstCastExpr, CXXNamedCastExpr);
+  CLASS_STMT(m,CXXDynamicCastExpr, CXXNamedCastExpr);
+  CLASS_STMT(m,CXXReinterpretCastExpr, CXXNamedCastExpr);
+  CLASS_STMT(m,CXXStaticCastExpr, CXXNamedCastExpr);
+  CLASS_STMT(m,ObjCBridgedCastExpr, ExplicitCastExpr);
+  CLASS_STMT(m,ImplicitCastExpr, CastExpr);
+  CLASS_STMT(m,CharacterLiteral, Expr);
+  CLASS_STMT(m,ChooseExpr, Expr);
+  CLASS_STMT(m,CompoundLiteralExpr, Expr);
+  CLASS_STMT(m,ConvertVectorExpr, Expr);
+  CLASS_STMT(m,DeclRefExpr, Expr);
+  CLASS_STMT(m,DependentScopeDeclRefExpr, Expr);
+  CLASS_STMT(m,DesignatedInitExpr, Expr);
+  CLASS_STMT(m,ExprWithCleanups, Expr);
+  CLASS_STMT(m,ExpressionTraitExpr, Expr);
+  CLASS_STMT(m,ExtVectorElementExpr, Expr);
+  CLASS_STMT(m,FloatingLiteral, Expr);
+  CLASS_STMT(m,FunctionParmPackExpr, Expr);
+  CLASS_STMT(m,GNUNullExpr, Expr);
+  CLASS_STMT(m,GenericSelectionExpr, Expr);
+  CLASS_STMT(m,ImaginaryLiteral, Expr);
+  CLASS_STMT(m,ImplicitValueInitExpr, Expr);
+  CLASS_STMT(m,InitListExpr, Expr);
+  CLASS_STMT(m,IntegerLiteral, Expr);
+  CLASS_STMT(m,LambdaExpr, Expr);
+  CLASS_STMT(m,MSPropertyRefExpr, Expr);
+  CLASS_STMT(m,MaterializeTemporaryExpr, Expr);
+  CLASS_STMT(m,MemberExpr, Expr);
+  CLASS_STMT(m,ObjCArrayLiteral, Expr);
+  CLASS_STMT(m,ObjCBoolLiteralExpr, Expr);
+  CLASS_STMT(m,ObjCBoxedExpr, Expr);
+  CLASS_STMT(m,ObjCDictionaryLiteral, Expr);
+  CLASS_STMT(m,ObjCEncodeExpr, Expr);
+  CLASS_STMT(m,ObjCIndirectCopyRestoreExpr, Expr);
+  CLASS_STMT(m,ObjCIsaExpr, Expr);
+  CLASS_STMT(m,ObjCIvarRefExpr, Expr);
+  CLASS_STMT(m,ObjCMessageExpr, Expr);
+  CLASS_STMT(m,ObjCPropertyRefExpr, Expr);
+  CLASS_STMT(m,ObjCProtocolExpr, Expr);
+  CLASS_STMT(m,ObjCSelectorExpr, Expr);
+  CLASS_STMT(m,ObjCStringLiteral, Expr);
+  CLASS_STMT(m,ObjCSubscriptRefExpr, Expr);
+  CLASS_STMT(m,OffsetOfExpr, Expr);
+  CLASS_STMT(m,OpaqueValueExpr, Expr);
+  CLASS_STMT(m,OverloadExpr, Expr);
+  CLASS_STMT(m,UnresolvedLookupExpr, OverloadExpr);
+  CLASS_STMT(m,UnresolvedMemberExpr, OverloadExpr);
+  CLASS_STMT(m,PackExpansionExpr, Expr);
+  CLASS_STMT(m,ParenExpr, Expr);
+  CLASS_STMT(m,ParenListExpr, Expr);
+  CLASS_STMT(m,PredefinedExpr, Expr);
+  CLASS_STMT(m,PseudoObjectExpr, Expr);
+  CLASS_STMT(m,ShuffleVectorExpr, Expr);
+  CLASS_STMT(m,SizeOfPackExpr, Expr);
+  CLASS_STMT(m,StmtExpr, Expr);
+  CLASS_STMT(m,StringLiteral, Expr)
+    .def("getString",&clang::StringLiteral::getString);
+  CLASS_STMT(m,SubstNonTypeTemplateParmExpr, Expr);
+  CLASS_STMT(m,SubstNonTypeTemplateParmPackExpr, Expr);
+  CLASS_STMT(m,TypeTraitExpr, Expr);
+  CLASS_STMT(m,UnaryExprOrTypeTraitExpr, Expr);
+  CLASS_STMT(m,UnaryOperator, Expr);
+  CLASS_STMT(m,VAArgExpr, Expr);
+  CLASS_STMT(m,ForStmt, Stmt);
+  CLASS_STMT(m,GotoStmt, Stmt);
+  CLASS_STMT(m,IfStmt, Stmt);
+  CLASS_STMT(m,IndirectGotoStmt, Stmt);
+  CLASS_STMT(m,LabelStmt, Stmt);
+  CLASS_STMT(m,MSDependentExistsStmt, Stmt);
+  CLASS_STMT(m,NullStmt, Stmt);
+  CLASS_STMT(m,OMPExecutableDirective, Stmt);
+  CLASS_STMT(m,OMPSimdDirective, OMPExecutableDirective);
+  CLASS_STMT(m,OMPForDirective, OMPExecutableDirective);
+  CLASS_STMT(m,OMPParallelDirective, OMPExecutableDirective);
+  CLASS_STMT(m,OMPSectionDirective, OMPExecutableDirective);
+  CLASS_STMT(m,OMPSectionsDirective, OMPExecutableDirective);
+  CLASS_STMT(m,OMPSingleDirective, OMPExecutableDirective);
+  CLASS_STMT(m,ObjCAtCatchStmt, Stmt);
+  CLASS_STMT(m,ObjCAtFinallyStmt, Stmt);
+  CLASS_STMT(m,ObjCAtSynchronizedStmt, Stmt);
+  CLASS_STMT(m,ObjCAtThrowStmt, Stmt);
+  CLASS_STMT(m,ObjCAtTryStmt, Stmt);
+  CLASS_STMT(m,ObjCAutoreleasePoolStmt, Stmt);
+  CLASS_STMT(m,ObjCForCollectionStmt, Stmt);
+  CLASS_STMT(m,ReturnStmt, Stmt);
+  CLASS_STMT(m,SEHExceptStmt, Stmt);
+  CLASS_STMT(m,SEHFinallyStmt, Stmt);
+  CLASS_STMT(m,SEHTryStmt, Stmt);
+  CLASS_STMT(m,SwitchCase, Stmt);
+  CLASS_STMT(m,CaseStmt, SwitchCase);
+  CLASS_STMT(m,DefaultStmt, SwitchCase);
+  CLASS_STMT(m,SwitchStmt, Stmt);
+  CLASS_STMT(m,WhileStmt, Stmt);
+  class_<Type>(m,"Type")
     .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
-        .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "", "", "Specialization of getAs<TemplateSpecializationType>")
-        .def("isIntegerType", &clang::Type::isIntegerType)
-        .def("getCanonicalTypeInternal", &clang::Type::getCanonicalTypeInternal),
-    /* regular function bug first arg is Type*/ def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, policies<>(), ARGS_af_getAsCXXRecordDecl, DECL_af_getAsCXXRecordDecl, DOCS_af_getAsCXXRecordDecl)
+    .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "", "", "Specialization of getAs<TemplateSpecializationType>")
+    .def("isIntegerType", &clang::Type::isIntegerType)
+    .def("getCanonicalTypeInternal", &clang::Type::getCanonicalTypeInternal);
+  m.def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL", "(arg)");
 
-#define CLASS_TYPE(_Class_, _Base_) class_<_Class_##Type, _Base_>(#_Class_ "Type", no_default_constructor)
+#define CLASS_TYPE(_m_,_Class_, _Base_) class_<_Class_##Type, _Base_>(_m_,#_Class_ "Type")
+  CLASS_TYPE(m,Builtin, Type)
+    .def("desugar", &clang::BuiltinType::desugar);
+  CLASS_TYPE(m,Complex, Type);
+  CLASS_TYPE(m,Pointer, Type)
+    .def("desugar", &clang::PointerType::desugar)
+    .def("getPointeeType", &clang::PointerType::getPointeeType);
+  CLASS_TYPE(m,BlockPointer, Type);
+  CLASS_TYPE(m,Reference, Type);
+  CLASS_TYPE(m,LValueReference, ReferenceType)
+    .def("desugar", &clang::LValueReferenceType::desugar);
+  CLASS_TYPE(m,RValueReference, ReferenceType)
+    .def("desugar", &clang::RValueReferenceType::desugar);
+  CLASS_TYPE(m,MemberPointer, Type)
+    .def("desugar", &clang::MemberPointerType::desugar)
+    .def("getPointeeType", &clang::MemberPointerType::getPointeeType);
+  CLASS_TYPE(m,Array, Type)
+    .def("getElementType", &clang::ArrayType::getElementType);
+  CLASS_TYPE(m,ConstantArray, ArrayType)
+    .def("desugar", &clang::ConstantArrayType::desugar);
+  m.def("constant-array-get-size", &af_constant_array_get_size, "returns the size of the constant array", "(constant-array)");
+  CLASS_TYPE(m,IncompleteArray, ArrayType)
+    .def("desugar", &clang::IncompleteArrayType::desugar);
+  CLASS_TYPE(m,VariableArray, ArrayType);
+  CLASS_TYPE(m,DependentSizedArray, ArrayType)
+    .def("desugar", &clang::DependentSizedArrayType::desugar);
+  CLASS_TYPE(m,DependentSizedExtVector, Type);
+  CLASS_TYPE(m,Vector, Type)
+    .def("desugar", &clang::VectorType::desugar);
+  CLASS_TYPE(m,ExtVector, VectorType);
+  CLASS_TYPE(m,Function, Type);
+  CLASS_TYPE(m,FunctionProto, FunctionType)
+    .def("desugar", &clang::FunctionProtoType::desugar);
+  CLASS_TYPE(m,FunctionNoProto, FunctionType);
+  CLASS_TYPE(m,UnresolvedUsing, Type);
+  CLASS_TYPE(m,Paren, Type)
+    .def("getInnerType", &clang::ParenType::getInnerType);
+  CLASS_TYPE(m,Typedef, Type)
+    .def("getDecl", &clang::TypedefType::getDecl)
+    .def("isSugared", &clang::TypedefType::isSugared)
+    .def("desugar", &clang::TypedefType::desugar);
+  CLASS_TYPE(m,Adjusted, Type);
+  CLASS_TYPE(m,Decayed, AdjustedType);
+  CLASS_TYPE(m,TypeOfExpr, Type);
+  CLASS_TYPE(m,TypeOf, Type);
+  CLASS_TYPE(m,Decltype, Type);
+  CLASS_TYPE(m,UnaryTransform, Type);
+  CLASS_TYPE(m,Tag, Type);
+  CLASS_TYPE(m,Record, TagType)
+    .def("getDecl", &clang::RecordType::getDecl)
+    .def("desugar", &clang::RecordType::desugar);
+  CLASS_TYPE(m,Enum, TagType)
+    .def("desugar", &clang::EnumType::desugar);
+  CLASS_TYPE(m,Elaborated, Type)
+    .def("getNamedType", &clang::ElaboratedType::getNamedType);
+  CLASS_TYPE(m,Attributed, Type);
+  CLASS_TYPE(m,TemplateTypeParm, Type)
+    .def("desugar", &clang::TemplateTypeParmType::desugar);
+  CLASS_TYPE(m,SubstTemplateTypeParm, Type)
+    .def("desugar", &clang::SubstTemplateTypeParmType::desugar);
+  CLASS_TYPE(m,SubstTemplateTypeParmPack, Type);
+  CLASS_TYPE(m,TemplateSpecialization, Type)
+    .def("getTemplateName", &clang::TemplateSpecializationType::getTemplateName)
+    .def("getNumArgs", &clang::TemplateSpecializationType::getNumArgs)
+    .def("getArg", &clang::TemplateSpecializationType::getArg)
+    .def("desugar", &clang::TemplateSpecializationType::desugar)
+    .def("getAliasedType", &clang::TemplateSpecializationType::getAliasedType)
+    .def("isTypeAlias", &clang::TemplateSpecializationType::isTypeAlias)
+    .def("isCurrentInstantiation", &clang::TemplateSpecializationType::isCurrentInstantiation);
+  CLASS_TYPE(m,Auto, Type)
     ,
-    CLASS_TYPE(Builtin, Type)
-        .def("desugar", &clang::BuiltinType::desugar),
-    CLASS_TYPE(Complex, Type),
-    CLASS_TYPE(Pointer, Type)
-        .def("desugar", &clang::PointerType::desugar)
-        .def("getPointeeType", &clang::PointerType::getPointeeType),
-    CLASS_TYPE(BlockPointer, Type),
-    CLASS_TYPE(Reference, Type),
-    CLASS_TYPE(LValueReference, ReferenceType)
-        .def("desugar", &clang::LValueReferenceType::desugar),
-    CLASS_TYPE(RValueReference, ReferenceType)
-        .def("desugar", &clang::RValueReferenceType::desugar),
-    CLASS_TYPE(MemberPointer, Type)
-        .def("desugar", &clang::MemberPointerType::desugar)
-        .def("getPointeeType", &clang::MemberPointerType::getPointeeType),
-    CLASS_TYPE(Array, Type)
-        .def("getElementType", &clang::ArrayType::getElementType),
-    CLASS_TYPE(ConstantArray, ArrayType)
-    .def("desugar", &clang::ConstantArrayType::desugar),
-    def("constant-array-get-size", &af_constant_array_get_size, policies<>(), ARGS_af_constant_array_get_size, DECL_af_constant_array_get_size, DOCS_af_constant_array_get_size),
-    CLASS_TYPE(IncompleteArray, ArrayType)
-        .def("desugar", &clang::IncompleteArrayType::desugar),
-    CLASS_TYPE(VariableArray, ArrayType),
-    CLASS_TYPE(DependentSizedArray, ArrayType)
-        .def("desugar", &clang::DependentSizedArrayType::desugar),
-    CLASS_TYPE(DependentSizedExtVector, Type),
-    CLASS_TYPE(Vector, Type)
-        .def("desugar", &clang::VectorType::desugar),
-    CLASS_TYPE(ExtVector, VectorType),
-    CLASS_TYPE(Function, Type),
-    CLASS_TYPE(FunctionProto, FunctionType)
-        .def("desugar", &clang::FunctionProtoType::desugar),
-    CLASS_TYPE(FunctionNoProto, FunctionType),
-    CLASS_TYPE(UnresolvedUsing, Type),
-    CLASS_TYPE(Paren, Type)
-        .def("getInnerType", &clang::ParenType::getInnerType),
-    CLASS_TYPE(Typedef, Type)
-        .def("getDecl", &clang::TypedefType::getDecl)
-        .def("isSugared", &clang::TypedefType::isSugared)
-        .def("desugar", &clang::TypedefType::desugar),
-    CLASS_TYPE(Adjusted, Type),
-    CLASS_TYPE(Decayed, AdjustedType),
-    CLASS_TYPE(TypeOfExpr, Type),
-    CLASS_TYPE(TypeOf, Type),
-    CLASS_TYPE(Decltype, Type),
-    CLASS_TYPE(UnaryTransform, Type),
-    CLASS_TYPE(Tag, Type),
-    CLASS_TYPE(Record, TagType)
-        .def("getDecl", &clang::RecordType::getDecl)
-        .def("desugar", &clang::RecordType::desugar),
-    CLASS_TYPE(Enum, TagType)
-        .def("desugar", &clang::EnumType::desugar),
-    CLASS_TYPE(Elaborated, Type)
-        .def("getNamedType", &clang::ElaboratedType::getNamedType),
-    CLASS_TYPE(Attributed, Type),
-    CLASS_TYPE(TemplateTypeParm, Type)
-        .def("desugar", &clang::TemplateTypeParmType::desugar),
-    CLASS_TYPE(SubstTemplateTypeParm, Type)
-        .def("desugar", &clang::SubstTemplateTypeParmType::desugar),
-    CLASS_TYPE(SubstTemplateTypeParmPack, Type),
-    CLASS_TYPE(TemplateSpecialization, Type)
-        .def("getTemplateName", &clang::TemplateSpecializationType::getTemplateName)
-        .def("getNumArgs", &clang::TemplateSpecializationType::getNumArgs)
-        .def("getArg", &clang::TemplateSpecializationType::getArg)
-        .def("desugar", &clang::TemplateSpecializationType::desugar)
-        .def("getAliasedType", &clang::TemplateSpecializationType::getAliasedType)
-        .def("isTypeAlias", &clang::TemplateSpecializationType::isTypeAlias)
-        .def("isCurrentInstantiation", &clang::TemplateSpecializationType::isCurrentInstantiation),
-    CLASS_TYPE(Auto, Type)
-    ,
-//        .def("desugar", &clang::AutoType::desugar),
-    CLASS_TYPE(InjectedClassName, Type)
-        .def("getDecl", &clang::InjectedClassNameType::getDecl),
-    CLASS_TYPE(DependentName, Type)
-        .def("desugar", &clang::DependentNameType::desugar)
-        .def("isSugared", &clang::DependentNameType::isSugared),
-    CLASS_TYPE(DependentTemplateSpecialization, Type)
-        .def("desugar", &clang::DependentTemplateSpecializationType::desugar),
-    CLASS_TYPE(PackExpansion, Type),
-    CLASS_TYPE(ObjCObject, Type),
-    CLASS_TYPE(ObjCInterface, ObjCObjectType),
-    CLASS_TYPE(ObjCObjectPointer, Type),
-    CLASS_TYPE(Atomic, Type),
-    class_<clang::QualType>("QualType", no_default_constructor)
-        .def("getAsString", (std::string (clang::QualType::*)() const) & clang::QualType::getAsString)
-        .def("isCanonical", &clang::QualType::isCanonical)
-        .def("getCanonicalType", &clang::QualType::getCanonicalType),
-    /*reg function but first arg is QualType*/ def("getTypePtrOrNull", &af_getTypePtrOrNull, policies<>(), ARGS_af_getTypePtrOrNull, DECL_af_getTypePtrOrNull, DOCS_af_getTypePtrOrNull),
-    def("makeQualType", &af_makeQualType, policies<>(), ARGS_af_makeQualType, DECL_af_makeQualType, DOCS_af_makeQualType),
-    class_<clang::TypeLoc>("TypeLoc", no_default_constructor)
-        .def("getSourceRange", &clang::TypeLoc::getSourceRange)
-        .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)
-        .def("getBeginLoc", &clang::TypeLoc::getBeginLoc)
-        .def("getEndLoc", &clang::TypeLoc::getEndLoc),
-    class_<clang::CXXBaseSpecifier>("CXXBaseSpecifier", no_default_constructor)
-        .def("getType", &clang::CXXBaseSpecifier::getType),
-    class_<clang::TemplateArgument>("TemplateArgument", no_default_constructor)
-        .def("getKind", &clang::TemplateArgument::getKind)
-        .def("pack_size", &clang::TemplateArgument::pack_size)
-        .def("getPackAsArray", &clang::TemplateArgument::getPackAsArray)
-        .def("getAsType", &clang::TemplateArgument::getAsType)
-        .def("getAsIntegral", &clang::TemplateArgument::getAsIntegral)
-        .def("getAsTemplate", &clang::TemplateArgument::getAsTemplate)
-        .def("getNullPtrType", &clang::TemplateArgument::getNullPtrType)
-        .def("getAsDecl", &clang::TemplateArgument::getAsDecl)
-        .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
+//        .def("desugar", &clang::AutoType::desugar);
+    CLASS_TYPE(m,InjectedClassName, Type)
+    .def("getDecl", &clang::InjectedClassNameType::getDecl);
+  CLASS_TYPE(m,DependentName, Type)
+    .def("desugar", &clang::DependentNameType::desugar)
+    .def("isSugared", &clang::DependentNameType::isSugared);
+  CLASS_TYPE(m,DependentTemplateSpecialization, Type)
+    .def("desugar", &clang::DependentTemplateSpecializationType::desugar);
+  CLASS_TYPE(m,PackExpansion, Type);
+  CLASS_TYPE(m,ObjCObject, Type);
+  CLASS_TYPE(m,ObjCInterface, ObjCObjectType);
+  CLASS_TYPE(m,ObjCObjectPointer, Type);
+  CLASS_TYPE(m,Atomic, Type);
+  class_<clang::QualType>(m,"QualType")
+    .def("getAsString", (std::string (clang::QualType::*)() const) & clang::QualType::getAsString)
+    .def("isCanonical", &clang::QualType::isCanonical)
+    .def("getCanonicalType", &clang::QualType::getCanonicalType);
+  m.def("getTypePtrOrNull", &af_getTypePtrOrNull, "returns the most derived Type* ptr or NIL");
+  m.def("makeQualType", &af_makeQualType, "docstring","(type)");
+  class_<clang::TypeLoc>(m,"TypeLoc")
+    .def("getSourceRange", &clang::TypeLoc::getSourceRange)
+    .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)
+    .def("getBeginLoc", &clang::TypeLoc::getBeginLoc)
+    .def("getEndLoc", &clang::TypeLoc::getEndLoc);
+  class_<clang::CXXBaseSpecifier>(m,"CXXBaseSpecifier")
+    .def("getType", &clang::CXXBaseSpecifier::getType);
+  class_<clang::TemplateArgument>(m,"TemplateArgument")
+    .def("getKind", &clang::TemplateArgument::getKind)
+    .def("pack_size", &clang::TemplateArgument::pack_size)
+    .def("getPackAsArray", &clang::TemplateArgument::getPackAsArray)
+    .def("getAsType", &clang::TemplateArgument::getAsType)
+    .def("getAsIntegral", &clang::TemplateArgument::getAsIntegral)
+    .def("getAsTemplate", &clang::TemplateArgument::getAsTemplate)
+    .def("getNullPtrType", &clang::TemplateArgument::getNullPtrType)
+    .def("getAsDecl", &clang::TemplateArgument::getAsDecl)
+    .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
-        .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)[
-      value("argkind-Type", clang::TemplateArgument::ArgKind::Type),
-      value("argkind-Null", clang::TemplateArgument::ArgKind::Null),
-      value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration),
-      value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-      value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral),
-      value("argkind-Template", clang::TemplateArgument::ArgKind::Template),
-      value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-      value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression),
-      value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack)
-    ],
-    class_<clang::TemplateName>("TemplateName", no_default_constructor)
-        .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl),
-    class_<clang::TypeSourceInfo>("TypeSourceInfo", no_default_constructor)
-        .def("getType", &clang::TypeSourceInfo::getType)
-        .def("getTypeLoc", &clang::TypeSourceInfo::getTypeLoc),
-    class_<clang::TemplateArgumentList>("TemplateArgumentList", no_default_constructor)
-        .def("size", &clang::TemplateArgumentList::size)
-        .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get)
-    ,
-    class_<clang::IdentifierInfo>("IdentifierInfo", no_default_constructor)
-  ];
+    .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)
+    [
+     value("argkind-Type", clang::TemplateArgument::ArgKind::Type),
+     value("argkind-Null", clang::TemplateArgument::ArgKind::Null),
+     value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration),
+     value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
+     value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral),
+     value("argkind-Template", clang::TemplateArgument::ArgKind::Template),
+     value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
+     value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression),
+     value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack)
+     ];
+    class_<clang::TemplateName>(m,"TemplateName")
+    .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl);
+  class_<clang::TypeSourceInfo>(m,"TypeSourceInfo")
+    .def("getType", &clang::TypeSourceInfo::getType)
+    .def("getTypeLoc", &clang::TypeSourceInfo::getTypeLoc);
+  class_<clang::TemplateArgumentList>(m,"TemplateArgumentList")
+    .def("size", &clang::TemplateArgumentList::size)
+    .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get);
+  class_<clang::IdentifierInfo>(m,"IdentifierInfo");
 }
 };
