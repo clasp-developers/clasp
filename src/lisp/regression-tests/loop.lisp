@@ -76,3 +76,7 @@
        (wrap-loop-as-in-ansi-tests
         (LOOP FOR I FROM 1 TO 5 FOR C UPFROM #C(0 1) BY 2 COLLECT C))))
 
+;;; from https://trac.clozure.com/ccl/ticket/1085
+(test loop-stassats-ccl-1085
+      (loop for x = #'(lambda ()) for y = 10 then 20 return y))
+

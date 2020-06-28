@@ -827,7 +827,7 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
 		      (if (or (symbolp (cadr x))
 			      (and (consp (cadr x)) (eq (caadr x) 'setf)))
 			  1
-			  (throw 'duplicatable-code-p nil)))
+			  (throw 'estimate-code-size nil)))
 		     ((eq fn 'multiple-value-setq) (f (length (second x)) (cddr x)))
 		     ((eq fn 'return-from) (1+ (estimate-code-size-1 (third x) env)))
 		     ((or (special-operator-p fn) (member fn *estimate-code-size-punt*))
