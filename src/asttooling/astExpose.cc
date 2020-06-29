@@ -1071,7 +1071,7 @@ void initialize_astExpose() {
     .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
-    .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "", "", "Specialization of getAs<TemplateSpecializationType>")
+    .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "Specialization of getAs<TemplateSpecializationType>", "", "")
     .def("isIntegerType", &clang::Type::isIntegerType)
     .def("getCanonicalTypeInternal", &clang::Type::getCanonicalTypeInternal);
   m.def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL", "(arg)");

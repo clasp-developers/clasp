@@ -856,7 +856,7 @@ void initialize_clangTooling() {
   cl_ba.def_constructor("newMatchFinder", constructor<>())
     .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
     .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST);
-  m.def("match", &ast_tooling__match, policies<>(), ARGS_ast_tooling__match, DECL_ast_tooling__match, DOCS_ast_tooling__match);
+  m.def("match", &ast_tooling__match, policies<>(), DOCS_ast_tooling__match, ARGS_ast_tooling__match, DECL_ast_tooling__match);
   m.def("runToolOnCode", &clang::tooling::runToolOnCode);
   class_<clang::ast_matchers::MatchFinder::MatchCallback> cl_bb(m,"MatchCallback-abstract");
   derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback> cl_bc(m,"MatchCallback",create_default_constructor);
@@ -868,7 +868,7 @@ void initialize_clangTooling() {
      .def("match-result-context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
      .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager);
   class_<clang::ast_matchers::BoundNodes> cl_be(m,"BoundNodes");
-  m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, policies<>(), ARGS_ast_tooling__IDToNodeMap, DECL_ast_tooling__IDToNodeMap, DOCS_ast_tooling__IDToNodeMap);
+  m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, policies<>(), DOCS_ast_tooling__IDToNodeMap, ARGS_ast_tooling__IDToNodeMap, DECL_ast_tooling__IDToNodeMap);
   m.def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken);
   m.def("Lexer-getSourceText", &clang::Lexer::getSourceText, policies<pureOutValue<4>>());
   class_<clang::tooling::CompileCommand> cl_bf(m,"CompileCommand");

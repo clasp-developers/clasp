@@ -307,6 +307,9 @@ struct class_registration : registration {
 
   std::string m_name;
 
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "class_registration"; };
+  
   mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
   typedef std::pair<type_id, cast_function> base_desc;
@@ -383,22 +386,26 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
 template <class Class, class MethodPointerType, class Policies>
 struct memfun_registration : registration {
   memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
-      : name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+    : m_name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
     void register_() const {
-    core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
-    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr));
-    lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
-                                    m_arguments, m_declares, m_docstring,
-                                    true,
-                                    CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
-                                    GatherPureOutValues<Policies, 0>::gather());
-    core::validateFunctionDescription(__FILE__, __LINE__, ffunc);
-  }
+      printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+      core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
+      core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+      core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr));
+      lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
+                                      m_arguments, m_declares, m_docstring,
+                                      true,
+                                      CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
+                                      GatherPureOutValues<Policies, 0>::gather());
+      core::validateFunctionDescription(__FILE__, __LINE__, ffunc);
+    }
 
-  std::string name;
+  virtual std::string name() const { return this->m_name; };
+  virtual std::string kind() const { return "memfun_registration"; };
+  
+  std::string m_name;
   MethodPointerType methodPtr;
   Policies policies;
   string m_arguments;
@@ -409,11 +416,12 @@ struct memfun_registration : registration {
 template <class Class, class Begin, class End, class Policies>
 struct iterator_registration : registration {
   iterator_registration(char const *name, Begin begin, End end, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
-      : name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
+    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-    core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
+    core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
     core::FunctionDescription* fdesc = makeFunctionDescription(sym);
     core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<IteratorMethoid<Policies, Class, Begin, End>>::allocate(fdesc, beginPtr, endPtr));
 
@@ -422,8 +430,11 @@ struct iterator_registration : registration {
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
     core::validateFunctionDescription(__FILE__, __LINE__, methoid);
   }
+  
+  virtual std::string name() const { return this->m_name; };
+  virtual std::string kind() const { return "iterator_registration"; };
 
-  char const *name;
+  char const *m_name;
   Begin beginPtr;
   End endPtr;
   Policies policies;
@@ -463,6 +474,7 @@ struct constructor_registration_base : public registration {
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
+    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
     string tname = m_name;
     if (m_name == "") {
       tname = "default-ctor";
@@ -474,6 +486,9 @@ struct constructor_registration_base : public registration {
     lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
     core::validateFunctionDescription( __FILE__, __LINE__, func );
   }
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "constructor_registration_base"; };
+  
 
   Policies policies;
   string m_name;
@@ -489,6 +504,7 @@ struct constructor_registration_base : public registration {
  
  template <class Class, class Pointer, class Signature, class Policies, class DerivableType>
 struct constructor_registration : public constructor_registration_base<Class, Pointer, Signature, Policies> {
+   typedef constructor_registration_base<Class, Pointer, Signature, Policies> Base;
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
@@ -548,10 +564,11 @@ struct property_registration : registration {
       string const &arguments = "",
       string const &declares = "",
       string const &docstring = "")
-      : name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-      const string n(name);
+    printf("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() );
+      const string n(m_name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
       core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
@@ -569,7 +586,9 @@ struct property_registration : registration {
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
   }
-  std::string name;
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "property_registration"; };
+  std::string m_name;
   Get get;
   GetPolicies get_policies;
   Set set;
@@ -592,10 +611,11 @@ struct property_registration : registration {
       string const &arguments = "",
       string const &declares = "",
       string const &docstring = "")
-      : name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+      : m_name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    const string n(name);
+    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+    const string n(m_name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
@@ -604,10 +624,12 @@ struct property_registration : registration {
     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(fdesc, get));
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);
-    //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
+    //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, m_name);
     // register the getter here
   }
-  std::string name;
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "property_registration"; };
+  std::string m_name;
   Get get;
   GetPolicies get_policies;
   string m_arguments;
@@ -684,25 +706,13 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  class_(scope_& outer_scope, const std::string &name, const std::string& docstring="") : class_base(name), _outer_scope(outer_scope),scope(*this) {
+  class_(scope_& outer_scope, const char *name, const string& docstring="") : class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
+    printf("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name);
     init();
-    // No default constructor
-#if 0
-    stringstream sconstructor;
-    sconstructor << "MAKE-";
-    sconstructor << name;
-    this->def_default_constructor_(sconstructor.str().c_str(), &globalDefaultConstructorSignature, policies<>(), docstring, "", "");
-#endif
-  }
-
-  class_(scope_& outer_scope, const char *name, const string& docstring="") : class_base(name), _outer_scope(outer_scope), scope(*this) {
-#ifndef NDEBUG
-    detail::check_link_compatibility();
-#endif
-    init();
+    this->_outer_scope->operator,(*this);
   }
 
   template <typename... Types>
@@ -883,7 +893,7 @@ public:
     return detail::enum_maker<self_t, EnumType>(*this, converter);
   }
 
-  scope_ _outer_scope;
+  scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:

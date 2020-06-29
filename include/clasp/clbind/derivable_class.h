@@ -117,7 +117,9 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
+#include <clasp/clbind/class.h>
 // #include <clasp/clbind/back_reference.hpp>
 // #include <clasp/clbind/function.hpp>
 // #include <clasp/clbind/dependency_policy.hpp>
@@ -173,6 +175,9 @@ namespace detail {
 
     const char *m_name;
 
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "derivable_class_registration"; };
+    
     mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
     typedef std::pair<type_id, cast_function> base_desc;
@@ -200,8 +205,7 @@ namespace detail {
       int ptr_offset;
     };
 
-    void init(
-              type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+    void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
 
     void add_base(type_id const &base, cast_function cast);
 
@@ -225,11 +229,14 @@ namespace detail {
         */
 template <class Class, class Policies>
   struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
- constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring), mm_name(name){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate());
   }
+  virtual std::string name() const { return this->mm_name;}
+  virtual std::string kind() const { return "derivable constructor_registration"; };
+  std::string mm_name;
 };
 
 } // namespace detail
@@ -625,10 +632,16 @@ private:
   template <class Policies>
   derivable_class_ &def_default_constructor_(const char *name, void *, Policies const &, string const &arguments, string const &declares, string const &docstring) {
     typedef T construct_type;
-    this->set_default_constructor(
-                                  new detail::constructor_registration<
-                                  construct_type, reg::null_type, default_constructor, Policies, detail::construct_derivable_class>(
-                                                                                                                                    Policies(), name, arguments, declares, docstring));
+    this->set_default_constructor(new detail::constructor_registration<
+                                  construct_type,
+                                  reg::null_type,
+                                  default_constructor,
+                                  Policies,
+                                  detail::construct_derivable_class>(Policies(),
+                                                                     name,
+                                                                     arguments,
+                                                                     declares,
+                                                                     docstring));
     return *this;
   }
 

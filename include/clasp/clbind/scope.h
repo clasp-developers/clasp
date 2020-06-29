@@ -49,40 +49,6 @@ THE SOFTWARE.
 #ifndef NEW_SCOPE_040211_HPP
 #define NEW_SCOPE_040211_HPP
 
-//#include "clbind/prefix.h"
-#include <clasp/clbind/config.h>
-#include <clasp/clbind/cl_include.h>
-#include <memory>
-
-namespace clbind {
-
-struct scope_;
-
-} // namespace clbind
-
-namespace clbind {
-namespace detail {
-
-struct CLBIND_API registration {
-  registration();
-  virtual ~registration();
-
-public:
-  virtual gc::smart_ptr<core::Creator_O> registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
-
-protected:
-  virtual void register_() const = 0;
-
-private:
-  friend struct ::clbind::scope_;
-  registration *m_next;
-};
-}
-} // namespace clbind::detail
-
-#include <clasp/clbind/function.h>
-
-
 namespace clbind {
 
 struct CLBIND_API scope_ {
@@ -91,6 +57,7 @@ struct CLBIND_API scope_ {
     scope_(scope_ const &other_);
     ~scope_();
 
+    
     scope_ &operator=(scope_ const &other_);
 
     scope_ &operator, (scope_ s);
@@ -103,34 +70,33 @@ struct CLBIND_API scope_ {
 
  public:
     template <typename F, class Policies>
-    scope_& def(char const *name, F f, Policies const &policies, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+    void def(char const *name, F f, Policies const &policies, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
       std::string docstring = "";
       std::string lambdalist;
       std::string declares;
       if (cdocstring) docstring = cdocstring;
       if (clambdalist) lambdalist = clambdalist;
       if (cdeclares) declares = cdeclares;
-      fndef(name,f,
-            policies,
-            lambdalist,
-            declares,
-            docstring);
-      return *this;
+      LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
+      scope_ fnscope(std::unique_ptr<detail::registration>(
+                                                     new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+      this->operator,(fnscope);
     }
 
     template <class F>
-    scope_& def(char const *name, F f, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+    void def(char const *name, F f, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
       std::string docstring = "";
       std::string lambdalist;
       std::string declares;
       if (cdocstring) docstring = cdocstring;
       if (clambdalist) lambdalist = clambdalist;
       if (cdeclares) declares = cdeclares;
-      fndef(name,f,
-            lambdalist,
-            declares,
-            docstring);
-      return *this;
+      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F>(name, f,
+                                                                                                policies<>(),
+                                                                                                lambdalist,
+                                                                                                declares,
+                                                                                                docstring)));
+      this->operator,(fnscope);
     }
       
 

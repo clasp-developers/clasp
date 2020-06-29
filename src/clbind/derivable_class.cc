@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 //#include <clasp/clbind/lua_include.hpp>
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/clbind/class.h>
@@ -92,6 +93,7 @@ derivable_class_registration::derivable_class_registration(char const *name) : m
 }
 
 void derivable_class_registration::register_() const {
+  printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
 #ifdef DEBUG_CLASS_INSTANCE
