@@ -655,188 +655,32 @@ a LET-like macro, and a SETQ-like macro, which perform LOOP-style destructuring.
     (values new-form constantp constant-value)))
 
 
-;;;; LOOP Iteration Optimization
-
-(defparameter *loop-duplicate-code*
-  nil)
-
-
-(defparameter *loop-iteration-flag-variable*
-  (make-symbol "LOOP-NOT-FIRST-TIME"))
-
-
-(defun loop-code-duplication-threshold (env)
-  (multiple-value-bind (speed space) (loop-optimization-quantities env)
-    (+ 40 (* (- speed space) 10))))
-
-
-(defmacro loop-body (&environment env
-		     prologue
+(defmacro loop-body (prologue
 		     before-loop
 		     main-body
 		     after-loop
-		     epilogue
-		     &aux rbefore rafter flagvar)
+		     epilogue)
   (unless (= (length before-loop) (length after-loop))
     (error "LOOP-BODY called with non-synched before- and after-loop lists."))
-  ;;All our work is done from these copies, working backwards from the end:
-  (setq rbefore (reverse before-loop) rafter (reverse after-loop))
-  (labels ((psimp (l)
-	     (let ((ans nil))
-	       (dolist (x l)
-		 (when x
-		   (push x ans)
-		   (when (and (consp x) (member (car x) '(go return return-from)))
-		     (return nil))))
-	       (nreverse ans)))
-	   (pify (l) (if (null (cdr l)) (car l) `(progn ,@l)))
-	   (makebody ()
-	     (let ((form `(tagbody
-			    ,@(psimp (append prologue (nreverse rbefore)))
-			 next-loop
-			    ,@(psimp (append main-body (nreconc rafter `((go next-loop)))))
-			 end-loop
-			    ,@(psimp epilogue))))
-	       (if flagvar `(let ((,flagvar nil)) ,form) form))))
-    (when (or *loop-duplicate-code* (not rbefore))
-      (return-from loop-body (makebody)))
-    ;; This outer loop iterates once for each not-first-time flag test generated
-    ;; plus once more for the forms that don't need a flag test
-    (do ((threshold (loop-code-duplication-threshold env))) (nil)
-      (declare (fixnum threshold))
-      ;; Go backwards from the ends of before-loop and after-loop merging all the equivalent
-      ;; forms into the body.
-      (do () ((or (null rbefore) (not (equal (car rbefore) (car rafter)))))
-	(push (pop rbefore) main-body)
-	(pop rafter))
-      (unless rbefore (return (makebody)))
-      ;; The first forms in rbefore & rafter (which are the chronologically
-      ;; last forms in the list) differ, therefore they cannot be moved
-      ;; into the main body.  If everything that chronologically precedes
-      ;; them either differs or is equal but is okay to duplicate, we can
-      ;; just put all of rbefore in the prologue and all of rafter after
-      ;; the body.  Otherwise, there is something that is not okay to
-      ;; duplicate, so it and everything chronologically after it in
-      ;; rbefore and rafter must go into the body, with a flag test to
-      ;; distinguish the first time around the loop from later times.
-      ;; What chronologically precedes the non-duplicatable form will
-      ;; be handled the next time around the outer loop.
-      (do ((bb rbefore (cdr bb)) (aa rafter (cdr aa)) (lastdiff nil) (count 0) (inc nil))
-	  ((null bb) (return-from loop-body (makebody)))	;Did it.
-	(cond ((not (equal (car bb) (car aa))) (setq lastdiff bb count 0))
-	      ((or (not (setq inc (estimate-code-size (car bb) env)))
-		   (> (incf count inc) threshold))
-	       ;; Ok, we have found a non-duplicatable piece of code.  Everything
-	       ;; chronologically after it must be in the central body.
-	       ;; Everything chronologically at and after lastdiff goes into the
-	       ;; central body under a flag test.
-	       (let ((then nil) (else nil))
-		 (do () (nil)
-		   (push (pop rbefore) else)
-		   (push (pop rafter) then)
-		   (when (eq rbefore (cdr lastdiff)) (return)))
-		 (unless flagvar
-		   (push `(setq ,(setq flagvar *loop-iteration-flag-variable*) t) else))
-		 (push `(if ,flagvar ,(pify (psimp then)) ,(pify (psimp else)))
-		       main-body))
-	       ;; Everything chronologically before lastdiff until the non-duplicatable form (car bb) 
-	       ;; is the same in rbefore and rafter so just copy it into the body
-	       (do () (nil)
-		 (pop rafter)
-		 (push (pop rbefore) main-body)
-		 (when (eq rbefore (cdr bb)) (return)))
-	       (return)))))))
-
-
-
-(defun duplicatable-code-p (expr env)
-  (if (null expr) 0
-      (let ((ans (estimate-code-size expr env)))
-	(declare (fixnum ans))
-	;; Use (DECLARATION-INFORMATION 'OPTIMIZE ENV) here to get an alist of
-	;; optimize quantities back to help quantify how much code we are willing to
-	;; duplicate.
-	ans)))
-
-
-(defparameter *special-code-sizes*
-	'((return 0) (progn 0)
-	  (null 1) (not 1) (eq 1) (car 1) (cdr 1)
-	  (when 1) (unless 1) (if 1)
-	  (caar 2) (cadr 2) (cdar 2) (cddr 2)
-	  (caaar 3) (caadr 3) (cadar 3) (caddr 3) (cdaar 3) (cdadr 3) (cddar 3) (cdddr 3)
-	  (caaaar 4) (caaadr 4) (caadar 4) (caaddr 4)
-	  (cadaar 4) (cadadr 4) (caddar 4) (cadddr 4)
-	  (cdaaar 4) (cdaadr 4) (cdadar 4) (cdaddr 4)
-	  (cddaar 4) (cddadr 4) (cdddar 4) (cddddr 4)))
-
-
-(defparameter *estimate-code-size-punt*
-	'(block
-	   do do* dolist
-	   flet
-	   labels lambda let let* locally
-	   macrolet multiple-value-bind
-	   prog prog*
-	   symbol-macrolet
-	   tagbody
-	   unwind-protect
-	   with-open-file))
-
-
-(defun destructuring-size (x)
-  (do ((x x (cdr x)) (n 0 (+ (destructuring-size (car x)) n)))
-      ((atom x) (+ n (if (null x) 0 1)))))
-
-
-(defun estimate-code-size (x env)
-  (catch 'estimate-code-size
-    (estimate-code-size-1 x env)))
-
-
-(defun estimate-code-size-1 (x env)
-  (flet ((list-size (l)
-	   (let ((n 0))
-	     (declare (fixnum n))
-	     (dolist (x l n) (incf n (estimate-code-size-1 x env))))))
-    (cond ((constantp x env) 1)
-	  ((symbolp x) (multiple-value-bind (new-form expanded-p) (macroexpand-1 x env)
-			 (if expanded-p (estimate-code-size-1 new-form env) 1)))
-          ;; Used to be an atom check here, but any atom that isn't a symbol is a constant.
-	  ((symbolp (car x))
-	   (let ((fn (car x)) (tem nil) (n 0))
-	     (declare (symbol fn) (fixnum n))
-	     (macrolet ((f (overhead &optional (args nil args-p))
-			  `(the fixnum (+ (the fixnum ,overhead)
-					  (the fixnum (list-size ,(if args-p args '(cdr x))))))))
-	       (cond ((setq tem (assoc fn *special-code-sizes*)) (f (second tem)))
-		     #+Genera
-		     ((eq fn 'compiler:invisible-references) (list-size (cddr x)))
-		     ((eq fn 'cond)
-		      (dolist (clause (cdr x) n) (incf n (list-size clause)) (incf n)))
-		     ((eq fn 'desetq)
-		      (do ((l (cdr x) (cdr l))) ((null l) n)
-			(setq n (+ n (destructuring-size (car l)) (estimate-code-size-1 (cadr l) env)))))
-		     ((member fn '(setq psetq))
-		      (do ((l (cdr x) (cdr l))) ((null l) n)
-			(setq n (+ n (estimate-code-size-1 (cadr l) env) 1))))
-		     ((eq fn 'go) 1)
-		     ((eq fn 'function)
-		      ;;This skirts the issue of implementationally-defined lambda macros
-		      ;; by recognizing CL function names and nothing else.
-		      (if (or (symbolp (cadr x))
-			      (and (consp (cadr x)) (eq (caadr x) 'setf)))
-			  1
-			  (throw 'duplicatable-code-p nil)))
-		     ((eq fn 'multiple-value-setq) (f (length (second x)) (cddr x)))
-		     ((eq fn 'return-from) (1+ (estimate-code-size-1 (third x) env)))
-		     ((or (special-operator-p fn) (member fn *estimate-code-size-punt*))
-		      (throw 'estimate-code-size nil))
-		     (t (multiple-value-bind (new-form expanded-p) (macroexpand-1 x env)
-			  (if expanded-p
-			      (estimate-code-size-1 new-form env)
-			      (f 3))))))))
-	  (t (throw 'estimate-code-size nil)))))
+  ;; All our work is done from these copies, working backwards from the end
+  (let ((rbefore (reverse before-loop))
+        (rafter (reverse after-loop)))
+    ;; Go backwards from the ends of before-loop and after-loop
+    ;; merging all the equivalent forms into the boyd.
+    (do ()
+        ((or (null rbefore)
+             (not (equal (car rbefore) (car rafter)))))
+      (push (pop rbefore) main-body)
+      (pop rafter))
+    `(tagbody
+        ,@(remove nil prologue)
+        ,@(nreverse (remove nil rbefore))
+      next-loop
+        ,@(remove nil main-body)
+        ,@(nreverse (remove nil rafter))
+        (go next-loop)
+      end-loop
+        ,@(remove nil epilogue))))
 
 
 ;;;; Loop Errors
