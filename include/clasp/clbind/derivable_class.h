@@ -313,7 +313,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type) : derivable_class_base(name), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type) : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -322,6 +322,7 @@ public:
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
     validateRackOffset(offsetof(WrappedType,_Rack));
+    this->_outer_scope->operator,(*this);
   }
   
   derivable_class_(scope_& outer_scope, const char *name) : derivable_class_base(name), scope(*this) {
@@ -537,6 +538,7 @@ public:
     return detail::enum_maker<self_t, EnumType>(*this, converter);
   }
 
+  scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:

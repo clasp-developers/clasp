@@ -389,7 +389,7 @@ struct memfun_registration : registration {
     : m_name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
     void register_() const {
-      printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+      LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
       core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
       core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
       core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
@@ -419,7 +419,7 @@ struct iterator_registration : registration {
       : m_name(name), beginPtr(begin), endPtr(end), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
     core::FunctionDescription* fdesc = makeFunctionDescription(sym);
@@ -474,7 +474,7 @@ struct constructor_registration_base : public registration {
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     string tname = m_name;
     if (m_name == "") {
       tname = "default-ctor";
@@ -567,7 +567,7 @@ struct property_registration : registration {
       : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    printf("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() );
+    LOG_SCOPE(("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() ));
       const string n(m_name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
@@ -614,7 +614,7 @@ struct property_registration : registration {
       : m_name(name), get(get), get_policies(get_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     const string n(m_name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
@@ -710,7 +710,7 @@ public:
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
-    printf("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name);
+    LOG_SCOPE(("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name));
     init();
     this->_outer_scope->operator,(*this);
   }

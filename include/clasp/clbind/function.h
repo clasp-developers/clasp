@@ -31,9 +31,12 @@ THE SOFTWARE.
 #ifndef CLBIND_FUNCTION2_081014_HPP
 #define CLBIND_FUNCTION2_081014_HPP
 
-#define DEBUG_SCOPE 1
-#define LOG_SCOPE(xxx) printf xxx;
-//define DEBUG_SCOPE
+#if 0
+# define DEBUG_SCOPE 1
+# define LOG_SCOPE(xxx) printf xxx;
+#else
+# define LOG_SCOPE(xxx)
+#endif
 
 
 //#include "clbind/prefix.h"
@@ -116,7 +119,7 @@ struct function_registration : registration {
       : m_name(name), functionPtr(f), policies(policies), m_lambdalist(lambdalist), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
-    printf("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str());
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
     core::FunctionDescription* fdesc = makeFunctionDescription(symbol);
     core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr));
