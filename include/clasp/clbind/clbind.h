@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.fwd.h>
 #include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
+#include <clasp/clbind/enum_maker.h>
 #include <clasp/clbind/class.h>
 #include <clasp/clbind/adapter.h>
 #include <clasp/clbind/derivable.h>

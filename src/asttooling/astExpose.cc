@@ -794,13 +794,12 @@ void initialize_astExpose() {
     .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
     .def("getBeginLoc", &clang::Decl::getBeginLoc)
     .def("getEndLoc", &clang::Decl::getEndLoc)
-    .def("getAccess",&clang::Decl::getAccess)
-    .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
-                                                                                  value("AS_public", clang::AS_public),
-                                                                                  value("AS_protected", clang::AS_protected),
-                                                                                  value("AS_private", clang::AS_private),
-                                                                                  value("AS_none", clang::AS_none) ];
-
+    .def("getAccess",&clang::Decl::getAccess);
+  enum_<clang::AccessSpecifier>(m,asttooling::_sym_STARclangAccessSpecifierSTAR)
+    .value("AS_public", clang::AS_public)
+    .value("AS_protected", clang::AS_protected)
+    .value("AS_private", clang::AS_private)
+    .value("AS_none", clang::AS_none);
   
 #define CLASS_DECL(_m_,_Class_, _Base_) class_<_Class_##Decl, _Base_>(_m_,#_Class_ "Decl")
   CLASS_DECL(m,AccessSpec, Decl);
@@ -856,15 +855,14 @@ void initialize_astExpose() {
     .def("getTypeAsWritten", &clang::ClassTemplateSpecializationDecl::getTypeAsWritten)
     .def("getPointOfInstantiation", &clang::ClassTemplateSpecializationDecl::getPointOfInstantiation)
     .def("getSpecializedTemplate", &clang::ClassTemplateSpecializationDecl::getSpecializedTemplate)
-    .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind)
-    .enum_<clang::TemplateSpecializationKind>(asttooling::_sym_STARclangTemplateSpecializationKindSTAR)[
-                                                                                                        value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
-                                                                                                        value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
-                                                                                                        value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
-                                                                                                        value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
-                                                                                                        value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
-                                                                                                        ],
-    m.def("getNameForDiagnostic", &af_getNameForDiagnostic, "docstring", "(decl stream lang-opts qualified)");
+    .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind);
+  enum_<clang::TemplateSpecializationKind>(m,asttooling::_sym_STARclangTemplateSpecializationKindSTAR)
+    .value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared)
+    .value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation)
+    .value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization)
+    .value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration)
+    .value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition);
+  m.def("getNameForDiagnostic", &af_getNameForDiagnostic, "docstring", "(decl stream lang-opts qualified)");
   CLASS_DECL(m,ClassTemplatePartialSpecialization, ClassTemplateSpecializationDecl);
   CLASS_DECL(m,TemplateTypeParm, TypeDecl);
   CLASS_DECL(m,TypedefName, TypeDecl)
@@ -1182,21 +1180,19 @@ void initialize_astExpose() {
     .def("getAsTemplate", &clang::TemplateArgument::getAsTemplate)
     .def("getNullPtrType", &clang::TemplateArgument::getNullPtrType)
     .def("getAsDecl", &clang::TemplateArgument::getAsDecl)
-    .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
+    .def("getAsExpr", &clang::TemplateArgument::getAsExpr);
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
-    .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)
-    [
-     value("argkind-Type", clang::TemplateArgument::ArgKind::Type),
-     value("argkind-Null", clang::TemplateArgument::ArgKind::Null),
-     value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration),
-     value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-     value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral),
-     value("argkind-Template", clang::TemplateArgument::ArgKind::Template),
-     value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-     value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression),
-     value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack)
-     ];
-    class_<clang::TemplateName>(m,"TemplateName")
+  enum_<clang::TemplateArgument::ArgKind>(m,asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)
+    .value("argkind-Type", clang::TemplateArgument::ArgKind::Type)
+    .value("argkind-Null", clang::TemplateArgument::ArgKind::Null)
+    .value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration)
+    .value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr)
+    .value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral)
+    .value("argkind-Template", clang::TemplateArgument::ArgKind::Template)
+    .value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion)
+    .value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression)
+    .value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack);
+  class_<clang::TemplateName>(m,"TemplateName")
     .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl);
   class_<clang::TypeSourceInfo>(m,"TypeSourceInfo")
     .def("getType", &clang::TypeSourceInfo::getType)

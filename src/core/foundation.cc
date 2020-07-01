@@ -504,6 +504,11 @@ string lisp_currentPackageName() {
   return pkg;
 }
 
+string lisp_packageName(T_sp tpkg) {
+  Package_sp pkg = gc::As<Package_sp>(tpkg);
+  return pkg->packageName();
+}
+
 Symbol_sp lispify_intern_keyword(string const &name) {
   string lispName = lispify_symbol_name(name);
   return _lisp->internKeyword(lispName);

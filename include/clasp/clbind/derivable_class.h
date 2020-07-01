@@ -533,11 +533,11 @@ public:
 
 #endif // end_meister_disabled
 
-  template <typename EnumType>
-  detail::enum_maker<self_t, EnumType> enum_(core::Symbol_sp converter) {
-    return detail::enum_maker<self_t, EnumType>(*this, converter);
+#if 0
+  enum_maker enum_(core::Symbol_sp converter) {
+    return enum_maker(this, converter);
   }
-
+#endif
   scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
