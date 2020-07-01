@@ -402,23 +402,6 @@
       module)))
 (export 'link-bitcode-modules)
 
-
-
-;;;
-;;; Gather a list of boot parts as pathnames
-;;; Skip over keyword symbols in the boot part lists
-;;;
-(defun boot-bitcode-pathnames (last-file &key first-file target-backend)
-  (or first-file (error "You must provide first-file"))
-  (let* ((source-files (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
-                               (core::select-source-files first-file last-file )))
-         (bitcode-files (mapcar (lambda (k) (compile-file-pathname k :target-backend target-backend))
-                                source-files)))
-    bitcode-files))
-(export 'boot-bitcode-pathnames)
-
-
-
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
                     (input-type :bitcode)

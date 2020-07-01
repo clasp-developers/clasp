@@ -295,32 +295,32 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   return ht;
 }
 
+// FIXME: contents read could just be atomic maybe?
+#define HASH_TABLE_ITER(tablep, key, value) \
+  gctools::tagged_pointer<gctools::GCVector_moveable<Cons_O>> iter_datap;\
+  {\
+    HT_READ_LOCK(tablep);\
+    iter_datap = tablep->_Table._Vector._Contents;\
+  }\
+  for (size_t it(0), itEnd(iter_datap->_End); it < itEnd; ++it) {\
+  Cons_O& entry = (*iter_datap)[it];\
+  T_sp key = entry.ocar();\
+  T_sp value = entry.cdr();\
+  if (!key.no_keyp()&&!key.deletedp())
+
+#define HASH_TABLE_ITER_END }
+
 void HashTable_O::maphash(T_sp function_desig) {
-    //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
   Function_sp func = coerce::functionDesignator(function_desig);
-  gctools::Vec0<Cons_O> tableCopy;
-  tableCopy.resize(this->_Table.size());
-  {
-    HT_READ_LOCK(this);
-    for ( size_t i=0; i<this->_Table.size(); ++i ) {
-      tableCopy[i] = this->_Table[i];
-    }
-  }
-  for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
-    Cons_O& entry = tableCopy[it];
-    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-      eval::funcall(func,entry.ocar(),entry.cdr());
-    }
-  }
-  //        printf("%s:%d finished maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
+  HASH_TABLE_ITER(this, key, value) {
+    eval::funcall(func, key, value);
+  } HASH_TABLE_ITER_END;
 }
 
 CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_sp cl__maphash(T_sp function_desig, HashTableBase_sp hash_table) {
-  //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
-  Function_sp func = coerce::functionDesignator(function_desig);
   if (hash_table.nilp()) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }
@@ -1073,65 +1073,25 @@ CL_DEFMETHOD string HashTable_O::hash_table_dump() {
 }
 
   void HashTable_O::mapHash(std::function<void(T_sp, T_sp)> const &fn) {
-    gctools::Vec0<Cons_O> tableCopy;
-    tableCopy.resize(this->_Table.size());
-    {
-      HT_READ_LOCK(this);
-      for ( size_t i=0; i<this->_Table.size(); ++i ) {
-        tableCopy[i] = this->_Table[i];
-      }
-    }
-    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
-      Cons_O& entry = tableCopy[it];
-      T_sp key = entry.ocar();
-      T_sp value = entry.cdr();
-      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-        fn(key, value);
-      }
-    }
+    HASH_TABLE_ITER(this, key, value) {
+      fn(key, value);
+    } HASH_TABLE_ITER_END;
   }
 
   bool HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) const {
-  //        HASH_TABLE_LOCK();
-    gctools::Vec0<Cons_O> tableCopy;
-    tableCopy.resize(this->_Table.size());
-    {
-      HT_READ_LOCK(this);
-      for ( size_t i=0; i<this->_Table.size(); ++i ) {
-        tableCopy[i] = this->_Table[i];
-      }
-    }
-    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
-      const Cons_O& entry = tableCopy[it];
-      T_sp key = entry.ocar();
-      T_sp value = entry.cdr();
-      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-        bool cont = fn(key, value);
-        if (!cont)
-          return false;
-      }
-    }
+    HASH_TABLE_ITER(this, key, value) {
+      bool cont = fn(key, value);
+      if (!cont)
+        return false;
+    } HASH_TABLE_ITER_END;
     return true;
   }
 
   void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
-    gctools::Vec0<Cons_O> tableCopy;
-    tableCopy.resize(this->_Table.size());
-    {
-      HT_READ_LOCK(this);
-      for ( size_t i=0; i<this->_Table.size(); ++i ) {
-        tableCopy[i] = this->_Table[i];
-      }
-    }
-    for (size_t it(0), itEnd(tableCopy.size()); it < itEnd; ++it) {
-      const Cons_O& entry = tableCopy[it];
-      T_sp key = entry.ocar();
-      T_sp value = entry.cdr();
-      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-        if (!mapper->mapKeyValue(key, value))
-          goto DONE;
-      }
-    }
+    HASH_TABLE_ITER(this, key, value) {
+      if (!mapper->mapKeyValue(key, value))
+        goto DONE;
+    } HASH_TABLE_ITER_END;
   DONE:
     return;
   }
