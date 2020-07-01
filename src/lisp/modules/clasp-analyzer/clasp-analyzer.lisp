@@ -775,7 +775,7 @@ to expose."
                      #+(or)(ctype-key (base one))))
             (field-names
              (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                    (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
+                    (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
                     (is-std-atomic (is-atomic one stream))
                     (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
                     (expose-it (and fixable good-name))
@@ -821,7 +821,7 @@ to expose."
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
     (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
+           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
            (is-std-atomic (is-atomic one stream))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and fixable
@@ -1084,21 +1084,21 @@ Generate offsets for every array element that exposes the fields in elements."
 (defun template-arg-as-string (template-arg)
   (let* ((template-arg-kind (cast:get-kind template-arg)))
     (case template-arg-kind
-      (ast-tooling:argkind-type
+      (clang-ast:argkind-type
 ;;       (cast:get-as-string (cast:get-as-type template-arg))
        (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg))))
-      (ast-tooling:argkind-integral
+      (clang-ast:argkind-integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
-      (ast-tooling:argkind-pack
+      (clang-ast:argkind-pack
        (let ((pack-size (cast:pack-size template-arg)))
          (if (eql pack-size 0)
              ""
              (format nil "TEMPLATE_ARG_PACK_SIZE~a" pack-size))))
-      (ast-tooling:argkind-template
+      (clang-ast:argkind-template
        "TEMPLATE_ARG_AS_STRING::TEMPLATE")
-      (ast-tooling:argkind-expression
+      (clang-ast:argkind-expression
        "TEMPLATE_ARG_AS_STRING::EXPRESSION")
-      (ast-tooling:argkind-declaration
+      (clang-ast:argkind-declaration
        "TEMPLATE_ARG_AS_STRING::DECLARATION")
       (otherwise
        (error "Add support for template-arg-as-string of kind: ~a" template-arg-kind)))))
@@ -1162,7 +1162,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
              (template-arg-kind (cast:get-kind arg))
              classified integral-value)
         (case template-arg-kind
-          (ast-tooling:argkind-type
+          (clang-ast:argkind-type
            (let* ((qtarg (cast:get-as-type arg))
                   (tsty-new (cast:get-type-ptr-or-null qtarg)))
              (if (and qtarg tsty-new)
@@ -1171,7 +1171,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
                    (setq classified (classify-ctype tsty-new)))
                  (format t "!!classify-template-args - could not classify arg: ~s  qtarg: ~s  (cast:get-as-string qtarg): ~s~%" arg qtarg (cast:get-as-string qtarg))
                  )))
-          (ast-tooling:argkind-integral
+          (clang-ast:argkind-integral
            (setf integral-value (template-arg-as-string arg)
                  classified nil))
           (otherwise
@@ -1569,7 +1569,7 @@ can be saved and reloaded within the project for later analysis"
                    (gclog "    record-key -> ~a~%" record-key)
                    (unless (or (typep class-node 'cast:class-template-partial-specialization-decl) ; ignore partial specializations
                                (and (typep class-node 'cast:class-template-specialization-decl) ; ignore template specializations that have undeclared specialization alloc
-                                    (eq (cast:get-specialization-kind class-node) 'ast-tooling:tsk-undeclared))
+                                    (eq (cast:get-specialization-kind class-node) 'clang-ast:tsk-undeclared))
                                (gethash record-key results)) ; ignore if we've seen it before
                      (gclog "About to call %%new-class-callback~%")
                      (%%new-class-callback match-info class-node record-key template-specializer))))))

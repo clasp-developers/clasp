@@ -49,66 +49,72 @@ THE SOFTWARE.
 #ifndef NEW_SCOPE_040211_HPP
 #define NEW_SCOPE_040211_HPP
 
-//#include "clbind/prefix.h"
-#include <clasp/clbind/config.h>
-#include <clasp/clbind/cl_include.h>
-#include <memory>
-
 namespace clbind {
 
-struct scope;
+struct CLBIND_API scope_ {
+    scope_();
+    explicit scope_(std::unique_ptr<detail::registration> reg);
+    scope_(scope_ const &other_);
+    ~scope_();
 
-} // namespace clbind
+    
+    scope_ &operator=(scope_ const &other_);
 
-namespace clbind {
-namespace detail {
+    scope_ &operator, (scope_ s);
 
-struct CLBIND_API registration {
-  registration();
-  virtual ~registration();
+    void register_() const;
 
-public:
-  virtual gc::smart_ptr<core::Creator_O> registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
+ private:
+    detail::registration *m_chain;
 
-protected:
-  virtual void register_() const = 0;
 
-private:
-  friend struct ::clbind::scope;
-  registration *m_next;
-};
-}
-} // namespace clbind::detail
+ public:
+    template <typename F, class Policies>
+    void def(char const *name, F f, Policies const &policies, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+      std::string docstring = "";
+      std::string lambdalist;
+      std::string declares;
+      if (cdocstring) docstring = cdocstring;
+      if (clambdalist) lambdalist = clambdalist;
+      if (cdeclares) declares = cdeclares;
+      LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
+      scope_ fnscope(std::unique_ptr<detail::registration>(
+                                                     new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+      this->operator,(fnscope);
+    }
 
-namespace clbind {
+    template <class F>
+    void def(char const *name, F f, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
+      std::string docstring = "";
+      std::string lambdalist;
+      std::string declares;
+      if (cdocstring) docstring = cdocstring;
+      if (clambdalist) lambdalist = clambdalist;
+      if (cdeclares) declares = cdeclares;
+      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F>(name, f,
+                                                                                                policies<>(),
+                                                                                                lambdalist,
+                                                                                                declares,
+                                                                                                docstring)));
+      this->operator,(fnscope);
+    }
+      
 
-struct CLBIND_API scope {
-  scope();
-  explicit scope(std::unique_ptr<detail::registration> reg);
-  scope(scope const &other_);
-  ~scope();
-
-  scope &operator=(scope const &other_);
-
-  scope &operator, (scope s);
-
-  void register_() const;
-
-private:
-  detail::registration *m_chain;
 };
 
 /*! Declare a package - provide the package name (which will be lispified) and a list
       of nicknames and a list of usePackageNames */
 class CLBIND_API package_ {
-public:
-  package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
-  void operator[](scope s);
-
-private:
-  string m_name;
-  list<std::string> m_nicknames;
-  list<std::string> m_usePackageNames;
+ public:
+ package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
+ ~package_();
+ scope_& scope() { return this->_Scope; }
+ private:
+ string m_name;
+ list<std::string> m_nicknames;
+ list<std::string> m_usePackageNames;
+ core::DynamicScopeManager* _PackageDynamicVariable;
+ scope_ _Scope;
 };
 
 inline package_ package(string const &name, std::list<std::string> nicknames = {}, std::list<std::string> usePackageNames = {}) {

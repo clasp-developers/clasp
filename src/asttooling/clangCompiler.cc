@@ -83,21 +83,10 @@ namespace clang_compile {
 void initialize_clang_compile() {
   printf("%s:%d  initialize_clang_compile\n", __FILE__, __LINE__ );
   // overloaded functions that had trouble resolving
-  package(ClangCompilePkg, {"CLANG-COMPILER"}, {}) // "CL", "CORE"})
-    [
+  package_ pkg(ClangCompilePkg, {"CLANG-COMPILER"}, {}); // "CL", "CORE"})
     /* -- */
-     class_<clang::DiagnosticOptions>("DiagnosticOptions") //, no_default_constructor)
-     ,
-     class_<clang::DiagnosticIDs>("DiagnosticIds")
-//     ,
-//     derivable_class_<DerivableFoo>("Foo",no_default_constructor)
-//     ,def("CreateFoo",&DerivableFoo::CreateFoo,policies<adopt<result>>())
-#if 0
-     ,
-     class_<clang::driver::Driver>("Driver")
-     ,
-     class_<clang::TextDiagnosticPrinter>("TextDiagnosticPrinter")
-#endif
-  ];
+  scope_& sc = pkg.scope();
+  class_<clang::DiagnosticOptions>(sc,"DiagnosticOptions"); //)
+  class_<clang::DiagnosticIDs>(sc,"DiagnosticIds");
 }
 };

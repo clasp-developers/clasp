@@ -48,12 +48,10 @@ namespace llvmo {
 using namespace clbind;
 
 void initialize_clbind_llvm_expose() {
-  package("LLVM")[
-    class_<llvm::APInt>("APInt", no_default_constructor)
+  clbind::package_ pkg("LLVM");
+  clbind::scope_& m = pkg.scope();
+  class_<llvm::APInt>(m,"APInt")
         .def("toString", (std::string (llvm::APInt::*)(unsigned Radix, bool Signed) const) & llvm::APInt::toString),
-    class_<llvm::APSInt, llvm::APInt>("APSInt", no_default_constructor)
-//    ,
-//    class_<llvm::DataLayout>("DataLayout",no_default_constructor)
-  ];
+    class_<llvm::APSInt, llvm::APInt>(m,"APSInt");
 }
 }

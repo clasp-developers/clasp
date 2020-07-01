@@ -866,6 +866,7 @@ uint64_t lisp_nameword(T_sp name);
 
   Lisp_sp lisp_fromObject(T_sp obj);
   string lisp_currentPackageName();
+  string lisp_packageName(T_sp package);
   string lisp_classNameAsString(Instance_sp c);
   void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId);
   core::T_sp lisp_false();

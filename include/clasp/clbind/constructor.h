@@ -38,7 +38,7 @@ namespace clbind {
 template <typename... SIGS>
 struct constructor {};
 
-typedef enum { no_default_constructor } no_default_constructor_type;
+typedef enum { create_default_constructor } default_constructor_type;
 
 typedef constructor<> default_constructor;
 

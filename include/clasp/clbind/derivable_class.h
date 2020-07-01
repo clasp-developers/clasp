@@ -117,7 +117,9 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/instance.h>
 #include <clasp/clbind/config.h>
+#include <clasp/clbind/function.h>
 #include <clasp/clbind/scope.h>
+#include <clasp/clbind/class.h>
 // #include <clasp/clbind/back_reference.hpp>
 // #include <clasp/clbind/function.hpp>
 // #include <clasp/clbind/dependency_policy.hpp>
@@ -173,6 +175,9 @@ namespace detail {
 
     const char *m_name;
 
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "derivable_class_registration"; };
+    
     mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
     typedef std::pair<type_id, cast_function> base_desc;
@@ -184,14 +189,14 @@ namespace detail {
     type_id m_wrapper_type;
     std::vector<cast_entry> m_casts;
 
-    scope m_scope;
-    scope m_members;
+    scope_ m_scope;
+    scope_ m_members;
     detail::registration *m_default_constructor;
-    scope m_default_members;
+    scope_ m_default_members;
     bool m_derivable;
   };
 
-  struct CLBIND_API derivable_class_base : scope {
+  struct CLBIND_API derivable_class_base : scope_ {
   public:
     derivable_class_base(char const *name);
 
@@ -200,8 +205,7 @@ namespace detail {
       int ptr_offset;
     };
 
-    void init(
-              type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+    void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
 
     void add_base(type_id const &base, cast_function cast);
 
@@ -212,7 +216,7 @@ namespace detail {
     const char *name() const;
 
     void add_static_constant(const char *name, int val);
-    void add_inner_scope(scope &s);
+    void add_inner_scope(scope_ &s);
 
     void add_cast(class_id src, class_id target, cast_function cast);
 
@@ -225,11 +229,14 @@ namespace detail {
         */
 template <class Class, class Policies>
   struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
- constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
+  constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring), mm_name(name){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
     return gc::As_unsafe<core::Creator_sp>(gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate());
   }
+  virtual std::string name() const { return this->mm_name;}
+  virtual std::string kind() const { return "derivable constructor_registration"; };
+  std::string mm_name;
 };
 
 } // namespace detail
@@ -252,25 +259,25 @@ public:
 
 // WrappedType MUST inherit from T
 #if 0
-        typedef typename detail::extract_parameter<
-            parameters_type
-            , boost::is_base_and_derived<T, boost::mpl::_>
-            , reg::null_type
-            >::type WrappedType;
+  typedef typename detail::extract_parameter<
+    parameters_type
+    , boost::is_base_and_derived<T, boost::mpl::_>
+    , reg::null_type
+    >::type WrappedType;
 #endif
   typedef T WrappedType;
 
   typedef typename detail::extract_parameter<
-      parameters_type, boost::mpl::not_<
-                           boost::mpl::or_<
-                               detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
-      T * // Default is to put the pointer into a T*
-      >::type HeldType;
+    parameters_type, boost::mpl::not_<
+                       boost::mpl::or_<
+                         detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>, boost::is_base_and_derived<T, boost::mpl::_>>>,
+    T * // Default is to put the pointer into a T*
+    >::type HeldType;
 
   template <class Src, class Target>
   void add_downcast(Src *, Target *, boost::mpl::true_) {
     add_cast(
-        reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
+             reg::registered_class<Src>::id, reg::registered_class<Target>::id, detail::dynamic_cast_<Src, Target>::execute);
   }
 
   template <class Src, class Target>
@@ -284,7 +291,7 @@ public:
   int gen_base_info(detail::type_<To>) {
     add_base(typeid(To), detail::static_cast_<T, To>::execute);
     add_cast(
-        reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
+             reg::registered_class<T>::id, reg::registered_class<To>::id, detail::static_cast_<T, To>::execute);
 
     add_downcast((To *)0, (T *)0, boost::is_polymorphic<To>());
     return 0;
@@ -306,7 +313,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  derivable_class_(const char *name) : derivable_class_base(name), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type) : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -315,9 +322,10 @@ public:
     // I should dispatch to def_derivable_default_constructor
     this->def_default_constructor_("default_ctor", NULL, policies<>(), "", "", "");
     validateRackOffset(offsetof(WrappedType,_Rack));
+    this->_outer_scope->operator,(*this);
   }
-
-  derivable_class_(const char *name, no_default_constructor_type) : derivable_class_base(name), scope(*this) {
+  
+  derivable_class_(scope_& outer_scope, const char *name) : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -351,185 +359,186 @@ public:
   }
 
   template <class F>
-  derivable_class_ &def(const char *name, F f)
-  //                        string const& arguments="",
-  //                        string const& declares="",
-  //                        string const& docstring="")
+  derivable_class_ &def(const char *name, F f,
+                        string const& docstring="",
+                        string const& arguments="",
+                        string const& declares="")
   {
     return this->virtual_def(
-        name, f, policies<>(), reg::null_type(), boost::mpl::true_(), "", "", "");
+                             name, f, policies<>(), reg::null_type(), boost::mpl::true_(), "", "", "");
 
     //                , arguments, declares, docstring);
   }
 
   // virtual functions
   template <class F, class DefaultOrPolicies>
-  derivable_class_ &def(char const *name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+  derivable_class_ &def(char const *name, F fn, DefaultOrPolicies default_or_policies, string const &docstring = "", string const &arguments = "", string const &declares = "") {
     return this->virtual_def(
-        name, fn, default_or_policies, reg::null_type(), CLBIND_MSVC_TYPENAME is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
+                             name, fn, default_or_policies, reg::null_type(), typename is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
   }
 
   template <class Getter>
   derivable_class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     this->add_member(
-        new detail::property_registration<T, Getter, reg::null_type>(
-            name // name
-            ,
-            g // Get
-            ,
-            reg::null_type() // GetPolicies
-            ,
-            reg::null_type(), reg::null_type(), arguments, declares, docstring));
+                     new detail::property_registration<T, Getter, reg::null_type>(
+                                                                                  name // name
+                                                                                  ,
+                                                                                  g // Get
+                                                                                  ,
+                                                                                  reg::null_type() // GetPolicies
+                                                                                  ,
+                                                                                  reg::null_type(), reg::null_type(), arguments, declares, docstring));
     return *this;
   }
 
   template <class Begin, class End>
   derivable_class_ &iterator(const char *iteratorName, Begin beginFn, End endFn, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     this->add_member(
-        new detail::iterator_registration<T, Begin, End, reg::null_type>(
-            iteratorName // name
-            ,
-            beginFn // begin
-            ,
-            endFn // end
-            ,
-            reg::null_type() // null policies
-            ,
-            arguments, declares, docstring));
+                     new detail::iterator_registration<T, Begin, End, reg::null_type>(
+                                                                                      iteratorName // name
+                                                                                      ,
+                                                                                      beginFn // begin
+                                                                                      ,
+                                                                                      endFn // end
+                                                                                      ,
+                                                                                      reg::null_type() // null policies
+                                                                                      ,
+                                                                                      arguments, declares, docstring));
     return *this;
   }
 
 #if 0
-        template <class Getter, class MaybeSetter>
-        class_& property(const char* name, Getter g, MaybeSetter s)
-        {
-            return property_impl(
-                name, g, s
-                , boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>()
-                );
-        }
+  template <class Getter, class MaybeSetter>
+  class_& property(const char* name, Getter g, MaybeSetter s)
+  {
+    return property_impl(
+                         name, g, s
+                         , boost::mpl::bool_<detail::is_policy_cons<MaybeSetter>::value>()
+                         );
+  }
 
-        template<class Getter, class Setter, class GetPolicies>
-        class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
-        {
-            typedef detail::property_registration<
-                T, Getter, GetPolicies, Setter, null_type
-                > registration_type;
+  template<class Getter, class Setter, class GetPolicies>
+  class_& property(const char* name, Getter g, Setter s, const GetPolicies& get_policies)
+  {
+    typedef detail::property_registration<
+      T, Getter, GetPolicies, Setter, null_type
+      > registration_type;
 
-            this->add_member(
-                new registration_type(name, g, get_policies, s));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(name, g, get_policies, s));
+    return *this;
+  }
 
-        template<class Getter, class Setter, class GetPolicies, class SetPolicies>
-        class_& property(
-            const char* name
-            , Getter g, Setter s
-            , GetPolicies const& get_policies
-            , SetPolicies const& set_policies)
-        {
-            typedef detail::property_registration<
-                T, Getter, GetPolicies, Setter, SetPolicies
-                > registration_type;
+  template<class Getter, class Setter, class GetPolicies, class SetPolicies>
+  class_& property(
+                   const char* name
+                   , Getter g, Setter s
+                   , GetPolicies const& get_policies
+                   , SetPolicies const& set_policies)
+  {
+    typedef detail::property_registration<
+      T, Getter, GetPolicies, Setter, SetPolicies
+      > registration_type;
 
-            this->add_member(
-                new registration_type(name, g, get_policies, s, set_policies));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(name, g, get_policies, s, set_policies));
+    return *this;
+  }
 
-        template <class C, class D>
-        class_& def_readonly(const char* name, D C::*mem_ptr)
-        {
-            typedef detail::property_registration<T, D C::*, null_type>
-                registration_type;
+  template <class C, class D>
+  class_& def_readonly(const char* name, D C::*mem_ptr)
+  {
+    typedef detail::property_registration<T, D C::*, null_type>
+      registration_type;
 
-            this->add_member(
-                new registration_type(name, mem_ptr, null_type()));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(name, mem_ptr, null_type()));
+    return *this;
+  }
 
-        template <class C, class D, class Policies>
-        class_& def_readonly(const char* name, D C::*mem_ptr, Policies const& policies)
-        {
-            typedef detail::property_registration<T, D C::*, Policies>
-                registration_type;
+  template <class C, class D, class Policies>
+  class_& def_readonly(const char* name, D C::*mem_ptr, Policies const& policies)
+  {
+    typedef detail::property_registration<T, D C::*, Policies>
+      registration_type;
 
-            this->add_member(
-                new registration_type(name, mem_ptr, policies));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(name, mem_ptr, policies));
+    return *this;
+  }
 
-        template <class C, class D>
-        class_& def_readwrite(const char* name, D C::*mem_ptr)
-        {
-            typedef detail::property_registration<
-                T, D C::*, null_type, D C::*
-                > registration_type;
+  template <class C, class D>
+  class_& def_readwrite(const char* name, D C::*mem_ptr)
+  {
+    typedef detail::property_registration<
+      T, D C::*, null_type, D C::*
+      > registration_type;
 
-            this->add_member(
-                new registration_type(
-                    name, mem_ptr, null_type(), mem_ptr));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(
+                                           name, mem_ptr, null_type(), mem_ptr));
+    return *this;
+  }
 
-        template <class C, class D, class GetPolicies>
-        class_& def_readwrite(
-            const char* name, D C::*mem_ptr, GetPolicies const& get_policies)
-        {
-            typedef detail::property_registration<
-                T, D C::*, GetPolicies, D C::*
-                > registration_type;
+  template <class C, class D, class GetPolicies>
+  class_& def_readwrite(
+                        const char* name, D C::*mem_ptr, GetPolicies const& get_policies)
+  {
+    typedef detail::property_registration<
+      T, D C::*, GetPolicies, D C::*
+      > registration_type;
 
-            this->add_member(
-                new registration_type(
-                    name, mem_ptr, get_policies, mem_ptr));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(
+                                           name, mem_ptr, get_policies, mem_ptr));
+    return *this;
+  }
 
-        template <class C, class D, class GetPolicies, class SetPolicies>
-        class_& def_readwrite(
-            const char* name
-            , D C::*mem_ptr
-            , GetPolicies const& get_policies
-            , SetPolicies const& set_policies
-            )
-        {
-            typedef detail::property_registration<
-                T, D C::*, GetPolicies, D C::*, SetPolicies
-                > registration_type;
+  template <class C, class D, class GetPolicies, class SetPolicies>
+  class_& def_readwrite(
+                        const char* name
+                        , D C::*mem_ptr
+                        , GetPolicies const& get_policies
+                        , SetPolicies const& set_policies
+                        )
+  {
+    typedef detail::property_registration<
+      T, D C::*, GetPolicies, D C::*, SetPolicies
+      > registration_type;
 
-            this->add_member(
-                new registration_type(
-                    name, mem_ptr, get_policies, mem_ptr, set_policies));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(
+                                           name, mem_ptr, get_policies, mem_ptr, set_policies));
+    return *this;
+  }
 
-        template<class Derived, class Policies>
-        class_& def(detail::operator_<Derived>, Policies const& policies)
-        {
-            return this->def(
-                Derived::name()
-                , &Derived::template apply<T, Policies>::execute
-                , policies
-                );
-        }
+  template<class Derived, class Policies>
+  class_& def(detail::operator_<Derived>, Policies const& policies)
+  {
+    return this->def(
+                     Derived::name()
+                     , &Derived::template apply<T, Policies>::execute
+                     , policies
+                     );
+  }
 
-        template<class Derived>
-        class_& def(detail::operator_<Derived>)
-        {
-            return this->def(
-                Derived::name()
-                , &Derived::template apply<T, null_type>::execute
-                );
-        }
+  template<class Derived>
+  class_& def(detail::operator_<Derived>)
+  {
+    return this->def(
+                     Derived::name()
+                     , &Derived::template apply<T, null_type>::execute
+                     );
+  }
 
 #endif // end_meister_disabled
 
-  template <typename EnumType>
-  detail::enum_maker<self_t, EnumType> enum_(core::Symbol_sp converter) {
-    return detail::enum_maker<self_t, EnumType>(*this, converter);
+#if 0
+  enum_maker enum_(core::Symbol_sp converter) {
+    return enum_maker(this, converter);
   }
-
+#endif
+  scope_* _outer_scope;
   detail::static_scope<self_t> scope;
 
 private:
@@ -540,16 +549,16 @@ private:
   template <class U>
   void add_wrapper_cast(U *) {
     add_cast(
-        reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
+             reg::registered_class<U>::id, reg::registered_class<T>::id, detail::static_cast_<U, T>::execute);
 
     add_downcast((T *)0, (U *)0, boost::is_polymorphic<T>());
   }
 
   void init(bool hasConstructor) {
     typedef typename detail::extract_parameter<
-        parameters_type, boost::mpl::or_<
-                             detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>>,
-        no_bases>::type bases_t;
+      parameters_type, boost::mpl::or_<
+        detail::is_bases<boost::mpl::_>, boost::is_base_and_derived<boost::mpl::_, T>>,
+      no_bases>::type bases_t;
 
     typedef typename boost::mpl::if_<detail::is_bases<bases_t>, bases_t, bases<bases_t>>::type Base;
 
@@ -559,7 +568,7 @@ private:
                        this->name());
     }
     derivable_class_base::init(
-        typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
+                               typeid(T), reg::registered_class<T>::id, typeid(WrappedType), reg::registered_class<WrappedType>::id, isDerivableCxxClass<T>(0));
 
     //            printf("%s:%d Should I be adding a wrapper cast???\n", __FILE__, __LINE__ );
     add_wrapper_cast((WrappedType *)0);
@@ -568,47 +577,47 @@ private:
   }
 
 #if 0 // begin_meister_disabled
-        template<class Getter, class GetPolicies>
-        class_& property_impl(const char* name,
-                              Getter g,
-                              GetPolicies policies,
-                              boost::mpl::bool_<true>)
-        {
-            this->add_member(
-                new detail::property_registration<T, Getter, GetPolicies>(
-                    name, g, policies));
-            return *this;
-        }
+  template<class Getter, class GetPolicies>
+  class_& property_impl(const char* name,
+                        Getter g,
+                        GetPolicies policies,
+                        boost::mpl::bool_<true>)
+  {
+    this->add_member(
+                     new detail::property_registration<T, Getter, GetPolicies>(
+                                                                               name, g, policies));
+    return *this;
+  }
 
-        template<class Getter, class Setter>
-        derivable_class_& property_impl(const char* name,
-                              Getter g,
-                              Setter s,
-                              boost::mpl::bool_<false>)
-        {
-            typedef detail::property_registration<
-                T, Getter, null_type, Setter, null_type
-                > registration_type;
+  template<class Getter, class Setter>
+  derivable_class_& property_impl(const char* name,
+                                  Getter g,
+                                  Setter s,
+                                  boost::mpl::bool_<false>)
+  {
+    typedef detail::property_registration<
+      T, Getter, null_type, Setter, null_type
+      > registration_type;
 
-            this->add_member(
-                new registration_type(name, g, null_type(), s));
-            return *this;
-        }
+    this->add_member(
+                     new registration_type(name, g, null_type(), s));
+    return *this;
+  }
 
-        template<class F, class Default, class Policies>
-        derivable_class_& virtual_def(char const* name, F const& fn
-                            , Default const& default_, Policies const&, boost::mpl::false_)
-        {
-            this->add_member(
-                new detail::memfun_registration<T, F, Policies>(
-                    name, fn, Policies()));
+  template<class F, class Default, class Policies>
+  derivable_class_& virtual_def(char const* name, F const& fn
+                                , Default const& default_, Policies const&, boost::mpl::false_)
+  {
+    this->add_member(
+                     new detail::memfun_registration<T, F, Policies>(
+                                                                     name, fn, Policies()));
 
-            this->add_default_member(
-                new detail::memfun_registration<T, Default, Policies>(
-                    name, default_, Policies()));
+    this->add_default_member(
+                             new detail::memfun_registration<T, Default, Policies>(
+                                                                                   name, default_, Policies()));
 
-            return *this;
-        }
+    return *this;
+  }
 
 #endif // end_meister_disabled
 
@@ -617,18 +626,24 @@ private:
   derivable_class_ &virtual_def(char const *name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
                                 string const &arguments, string const &declares, string const &docstring) {
     this->add_member(
-        new detail::memfun_registration<T, F, Policies>(
-            name, fn, Policies(), arguments, declares, docstring));
+                     new detail::memfun_registration<T, F, Policies>(
+                                                                     name, fn, Policies(), arguments, declares, docstring));
     return *this;
   }
 
   template <class Policies>
   derivable_class_ &def_default_constructor_(const char *name, void *, Policies const &, string const &arguments, string const &declares, string const &docstring) {
     typedef T construct_type;
-    this->set_default_constructor(
-        new detail::constructor_registration<
-        construct_type, reg::null_type, default_constructor, Policies, detail::construct_derivable_class>(
-            Policies(), name, arguments, declares, docstring));
+    this->set_default_constructor(new detail::constructor_registration<
+                                  construct_type,
+                                  reg::null_type,
+                                  default_constructor,
+                                  Policies,
+                                  detail::construct_derivable_class>(Policies(),
+                                                                     name,
+                                                                     arguments,
+                                                                     declares,
+                                                                     docstring));
     return *this;
   }
 
@@ -637,21 +652,22 @@ private:
     typedef Signature signature;
 
     typedef typename boost::mpl::if_<
-        boost::is_same<WrappedType, reg::null_type>, T, WrappedType>::type construct_type;
+      boost::is_same<WrappedType, reg::null_type>, T, WrappedType>::type construct_type;
 
     this->add_member(
-        new detail::constructor_registration<
-        construct_type, HeldType, signature, Policies, detail::construct_derivable_class>(
-            Policies(), name, arguments, declares, docstring));
+                     new detail::constructor_registration<
+                     construct_type, HeldType, signature, Policies, detail::construct_derivable_class>(
+                                                                                                       Policies(), name, arguments, declares, docstring));
 
 #if 0
-            this->add_default_member(
-                new detail::constructor_registration<
-                construct_type, HeldType, signature, Policies>(
-                    Policies(),name,arguments,declares,docstring));
+    this->add_default_member(
+                             new detail::constructor_registration<
+                             construct_type, HeldType, signature, Policies>(
+                                                                            Policies(),name,arguments,declares,docstring));
 #endif
     return *this;
   }
+
 };
 }
 
