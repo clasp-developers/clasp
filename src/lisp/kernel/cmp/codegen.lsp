@@ -314,6 +314,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (not (core:lexical-function head env))
             (not (core:lexical-macro-function head env))
             (not (core:declared-global-notinline-p head))
+            (not (member head *notinlines*))
             (let ((expansion (core:compiler-macroexpand form env)))
               (if (eq expansion form)
                   nil

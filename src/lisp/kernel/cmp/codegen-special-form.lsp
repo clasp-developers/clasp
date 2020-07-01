@@ -309,6 +309,20 @@
 
 ;;; LET, LET*
 
+(defun new-notinlines (declarations)
+  ;; NOTE: If there are duplicates in the code this will have
+  ;; them as well, but that shouldn't meaningfully affect anything.
+  (append *notinlines*
+          ;; This REMOVE gets all the NOTINLINE declarations.
+          ;; ...but we can't use it since we don't have REMOVE yet.
+          #+(or)
+          (mapcar #'second
+                  (remove 'notinline :test-not #'eq :key #'car))
+          (let ((result nil))
+            (dolist (decl declarations result)
+              (when (eq (first decl) 'notinline)
+                (push (second decl) result))))))
+
 (defun codegen-fill-let-environment (new-env reqvars
                                      exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
@@ -394,7 +408,8 @@ and put the values into the activation frame for new-env."
                  traceid)
             (multiple-value-bind (reqvars)
                 (process-lambda-list-handler lambda-list-handler)
-              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler)))
+              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
+                    (*notinlines* (new-notinlines declares)))
                 (if (core:special-variables lambda-list-handler)
                     (with-try "TRY.let/let*"
                       (progn
@@ -847,7 +862,8 @@ jump to blocks within this tagbody."
 	(let ((evaluate-env (cond
 			      ((eq operator-symbol 'flet) env)
 			      ((eq operator-symbol 'labels) function-env)
-			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol)))))
+			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
+              (*notinlines* (new-notinlines declares)))
 	  (irc-branch-to-and-begin-block (irc-basic-block-create
 					  (bformat nil "%s-start"
 						   (symbol-name operator-symbol))))
@@ -888,7 +904,8 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
-      (codegen-progn result code macro-env))))
+      (let ((*notinlines* (new-notinlines declares)))
+        (codegen-progn result code macro-env)))))
 
 ;;; SYMBOL-MACROLET
 
@@ -927,7 +944,8 @@ jump to blocks within this tagbody."
       (let ((new-env (irc-new-unbound-value-environment-of-size
 		      env
 		      :number-of-arguments (length specials)
-		      :label "locally-env")))
+		      :label "locally-env"))
+            (*notinlines* (new-notinlines declarations)))
 	;; TODO: A runtime environment will be created with space for the specials
 	;; but they aren't used - get rid of them
         (irc-make-value-frame-set-parent new-env 0 env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv env))
@@ -1354,7 +1372,8 @@ jump to blocks within this tagbody."
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
               ;; See comment in cleavir bind-va-list w/r/t safep.
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil)))
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
+                    (*notinlines* (new-notinlines canonical-declares)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 
