@@ -48,7 +48,8 @@
                              ,class
                              ,@(loop for key in keys for param in params
                                      collect `',key collect param))))
-             ,(initialize-instance-form class instance keys params)))))))
+             ,(initialize-instance-form class instance keys params)
+             ,instance))))))
 
 ;; Returns a defaulted list of keys and list of params, as well as a list
 ;; of bindings for any new params to the default values.
