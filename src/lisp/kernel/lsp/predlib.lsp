@@ -1189,6 +1189,7 @@ if not possible."
       (core:SIMPLE-MDARRAY-INT32-T (simple-array ext:INTEGER32 *))
       (core:SIMPLE-MDARRAY-INT64-T (simple-array ext:INTEGER64 *))
       (core:SIMPLE-MDARRAY-T (simple-array T *))
+      (core:abstract-simple-vector (simple-array * (*)))
 
       (STRING (ARRAY CHARACTER (*)))
       #+unicode
