@@ -13,6 +13,7 @@ when this is t a lot of graphs will be generated.")
 (defvar *form* nil)
 (defvar *ast* nil)
 (defvar *hir* nil)
+(defvar *save-hir* nil)
 (defvar *mir* nil)
 
 ;;; FIXME: Move this earlier

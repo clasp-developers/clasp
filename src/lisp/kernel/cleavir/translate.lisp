@@ -570,6 +570,8 @@ when this is t a lot of graphs will be generated.")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr system env)
   (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   (setf *ct-eliminate-load-time-value-inputs* (compiler-timer-elapsed))
+  (when *save-hir*
+    (setf *hir* init-instr))
   #+debug-monitor(monitor-instructions-with-origins init-instr)
 
   #+(or)(replace-aliases init-instr)
