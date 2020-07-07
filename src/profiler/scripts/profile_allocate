@@ -4,6 +4,6 @@ echo PID $1  time: $2
 PID=$1
 TIME=${2:-10s}
 FRAMES=${3:-4000}
-sudo dtrace -p $1 -x ustackframes=${FRAMES} -n "pid$PID::*allocate_*:entry / pid == $PID / {@[ustack()] = count();}   tick-$TIME { exit(0); }" -o /tmp/out-allocate-$PID.raw.stacks
+sudo dtrace -p $1 -x aggsize=512m -x ustackframes=${FRAMES} -n "pid$PID::*allocate_*:entry / pid == $PID / {@[ustack()] = count();}   tick-$TIME { exit(0); }" -o /tmp/out-allocate-$PID.raw.stacks
 echo Wrote to /tmp/out-allocate-$PID.raw.stacks
 
