@@ -677,6 +677,15 @@ Does not hoist."
       (clasp-cleavir-ast:hoist-load-time-value ast env)
     (setf *ct-hoist-ast* (compiler-timer-elapsed))))
 
+;;; Given an AST that may not be a function-ast, wrap it
+;;; in a function AST. Useful for the pattern of
+;;; (eval form) = (funcall (compile nil `(lambda () ,form)))
+;;; as this essentially does the lambda wrap.
+(defun wrap-ast (ast)
+  (cleavir-ast:make-function-ast
+   ast nil
+   :origin (cleavir-ast:origin ast)
+   :policy (cleavir-ast:policy ast)))
 
 #+debug-monitor
 (defun monitor-ast-with-origins (ast)
@@ -706,7 +715,10 @@ Does not hoist."
 (defun ast->hir (ast)
   "Compile an AST down to HIR and return it."
   #+debug-monitor(monitor-ast-with-origins ast)
-  (prog1 (cleavir-ast-to-hir:compile-toplevel ast)
+  ;; The AST must be hoisted here, but by Clasp's standards.
+  ;; Cleavir expects a top-level-function-ast but we don't
+  ;; always need one so we use -unhoisted instead.
+  (prog1 (cleavir-ast-to-hir:compile-toplevel-unhoisted ast)
     (setf *ct-generate-hir* (compiler-timer-elapsed))))
 
 (defun hir->mir (hir &optional (env *clasp-env*))
@@ -732,8 +744,9 @@ and go-indices as third."
       (values hir function-info-map *instruction-go-indices*))))
 
 ;;; Convenience. AST must have been hoisted already.
-(defun translate-hoisted-ast (ast &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*))
+(defun translate-hoisted-ast (ast &key (abi *abi-x86-64*)
+                                    (linkage 'llvm-sys:internal-linkage)
+                                    (env *clasp-env*))
   (let ((hir (ast->hir ast)))
     (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir env)
@@ -741,8 +754,9 @@ and go-indices as third."
                  :abi abi :linkage linkage))))
 
 
-(defun translate-ast (ast  &key (abi *abi-x86-64*) (linkage 'llvm-sys:internal-linkage)
-                             (env *clasp-env*))
+(defun translate-ast (ast &key (abi *abi-x86-64*)
+                            (linkage 'llvm-sys:internal-linkage)
+                            (env *clasp-env*))
   (let ((hoisted-ast (hoist-ast ast env)))
     (translate-hoisted-ast hoisted-ast
                            :abi abi :linkage linkage :env env)))
@@ -759,17 +773,7 @@ This works like compile-lambda-function in bclasp."
          (hir (ast->hir (hoist-ast ast))))
     (multiple-value-bind (mir function-info-map go-indices)
         (hir->mir hir)
-      (let ((function-enter-instruction
-              (block first-function
-                (cleavir-ir:map-local-instructions
-                 (lambda (instruction)
-                   (when (typep instruction 'cleavir-ir:enclose-instruction)
-                     (return-from first-function (cleavir-ir:code instruction))))
-                 mir))))
-        (unless function-enter-instruction
-          (error "Could not find enter-instruction for enclosed function in ~a"
-                 lambda-expression))
-        (translate function-enter-instruction function-info-map go-indices)))))
+      (translate mir function-info-map go-indices))))
 
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
@@ -817,7 +821,7 @@ This works like compile-lambda-function in bclasp."
             (cmp:jit-add-module-return-function
              cmp:*the-module*
              function startup-fn shutdown-fn ordered-raw-constants-list)))
-      (funcall setup-function))))
+      setup-function)))
 
 (defun cclasp-compile-ast (ast env pathname &key (linkage 'llvm-sys:internal-linkage))
   (let* (function lambda-name
@@ -841,13 +845,14 @@ This works like compile-lambda-function in bclasp."
             (cmp:jit-add-module-return-function
              cmp:*the-module*
              function startup-fn shutdown-fn ordered-raw-constants-list)))
-      (funcall setup-function))))
+      setup-function)))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
   #+cst
   (let* ((cst (cst:cst-from-expression form))
-         (ast (cst->ast cst env)))
+         (pre-ast (cst->ast cst env))
+         (ast (wrap-ast pre-ast)))
     (translate-ast ast :env env))
   #-cst
   (let ((ast (generate-ast form env)))
@@ -857,9 +862,11 @@ This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
   (literal:with-top-level-form
       (if cmp::*debug-compile-file*
-          (compiler-time (let ((ast (cst->ast cst env)))
+          (compiler-time (let* ((pre-ast (cst->ast cst env))
+                                (ast (wrap-ast pre-ast)))
                            (translate-ast ast :env env :linkage cmp:*default-linkage*)))
-          (let ((ast (cst->ast cst env)))
+          (let* ((pre-ast (cst->ast cst env))
+                 (ast (wrap-ast pre-ast)))
             (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 #-cst

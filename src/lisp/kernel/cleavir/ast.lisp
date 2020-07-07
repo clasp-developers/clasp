@@ -566,40 +566,6 @@
          (cleavir-ast:index-ast ast)
          (call-next-method)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class PRECALC-VECTOR-FUNCTION-AST
-;;;
-;;; This AST is a subclass of FUNCTION-AST. It is used when an AST
-;;; is transformed by hoisting all the LOAD-TIME-VALUE-ASTs in the tree
-;;; by turning them into PRECALC-VALUE-AST that are also required
-;;; arguments of the PRECALC-VECTOR-FUNCTION-AST.
-;;;
-;;; This AST class supplies a slot that contains a list of the forms
-;;; that were contained in the LOAD-TIME-VALUE-ASTs. In order to
-;;; evaluate the original AST, the transformed AST must be called with
-;;; two vectors that are filled by evaluating those forms and putting
-;;; their results (symbols and values) into the presym-vector and preval-vector
-;;; calc-value-vector and passing that as arguments.
-;;
-
-
-(defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
-  ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
-
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy
-                                         &key origin)
-  (make-instance 'precalc-vector-function-ast
-                 :body-ast body-ast
-                 :lambda-list nil
-                 :precalc-asts precalc-asts
-                 :forms forms
-                 :policy policy
-                 :origin origin))
-
-(cleavir-io:define-save-info precalc-vector-function-ast
-    (:precalc-asts precalc-asts))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class BIND-AST
@@ -762,8 +728,7 @@ precalculated-vector and returns the index."
          (values index-or-immediate (not index-p)))))))
 
 (defun hoist-load-time-value (ast env)
-  (let ((ltvs nil)
-        (forms nil))
+  (let ((ltvs nil))
     (cleavir-ast:map-ast-depth-first-preorder
      (lambda (ast)
        (when (typep ast 'cleavir-ast:load-time-value-ast)
@@ -779,8 +744,5 @@ precalculated-vector and returns the index."
               (change-class ltv 'precalc-value-reference-ast
                             :index index-or-immediate
                             :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 9999912)
-                            :original-object form)))
-        (push form forms)))
-    (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast ltvs forms (cleavir-ast:policy ast)
-     :origin (cleavir-ast:origin ast))))
+                            :original-object form)))))
+    ast))

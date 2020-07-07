@@ -54,7 +54,6 @@
   (:export 
    #:hoist-load-time-value
    #:precalculated-value-ast
-   #:make-precalc-vector-function-ast
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast

@@ -172,7 +172,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual bool allocates() const { return false; };
   virtual core::T_sp creator_allocate() {
-    SIMPLE_ERROR_SPRINTF("This class cannot allocate instances");
+    SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", this->_name.c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));

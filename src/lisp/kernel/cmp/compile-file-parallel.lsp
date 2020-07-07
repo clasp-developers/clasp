@@ -222,17 +222,22 @@ multithreaded performance that we should explore."
                     #+cst
                     (form (cst:raw cst))
                     #+cst
-                    (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
-                             (clasp-cleavir::cst->ast cst)))
+                    (pre-ast
+                      (if cmp::*debug-compile-file*
+                          (clasp-cleavir::compiler-time
+                           (clasp-cleavir::cst->ast cst))
+                          (clasp-cleavir::cst->ast cst)))
                     #-cst
                     (form (read source-sin nil eof-value))
                     #-cst
                     (_ (when (eq form eof-value) (return nil)))
                     #-cst
-                    (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
-                             (clasp-cleavir::generate-ast form))))
+                    (pre-ast
+                      (if cmp::*debug-compile-file*
+                          (clasp-cleavir::compiler-time
+                           (clasp-cleavir::generate-ast form))
+                          (clasp-cleavir::generate-ast form)))
+                    (ast (clasp-cleavir::wrap-ast pre-ast)))
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
                                             :current-source-pos-info current-source-pos-info
