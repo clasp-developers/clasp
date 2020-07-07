@@ -105,6 +105,7 @@ mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 
 /*! Implemented in gc_interace.cc */
 mps_addr_t obj_skip(mps_addr_t base);
+mps_addr_t obj_skip_debug(mps_addr_t base,bool debug=false);
 
 /*! Implemented in gc_interace.cc */
 void obj_finalize(mps_addr_t base);
