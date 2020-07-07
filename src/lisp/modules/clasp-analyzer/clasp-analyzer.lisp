@@ -1212,6 +1212,11 @@ can be saved and reloaded within the project for later analysis"
                    (qtarg (cast:get-as-type arg)))
               (gclog "          Found a smart_ptr~%")
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "GCVector_atomic")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (gclog "          Found a smart_ptr~%")
+              (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCBitUnitArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg))
@@ -1228,6 +1233,9 @@ can be saved and reloaded within the project for later analysis"
                    (qtarg (cast:get-as-type arg)))
               (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            (t
+            (when (or (search "GCVector" name)
+                      (search "GCArray" name))
+              (error "The Decl ~a contains a ~a as one of its fields, but we couldn't figure out exactly what kind of object it will represent - so fix classify-decl to add support for this type of vector/array" decl name ))
             #+gc-warnings(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
                                                       :name name
