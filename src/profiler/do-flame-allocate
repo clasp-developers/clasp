@@ -21,7 +21,7 @@ else
    cp /tmp/out-allocate-$PID.raw.stacks /tmp/out-allocate-$PID.sym.stacks
 fi
 ./cleanup-stacks -i /tmp/out-allocate-$PID.sym.stacks -o /tmp/out-allocate-$PID.stacks
-./invert -i /tmp/out-allocate-$PID.stacks -o /tmp/out-allocate-$PID.invstacks -m 20
+./invert -i /tmp/out-allocate-$PID.stacks -o /tmp/out-allocate-$PID.invstacks -m 13
 # PRUNE_OUTFILE=${OUTFILE%.prune_stacks}
 # ./prune-trace.lisp $OUTFILE $PRUNE_OUTFILE
 echo /tmp/out-allocate-$PID.invstacks
