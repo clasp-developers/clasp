@@ -11324,14 +11324,15 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Sig), "_Sig" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// second-last-field is-atomic atomic: NIL  name: "GCArray_atomic"
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>" :NAME "GCArray_atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
-// not-exposing {  fixed_field, ctype_long, sizeof(long), offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Slots._Length), "_Slots._Length" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: "GCArray_atomic"
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>" :NAME "GCArray_atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL))))
- {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Slots._Data), "_Slots._Data" }, // atomic: NIL public: (T T) fixable: ((#S(CLASP-ANALYZER::INSTANCE-VARIABLE :ACCESS CLANG-AST:AS-PRIVATE :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :FIELD-NAME "_M_i" :LOCATION "/usr/include/c++/9/atomic:189:29") SMART-PTR-FIX)) good-name: T
+ {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Slots._Data), "_Slots._Data" },
+ {  variable_capacity, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Slots._Length), offsetof(SAFE_TYPE_MACRO(core::Rack_O),_Slots._Length), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
+*/
+/* (ctype-key (base one)) -> "std::atomic<gctools::smart_ptr<core::T_O>>"
+*/
+// atomic-smart-ptr-p -> T
+// one -> #<SMART-PTR-OFFSET :fields (#S(CLASP-ANALYZER::INSTANCE-VARIABLE :ACCESS CLANG-AST:AS-PRIVATE :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :FIELD-NAME "_M_i" :LOCATION "/usr/include/c++/9/atomic:189:29")) :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))>
+{    variable_field, SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, "only" },
 // Stamp = core::SmallMultimap_O/1391
 { class_kind, STAMP_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, "core::SmallMultimap_O" },
 // second-last-field is-atomic atomic: NIL  name: "SmallMultimap"
