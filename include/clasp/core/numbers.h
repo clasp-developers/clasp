@@ -1090,12 +1090,10 @@ namespace core {
   inline gc::Fixnum clasp_integer_length(Integer_sp x) {
     if (x.fixnump()) {
       Fixnum i(x.unsafe_fixnum());
-      Fixnum count = 0;
-      if (i < 0)
-        i = ~i;
-      for (; i && (count < FIXNUM_BITS); i >>= 1, count++)
-        ;
-      return count;
+      // clrsb counts _redundant_ sign bits, so the highest
+      // value it can return is [number of bits in a word] - 1.
+      // unsafe_fixnum untags, so nothing to worry about there.
+      return sizeof(Fixnum) * CHAR_BIT - 1 - fixnum_clrsb(i);
     }
     return x->bit_length_();
   }
