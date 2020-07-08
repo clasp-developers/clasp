@@ -1061,14 +1061,14 @@ namespace core {
       } else {
         Fixnum y = (uint64_t)n.raw_();
         if (y>0) {
-          int clz = word_clz(y);
+          int clz = fixnum_clz(y);
           if (clz>bits) {
             y <<= bits;
             Integer_sp result((gctools::Tagged)y);
             return result;
           }
         } else if (y<0) {
-          int clrsb = word_clrsb(y);
+          int clrsb = fixnum_clrsb(y);
           if (clrsb>bits) {
             y <<= bits;
             Integer_sp result((gctools::Tagged)y);
