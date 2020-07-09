@@ -740,16 +740,16 @@ to expose."
       (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
     (let ((*print-pretty* nil))
       (if gcbitunit-ctype
-          (format stream " {  variable_bit_array0, ~a, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+          (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
                   (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
                   (offset-base-ctype array)
                   (layout-offset-field-names array)
                   (layout-offset-field-names array))          
-          (format stream " {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+          (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
                   (offset-base-ctype array)
                   (layout-offset-field-names array)
                   (layout-offset-field-names array)))
-      (format stream " {  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
+      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
               (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
               (offset-base-ctype array)
               (layout-offset-field-names end)
@@ -782,7 +782,7 @@ to expose."
                     (*print-pretty* nil))
                (dolist (iv (fields one))
                  (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%" (instance-field-access iv) (instance-field-ctype iv)))
-               (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+               (format stream "~a    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
                        (if expose-it "" "// not-exposed-yet ")
                        (offset-type-c++-identifier one)
                        (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
@@ -833,7 +833,7 @@ to expose."
         (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
                 (instance-field-access iv)
                 (instance-field-ctype iv)))
-      (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+      (format stream "~a {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it   "" "// not-exposing")
               (offset-type-c++-identifier one)
               (or (offset-ctype one) "UnknownType")
@@ -2379,7 +2379,7 @@ so that they don't have to be constantly recalculated"
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names))
     (let ((reverse-names (nreverse names)))
-      (format nil " { ~a, offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
+      (format nil " { ~a, __builtin_offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
               prefix
               key
               reverse-names
