@@ -84,7 +84,7 @@ public:
   virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  
@@ -125,7 +125,7 @@ public:
   virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  
@@ -166,7 +166,7 @@ public:
   virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  
@@ -203,7 +203,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIScope_O(){};
@@ -307,7 +307,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIFile_O(){};
@@ -343,7 +343,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DILocalScope_O(){};
@@ -379,7 +379,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DISubprogram_O(){};
@@ -415,7 +415,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIType_O(){};
@@ -451,7 +451,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIBasicType_O(){};
@@ -487,7 +487,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIDerivedType_O(){};
@@ -523,7 +523,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DICompositeType_O(){};
@@ -559,7 +559,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DISubroutineType_O(){};
@@ -595,7 +595,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DILexicalBlockBase_O(){};
@@ -631,7 +631,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DILexicalBlock_O(){};
@@ -667,7 +667,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DICompileUnit_O(){};
@@ -720,8 +720,7 @@ public:
   static DIBuilder_sp make(Module_sp context);
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL)
-      delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   };
   DINodeArray_sp getOrCreateArray(core::List_sp elements);
@@ -766,7 +765,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIVariable_O(){};
@@ -803,7 +802,7 @@ public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DILocalVariable_O(){};
@@ -891,14 +890,13 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   DIContext_O() : Base(), _ptr(NULL){};
   ~DIContext_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 }; // DIContext_O class def
 }; // llvmo
@@ -940,16 +938,15 @@ public:
   virtual void *externalObject() const { return this->_ptr; };
   PointerToExternalType wrappedPtr() const { return this->_ptr; }
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  public:
   static DWARFContext_sp createDwarfContext(ObjectFile_sp);
   DWARFContext_O() : Base(), _ptr(NULL){};
   ~DWARFContext_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 }; // DWARFContext_O class def
 }; // llvmo

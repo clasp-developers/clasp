@@ -348,9 +348,7 @@ void DirectoryIterator_O::setupCurrentIterator() {
   _OF();
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
-  if (this->_CurrentIterator != NULL) {
-    delete (this->_CurrentIterator);
-  }
+  delete (this->_CurrentIterator);
   try {
     this->_CurrentIterator = new boost_filesystem::directory_iterator(this->_Path->getPath());
   }
@@ -390,9 +388,7 @@ T_sp DirectoryIterator_O::currentObject() {
 }
 
 DirectoryIterator_O::~DirectoryIterator_O() {
-  if (this->_CurrentIterator != NULL) {
-    delete this->_CurrentIterator;
-  }
+  delete this->_CurrentIterator;
 }
 
 RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
@@ -421,9 +417,7 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   _OF();
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
-  if (this->_CurrentIterator != NULL) {
-    delete (this->_CurrentIterator);
-  }
+  delete (this->_CurrentIterator);
   try {
     this->_CurrentIterator = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
@@ -463,9 +457,7 @@ T_sp RecursiveDirectoryIterator_O::currentObject() {
 }
 
 RecursiveDirectoryIterator_O::~RecursiveDirectoryIterator_O() {
-  if (this->_CurrentIterator != NULL) {
-    delete this->_CurrentIterator;
-  }
+  delete this->_CurrentIterator;
 }
 
 
@@ -478,9 +470,7 @@ void DirectoryEntry_O::initialize() {
 
 void DirectoryEntry_O::setEntry(const boost_filesystem::directory_entry &entry) {
   _OF();
-  if (this->_Entry != NULL) {
-    delete this->_Entry;
-  }
+  delete this->_Entry;
   boost_filesystem::path p = entry.path();
   boost_filesystem::file_status s = entry.status();
   boost_filesystem::file_status ss = entry.symlink_status();
@@ -512,8 +502,7 @@ CL_DEFMETHOD Path_sp DirectoryEntry_O::path() {
 }
 
 DirectoryEntry_O::~DirectoryEntry_O() {
-  if (this->_Entry != NULL)
-    delete this->_Entry;
+  delete this->_Entry;
 }
 
 

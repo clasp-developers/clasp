@@ -250,9 +250,7 @@ void Lisp_O::shutdownLispEnvironment() {
   this->_Roots._TrueObject.reset_();
 
   //    this->_ClassesByClassSymbol.clear();
-  if (this->_Bundle != NULL) {
-    delete this->_Bundle;
-  }
+  delete this->_Bundle;
   if (this->_DebugStream != NULL) {
     this->_DebugStream->endNode(DEBUG_TOPLEVEL);
     delete this->_DebugStream;
