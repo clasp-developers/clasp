@@ -371,9 +371,9 @@ public:
   bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
-	 * before everything else to extend the environment
-	 */
-  string _RCFileName;
+   * before everything else to extend the environment
+   */
+  string _InitFileName;
   bool _NoRc;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded

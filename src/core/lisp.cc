@@ -1281,7 +1281,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
 
   //	this->_FunctionName = execName;
-  this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
+  this->_InitFileName = "sys:" KERNEL_NAME ";init.lsp";
 
   this->_IgnoreInitImage = options._DontLoadImage;
   this->_IgnoreInitLsp = options._DontLoadInitLsp;
@@ -2384,8 +2384,8 @@ int Lisp_O::run() {
     // we want an interactive script
     //
       {
-        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
-        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_RCFileName));
+        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_InitFileName);
+        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_InitFileName));
         T_mv result = core__load_no_package_set(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
