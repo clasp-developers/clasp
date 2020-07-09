@@ -1417,8 +1417,7 @@ CL_DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl
 CL_DEFUN void core__low_level_repl() {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   if ( features.notnilp() ) {
-    List_sp interactive = gc::As<Cons_sp>(features)->memberEq(kw::_sym_interactive);
-    if ( interactive.notnilp() ) {
+    if (_lisp->_Interactive) {
       _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
     }
   }
@@ -1451,21 +1450,7 @@ CL_DEFUN bool core__is_interactive_lisp() {
 }
 
 CL_DEFUN void core__set_interactive_lisp(bool interactive) {
-  List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-  // Remove any old :interactive feature
-  ql::list edited_features;
-  for ( T_sp cur = features; cur.consp(); cur = oCdr(cur) ) {
-    T_sp feature = CONS_CAR(cur);
-    if (feature != kw::_sym_interactive) {
-      edited_features << feature;
-    }
-  }
   _lisp->_Interactive = interactive;
-  if (interactive) {
-    cl::_sym_STARfeaturesSTAR->defparameter(Cons_O::create(kw::_sym_interactive,edited_features.cons()));
-  } else {
-    cl::_sym_STARfeaturesSTAR->defparameter(edited_features.cons());
-  }
 };
 
 void Lisp_O::readEvalPrintInteractive() {

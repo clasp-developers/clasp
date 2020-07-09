@@ -1050,10 +1050,7 @@ T_sp LispDebugger::invoke() {
     printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
     abort();
   }
-  if ( cl::_sym_STARfeaturesSTAR
-       && cl::_sym_STARfeaturesSTAR->symbolValue()
-       && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
-       && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
+  if (_lisp->_DebuggerDisabled) {
     printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }
