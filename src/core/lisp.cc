@@ -226,6 +226,7 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _Bundle(NULL),
                    _DebugStream(NULL),
                    _SingleStepLevel(UndefinedUnsignedInt),
+                   _NoRc(false),
                    _Interactive(true),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
@@ -1302,12 +1303,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   this->_NoPrint = options._NoPrint;
   this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
-  if (options._NoRc) {
-    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-    features = Cons_O::create(KW("no-rc"), features);
-    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  }
-
+  this->_NoRc = options._NoRc;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
   } else {
@@ -1442,6 +1438,10 @@ CL_DEFUN bool core__debugger_disabled_p() {
 
 CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
+}
+
+CL_DEFUN bool core__no_rc_p() {
+  return _lisp->_NoRc;
 }
 
 void Lisp_O::readEvalPrintInteractive() {

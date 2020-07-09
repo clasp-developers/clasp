@@ -374,6 +374,7 @@ public:
 	 * before everything else to extend the environment
 	 */
   string _RCFileName;
+  bool _NoRc;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
   /*! Keep track of every new environment that is created */

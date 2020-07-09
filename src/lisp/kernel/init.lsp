@@ -766,7 +766,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
-  (if (not (member :no-rc *features*))
+  (if (not (core:no-rc-p))
       (let ((clasprc (make-pathname :name ""
                                     :type "clasprc"
                                     :defaults (user-homedir-pathname))))
