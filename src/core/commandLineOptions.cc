@@ -62,7 +62,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--noinform           - Don't print startup banner text\n"
              "--noprint            - Don't prompt or print in read-eval loop\n"
              "-D/--disable-debugger - If the default debugger would be entered, Clasp instead quits\n"
-             "-N/--non-interactive - Suppress all repls\n"
+             "--quit               - Don't start a REPL\n"
+             "-N/--non-interactive - Short for --disable-debugger --quit\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
              "--resource-dir       - Options directory is treated as the executable directory\n"
@@ -138,6 +139,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_NoPrint = true;
     } else if (arg == "-D" || arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
+    } else if (arg == "--quit") {
+      options->_Interactive = false;
     } else if (arg == "-N" || arg == "--non-interactive") {
       options->_DebuggerDisabled = true;
       options->_Interactive = false;
