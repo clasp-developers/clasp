@@ -1302,11 +1302,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   this->_NoPrint = options._NoPrint;
   this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
-  if (this->_Interactive) {
-    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-    features = Cons_O::create(KW("interactive"), features);
-    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  }
   if (options._NoRc) {
     List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
     features = Cons_O::create(KW("no-rc"), features);
