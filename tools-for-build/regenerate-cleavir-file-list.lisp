@@ -48,10 +48,13 @@
 
 (asdf:initialize-source-registry
  `(:source-registry
-   (:tree ,(translate-logical-pathname #P"sys:"))
+   (:tree ,(make-pathname :directory '(:absolute "Users" "karlosz" "clasp" "src" "lisp")))
    :ignore-inherited-configuration))
 
-(load "source-dir:tools-for-build;asdf-system-groveler.lisp")
+(load (make-pathname
+       :name "asdf-system-groveler"
+       :type "lisp"
+       :defaults (or *load-truename* *compile-file-truename*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
