@@ -1449,10 +1449,6 @@ CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
 }
 
-CL_DEFUN void core__set_interactive_lisp(bool interactive) {
-  _lisp->_Interactive = interactive;
-};
-
 void Lisp_O::readEvalPrintInteractive() {
   Cons_sp expression;
   //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),_Nil<T_O>());
