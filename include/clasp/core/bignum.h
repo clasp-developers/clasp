@@ -175,6 +175,7 @@ public: // Functions here
   }
 
   virtual gc::Fixnum bit_length_() const;
+  virtual gc::Fixnum popcount() const;
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */

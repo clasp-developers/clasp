@@ -2946,6 +2946,22 @@ CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
 
 CL_LAMBDA(i);
 CL_DECLARE();
+CL_DOCSTRING("Return the number of bits in the 2's complement representation"
+             "of I that are 'on', i.e. distinct from the sign bit.");
+CL_DEFUN gc::Fixnum cl__logcount(Integer_sp i) {
+  // Builtins aren't very helpful for negative numbers, so we use the
+  // (logcount x) = (logcount (lognot x)) identity.
+  if (i.fixnump()) {
+    gc::Fixnum x(i.unsafe_fixnum());
+    if (x < 0) x = ~x;
+    return fixnum_popcount(x);
+  } else { // bignum
+    return i->popcount();
+  }
+}
+
+CL_LAMBDA(i);
+CL_DECLARE();
 CL_DOCSTRING("float-nan-p");
 CL_DEFUN bool ext__float_nan_p(Float_sp i) {
   return clasp_float_nan_p(i);

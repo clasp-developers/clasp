@@ -349,6 +349,7 @@ namespace core {
     virtual bool oddp_() const { SUBIMP(); };
 
     virtual gc::Fixnum bit_length_() const { SUBIMP(); };
+    virtual gc::Fixnum popcount() const { SUBIMP(); };
 
     /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */

@@ -320,6 +320,18 @@ gc::Fixnum Bignum_O::bit_length_() const {
   }
 }
 
+gc::Fixnum Bignum_O::popcount() const {
+  Bignum x = this->_value;
+  if (this->sign() < 0) {
+    // mpz_popcount is defined to return useless results on negative numbers,
+    // so use (logcount x) = (logcount (lognot x))
+    mpz_class temp;
+    mpz_com(temp.get_mpz_t(), x.get_mpz_t());
+    return mpz_popcount(temp.get_mpz_t());
+  } else
+    return mpz_popcount(x.get_mpz_t());
+}
+
 /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
 Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
