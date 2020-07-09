@@ -522,7 +522,7 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
   core::T_O** module_mem = shadow_mem;
 #endif
 #ifdef USE_MPS
-  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(0);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*this->_capacity));
 #endif
   this->_boehm_shadow_memory = shadow_mem;
