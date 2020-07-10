@@ -374,6 +374,7 @@ public:
    * before everything else to extend the environment
    */
   string _InitFileName;
+  string _RCFileName;
   bool _NoRc;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded

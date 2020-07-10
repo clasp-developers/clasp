@@ -767,11 +767,10 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
   (if (not (core:no-rc-p))
-      (let ((clasprc (make-pathname :name ""
-                                    :type "clasprc"
+      (let ((clasprc (make-pathname :name (core:rc-file-name)
                                     :defaults (user-homedir-pathname))))
         (if (probe-file clasprc)
-            (load clasprc)))))
+            (core:load-source clasprc)))))
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))

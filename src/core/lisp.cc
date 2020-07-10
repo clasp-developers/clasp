@@ -1303,6 +1303,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   this->_NoPrint = options._NoPrint;
   this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
+  this->_RCFileName = options._RCFileName;
   this->_NoRc = options._NoRc;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
@@ -1438,6 +1439,12 @@ CL_DEFUN bool core__debugger_disabled_p() {
 
 CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
+}
+
+// This conses, which is kind of stupid, but we only call it once.
+CL_DEFUN String_sp core__rc_file_name() {
+  // FIXME: Unicode filenames?
+  return SimpleBaseString_O::make(_lisp->_RCFileName);
 }
 
 CL_DEFUN bool core__no_rc_p() {

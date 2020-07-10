@@ -72,7 +72,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
              "-l/--load {file}     - LOAD the file\n"
-             "-r/--norc            - Don't load the ~/.clasprc file\n"
+             "--rc {file}          - Specify name of the RC file (default .clasprc)\n"
+             "-r/--norc            - Don't load the RC file\n"
              "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
              "-S/--seed #          - Seed the random number generator\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
@@ -147,6 +148,9 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (arg == "-R" || arg == "--resource-dir") {
       options->_ResourceDir = options->_RawArguments[iarg+1];
       iarg++;
+    } else if (arg == "--rc") {
+      options->_RCFileName = options->_RawArguments[iarg+1];
+      iarg++;
     } else if (arg == "-r" || arg == "--norc") {
       options->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
@@ -215,6 +219,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _Interactive(true),
     _Version(false),
     _SilentStartup(true),
+    _RCFileName(".clasprc"),
     _NoRc(false),
     _PauseForDebugger(false)
 
