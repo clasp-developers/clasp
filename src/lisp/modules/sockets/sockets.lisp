@@ -269,21 +269,23 @@ SB-SYS:MAKE-FD-STREAM."))
       (setf (slot-value socket 'file-descriptor) -1))))
 
 
-;; FIXME: How bad is manipulating fillp directly?
+;;; Receive data from a datagram socket, and return 4 values:
+;;;   return-buffer, return-length, remote-host, and remove-port. 
+
 (defmethod socket-receive ((socket socket) buffer length
                            &key oob peek waitall element-type)
   (unless (or buffer length)
     (error "You have to supply either buffer or length!"))
+  (unless length
+    (setq size (length buffer)))
   (let ((need-to-copy nil)
         (local-buffer nil))
-    (cond ((null buffer)(setq local-buffer (make-string length :initial-element #\Space :element-type 'base-char)))
-          ((stringp buffer)(setq local-buffer buffer))
-          (t (setq local-buffer (make-string (or length (length buffer)) :initial-element #\Space :element-type 'base-char)
+    (cond ((null buffer)(setq local-buffer (sys:make-static-vector (upgraded-array-element-type '(unsigned-byte 8)) length)))
+          (t (setq local-buffer (sys:make-static-vector (upgraded-array-element-type '(unsigned-byte 8)) length)
                    need-to-copy t)))
-      ;;; and it better be a string of 8-bit chars
     (let ((length (or length (length local-buffer)))
           (fd (socket-file-descriptor socket)))
-      (multiple-value-bind (len-recv errno)
+      (multiple-value-bind (len-recv errno remote-host remote-port)
           (ll-socket-receive fd local-buffer length oob peek waitall)
         (cond ((and (= len-recv -1)
                     (member errno (list +eagain+ +eintr+)))
@@ -293,9 +295,9 @@ SB-SYS:MAKE-FD-STREAM."))
               (t
                (cond (need-to-copy
                       (dotimes (x len-recv)
-                        (setf (aref buffer x) (char-code (aref local-buffer x))))
-                      (values buffer len-recv))
-                     (t (values local-buffer len-recv)))))))))
+                        (setf (aref buffer x) (aref local-buffer x)))
+                      (values buffer len-recv remote-host remote-port))
+                     (t (values local-buffer len-recv remote-host remote-port)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -388,29 +390,26 @@ Examples:
                         &key address external-format oob eor dontroute dontwait nosignal confirm more)
   (declare (ignore external-format more))
   (assert (or (stringp buffer) (typep buffer 'vector)))
-  (let (;eh, here goes string->octet convertion... 
-        ;When will ecl support Unicode?
-        (length (or length (length buffer)))
+  (let ((length (or length (length buffer)))
         (fd (socket-file-descriptor socket)))
-    (unless (stringp buffer)
-      ;;; and it better be a string of 8-bit chars
-      (let ((new-buffer (make-string length :initial-element #\Space :element-type 'base-char)))
-        (dotimes (x length)
-          (setf (aref new-buffer x)(code-char (aref buffer x))))
-        (setq buffer new-buffer)))
+    ;;; Now we need a buffer that is not moved by the GC
+    ;;; So lets borrow that from our static vector code
+    (let ((new-buffer (sys:make-static-vector (upgraded-array-element-type '(unsigned-byte 8)) length)))
+      (dotimes (x length)
+        (setf (aref new-buffer x)(aref buffer x)))
     (let ((len-sent
            (if address
                (progn
                  (assert (= 2 (length address)))
-                 (ll-socket-send-address fd buffer length (second address)
+                 (ll-socket-send-address fd new-buffer length (second address)
                                          (aref (first address) 0) (aref (first address) 1)
                                          (aref (first address) 2) (aref (first address) 3)
                                          oob eor dontroute dontwait nosignal confirm))
-               (ll-socket-send-no-address fd buffer length
+               (ll-socket-send-no-address fd new-buffer length
                                           oob eor dontroute dontwait nosignal confirm))))
       (if (= len-sent -1)
           (socket-error "send")
-          len-sent))))
+          len-sent)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
