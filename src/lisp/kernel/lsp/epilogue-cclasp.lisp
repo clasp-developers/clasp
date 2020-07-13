@@ -5,6 +5,8 @@
 (eval-when (:load-toplevel)
   (cl:in-package :cl-user)
   (let ((core:*use-interpreter-for-eval* nil))
+    ;; FIXME: probably can be made default with MPS.
+    (setq clasp-cleavir::*eliminate-typeq* nil)
     (core:process-extension-loads)
     (core:maybe-load-clasprc)
     (core:process-command-line-load-eval-sequence)

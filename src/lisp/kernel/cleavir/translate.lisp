@@ -6,6 +6,14 @@
   "controls if cleavir debugging is carried out on literal compilation. 
 when this is t a lot of graphs will be generated.")
 
+;;; FIXME: Make this variable always true once MPS comes around.
+(defvar *eliminate-typeq* t
+  "controls whether the typew/typeq elimination phase of the compiler
+  runs. This is set to T during self build, but becomes NIL by default
+  during normal use, as that phase conses a lot, which may cause the
+  compiler to become useless due to memory fragmentation sooner under
+  Boehm.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Set the source-position for an instruction
@@ -553,6 +561,8 @@ when this is t a lot of graphs will be generated.")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   (cleavir-hir-transformations:eliminate-catches init-instr)
+  (when *eliminate-typeq*
+    (cleavir-hir-transformations:eliminate-redundant-typeqs init-instr clasp-cleavir:*clasp-system*))
   ;; Disabled at the moment because deleting these instructions does
   ;; not help with anything at the moment, and only serve to blow up
   ;; compilation times in cases with many THEs produced, since Cleavir
