@@ -13,10 +13,11 @@ Returns the previous value of PLACE; if it's EQ to OLD the swap happened.
 Only the swap is atomic. Evaluation of PLACE's subforms, OLD, and NEW is
 not guaranteed to be in any sense atomic with the swap, and likely won't be.
 PLACE must be a CAS-able place. CAS-able places are either symbol macros,
+special variables,
 or accessor forms with a CAR of
 SYMBOL-VALUE, SYMBOL-PLIST, SVREF, CLOS:STANDARD-INSTANCE-ACCESS, THE,
 SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
-or a macro,
+or macro forms that expand into CAS-able places,
 or an accessor defined with DEFINE-CAS-EXPANDER.
 Some CAS accessors have additional semantic constraints.
 You can see their documentation with e.g. (documentation 'slot-value 'mp:cas)
@@ -56,12 +57,15 @@ Experimental."
 * A form to read a value from PLACE, which can refer to the temporary variables"
   (etypecase place
     (symbol
+     ;; KLUDGE: This will not work in bclasp at all, and the cleavir interface
+     ;; may not be great for this.
+     #-cclasp
      (multiple-value-bind (expansion expanded)
          (macroexpand-1 place env)
        (if expanded
            (get-cas-expansion expansion env)
            (error "CAS on variables not supported yet")))
-     #+(or)
+     #+cclasp
      (let ((info (cleavir-env:variable-info env place)))
        (etypecase info
          (cleavir-env:symbol-macro-info
@@ -69,7 +73,12 @@ Experimental."
          (cleavir-env:special-variable-info
           (get-cas-expansion `(symbol-value ',place) env))
          (cleavir-env:lexical-variable-info
-          (lexical-cas-expansion place env)))))
+          (error "CAS on lexical variable (~a) not supported yet" place)
+          #+(or)
+          (lexical-cas-expansion place env))
+         (null
+          ;; FIXME?: Could assume special
+          (error "Unknown variable to CAS: ~a" place)))))
     (cons
      (let* ((name (car place))
             (expander (cas-expander name)))
