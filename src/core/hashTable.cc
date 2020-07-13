@@ -689,6 +689,15 @@ CL_DEFUN uint cl__hash_table_size(HashTableBase_sp ht) {
   return ht->hashTableSize();
 }
 
+T_sp HashTable_O::operator[](const std::string& key) {
+  T_sp tkey = _lisp->internKeyword(key);
+  T_mv val = this->gethash(tkey);
+  if (val.second().nilp()) {
+    SIMPLE_ERROR(BF("Could not find key: %s") % tkey);
+  }
+  return val;
+}
+
 size_t HashTable_O::hashTableSize() const {
   HT_READ_LOCK(this);
   return this->_Table.size();
