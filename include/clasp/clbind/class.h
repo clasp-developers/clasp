@@ -169,12 +169,12 @@ public:
   DummyCreator_O(const string &name) : _name(name){};
 
 public:
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual bool allocates() const { return false; };
-  virtual core::T_sp creator_allocate() {
+  virtual size_t templatedSizeof() const  override{ return sizeof(*this); };
+  virtual bool allocates() const  override{ return false; };
+  virtual core::T_sp creator_allocate()  override{
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", this->_name.c_str());
   } //return _Nil<core::T_O>(); };
-  core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+  core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
     return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));
   }
 };
@@ -337,8 +337,7 @@ public:
     int ptr_offset;
   };
 
-  void init(
-      type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+  void init(type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
 
   void add_base(type_id const &base, cast_function cast);
 
@@ -355,6 +354,8 @@ public:
 
 private:
   class_registration *m_registration;
+ public:
+  int m_init_counter;
 };
 
 // MSVC complains about member being sensitive to alignment (C4121)
@@ -385,23 +386,27 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
 
 template <class Class, class MethodPointerType, class Policies>
 struct memfun_registration : registration {
-  memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
-    : m_name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+  memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies)
+    : m_name(name), methodPtr(f), policies(policies) {
+    this->m_arguments = policies.lambdaList();
+    this->m_docstring = policies.docstring();
+    this->m_declares = policies.declares();
+  }
 
-    void register_() const {
-      LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
-      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-      core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
-      core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
-      core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr));
-      lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
-                                      m_arguments, m_declares, m_docstring,
-                                      true,
-                                      CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
-                                      GatherPureOutValues<Policies, 0>::gather());
-      core::validateFunctionDescription(__FILE__, __LINE__, ffunc);
-    }
-
+  void register_() const {
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
+    core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+    core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
+    core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
+    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr));
+    lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
+                                    m_arguments, m_declares, m_docstring,
+                                    true,
+                                    CountMethodArguments<MethodPointerType>::value + 1, // +1 for the self argument
+                                    GatherPureOutValues<Policies, 0>::gather());
+    core::validateFunctionDescription(__FILE__, __LINE__, ffunc);
+  }
+  
   virtual std::string name() const { return this->m_name; };
   virtual std::string kind() const { return "memfun_registration"; };
   
@@ -734,60 +739,55 @@ public:
     return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
   }
 
-  template <class F>
-  class_ &def(const std::string &name, F f,
-              const char* cdocstring=NULL,
-              const char* carguments=NULL,
-              const char* cdeclares=NULL)
+  template <class F, class... PTypes>
+  class_ &def(const std::string &name, F f, PTypes... pols)
   {
-    std::string docstring = "";
-    std::string arguments = "";
-    std::string declares = "";
-    if (cdocstring) docstring = cdocstring;
-    if (carguments) arguments = carguments;
-    if (cdeclares) declares = cdeclares;
+    typedef policies<PTypes...> Policies;
+    Policies curPolicies;
+    walk_policy(curPolicies,pols...);
     return this->virtual_def(name, f,
-                             policies<>(),
-                             reg::null_type(),
-                             boost::mpl::true_(),
-                             arguments,
-                             declares,
-                             docstring);
+                             curPolicies,
+                             reg::null_type());
   }
-
-  template <class f, class DefaultOrPolicies>
-  class_ &def(const std::string &name, f fn,
-              DefaultOrPolicies default_or_policies=DefaultOrPolicies(),
-              string const &docstring = "",
-              string const &arguments = "",
-              string const &declares = "" ) {
-    return this->virtual_def(name, fn,
-                             default_or_policies,
-                             reg::null_type(),
-                             typename is_policy_list<DefaultOrPolicies>::type(),
-                             arguments,
-                             declares,
-                             docstring);
-  }
-
 
   // static functions
-  template <class F, class DefaultOrPolicies>
-  class_ &def_static(const std::string &name, F fn,
+  template <class F, class Policies>
+  class_ &def_static(const char*name,
+                     F fn,
                      string const &docstring = "",
                      string const &arguments = "",
                      string const &declares = "",
-                     DefaultOrPolicies default_or_policies=DefaultOrPolicies() ) {
+                     Policies policies=Policies() ) {
       
-    return this->virtual_def(name, fn,
-                             default_or_policies,
-                             reg::null_type(),
-                             typename is_policy_list<DefaultOrPolicies>::type(),
-                             arguments,
-                             declares,
-                             docstring);
+    this->scope_::def(name,fn,policies,docstring,arguments,declares);
+    return *this;
   }
+  // static functions
+  template <class F>
+  class_ &def_static(const char* name,
+                     F fn,
+                     string const &docstring = "",
+                     string const &arguments = "",
+                     string const &declares = "") {
+    this->scope_::def(name,fn,docstring.c_str(),arguments.c_str(),declares.c_str());
+    return *this;
+  }  
 
+
+    // static functions
+  template <typename... Types>
+  class_ &def(constructor<Types...> sig) {
+    printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__ );
+    stringstream ss;
+    ss << "make-";
+    ss << this->name();
+    if (this->m_init_counter) {
+      ss << this->m_init_counter;
+    }
+    this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
+    this->m_init_counter++;
+    return *this;
+  }
 
   template <class Getter>
   class_ &property(const char *name, Getter g, string const &arguments = "", string const &declares = "", string const &docstring = "") {
@@ -960,27 +960,12 @@ private:
     return *this;
   }
 
-  template<class F, class Default, class Policies>
+  template<class F, class Policies, class Default>
   class_ &virtual_def(const std::string& name, F const& fn,
-                      Default const& default_,
-                      Policies const&,
-                      boost::mpl::false_, // Third argument is Default, Fourth is Policies
-                      string const &arguments,
-                      string const &declares,
-                      string const &docstring) {
-    this->add_member(
-                     new detail::memfun_registration<T, F, Policies>(name, fn,
-                                                                     Policies(),
-                                                                     arguments,
-                                                                     declares,
-                                                                     docstring));
-    this->add_default_member(
-                             new detail::memfun_registration<T, Default, Policies>(
-                                                                                   name, default_,
-                                                                                   Policies(),
-                                                                                   arguments,
-                                                                                   declares,
-                                                                                   docstring));
+                      Policies const& policies_,
+                      Default const& default_) {
+    this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies_));
+    this->add_default_member(new detail::memfun_registration<T, Default, Policies>(name, default_,policies_));
     return *this;
   }
 
@@ -990,21 +975,12 @@ private:
   template <class F, class Policies>
   class_ &virtual_def(const std::string &name, F const &fn,
                       Policies const &policies,
-                      reg::null_type,
-                      boost::mpl::true_, // Third argument is Policies, Fourth argument is unused
-                      string const &arguments,
-                      string const &declares,
-                      string const &docstring) {
-    this->add_member(
-                     new detail::memfun_registration<T, F, Policies>(
-                                                                     name, fn,
-                                                                     policies,
-                                                                     arguments,
-                                                                     declares,
-                                                                     docstring));
+                      reg::null_type) {
+    this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
 
+  
   template <class Signature, class Policies>
   class_ &def_default_constructor_(const char *name, Signature *, Policies const &, string const &docstring, string const &arguments, string const &declares) {
     typedef typename boost::mpl::if_<
@@ -1031,6 +1007,15 @@ private:
 
     return *this;
   }
+
+public:
+
+  template <class Getter, class Setter>
+  class_& def_property(const std::string& prefix, Getter g, Setter s, const char* docstring="") {
+    this->property_impl(prefix,g,s);
+  }
+
+  
 };
 }
 

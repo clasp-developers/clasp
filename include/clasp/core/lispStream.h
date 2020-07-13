@@ -347,8 +347,8 @@ GCPROTECTED:
   T_sp _ElementType;
 
 public: // Functions here
-  virtual string __repr__() const;
-  T_sp filename() const { return this->_Filename; };
+  virtual string __repr__() const override;
+  T_sp filename() const override { return this->_Filename; };
   virtual bool has_file_position() const;
 }; // FileStream class
 };
@@ -386,7 +386,7 @@ public: // Functions here
 
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
-  virtual bool has_file_position() const;
+  virtual bool has_file_position() const override;
 };
 };
 
@@ -523,8 +523,8 @@ public:
   }
 
 public: // Functions here
-  virtual string __repr__() const;
-  T_sp filename() const;
+  virtual string __repr__() const override;
+  T_sp filename() const override;
 
 }; // SynonymStream class
 

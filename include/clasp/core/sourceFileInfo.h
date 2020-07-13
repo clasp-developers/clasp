@@ -47,8 +47,8 @@ public:
 class FileScope_O : public Scope_O {
   LISP_CLASS(core, CorePkg, FileScope_O, "FileScope",Scope_O);
  public:
-  bool fieldsp() const { return true; };
-  void fields(Record_sp node);
+  bool fieldsp() const override { return true; };
+  void fields(Record_sp node) override;
 public:
   static FileScope_sp create(Pathname_sp path, int handle);
   static FileScope_sp create(const string &fileNamePath, int handle);
@@ -56,7 +56,7 @@ public:
 public: // ctor/dtor for classes with shared virtual base
   explicit FileScope_O();
   virtual ~FileScope_O(){};
-  void initialize();
+  void initialize() override;
 GCPRIVATE: // instance variables here
   Pathname_sp _pathname;
   /*! Allocated buffer that stores the file name until the program exits */
@@ -73,7 +73,7 @@ CL_LISPIFY_NAME("FileScope-pathname");
 CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
-  string __repr__() const;
+  string __repr__() const override;
 }; // FileScope class
 
 
@@ -88,8 +88,8 @@ class SourcePosInfo_O : public General_O {
 
   LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
  public:
-  bool fieldsp() const { return true; };
-  void fields(Record_sp node);
+  bool fieldsp() const override { return true; };
+  void fields(Record_sp node) override;
 public:                                                                                    // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(_Nil<T_O>()), _InlinedAt(_Nil<T_O>()){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
@@ -109,7 +109,7 @@ public:
   }
   CL_LISPIFY_NAME(make_source_pos_info);
   CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column);
-  string __repr__() const;
+  string __repr__() const override;
   int fileHandle() const { return this->_FileId; };
   size_t filepos() const { return this->_Filepos; };
   uint lineno() const { return this->_Lineno; };

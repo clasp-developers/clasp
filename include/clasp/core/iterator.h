@@ -40,7 +40,7 @@ class Iterator_O : public General_O {
   LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",General_O);
 
 public:
-  void initialize();
+  void initialize() override;
 
 private:
 public:
@@ -50,8 +50,8 @@ public:
   virtual void step() { SUBIMP(); };
   virtual bool operator==(T_sp other) const { SUBIMP(); };
   virtual bool operator<(T_sp other) const { SUBIMP(); };
-  virtual bool eql_(T_sp other) const { return this->operator==(other); };
-  virtual size_t templatedSizeof() const { SUBIMP(); };
+  virtual bool eql_(T_sp other) const override { return this->operator==(other); };
+  virtual size_t templatedSizeof() const override { SUBIMP(); };
 
   // Old way of doing things
 CL_LISPIFY_NAME("core:begin");

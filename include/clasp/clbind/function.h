@@ -81,9 +81,9 @@ private:
 namespace clbind {
 
 template <typename FunctionPtrType, typename Policies>
-class VariadicFunctor : public core::Function_O {
+class VariadicFunctor : public core::BuiltinClosure_O {
 public:
-  typedef core::Function_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
@@ -115,8 +115,12 @@ struct CountFunctionArguments<RT (*)(ARGS...)> {
 
 template <class FunctionPointerType, class Policies=policies<>>
 struct function_registration : registration {
-  function_registration(char const *name, FunctionPointerType f, Policies const &policies, string const &lambdalist, string const &declares, string const &docstring)
-      : m_name(name), functionPtr(f), policies(policies), m_lambdalist(lambdalist), m_declares(declares), m_docstring(docstring) {}
+  function_registration(char const *name, FunctionPointerType f, Policies const &policies) // , string const &lambdalist, string const &declares, string const &docstring)
+    : m_name(name), functionPtr(f), m_policies(policies) {
+    this->m_lambdalist = policies.lambdaList();
+    this->m_docstring = policies.docstring();
+    this->m_declares = policies.declares();
+  }
 
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
@@ -132,7 +136,7 @@ struct function_registration : registration {
   
   char const *m_name;
   FunctionPointerType functionPtr;
-  Policies policies;
+  Policies m_policies;
   string m_lambdalist;
   string m_declares;
   string m_docstring;

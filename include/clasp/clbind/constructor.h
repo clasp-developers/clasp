@@ -180,4 +180,10 @@ public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Stamp;
 };
 
+
+namespace clbind {
+template <typename... SIGS>
+using init = constructor<SIGS...>;
+
+};
 #endif

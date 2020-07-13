@@ -59,8 +59,8 @@ struct KeyValuePair {
     friend class HashTableReadLock;
     friend class HashTableWriteLock;
     LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",HashTableBase_O);
-    bool fieldsp() const { return true; };
-    void fields(Record_sp node);
+    bool fieldsp() const override { return true; };
+    void fields(Record_sp node) override;
 
     friend T_sp cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() :
@@ -128,16 +128,18 @@ struct KeyValuePair {
 //    void set_thread_safe(bool thread_safe);
   public: // Functions here
     virtual bool is_eq_hashtable() const { return false;}
-    virtual bool equalp(T_sp other) const;
+    virtual bool equalp(T_sp other) const override;
 
   /*! See CLHS */
     virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
-    size_t hashTableCount() const;
-    size_t hashTableSize() const;
+    size_t hashTableCount() const override;
+    size_t hashTableSize() const override;
     size_t size() { return this->hashTableCount(); };
 
+    T_sp operator[](const std::string& key);
+    
     virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, HashGenerator& hg) const;
     virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
@@ -155,22 +157,22 @@ struct KeyValuePair {
   /*! Return the key/value pair in a CONS if found or NIL if not */
     KeyValuePair* find(T_sp key);
 
-    T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
+    T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>()) override;
     gc::Fixnum hashIndex(T_sp key) const;
 
-    T_sp hash_table_setf_gethash(T_sp key, T_sp value);
+    T_sp hash_table_setf_gethash(T_sp key, T_sp value) override;
     T_sp setf_gethash_no_write_lock(T_sp key, T_sp value);
     void setf_gethash(T_sp key, T_sp val) { this->hash_table_setf_gethash(key, val); };
 
-    Number_sp rehash_size();
-    double rehash_threshold();
-    T_sp hash_table_test();
+    Number_sp rehash_size() override;
+    double rehash_threshold() override;
+    T_sp hash_table_test() override;
     
-    T_sp clrhash();
+    T_sp clrhash() override;
 
-    bool remhash(T_sp key);
+    bool remhash(T_sp key) override;
 
-    string __repr__() const;
+    string __repr__() const override;
 
     string hash_table_dump();
     void hash_table_pointers_dump();
@@ -178,7 +180,7 @@ struct KeyValuePair {
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
 
-    void maphash(T_sp fn); 
+    void maphash(T_sp fn) override; 
 
     void mapHash(std::function<void(T_sp, T_sp)> const &fn);
     void maphash(std::function<void(T_sp, T_sp)> const &fn) { this->mapHash(fn); };

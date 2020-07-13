@@ -392,7 +392,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creat
   static gctools::smart_ptr<aClass> create() {                          \
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
-  virtual core::Instance_sp __class() const {                           \
+  virtual core::Instance_sp __class() const OVERRIDE {                           \
     return core::lisp_getStaticClass(aClass::static_StampWtagMtag);       \
   }                                                                     \
   /* end LISP_CLASS */
@@ -444,6 +444,7 @@ namespace core {
 
   Instance_sp instance_class(T_sp obj);
 
+#define OVERRIDE
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
@@ -526,6 +527,9 @@ namespace core {
     virtual Fixnum get_stamp_() const { lisp_error_no_stamp((void*)this); };
   };
 };
+
+#undef OVERRIDE
+#define OVERRIDE override
 
 #include <clasp/core/functor.h>
 #include <clasp/core/creator.h>

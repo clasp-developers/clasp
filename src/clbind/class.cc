@@ -164,7 +164,8 @@ void class_registration::register_() const {
 
 class_base::class_base(const string &name)
     : scope_(std::unique_ptr<registration>(
-          m_registration = new class_registration(name))) {
+          m_registration = new class_registration(name)))
+    , m_init_counter(0) {
 }
 
 void class_base::init(

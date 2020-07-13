@@ -127,55 +127,56 @@ public: // Functions here
 
  public:
 
-  NumberType number_type_() const { return number_Bignum; };
+  NumberType number_type_() const override { return number_Bignum; };
 
   mpz_class mpz() const { return this->_value; };
   mpz_class& mpz_ref() { return this->_value; };
 
-  string __repr__() const;
+  string __repr__() const override;
 
-  Number_sp signum_() const;
+  Number_sp signum_() const override;
 
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
   //virtual Number_sp copy() const;
-  string description() const {
+  string description() const override {
     stringstream ss;
     ss << this->_value;
     return ss.str();
   };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
-  Number_sp abs_() const;
-  Number_sp log1_() const;
-  Number_sp sqrt_() const;
-  Number_sp reciprocal_() const;
+  Bignum get() const;
+  Bignum get_or_if_nil_default(Bignum default_value) const;
+  Number_sp abs_() const override;
+  Number_sp log1_() const override;
+  Number_sp sqrt_() const override;
+  Number_sp reciprocal_() const override;
   Number_sp rational_() const final { return this->asSmartPtr(); };
 
-  virtual bool zerop_() const { return ((this->_value == 0)); }
-  virtual bool plusp_() const { return ((this->_value > 0)); }
-  virtual bool minusp_() const { return ((this->_value < 0)); }
+  virtual bool zerop_() const override { return ((this->_value == 0)); }
+  virtual bool plusp_() const override { return ((this->_value > 0)); }
+  virtual bool minusp_() const override { return ((this->_value < 0)); }
 
-  virtual Number_sp negate_() const {
+  virtual Number_sp negate_() const override {
     return Integer_O::create(-this->_value);
   }
 
-  virtual Number_sp oneMinus_() const {
+  virtual Number_sp oneMinus_() const override {
     return Integer_O::create(this->_value - 1);
   }
-  virtual Number_sp onePlus_() const {
+  virtual Number_sp onePlus_() const override {
     return Integer_O::create(this->_value + 1);
   }
 
-  virtual gc::Fixnum bit_length_() const;
-  virtual gc::Fixnum popcount() const;
+  virtual gc::Fixnum bit_length_() const override;
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-  Integer_sp shift_(gc::Fixnum bits) const;
+  Integer_sp shift_(gc::Fixnum bits) const override;
 
   //	virtual	bool	eqn(T_sp obj) const;
-  virtual bool eql_(T_sp obj) const;
+  virtual bool eql_(T_sp obj) const override;
 
  public:
   virtual string valueAsString() const {
@@ -187,56 +188,57 @@ public: // Functions here
 
   // --- TRANSLATION METHODS ---
 
-  virtual short as_short() const;
-  virtual unsigned short as_ushort() const;
+  virtual short as_short() const override;
+  virtual unsigned short as_ushort() const override;
 
-  virtual int as_int() const;
-  virtual unsigned int as_uint() const;
+  virtual int as_int() const override;
+  virtual unsigned int as_uint() const override;
 
-  virtual long as_long() const;
-  virtual unsigned long as_ulong() const;
+  virtual long as_long() const override;
+  virtual unsigned long as_ulong() const override;
 
-  virtual long long as_longlong() const;
-  virtual unsigned long long as_ulonglong() const;
+  virtual long long as_longlong() const override;
+  virtual unsigned long long as_ulonglong() const override;
 
-  virtual int8_t as_int8_t() const;
-  virtual uint8_t as_uint8_t() const;
+  virtual int8_t as_int8_t() const override;
+  virtual uint8_t as_uint8_t() const override;
 
-  virtual int16_t as_int16_t() const;
-  virtual uint16_t as_uint16_t() const;
+  virtual int16_t as_int16_t() const override;
+  virtual uint16_t as_uint16_t() const override;
 
-  virtual int32_t as_int32_t() const;
-  virtual uint32_t as_uint32_t() const;
+  virtual int32_t as_int32_t() const override;
+  virtual uint32_t as_uint32_t() const override;
 
-  virtual int64_t as_int64_t() const;
-  virtual uint64_t as_uint64_t() const;
+  virtual int64_t as_int64_t() const override;
+  virtual uint64_t as_uint64_t() const override;
 
-  virtual uintptr_t as_uintptr_t() const;
-  virtual ptrdiff_t as_ptrdiff_t() const;
-  virtual size_t as_size_t() const;
-  virtual ssize_t as_ssize_t() const;
+  virtual uintptr_t as_uintptr_t() const override;
+  virtual ptrdiff_t as_ptrdiff_t() const override;
+  virtual size_t as_size_t() const override;
+  virtual ssize_t as_ssize_t() const override;
 
   // --- THESE FUNCTIONS RETAINED FOR COMPATIBILITY ---
   // TODO: Code Cleanup: Replace with newer translation functions above
   // frgo, 2016-09-06
 
-  virtual gc::Fixnum as_int_() const;
-  virtual int64_t as_int64_() const;
-  virtual uint64_t as_uint64_() const;
+  virtual gc::Fixnum as_int_() const override;
+  virtual int64_t as_int64_() const override;
+  virtual uint64_t as_uint64_() const override;
   string as_uint64_string() const;
 
-  virtual LongLongInt as_LongLongInt_() const;
+  virtual Bignum as_mpz_() const override;
+  virtual LongLongInt as_LongLongInt_() const override;
   virtual unsigned long long as_unsigned_long_long_() const;
-  virtual float as_float_() const;
-  virtual double as_double_() const;
-  virtual LongFloat as_long_float_() const;
+  virtual float as_float_() const override;
+  virtual double as_double_() const override;
+  virtual LongFloat as_long_float_() const override;
 
   // --- END OF TRANSLATION METHODS ---
 
-  void sxhash_(HashGenerator &hg) const;
+  void sxhash_(HashGenerator &hg) const override;
 
-  virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
-  virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
+  virtual bool evenp_() const override { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
+  virtual bool oddp_() const override { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
 
 }; // Bignum class
 
@@ -314,7 +316,7 @@ public: // Functions here
     return b;
   };
 
-  virtual Number_sp rational_() const {IMPLEMENT_ME();};
+  virtual Number_sp rational_() const override {IMPLEMENT_ME();};
   
 }; // TheNextBignum class
 

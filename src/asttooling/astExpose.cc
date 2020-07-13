@@ -862,7 +862,7 @@ void initialize_astExpose() {
     .value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization)
     .value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration)
     .value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition);
-  m.def("getNameForDiagnostic", &af_getNameForDiagnostic, "docstring", "(decl stream lang-opts qualified)");
+  m.def("getNameForDiagnostic", &af_getNameForDiagnostic, "docstring", "(decl stream lang-opts qualified)"_ll);
   CLASS_DECL(m,ClassTemplatePartialSpecialization, ClassTemplateSpecializationDecl);
   CLASS_DECL(m,TemplateTypeParm, TypeDecl);
   CLASS_DECL(m,TypedefName, TypeDecl)
@@ -1069,10 +1069,11 @@ void initialize_astExpose() {
     .def("dump", (void(clang::Type::*)() const)&clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
-    .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>, policies<>(), "Specialization of getAs<TemplateSpecializationType>", "", "")
+    .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>,
+         "Specialization of getAs<TemplateSpecializationType>", "", "")
     .def("isIntegerType", &clang::Type::isIntegerType)
     .def("getCanonicalTypeInternal", &clang::Type::getCanonicalTypeInternal);
-  m.def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL", "(arg)");
+  m.def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL", "(arg)"_ll);
 
 #define CLASS_TYPE(_m_,_Class_, _Base_) class_<_Class_##Type, _Base_>(_m_,#_Class_ "Type")
   CLASS_TYPE(m,Builtin, Type)
@@ -1094,7 +1095,7 @@ void initialize_astExpose() {
     .def("getElementType", &clang::ArrayType::getElementType);
   CLASS_TYPE(m,ConstantArray, ArrayType)
     .def("desugar", &clang::ConstantArrayType::desugar);
-  m.def("constant-array-get-size", &af_constant_array_get_size, "returns the size of the constant array", "(constant-array)");
+  m.def("constant-array-get-size", &af_constant_array_get_size, "returns the size of the constant array", "(constant-array)"_ll);
   CLASS_TYPE(m,IncompleteArray, ArrayType)
     .def("desugar", &clang::IncompleteArrayType::desugar);
   CLASS_TYPE(m,VariableArray, ArrayType);
@@ -1163,7 +1164,7 @@ void initialize_astExpose() {
     .def("isCanonical", &clang::QualType::isCanonical)
     .def("getCanonicalType", &clang::QualType::getCanonicalType);
   m.def("getTypePtrOrNull", &af_getTypePtrOrNull, "returns the most derived Type* ptr or NIL");
-  m.def("makeQualType", &af_makeQualType, "docstring","(type)");
+  m.def("makeQualType", &af_makeQualType, "docstring","(type)"_ll);
   class_<clang::TypeLoc>(m,"TypeLoc")
     .def("getSourceRange", &clang::TypeLoc::getSourceRange)
     .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)

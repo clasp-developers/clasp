@@ -156,7 +156,7 @@ extern std::atomic<uintptr_t> global_process_UniqueID;
       pthread_attr_destroy(&attr);
       return result;
     }
-    string __repr__() const;
+    string __repr__() const override;
     string phase_as_string() const;
   };
 };
@@ -200,7 +200,7 @@ namespace mp {
     gctools::Fixnum counter() const{
       return this->_Mutex.counter();
     }
-    string __repr__() const;
+    string __repr__() const override;
   };
 };
 
@@ -255,7 +255,7 @@ void write_unlock(bool release_read_lock=false) {
       this->_SharedMutex.readUnlock();
     };
     void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
-    string __repr__() const;
+    string __repr__() const override;
   };
 };
 
@@ -314,7 +314,7 @@ namespace mp {
     CL_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;
     }
-    string __repr__() const;
+    string __repr__() const override;
   };
   void mp__interrupt_process(Process_sp process, core::T_sp func);
 };

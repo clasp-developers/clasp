@@ -57,48 +57,21 @@ struct CLBIND_API scope_ {
     scope_(scope_ const &other_);
     ~scope_();
 
-    
     scope_ &operator=(scope_ const &other_);
-
     scope_ &operator, (scope_ s);
-
     void register_() const;
-
  private:
     detail::registration *m_chain;
-
-
  public:
-    template <typename F, class Policies>
-    void def(char const *name, F f, Policies const &policies, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
-      std::string docstring = "";
-      std::string lambdalist;
-      std::string declares;
-      if (cdocstring) docstring = cdocstring;
-      if (clambdalist) lambdalist = clambdalist;
-      if (cdeclares) declares = cdeclares;
+    template <typename F, class... PTypes>
+    void def(char const *name, F f, PTypes... pols) { // const char* clambdalist=NULL, const char* cdeclares=NULL) {
+      typedef policies<PTypes...> Policies;
+      Policies curPolicies;
+      walk_policy(curPolicies,pols...);
       LOG_SCOPE(("%s:%d function %s to chain of %p\n", __FILE__, __LINE__, name, this ));
-      scope_ fnscope(std::unique_ptr<detail::registration>(
-                                                     new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F, Policies>(name, f, curPolicies)));
       this->operator,(fnscope);
     }
-
-    template <class F>
-    void def(char const *name, F f, const char* cdocstring = NULL, const char* clambdalist=NULL, const char* cdeclares=NULL) {
-      std::string docstring = "";
-      std::string lambdalist;
-      std::string declares;
-      if (cdocstring) docstring = cdocstring;
-      if (clambdalist) lambdalist = clambdalist;
-      if (cdeclares) declares = cdeclares;
-      scope_ fnscope(std::unique_ptr<detail::registration>(new detail::function_registration<F>(name, f,
-                                                                                                policies<>(),
-                                                                                                lambdalist,
-                                                                                                declares,
-                                                                                                docstring)));
-      this->operator,(fnscope);
-    }
-      
 
 };
 

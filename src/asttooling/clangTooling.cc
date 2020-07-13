@@ -515,17 +515,11 @@ SYMBOL_EXPORT_SC_(AstToolingPkg, onEndOfTranslationUnit);
 
 namespace asttooling {
 
-#define ARGS_ast_tooling__clangVersionString "()"
-#define DECL_ast_tooling__clangVersionString ""
-#define DOCS_ast_tooling__clangVersionString "clangVersionString"
 CL_DEFUN core::T_sp ast_tooling__clangVersionString() {
   core::T_sp version = core::SimpleBaseString_O::make(CLANG_VERSION_STRING);
   return version;
 };
 
-#define ARGS_ast_tooling__getSingleMatcher "(variant-matcher)"
-#define DECL_ast_tooling__getSingleMatcher ""
-#define DOCS_ast_tooling__getSingleMatcher "getSingleMatcher"
 core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
@@ -535,9 +529,6 @@ core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_ast_tooling__IDToNodeMap "(bound-nodes)"
-#define DECL_ast_tooling__IDToNodeMap ""
-#define DOCS_ast_tooling__IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
 core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
   if (const clang::ast_matchers::BoundNodes *boundNodes = gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>()) {
     core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
@@ -567,9 +558,6 @@ core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
   SIMPLE_ERROR(BF("Wrong argument type for IDToNodeMap"));
 }
 
-#define ARGS_ast_tooling__match "(match-finder node ast-context)"
-#define DECL_ast_tooling__match ""
-#define DOCS_ast_tooling__match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
 void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
   clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
   clang::ASTContext *astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
@@ -740,8 +728,9 @@ void initialize_clangTooling() {
         .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
         .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands);
     class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>> cljcd(m,"JSONCompilationDatabase");
+    /*This was used when exposing the original clang function, the wrapped one doesn't have a second string parameter */
     m.def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile,
-          policies<adopt<result> ,outValue<2> /*This was used when exposing the original clang function, the wrapped one doesn't have a second string parameter */ >());
+          adopt<result>() ,outValue<2>());
     class_<clang::ASTConsumer> cl_aa(m,"Clang-ASTConsumer");
     class_<clang::LangOptions> cl_ab(m,"LangOptions");
     class_<clang::Lexer> cl_ac(m,"Lexer");
@@ -753,16 +742,16 @@ void initialize_clangTooling() {
         .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout);
   
     class_<clang::SourceManager> cl_af(m,"SourceManager");
-    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
+    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
         .def("getFilename", &clang::SourceManager::getFilename)
         .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
-        .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, policies<pureOutValue<2>>())
-        .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, policies<pureOutValue<2>>())
+        .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
+        .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, pureOutValue<2>())
         .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
-        .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, policies<pureOutValue<2>>())
-        .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, policies<pureOutValue<2>>())
-        .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, policies<pureOutValue<2>>())
-        .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, policies<pureOutValue<2>>());
+        .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, pureOutValue<2>())
+        .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
+        .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
+        .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>());
     m.def("getFieldOffset",&getFieldOffset);
     m.def("getRecordSize",&getRecordSize);
     class_<clang::SourceLocation> cl_ag(m,"SourceLocation");
@@ -802,14 +791,14 @@ void initialize_clangTooling() {
     class_<clang::ASTFrontendAction, clang::FrontendAction> cl_al(m,"Clang-ASTFrontendAction");
     class_<clang::SyntaxOnlyAction, clang::ASTFrontendAction> cl_am(m,"Clang-SyntaxOnlyAction");
     derivable_class_<DerivableASTFrontendAction, clang::ASTFrontendAction> dc_a(m,"ASTFrontendAction",create_default_constructor);
-    dc_a.def("CreateASTConsumer", &DerivableASTFrontendAction::CreateASTConsumer, policies<adopt<result>>());
+    dc_a.def("CreateASTConsumer", &DerivableASTFrontendAction::CreateASTConsumer, adopt<result>());
     class_<clang::tooling::ClangTool> cc_a(m,"ClangTool");
     cc_a.def_constructor("newClangTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
         .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
         .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
         .def("clangToolRun", &clang::tooling::ClangTool::run)
-        .def("buildASTs", &clang::tooling::ClangTool::buildASTs, policies<pureOutValue<1>>());
+        .def("buildASTs", &clang::tooling::ClangTool::buildASTs, pureOutValue<1>());
     class_<clang::tooling::Replacement>(m,"Replacement")
         .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, llvm::StringRef>())
         .def("toString", &clang::tooling::Replacement::toString)
@@ -858,7 +847,7 @@ void initialize_clangTooling() {
     cl_ba.def_constructor("newMatchFinder", constructor<>())
         .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
         .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST);
-    m.def("match", &ast_tooling__match, policies<>(), DOCS_ast_tooling__match, ARGS_ast_tooling__match, DECL_ast_tooling__match);
+    m.def("match", &ast_tooling__match);
     m.def("runToolOnCode", &clang::tooling::runToolOnCode);
     class_<clang::ast_matchers::MatchFinder::MatchCallback> cl_bb(m,"MatchCallback-abstract");
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback> cl_bc(m,"MatchCallback",create_default_constructor);
@@ -870,9 +859,9 @@ void initialize_clangTooling() {
         .def("match-result-context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
         .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager);
     class_<clang::ast_matchers::BoundNodes> cl_be(m,"BoundNodes");
-    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, policies<>(), DOCS_ast_tooling__IDToNodeMap, ARGS_ast_tooling__IDToNodeMap, DECL_ast_tooling__IDToNodeMap);
+    m.def("IDToNodeMap", &ast_tooling__IDToNodeMap, "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes", "(bound-nodes)"_ll);
     m.def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken);
-    m.def("Lexer-getSourceText", &clang::Lexer::getSourceText, policies<pureOutValue<4>>());
+    m.def("Lexer-getSourceText", &clang::Lexer::getSourceText, pureOutValue<4>());
     class_<clang::tooling::CompileCommand> cl_bf(m,"CompileCommand");
     cl_bf.property("CompileCommandDirectory", &clang::tooling::CompileCommand::Directory)
         .property("CompileCommandCommandLine", &clang::tooling::CompileCommand::CommandLine);

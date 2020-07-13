@@ -64,7 +64,7 @@ public:
   }
 
 public:
-  void initialize();
+  void initialize() override;
   List_sp data() const { return this->_alist; };
   T_sp seen() const { return this->_Seen; };
   RecordStage stage() const { return this->_stage; };

@@ -66,6 +66,14 @@ struct enum_base {
     this->m_converterPackageName = core::lisp_packageName(converterSym->getPackage());
     LOG_SCOPE(("%s:%d enum_base @%p  scope %p  symbol: %s  name: %s  package: %s\n", __FILE__, __LINE__, this, &from, _rep_(converterSym).c_str(), this->m_converterSymbolName.c_str(), this->m_converterPackageName.c_str() ));
   }
+  explicit enum_base(scope_& from, const std::string& converterName) : _from(&from) {
+    core::Symbol_sp converterSym = _lisp->intern(converterName);
+    core::SymbolToEnumConverter_sp converter = core::SymbolToEnumConverter_O::create(converterSym->symbolNameAsString());
+    converterSym->defparameter(converter);
+    this->m_converterSymbolName = converterSym->symbolNameAsString();
+    this->m_converterPackageName = core::lisp_packageName(converterSym->getPackage());
+    LOG_SCOPE(("%s:%d enum_base @%p  scope %p  symbol: %s  name: %s  package: %s\n", __FILE__, __LINE__, this, &from, _rep_(converterSym).c_str(), this->m_converterSymbolName.c_str(), this->m_converterPackageName.c_str() ));
+  }
   scope_ *_from;
   std::string m_converterSymbolName;
   std::string m_converterPackageName;
@@ -103,7 +111,9 @@ struct enum_value_registration : registration {
 
 template <typename EnumType>
 struct enum_ : public enum_base {
-  explicit enum_(scope_& from, core::Symbol_sp converterSym) : enum_base(from,converterSym) {};
+  explicit enum_(scope_& from, core::Symbol_sp converterSym, const std::string& docstring="docstring") : enum_base(from,converterSym), _docstring(docstring) {};
+
+  explicit enum_(scope_& from, const std::string& converterName, const std::string& docstring="docstring") : enum_base(from,converterName), _docstring(docstring) {};
 
   template <class ValueType>
   enum_& value(const char* name, ValueType val) {
@@ -112,10 +122,13 @@ struct enum_ : public enum_base {
     return *this;
   }
 
+  std::string _docstring;
 private:
   //            void operator=(enum_ const&); // C4512, assignment operator could not be generated
   template <class T>
   void operator, (T const &) const;
+public:
+  void export_values() {};
 };
 }
 

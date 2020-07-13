@@ -551,7 +551,7 @@ template <>
   {
     typedef std::string DeclareType;
     DeclareType _v;
-  from_object( T_P o ) : _v( "" ){};
+    from_object( T_P o ) : _v(gc::As<core::String_sp>(o)->get_std_string()) {};
   };
 
   template <>

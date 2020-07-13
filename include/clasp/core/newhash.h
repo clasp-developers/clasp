@@ -88,8 +88,8 @@ THE SOFTWARE.
 
 inline uintptr_t
 hash_string(int initval, const unsigned char *k, int length) {
-  register uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
-  register int len;
+  uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
+  int len;
   for (len = length; len >= 24; len -= 24) {
     a += extract_word(k);
     k += 8;
@@ -199,8 +199,8 @@ hash_string(int initval, const unsigned char *k, int length) {
 
 inline uintptr_t
 hash_string(int initval, const unsigned char *k, int length) {
-  register uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
-  register int len;
+  uintptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, c = initval;
+  int len;
   for (len = length; len >= 12; len -= 12) {
     a += extract_word(k);
     k += 4;

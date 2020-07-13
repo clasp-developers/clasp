@@ -45,7 +45,7 @@ namespace core {
   TranslationFunctor_O(FunctionDescription* fdesc, Type ptr) : BuiltinClosure_O(TranslationFunctor_O::entry_point,fdesc), fptr(ptr) {};
   public:
     typedef BuiltinClosure_O TemplatedBase;
-    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor_O); };
+    virtual size_t templatedSizeof() const override { return sizeof(TranslationFunctor_O); };
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
       TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
       return gctools::return_type((closure->fptr)(lcc_fixed_arg0),1);
