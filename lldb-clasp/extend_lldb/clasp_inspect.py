@@ -3,12 +3,21 @@ import lldb
 
 global_DataTypes = {}
 global_Kinds = {}
+global_Structs = {}
+global_HeaderStruct = None
 
+class StructType:
+    def __init__(self,name,sizeof,fields):
+        self._name = name
+        self._sizeof = sizeof
+        self._fields = fields
+        
 class DataType:
-    def __init__(self,data_type,name):
+    def __init__(self,data_type,name,sizeof):
         self._data_type = data_type
         self._name = name
-
+        self._sizeof = sizeof
+        
 class ClassKind:
     def __init__(self,stamp,name,size):
         self._stamp = stamp
@@ -72,11 +81,17 @@ class VariableField:
 
 def Init_test(msg):
     print("Init_test -> %s" % msg)
-        
-def Init_data_type(data_type,name):
-    global_DataTypes[data_type] = DataType(data_type,name)
+
+def Init_struct(name,sizeof,fields):
+    global global_Structs
+    global_Structs[name] = StructType(name,sizeof,fields)
+    
+def Init_data_type(data_type,name,sizeof):
+    global global_DataTypes
+    global_DataTypes[data_type] = DataType(data_type,name,sizeof)
 
 def Init_class_kind(stamp, name, size):
+    global global_Kinds
     # print("Init__class_kind stamp = %d\n" % stamp)
     global_Kinds[stamp] = ClassKind(stamp,name,size)
 
@@ -117,6 +132,9 @@ def Init__variable_field(stamp,index,data_type,field_name,field_offset):
 
 
 
+def valid_tptr(val):
+    return "0x%x" % val
+
 def is_int(str,base):
     try:
         int(str,base)
@@ -145,18 +163,25 @@ def read_unsigned_at_offset(debugger,verbose,base,offset):
     
 def print_object_type(debugger,verbose,obj,type_=0):
     if (type_==0):
-        print_tagged_ptr(debugger,verbose,obj)
+        print_tagged_ptr(debugger,verbose,obj,toplevel=False)
     print("print_object_type Handle obj: %d  type: %d\n" % (obj, type_))
 
-def print_variable_array0(debugger,verbose,indent,class_,obj):
+def print_variable_array0(debugger,verbose,indent,class_,obj,toplevel=False):
     base = untag_general(obj)
     data_offset = class_._variable_array0._offset
+    element_size = class_._variable_capacity._element_size
     length_offset = class_._variable_capacity._end_offset
     length_ = read_unsigned_at_offset(debugger,verbose,base,length_offset)
     print("%d slots" % length_)
+    print("variable_fields -> %s" % class_._variable_fields)
     for index in range(0,length_):
-        data = read_unsigned_at_offset(debugger,verbose,base,data_offset+8*index)
-        print("Data[%d] at 0x%x"% (index,data))
+        element_offset = data_offset+element_size*index
+        print("element[%d]@0x%x" % (index, base+element_offset))
+        for field_index in class_._variable_fields:
+            field = class_._variable_fields[field_index]
+            field_offset = element_offset + field._field_offset
+            data = read_unsigned_at_offset(debugger,verbose,base,field_offset)
+            print("%s%s -> %s" % (indent,field._field_name, valid_tptr(data)));
     
 def print_simple_base_string(debugger,verbose,indent,class_,obj):
     base = untag_general(obj)
@@ -167,38 +192,37 @@ def print_simple_base_string(debugger,verbose,indent,class_,obj):
     process = debugger.GetSelectedTarget().GetProcess()
     data = process.ReadMemory(base+data_offset,length_,err)
     if (err.Success()):
-        print("Data: %s "% data)
+        print("Data: %s "% str(data))
     else:
         print("Data Could not read!!!")
 
 def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
     print("class dict -> %s" % class_.__dict__)
     
-def print_shallow_object_type(debugger,verbose,indent,obj,type_=0):
-    if (type_==0):
-        if (generalp(obj)):
-            base = untag_general(obj)
-            header_ptr = base - 8
-            err = lldb.SBError()
-            process = debugger.GetSelectedTarget().GetProcess()
-            header = process.ReadUnsignedFromMemory(header_ptr,8,err)
-            if (err.Success()):
-                stamp = header>>4
-                if (verbose): print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
-                class_ = global_Kinds[stamp]
-                name = class_._name
-                if (name=="core::SimpleBaseString_O"):
-                    if (verbose): print("class_ = %s" % class_.__dict__)
-                    print_simple_base_string(debugger,verbose,indent,class_,obj)
-                    return
-                if (verbose): print("%sclass = %s" % (indent,name))
-            return
-    print("%sprint_object_type Handle obj: %d  type: %d\n" % (indent, obj, type_))
+def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False):
+    if (generalp(obj)):
+        base = untag_general(obj)
+        header_ptr = base - global_HeaderStruct._sizeof;
+        err = lldb.SBError()
+        process = debugger.GetSelectedTarget().GetProcess()
+        header = process.ReadUnsignedFromMemory(header_ptr,8,err)
+        if (err.Success()):
+            stamp = header>>4
+            if (not toplevel and verbose): print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
+            class_ = global_Kinds[stamp]
+            name = class_._name
+            if (name=="core::SimpleBaseString_O"):
+                if (not toplevel and verbose): print("class_ = %s" % class_.__dict__)
+                print_simple_base_string(debugger,verbose,indent,class_,obj)
+                return True
+            if (not toplevel and verbose): print("%sclass = %s" % (indent,name))
+            return False
+    return False
     
-def print_tagged_ptr(debugger,verbose,tptr):
+def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
     if (generalp(tptr)):
         base = tptr-1
-        header_ptr = base - 8
+        header_ptr = base - global_HeaderStruct._sizeof
         err = lldb.SBError()
         process = debugger.GetSelectedTarget().GetProcess()
         header = process.ReadUnsignedFromMemory(header_ptr,8,err)
@@ -207,14 +231,17 @@ def print_tagged_ptr(debugger,verbose,tptr):
             if (verbose): print("header@%x stamp = %d" % (header_ptr,stamp))
             class_ = global_Kinds[stamp]
             name = class_._name
-            print("a %s" % name)
-            for field in class_._fields.values():
-                val = read_unsigned_at_offset(debugger,verbose,base,field._field_offset)
-                print("field@0x%x: %s" % (val,field._field_name))
-                type_ = field._data_type
-                print_shallow_object_type(debugger,verbose,"  ",val,type_)
+            printed = print_shallow_object_type(debugger,verbose,0,tptr,toplevel)
+            if (printed): return
+            print("a %s" % name )
+            if (isinstance(class_,ClassKind)):
+                for field in class_._fields.values():
+                    val = read_unsigned_at_offset(debugger,verbose,base,field._field_offset)
+                    print("field %s: %s" % (field._field_name,valid_tptr(val)))
+                    type_ = field._data_type
+                    print_shallow_object_type(debugger,verbose,"  ",val,type_,toplevel=False)
             if (class_._variable_array0):
-                print_variable_array0(debugger,verbose,"  ",class_,tptr)
+                print_variable_array0(debugger,verbose,"  ",class_,tptr,toplevel=False)
             return
         print("Error %s\n" % err)
         return
@@ -241,12 +268,19 @@ def inspect(debugger,command,result,internal_dict):
         # theObject.GetValue() returns a string - why? dunno
         if (verbose): print("theObject.GetValue() = %s" % theObject.GetValue())
         tptr = int(theObject.GetValue(),16)
-    print_tagged_ptr(debugger,verbose,tptr)
+    print_tagged_ptr(debugger,verbose,tptr,toplevel=True)
 
 
 def do_lldb_init_module(debugger,internal_dict,prefix):
+    global global_HeaderStruct
     print("In clasp_inspect")
-    filename = "/tmp/foo.py"
+    filename = "/tmp/clasp-layout.py"
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
     exec(code) # , globals, locals)
+    global_HeaderStruct = global_Structs["gctools::Header_s"]
+    if (global_HeaderStruct==None):
+        raise "Could not find gctools::Header_s struct"
+    prefix = "%s.clasp_inspect" % prefix
+    debugger.HandleCommand('command script add -f %s.inspect il' % prefix)
+

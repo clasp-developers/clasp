@@ -4528,4 +4528,37 @@ SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t A
   GC_ALLOCATE_VARIADIC(SectionedAddress_O, sa, SectionIndex, Address);
   return sa;
 }
+
+
+void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset)
+{
+  if (comma) fprintf(fout, ",");
+  fprintf(fout, "[ \"%s\", %d, %lu ]\n", name, dt, offset );
+}
+
+void dump_objects_for_lldb(FILE* fout)
+{
+  fprintf(fout,"Init_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", sizeof(gctools::Header_s));
+  python_dump_field(fout,"_stamp_wtag_mtag",false,gctools::ctype_size_t,offsetof(gctools::Header_s,_stamp_wtag_mtag));
+#ifdef DEBUG_GUARD
+  python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
+  python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
+  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,guard));
+#endif
+  fprintf(fout,"] )\n");
+  fprintf(fout,"Init_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", sizeof(llvmo::ObjectFileInfo));
+  python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
+  python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
+  python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
+  python_dump_field(fout,"_object_file_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_object_file_start));
+  python_dump_field(fout,"_object_file_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_object_file_size));
+  python_dump_field(fout,"_text_segment_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_text_segment_start));
+  python_dump_field(fout,"_text_segment_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_size));
+  python_dump_field(fout,"_text_segment_SectionID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_SectionID));
+  python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
+  python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
+  python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
+  fprintf(fout,"] )\n");
+};
+  
 }; // namespace llvmo, SectionedAddress_O

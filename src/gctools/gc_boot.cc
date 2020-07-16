@@ -19,31 +19,6 @@ Container_layout* global_container_layout;
 Container_info*  global_container_info;
 
 
-void dump_data_types(FILE* fout, const std::string& indent)
-{
-#define DTNAME(_type_,_name_) fprintf(fout,"%sclasp.Init_data_type( data_type=%d, name=\"%s\")\n", indent.c_str(), _type_, _name_)
-  DTNAME(SMART_PTR_OFFSET,"smart_ptr");
-  DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr");
-  DTNAME(ARRAY_OFFSET,"array");
-  DTNAME(POINTER_OFFSET,"pointer");
-  DTNAME(CONSTANT_ARRAY_OFFSET,"constant_array");
-  DTNAME(ctype_double,"double");
-  DTNAME(ctype_float,"float");
-  DTNAME(ctype_int,"int");
-  DTNAME(ctype_short,"short");
-  DTNAME(ctype_unsigned_char,"unsigned_char");
-  DTNAME(ctype_signed_char,"signed_char");
-  DTNAME(ctype_unsigned_short,"unsigned_short");
-  DTNAME(ctype_signed_short,"signed_short");
-  DTNAME(ctype_unsigned_long,"unsigned_long");
-  DTNAME(ctype_unsigned_int,"unsigned_int");
-  DTNAME(ctype_long,"long");
-  DTNAME(ctype_long_long,"long_long");
-  DTNAME(ctype_char,"char");
-  DTNAME(ctype__Bool,"_Bool");
-  DTNAME(ctype_enum_core__StreamMode,"enum_core__StreamMode");
-  DTNAME(ctype_core__FrameStamp,"FrameStamp");
-}
 
 void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 {
