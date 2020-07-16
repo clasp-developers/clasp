@@ -134,6 +134,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 #ifdef CLASP_THREADS
 #include <clasp/core/mpPackage.h>
@@ -1314,6 +1315,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_MPS 
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
+    llvmo::dump_objects_for_lldb(fout);
     fclose(fout);
     printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
     exit(0);

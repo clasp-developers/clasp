@@ -4621,7 +4621,6 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 
 namespace llvmo {
 
-
 struct ObjectFileInfo {
   const char* _faso_filename;
   size_t    _faso_index;
@@ -4811,5 +4810,9 @@ struct from_object<llvm::Optional<T>> {
    }
  };
 }
+
+namespace llvmo {
+void dump_objects_for_lldb(FILE* fout);
+};
 
 #endif //]
