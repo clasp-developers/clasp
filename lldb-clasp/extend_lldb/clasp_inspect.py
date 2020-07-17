@@ -277,10 +277,11 @@ def do_lldb_init_module(debugger,internal_dict,prefix):
     filename = "/tmp/clasp-layout.py"
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
-    exec(code) # , globals, locals)
+    exec(code)
     global_HeaderStruct = global_Structs["gctools::Header_s"]
     if (global_HeaderStruct==None):
         raise "Could not find gctools::Header_s struct"
     prefix = "%s.clasp_inspect" % prefix
     debugger.HandleCommand('command script add -f %s.inspect il' % prefix)
+
 

@@ -66,7 +66,7 @@ class PerfFile():
             return None
         mid = self.binary_search(address)
         if (mid != None):
-            return self._funcs[mid]._name
+            return (self._funcs[mid]._name, self._funcs[mid]._start)
             
 def load_perf_file(pid):
     global global_perf
@@ -77,9 +77,9 @@ def load_perf_file(pid):
 
 def lookup_address(address):
     global global_perf
-    func = global_perf.lookup_function(address)
+    func_start = global_perf.lookup_function(address)
 #    print("Looked up address %x -> %s" % (address , func))
-    return func
+    return func_start
     
 def do_lldb_init_module(debugger,internal_dict,prefix):
     target = debugger.GetSelectedTarget()

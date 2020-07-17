@@ -1,3 +1,11 @@
+#
+# Load this into lldb using
+#
+# command script import <path-to-loader.py>
+#
+#
+
+
 import extend_lldb
 
 print("Imported extend_lldb")
