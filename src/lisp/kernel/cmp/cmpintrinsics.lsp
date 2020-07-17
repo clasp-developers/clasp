@@ -1,4 +1,4 @@
-;;;
+;;
 ;;;    File: cmpintrinsics.lsp
 ;;;
 
@@ -183,6 +183,7 @@ names to offsets."
 
 (define-symbol-macro %size_t% #+64-bit %i64%
                               #+32-bit %i32%)
+(define-symbol-macro %badge% %size_t%)
 (define-symbol-macro %atomic<size_t>% %size_t%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
@@ -298,11 +299,12 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %i64%     ; 1 _Stamp_;
-         %t*%      ; 2 Class_;
+         %badge%   ; 1 Badge
+         %i64%     ; 2 _Stamp_;
+         %t*%      ; 3 Class_;
          )
    nil))
-(defconstant +wrapped-pointer.stamp-index+ 1)
+(defconstant +wrapped-pointer.stamp-index+ 2)
 (define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
 
 ;;; MUST match Instance_O layout
@@ -310,11 +312,12 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %t*%      ; 1 _Class
-         %t*%      ; 2 _Rack
+         %badge%   ; 1 badge
+         %t*%      ; 2 _Class
+         %t*%      ; 3 _Rack
          )
    nil))
-(defconstant +instance.rack-index+ 2)
+(defconstant +instance.rack-index+ 3)
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
 
 
@@ -323,32 +326,35 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %size_t%  ; 1 length
-         %tsp[0]%  ; 2 zeroth element of data
+         %badge%   ; 1 badge
+         %size_t%  ; 2 length
+         %tsp[0]%  ; 3 zeroth element of data
          )
    nil))
-(defconstant +simple-vector.length-index+ 1)
-(defconstant +simple-vector.data-index+ 2)
+(defconstant +simple-vector.length-index+ 2)
+(defconstant +simple-vector.data-index+ 3)
 
 (define-symbol-macro %rack%
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %tsp%     ; 1 Stamp
-         %tsp%     ; 2 Sig
-         %size_t%  ; 3 length
-         %t*[0]%  ; 4 zeroth element of data
+         %badge%   ; 1 badge
+         %tsp%     ; 2 Stamp
+         %tsp%     ; 3 Sig
+         %size_t%  ; 4 length
+         %t*[0]%   ; 5 zeroth element of data
          )
    nil))
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
-(defconstant +rack.stamp-index+ 1)
-(defconstant +rack.length-index+ 3)
-(defconstant +rack.data-index+ 4)
+(defconstant +rack.stamp-index+ 2)
+(defconstant +rack.length-index+ 4)
+(defconstant +rack.data-index+ 5)
 
 
 (define-c++-struct %mdarray% +general-tag+
   ((%i8*% :vtable)
+   (%badge% :badge)
    (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
    (%size_t% :Array-Total-Size)
    (%t*%     :Data)
@@ -363,15 +369,16 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %tsp%     ; 1 _Parent
-         %size_t%  ; 2 length
-         %tsp[0]%  ; 3 zeroth element of data
+         %badge%   ; 1 badge
+         %tsp%     ; 2 _Parent
+         %size_t%  ; 3 length
+         %tsp[0]%  ; 4 zeroth element of data
          )
    nil))
 (define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
-(defconstant +value-frame.parent-index+ 1)
-(defconstant +value-frame.length-index+ 2)
-(defconstant +value-frame.data-index+ 3)
+(defconstant +value-frame.parent-index+ 2)
+(defconstant +value-frame.length-index+ 3)
+(defconstant +value-frame.data-index+ 4)
 
 
 
@@ -380,16 +387,17 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %i8*%     ; 1 entry (From Function_O)
-         %t*%      ; 2 _Rack
-         %t*%      ; 3 _Class
-         %function-description*%   ; 4  FunctionDescription*
-         %atomic<size_t>%          ; 5  _InterpretedCalls
-         %atomic<tsp>%             ; 6 _CompiledDispatchFunction
+         %badge%   ; 1 badge
+         %i8*%     ; 2 entry (From Function_O)
+         %t*%      ; 3 _Rack
+         %t*%      ; 4 _Class
+         %function-description*%   ; 5  FunctionDescription*
+         %atomic<size_t>%          ; 6  _InterpretedCalls
+         %atomic<tsp>%             ; 7 _CompiledDispatchFunction
          )
    nil))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
-(defconstant +funcallable-instance.rack-index+ 2)
+(defconstant +funcallable-instance.rack-index+ 3)
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;;
@@ -397,6 +405,7 @@ Boehm and MPS use a single pointer"
 ;;;
 (define-c++-struct %symbol% +general-tag+
   ((%i8*% :sym-vtable)
+   (%badge% :badge)
    (%t*% :name)
    (%t*% :home-package)
    (%t*% :global-value)
@@ -406,8 +415,8 @@ Boehm and MPS use a single pointer"
    (%i32% :flags)
    (%t*% :property-list)))
 
-(defconstant +symbol.function-index+ 4)
-(defconstant +symbol.setf-function-index+ 5)
+(defconstant +symbol.function-index+ 5)
+(defconstant +symbol.setf-function-index+ 6)
 
 (define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
@@ -714,10 +723,11 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %Function%
     (llvm-sys:struct-type-get
      (thread-local-llvm-context)
-     (list %i8*%    ; vtable
-           %fn-prototype*%     ; entry
+     (list %i8*%            ; 0 vtable
+           %badge%          ; 1 badge
+           %fn-prototype*%  ; 2 entry
            ) nil))
-(defconstant +function.entry-index+ 1)
+(defconstant +function.entry-index+ 2)
 
 (define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
 (define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
@@ -745,6 +755,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 
 (define-c++-struct %closure-with-slots% +general-tag+
   ((%i8*% vtable)
+   (%badge% :badge)
    (%fn-prototype*% entry)
    (%function-description*% function-description)
    (%i32% closure-type)

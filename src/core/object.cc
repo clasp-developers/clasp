@@ -368,13 +368,13 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    hg.addAddress((void*)this);
+    hg.addGeneralAddress(this);
   }
 }
 
 void General_O::sxhash_equal(HashGenerator &hg) const {
   if (!hg.isFilling()) return;
-  hg.addAddress((void*)this);
+  hg.addGeneralAddress(this);
   return;
 }
 
@@ -390,8 +390,30 @@ bool General_O::equalp(T_sp obj) const {
   return this->equal(obj);
 }
 
+
+bool HashGenerator::addGeneralAddress(const General_O* part) {
+  ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+  if (this->isFull()) return false;
+  this->_Parts[this->_NextAddressIndex] = (uintptr_t)part->_badge;
+  this->_NextAddressIndex--;
+  return true;
+}
+
 void Hash1Generator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);
+}
+
+  // Add an address - this may need to work with location dependency
+bool Hash1Generator::addGeneralAddress(const General_O* part) {
+  ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+  this->_Part = (uintptr_t)part->_badge;
+  this->_PartIsPointer = true;
+#ifdef DEBUG_HASH_GENERATOR
+  if (this->_debug) {
+    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+  }
+#endif
+  return true;
 }
 
 /*! Recursive hashing of objects need to be prevented from 

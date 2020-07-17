@@ -415,10 +415,10 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
   if (obj.generalp()) {
-    hg.addAddress((void*)obj.unsafe_general());
+    hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addAddress((void*)obj.unsafe_cons());
+    hg.addConsAddress((void*)obj.unsafe_cons());
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -427,10 +427,10 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
 
 void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj) {
   if (obj.generalp()) {
-    hg.addAddress((void*)obj.unsafe_general());
+    hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addAddress((void*)obj.unsafe_cons());
+    hg.addConsAddress((void*)obj.unsafe_cons());
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -462,12 +462,12 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
         hg.hashObject(obj);
         return;
       }
-      hg.addAddress((void*)(obj.unsafe_general()));
+      hg.addGeneralAddress(obj.unsafe_general());
       return;
     }
   case gctools::cons_tag:
     {
-      hg.addAddress((void*)(obj.unsafe_cons()));
+      hg.addConsAddress((void*)(obj.unsafe_cons()));
       return;
     }
   default:
@@ -494,10 +494,10 @@ void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
       hg.hashObject(obj);
       return;
     }
-    hg.addAddress((void*)(obj.unsafe_general()));
+    hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addAddress((void*)(obj.unsafe_cons()));
+    hg.addConsAddress((void*)(obj.unsafe_cons()));
     return;
   }
   SIMPLE_ERROR(BF("Illegal object for eql hash %s") % _rep_(obj));
@@ -697,9 +697,10 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   return ht->gethash(key, default_value);
 };
 
-List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index, HashGenerator& hg) {
+__attribute__((optnone)) List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index, HashGenerator& hg) {
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d key = %s  index = %ld\n") % __FILE__ % __LINE__ % _rep_(key) % index , T_sp());});
   VERIFY_HASH_TABLE(this);
+  BOUNDS_ASSERT(index<this->_Table.size());
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
     Cons_O& entry = this->_Table[cur];
     if (entry.ocar().no_keyp()) goto NOT_FOUND;
@@ -725,7 +726,7 @@ List_sp HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_i
   }
  NOT_FOUND:
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d key not found\n") % __FILE__ % __LINE__, T_sp());});
-#if defined(USE_MPS)
+#if 0 // defined(USE_MPS)
   if (key.objectp()) {
     if (hg.isstale(&this->_LocationDependency)) {
       DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  mps_ld_isstale->TRUE\n") % __FILE__ % __LINE__, T_sp());});
@@ -752,11 +753,12 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   ht->rehash_no_lock(false, _NoKey<T_O>());
 }
 
-T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
+__attribute__((optnone)) T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE(this);
   HashGenerator hg;
+  size_t sz = this->_Table.size();
   cl_index index = this->sxhashKey(key, this->_Table.size(), hg );
   List_sp keyValuePair = this->tableRef_no_read_lock(key, false /*under_write_lock*/, index, hg);
   LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
@@ -831,7 +833,7 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     return value;
   }
   // not found
-#ifdef USE_MPS  
+#if 0 // def USE_MPS  
   // DO NOT! I repeat DO NOT comment out the following line because you see we calculate index above
   // The one below has "true /*will-add-key*/ - this means it will add to the MPS location dependency
   // object - this is essential if this is to work with MPS
@@ -897,10 +899,10 @@ List_sp HashTable_O::rehash_no_lock(bool expandTable, T_sp findKey) {
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d rehash_no_lock\n") % __FILE__ % __LINE__ , T_sp());});
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
-  ASSERTF(this->_Table.size() != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
+  gc::Fixnum curSize = this->_Table.size();
+  ASSERTF(this->_Table.size() != 0, BF("HashTable is empty in expandHashTable curSize=%ld  this->_Table.size()= %lu this shouldn't be") % curSize % this->_Table.size());
   List_sp foundKeyValuePair(_Nil<T_O>());
   LOG(BF("At start of expandHashTable current hash table size: %d") % this->_Table.size());
-  gc::Fixnum curSize = this->_Table.size();
   gc::Fixnum newSize = 0;
   if (expandTable) {
     if (cl__integerp(this->_RehashSize)) {

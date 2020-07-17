@@ -365,7 +365,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
-        mps_ap_t obj_ap = my_thread_allocation_points._amc_cons_allocation_point;
+        mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
         globalMpsMetrics.consAllocations++;
         smart_ptr<Cons> obj =
           cons_mps_allocation<Cons>(obj_ap,"CONS",

@@ -561,7 +561,7 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
   patternStack = core::Cons_O::create(pattern, patternStack);
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #endif
 };
@@ -581,7 +581,7 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
     mps_pat = mps_alloc_pattern_ramp_collect_all();
   }
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #endif
   return pattern;

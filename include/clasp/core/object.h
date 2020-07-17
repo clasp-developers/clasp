@@ -159,8 +159,8 @@ class Hash1Generator : public HashGeneratorBase {
   /* Add the limbs of the bignum - the value*/
   bool addValue(const mpz_class &bignum);
 
-  // Add an address - this may need to work with location dependency
-  bool addAddress(void* part) {
+    // Add an address - this may need to work with location dependency
+  bool addConsAddress(void* part) {
     ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
     this->_Part = (uintptr_t)part;
     this->_PartIsPointer = true;
@@ -171,6 +171,10 @@ class Hash1Generator : public HashGeneratorBase {
 #endif
     return true;
   }
+
+  // Add an address - this may need to work with location dependency
+  bool addGeneralAddress(const General_O* part);
+  
   // Hash1Generator is always filling
   bool isFilling() const { return true; };
   void hashObject(T_sp obj);
@@ -194,8 +198,7 @@ class Hash1Generator : public HashGeneratorBase {
 #endif
     return ((uintptr_t)hash) % bound;
   }
-
-#ifdef USE_MPS
+#if 0 // def USE_MPS
   void addAddressesToLocationDependency(mps_ld_t ld) {
     if (this->_PartIsPointer) {
       mps_ld_add(ld,global_arena,(mps_addr_t)this->_Part);
@@ -259,7 +262,7 @@ public:
     return true;
   }
 
-  bool addAddress(void* part) {
+  bool addConsAddress(void* part) {
     ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
     if (this->isFull()) {
       return false;
@@ -269,6 +272,8 @@ public:
     return true;
   }
 
+  bool addGeneralAddress(const General_O* part);
+  
   /*Add the bignum across multiple parts, return true if everything was added */
   bool addValue(const mpz_class &bignum);
 
@@ -321,7 +326,7 @@ public:
 
   void hashObject(T_sp obj);
 
-#ifdef USE_MPS
+#if 0 // def USE_MPS
   void addAddressesToLocationDependency(mps_ld_t ld) {
     for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
       mps_ld_add(ld,global_arena,(mps_addr_t)this->_Parts[ia]);
@@ -461,7 +466,10 @@ namespace core {
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
-
+    size_t _badge;
+  public:
+    General_O() : _badge(my_thread->random()) {};
+  public:
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equal(HashGenerator &hg) const;
     virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};
@@ -664,11 +672,11 @@ namespace core {
       return;
     } else if (obj.consp() ) {
       Cons_O* cons = obj.unsafe_cons();
-      hg.addAddress((void*)cons);
+      hg.addConsAddress((void*)cons);
       return;
     } else if ( obj.generalp() ) {
       General_O* general = obj.unsafe_general();
-      hg.addAddress((void*)general);
+      hg.addGeneralAddress(general);
       return;
     }
     SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");

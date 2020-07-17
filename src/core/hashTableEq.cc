@@ -93,7 +93,7 @@ List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     if (entry.ocar().no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
-#if defined(USE_MPS)
+#if 0 // defined(USE_MPS)
   // Location dependency test if key is stale
   if (key.objectp()) {
     if (hg.isstale(&this->_LocationDependency)) {

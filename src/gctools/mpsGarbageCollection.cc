@@ -154,13 +154,13 @@ bool global_underscanning = false;
 
 // The pools - if you add a pool - assign it an integer index
 // in the id_from_pool and pool_from_id functions
-mps_pool_t global_amc_cons_pool;
+mps_pool_t global_cons_pool;
 mps_pool_t global_amc_pool;
 mps_pool_t global_amcz_pool;
 mps_pool_t global_awl_pool;
 mps_pool_t global_non_moving_pool;
 //mps_pool_t global_unmanaged_pool;
-enum PoolEnum {amc_cons_pool=0, amc_pool=1, amcz_pool=2, awl_pool=3, non_moving_pool=4, max_pool=4 };
+enum PoolEnum {cons_pool=0, amc_pool=1, amcz_pool=2, awl_pool=3, non_moving_pool=4, max_pool=4 };
 size_t global_sizeof_fwd;
 
 struct PoolInfo {
@@ -174,7 +174,7 @@ struct PoolInfo {
 /*! Info about the pools.
     PoolInfo structs. */
 PoolInfo global_pool_info[] = {
-    {false,amc_cons_pool,global_amc_cons_pool,cons_skip},
+    {false,cons_pool,global_cons_pool,cons_skip},
     {true,amc_pool,global_amc_pool,obj_skip},
     {true,amcz_pool,global_amcz_pool,obj_skip},
     {false,awl_pool,global_awl_pool,weak_obj_skip},
@@ -183,7 +183,7 @@ PoolInfo global_pool_info[] = {
     
 
 PoolInfo& pool_info_from_pool(mps_pool_t p) {
-  if (p == global_amc_cons_pool) return global_pool_info[(int)amc_cons_pool];
+  if (p == global_cons_pool) return global_pool_info[(int)cons_pool];
   if (p == global_amc_pool) return global_pool_info[(int)amc_pool];
   if (p == global_amcz_pool) return global_pool_info[(int)amcz_pool];
   if (p == global_awl_pool) return global_pool_info[(int)awl_pool];
@@ -194,7 +194,7 @@ PoolInfo& pool_info_from_pool(mps_pool_t p) {
 
 mps_pool_t pool_from_id(PoolEnum p) {
   switch (p) {
-  case amc_cons_pool: return global_amc_cons_pool;
+  case cons_pool: return global_cons_pool;
   case amc_pool: return global_amc_pool;
   case amcz_pool: return global_amcz_pool;
   case awl_pool: return global_awl_pool;
@@ -649,7 +649,7 @@ size_t processMpsMessages(size_t& finalizations) {
       bool live_object = true;
       if (pool) {
 //        printf("%s:%d  ---- In pool %p\n", __FILE__, __LINE__, pool );
-        if (pool == gctools::global_amc_cons_pool) {
+        if (pool == gctools::global_cons_pool) {
 //          printf("%s:%d    in CONS pool %p\n", __FILE__, __LINE__, ref_o);
           obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
@@ -955,7 +955,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create cons format");
 
-  // Create the AMC CONS pool
+  // Create the CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
@@ -964,7 +964,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #endif
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-    res = mps_pool_create_k(&global_amc_cons_pool, global_arena, mps_class_amc(), args);
+    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_awl(), args);
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -1148,7 +1148,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_amcz_pool);
   mps_fmt_destroy(obj_fmt_zero);
   mps_pool_destroy(global_non_moving_pool);
-  mps_pool_destroy(global_amc_cons_pool);
+  mps_pool_destroy(global_cons_pool);
   mps_pool_destroy(global_amc_pool);
   mps_arena_park(global_arena);
   mps_chain_destroy(general_chain);
@@ -1228,10 +1228,10 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
 
-  res = mps_ap_create_k(&this->_amc_cons_allocation_point,
-                        global_amc_cons_pool, mps_args_none);
+  res = mps_ap_create_k(&this->_cons_allocation_point,
+                        global_cons_pool, mps_args_none);
   if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Couldn't create global_amc_cons_allocation_point");
+    GC_RESULT_ERROR(res, "Couldn't create global_cons_allocation_point");
 
   res = mps_ap_create_k(&this->_automatic_mostly_copying_zero_rank_allocation_point,
                         global_amcz_pool, mps_args_none);
@@ -1252,7 +1252,7 @@ void ThreadLocalAllocationPoints::destroyAllocationPoints() {
     mps_ap_destroy(this->_custom_allocation_points[handle]);
   }
   mps_ap_destroy(this->_automatic_mostly_copying_zero_rank_allocation_point);
-  mps_ap_destroy(this->_amc_cons_allocation_point);
+  mps_ap_destroy(this->_cons_allocation_point);
   mps_ap_destroy(this->_automatic_mostly_copying_allocation_point);
   mps_ap_destroy(this->_weak_link_allocation_point);
   mps_ap_destroy(this->_strong_link_allocation_point);
