@@ -18,15 +18,17 @@ class PerfFile():
         
     def load(self,filename):
         print("Loading file: %s\n" % filename)
-        with open(filename) as fin:
-            for line in fin:
-                parts = line.split()
-                ff = FuncRange(int(parts[0],16),int(parts[1],16),parts[2])
-                self._funcs.append(ff)
-        self._funcs.sort(key=func_start)
+        if os.path.isfile(filename):
+            with open(filename) as fin:
+                for line in fin:
+                    parts = line.split()
+                    ff = FuncRange(int(parts[0],16),int(parts[1],16),parts[2])
+                    self._funcs.append(ff)
+                    self._funcs.sort(key=func_start)
+        else:
+            print("Could not find file %s" % filename)
         return self
-
-
+        
     def binary_search(self, x):
 #        print("binary_search started %x" % x)
         arr = self._funcs
