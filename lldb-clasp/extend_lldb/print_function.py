@@ -341,7 +341,9 @@ def lbt(debugger, command, result, internal_dict):
             symbol_offset = file_addr - start_addr
             sym = symbols[i]
             if (sym == None):
-                sym = extend_lldb.loadperf.lookup_address(load_addr)
+                sym_start = extend_lldb.loadperf.lookup_address(load_addr)
+                sym = sym_start[0]
+                symbol_offset = load_addr-sym_start[1]
             mmod = mods[i]
             if (mmod == None):
                 mmod = ""
