@@ -1,4 +1,4 @@
-
+import os
 import extend_lldb.loadperf
 
 global_perf = None
@@ -18,7 +18,7 @@ class PerfFile():
         
     def load(self,filename):
         print("Loading file: %s\n" % filename)
-        if os.path.isfile(filename):
+        if os.path.exists(filename):
             with open(filename) as fin:
                 for line in fin:
                     parts = line.split()

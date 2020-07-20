@@ -59,7 +59,6 @@
 (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
 (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
 (defvar +vaslist-tag+ (get-cxx-data-structure-info :valist-tag))
-(defvar +unused-tag+ (get-cxx-data-structure-info :unused-tag))
 (defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
 (defvar +fixnum1-tag+ (get-cxx-data-structure-info :fixnum1-tag))
 (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))

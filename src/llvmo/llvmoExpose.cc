@@ -4543,7 +4543,11 @@ void dump_objects_for_lldb(FILE* fout)
 #ifdef DEBUG_GUARD
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
-  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,guard));
+  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard));
+  python_dump_field(fout,"_dup_tail_start",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_start));
+  python_dump_field(fout,"_dup_tail_size",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_size));
+  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
 #endif
   fprintf(fout,"] )\n");
   fprintf(fout,"Init_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", sizeof(llvmo::ObjectFileInfo));

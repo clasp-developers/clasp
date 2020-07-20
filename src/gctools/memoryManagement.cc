@@ -344,15 +344,17 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 void Header_s::validate() const {
   if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"header is 0");
+  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
+    if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
+    if ( this->_guard2!= 0xAAAAAAAAAAAAAAAA) signal_invalid_object(this,"normal object bad header guard2");
 #endif
     if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->_tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
-    if ( this->_tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
+    if ( this->_tail_start != this->_dup_tail_start) signal_invalid_object(this,"normal object bad header tail_start");
+    if ( this->_tail_size != this->_dup_tail_size) signal_invalid_object(this,"normal object bad header tail_size");
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
@@ -362,7 +364,7 @@ void Header_s::validate() const {
 #ifdef USE_MPS
 #ifdef DEBUG_GUARD
   if ( this->fwdP() ) {
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
+    if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");

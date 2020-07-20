@@ -236,7 +236,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNUSED-TAG"), make_fixnum((int)gctools::unused_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-TAG"), make_fixnum((int)gctools::fixnum0_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM1-TAG"), make_fixnum((int)gctools::fixnum1_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);

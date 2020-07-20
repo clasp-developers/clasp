@@ -238,6 +238,7 @@ DEBUG_OPTIONS = [
     "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
     "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
     "DEBUG_THREADS",
+    "DEBUG_STORES", # insert a call to cc_validate_tagged_pointer everytime something is written to memory
     "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
     "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip

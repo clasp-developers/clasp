@@ -418,7 +418,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
     hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress((void*)obj.unsafe_cons());
+    hg.addConsAddress(obj.unsafe_cons());
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -430,7 +430,7 @@ void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj) {
     hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress((void*)obj.unsafe_cons());
+    hg.addConsAddress(obj.unsafe_cons());
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -467,7 +467,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
     }
   case gctools::cons_tag:
     {
-      hg.addConsAddress((void*)(obj.unsafe_cons()));
+      hg.addConsAddress(obj.unsafe_cons());
       return;
     }
   default:
@@ -497,7 +497,7 @@ void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
     hg.addGeneralAddress(obj.unsafe_general());
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress((void*)(obj.unsafe_cons()));
+    hg.addConsAddress(obj.unsafe_cons());
     return;
   }
   SIMPLE_ERROR(BF("Illegal object for eql hash %s") % _rep_(obj));

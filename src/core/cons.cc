@@ -331,12 +331,6 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 //
 // Constructor
 //
-Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
-{
-  ASSERTNOTNULL(this->ocar());
-  ASSERTNOTNULL(this->cdr());
-}
-
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   _OF();

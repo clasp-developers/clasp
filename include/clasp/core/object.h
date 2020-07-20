@@ -160,17 +160,7 @@ class Hash1Generator : public HashGeneratorBase {
   bool addValue(const mpz_class &bignum);
 
     // Add an address - this may need to work with location dependency
-  bool addConsAddress(void* part) {
-    ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
-    this->_Part = (uintptr_t)part;
-    this->_PartIsPointer = true;
-#ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
-    }
-#endif
-    return true;
-  }
+  bool addConsAddress(const Cons_O* part);
 
   // Add an address - this may need to work with location dependency
   bool addGeneralAddress(const General_O* part);
@@ -262,16 +252,7 @@ public:
     return true;
   }
 
-  bool addConsAddress(void* part) {
-    ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
-    if (this->isFull()) {
-      return false;
-    }
-    this->_Parts[this->_NextAddressIndex] = (uintptr_t)part;
-    this->_NextAddressIndex--;
-    return true;
-  }
-
+  bool addConsAddress(const Cons_O* part);
   bool addGeneralAddress(const General_O* part);
   
   /*Add the bignum across multiple parts, return true if everything was added */
@@ -672,7 +653,7 @@ namespace core {
       return;
     } else if (obj.consp() ) {
       Cons_O* cons = obj.unsafe_cons();
-      hg.addConsAddress((void*)cons);
+      hg.addConsAddress(cons);
       return;
     } else if ( obj.generalp() ) {
       General_O* general = obj.unsafe_general();

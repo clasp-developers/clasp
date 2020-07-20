@@ -457,7 +457,9 @@ extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
+  // Very expensive to validate every object on the heap
   if (header->stampP()) {
+    header->validate();
     ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
@@ -765,7 +767,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 #endif
 #ifdef USE_MPS
   if (object.generalp() || object.consp()) {
-    my_mps_finalize((void*)&*object);
+    my_mps_finalize(object.raw_());
   }
 #endif
 };
@@ -1257,6 +1259,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_DTRACE_LOCK_PROBE = %s\n") % (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_stores = false;
+#ifdef DEBUG_STORES
+  debug_stores = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-STORES"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_STORES = %s\n") % (debug_stores ? "**DEFINED**" : "undefined") ).str();
+
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;
@@ -1354,6 +1364,9 @@ CL_DEFUN void gctools__configuration()
 
 CL_DEFUN void gctools__thread_local_cleanup()
 {
+#ifdef DEBUG_FINALIZERS
+  printf("%s:%d:%s  called to cleanup thread local resources\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   core::thread_local_invoke_and_clear_cleanup();
 }
 

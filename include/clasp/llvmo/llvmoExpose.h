@@ -2435,7 +2435,6 @@ class PassManagerBuilder_O : public core::ExternalObject_O {
 
 protected:
   PointerToExternalType _ptr;
-  string _ErrorStr; // store creation errors here
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -2450,10 +2449,21 @@ public:
     delete this->_ptr;
     this->_ptr = ptr;
   }
-  string error_string() const { return this->_ErrorStr; };
-
-  PassManagerBuilder_O() : Base(), _ptr(NULL){};
+  PassManagerBuilder_O() : Base(), _ptr(NULL){
+#ifdef DEBUG_FINALIZERS
+    printf("%s:%d:%s creating PassManagerBuilder_O at %p  badge: 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge);
+#endif
+  };
+#ifdef DEBUG_FINALIZERS  
+  PassManagerBuilder_O(const PassManagerBuilder_O& orig) : core::ExternalObject_O(orig) {
+    printf("%s:%d:%s copy ctor PassManagerBuilder_O from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, &orig, this);
+    this->_ptr = orig._ptr;
+  }
+#endif
   ~PassManagerBuilder_O() {
+#ifdef DEBUG_FINALIZERS    
+    printf("%s:%d:%s destructor for object this=%p this->_ptr=%p\n", __FILE__, __LINE__, __FUNCTION__, this, this->_ptr );
+#endif
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
       core::thread_local_register_cleanup([ptr] (void) {

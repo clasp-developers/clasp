@@ -422,7 +422,7 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %t*%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %size_t% %t*% %t*%) nil))
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
 ;; This structure must match the gctools::GCRootsInModule structure

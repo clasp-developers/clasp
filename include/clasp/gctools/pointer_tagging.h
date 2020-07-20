@@ -190,7 +190,7 @@ for a CONS cell*/
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
-  static const uintptr_t gc_tag = ZERO_TAG_MASK; //0b111;
+  static const uintptr_t gc_tag = GC_TAG; //0b111;
 
 /*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to
 iterate over variable numbers of arguments passed to functions.
@@ -202,7 +202,6 @@ ABI's  */
   static const uintptr_t valist_tag = VASLIST_TAG; // means a valist
                                                        /*! Immediate value tags */
   static const uintptr_t immediate_mask   = IMMEDIATE_MASK;
-  static const uintptr_t unused_tag       = UNUSED_TAG;
   static const uintptr_t character_tag    = CHARACTER_TAG;
   static const uintptr_t character_shift  = CHARACTER_SHIFT;
   static const uintptr_t single_float_tag = SINGLE_FLOAT_TAG;

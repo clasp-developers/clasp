@@ -98,7 +98,7 @@ extern "C" {
 void mps_park();
 void mps_release();
 
-void my_mps_finalize(void* client);
+  void my_mps_finalize(core::T_O* client);
 
 /*! Implemented in gc_interace.cc */
 mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);

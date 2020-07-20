@@ -33,7 +33,10 @@ THE SOFTWARE.
 #include <set>
 #include <atomic>
 #include <clasp/core/cons.fwd.h>
+#include <clasp/core/foundation.h>
+
 //#include <clasp/core/lispList.h>
+
 
 namespace cl {
 extern core::Symbol_sp& _sym_type_error;
@@ -105,6 +108,10 @@ struct gctools::GCInfo<core::Cons_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+extern "C" {
+  void cc_validate_tagged_pointer(core::T_O* ptr);
+};
+
 namespace core {
 
   class Cons_O : public T_O {
@@ -114,49 +121,52 @@ namespace core {
     friend T_sp oCdr(T_sp o);
 #ifdef USE_MPS
   public: // Garbage collector functions
-    uintptr_t& rawRef(int idx) {return *(uintptr_t*)((uintptr_t*)this+idx);};
-    uintptr_t& rawRef(int idx) const {return *(uintptr_t*)((uintptr_t*)this+idx);};
-    
+    uintptr_t rawRefCar() const { return (uintptr_t)this->ocar().raw_(); }
+    uintptr_t rawRefCdr() const { return (uintptr_t)this->cdr().raw_(); }
+    void rawRefSetCar(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCarNoValidate(tval); }
+    void rawRefSetCdr(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCdrNoValidate(tval); }
     bool hasGcTag() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag));
+      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag));
     }
     bool fwdP() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRef(1))&gctools::ptag_mask) == gctools::Header_s::fwd_tag));
+      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRefCdr())&gctools::ptag_mask) == gctools::Header_s::fwd_tag));
     }
     bool pad1P() const {
-      return ((uintptr_t)(this->rawRef(0)) == gctools::gc_tag);
+      return ((uintptr_t)(this->rawRefCar()) == gctools::gc_tag);
     }
     bool padP() const {
-      return ((((uintptr_t)(this->rawRef(0))&gctools::ptag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRef(1))&gctools::ptag_mask) == gctools::Header_s::pad_tag));
+      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag)
+              && (((uintptr_t)(this->rawRefCdr())&gctools::ptag_mask) == gctools::Header_s::pad_tag));
     }
     size_t padSize() const {
-      size_t sz = (size_t)(((uintptr_t)this->rawRef(1)) >> gctools::tag_shift);
+      size_t sz = (size_t)(((uintptr_t)this->rawRefCdr()) >> gctools::tag_shift);
       return sz;
     }
     void setFwdPointer(void* ptr) {
-      this->rawRef(0) = (uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag);
-      this->rawRef(1) = (uintptr_t)(gctools::Header_s::fwd_tag);
+      this->_badge = (uintptr_t)(gctools::Header_s::fwd_tag);
+      this->rawRefSetCdr((uintptr_t)(gctools::Header_s::fwd_tag));
+      this->rawRefSetCar((uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag));
     }
     void* fwdPointer() {
-      return (void*)((uintptr_t)(this->rawRef(0)) & gctools::ptr_mask);
+      return (void*)((uintptr_t)(this->rawRefCar()) & gctools::ptr_mask);
     }
     void setPad1()
     {
     // Just a gc_tag means pad1
-      this->rawRef(0) = (uintptr_t)(gctools::gc_tag | 0);
+      this->rawRefSetCar((uintptr_t)(gctools::gc_tag | 0));
     }
     void setPad(size_t sz)
     {
-      this->rawRef(0) = (uintptr_t)(gctools::gc_tag | gctools::ptr_mask);
-      this->rawRef(1) = (uintptr_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift));
+      this->rawRefSetCar((uintptr_t)(gctools::gc_tag | gctools::ptr_mask));
+      this->rawRefSetCdr((uintptr_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift)));
     }
 #endif
 
   public:
     std::atomic<T_sp> _Car;
     std::atomic<T_sp> _Cdr;
+    size_t            _badge;
 
   public:
     template <class T>
@@ -199,22 +209,32 @@ namespace core {
   public: // basic access
     inline T_sp ocar() const { return _Car.load(std::memory_order_relaxed); }
     inline T_sp cdr() const { return _Cdr.load(std::memory_order_relaxed); }
-    inline void setCar(T_sp o) { _Car.store(o, std::memory_order_relaxed); }
-    inline void setCdr(T_sp o) { _Cdr.store(o, std::memory_order_relaxed); }
+    inline void setCarNoValidate(T_sp o) {
+      _Car.store(o, std::memory_order_relaxed);
+    }
+    inline void setCdrNoValidate(T_sp o) {
+      _Cdr.store(o, std::memory_order_relaxed);
+    }
+    inline void setCar(T_sp o) {
+#ifdef DEBUG_STORES
+      cc_validate_tagged_pointer(o.raw_());
+#endif
+      this->setCarNoValidate(o);
+    }
+    inline void setCdr(T_sp o) {
+#ifdef DEBUG_STORES
+      cc_validate_tagged_pointer(o.raw_());
+#endif
+      this->setCdrNoValidate(o);
+    }
 
   public:
     inline Cons_sp rplaca(T_sp o) {
       setCar(o);
-#ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->ocar().raw_());
-#endif
       return this->asSmartPtr();
     }
     inline Cons_sp rplacd(T_sp o) {
       setCdr(o);
-#ifdef DEBUG_VALIDATE_GUARD
-      client_validate(this->cdr().raw_());
-#endif
       return this->asSmartPtr();
     };
 
@@ -326,8 +346,8 @@ namespace core {
   /*! Return the value associated with the property of the plist - implements CL getf */
     T_sp getf(T_sp key, T_sp defValue) const;
 
-    explicit Cons_O();
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){}
+    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _badge(my_thread->random()|(~gctools::ptag_mask)) {};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr), _badge(my_thread->random()|(~gctools::ptag_mask)){}
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.

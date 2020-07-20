@@ -370,12 +370,13 @@ static void obj_pad(mps_addr_t base, size_t size) {
 
 
 GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-//  printf("%s:%d in cons_scan\n", __FILE__, __LINE__ );
+  //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
   mps_addr_t original_client = client;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
+        //        printf("%s:%d It's a regular cons\n", __FILE__, __LINE__ );
 #if DEBUG_VALIDATE_GUARD
         client_validate(cons->ocar().raw_());
         client_validate(cons->cdr().raw_());
@@ -389,13 +390,16 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #endif
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
       } else if (cons->fwdP()) {
+        //        printf("%s:%d It's a fwdP\n", __FILE__, __LINE__ );
         client = (char *)(client) + sizeof(core::Cons_O);
       } else if (cons->pad1P()) {
+        //        printf("%s:%d It's a pad1P\n", __FILE__, __LINE__ );
         client = (char *)(client) + Alignment();
       } else if (cons->padP()) {
+        //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
         client = (char *)(client) + cons->padSize();
       } else {
-        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->ocar().raw_(), cons->cdr().raw_());
+        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, client, original_client, limit, cons->ocar().raw_(), cons->cdr().raw_());
         abort();
       }
     };
@@ -585,17 +589,22 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
 extern "C" {
 
 std::atomic<size_t> global_finalization_requests;
-void my_mps_finalize(void* client) {
-//  printf("%s:%d   mps_finalize of %p\n", __FILE__, __LINE__, client);
-  mps_finalize(global_arena,&client);
-  ++gctools::globalMpsMetrics.finalizationRequests;
-  ++global_finalization_requests;
-  if (global_finalization_requests>16) {
-    size_t finalizations;
-    processMpsMessages(finalizations);
-    global_finalization_requests = 0;
+  void my_mps_finalize(core::T_O* tclient) {
+    core::T_sp tsp((gctools::Tagged)tclient);
+    size_t badge = core::lisp_badge(tsp);
+    void* client = reinterpret_cast<void*>(gctools::untag_object(tclient));
+#ifdef DEBUG_FINALIZERS
+    printf("%s:%d register mps_finalize of tagged: %p client: %p badge: 0x%zx\n", __FILE__, __LINE__, tclient, client, badge);
+#endif
+    mps_finalize(global_arena,&client);
+    ++gctools::globalMpsMetrics.finalizationRequests;
+    ++global_finalization_requests;
+    if (global_finalization_requests>16) {
+      size_t finalizations;
+      processMpsMessages(finalizations);
+      global_finalization_requests = 0;
+    }
   }
-}
 
 
 #ifdef CLASP_THREADS
@@ -636,10 +645,14 @@ size_t processMpsMessages(size_t& finalizations) {
 #endif
     } else if (type == mps_message_type_finalization()) {
       ++finalizations;
-      //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
+#ifdef DEBUG_FINALIZERS
+      printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
+#endif
       mps_addr_t ref_o;
       mps_message_finalization_ref(&ref_o, global_arena, message);
-//      printf("%s:%d finalization message for %p\n", __FILE__, __LINE__, ref_o);
+#ifdef DEBUG_FINALIZERS
+      printf("%s:%d finalization message for %p\n", __FILE__, __LINE__, ref_o);
+#endif
       // Figure out what pool the pointer belonged to and recreate the
       //   original tagged object pointer
       //   For general objects the object may already have been destructed (dead_object)
@@ -648,21 +661,32 @@ size_t processMpsMessages(size_t& finalizations) {
       core::T_sp obj;
       bool live_object = true;
       if (pool) {
-//        printf("%s:%d  ---- In pool %p\n", __FILE__, __LINE__, pool );
+#ifdef DEBUG_FINALIZERS        
+        printf("%s:%d  ---- In pool %p\n", __FILE__, __LINE__, pool );
+#endif
         if (pool == gctools::global_cons_pool) {
-//          printf("%s:%d    in CONS pool %p\n", __FILE__, __LINE__, ref_o);
+#ifdef DEBUG_FINALIZERS
+          printf("%s:%d    in CONS pool %p\n", __FILE__, __LINE__, ref_o);
+#endif
           obj = gctools::smart_ptr<core::Cons_O>((gctools::Tagged)gctools::tag_cons<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         } else {
-//          printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
+#ifdef DEBUG_FINALIZERS
+          printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
+#endif
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
           live_object = (header->stampP());
-//          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
+#ifdef DEBUG_FINALIZERS
+          printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
+#endif
           obj = gctools::smart_ptr<core::T_O>((gctools::Tagged)gctools::tag_general<core::T_O*>(reinterpret_cast<core::T_O*>(ref_o)));
         }
       } else {
         printf("%s:%d   MPS could not figure out what pool the pointer %p belongs to - treating it like a dead object and no finalizer will be invoked\n", __FILE__, __LINE__, ref_o);
         live_object = false;
       }
+#ifdef DEBUG_FINALIZERS
+      printf("%s:%d     finalizing object with badge: 0x%zx\n", __FILE__, __LINE__, lisp_badge(obj));
+#endif
       if (live_object) {
         bool invoked_finalizer = false;
         // Ok, I'm super worried about a deadlock here.
@@ -677,12 +701,12 @@ size_t processMpsMessages(size_t& finalizations) {
         auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
         if (res.second().notnilp()) {
-//          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
+          printf("%s:%d           Trying to pass object %p to finalizer at %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), (void*)res.tagged_());
           core::List_sp finalizers = res;
           for ( auto cur : finalizers ) {
             core::T_sp finalizer = oCar(cur);
             core::eval::funcall(finalizer,obj);
-//            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
+            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
           }
           ht->remhash(obj);
           invoked_finalizer = true;
@@ -887,6 +911,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     GC_RESULT_ERROR(res, "Could not create MPS arena");
 
   // David suggested this - it never gives back memory to the OS
+  // TODO: Try turning this off for type inference
   mps_arena_spare_commit_limit_set(global_arena, spareCommitLimitMb * 1024 * 1024);
 
   mps_fmt_t obj_fmt;
@@ -955,23 +980,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create cons format");
 
-  // Create the CONS pool
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-#ifdef DEBUG_MPS_FENCEPOST_FREE
-    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
-#endif
-    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
-    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_awl(), args);
-  }
-  MPS_ARGS_END(args);
-  if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Could not create amc cons pool");
-
-
-  /* Objects that can not move but are managed by the garbage collector
+    /* Objects that can not move but are managed by the garbage collector
      go in the global_non_moving_pool.
      Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
   MPS_ARGS_BEGIN(args) {
@@ -981,6 +990,27 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create awl pool");
+
+  // Create the CONS pool
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
+#if 0    // 1 if awl pool
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+#else
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
+#endif
+    MPS_ARGS_ADD(args, MPS_KEY_INTERIOR,1);
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
+#endif
+    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_amc(), args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create amc cons pool");
+
 
   mps_fmt_t obj_fmt_zero;
   MPS_ARGS_BEGIN(args) {
@@ -1000,6 +1030,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 //  mps_pool_t global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt_zero);
+    MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     res = mps_pool_create_k(&global_amcz_pool, global_arena, mps_class_amcz(), args);
   }
@@ -1078,6 +1109,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
 //#define USE_main_thread_roots_scan
 #ifdef USE_main_thread_roots_scan
+# error "We have USE_main_thread_roots_scan ON"
   printf("%s:%d USE_main_thread_roots_scan\n", __FILE__, __LINE__ );
   mps_root_t global_scan_root;
   res = mps_root_create(&global_scan_root,
@@ -1147,8 +1179,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_awl_pool);
   mps_pool_destroy(global_amcz_pool);
   mps_fmt_destroy(obj_fmt_zero);
-  mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_cons_pool);
+  mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_amc_pool);
   mps_arena_park(global_arena);
   mps_chain_destroy(general_chain);

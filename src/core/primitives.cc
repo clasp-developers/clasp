@@ -773,7 +773,7 @@ CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
 CL_DOCSTRING("hook to invoke gdb");
-CL_DEFUN void core__gdb(T_sp msg) {
+__attribute__((optnone)) CL_DEFUN void core__gdb(T_sp msg) {
   T_sp obj = msg;
   string smsg = "No msg";
   if (obj.notnilp()) {

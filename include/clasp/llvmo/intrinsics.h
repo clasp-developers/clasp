@@ -83,6 +83,7 @@ LtvcReturn ltvc_toplevel_funcall(gctools::GCRootsInModule* holder, size_t fptr_i
 void cc_throw(core::T_O *tag, core::T_O *resultP);
 
 void cc_invoke_startup_functions();
+  void cc_validate_tagged_pointer(core::T_O* ptr);
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------

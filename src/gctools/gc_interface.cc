@@ -487,7 +487,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-    LOG(BF("obj_scan client=%p limit=%p\n") % (void*)client % (void*)limit );
+  LOG(BF("obj_scan client=%p limit=%p\n") % (void*)client % (void*)limit );
   mps_addr_t oldClient;
   size_t size = 0;  // Used to store the size of the object
   size_t stamp_index;

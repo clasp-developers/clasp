@@ -166,6 +166,7 @@ namespace gctools {
     gc::smart_ptr<Cons> tagged_obj;
     { RAII_DISABLE_INTERRUPTS();
       RAII_DEBUG_RECURSIVE_ALLOCATIONS();
+      // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
       mps_addr_t addr;
       Cons* cons;
       do {
@@ -175,6 +176,7 @@ namespace gctools {
         new (cons) Cons(std::forward<ARGS>(args)...);
         tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
       } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
+      //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
       my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
@@ -514,7 +516,7 @@ should not be managed by the GC */
 typedef void (*BoehmFinalizerFn)(void *obj, void *data);
 
 extern "C" {
-void my_mps_finalize(void* client);
+  void my_mps_finalize(core::T_O* tagged);
 };
 
 namespace gctools {
@@ -546,7 +548,7 @@ struct GCObjectFinalizer {
 #endif
 #ifdef USE_MPS
     // Defined in mpsGarbageCollection.cc
-    my_mps_finalize(&*sp);
+    my_mps_finalize(sp.raw_());
 #endif
   };
 };

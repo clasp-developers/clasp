@@ -651,9 +651,11 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:memset2-instruction) return-value abi function-info)
   (declare (ignore return-value abi function-info))
-  (let ((inputs (cleavir-ir:inputs instruction)))
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (val (in (second inputs) "memset2-val")))
+    #+debug-stores(%intrinsic-call "cc_validate_tagged_pointer" (list val))
     (cmp:irc-store-atomic
-     (in (second inputs) "memset2-val")
+     val
      (cmp::gen-memref-address (in (first inputs))
                               (cleavir-ir:offset instruction)))))
 

@@ -461,7 +461,7 @@ namespace gctools {
 #ifdef DEBUG_QUICK_VALIDATE
       if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
-        if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
+        if (this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
         if (this->_tail_size>0) {
           const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
           if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
@@ -481,7 +481,11 @@ namespace gctools {
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
-    tagged_stamp_t guard;
+    tagged_stamp_t _guard;
+    int _dup_tail_start;
+    int _dup_tail_size;
+    StampWtagMtag _dup_stamp_wtag_mtag;
+    tagged_stamp_t _guard2;
 #endif
   public:
 #if !defined(DEBUG_GUARD)
@@ -494,7 +498,11 @@ namespace gctools {
     : _stamp_wtag_mtag(k),
       _tail_start(tstart),
       _tail_size(tsize),
-      guard(0xFEEAFEEBDEADBEEF)
+      _guard(0xFEEAFEEBDEADBEEF),
+      _dup_tail_start(tstart),
+      _dup_tail_size(tsize),
+      _dup_stamp_wtag_mtag(k),
+      _guard2(0xAAAAAAAAAAAAAAAA)
       {
         this->fill_tail();
       };

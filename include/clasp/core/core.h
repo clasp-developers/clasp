@@ -1002,6 +1002,7 @@ size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_l
   DebugStream *lisp_debugLog();
 /*! Return a string representation of the object */
   string lisp_rep(T_sp obj);
+size_t lisp_badge(T_sp obj);
   Symbol_sp lisp_internKeyword(const string &name);
   Symbol_sp lisp_intern(const string &name);
   Symbol_sp lisp_intern(const string &symbolName, const string &packageName);

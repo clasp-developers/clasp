@@ -141,6 +141,8 @@
          (primitive         "makeBlockFrameSetParent" %t*% (list %t*%))
          (primitive         "makeTagbodyFrameSetParent" %t*% (list %t*%))
 
+         (primitive         "cc_validate_tagged_pointer" %void% (list %t*%))
+
          (primitive         "setFrameUniqueId" %void% (list %size_t% %t*%))
          (primitive         "ensureFrameUniqueId" %void% (list %size_t% %size_t% %t*%))
 

@@ -399,12 +399,34 @@ bool HashGenerator::addGeneralAddress(const General_O* part) {
   return true;
 }
 
+bool HashGenerator::addConsAddress(const Cons_O* part) {
+    ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+    if (this->isFull()) {
+      return false;
+    }
+    this->_Parts[this->_NextAddressIndex] = (uintptr_t)part->_badge;
+    this->_NextAddressIndex--;
+    return true;
+  }
+
 void Hash1Generator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);
 }
 
   // Add an address - this may need to work with location dependency
 bool Hash1Generator::addGeneralAddress(const General_O* part) {
+  ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
+  this->_Part = (uintptr_t)part->_badge;
+  this->_PartIsPointer = true;
+#ifdef DEBUG_HASH_GENERATOR
+  if (this->_debug) {
+    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+  }
+#endif
+  return true;
+}
+
+bool Hash1Generator::addConsAddress(const Cons_O* part) {
   ASSERT(!(((uintptr_t)part)&gctools::ptag_mask));
   this->_Part = (uintptr_t)part->_badge;
   this->_PartIsPointer = true;
