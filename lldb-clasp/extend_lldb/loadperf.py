@@ -17,14 +17,16 @@ class PerfFile():
         self._funcs = []
         
     def load(self,filename):
-        print("Loading file: %s\n" % filename)
+        print("Loading file: %s" % filename)
         if os.path.exists(filename):
+            self._funcs = []
             with open(filename) as fin:
                 for line in fin:
                     parts = line.split()
                     ff = FuncRange(int(parts[0],16),int(parts[1],16),parts[2])
                     self._funcs.append(ff)
-                    self._funcs.sort(key=func_start)
+            self._funcs.sort(key=func_start)
+            print("Loaded file")
         else:
             print("Could not find file %s" % filename)
         return self

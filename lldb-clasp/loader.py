@@ -11,6 +11,9 @@ import extend_lldb
 print("Imported extend_lldb")
 
 def __lldb_init_module(debugger, internal_dict):
+    debugger.HandleCommand('break set -n dbg_hook')
+    debugger.HandleCommand('break set -n core::lisp_error_simple')
+    debugger.HandleCommand('break set -n core::lisp_error')
     debugger.HandleCommand('process handle -p true -n false -s false SIGXFSZ')
     debugger.HandleCommand('process handle -p true -n false -s false SIGWINCH')
     debugger.HandleCommand('process handle -p true -n false -s false SIGXCPU')
