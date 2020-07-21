@@ -58,10 +58,6 @@ typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &m
 
 namespace gctools {
 
-template <typename T>
-constexpr size_t depreciatedAlignmentT() { return alignof(T); };
-template <typename T>
-constexpr size_t depreciatedAlignUpT(size_t size) { return (size + depreciatedAlignmentT<T>() - 1) & ~(depreciatedAlignmentT<T>() - 1); };
 };
 
 // ----------------------------------------------------------------------
