@@ -1472,7 +1472,7 @@ Integer_sp Integer_O::create( uintptr_t v) {
  */
 
 Integer_sp Integer_O::create(float v) {
-  if (v >= (float)gc::most_negative_fixnum && v < (float)gc::most_positive_fixnum) {
+  if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
 
@@ -1482,7 +1482,7 @@ Integer_sp Integer_O::create(float v) {
 }
 
 Integer_sp Integer_O::create(double v) {
-  if (v >= (double)gc::most_negative_fixnum && v < (double)gc::most_positive_fixnum) {
+  if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
   Bignum rop;
@@ -1491,7 +1491,7 @@ Integer_sp Integer_O::create(double v) {
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  if (v >= (LongFloat)gc::most_negative_fixnum && v < (LongFloat)gc::most_positive_fixnum) {
+  if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
   Bignum rop;
@@ -3121,7 +3121,7 @@ unsigned long long clasp_to_ulonglong( core::T_sp x )
 int8_t clasp_to_int8( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() < gc::most_positive_int8);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() <= gc::most_positive_int8);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3135,7 +3135,7 @@ int8_t clasp_to_int8( core::T_sp x )
 uint8_t clasp_to_uint8( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint8);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint8);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3162,7 +3162,7 @@ uint8_t clasp_to_uint8_t( core::T_sp x )
 int16_t clasp_to_int16( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() < gc::most_positive_int16);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() <= gc::most_positive_int16);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3176,7 +3176,7 @@ int16_t clasp_to_int16( core::T_sp x )
 uint16_t clasp_to_uint16( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint16);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint16);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3202,7 +3202,7 @@ uint16_t clasp_to_uint16_t( core::T_sp x )
 int32_t clasp_to_int32( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() < gc::most_positive_int32);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() <= gc::most_positive_int32);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3216,7 +3216,7 @@ int32_t clasp_to_int32( core::T_sp x )
 uint32_t clasp_to_uint32( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint32);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint32);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3242,7 +3242,7 @@ int32_t clasp_to_int32_t( core::T_sp x )
 int64_t clasp_to_int64_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() < gc::most_positive_int64);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() <= gc::most_positive_int64);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3256,7 +3256,7 @@ int64_t clasp_to_int64_t( core::T_sp x )
 uint64_t clasp_to_uint64_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint64);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint64);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3272,7 +3272,7 @@ uint64_t clasp_to_uint64_t( core::T_sp x )
 uintptr_t clasp_to_uintptr_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() < gc::most_positive_uintptr);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() <= gc::most_positive_uintptr);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
