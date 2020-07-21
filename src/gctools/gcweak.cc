@@ -56,25 +56,11 @@ void WeakKeyHashTable::initialize() {
   this->_Keys->dependent = this->_Values;
   //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
-#ifdef USE_MPS
-  mps_ld_reset(&this->_LocationDependency, global_arena);
-#endif
 }
 
-uint WeakKeyHashTable::sxhashKey(const value_type &key
-#ifdef USE_MPS
-                              ,
-                              mps_ld_s *locationDependencyP
-#endif
-                              ) {
-#ifdef USE_MPS
-  if (locationDependencyP && key.objectp()) {
-    GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-    mps_ld_add(locationDependencyP, global_arena, key.raw_());
-  }
-#endif
-  GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)key.raw_());
-  return core::lisp_hash(reinterpret_cast<uintptr_t>(key.raw_()));
+uint WeakKeyHashTable::sxhashKey(const value_type &key) {
+  GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)lisp_badge(key));
+  return core::lisp_hash(reinterpret_cast<uintptr_t>(lisp_badge(key)));
 }
 
 /*! Return 0 if there is no more room in the sequence of entries for the key
@@ -82,10 +68,6 @@ uint WeakKeyHashTable::sxhashKey(const value_type &key
 	  Return the entry index in (b)
 	*/
 size_t WeakKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
-#ifdef USE_MPS
-                        ,
-                        mps_ld_s *ldP
-#endif
                         ,
                         size_t &b
 #ifdef DEBUG_FIND
@@ -96,11 +78,7 @@ size_t WeakKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, cons
   unsigned long i, h, probe;
   unsigned long l = keys->length() - 1;
   int result = 0;
-#ifdef USE_MPS
-  h = WeakKeyHashTable::sxhashKey(key, ldP);
-#else
   h = WeakKeyHashTable::sxhashKey(key);
-#endif
 
 #ifdef DEBUG_FIND
   if (debugFind) {
@@ -165,20 +143,12 @@ int WeakKeyHashTable::rehash_not_safe(const value_type &key, size_t &key_bucket)
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;
 		//new_values->dependent = new_keys;
-#ifdef USE_MPS
-  GCWEAK_LOG(BF("Calling mps_ld_reset"));
-  mps_ld_reset(&this->_LocationDependency,global_arena);
-#endif
   for (i = 0; i < length; ++i) {
     value_type& old_key = (*this->_Keys)[i];
     if (!old_key.unboundp() && !old_key.deletedp() && old_key.raw_() ) {
       size_t found;
       size_t b;
-#ifdef USE_MPS
-      found = WeakKeyHashTable::find(newHashTable._Keys, old_key, &this->_LocationDependency, b);
-#else
       found = WeakKeyHashTable::find(newHashTable._Keys, old_key, b);
-#endif
       GCTOOLS_ASSERT(found);// assert(found);            /* new table shouldn't be full */
       if ( !(*newHashTable._Keys)[b].unboundp() ) {
         printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
@@ -237,16 +207,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
   }
 #endif
-#ifdef USE_MPS
-  size_t result = WeakKeyHashTable::find(this->_Keys, key, NULL, b
-#ifdef DEBUG_FIND
-                                   ,
-                                   alreadyThere, &report
-#endif
-                                   ); // &this->_LocationDependency,b);
-#else
   size_t result = WeakKeyHashTable::find(this->_Keys, key, b);
-#endif
   if ((!result || (*this->_Keys)[b] != key)) {
     GCWEAK_LOG(BF("then case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
 #ifdef DEBUG_TRYSET
@@ -262,65 +223,9 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
 #endif
 
-#ifdef USE_MPS
-    GCWEAK_LOG(BF("About to call mps_ld_isstale"));
-    if (mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_())) {
-      GCWEAK_LOG(BF("Key has gone stale"));
-#ifdef DEBUG_TRYSET
-      if (alreadyThere)
-        report << " mps_ld_isstale returned TRUE - The key was stale - rehashing" << std::endl;
-#endif
-      // The key was not found and the address is stale - rehash
-      size_t rehashb;
-      if (this->rehash(/*this->_Keys->length(),*/ key, rehashb)) {
-#ifdef DEBUG_TRYSET
-        if (alreadyThere)
-          report << "Rehashed and found the key = " << rehashb << std::endl;
-#endif
-        GCWEAK_LOG(BF("rehashed table, key is in table rehashb = %d") % rehashb);
-        b = rehashb;
-        goto DO_SET;
-      } else {
-#ifdef DEBUG_TRYSET
-        if (alreadyThere)
-          report << "The table was rehashed but rehash returned 0" << std::endl;
-#endif
-// At this point the key definitely is NOT in the hash-table
-#ifdef USE_MPS
-        size_t result2 = WeakKeyHashTable::find(this->_Keys, key, &this->_LocationDependency, b
-#ifdef DEBUG_FIND
-                                          ,
-                                          alreadyThere, &report
-#endif
-                                          ); // &this->_LocationDependency,b);
-#else
-        size_t result2 = WeakKeyHashTable::find(this->_Keys, key, b);
-#endif
-        if (!result2) {
-          GCWEAK_LOG(BF("Find returning 0 - a string of hash-table entries with the same hash did not match and had no empties"));
-          return 0;
-        }
-        GCWEAK_LOG(BF("rehashed table, key is not in table new b = %d") % b);
-      }
-    } else {
-      GCWEAK_LOG(BF("mps_ld_isstale returned false"));
-#ifdef DEBUG_TRYSET
-      if (alreadyThere) {
-        report << __FILE__ << ":" << __LINE__ << " mps_ld_isstale returned FALSE for the key " << key.raw_() << "  !!!!!" << std::endl;
-        report << "  despite the fact that key was NOT found even though it is at " << firstOtherIndex << std::endl;
-        report << " some info...   result = " << result << "   _rep_(keys[b=" << b << "]) = " << core::lisp_rep((*this->_Keys)[b]) << std::endl;
-      }
-#endif // DEBUG_TRYSET
-      GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-      mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
-    }
-#endif
   } else {
     GCWEAK_LOG(BF("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
     GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-#ifdef USE_MPS
-    mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
-#endif
   }
   if ((*this->_Keys)[b].unboundp()) {
     GCWEAK_LOG(BF("Writing key over unbound entry"));
@@ -338,9 +243,6 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
 #endif // DEBUG_GCWEAK
   }
-#ifdef USE_MPS
-DO_SET:
-#endif
   GCWEAK_LOG(BF("Setting value at b = %d") % b);
   (*this->_Values).set(b, value_type(value));
 #ifdef DEBUG_TRYSET
@@ -393,42 +295,26 @@ string WeakKeyHashTable::dump(const string &prefix) {
 core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
   core::T_mv result_mv;
   safeRun<void()>([&result_mv, this, tkey, defaultValue]() -> void {
-		value_type key(tkey);
-		size_t pos;
-		size_t result = gctools::WeakKeyHashTable::find(this->_Keys,key
-#ifdef USE_MPS
-							  ,NULL
-#endif
-							  ,pos);
-		if (result) { // WeakKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
-		    value_type& k = (*this->_Keys)[pos];
-		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
-		    if ( k.raw_() && !k.unboundp() && !k.deletedp() ) {
+                    value_type key(tkey);
+                    size_t pos;
+                    size_t result = gctools::WeakKeyHashTable::find(this->_Keys,key ,pos);
+                    if (result) { // WeakKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
+                      value_type& k = (*this->_Keys)[pos];
+                      GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
+                      if ( k.raw_() && !k.unboundp() && !k.deletedp() ) {
 			GCWEAK_LOG(BF("Returning success!"));
 			core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
 			if ( value.sameAsKeyP() ) {
-			    value = smart_ptr<core::T_O>(k);
+                          value = smart_ptr<core::T_O>(k);
 			}
 			result_mv = Values(value,core::lisp_true());
 			return;
-		    }
-		    GCWEAK_LOG(BF("Falling through"));
-		}
-#ifdef USE_MPS
-		if (key.objectp() && mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_() )) {
-		    if (this->rehash(/* this->_Keys->length(),*/ key, pos)) {
-			core::T_sp value((*this->_Values)[pos]);
-			if ( value.sameAsKeyP() ) {
-			    value = smart_ptr<core::T_O>(key);
-			}
-			result_mv = Values(value,core::lisp_true());
-			return;
-		    }
-		}
-#endif
-		result_mv = Values(defaultValue,_Nil<core::T_O>());
-		return;
-  });
+                      }
+                      GCWEAK_LOG(BF("Falling through"));
+                    }
+                    result_mv = Values(defaultValue,_Nil<core::T_O>());
+                    return;
+                  });
   return result_mv;
 }
 
@@ -480,23 +366,12 @@ bool WeakKeyHashTable::remhash(core::T_sp tkey) {
   safeRun<void()>([this, tkey, &bresult]() -> void {
 		size_t b;
 		value_type key(tkey);
-#ifdef USE_MPS
-		size_t result = gctools::WeakKeyHashTable::find(this->_Keys, key, NULL, b);
-#endif
-#ifdef USE_BOEHM
 		size_t result = gctools::WeakKeyHashTable::find(this->_Keys, key, b);
-#endif
 		if( ! result ||
                     !((*this->_Keys)[b]).raw_() ||
 		    (*this->_Keys)[b].unboundp() ||
 		    (*this->_Keys)[b].deletedp() )
 		    {
-#ifdef USE_MPS
-                      if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_())) {
-                        bresult = false;
-                        return;
-                      }
-#endif
                       if(!this->rehash( key, b)) {
                         bresult = false;
                         return;
@@ -527,9 +402,6 @@ void WeakKeyHashTable::clrhash() {
 		}
 		(*this->_Keys).setUsed(0);
 		(*this->_Keys).setDeleted(0);
-#ifdef USE_MPS
-		mps_ld_reset(&this->_LocationDependency,global_arena);
-#endif
   });
 };
 };
@@ -549,36 +421,19 @@ void StrongKeyHashTable::initialize() {
   this->_Keys->dependent = this->_Values;
   //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
-#ifdef USE_MPS
-  mps_ld_reset(&this->_LocationDependency, global_arena);
-#endif
 }
 
-uint StrongKeyHashTable::sxhashKey(const value_type &key
-#ifdef USE_MPS
-                              ,
-                              mps_ld_s *locationDependencyP
-#endif
-                              ) {
-#ifdef USE_MPS
-  if (locationDependencyP && key.objectp()) {
-    GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-    mps_ld_add(locationDependencyP, global_arena, key.raw_());
-  }
-#endif
-  GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)key.raw_());
-  return core::lisp_hash(reinterpret_cast<uintptr_t>(key.raw_()));
+uint StrongKeyHashTable::sxhashKey(const value_type &key) {
+  uintptr_t hash = lisp_badge(key);
+  GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)hash);
+  return core::lisp_hash(reinterpret_cast<uintptr_t>(hash));
 }
 
 /*! Return 0 if there is no more room in the sequence of entries for the key
 	  Return 1 if the element is found or an unbound or deleted entry is found.
 	  Return the entry index in (b)
 	*/
-size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
-#ifdef USE_MPS
-                        , mps_ld_s *ldP
-#endif
-                        , size_t &b
+size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key , size_t &b
 #ifdef DEBUG_FIND
                         , bool debugFind, stringstream *reportP
 #endif
@@ -586,11 +441,7 @@ size_t StrongKeyHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, co
   unsigned long i, h, probe;
   unsigned long l = keys->length() - 1;
   int result = 0;
-#ifdef USE_MPS
-  h = StrongKeyHashTable::sxhashKey(key, ldP);
-#else
   h = StrongKeyHashTable::sxhashKey(key);
-#endif
 
 #ifdef DEBUG_FIND
   if (debugFind) {
@@ -647,20 +498,12 @@ size_t StrongKeyHashTable::rehash_not_safe(size_t newLength, const value_type &k
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;
 		//new_values->dependent = new_keys;
-#ifdef USE_MPS
-  GCWEAK_LOG(BF("Calling mps_ld_reset"));
-  mps_ld_reset(&this->_LocationDependency,global_arena);
-#endif
   for (i = 0; i < length; ++i) {
     value_type& old_key = (*this->_Keys)[i];
     if (!old_key.unboundp() && !old_key.deletedp() && old_key.raw_() ) {
       size_t found;
       size_t b;
-#ifdef USE_MPS
-      found = StrongKeyHashTable::find(newHashTable._Keys, old_key, &this->_LocationDependency, b);
-#else
       found = StrongKeyHashTable::find(newHashTable._Keys, old_key, b);
-#endif
       GCTOOLS_ASSERT(found);// assert(found);            /* new table shouldn't be full */
       if ( !(*newHashTable._Keys)[b].unboundp() ) {
         printf("%s:%d About to copy key: %12p   at index %zu    to newHashTable at index: %zu\n", __FILE__, __LINE__,
@@ -717,16 +560,7 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
   }
 #endif
-#ifdef USE_MPS
-  size_t result = StrongKeyHashTable::find(this->_Keys, key, NULL, b
-#ifdef DEBUG_FIND
-                                   ,
-                                   alreadyThere, &report
-#endif
-                                   ); // &this->_LocationDependency,b);
-#else
   size_t result = StrongKeyHashTable::find(this->_Keys, key, b);
-#endif
   if ((!result || (*this->_Keys)[b] != key)) {
     GCWEAK_LOG(BF("then case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
 #ifdef DEBUG_TRYSET
@@ -741,66 +575,9 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
       report << " ...  about to check if mps_ld_isstale" << std::endl;
     }
 #endif
-
-#ifdef USE_MPS
-    GCWEAK_LOG(BF("About to call mps_ld_isstale"));
-    if (mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_())) {
-      GCWEAK_LOG(BF("Key has gone stale"));
-#ifdef DEBUG_TRYSET
-      if (alreadyThere)
-        report << " mps_ld_isstale returned TRUE - The key was stale - rehashing" << std::endl;
-#endif
-      // The key was not found and the address is stale - rehash
-      size_t rehashb;
-      if (this->rehash(this->_Keys->length(), key, rehashb)) {
-#ifdef DEBUG_TRYSET
-        if (alreadyThere)
-          report << "Rehashed and found the key = " << rehashb << std::endl;
-#endif
-        GCWEAK_LOG(BF("rehashed table, key is in table rehashb = %d") % rehashb);
-        b = rehashb;
-        goto DO_SET;
-      } else {
-#ifdef DEBUG_TRYSET
-        if (alreadyThere)
-          report << "The table was rehashed but rehash returned 0" << std::endl;
-#endif
-// At this point the key definitely is NOT in the hash-table
-#ifdef USE_MPS
-        size_t result2 = StrongKeyHashTable::find(this->_Keys, key, &this->_LocationDependency, b
-#ifdef DEBUG_FIND
-                                          ,
-                                          alreadyThere, &report
-#endif
-                                          ); // &this->_LocationDependency,b);
-#else
-        size_t result2 = StrongKeyHashTable::find(this->_Keys, key, b);
-#endif
-        if (!result2) {
-          GCWEAK_LOG(BF("Find returning 0 - a string of hash-table entries with the same hash did not match and had no empties"));
-          return 0;
-        }
-        GCWEAK_LOG(BF("rehashed table, key is not in table new b = %d") % b);
-      }
-    } else {
-      GCWEAK_LOG(BF("mps_ld_isstale returned false"));
-#ifdef DEBUG_TRYSET
-      if (alreadyThere) {
-        report << __FILE__ << ":" << __LINE__ << " mps_ld_isstale returned FALSE for the key " << key.raw_() << "  !!!!!" << std::endl;
-        report << "  despite the fact that key was NOT found even though it is at " << firstOtherIndex << std::endl;
-        report << " some info...   result = " << result << "   _rep_(keys[b=" << b << "]) = " << core::lisp_rep((*this->_Keys)[b]) << std::endl;
-      }
-#endif // DEBUG_TRYSET
-      GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-      mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
-    }
-#endif
   } else {
     GCWEAK_LOG(BF("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
     GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-#ifdef USE_MPS
-    mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
-#endif
   }
   if ((*this->_Keys)[b].unboundp()) {
     GCWEAK_LOG(BF("Writing key over unbound entry"));
@@ -818,9 +595,6 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
 #endif // DEBUG_GCWEAK
   }
-#ifdef USE_MPS
-DO_SET:
-#endif
   GCWEAK_LOG(BF("Setting value at b = %d") % b);
   (*this->_Values).set(b, value_type(value));
 #ifdef DEBUG_TRYSET
@@ -872,11 +646,7 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
   core::T_mv result_mv;
   value_type key(tkey);
   size_t pos;
-  size_t result = gctools::StrongKeyHashTable::find(this->_Keys,key
-#ifdef USE_MPS
-                                                    ,NULL
-#endif
-                                                    ,pos);
+  size_t result = gctools::StrongKeyHashTable::find(this->_Keys,key,pos);
   if (result) { // StrongKeyHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
     value_type& k = (*this->_Keys)[pos];
     GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
@@ -891,18 +661,6 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
     }
     GCWEAK_LOG(BF("Falling through"));
   }
-#ifdef USE_MPS
-  if (key.objectp() && mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_() )) {
-    if (this->rehash( this->_Keys->length(), key, pos)) {
-      core::T_sp value((*this->_Values)[pos]);
-      if ( value.sameAsKeyP() ) {
-        value = smart_ptr<core::T_O>(key);
-      }
-      result_mv = Values(value,core::lisp_true());
-      return result_mv;
-    }
-  }
-#endif
   result_mv = Values(defaultValue,_Nil<core::T_O>());
   return result_mv;
 }
@@ -933,20 +691,11 @@ void StrongKeyHashTable::maphash(std::function<void(core::T_sp, core::T_sp)> con
 bool StrongKeyHashTable::remhash(core::T_sp tkey) {
   size_t b;
   value_type key(tkey);
-#ifdef USE_MPS
-  size_t result = gctools::StrongKeyHashTable::find(this->_Keys, key, NULL, b);
-#endif
-#ifdef USE_BOEHM
   size_t result = gctools::StrongKeyHashTable::find(this->_Keys, key, b);
-#endif
   if( ! result ||
       (*this->_Keys)[b].unboundp() ||
       (*this->_Keys)[b].deletedp() )
   {
-#ifdef USE_MPS
-    if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_()))
-      return false;
-#endif
     if(!this->rehash( (*this->_Keys).length(), key, b))
       return false;
   }
@@ -970,9 +719,6 @@ void StrongKeyHashTable::clrhash() {
   }
   (*this->_Keys).setUsed(0);
   (*this->_Keys).setDeleted(0);
-#ifdef USE_MPS
-  mps_ld_reset(&this->_LocationDependency,global_arena);
-#endif
 };
 };
 

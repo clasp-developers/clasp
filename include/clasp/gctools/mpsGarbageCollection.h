@@ -24,6 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+#define USE_BADGES 1
+
+#ifndef USE_BADGES
+#define USE_LOCATION_DEPENDENCY 1
+#else
+// do nothing
+#endif
+
 #ifndef _clasp_mpsGarbageCollection_H
 #define _clasp_mpsGarbageCollection_H
 
