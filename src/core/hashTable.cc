@@ -74,20 +74,6 @@ size_t next_hash_table_id() {
   return global_next_hash_table_id++;
 }
 
-CL_DEFUN Vector_sp core__hash_table_pairs(HashTable_sp hash_table)
-{
-  SimpleVector_sp keyvalues = SimpleVector_O::make(hash_table->_HashTableCount*2);
-  size_t idx(0);
-  for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
-    Cons_O& entry = hash_table->_Table[it];
-    if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
-      (*keyvalues)[idx++] = entry.ocar();
-      (*keyvalues)[idx++] = entry.cdr();
-    }
-  }
-  return keyvalues;
-}
-  
 
 void verifyHashTable(bool print, std::ostream& ss, HashTable_O* ht, const char* filename, size_t line, size_t index=0, T_sp key=_Nil<core::T_O>() )
 {
@@ -178,6 +164,31 @@ struct HashTableWriteLock {
 #endif
 
 
+CL_DEFUN Vector_sp core__hash_table_pairs(HashTableBase_sp hash_table_base)
+{
+  if (gc::IsA<HashTable_sp>(hash_table_base)) {
+    HashTable_sp hash_table = gc::As_unsafe<HashTable_sp>(hash_table_base);
+    HT_READ_LOCK(&*hash_table);
+    SimpleVector_sp keyvalues = SimpleVector_O::make(hash_table->_HashTableCount*2);
+    size_t idx(0);
+    for (size_t it(0), itEnd(hash_table->_Table.size()); it < itEnd; ++it) {
+      Cons_O& entry = hash_table->_Table[it];
+      if (!entry.ocar().no_keyp()&&!entry.ocar().deletedp()) {
+        (*keyvalues)[idx++] = entry.ocar();
+        (*keyvalues)[idx++] = entry.cdr();
+      }
+    }
+    return keyvalues;
+  } else if (gc::IsA<WeakKeyHashTable_sp>(hash_table_base)) {
+    WeakKeyHashTable_sp hash_table = gc::As_unsafe<WeakKeyHashTable_sp>(hash_table_base);
+    gctools::WeakKeyHashTable& wkht = hash_table->_HashTable;
+    return gctools::weak_key_hash_table_pairs(wkht);
+  }
+  TYPE_ERROR(hash_table_base, Cons_O::createList(cl::_sym_or,cl::_sym_HashTable_O,core::_sym_WeakKeyHashTable_O));
+}
+  
+
+
 #ifdef USE_MPS
 static int LockDepth = 0;
 struct HashTableLocker {
@@ -226,11 +237,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
-      if (thread_safe.nilp()
-          && (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction())) {
+      if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
         return core__make_weak_key_hash_table(clasp_make_fixnum(size));
       } else {
-        SIMPLE_ERROR(BF("Weak hash tables with thread safety or non-EQ tests are not yet supported"));
+        SIMPLE_ERROR(BF("Weak hash tables non-EQ tests are not yet supported"));
       }
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
@@ -298,14 +308,19 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
 // FIXME: contents read could just be atomic maybe?
 #define HASH_TABLE_ITER(tablep, key, value) \
   gctools::tagged_pointer<gctools::GCVector_moveable<Cons_O>> iter_datap;\
+  T_sp key; \
+  T_sp value; \
   {\
     HT_READ_LOCK(tablep);\
     iter_datap = tablep->_Table._Vector._Contents;\
   }\
   for (size_t it(0), itEnd(iter_datap->_End); it < itEnd; ++it) {\
   Cons_O& entry = (*iter_datap)[it];\
-  T_sp key = entry.ocar();\
-  T_sp value = entry.cdr();\
+  { \
+    HT_READ_LOCK(tablep);\
+    key = entry.ocar();\
+    value = entry.cdr();\
+  } \
   if (!key.no_keyp()&&!key.deletedp())
 
 #define HASH_TABLE_ITER_END }
