@@ -223,13 +223,32 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* claspProcess) {
-  Process_sp process((Process_O*)claspProcess);
+  Process_sp my_process((Process_O*)claspProcess);
   void* cold_end_of_stack = &cold_end_of_stack;
+#ifdef DEBUG_ASSERTS
+  core::List_sp processes = _lisp->processes();
+  bool foundIt = false;
+  Process_O* movedTo = NULL;
+  for ( auto cur : processes ) {
+    Process_sp proc = gc::As<Process_sp>(CONS_CAR(cur));
+    if (&*proc == &*my_process) {
+      foundIt = true;
+    }
+    if (proc->_badge == my_process->_badge) {
+      moveTo = &*proc;
+    }
+  }
+  if (!foundIt) {
+    printf("%s:%d A child process started up with the Process_O* pointer of %p but its Process_O object moved to %p\n",
+           __FILE__, __LINE__, &*my_process, movedTo);
+    abort();
+  }
+#endif
   ////////////////////////////////////////////////////////////
   //
   // MPS setup of thread
   //
-  start_thread_inner(process,cold_end_of_stack);
+  start_thread_inner(my_process,cold_end_of_stack);
 
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
