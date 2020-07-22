@@ -304,8 +304,11 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   }\
   for (size_t it(0), itEnd(iter_datap->_End); it < itEnd; ++it) {\
   Cons_O& entry = (*iter_datap)[it];\
+  { \
+  HT_READ_LOCK(tablep); \
   T_sp key = entry.ocar();\
   T_sp value = entry.cdr();\
+  } \
   if (!key.no_keyp()&&!key.deletedp())
 
 #define HASH_TABLE_ITER_END }
