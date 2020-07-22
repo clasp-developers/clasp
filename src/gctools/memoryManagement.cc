@@ -344,7 +344,9 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 void Header_s::validate() const {
   if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"header is 0");
+#ifdef DEBUG_GUARD  
   if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
+#endif
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
