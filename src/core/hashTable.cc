@@ -298,6 +298,8 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
 // FIXME: contents read could just be atomic maybe?
 #define HASH_TABLE_ITER(tablep, key, value) \
   gctools::tagged_pointer<gctools::GCVector_moveable<Cons_O>> iter_datap;\
+  T_sp key; \
+  T_sp value; \
   {\
     HT_READ_LOCK(tablep);\
     iter_datap = tablep->_Table._Vector._Contents;\
@@ -305,9 +307,9 @@ HashTable_sp HashTable_O::create_thread_safe(T_sp test, SimpleBaseString_sp read
   for (size_t it(0), itEnd(iter_datap->_End); it < itEnd; ++it) {\
   Cons_O& entry = (*iter_datap)[it];\
   { \
-  HT_READ_LOCK(tablep); \
-  T_sp key = entry.ocar();\
-  T_sp value = entry.cdr();\
+    HT_READ_LOCK(tablep); \
+    key = entry.ocar();\
+    value = entry.cdr();\
   } \
   if (!key.no_keyp()&&!key.deletedp())
 
