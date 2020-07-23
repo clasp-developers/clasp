@@ -55,6 +55,8 @@ void mutex_lock_return(char* nameword) {
 
 namespace mp {
 
+std::atomic<uintptr_t> global_process_UniqueID;
+
 #ifdef CLASP_THREADS
 std::atomic<size_t> global_LastBindingIndex = ATOMIC_VAR_INIT(0);
 Mutex global_BindingIndexPoolMutex(BINDINDX_NAMEWORD,false);
@@ -154,7 +156,6 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
     process->_Phase = Active;
     core::T_mv result_mv;
     {
-      SafeRegisterDeregisterProcessWithLisp reg(process);
       try {
         result_mv = core::eval::applyLastArgsPLUSFirst(process->_Function,args);
       } catch (ExitProcess& e) {
@@ -182,19 +183,21 @@ void do_start_thread_inner(Process_sp process, core::List_sp bindings) {
 }
 
 __attribute__((noinline))
-void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
+void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
 #ifdef USE_MPS
   // use mask
-  mps_res_t res = mps_thread_reg(&process->thr_o,global_arena);
+  mps_thr_t thr_o;
+  mps_res_t res = mps_thread_reg(&thr_o,global_arena);
   if (res != MPS_RES_OK) {
     printf("%s:%d Could not register thread\n", __FILE__, __LINE__ );
     abort();
   }
-  res = mps_root_create_thread_tagged(&process->root,
+  mps_root_t root;
+  res = mps_root_create_thread_tagged(&root,
                                       global_arena,
                                       mps_rank_ambig(),
                                       0,
-                                      process->thr_o,
+                                      thr_o,
                                       mps_scan_area_tagged_or_zero,
                                       gctools::pointer_tag_mask,
                                       gctools::pointer_tag_eq,
@@ -203,6 +206,30 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
     printf("%s:%d Could not create thread stack roots\n", __FILE__, __LINE__ );
     abort();
   };
+#endif
+  // Look for the process
+  Process_sp process;
+  core::List_sp processes;
+  {
+    WITH_READ_LOCK(_lisp->_Roots._ActiveThreadsMutex);
+    processes = _lisp->_Roots._ActiveThreads;
+    bool foundIt = false;
+    for ( auto cur : processes ) {
+      Process_sp proc = gc::As<Process_sp>(CONS_CAR(cur));
+      if (proc->_UniqueID == uniqueId) {
+        foundIt = true;
+        process = proc;
+      }
+    }
+    if (!foundIt) {
+      printf("%s:%d A child process started up with the uniqueId %lu but its Process_O could not be found\n", __FILE__, __LINE__, uniqueId);
+      abort();
+    }
+  }
+  // Tell the process what MPS thr_o and root is
+#ifdef USE_MPS
+  process->thr_o = thr_o;
+  process->root = root;
 #endif
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
   core::ThreadLocalState thread_local_state;
@@ -219,37 +246,9 @@ void start_thread_inner(Process_sp process, void* cold_end_of_stack) {
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   do_start_thread_inner(process,reversed_bindings);
-};
-
-// This is the function actually passed to pthread_create.
-void* start_thread(void* claspProcess) {
-  Process_sp my_process((Process_O*)claspProcess);
-  void* cold_end_of_stack = &cold_end_of_stack;
-#ifdef DEBUG_ASSERTS
-  core::List_sp processes = _lisp->processes();
-  bool foundIt = false;
-  Process_O* movedTo = NULL;
-  for ( auto cur : processes ) {
-    Process_sp proc = gc::As<Process_sp>(CONS_CAR(cur));
-    if (&*proc == &*my_process) {
-      foundIt = true;
-    }
-    if (proc->_badge == my_process->_badge) {
-      moveTo = &*proc;
-    }
-  }
-  if (!foundIt) {
-    printf("%s:%d A child process started up with the Process_O* pointer of %p but its Process_O object moved to %p\n",
-           __FILE__, __LINE__, &*my_process, movedTo);
-    abort();
-  }
-#endif
-  ////////////////////////////////////////////////////////////
-  //
-  // MPS setup of thread
-  //
-  start_thread_inner(my_process,cold_end_of_stack);
-
+  // Remove the process
+  process->_Phase = Exiting;
+  _lisp->remove_process(process);
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
     // used for logging. This is so that per-thread log files can be
@@ -264,6 +263,19 @@ void* start_thread(void* claspProcess) {
   mps_root_destroy(process->root);
   mps_thread_dereg(process->thr_o);
 #endif
+};
+
+// This is the function actually passed to pthread_create.
+void* start_thread(void* vinfo) {
+  ThreadStartInfo* info = (ThreadStartInfo*)vinfo;
+  uintptr_t uniqueId = info->_UniqueID;
+  delete info;
+  void* cold_end_of_stack = &cold_end_of_stack;
+  ////////////////////////////////////////////////////////////
+  //
+  // MPS setup of thread
+  //
+  start_thread_inner(uniqueId,cold_end_of_stack);
   my_thread->destroy_sigaltstack();
   return NULL;
 }
@@ -390,6 +402,9 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
 #endif
   if (cl__functionp(function)) {
     Process_sp process = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
+    // The process needs to be added to the list of processes before process->enable() is called.
+    // The child process code needs this to find the process in the list
+    _lisp->add_process(process);
     process->enable();
     return process;
   }

@@ -4663,14 +4663,14 @@ public:
   ~ClaspJIT_O();
 public:
   llvm::DataLayout* _DataLayout;
-  llvm::orc::ExecutionSession *ES;
+  llvm::orc::ExecutionSession *_ES;
 #ifdef USE_JITLINKER
-  llvm::org::JITLinker* LinkLayer;
+  llvm::org::JITLinker* _LinkLayer;
 #else
-  llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
+  llvm::orc::RTDyldObjectLinkingLayer *_LinkLayer;
 #endif
-  llvm::orc::ConcurrentIRCompiler *Compiler;
-  llvm::orc::IRCompileLayer *CompileLayer;
+  llvm::orc::ConcurrentIRCompiler *_Compiler;
+  llvm::orc::IRCompileLayer *_CompileLayer;
 };
 
 

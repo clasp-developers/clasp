@@ -3948,6 +3948,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
             if (name == startup_name) {
               my_thread->_ObjectFileStartUp = (void*)((char*)section_address+address);
+//              printf("%s:%d Found _ObjectFileStartUp -> %p\n", __FILE__, __LINE__, my_thread->_ObjectFileStartUp );
             }
 //          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
 //          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
@@ -4148,7 +4149,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   // always unique 
   core::Pointer_sp startupPtr;
   if (startupName!="") {
-    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(jit->ES->getMainJITDylib(),startupName));
+    startupPtr = gc::As<core::Pointer_sp>(jit->lookup(jit->_ES->getMainJITDylib(),startupName));
   }
   core::T_O* replPtrRaw = NULL;
   if (startupPtr && startupPtr->ptr()) {
@@ -4316,14 +4317,14 @@ ClaspJIT_O::ClaspJIT_O() {
                      .create());
 #endif
   
-  this->ES = new llvm::orc::ExecutionSession();
+  this->_ES = new llvm::orc::ExecutionSession();
   auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
 #ifdef USE_JITLINKER
     #error "JITLinker support needed"
 #else
-  this->LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->ES,GetMemMgr);
-  this->LinkLayer->setProcessAllSections(true);
-  this->LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
+  this->_LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->_ES,GetMemMgr);
+  this->_LinkLayer->setProcessAllSections(true);
+  this->_LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
 //                                      printf("%s:%d  NotifyLoaded ObjectFile@%p\n", __FILE__, __LINE__, &Obj);
                                       save_symbol_info(Obj,loadedObjectInfo);
                                       register_object_file_with_gdb(Obj,loadedObjectInfo);
@@ -4345,10 +4346,10 @@ ClaspJIT_O::ClaspJIT_O() {
   auto cm = converter->enumForSymbol<llvm::CodeModel::Model>(code_model_symbol);
   JTMB->setCodeModel(cm);
 #endif
-  this->Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
-  this->CompileLayer = new llvm::orc::IRCompileLayer(*this->ES,*this->LinkLayer,*this->Compiler);
+  this->_Compiler = new llvm::orc::ConcurrentIRCompiler(*JTMB);
+  this->_CompileLayer = new llvm::orc::IRCompileLayer(*this->_ES,*this->_LinkLayer,*this->_Compiler);
   //  printf("%s:%d Registering ClaspDynamicLibarySearchGenerator\n", __FILE__, __LINE__ );
-  this->ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
+  this->_ES->getMainJITDylib().setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
 }
 
 ClaspJIT_O::~ClaspJIT_O()
@@ -4371,11 +4372,11 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
 #error You need to decide here
 #endif
 //  printf("%s:%d:%s mangledName = %s\n", __FILE__, __LINE__, __FUNCTION__, mangledName.c_str());
-  JITDylib& mainDylib = this->ES->getMainJITDylib();
-  llvm::orc::SymbolStringPtr ssptr = this->ES->intern(mangledName);
-  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true},{&mainDylib,true}}),ssptr);
+  JITDylib& mainDylib = this->_ES->getMainJITDylib();
+  llvm::orc::SymbolStringPtr ssptr = this->_ES->intern(mangledName);
+  llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_ES->lookup(llvm::orc::JITDylibSearchList({{&dylib,true},{&mainDylib,true}}),ssptr);
   if (!symbol) {
-    printf("%s:%d could not find symbol\n", __FILE__, __LINE__ );
+    printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
     return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
@@ -4418,7 +4419,7 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, T
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
   JITDylib& jdl = *dylib->wrappedPtr();
-  ExitOnErr(this->CompileLayer->add(jdl,llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
+  ExitOnErr(this->_CompileLayer->add(jdl,llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
 
@@ -4433,7 +4434,7 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
-  auto erro = this->LinkLayer->add(dylib,std::move(mbuffer),this->ES->allocateVModule());
+  auto erro = this->_LinkLayer->add(dylib,std::move(mbuffer),this->_ES->allocateVModule());
   if (erro) {
     printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
   }
@@ -4465,11 +4466,11 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
 }
 
 CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
-  return this->ES->getMainJITDylib();
+  return this->_ES->getMainJITDylib();
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
-  JITDylib& dylib(this->ES->createJITDylib(name));
+  JITDylib& dylib(this->_ES->createJITDylib(name));
   dylib.setGenerator(llvm::cantFail(ClaspDynamicLibrarySearchGenerator::GetForCurrentProcess(this->_DataLayout->getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
 #if 1
