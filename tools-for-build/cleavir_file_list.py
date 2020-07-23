@@ -306,5 +306,6 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/inline-prep",
     "src/lisp/kernel/cleavir/auto-compile",
     "src/lisp/kernel/cleavir/inline",
+    "src/lisp/kernel/cleavir/inline-one-more-time",
     "src/lisp/kernel/cleavir/transform"
 ]

@@ -67,6 +67,7 @@
     ;;#P"src/lisp/kernel/tags/pre-auto"
     "src/lisp/kernel/cleavir/auto-compile"
     "src/lisp/kernel/cleavir/inline"
+    "src/lisp/kernel/cleavir/inline-one-more-time" ; load inline.lsp twice.
     "src/lisp/kernel/cleavir/transform")))
 
 (save-file-list-as-python
