@@ -1633,7 +1633,16 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
 
 size_t lisp_badge(T_sp object) {
   if (object.consp()) {
-    return object.unsafe_cons()->_badge;
+#ifdef USE_BOEHM
+    return (size_t)object.raw_();
+#else
+    // USE_MPS
+# ifdef MPS_CONS_AWL_POOL    
+    return (size_t)object.unsafe_cons();
+# else
+    return (size_t)object.unsafe_cons()->_badge;
+# endif
+#endif    
   }
   return object.unsafe_general()->_badge;
 }

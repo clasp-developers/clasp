@@ -422,7 +422,11 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %t*% %size_t% %size_t%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get
+                             (thread-local-llvm-context)
+                             (smart-pointer-fields %t*% %t*%
+                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%
+                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%) nil))
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
 (defconstant +cons.car-index+ 0)

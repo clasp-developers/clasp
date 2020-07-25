@@ -867,7 +867,7 @@ void run_quick_tests()
 
 __attribute__((noinline))
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-  if (Alignment() != 8) {
+#if 1
     printf("%s:%d WARNING   Alignment is %lu \n",__FILE__,__LINE__, Alignment());
     printf("%s:%d           AlignUp(8) -> %lu\n", __FILE__, __LINE__, AlignUp(8));
     printf("%s:%d           AlignUp(16) -> %lu\n", __FILE__, __LINE__, AlignUp(16));
@@ -877,7 +877,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
       printf("%s:%d The header size must be an size aligned with %lu - instead it is %lu\n", __FILE__, __LINE__, Alignment(), sizeof(Header_s));
       abort();
     }
-  }
+    printf("%s:%d  sizeof(Cons_O) = %lu\n", __FILE__, __LINE__, sizeof(core::Cons_O));
+    printf("%s:%d pointer_tag_mask = 0x%zx\n", __FILE__, __LINE__, (size_t)gctools::pointer_tag_mask);
+    printf("%s:%d pointer_tag_eq = 0x%zx\n", __FILE__, __LINE__, (size_t)gctools::pointer_tag_eq);
+#endif
+
   global_sizeof_fwd = AlignUp(sizeof(Header_s));
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
@@ -1002,23 +1006,20 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-#if 0    // 1 if awl pool
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+#ifdef MPS_CONS_AWL_POOL    // 1 if awl pool
+    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_awl(), args);
+    printf("%s:%d Using the AWL pool for cons cells\n", __FILE__, __LINE__ );
 #else
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
-#ifdef DEBUG_MPS_FENCEPOST_FREE
-    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
-#endif
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR,1);
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
-#endif
     res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_amc(), args);
+#endif
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
-    GC_RESULT_ERROR(res, "Could not create amc cons pool");
-
+    GC_RESULT_ERROR(res, "Could not create cons pool");
 
   mps_fmt_t obj_fmt_zero;
   MPS_ARGS_BEGIN(args) {
@@ -1268,8 +1269,17 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
 
+#ifdef MPS_CONS_AWL_POOL
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&this->_cons_allocation_point,
+                          global_cons_pool, args);
+  }
+  MPS_ARGS_END(args);
+#else
   res = mps_ap_create_k(&this->_cons_allocation_point,
                         global_cons_pool, mps_args_none);
+#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_cons_allocation_point");
 

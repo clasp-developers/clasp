@@ -18,6 +18,14 @@
  #endif
 #endif
 
+//// MPS_CONS_AWL_POOL puts cons cells into the AWL pool and reduces them to 16 bytes
+//// in size.  Since they don't move we can use their addresses as hash keys.
+//// If this is not defined then CONS cells become 32 bytes and they are stored
+//// in the AMC pools with a badge that stores a PRNG value as a hash.
+
+#define MPS_CONS_AWL_POOL 1
+
+
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of
 /// exactly how many bytes are CONSed by Clasp
 /// Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
@@ -63,8 +71,13 @@
       MPS needs to manage tagged pointers with POINTER_GENERAL_TAG or POINTER_CONS_TAG and nothing else.
       POINTER_GENERAL_TAG and POINTER_CONS_TAG objects are the only objects that are moved/fixed/updated by MPS.
       This will recognize 0x03 (CONS_TAG) and 0x01 (GENERAL_TAG) and not anything else ie: 0x05 (VALIST_S)*/
-#define POINTER_TAG_MASK    ((~(GENERAL_TAG^CONS_TAG))&ZERO_TAG_MASK)
-#define POINTER_TAG_EQ      (GENERAL_TAG&CONS_TAG)
+#if (defined(USE_MPS) && defined(MPS_CONS_AWL_POOL))
+# define POINTER_TAG_MASK    ZERO_TAG_MASK
+# define POINTER_TAG_EQ      GENERAL_TAG
+#else
+# define POINTER_TAG_MASK    ((~(GENERAL_TAG^CONS_TAG))&ZERO_TAG_MASK)
+# define POINTER_TAG_EQ      (GENERAL_TAG&CONS_TAG)
+#endif
 
   
 ///------------------------------------------------------------

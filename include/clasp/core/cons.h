@@ -144,7 +144,9 @@ namespace core {
       return sz;
     }
     void setFwdPointer(void* ptr) {
+#if (defined(USE_MPS)&&!defined(MPS_CONS_AWL_POOL))
       this->_badge = (uintptr_t)(gctools::Header_s::fwd_tag);
+#endif
       this->rawRefSetCdr((uintptr_t)(gctools::Header_s::fwd_tag));
       this->rawRefSetCar((uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag));
     }
@@ -166,8 +168,10 @@ namespace core {
   public:
     std::atomic<T_sp> _Car;
     std::atomic<T_sp> _Cdr;
+#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
     size_t            _badge;
     size_t            _guard;
+#endif
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
@@ -347,8 +351,16 @@ namespace core {
   /*! Return the value associated with the property of the plist - implements CL getf */
     T_sp getf(T_sp key, T_sp defValue) const;
 
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111) {};
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr), _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111){}
+    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>())
+#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
+                     , _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111)
+#endif
+    {};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr)
+#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
+                                        , _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111)
+#endif
+    {}
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.
