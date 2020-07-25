@@ -89,6 +89,25 @@ namespace gctools {
 };
 #endif
 
+inline void* verify_alignment(void* ptr) {
+  if ((((uintptr_t)ptr)&gctools::ptr_mask) != (uintptr_t)ptr) {
+    printf("%s:%d The pointer at %p is not aligned properly\n", __FILE__, __LINE__, ptr);
+    abort();
+  }
+  return ptr;
+}
+
+#ifdef DEBUG_ALLOC_ALIGNMENT
+#define MAYBE_VERIFY_ALIGNMENT(ptr) verify_alignment(ptr)
+#else
+#define MAYBE_VERIFY_ALIGNMENT(ptr) (void*)ptr
+#endif
+
+#ifdef USE_BOEHM
+#define ALIGNED_GC_MALLOC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
+#define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
+#define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz+Alignment())))
+#endif
 
 namespace gctools {
 #ifdef USE_BOEHM
@@ -100,7 +119,7 @@ namespace gctools {
     size_t tail_size = ((rand()%8)+1)*Alignment();
     true_size += tail_size;
 #endif
-    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_ATOMIC(true_size));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
     my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
@@ -118,7 +137,7 @@ namespace gctools {
     size_t tail_size = ((rand()%8)+1)*Alignment();
     true_size += tail_size;
 #endif
-    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC(true_size));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
     my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
@@ -136,7 +155,7 @@ namespace gctools {
     size_t tail_size = ((rand()%8)+1)*Alignment();
     true_size += tail_size;
 #endif
-    Header_s* header = reinterpret_cast<Header_s*>(GC_MALLOC_UNCOLLECTABLE(true_size));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(true_size));
     my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
     memset(header,0x00,true_size);
@@ -169,20 +188,22 @@ namespace gctools {
       // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
       mps_addr_t addr;
       Cons* cons;
+      size_t cons_size = AlignUp(sizeof(Cons));
       do {
-        mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));
+        mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
         if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
         cons = reinterpret_cast<Cons*>(addr);
         new (cons) Cons(std::forward<ARGS>(args)...);
         tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
-      } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
+      } while (!mps_commit(allocation_point, addr, cons_size));
+      MAYBE_VERIFY_ALIGNMENT((void*)addr);
       //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
-      my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
+      my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,cons_size);
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
     handle_all_queued_interrupts();
 #if 0
-    globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
+    globalMpsMetrics.totalMemoryAllocated += cons_size;
     ++globalMpsMetrics.consAllocations;
 #endif    
     return tagged_obj;
@@ -206,7 +227,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     RAII_DEBUG_RECURSIVE_ALLOCATIONS();
     PTR_TYPE tagged_obj;
     T* obj;
-    size_t allocate_size = size;
+    size_t allocate_size = AlignUp(size);
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();
     allocate_size += tail_size;
@@ -227,6 +248,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
         new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(obj);
       } while (!mps_commit(allocation_point, addr, allocate_size));
+      MAYBE_VERIFY_ALIGNMENT((void*)addr);
       my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),allocate_size);
     }
 #ifdef DEBUG_VALIDATE_GUARD
@@ -237,6 +259,14 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     globalMpsMetrics.totalMemoryAllocated += allocate_size;
 #ifdef DEBUG_MPS_SIZE
     {
+      if ((((uintptr_t)obj)&ptag_mask)!=0) {
+        printf("%s:%d The pointer at %p must be aligned to the Alignment() %lu ptag_mask=0x%zx ((uintptr_t)obj)&ptag_mask) = 0x%zx\n", __FILE__, __LINE__, (void*)obj, Alignment(), ptag_mask, (((uintptr_t)obj)&ptag_mask));
+        abort();
+      }
+      if (AlignUp(allocate_size)!=allocate_size) {
+        printf("%s:%d The allocate_size %lu must be a multiple of the Alignment() %lu\n", __FILE__, __LINE__, allocate_size, Alignment());
+        abort();
+      }
       mps_addr_t nextClient = obj_skip((mps_addr_t)obj);
       int skip_size = (int)((char*)nextClient-(char*)obj);
       if (skip_size != allocate_size) {
@@ -268,6 +298,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     T* myAddress;
     { RAII_DISABLE_INTERRUPTS();
       RAII_DEBUG_RECURSIVE_ALLOCATIONS();
+      size = AlignUp(size);
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, size);
         if (res != MPS_RES_OK)
@@ -279,6 +310,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
         new (myAddress) T(std::forward<ARGS>(args)...);
         tagged_obj = PTR_TYPE(myAddress);
       } while (!mps_commit(allocation_point, addr, size));
+      MAYBE_VERIFY_ALIGNMENT((void*)addr);
       my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     }
     handle_all_queued_interrupts();
@@ -359,7 +391,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
 #ifdef USE_BOEHM
       Cons* cons;
       { RAII_DISABLE_INTERRUPTS();
-        cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
+        cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(sizeof(Cons)));
         my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
@@ -1021,7 +1053,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
+    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1095,7 +1127,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    container_pointer myAddress = (container_pointer)GC_MALLOC(size);
+    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1159,7 +1191,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-    container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
+    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1196,7 +1228,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
-    container_pointer myAddress = (container_pointer)GC_MALLOC(size);
+    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1235,7 +1267,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
+    value_pointer myAddress = (value_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1305,7 +1337,7 @@ public:
     bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
-    this->_StackBottom = (uintptr_t *)GC_MALLOC(bufferSize);
+    this->_StackBottom = (uintptr_t *)ALIGNED_GC_MALLOC(bufferSize);
     this->_StackMiddleOffset = (bufferSize / 2);
     this->_StackLimit = (uintptr_t *)((char *)this->_StackBottom + bufferSize);
     this->_StackMinOffset = bufferSize;

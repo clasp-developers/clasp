@@ -456,6 +456,16 @@ struct ReachableMPSObject {
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
+    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)header,gctools::Alignment());
+    abort();
+  }
+  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
+    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)client,gctools::Alignment());
+    abort();
+  }
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
   // Very expensive to validate every object on the heap
   if (header->stampP()) {
@@ -959,6 +969,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
 #endif
   if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_alloc_alignment = false;
+#ifdef DEBUG_ALLOC_ALIGNMENT
+  debug_alloc_alignment = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_ALLOC_ALIGNMENT = %s\n") % (debug_alloc_alignment ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_stackmaps = false;
 #ifdef DEBUG_STACKMAPS

@@ -1135,7 +1135,11 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun alloca-t* (&optional (label "")) (alloca %t*% 1 label))
 (defun alloca-tmv (&optional (label "")) (alloca %tmv% 1 label))
 (defun alloca-af* (&key (label "")) (alloca %af*% 1 label))
-(defun alloca-i8 (size &optional (label "var")) (alloca %i8% size label))
+(defun alloca-i8 (size &key (alignment 8) (label "var"))
+  (let ((al (alloca %i8% size label)))
+    (llvm-sys:set-alignment al alignment)
+    al))
+
 (defun alloca-i8* (&optional (label "i8*-")) (alloca %i8*% 1 label))
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
 (defun alloca-va_list (&optional (label "va_list")) (alloca %va_list% 1 label))
@@ -1146,7 +1150,9 @@ and then the irbuilder-alloca, irbuilder-body."
   ;; Unlike most allocas, we want dx object allocas to be done inline with the code,
   ;; as the length will have been computed at runtime. Kinda like a C VLA.
   ;; So we use *irbuilder*, and don't send the length through constantization.
-  (llvm-sys:create-alloca *irbuilder* %cons% length label))
+  (let ((instr (llvm-sys:create-alloca *irbuilder* %cons% length label)))
+    (llvm-sys:set-alignment instr +alignment+)
+    instr))
 
 (defun alloca-temp-values (size &optional (label "temp-values"))
   ;; Also VLA

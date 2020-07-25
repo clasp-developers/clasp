@@ -55,17 +55,18 @@ namespace clbind {
 //
 //
 namespace core {
-  class KeywordArgument;
-  class RequiredArgument;
-  class SymbolClassHolderPair;
-  class SymbolStorage;
-  class TranslationFunctor_O;
-  class DynamicBinding;
-  class AuxArgument;
-  class OptionalArgument;
-  class CacheRecord;
-  class ExceptionEntry;
-  class BacktraceEntry;
+class KeyValuePair;
+class KeywordArgument;
+class RequiredArgument;
+class SymbolClassHolderPair;
+class SymbolStorage;
+class TranslationFunctor_O;
+class DynamicBinding;
+class AuxArgument;
+class OptionalArgument;
+class CacheRecord;
+class ExceptionEntry;
+class BacktraceEntry;
 };
 namespace asttooling {
   class DerivableSyntaxOnlyAction;

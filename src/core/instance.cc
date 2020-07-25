@@ -409,7 +409,12 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_s
   if (supers->contains(mc))
     return;
   Fixnum arraySuperLength = arrayedSupers->length();
-  supers->setf_gethash(mc, clasp_make_fixnum(arraySuperLength));
+  //  printf("%s:%d arraySuperLength = %ld\n", __FILE__, __LINE__, arraySuperLength);
+  T_sp index = clasp_make_fixnum(arraySuperLength);
+  supers->setf_gethash(mc, index);
+  //  printf("%s:%d dumping supers hash-table\n", __FILE__, __LINE__ );
+  // supers->hash_table_early_dump();
+  //  printf("%s:%d associating %s with %s\n", __FILE__, __LINE__, _rep_(mc).c_str(), _rep_(index).c_str());
   arrayedSupers->vectorPushExtend(mc);
   List_sp directSuperclasses = mc->directSuperclasses();
   //	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
@@ -439,8 +444,11 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
       Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
       int mcIndex = unbox_fixnum(fnValue);
       Instance_sp mc = gc::As<Instance_sp>(key);
+      //      printf("%s:%d Superclasses -> %s\n", __FILE__, __LINE__, _rep_(mc->directSuperclasses()).c_str());
       for (auto mit : (List_sp)(mc->directSuperclasses())) {
-        T_sp val = this->supers->gethash(oCar(mit));
+        T_sp key = oCar(mit);
+        T_sp val = this->supers->gethash(key);
+        //        printf("%s:%d lookup key@%p -> %s  val -> %s\n", __FILE__, __LINE__, key.raw_(), _rep_(key).c_str(), _rep_(val).c_str());
         ASSERT(val.notnilp());
         Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
         int aSuperIndex = unbox_fixnum(fnval);

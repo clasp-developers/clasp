@@ -608,6 +608,7 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
   va_end(rargs);
+  MAYBE_VERIFY_ALIGNMENT(&*(result.result()));
   return result.result().raw_();
   NO_UNWIND_END();
 }

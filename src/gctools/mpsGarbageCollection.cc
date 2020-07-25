@@ -867,8 +867,16 @@ void run_quick_tests()
 
 __attribute__((noinline))
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-  if (Alignment() == 16) {
-    //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
+  if (Alignment() != 8) {
+    printf("%s:%d WARNING   Alignment is %lu \n",__FILE__,__LINE__, Alignment());
+    printf("%s:%d           AlignUp(8) -> %lu\n", __FILE__, __LINE__, AlignUp(8));
+    printf("%s:%d           AlignUp(16) -> %lu\n", __FILE__, __LINE__, AlignUp(16));
+    printf("%s:%d           AlignUp(24) -> %lu\n", __FILE__, __LINE__, AlignUp(24));
+    printf("%s:%d           AlignUp(32) -> %lu\n", __FILE__, __LINE__, AlignUp(32));
+    if (AlignUp(sizeof(Header_s))!=sizeof(Header_s)) {
+      printf("%s:%d The header size must be an size aligned with %lu - instead it is %lu\n", __FILE__, __LINE__, Alignment(), sizeof(Header_s));
+      abort();
+    }
   }
   global_sizeof_fwd = AlignUp(sizeof(Header_s));
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));

@@ -46,6 +46,12 @@ size_t next_hash_table_id();
 
 namespace core{
 
+struct KeyValuePair {
+  KeyValuePair(T_sp k, T_sp v) : _Key(k), _Value(v) {};
+  core::T_sp _Key;
+  core::T_sp _Value;
+};
+
   FORWARD(HashTable);
   class HashTable_O : public HashTableBase_O {
     struct metadata_bootstrap_class {};
@@ -82,7 +88,7 @@ namespace core{
 #endif
     Number_sp _RehashSize;
     double _RehashThreshold;
-    gctools::Vec0<Cons_O> _Table;
+    gctools::Vec0<KeyValuePair> _Table;
     size_t _HashTableCount;
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;
@@ -113,8 +119,8 @@ namespace core{
   public:
     List_sp hash_table_bucket(size_t index);
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
-    List_sp rehash_no_lock(bool expandTable, T_sp findKey);
-    List_sp rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
+    KeyValuePair* rehash_no_lock(bool expandTable, T_sp findKey);
+    KeyValuePair* rehash_upgrade_write_lock(bool expandTable, T_sp findKey);
     CL_LISPIFY_NAME("hash-table-buckets");
 //    CL_DEFMETHOD ComplexVector_T_sp hash_table_buckets() const { return this->_HashTable; };
     CL_LISPIFY_NAME("hash-table-shared-mutex");
@@ -138,7 +144,7 @@ namespace core{
   /*! I'm not sure I need this and tableRef */
     List_sp bucketsFind_no_lock(T_sp key) const;
   /*! I'm not sure I need this and bucketsFind */
-    virtual List_sp tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index, HashGenerator& hg);
+    virtual KeyValuePair* tableRef_no_read_lock(T_sp key,bool under_write_lock, cl_index index, HashGenerator& hg);
 //    List_sp findAssoc_no_lock(gc::Fixnum index, T_sp searchKey) const;
 
     T_sp hash_table_average_search_length();
@@ -147,7 +153,7 @@ namespace core{
     bool contains(T_sp key);
 
   /*! Return the key/value pair in a CONS if found or NIL if not */
-    List_sp find(T_sp key);
+    KeyValuePair* find(T_sp key);
 
     T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
     gc::Fixnum hashIndex(T_sp key) const;
@@ -167,6 +173,8 @@ namespace core{
     string __repr__() const;
 
     string hash_table_dump();
+    void hash_table_pointers_dump();
+    void hash_table_early_dump();
 
     void lowLevelMapHash(KeyValueMapper *mapper) const;
 

@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
@@ -110,7 +111,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4, false>);
-GC_MANAGED_TYPE(gctools::GCVector_moveable<core::Cons_O>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeyValuePair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
@@ -126,6 +127,7 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::KeyValuePair>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>);
@@ -343,6 +345,10 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 
 void Header_s::validate() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
   if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"header is 0");
 #ifdef DEBUG_GUARD  
   if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");

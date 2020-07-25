@@ -174,9 +174,11 @@ namespace gctools {
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb x00 set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
-  static const uintptr_t ptag_mask    = ZERO_TAG_MASK; // 0b111;
-  static const uintptr_t fixnum0_tag  = FIXNUM0_TAG; // x00 means fixnum
-  static const uintptr_t fixnum1_tag  = FIXNUM1_TAG; // x100 means fixnum odd
+  static const uintptr_t ptag_mask     = ZERO_TAG_MASK; // #b1111;
+  static const uintptr_t fixnum00_tag  = FIXNUM0_TAG; // x0000 means fixnum
+  static const uintptr_t fixnum01_tag  = FIXNUM1_TAG; // x0100 means fixnum 
+  static const uintptr_t fixnum10_tag  = FIXNUM2_TAG; // x1000 means fixnum
+  static const uintptr_t fixnum11_tag  = FIXNUM3_TAG; // x1100 means fixnum 
   static const uintptr_t fixnum_mask =  FIXNUM_MASK;
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
@@ -190,7 +192,7 @@ for a CONS cell*/
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
-  static const uintptr_t gc_tag = GC_TAG; //0b111;
+  static const uintptr_t gc_tag = GC_TAG; //0b1111;
 
 /*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to
 iterate over variable numbers of arguments passed to functions.
@@ -199,7 +201,9 @@ point to are only ever on the stack.
 I hack the va_list structure in X86_64 ABI dependent ways and I will abstract all of the
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
-  static const uintptr_t valist_tag = VASLIST_TAG; // means a valist
+  static const uintptr_t vaslist_ptag_mask = VASLIST_TAG_MASK; // #b111
+  static const uintptr_t vaslist0_tag = VASLIST0_TAG; // means a valist
+  static const uintptr_t vaslist1_tag = VASLIST1_TAG; // means a valist that is unaligned
                                                        /*! Immediate value tags */
   static const uintptr_t immediate_mask   = IMMEDIATE_MASK;
   static const uintptr_t character_tag    = CHARACTER_TAG;
@@ -327,8 +331,8 @@ template <class T>
   }
   template <class T>
     inline T tag_vaslist(core::Vaslist *p) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & ptag_mask) == 0);
-    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & vaslist_ptag_mask) == 0);
+    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + vaslist0_tag);
   }
 
 
@@ -339,8 +343,8 @@ template <class T>
   }
   template <class T>
     inline core::Vaslist* untag_vaslist(T ptr) {
-    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == valist_tag);
-    return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
+    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
+    return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_t>(ptr) - vaslist0_tag);
   }
 
 
@@ -355,7 +359,7 @@ template <class T>
   }
   template <class T>
     inline bool tagged_fixnump(T ptr) {
-    return ((reinterpret_cast<uintptr_t>(ptr) & fixnum_mask) == fixnum0_tag);
+    return ((reinterpret_cast<uintptr_t>(ptr) & fixnum_mask) == fixnum00_tag);
   };
   template <class T>
     inline T tag_character(int ch) {
@@ -404,7 +408,7 @@ template <class T>
   }
   template <class T>
     inline bool tagged_vaslistp(T ptr) {
-    return ((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == valist_tag);
+    return ((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
   };
 
   template <class T>

@@ -13,6 +13,7 @@
    #:serial-search-all
    #:serial-search/generate-code
    #:parallel-search/generate-code
+   #:parallel-search-all-threaded
    #:analyze-project
    #:generate-code
    #:build-arguments-adjuster))
@@ -3716,53 +3717,69 @@ Run searches in *tools* on the source files in the compilation database."
 
 (defstruct parallel-job id filename)
 (defstruct parallel-result id filename result)
-    
-(defun one-search-process (compilation-tool-database tools jobid job-queue)
-  (let* ((log-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :supersede))
-         (*standard-output* log-file))
-    (format t "Starting process ~a~%" jobid)
+
+(defclass job-group ()
+  ((jobs :initform nil :accessor jobs)
+   (results :initform (make-project) :accessor results)))
+
+
+(defun one-search-process (compilation-tool-database job-group-index job-group)
+  (let* ((tools (setup-tools compilation-tool-database))
+         (log-file (open (format nil "/tmp/process~a-output.log" job-group-index) :direction :output :if-exists :supersede))
+         (err-file (open (format nil "/tmp/process~a-error.log" job-group-index) :direction :output :if-exists :supersede))
+         (*standard-output* log-file)
+         (*error-output* err-file))
+    (format t "Starting process ~a~%" job-group-index)
+    (setf (clang-tool:multitool-results tools) (results job-group))
     (clang-tool:with-compilation-tool-database compilation-tool-database
-      (loop while (> (core:queue-count job-queue) 0)
-         do (let ((one-job (core:dequeue job-queue)))
-              (when one-job
-                (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
-                (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
-    (close log-file)))
+      (loop for one-job in (jobs job-group)
+            for id = (parallel-job-id one-job)
+            for filename = (parallel-job-filename one-job)
+            do (progn
+                 (format *terminal-io* "Running search on ~a ~a~%" id filename)
+                 (format t "Running search on ~a ~a~%" id filename)
+                 (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list filename)))))
+    (close log-file)
+    (close err-file)))
 
 (defun parallel-search-all-threaded (compilation-tool-database
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
-                              (jobs 2))
+                              (threads 8))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
 * Description
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
-  (let ((tools (setup-tools compilation-tool-database))
-        (all-jobs source-namestrings)
-        (job-queue (core:make-queue :analyze-queue)))
-    (setf (clang-tool:multitool-results tools) (make-project))
-    (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
+  (let ((all-jobs source-namestrings)
+        (job-groups (loop for idx from 0 below threads
+                          collect (make-instance 'job-group))))
+;; Distribute the jobs to the job-groups
+(loop for job in all-jobs
+      for job-index from 0
+      for job-group-index = (mod job-index threads)
+      for job-group = (elt job-groups job-group-index)
+      for job-info = (make-parallel-job :id job-index :filename job)
+      do (push job-info (jobs job-group)))
+
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
-    (loop for job in all-jobs
-       for id from 0
-       do (core:atomic-enqueue job-queue (make-parallel-job :id id :filename job)))
     (format t "Starting processes~%")
-    (let ((processes (loop for x from 0 below jobs
-                        do (format t "loop for process ~a~%" x)
-                        collect (prog1
-                                    (mp:process-run-function
-                                     nil
-                                     (lambda ()
-                                       (one-search-process compilation-tool-database tools x job-queue)))
+    (let ((processes (loop for job-group-index from 0 below threads
+                           for job-group = (elt job-groups job-group-index)
+                           do (format t "loop for process ~a~%" job-group-index)
+                           collect (prog1
+                                       (mp:process-run-function
+                                        nil
+                                        (lambda ()
+                                          (one-search-process compilation-tool-database job-group-index job-group)))
                                   (sleep 2)))))
       (loop for process in processes
            do (mp:process-join process))
-      (format t "All processes done~%")
-      (when save-project
+      (format t "All processes done  merge everything here~%")
+      #+(or)(when save-project
         (let ((project (clang-tool:multitool-results tools)))
           (save-data project output-file)
           (values project output-file))))))

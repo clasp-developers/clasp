@@ -506,7 +506,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
   target._ArgTargetFrameIndex = SUB_LAMBDA_LIST;
 }
 
-void TargetClassifier::classifyTarget(Argument &target) {
+__attribute__((optnone)) void TargetClassifier::classifyTarget(Argument &target) {
   //  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
   if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {
@@ -524,6 +524,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   { // required arguments
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
+      //      printf("%s:%d  (*it)._ArgTarget.raw_() -> %p\n", __FILE__, __LINE__, (*it)._ArgTarget.raw_());
       if (it->_lambdaListP()) {
         SIMPLE_ERROR(BF("A nested lambda list was discovered while building handler for %s") % this->__repr__());
         List_sp sub_lambda_list = it->lambda_list();

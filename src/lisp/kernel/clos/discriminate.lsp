@@ -147,7 +147,7 @@
   ;; This is essentially just class-name, but avoiding the generic function call.
   (case (first (find (core:class-stamp-for-instances class)  *tag-tests*
                      :key #'second))
-    ((:fixnum-tag) 'fixnum)
+    ((:fixnum00-tag) 'fixnum)
     ((:single-float-tag) 'single-float)
     ((:character-tag) 'character)
     ((:cons-tag) 'cons)

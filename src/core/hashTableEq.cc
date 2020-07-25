@@ -83,14 +83,14 @@ List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
   HashGenerator hg;
   cl_index index = this->sxhashKey(key, length, hg );
   for (size_t cur = index, curEnd(this->_Table.size()); cur<curEnd; ++cur ) {
-    Cons_O& entry = this->_Table[cur];
-    if (entry.ocar() == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
-    if (entry.ocar().no_keyp()) goto NOT_FOUND;
+    KeyValuePair& entry = this->_Table[cur];
+    if (entry._Key == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
   for (size_t cur = 0, curEnd(index); cur<curEnd; ++cur ) {
-    Cons_O& entry = this->_Table[cur];
-    if (entry.ocar() == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
-    if (entry.ocar().no_keyp()) goto NOT_FOUND;
+    KeyValuePair& entry = this->_Table[cur];
+    if (entry._Key == key) return gc::smart_ptr<Cons_O>((Cons_O*)&entry);
+    if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
 #if 0 // defined(USE_MPS)

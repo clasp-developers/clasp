@@ -48,71 +48,71 @@ public:
   struct GCVector_moveable_iterator {
     typedef GCVector_moveable_iterator<Uty> Iterator;
     typedef Uty value_type;
-    mutable Uty *_TaggedCurP;
-    GCVector_moveable_iterator() : _TaggedCurP(NULL){};
-    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _TaggedCurP(tag_general<Uty *>(&(vec->_Data[index]))){};
-    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _TaggedCurP(tag_general<Uty *>(&(vec->_Data[index]))){};
+    mutable Uty *_CurP;
+    GCVector_moveable_iterator() : _CurP(NULL){};
+    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _CurP(&(vec->_Data[index])){};
+    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _CurP(&(vec->_Data[index])){};
     const Iterator &operator=(const Iterator &other) const {
       if (&other == this)
         return *this;
-      this->_TaggedCurP = other._TaggedCurP;
+      this->_CurP = other._CurP;
       return *this;
     }
-    Uty *operator->() { return (untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty &operator*() { return *(untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty const *operator->() const { return (untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty const &operator*() const { return *(untag_general<Uty *>(this->_TaggedCurP)); };
+    Uty *operator->() { return ((this->_CurP)); };
+    Uty &operator*() { return *((this->_CurP)); };
+    Uty const *operator->() const { return ((this->_CurP)); };
+    Uty const &operator*() const { return *((this->_CurP)); };
     size_t operator-(const Iterator &other) const {
-      return (this->_TaggedCurP - other._TaggedCurP);
+      return (this->_CurP - other._CurP);
     }
     Iterator operator+(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._TaggedCurP += num;
+      clone._CurP += num;
       return clone;
     }
     Iterator operator-(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._TaggedCurP -= num;
+      clone._CurP -= num;
       return clone;
     }
     bool operator==(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP == other._TaggedCurP;
+      return this->_CurP == other._CurP;
     }
     bool operator>(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP > other._TaggedCurP;
+      return this->_CurP > other._CurP;
     }
     bool operator>=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP >= other._TaggedCurP;
+      return this->_CurP >= other._CurP;
     }
     bool operator<(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP < other._TaggedCurP;
+      return this->_CurP < other._CurP;
     }
     bool operator<=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP <= other._TaggedCurP;
+      return this->_CurP <= other._CurP;
     }
     bool operator!=(const GCVector_moveable_iterator<Uty> &other) const {
       return !(*this == other);
     }
     const GCVector_moveable_iterator<Uty> &operator++() const {
-      ++this->_TaggedCurP;
+      ++this->_CurP;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator++(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      ++this->_TaggedCurP;
+      ++this->_CurP;
       return clone;
     }
     GCVector_moveable_iterator<Uty> &operator--() {
-      --this->_TaggedCurP;
+      --this->_CurP;
       return *this;
     }
     const GCVector_moveable_iterator<Uty> &operator--() const {
-      --this->_TaggedCurP;
+      --this->_CurP;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator--(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      --this->_TaggedCurP;
+      --this->_CurP;
       return clone;
     }
   };

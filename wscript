@@ -244,7 +244,8 @@ DEBUG_OPTIONS = [
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
     "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
-    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_RECURSIVE_ALLOCATIONS", # Catch allocations within allocations - MPS hates these
+    "DEBUG_ALLOC_ALIGNMENT", # catch misaligned allocations
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",

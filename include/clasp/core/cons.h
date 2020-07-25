@@ -167,7 +167,7 @@ namespace core {
     std::atomic<T_sp> _Car;
     std::atomic<T_sp> _Cdr;
     size_t            _badge;
-
+    size_t            _guard;
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
@@ -196,6 +196,7 @@ namespace core {
 #endif
     static Cons_sp create(T_sp car, T_sp cdr) {
       gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
+      MAYBE_VERIFY_ALIGNMENT(&*ll);
       return ll;
     };
   public:
@@ -346,8 +347,8 @@ namespace core {
   /*! Return the value associated with the property of the plist - implements CL getf */
     T_sp getf(T_sp key, T_sp defValue) const;
 
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _badge(my_thread->random()|(~gctools::ptag_mask)) {};
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr), _badge(my_thread->random()|(~gctools::ptag_mask)){}
+    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111) {};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr), _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111){}
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.

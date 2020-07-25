@@ -422,8 +422,17 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %size_t% %t*% %t*%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %t*% %size_t% %size_t%) nil))
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
+
+(defconstant +cons.car-index+ 0)
+(defconstant +cons.cdr-index+ 1)
+(let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %cons%))
+       (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
+       (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
+       (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
+      (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
+
 
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
@@ -534,7 +543,7 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-c++-struct %vaslist% +vaslist-tag+
+  (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
     ((%va_list% va_list)
      (%size_t% remaining-nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))

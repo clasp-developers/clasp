@@ -404,7 +404,8 @@
                 ;; Closure is dynamic extent, so we can use stack storage.
                 (%intrinsic-call
                  "cc_stack_enclose"
-                 (list* (cmp:alloca-i8 (core:closure-with-slots-size ninputs) "stack-allocated-closure")
+                 (list* (cmp:alloca-i8 (core:closure-with-slots-size ninputs) :alignment cmp:+alignment+
+                                                                              :label "stack-allocated-closure")
                         enclose-args)
                  (format nil "closure->~a" lambda-name)))
                (t
@@ -808,7 +809,7 @@
                      (let ((fixnum-block (cmp:irc-basic-block-create "is-fixnum")))
                        ;; same as fixnump, below
                        (cmp:compile-tag-check input
-                                              cmp:+fixnum-mask+ cmp:+fixnum-tag+
+                                              cmp:+fixnum-mask+ cmp:+fixnum00-tag+
                                               fixnum-block default)
                        (cmp:irc-begin-block fixnum-block)
                        (cmp:irc-untag-fixnum input cmp:%i64% "switch-input"))
@@ -834,7 +835,7 @@
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:fixnump-instruction) return-value successors abi function-info)
   (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
-                         cmp:+fixnum-mask+ cmp:+fixnum-tag+
+                         cmp:+fixnum-mask+ cmp:+fixnum00-tag+
                          (first successors) (second successors)))
 
 (defmethod translate-branch-instruction

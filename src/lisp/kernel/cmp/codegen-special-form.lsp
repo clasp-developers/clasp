@@ -458,7 +458,7 @@ and put the values into the activation frame for new-env."
       (codegen value object env)
       (let ((object-raw (irc-load value)))
         (case type
-          ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum-tag+ thenb elseb))
+          ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum00-tag+ thenb elseb))
           ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
           ((character) (compile-tag-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
           ((single-float) (compile-tag-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
@@ -477,7 +477,7 @@ and put the values into the activation frame for new-env."
        (codegen value object env)
        (compile-tag-check (irc-load value) ,mask ,tag thenb elseb))))
 
-(define-tag-check compile-fixnump +fixnum-mask+ +fixnum-tag+)
+(define-tag-check compile-fixnump +fixnum-mask+ +fixnum00-tag+)
 (define-tag-check compile-consp +immediate-mask+ +cons-tag+)
 (define-tag-check compile-characterp +immediate-mask+ +character-tag+)
 (define-tag-check compile-single-float-p +immediate-mask+ +single-float-tag+)

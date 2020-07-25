@@ -510,7 +510,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-  LOG(BF("obj_scan client=%p limit=%p\n") % (void*)client % (void*)limit );
+  LOG(BF("obj_scan START client=%p limit=%p\n") % (void*)client % (void*)limit );
   mps_addr_t oldClient;
   size_t size = 0;  // Used to store the size of the object
   size_t stamp_index;
@@ -531,7 +531,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       }
 #endif
       stamp_index = header.stamp_();
-      LOG(BF("obj_scan client=%p stamp-index=%lu\n") % (void*)client % stamp_index );
+      LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
       tagged_stamp_t mtag = header_value.mtag();
       switch (mtag) {
       case gctools::Header_s::stamp_tag: {
@@ -626,6 +626,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       }
     }
   } MPS_SCAN_END(GC_SCAN_STATE);
+  LOG(BF("obj_scan ENDING client=%p\n") % (void*)client );
   return MPS_RES_OK;
 }
 };

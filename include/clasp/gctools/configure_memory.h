@@ -30,7 +30,7 @@
 /// MPS_RECOGNIZE_ZERO_TAG allows ( ZERO_TAG_MASK | ptr ) == 0 to be considered as a pointer
 //#define MPS_RECOGNIZE_ALL_TAGS   // Anything can be a pointer - overrides MPS_RECOGNIZE_ZERO_TAG
 #define MPS_RECOGNIZE_ZERO_TAG   // recognize #b000 as a tagged pointer
-#define ZERO_TAG_MASK       0x07          // goes with MPS_RECOGNIZE_ZERO_TAG
+#define ZERO_TAG_MASK       0x0F          // goes with MPS_RECOGNIZE_ZERO_TAG
 
 
 // For MPS extensions can define custom allocation points - but only up to this many
@@ -46,12 +46,16 @@
 #define CHARACTER_TAG       0x02
 #define CONS_TAG            0x03
 #define FIXNUM1_TAG         0x04
-#define VASLIST_TAG         0x05
+#define VASLIST0_TAG        0x05
+#define VASLIST1_TAG        0x0D // Two vaslist tags because they will be 8-byte aligned
+#define VASLIST_TAG_MASK    0x7 // mask out the tag part of a VASLIST
 #define SINGLE_FLOAT_TAG    0x06
-#define GC_TAG              0x07
-#define IMMEDIATE_MASK      0x07
-#define SINGLE_FLOAT_SHIFT  3
-#define CHARACTER_SHIFT     3
+#define GC_TAG              0x0F
+#define IMMEDIATE_MASK      0x0F
+#define FIXNUM2_TAG         0x08
+#define FIXNUM3_TAG         0x0C
+#define SINGLE_FLOAT_SHIFT  4
+#define CHARACTER_SHIFT     4
 
 
 

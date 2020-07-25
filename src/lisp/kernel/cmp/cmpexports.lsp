@@ -61,8 +61,15 @@
             *the-module*
             +header-size+
             +cons-tag+
-            +fixnum-tag+
-            +vaslist-tag+
+            +fixnum-mask+
+            +fixnum00-tag+
+            +fixnum01-tag+
+            +fixnum10-tag+
+            +fixnum11-tag+
+            +alignment+
+            +vaslist-ptag-mask+
+            +vaslist0-tag+
+            +vaslist1-tag+
             +single-float-tag+
             +character-tag+
             +general-tag+

@@ -246,7 +246,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_i
   }
   core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d symbol was not defined") % expectedTyp);
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("unexpected type for object %p givenTyp %d could not find expectedTyp %d because symbol was not defined") % (void*)objP % givenTyp % expectedTyp);
   }
 
   if (givenTyp >= _lisp->classSymbolsHolder().size()) {
