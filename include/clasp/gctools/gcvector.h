@@ -43,76 +43,91 @@ public:
   size_t _Capacity; // Index one beyond the total number of elements allocated
   size_t _End;
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
-
   template <typename Uty>
   struct GCVector_moveable_iterator {
     typedef GCVector_moveable_iterator<Uty> Iterator;
     typedef Uty value_type;
-    mutable Uty *_CurP;
-    GCVector_moveable_iterator() : _CurP(NULL){};
-    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _CurP(&(vec->_Data[index])){};
-    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _CurP(&(vec->_Data[index])){};
+    tagged_pointer<GCVector_moveable<T>> _Vec;
+    mutable size_t _Index;
+    GCVector_moveable_iterator() : _Index(0) {};
+    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _Vec(vec), _Index(index) {
+      //      printf("%s:%d initializing %p\n", __FILE__, __LINE__, _Vec.raw_() );
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+    };
+    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _Vec(gctools::tag_general<GCVector_moveable<T>*>(vec)), _Index(index) {
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+    };
+#if 0
     const Iterator &operator=(const Iterator &other) const {
       if (&other == this)
         return *this;
-      this->_CurP = other._CurP;
+      this->_Vec = other._Vec;
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+      this->_Index = other._Index;
       return *this;
     }
-    Uty *operator->() { return ((this->_CurP)); };
-    Uty &operator*() { return *((this->_CurP)); };
-    Uty const *operator->() const { return ((this->_CurP)); };
-    Uty const &operator*() const { return *((this->_CurP)); };
+#endif    
+    Uty *operator->() { return &(*this->_Vec)[this->_Index]; };
+    Uty &operator*() { return (*this->_Vec)[this->_Index]; };
+    Uty const *operator->() const { return &(*this->_Vec)[this->_Index]; };
+    Uty const &operator*() const { return (*this->_Vec)[this->_Index]; };
     size_t operator-(const Iterator &other) const {
-      return (this->_CurP - other._CurP);
+      return (this->_Index - other._Index);
     }
     Iterator operator+(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._CurP += num;
+      clone._Index += num;
       return clone;
     }
     Iterator operator-(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._CurP -= num;
+      clone._Index -= num;
       return clone;
     }
     bool operator==(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_CurP == other._CurP;
+      return (this->_Vec == other._Vec) && (this->_Index == other._Index);
     }
     bool operator>(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_CurP > other._CurP;
+      return this->_Index > other._Index;
     }
     bool operator>=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_CurP >= other._CurP;
+      return this->_Index >= other._Index;
     }
     bool operator<(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_CurP < other._CurP;
+      return this->_Index < other._Index;
     }
     bool operator<=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_CurP <= other._CurP;
+      return this->_Index <= other._Index;
     }
     bool operator!=(const GCVector_moveable_iterator<Uty> &other) const {
       return !(*this == other);
     }
     const GCVector_moveable_iterator<Uty> &operator++() const {
-      ++this->_CurP;
+      ++this->_Index;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator++(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      ++this->_CurP;
+      ++this->_Index;
       return clone;
     }
     GCVector_moveable_iterator<Uty> &operator--() {
-      --this->_CurP;
+      --this->_Index;
       return *this;
     }
     const GCVector_moveable_iterator<Uty> &operator--() const {
-      --this->_CurP;
+      --this->_Index;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator--(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      --this->_CurP;
+      --this->_Index;
       return clone;
     }
   };
