@@ -160,10 +160,10 @@ class Hash1Generator : public HashGeneratorBase {
   bool addValue(const mpz_class &bignum);
 
     // Add an address - this may need to work with location dependency
-  bool addConsAddress(const Cons_O* part);
+  bool addConsAddress(Cons_sp part);
 
   // Add an address - this may need to work with location dependency
-  bool addGeneralAddress(const General_O* part);
+  bool addGeneralAddress(General_sp part);
   
   // Hash1Generator is always filling
   bool isFilling() const { return true; };
@@ -252,8 +252,8 @@ public:
     return true;
   }
 
-  bool addConsAddress(const Cons_O* part);
-  bool addGeneralAddress(const General_O* part);
+  bool addConsAddress(Cons_sp part);
+  bool addGeneralAddress(General_sp part);
   
   /*Add the bignum across multiple parts, return true if everything was added */
   bool addValue(const mpz_class &bignum);
@@ -652,12 +652,10 @@ namespace core {
       hg.addValue(obj.unsafe_character());
       return;
     } else if (obj.consp() ) {
-      Cons_O* cons = obj.unsafe_cons();
-      hg.addConsAddress(cons);
+      hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
       return;
     } else if ( obj.generalp() ) {
-      General_O* general = obj.unsafe_general();
-      hg.addGeneralAddress(general);
+      hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
       return;
     }
     SIMPLE_ERROR_SPRINTF("Handle sxhash_ for object");

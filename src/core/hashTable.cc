@@ -430,10 +430,10 @@ void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
 
 void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
   if (obj.generalp()) {
-    hg.addGeneralAddress(obj.unsafe_general());
+    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress(obj.unsafe_cons());
+    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -442,10 +442,10 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj) {
 
 void HashTable_O::sxhash_eq(Hash1Generator &hg, T_sp obj) {
   if (obj.generalp()) {
-    hg.addGeneralAddress(obj.unsafe_general());
+    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress(obj.unsafe_cons());
+    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
     return;
   } else {
     hg.addValue((uintptr_t)obj.raw_());
@@ -479,12 +479,12 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
         hg.hashObject(obj);
         return;
       }
-      hg.addGeneralAddress(obj.unsafe_general());
+      hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
       return;
     }
   case gctools::cons_tag:
     {
-      hg.addConsAddress(obj.unsafe_cons());
+      hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
       return;
     }
   default:
@@ -511,10 +511,10 @@ void HashTable_O::sxhash_eql(Hash1Generator &hg, T_sp obj) {
       hg.hashObject(obj);
       return;
     }
-    hg.addGeneralAddress(obj.unsafe_general());
+    hg.addGeneralAddress(gc::As_unsafe<General_sp>(obj));
     return;
   } else if (obj.consp()) {
-    hg.addConsAddress(obj.unsafe_cons());
+    hg.addConsAddress(gc::As_unsafe<Cons_sp>(obj));
     return;
   }
   SIMPLE_ERROR(BF("Illegal object for eql hash %s") % _rep_(obj));
