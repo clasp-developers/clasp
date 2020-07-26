@@ -93,4 +93,39 @@ public:                                                                         
 
 #endif // SCRAPING
 
+namespace core {
+class ImmobileObject_O;
+};
+
+template <>
+struct gctools::GCInfo<core::ImmobileObject_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = collectable_immobile;
+};
+
+namespace core {
+  SMART(ImmobileObject);
+  class ImmobileObject_O : public General_O {
+    CL_DOCSTRING(R"doc(Immobile-object is allocated in the collectable_immobile pool and guaranteed not to move.
+They can be passed to C++ functions and and then passed back to clasp code and used to locate a moveable object by one level of indirection.)doc");
+    LISP_CLASS(core,CorePkg,ImmobileObject_O,"ImmobileObject",General_O);
+  public:
+    T_sp _Object;
+    T_sp _Name;
+  public:
+
+    CL_LAMBDA(object &optional name);
+    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp object, core::T_sp name) {
+      GC_ALLOCATE_VARIADIC(ImmobileObject_O,p,object,name);
+      return p;
+    };
+
+  public:
+    CL_DEFMETHOD T_sp getObject() const { return this->_Object; };
+    CL_DEFMETHOD T_sp getName() const { return this->_Name; };
+    explicit ImmobileObject_O(T_sp obj, T_sp name) : _Object(obj), _Name(name) {};
+    virtual ~ImmobileObject_O(){};
+  };
+};
 #endif // __CLASP_CORE_EXTERNAL_OBJECT_H__
