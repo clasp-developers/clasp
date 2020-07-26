@@ -214,10 +214,14 @@
     :meta-class% (getf plist :meta-class))
   (define-tag-handler cl-lambda-tag "CL_LAMBDA_TAG" tags:cl-lambda-tag
     :lambda-list% (let ((lambda-list (getf plist :lambda-list)))
+                    (format t "lambda-list: |~s|~%" lambda-list)
                     (if (and (> (length lambda-list) 1)
                              (char= (elt lambda-list 0) #\"))
-                        (read-from-string lambda-list)
-                        lambda-list)))
+                        (let ((ll (read-from-string lambda-list)))
+                          (if (char= (elt ll 0) #\()
+                              (error "Don't put parentheses around lambda ~s" ll)
+                              ll)
+                        lambda-list))))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-priority-tag "CL_PRIORITY_TAG" tags:cl-priority-tag
