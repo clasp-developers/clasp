@@ -62,6 +62,9 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
 T_sp WrappedPointer_O::_instanceClassSet(Instance_sp cl) {
   this->Class_ = cl;
   this->ShiftedStamp_ = cl->CLASS_stamp_for_instances();
+  if (!gctools::Header_s::StampWtagMtag::is_wrapped_shifted_stamp(this->ShiftedStamp_)) {
+    printf("%s:%d When setting the class of an instance to class: %s - the ShiftedStamp_ %lu is not a wrapped_shifted_stamp\n", __FILE__, __LINE__, _rep_(cl).c_str(), this->ShiftedStamp_);
+  }
   ASSERT(gctools::Header_s::StampWtagMtag::is_wrapped_shifted_stamp(this->ShiftedStamp_));
   return this->asSmartPtr();
 }
