@@ -1447,10 +1447,10 @@ template <typename T1,typename T2>
 T_sp template_search_string(const T1& sub, const T2& outer, size_t sub_start, size_t sub_end, size_t outer_start, size_t outer_end)
 {
   // The std::search convention is reversed -->  std::search(outer,sub,...)
-  const typename T2::simple_element_type* startp = &outer[0];
-  const typename T2::simple_element_type* cps = &outer[outer_start];
+  const typename T2::simple_element_type* startp = (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(0); // &outer[0];
+  const typename T2::simple_element_type* cps = (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(outer_start); //&outer[outer_start];
   const typename T2::simple_element_type* cpe = (const typename T2::simple_element_type*)outer.rowMajorAddressOfElement_(outer_end);
-  const typename T1::simple_element_type* s_cps = &sub[sub_start];
+  const typename T1::simple_element_type* s_cps = (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_start); //&sub[sub_start];
   const typename T1::simple_element_type* s_cpe = (const typename T1::simple_element_type*)sub.rowMajorAddressOfElement_(sub_end);
   const typename T2::simple_element_type* pos = std::search(cps,cpe,s_cps,s_cpe);
   if (pos == cpe ) return _Nil<T_O>();
