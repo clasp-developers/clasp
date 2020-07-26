@@ -2437,7 +2437,10 @@ so that they don't have to be constantly recalculated"
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+      (format fout "#pragma clang diagnostic push~%")
+      (format fout "#pragma clang diagnostic ignored \"-Wignored-qualifiers\"~%")
       (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
+      (format fout "#pragma clang diagnostic pop~%")
       (format fout "    goto finalize_done;~%"))))
 
 
