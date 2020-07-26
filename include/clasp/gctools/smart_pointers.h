@@ -984,14 +984,18 @@ public:
 
 public:
   void reset_() { this->theObject = NULL; };
-  inline bool generalp() const { return tagged_generalp<core::Cons_O *>(this->theObject); };
-  inline bool objectp() const { return this->generalp() || this->consp(); };
+  inline bool generalp() const { return false; };
+  inline bool objectp() const { return this->consp(); };
   inline bool isTrue() const { return true; };
   inline bool consp() const { return tagged_consp(this->theObject); };
   inline bool valid() const { return this->consp(); } // || this->nilp(); };
   inline bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
   inline Type *&rawRef_() { return this->theObject; };
+  inline core::Cons_O *unsafe_cons() const {
+    GCTOOLS_ASSERT(this->consp());
+    return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
+  };
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
