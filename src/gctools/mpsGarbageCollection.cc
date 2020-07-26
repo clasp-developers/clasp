@@ -630,18 +630,25 @@ size_t processMpsMessages(size_t& finalizations) {
     assert(b); /* we just checked there was one */
     if (type == mps_message_type_gc_start()) {
       ++mGcStart;
+#if 1
+      if (getenv("CLASP_GC_MESSAGES")) {
+        printf("%s:%d Message: mps_message_type_gc_start()\n", __FILE__, __LINE__);
+      }
+#endif
     } else if (type == mps_message_type_gc()) {
       ++mGc;
-#if 0
-      printf("Message: mps_message_type_gc()\n");
-      size_t live = mps_message_gc_live_size(global_arena, message);
-      size_t condemned = mps_message_gc_condemned_size(global_arena, message);
-      size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
-      printf("Collection finished.\n");
-      printf("    live %" PRu "\n", (unsigned long)live);
-      printf("    condemned %" PRu "\n", (unsigned long)condemned);
-      printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
-      printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
+#if 1
+      if (getenv("CLASP_GC_MESSAGES")) {
+        printf("%s:%d Message: mps_message_type_gc()\n", __FILE__, __LINE__);
+        size_t live = mps_message_gc_live_size(global_arena, message);
+        size_t condemned = mps_message_gc_condemned_size(global_arena, message);
+        size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
+        printf("Collection finished.\n");
+        printf("    live %" PRu "\n", (unsigned long)live);
+        printf("    condemned %" PRu "\n", (unsigned long)condemned);
+        printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
+        printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
+      }
 #endif
     } else if (type == mps_message_type_finalization()) {
       ++finalizations;
