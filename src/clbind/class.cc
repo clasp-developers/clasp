@@ -84,9 +84,14 @@ void class_registration::register_() const {
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
   clbind::ClassRep_sp crep;
   size_t where = 0;
+#if 0
+  if (this->m_name=="DynTypedMatcher") {
+    printf("%s:%d setting up DynTypedMatcher\n", __FILE__, __LINE__ );
+  }
+#endif
   if (!this->m_derivable) {
     crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, this->m_name, this->m_derivable);
-    where = gctools::Header_s::rack_wtag;
+    where = gctools::Header_s::wrapped_wtag;
   } else {
     crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
     where = gctools::Header_s::derivable_wtag;
@@ -101,6 +106,7 @@ void class_registration::register_() const {
   } else {
     creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
   }
+  //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
   crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
