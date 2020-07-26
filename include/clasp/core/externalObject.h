@@ -107,24 +107,28 @@ struct gctools::GCInfo<core::ImmobileObject_O> {
 namespace core {
   SMART(ImmobileObject);
   class ImmobileObject_O : public General_O {
+#if 0
     CL_DOCSTRING(R"doc(Immobile-object is allocated in the collectable_immobile pool and guaranteed not to move.
 They can be passed to C++ functions and and then passed back to clasp code and used to locate a moveable object by one level of indirection.)doc");
+#endif
     LISP_CLASS(core,CorePkg,ImmobileObject_O,"ImmobileObject",General_O);
   public:
-    T_sp _Object;
-    T_sp _Name;
+    T_sp _Head;
+    T_sp _Tail;
   public:
 
-    CL_LAMBDA(object &optional name);
-    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp object, core::T_sp name) {
-      GC_ALLOCATE_VARIADIC(ImmobileObject_O,p,object,name);
+    CL_LAMBDA(head &optional tail);
+    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp head, core::T_sp tail) {
+      GC_ALLOCATE_VARIADIC(ImmobileObject_O,p,head,tail);
       return p;
     };
 
   public:
-    CL_DEFMETHOD T_sp getObject() const { return this->_Object; };
-    CL_DEFMETHOD T_sp getName() const { return this->_Name; };
-    explicit ImmobileObject_O(T_sp obj, T_sp name) : _Object(obj), _Name(name) {};
+    CL_DEFMETHOD T_sp getHead() const { return this->_Head; };
+    CL_DEFMETHOD T_sp getTail() const { return this->_Tail; };
+    CL_DEFMETHOD void setHead(T_sp head) { this->_Head = head; };
+    CL_DEFMETHOD void setTail(T_sp tail) { this->_Tail = tail; };
+    explicit ImmobileObject_O(T_sp head, T_sp tail) : _Head(head), _Tail(tail) {};
     virtual ~ImmobileObject_O(){};
   };
 };
