@@ -368,18 +368,9 @@ void Header_s::validate() const {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
 #endif
+  } else {
+    signal_invalid_object(this,"Not a normal object");
   }
-#ifdef USE_MPS
-#ifdef DEBUG_GUARD
-  if ( this->fwdP() ) {
-    if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
-            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
-    }
-  }
-#endif
-#endif
 }
 };
 
