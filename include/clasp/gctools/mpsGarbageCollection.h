@@ -196,6 +196,7 @@ class smart_ptr;
       if (MPS_FIX1(ss, tagged_obj)) {\
         gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);\
         gctools::Tagged tag = gctools::ptag<gctools::Tagged>(tagged_obj);\
+        /*printf("%s:%d fixing obj@%p tag@0x%zx\n", __FILE__, __LINE__, (void*)obj, tag);*/ \
         mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&obj));\
         if (res != MPS_RES_OK) return res;\
         obj = obj | tag;\
@@ -208,7 +209,7 @@ class smart_ptr;
 #define TAGGED_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
 // Get rid of SIMPLE_POINTER_FIX - its a terrible name
 #define SIMPLE_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
-#define POINTER_REF_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+//#define POINTER_REF_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
 #define POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {

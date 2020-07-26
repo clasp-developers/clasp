@@ -200,7 +200,7 @@ namespace core {
 #endif
     static Cons_sp create(T_sp car, T_sp cdr) {
       gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
-      MAYBE_VERIFY_ALIGNMENT(&*ll);
+      MAYBE_VERIFY_ALIGNMENT((void*)(ll.unsafe_cons()));
       return ll;
     };
   public:
