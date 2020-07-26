@@ -424,6 +424,7 @@ If the name has neither of the above forms then use the package_name to construc
 */
 std::string magic_name(const std::string& name,const std::string& package_name)
 {
+  // printf("%s:%d magic_name -> %s\n", __FILE__, __LINE__, name.c_str());
   std::size_t found = name.find(":");
   if ( found != std::string::npos ) {
     if ( package_name != "" ) {

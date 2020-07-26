@@ -597,7 +597,7 @@ void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_s
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
-//  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
+  // printf("%s:%d:%s unstamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, unstamp);
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp] = value;
 }
 Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
