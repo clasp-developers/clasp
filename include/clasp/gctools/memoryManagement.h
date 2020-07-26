@@ -710,8 +710,7 @@ namespace gctools {
 
 
 namespace gctools {
-
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
 #else
 #define EXHAUSTIVE_VALIDATE(ptr)
@@ -957,19 +956,17 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 
   inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {
-#ifdef DEBUG_ENSURE_VALID_OBJECT
   // Only validate general objects for now
     if (tagged_generalp(tagged_object)) {
       core::T_O* untagged_object = gc::untag_general(tagged_object);
       Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
       header->quick_validate();
     }
-#endif
     return tagged_object;
   }
   template <typename OT>
     inline gctools::smart_ptr<OT> ensure_valid_object(gctools::smart_ptr<OT> tagged_object) {
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
   // Only validate general objects for now
     if (tagged_generalp(tagged_object.raw_())) {
       core::T_O* untagged_object = gc::untag_general(tagged_object.raw_());
@@ -988,7 +985,7 @@ void gc_park();
 void gc_release();
 };
 
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define EVO(x) (gctools::ensure_valid_object(x))
 #else
