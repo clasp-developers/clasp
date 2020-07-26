@@ -198,7 +198,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
                                       mps_rank_ambig(),
                                       0,
                                       thr_o,
-                                      mps_scan_area_tagged_or_zero,
+                                      mps_scan_area_masked,
                                       gctools::pointer_tag_mask,
                                       gctools::pointer_tag_eq,
                                       reinterpret_cast<mps_addr_t>(const_cast<void*>(cold_end_of_stack)));

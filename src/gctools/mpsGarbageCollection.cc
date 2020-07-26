@@ -384,10 +384,6 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         core::T_O* old_car = cons->ocar().raw_();
         POINTER_FIX(&cons->_Car);
         POINTER_FIX(&cons->_Cdr);
-#if 0
-        SMART_PTR_FIX(cons->_Car);
-        SMART_PTR_FIX(cons->_Cdr);
-#endif
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
       } else if (cons->fwdP()) {
         //        printf("%s:%d It's a fwdP\n", __FILE__, __LINE__ );
@@ -1101,7 +1097,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                                       mps_rank_ambig(),
                                       0,
                                       global_thread,
-                                      mps_scan_area_tagged_or_zero,
+                                      mps_scan_area_masked,
                                       gctools::pointer_tag_mask,
                                       gctools::pointer_tag_eq,
                                       reinterpret_cast<mps_addr_t>(const_cast<char*>(_global_stack_marker)));
