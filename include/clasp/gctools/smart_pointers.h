@@ -1004,9 +1004,9 @@ public:
   //	operator smart_ptr<core::List_V>() const { return smart_ptr<core::List_V>((Tagged)const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));};
 
   inline core::Cons_O *untag_object() const {
-    return ::gctools::untag_object(this->theObject);
+    return this->unsafe_cons();
   }
-
+  
   inline void swap(smart_ptr<core::Cons_O> &other) {
     core::Cons_O *temp;
     temp = this->theObject;
@@ -1016,17 +1016,17 @@ public:
 
   /*! Dereferencing operator - remove the other tag */
   inline core::Cons_O *operator->() {
-    GCTOOLS_ASSERT(this->objectp());
-    return this->untag_object();
+    GCTOOLS_ASSERT(this->consp());
+    return this->unsafe_cons();
   };
   inline core::Cons_O *operator->() const {
-    GCTOOLS_ASSERT(this->objectp());
-    return this->untag_object();
+    GCTOOLS_ASSERT(this->consp());
+    return this->unsafe_cons();
   };
 
   inline core::Cons_O &operator*() {
-    GCTOOLS_ASSERT(this->objectp());
-    return *(this->untag_object());
+    GCTOOLS_ASSERT(this->consp());
+    return *(this->unsafe_cons());
   };
 
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
