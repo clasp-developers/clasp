@@ -214,7 +214,6 @@
     :meta-class% (getf plist :meta-class))
   (define-tag-handler cl-lambda-tag "CL_LAMBDA_TAG" tags:cl-lambda-tag
     :lambda-list% (let ((lambda-list (getf plist :lambda-list)))
-                    (format t "lambda-list: |~s|~%" lambda-list)
                     (if (and (> (length lambda-list) 1)
                              (char= (elt lambda-list 0) #\"))
                         (let ((ll (read-from-string lambda-list)))
