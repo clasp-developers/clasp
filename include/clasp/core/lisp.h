@@ -67,6 +67,7 @@ namespace core {
 
 
 extern CommandLineOptions *global_options;
+extern bool global_initialize_builtin_classes;
 
 class Bundle;
 class CallStack;

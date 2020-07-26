@@ -154,6 +154,7 @@ extern "C" void add_history(char *line);
 namespace core {
 
 CommandLineOptions *global_options;
+bool global_initialize_builtin_classes = false;
 
 bool global_Started = false;
 bool globalTheSystemIsUp = false;
@@ -321,7 +322,11 @@ void Lisp_O::finalizeSpecialSymbols() {
 }
 
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
-  initialize_clasp_Kinds();
+  {
+    global_initialize_builtin_classes = true;
+    initialize_clasp_Kinds();
+    global_initialize_builtin_classes = false;
+  }
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();

@@ -352,10 +352,11 @@ namespace gctools {
         return (start+(1<<stamp_shift))&(~mtag_mask);
       }
       static bool is_unshifted_stamp(uint64_t unknown) {
+        size_t sm = STAMP_max;
         // This is the only test that makes sense.
-        if (is_header_stamp(unknown) && unknown <= STAMP_max) return true;
+        if (is_header_stamp(unknown) && unknown <= sm) return true;
         // Otherwise it's an assigned stamp and it must be in the range below.
-        if (STAMP_max<unknown && unknown<global_NextUnshiftedStamp) return true;
+        if (sm<unknown && unknown<global_NextUnshiftedStamp) return true;
         return false;
       }
       static bool is_shifted_stamp(uint64_t unknown) {
@@ -408,6 +409,8 @@ namespace gctools {
         #ifdef DEBUG_ASSERT
         if (!is_unshifted_stamp(us)) {
           printf("%s:%d:%s the argument %lu must be an unshifted stamp\n", __FILE__, __LINE__, __FUNCTION__, us );
+          bool result = is_unshifted_stamp(us);
+          printf("%s:%d   After running is_unshifted_stamp(%lu) -> %d and it should be 1\n", __FILE__, __LINE__, us, result);
           abort();
         }
         #endif
@@ -451,10 +454,13 @@ namespace gctools {
         return static_cast<ShiftedStamp>( this->_value );
       }
       inline UnshiftedStamp unshifted_stamp() const {
+        //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
         return static_cast<UnshiftedStamp>( unshift_shifted_stamp(this->_value) );
       }
       inline size_t nowhere_stamp() const {
-        return make_nowhere_stamp(this->unshifted_stamp());
+        size_t us = this->unshifted_stamp();
+        // printf("%s:%d  unshifted_stamp -> %lu\n", __FILE__, __LINE__, us);
+        return make_nowhere_stamp(us);
       }
     };
   public:

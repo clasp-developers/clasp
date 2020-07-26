@@ -767,6 +767,12 @@ NOINLINE void set_one_static_class_Header() {
   if (gctools::GCStamp<TheClass>::Stamp!=0) {
     TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
   } else {
+#ifdef USE_MPS
+    if (core::global_initialize_builtin_classes) {
+      printf("!\n!\n! %s:%d While initializing builtin classes with MPS clasp\n!\n!\n! A class was found without a Stamp - this happens if you haven't run the static analyzer since adding a class\n! Go run the static analyzer.\n!\n!\n!\n", __FILE__, __LINE__ );
+      abort();
+    }
+#endif
     TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_unknown(the_stamp);
   }
 }
