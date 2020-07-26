@@ -525,50 +525,23 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
       //      printf("%s:%d  (*it)._ArgTarget.raw_() -> %p\n", __FILE__, __LINE__, (*it)._ArgTarget.raw_());
-      if (it->_lambdaListP()) {
-        SIMPLE_ERROR(BF("A nested lambda list was discovered while building handler for %s") % this->__repr__());
-        List_sp sub_lambda_list = it->lambda_list();
-        //		    throw_if_not_destructuring_context(context);
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
-        classifier.targetIsSubLambdaList(*it, sub_handler);
-      } else {
-        classifier.classifyTarget(*it);
-      }
+      classifier.classifyTarget(*it);
     }
   }
   { // optional arguments
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
-      if (it->_lambdaListP()) {
-        DEPRECATED();
-        //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambda_list();
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
-        classifier.targetIsSubLambdaList(*it, sub_handler);
-      } else {
-        classifier.classifyTarget(*it);
-      }
-      if (it->_Sensor.isDefined())
-        classifier.classifyTarget(it->_Sensor);
+      ENSURE_VALID_OBJECT((T_O*)it._Vec.raw_());
+      classifier.classifyTarget(*it);
+      if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
     }
   }
-  if (this->_RestArgument.isDefined()) {
-    classifier.classifyTarget(this->_RestArgument);
-  }
+  if (this->_RestArgument.isDefined()) classifier.classifyTarget(this->_RestArgument);
   { // keyed arguments
     for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
          it != this->_KeywordArguments.end(); it++) {
-      if (it->_lambdaListP()) {
-        DEPRECATED();
-        //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambda_list();
-        LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
-        classifier.targetIsSubLambdaList(*it, sub_handler);
-      } else {
-        classifier.classifyTarget(*it);
-      }
-      if (it->_Sensor.isDefined())
-        classifier.classifyTarget(it->_Sensor);
+      classifier.classifyTarget(*it);
+      if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
     }
   }
 
