@@ -23,7 +23,7 @@
 //// If this is not defined then CONS cells become 32 bytes and they are stored
 //// in the AMC pools with a badge that stores a PRNG value as a hash.
 
-#define MPS_CONS_AWL_POOL 1
+//#define MPS_CONS_AWL_POOL 1
 
 
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of
