@@ -531,7 +531,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
   { // optional arguments
     for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
          it != this->_OptionalArguments.end(); it++) {
-      ENSURE_VALID_OBJECT((T_O*)it._Vec.raw_());
+      (void)ENSURE_VALID_OBJECT((T_O*)it._Vec.raw_());
       classifier.classifyTarget(*it);
       if (it->_Sensor.isDefined()) classifier.classifyTarget(it->_Sensor);
     }
