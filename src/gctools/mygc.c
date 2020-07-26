@@ -40,8 +40,7 @@ mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
   mps_scan_tag_t tag = closure;
   mps_word_t mask = tag->mask;
   mps_word_t pattern = tag->pattern;
-  // gctools::pointer_tag_mask is #b101
-  // gctools::pointer_tag_eq is   #b001
+  // I can't use gctools:: namespace because this is c
   //MPS_SCAN_AREA((tag_bits&gctools::pointer_tag_mask) == gctools::pointer_tag_eq);
   MPS_SCAN_AREA((tag_bits&POINTER_TAG_MASK) == POINTER_TAG_EQ);
   return MPS_RES_OK;
