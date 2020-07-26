@@ -55,13 +55,13 @@
 #define CONS_TAG            0x03
 #define FIXNUM1_TAG         0x04
 #define VASLIST0_TAG        0x05
+#define SINGLE_FLOAT_TAG    0x06
+#define FIXNUM2_TAG         0x08
 #define VASLIST1_TAG        0x0D // Two vaslist tags because they will be 8-byte aligned
 #define VASLIST_TAG_MASK    0x7 // mask out the tag part of a VASLIST
-#define SINGLE_FLOAT_TAG    0x06
+#define FIXNUM3_TAG         0x0C
 #define GC_TAG              0x0F
 #define IMMEDIATE_MASK      0x0F
-#define FIXNUM2_TAG         0x08
-#define FIXNUM3_TAG         0x0C
 #define SINGLE_FLOAT_SHIFT  4
 #define CHARACTER_SHIFT     4
 
