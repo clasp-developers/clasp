@@ -213,14 +213,15 @@
   (define-tag-handler meta-class-tag "META_CLASS_TAG" tags:meta-class-tag
     :meta-class% (getf plist :meta-class))
   (define-tag-handler cl-lambda-tag "CL_LAMBDA_TAG" tags:cl-lambda-tag
-    :lambda-list% (let ((lambda-list (getf plist :lambda-list)))
-                    (if (and (> (length lambda-list) 1)
-                             (char= (elt lambda-list 0) #\"))
-                        (let ((ll (read-from-string lambda-list)))
-                          (if (char= (elt ll 0) #\()
-                              (error "Don't put parentheses around lambda ~s" ll)
-                              ll)
-                        lambda-list))))
+    :lambda-list% (let* ((raw-lambda-list (getf plist :lambda-list))
+                         (lambda-list (if (and (> (length raw-lambda-list) 1)
+                                               (char= (elt raw-lambda-list 0) #\"))
+                                          (let ((ll (read-from-string raw-lambda-list)))
+                                            (if (char= (elt ll 0) #\()
+                                                (error "Don't put parentheses around lambda ~s" ll)
+                                                ll))
+                                          raw-lambda-list)))
+                    lambda-list))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
   (define-tag-handler cl-priority-tag "CL_PRIORITY_TAG" tags:cl-priority-tag
