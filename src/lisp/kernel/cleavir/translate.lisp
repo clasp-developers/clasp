@@ -6,13 +6,9 @@
   "controls if cleavir debugging is carried out on literal compilation. 
 when this is t a lot of graphs will be generated.")
 
-;;; FIXME: Make this variable always true once MPS comes around.
 (defvar *eliminate-typeq* t
-  "controls whether the typew/typeq elimination phase of the compiler
-  runs. This is set to T during self build, but becomes NIL by default
-  during normal use, as that phase conses a lot, which may cause the
-  compiler to become useless due to memory fragmentation sooner under
-  Boehm.")
+  "Controls whether the typew/typeq elimination phase of the compiler
+  runs.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
