@@ -138,8 +138,6 @@ public: // Functions here
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
-  virtual void increment() { ++this->_value; };
-  virtual void decrement() { --this->_value; };
   //virtual Number_sp copy() const;
   string description() const {
     stringstream ss;
@@ -154,8 +152,7 @@ public: // Functions here
   Number_sp sqrt_() const;
   Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
-  void increment(gc::Fixnum i) { this->_value += static_cast<long>(i); };
-  int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
+   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
   virtual bool zerop_() const { return ((this->_value == 0)); }
   virtual bool plusp_() const { return ((this->_value > 0)); }
