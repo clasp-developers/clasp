@@ -42,6 +42,83 @@
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
+;;; If FORM is of the form #'valid-function-name, return valid-function-name.
+;;; FIXME?: Give up on expansion and warn if it's invalid?
+(defun constant-function-form (form env)
+  (declare (ignore env))
+  (and (consp form) (eq (first form) 'function)
+       (consp (cdr form)) (null (cddr form))
+       (core:valid-function-name-p (second form))
+       (second form)))
+
+(define-cleavir-compiler-macro funcall
+    (&whole form function &rest arguments &environment env)
+  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
+  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
+  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
+  (let ((name (constant-function-form function env)))
+    (when name
+      (return-from funcall
+        (let* ((func-info (cleavir-env:function-info env name))
+               (notinline (and func-info
+                               (eq 'notinline (cleavir-env:inline func-info))))
+               ;; We can't get this from the func-info because it might be
+               ;; a local-function-info, which doesn't have that slot.
+               (cmf (compiler-macro-function name env)))
+          (if (and cmf (not notinline))
+              (funcall *macroexpand-hook* cmf form env)
+              `(cleavir-primop:funcall ,function ,@arguments))))))
+  `(cleavir-primop:funcall
+    (core:coerce-fdesignator ,function)
+    ,@arguments))
+
+(define-cleavir-compiler-macro values (&whole form &rest values)
+  `(cleavir-primop:values ,@values))
+
+;;; Written as a compiler macro to avoid confusing bclasp.
+(define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
+  (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
+    ;; NOTE: We ought to be able to use LET-UNINITIALIZED here. However,
+    ;; Cleavir works badly with this in some situations. See bug #866.
+    `(let (,@syms)
+       (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
+       (let (,@(loop for var in vars for sym in syms
+                     collecting `(,var ,sym)))
+         ,@body))))
+
+;;; Ditto, a compiler macro to avoid confusing bclasp.
+#+cst
+(define-cleavir-compiler-macro ext:with-current-source-form
+    (&whole f (&rest forms) &body body)
+  `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))
+
+;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
+;;; for validity. However, they do rely on their efficiency being from
+;;; multiple-value-bind being efficient, which it is not without the above version.
+
+(define-compiler-macro nth-value (&whole form n expr &environment env)
+  (let ((n (and (constantp n env) (ext:constant-form-value n env))))
+    (if (or (null n) (> n 100)) ; completely arbitrary limit
+        form
+        (let ((dummies (loop repeat n collect (gensym "DUMMY")))
+              (keeper (gensym "SMARTIE")))
+          `(multiple-value-bind (,@dummies ,keeper) ,expr
+             (declare (ignore ,@dummies))
+             ,keeper)))))
+
+;;; I'm not sure I understand the order of evaluation issues entirely,
+;;; so I'm antsy about using the m-v-setq primop directly... and this
+;;; equivalence is guaranteed.
+;;; SETF VALUES will expand into a multiple-value-bind, which will use
+;;; the m-v-setq primop as above, so it works out about the same.
+;;; Not a cleavir macro because all we need is setf.
+(define-compiler-macro multiple-value-setq ((&rest vars) form)
+  ;; SETF VALUES will return no values if it sets none, but m-v-setq
+  ;; always returns the primary value.
+  (if (null vars)
+      `(values ,form)
+      `(values (setf (values ,@vars) ,form))))
+
 ;;; This stupid little macro is to tighten up
 ;;; (if (and (fixnump x) (>= x c1) (< x c2)) ...)
 ;;; which is useful for bounds checks.
@@ -890,119 +967,3 @@
 (defun posn-column (posn stream)
   (declare (type posn posn) (type pretty-stream stream))
   (index-column (posn-index posn stream) stream))
-
-(in-package #:clasp-cleavir)
-;;; --------------------------------------------------
-;;;
-;;; Provided by bike  May 21, 2017
-;;;
-
-;;; should be moved to non-cleavir-specific land.
-;;; Seems to be slower. Probably would be an improvement
-;;; if the called function was inlined as well.
-#+(or)
-(progn
-  (defun mapfoo-macro (iter accum function lists)
-    ;; nothing cleavir-specific here
-    (let ((sfunction (gensym "MAPCAR-FUNCTION"))
-          (syms (loop repeat (length lists)
-                      collect (gensym "MAPCAR-ARGUMENT"))))
-      `(loop named ,(gensym "UNUSED-BLOCK")
-             ;; the loop needs a (gensym) name so that ,function
-             ;; can't refer to it.
-             with ,sfunction = ,function
-             ,@(loop for sym in syms
-                     for list in lists
-                     append `(for ,sym ,iter ,list))
-             ,accum (funcall ,sfunction ,@syms))))
-
-  (define-compiler-macro mapc (function list &rest more-lists)
-    (mapfoo-macro 'in 'do function (cons list more-lists)))
-  (define-compiler-macro mapcar (function list &rest more-lists)
-    (mapfoo-macro 'in 'collect function (cons list more-lists)))
-  (define-compiler-macro mapcan (function list &rest more-lists)
-    (mapfoo-macro 'in 'nconc function (cons list more-lists)))
-  (define-compiler-macro mapl (function list &rest more-lists)
-    (mapfoo-macro 'on 'do function (cons list more-lists)))
-  (define-compiler-macro maplist (function list &rest more-lists)
-    (mapfoo-macro 'on 'collect function (cons list more-lists)))
-  (define-compiler-macro mapcon (function list &rest more-lists)
-    (mapfoo-macro 'on 'nconc function (cons list more-lists)))
-  )
-
-;;; If FORM is of the form #'valid-function-name, return valid-function-name.
-;;; FIXME?: Give up on expansion and warn if it's invalid?
-(defun constant-function-form (form env)
-  (declare (ignore env))
-  (and (consp form) (eq (first form) 'function)
-       (consp (cdr form)) (null (cddr form))
-       (core:valid-function-name-p (second form))
-       (second form)))
-
-(define-cleavir-compiler-macro funcall
-    (&whole form function &rest arguments &environment env)
-  ;; If we have (funcall #'foo ...), we might be able to apply the FOO compiler macro.
-  ;; Failing that, we can at least skip any coercion - #'foo is obviously a function.
-  ;; (funcall #'(setf foo) ...) is fairly common, so this is nice to do.
-  (let ((name (constant-function-form function env)))
-    (when name
-      (return-from funcall
-        (let* ((func-info (cleavir-env:function-info env name))
-               (notinline (and func-info
-                               (eq 'notinline (cleavir-env:inline func-info))))
-               ;; We can't get this from the func-info because it might be
-               ;; a local-function-info, which doesn't have that slot.
-               (cmf (compiler-macro-function name env)))
-          (if (and cmf (not notinline))
-              (funcall *macroexpand-hook* cmf form env)
-              `(cleavir-primop:funcall ,function ,@arguments))))))
-  `(cleavir-primop:funcall
-    (core:coerce-fdesignator ,function)
-    ,@arguments))
-
-(define-cleavir-compiler-macro values (&whole form &rest values)
-  `(cleavir-primop:values ,@values))
-
-;;; Written as a compiler macro to avoid confusing bclasp.
-(define-cleavir-compiler-macro multiple-value-bind (&whole form vars values-form &body body)
-  (let ((syms (loop for var in vars collecting (gensym (symbol-name var)))))
-    ;; NOTE: We ought to be able to use LET-UNINITIALIZED here. However,
-    ;; Cleavir works badly with this in some situations. See bug #866.
-    `(let (,@syms)
-       (cleavir-primop:multiple-value-setq (,@syms) ,values-form)
-       (let (,@(loop for var in vars for sym in syms
-                     collecting `(,var ,sym)))
-         ,@body))))
-
-;;; Ditto, a compiler macro to avoid confusing bclasp.
-#+cst
-(define-cleavir-compiler-macro ext:with-current-source-form
-    (&whole f (&rest forms) &body body)
-  `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))
-
-;;; NOTE: The following two macros don't actually rely on anything cleavir-specific
-;;; for validity. However, they do rely on their efficiency being from
-;;; multiple-value-bind being efficient, which it is not without the above version.
-
-(define-compiler-macro nth-value (&whole form n expr &environment env)
-  (let ((n (and (constantp n env) (ext:constant-form-value n env))))
-    (if (or (null n) (> n 100)) ; completely arbitrary limit
-        form
-        (let ((dummies (loop repeat n collect (gensym "DUMMY")))
-              (keeper (gensym "SMARTIE")))
-          `(multiple-value-bind (,@dummies ,keeper) ,expr
-             (declare (ignore ,@dummies))
-             ,keeper)))))
-
-;;; I'm not sure I understand the order of evaluation issues entirely,
-;;; so I'm antsy about using the m-v-setq primop directly... and this
-;;; equivalence is guaranteed.
-;;; SETF VALUES will expand into a multiple-value-bind, which will use
-;;; the m-v-setq primop as above, so it works out about the same.
-;;; Not a cleavir macro because all we need is setf.
-(define-compiler-macro multiple-value-setq ((&rest vars) form)
-  ;; SETF VALUES will return no values if it sets none, but m-v-setq
-  ;; always returns the primary value.
-  (if (null vars)
-      `(values ,form)
-      `(values (setf (values ,@vars) ,form))))
