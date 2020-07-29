@@ -384,22 +384,22 @@ Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   Bignum mpzq, mpzr;
   mpz_cdiv_qr(mpzq.get_mpz_t(),
               mpzr.get_mpz_t(),
-              a->ref().get_mpz_t(),
-              b->ref().get_mpz_t());
+              a->mpz_ref().get_mpz_t(),
+              b->mpz_ref().get_mpz_t());
   return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
 }
 
 Integer_mv big_floor(Bignum_sp a, Bignum_sp b) {
   Bignum_sp q = my_thread->bigRegister0();
   Bignum_sp r = my_thread->bigRegister1();
-  mpz_fdiv_qr(q->ref().get_mpz_t(), r->ref().get_mpz_t(),
-              a->ref().get_mpz_t(), b->ref().get_mpz_t());
+  mpz_fdiv_qr(q->mpz_ref().get_mpz_t(), r->mpz_ref().get_mpz_t(),
+              a->mpz_ref().get_mpz_t(), b->mpz_ref().get_mpz_t());
   return Values(Integer_O::create(q->get()), Integer_O::create(r->get()));
 }
 
 Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y) {
   Bignum zz;
-  mpz_gcd(zz.get_mpz_t(), x->ref().get_mpz_t(), y->ref().get_mpz_t());
+  mpz_gcd(zz.get_mpz_t(), x->mpz_ref().get_mpz_t(), y->mpz_ref().get_mpz_t());
   return Bignum_O::create(zz);
 }
 

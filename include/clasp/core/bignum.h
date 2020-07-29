@@ -129,7 +129,6 @@ public: // Functions here
 
   NumberType number_type_() const { return number_Bignum; };
 
-  mpz_class &ref() { return this->_value; };
   mpz_class &mpz_ref() { return this->_value; };
 
   string __repr__() const;
@@ -258,7 +257,7 @@ namespace translate {
     from_object(core::T_sp o) {
       _G();
       if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
-        _v = bn->ref();
+        _v = bn->mpz_ref();
         ;
         return;
       }
