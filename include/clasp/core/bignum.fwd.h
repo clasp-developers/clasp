@@ -29,25 +29,6 @@ THE SOFTWARE.
 
 namespace core {
 
-inline mpz_class clasp_create_mpz_class(uint64_t x) {
-  ASSERT(sizeof(x) == sizeof(unsigned long int));
-  return mpz_class((unsigned long int)x);
-}
-
-#ifndef _TARGET_OS_DARWIN
-inline mpz_class clasp_create_mpz_class(unsigned long long int x) {
-  ASSERT(sizeof(x) == sizeof(unsigned long int));
-  return mpz_class((unsigned long int)x);
-}
-#endif
-#if 0
- inline mpz_class clasp_create_mpz_class(long long int x)
-    {
-        ASSERT(sizeof(x) == sizeof(long int));
-        return mpz_class((long int)x);
-    }
-#endif
-
 FORWARD(Bignum);
 };
 #endif
