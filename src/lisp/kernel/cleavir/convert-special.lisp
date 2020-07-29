@@ -122,7 +122,7 @@
         (cleavir-cst-to-ast:convert
          (cst:cst-from-expression
           (let ((vars (loop repeat (length required) collect (gensym "CHECKED"))))
-            `(let (,@vars)
+            `(cleavir-primop:let-uninitialized (,@vars)
                (cleavir-primop:multiple-value-extract (,@vars)
                  (cleavir-primop:ast ,ast)
                  ,@(loop for var in vars
