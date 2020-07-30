@@ -129,7 +129,8 @@ public: // Functions here
 
   NumberType number_type_() const { return number_Bignum; };
 
-  mpz_class &mpz_ref() { return this->_value; };
+  mpz_class mpz() const { return this->_value; };
+  mpz_class& mpz_ref() { return this->_value; };
 
   string __repr__() const;
 
@@ -145,7 +146,6 @@ public: // Functions here
     return ss.str();
   };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
-  Bignum get() const;
   Number_sp abs_() const;
   Number_sp log1_() const;
   Number_sp sqrt_() const;
@@ -266,7 +266,7 @@ namespace core {
   Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
 
   inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
-    return Integer_O::create(x->get());
+    return Integer_O::create(x->mpz_ref());
   }
 
   inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
