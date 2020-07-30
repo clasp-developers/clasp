@@ -243,23 +243,6 @@ public: // Functions here
 
 }; // core namespace
 
-namespace translate {
-  template <>
-    struct from_object<const Bignum &, std::true_type> {
-    typedef Bignum DeclareType;
-    DeclareType _v;
-    from_object(core::T_sp o) {
-      _G();
-      if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
-        _v = bn->mpz_ref();
-        ;
-        return;
-      }
-      SIMPLE_ERROR_SPRINTF("Handle conversions of %s to Bignum", _rep_(o).c_str());
-    }
-  };
-};
-
 namespace core {
 
   Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
