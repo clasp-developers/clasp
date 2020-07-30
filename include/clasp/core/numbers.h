@@ -221,7 +221,6 @@ namespace core {
 */
     virtual gc::Fixnum as_int_() const { SUBIMP(); }
     virtual uint as_uint_() const { SUBIMP(); }
-    virtual Bignum as_mpz_() const { SUBIMP(); }
     virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
     virtual float as_float_() const { SUBIMP(); };
     virtual double as_double_() const { SUBIMP(); }

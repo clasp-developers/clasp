@@ -227,7 +227,6 @@ public: // Functions here
   virtual uint64_t as_uint64_() const;
   string as_uint64_string() const;
 
-  virtual Bignum as_mpz_() const;
   virtual LongLongInt as_LongLongInt_() const;
   virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const;

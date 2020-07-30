@@ -3307,7 +3307,7 @@ mpz_class clasp_to_mpz( core::T_sp x )
     mpz_class z = GMP_LONG(fn);
     return z;
   }
-  return (gc::As< Integer_sp >(x))->as_mpz_();
+  return (gc::As<Bignum_sp>(x))->mpz_ref();
 }
 
   // --- LONG LONG ---

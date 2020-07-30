@@ -45,10 +45,6 @@ CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   return ((bn));
 };
 
-Bignum Bignum_O::as_mpz_() const {
-  return ((this->_value));
-}
-
 LongLongInt Bignum_O::as_LongLongInt_() const {
   LIKELY_if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));

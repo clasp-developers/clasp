@@ -303,7 +303,7 @@ CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
         i = ((y >> n) & 1);
       }
     } else {
-      i = mpz_tstbit(gc::As<Bignum_sp>(x)->as_mpz_().get_mpz_t(), n);
+      i = mpz_tstbit(gc::As<Bignum_sp>(x)->mpz_ref().get_mpz_t(), n);
     }
   } else {
     if (x.fixnump())
