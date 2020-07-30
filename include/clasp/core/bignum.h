@@ -146,7 +146,6 @@ public: // Functions here
   };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
   Bignum get() const;
-  Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
   Number_sp log1_() const;
   Number_sp sqrt_() const;
