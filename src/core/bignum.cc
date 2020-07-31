@@ -303,7 +303,7 @@ void Bignum_O::setFromString(const string &strVal) {
 
 gc::Fixnum Bignum_O::bit_length_() const {
   Bignum x = this->_value;
-  if (this->sign() < 0) {
+  if (this->minusp_()) {
     // issue #536
     // from ECL: logxor(2,x,ecl_make_fixnum(-1)); before calling mpz_sizeinbase on x
     mpz_class temp;
@@ -318,7 +318,7 @@ gc::Fixnum Bignum_O::bit_length_() const {
 
 gc::Fixnum Bignum_O::popcount() const {
   Bignum x = this->_value;
-  if (this->sign() < 0) {
+  if (this->minusp_()) {
     // mpz_popcount is defined to return useless results on negative numbers,
     // so use (logcount x) = (logcount (lognot x))
     mpz_class temp;

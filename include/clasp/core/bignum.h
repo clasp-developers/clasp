@@ -151,7 +151,6 @@ public: // Functions here
   Number_sp sqrt_() const;
   Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
-   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
   virtual bool zerop_() const { return ((this->_value == 0)); }
   virtual bool plusp_() const { return ((this->_value > 0)); }
