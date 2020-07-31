@@ -118,7 +118,7 @@ They can be passed to C++ functions and and then passed back to clasp code and u
   public:
 
     CL_LAMBDA(head &optional tail);
-    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp head, core::T_sp tail) {
+    CL_DEF_CLASS_METHOD static ImmobileObject_sp make_immobile_object(core::T_sp head, core::T_sp tail=_Nil<core::T_O>()) {
       GC_ALLOCATE_VARIADIC(ImmobileObject_O,p,head,tail);
       return p;
     };
