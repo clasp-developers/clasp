@@ -13,10 +13,12 @@
 (defclass cell-updater () ())
 
 ;; See KLUDGE in fixup.lisp.
-(let ((updater (apply #'make-instance 'cell-updater nil)))
-  (clos:add-dependent #'make-instance updater)
-  (clos:add-dependent #'initialize-instance updater)
-  (clos:add-dependent #'shared-initialize updater))
+(locally
+    (declare (notinline make-instance))
+  (let ((updater (make-instance 'cell-updater)))
+    (clos:add-dependent #'make-instance updater)
+    (clos:add-dependent #'initialize-instance updater)
+    (clos:add-dependent #'shared-initialize updater)))
 
 ;; FIXME?: With diamond inheritance will do redundant work.
 ;; Doesn't matter with invalidate-cell though.

@@ -533,7 +533,8 @@ and cannot be added to ~A." method other-gf gf)))
 ;; NOTE that we can't use MAKE-INSTANCE since the
 ;; compiler macro in static-gfs will put in code
 ;; that the loader can't handle yet.
-;; We can't just use NOTINLINE since bclasp ignores it (this is a bug).
+;; We could use NOTINLINE now that bclasp handles it,
+;; but we don't need to go through make-instance's song and dance anyway.
 (let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)

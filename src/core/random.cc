@@ -74,7 +74,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
     if (clasp_plusp (gbn)) {
-      boost::uniform_int<bmp::mpz_int> gen(0, bmp::mpz_int(gbn->get().get_mpz_t()));
+      boost::uniform_int<bmp::mpz_int> gen(0, bmp::mpz_int(gbn->mpz_ref().get_mpz_t()));
       auto rnd = gen(random_state->_Producer);
       bmp::mpz_int v = rnd;
       mpz_t z;
