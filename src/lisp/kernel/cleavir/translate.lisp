@@ -6,6 +6,10 @@
   "controls if cleavir debugging is carried out on literal compilation. 
 when this is t a lot of graphs will be generated.")
 
+(defvar *eliminate-typeq* t
+  "Controls whether the typew/typeq elimination phase of the compiler
+  runs.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Set the source-position for an instruction
@@ -553,6 +557,8 @@ when this is t a lot of graphs will be generated.")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   (cleavir-hir-transformations:eliminate-catches init-instr)
+  (when *eliminate-typeq*
+    (cleavir-hir-transformations:eliminate-redundant-typeqs init-instr clasp-cleavir:*clasp-system*))
   ;; Disabled at the moment because deleting these instructions does
   ;; not help with anything at the moment, and only serve to blow up
   ;; compilation times in cases with many THEs produced, since Cleavir
