@@ -188,6 +188,36 @@
                                        :line% (getf plist :line)
                                        ,@keys)))))
 
+(defun wrapped-in-parentheses-p (str)
+  (let ((sis (make-string-input-stream str)))
+    (when (char= (elt str 0) #\()
+      (read-char sis)
+      (handler-case
+          (handler-bind
+              ((SB-INT:SIMPLE-READER-PACKAGE-ERROR
+                 (lambda (err) 
+                   (invoke-restart 'use-value (find-package :keyword)))))
+            (read-delimited-list #\) sis))
+        (end-of-file (err)
+          (declare (ignore err))
+          (return-from wrapped-in-parentheses-p nil)))
+      (= (file-position sis) (length str)))))
+
+(defun verify-lambda-list (orig-str)
+  (if (> (length orig-str) 0)
+      ;; Clip one level of parentheses
+      (let ((str (string-trim " " orig-str)))
+        (when (char= (elt str 0) #\")
+          (setf str (read-from-string str)))
+        (when (wrapped-in-parentheses-p str)
+          (setf str (subseq str 1 (1- (length str)))))
+        ;; Add a level of parentheses
+        (let ((pstr (format nil "(~a)" str)))
+          (unless (wrapped-in-parentheses-p pstr)
+            (error "Invalid lambda list - there are unbalanced parentheses in pstr ~s" pstr)))
+        str)
+      orig-str))
+
 (progn
   (define-tag-handler lisp-internal-class-tag "LISP_CLASS_TAG" tags:lisp-internal-class-tag
     :namespace% (getf plist :namespace)
@@ -214,13 +244,7 @@
     :meta-class% (getf plist :meta-class))
   (define-tag-handler cl-lambda-tag "CL_LAMBDA_TAG" tags:cl-lambda-tag
     :lambda-list% (let* ((raw-lambda-list (getf plist :lambda-list))
-                         (lambda-list (if (and (> (length raw-lambda-list) 1)
-                                               (char= (elt raw-lambda-list 0) #\"))
-                                          (let ((ll (read-from-string raw-lambda-list)))
-                                            (if (char= (elt ll 0) #\()
-                                                (error "Don't put parentheses around lambda ~s" ll)
-                                                ll))
-                                          raw-lambda-list)))
+                         (lambda-list (verify-lambda-list raw-lambda-list)))
                     lambda-list))
   (define-tag-handler cl-docstring-tag "CL_DOCSTRING_TAG" tags:cl-docstring-tag
     :docstring% (cscrape:read-string-to-tag bufs cscrape:+end-tag+))
