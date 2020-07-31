@@ -45,10 +45,6 @@ CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   return ((bn));
 };
 
-Bignum Bignum_O::as_mpz_() const {
-  return ((this->_value));
-}
-
 LongLongInt Bignum_O::as_LongLongInt_() const {
   LIKELY_if (this->_value.fits_sint_p()) {
     return ((this->_value.get_si()));
@@ -161,31 +157,31 @@ CL_DEFMETHOD bool Bignum_O::fits_sint_p() {
 // -- SHORT --
 
 inline short Bignum_O::as_short() const {
-  return static_cast<short>(this->get().get_si());
+  return static_cast<short>(this->mpz().get_si());
 }
 
 inline unsigned short Bignum_O::as_ushort() const {
-  return static_cast<unsigned short>(this->get().get_ui());
+  return static_cast<unsigned short>(this->mpz().get_ui());
 }
 
 // -- INT --
 
 inline int Bignum_O::as_int() const {
-  return static_cast<int>(this->get().get_si());
+  return static_cast<int>(this->mpz().get_si());
 }
 
 inline unsigned int Bignum_O::as_uint() const {
-  return static_cast<unsigned int>(this->get().get_ui());
+  return static_cast<unsigned int>(this->mpz().get_ui());
 }
 
 // --  LONG --
 
 inline long Bignum_O::as_long() const {
-  return static_cast<long>(this->get().get_si());
+  return static_cast<long>(this->mpz().get_si());
 }
 
 inline unsigned long Bignum_O::as_ulong() const {
-  return static_cast<unsigned long>(this->get().get_ui());
+  return static_cast<unsigned long>(this->mpz().get_ui());
 }
 
 // -- LONG LONG --
@@ -207,31 +203,31 @@ inline unsigned long long Bignum_O::as_ulonglong() const {
 // -- INT8 --
 
 inline int8_t Bignum_O::as_int8_t() const {
-  return static_cast<int8_t>(this->get().get_si());
+  return static_cast<int8_t>(this->mpz().get_si());
 }
 
 inline uint8_t Bignum_O::as_uint8_t() const {
-  return static_cast<uint8_t>(this->get().get_ui());
+  return static_cast<uint8_t>(this->mpz().get_ui());
 }
 
 // -- INT16 --
 
 inline int16_t Bignum_O::as_int16_t() const {
-  return static_cast<int16_t>(this->get().get_si());
+  return static_cast<int16_t>(this->mpz().get_si());
 }
 
 inline uint16_t Bignum_O::as_uint16_t() const {
-  return static_cast<uint16_t>(this->get().get_ui());
+  return static_cast<uint16_t>(this->mpz().get_ui());
 }
 
 // -- INT32 --
 
 inline int32_t Bignum_O::as_int32_t() const {
-  return static_cast<int32_t>(this->get().get_si());
+  return static_cast<int32_t>(this->mpz().get_si());
 }
 
 inline uint32_t Bignum_O::as_uint32_t() const {
-  return static_cast<uint32_t>(this->get().get_ui());
+  return static_cast<uint32_t>(this->mpz().get_ui());
 }
 
 // -- INT64 --
@@ -248,41 +244,41 @@ inline uint64_t Bignum_O::as_uint64_t() const {
 
 inline uintptr_t Bignum_O::as_uintptr_t() const
 {
-  if( this->get().get_si() >= 0 )
+  if( this->mpz().get_si() >= 0 )
   {
-    return static_cast<uintptr_t>( this->get().get_si() );
+    return static_cast<uintptr_t>( this->mpz().get_si() );
   }
 
-  SIMPLE_ERROR(BF("Value %llud out of range for type UINTPTR_T .") % (unsigned long long) this->get().get_si() );
+  SIMPLE_ERROR(BF("Value %llud out of range for type UINTPTR_T .") % (unsigned long long) this->mpz().get_si() );
 }
 
 // -- PTRDIFF_T --
 
 inline ptrdiff_t Bignum_O::as_ptrdiff_t() const {
-  if( this->get().get_si() >= 0 ) {
-    return static_cast<ptrdiff_t>(  this->get().get_si() );
+  if( this->mpz().get_si() >= 0 ) {
+    return static_cast<ptrdiff_t>(  this->mpz().get_si() );
   }
-  SIMPLE_ERROR(BF("Value %lld out of range for type PTRDIFF_T .") % (long long) this->get().get_si() );
+  SIMPLE_ERROR(BF("Value %lld out of range for type PTRDIFF_T .") % (long long) this->mpz().get_si() );
 }
 
 // -- SIZE_T --
 
 inline size_t Bignum_O::as_size_t() const {
-  if(( this->get().get_si() >= gc::most_negative_size ) && ( this->get().get_si() <= gc::most_positive_size )) {
-    return static_cast<size_t>( this->get().get_si() );
+  if(( this->mpz().get_si() >= gc::most_negative_size ) && ( this->mpz().get_si() <= gc::most_positive_size )) {
+    return static_cast<size_t>( this->mpz().get_si() );
   }
 
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type SIZE_T .") % (long long) this->get().get_si() );
+  SIMPLE_ERROR(BF("Value %lld out of range for integer type SIZE_T .") % (long long) this->mpz().get_si() );
 }
 
 // -- SSIZE_T --
 
 inline ssize_t Bignum_O::as_ssize_t() const {
-  if(( this->get().get_si() >= gc::most_negative_ssize ) && ( this->get().get_si() <= gc::most_positive_ssize )) {
-    return static_cast<ssize_t>( this->get().get_si() );
+  if(( this->mpz().get_si() >= gc::most_negative_ssize ) && ( this->mpz().get_si() <= gc::most_positive_ssize )) {
+    return static_cast<ssize_t>( this->mpz().get_si() );
   }
 
-  SIMPLE_ERROR(BF("Value %lld out of range for integer type SSIZE_T .") % (long long) this->get().get_si() );
+  SIMPLE_ERROR(BF("Value %lld out of range for integer type SSIZE_T .") % (long long) this->mpz().get_si() );
 }
 
 // --- ---
@@ -361,10 +357,6 @@ Number_sp Bignum_O::signum_() const {
     return immediate_fixnum<Number_O>(-1);
 }
 
-Bignum Bignum_O::get() const {
-  return ((this->_value));
-}
-
 Number_sp Bignum_O::abs_() const {
   GC_ALLOCATE(Bignum_O, cp);
   cp->_value = this->_value * ::sgn(this->_value);
@@ -384,26 +376,26 @@ Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   Bignum mpzq, mpzr;
   mpz_cdiv_qr(mpzq.get_mpz_t(),
               mpzr.get_mpz_t(),
-              a->ref().get_mpz_t(),
-              b->ref().get_mpz_t());
+              a->mpz().get_mpz_t(),
+              b->mpz().get_mpz_t());
   return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
 }
 
 Integer_mv big_floor(Bignum_sp a, Bignum_sp b) {
   Bignum_sp q = my_thread->bigRegister0();
   Bignum_sp r = my_thread->bigRegister1();
-  mpz_fdiv_qr(q->ref().get_mpz_t(), r->ref().get_mpz_t(),
-              a->ref().get_mpz_t(), b->ref().get_mpz_t());
-  return Values(Integer_O::create(q->get()), Integer_O::create(r->get()));
+  mpz_fdiv_qr(q->mpz_ref().get_mpz_t(), r->mpz_ref().get_mpz_t(),
+              a->mpz().get_mpz_t(), b->mpz().get_mpz_t());
+  return Values(Integer_O::create(q->mpz()), Integer_O::create(r->mpz()));
 }
 
 Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y) {
   Bignum zz;
-  mpz_gcd(zz.get_mpz_t(), x->ref().get_mpz_t(), y->ref().get_mpz_t());
+  mpz_gcd(zz.get_mpz_t(), x->mpz().get_mpz_t(), y->mpz().get_mpz_t());
   return Bignum_O::create(zz);
 }
 
-Integer_sp _clasp_big_divided_by_big(const Bignum &a, const Bignum &b) {
+Integer_sp bignum_divide(const Bignum &a, const Bignum &b) {
   size_t size_a = CLASP_BIGNUM_ABS_SIZE(a.get_mpz_t());
   size_t size_b = CLASP_BIGNUM_ABS_SIZE(b.get_mpz_t());
   Fixnum size_z = size_a - size_b + 1;
@@ -414,14 +406,18 @@ Integer_sp _clasp_big_divided_by_big(const Bignum &a, const Bignum &b) {
   return Integer_O::create(z);
 }
 
-Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y) {
-  Bignum by(GMP_LONG(y));
-  return _clasp_big_divided_by_big(x, by);
+Integer_sp _clasp_big_divided_by_big(const Bignum_sp a, const Bignum_sp b) {
+  return bignum_divide(a->mpz_ref(), b->mpz_ref());
 }
 
-Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y) {
+Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y) {
+  Bignum by(GMP_LONG(y));
+  return bignum_divide(x->mpz_ref(), by);
+}
+
+Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y) {
   Bignum bx(GMP_LONG(x));
-  return _clasp_big_divided_by_big(bx, y);
+  return bignum_divide(bx, y->mpz_ref());
 }
 
 void clasp_big_register_free(Bignum_sp b) {

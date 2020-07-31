@@ -129,8 +129,8 @@ public: // Functions here
 
   NumberType number_type_() const { return number_Bignum; };
 
-  mpz_class &ref() { return this->_value; };
-  mpz_class &mpz_ref() { return this->_value; };
+  mpz_class mpz() const { return this->_value; };
+  mpz_class& mpz_ref() { return this->_value; };
 
   string __repr__() const;
 
@@ -139,25 +139,19 @@ public: // Functions here
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
-  virtual void increment() { ++this->_value; };
-  virtual void decrement() { --this->_value; };
   //virtual Number_sp copy() const;
   string description() const {
     stringstream ss;
     ss << this->_value;
     return ss.str();
   };
-  void set(gc::Fixnum val) { this->_value = static_cast<long>(val); };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
-  Bignum get() const;
-  Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const;
   Number_sp log1_() const;
   Number_sp sqrt_() const;
   Number_sp reciprocal_() const;
   Number_sp rational_() const final { return this->asSmartPtr(); };
-  void increment(gc::Fixnum i) { this->_value += static_cast<long>(i); };
-  int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
+   int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
   virtual bool zerop_() const { return ((this->_value == 0)); }
   virtual bool plusp_() const { return ((this->_value > 0)); }
@@ -232,7 +226,6 @@ public: // Functions here
   virtual uint64_t as_uint64_() const;
   string as_uint64_string() const;
 
-  virtual Bignum as_mpz_() const;
   virtual LongLongInt as_LongLongInt_() const;
   virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const;
@@ -250,30 +243,13 @@ public: // Functions here
 
 }; // core namespace
 
-namespace translate {
-  template <>
-    struct from_object<const Bignum &, std::true_type> {
-    typedef Bignum DeclareType;
-    DeclareType _v;
-    from_object(core::T_sp o) {
-      _G();
-      if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
-        _v = bn->ref();
-        ;
-        return;
-      }
-      SIMPLE_ERROR_SPRINTF("Handle conversions of %s to Bignum", _rep_(o).c_str());
-    }
-  };
-};
-
 namespace core {
 
   Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
   Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
 
   inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
-    return Integer_O::create(x->get());
+    return Integer_O::create(x->mpz_ref());
   }
 
   inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
@@ -294,9 +270,9 @@ namespace core {
 
   void clasp_big_register_free(Bignum_sp x);
 
-  Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y);
-  Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y);
-  Integer_sp _clasp_big_divided_by_big(const Bignum &x, const Bignum &y);
+  Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y);
+  Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y);
+  Integer_sp _clasp_big_divided_by_big(const Bignum_sp x, const Bignum_sp y);
 
   Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 
