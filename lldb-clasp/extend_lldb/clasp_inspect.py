@@ -1,6 +1,7 @@
 import lldb
 
-
+global_Debugger = None
+global_Process = None
 global_DataTypes = {}
 global_Kinds = {}
 global_Structs = {}
@@ -79,6 +80,85 @@ class VariableField:
         self._field_name = field_name
         self._field_offset = field_offset
 
+def verify_not_tagged(address):
+    if (taggedp(address)):
+        raise "The address %x is still tagged" % address
+
+def object(address):
+    if (generalp(address)):
+        return GeneralPtr(address)
+    if (consp(address)):
+        return ConsPtr(address)
+    if (fixnump(address)):
+        return Fixnum(address)
+
+class Fixnum:
+    def __init__(self,address):
+        if (fixnump(address)):
+            self._Value = address>>2
+            return
+        raise("%x is not a fixnum" % address)
+    def value(self):
+        return self._Value
+    def __repr__(self):
+        return str(self._Value)
+
+class TPtr:
+    def consp(self):
+        return False
+    def generalp(self):
+        return False
+    def fixnump(self):
+        return False
+    
+class ConsPtr(TPtr):
+    def __init__(self,address):
+        if (consp(address)):
+            address = untag_cons(address)
+        verify_not_tagged(address)
+        self._address = address
+    def consp(self):
+        return True
+    def car(self):
+        global global_Process
+        err = lldb.SBError()
+        value = global_Process.ReadUnsignedFromMemory(self._address,8,err)
+        return value
+    def cdr(self):
+        global global_Process
+        err = lldb.SBError()
+        value = global_Process.ReadUnsignedFromMemory(self._address+8,8,err)
+        return value
+    def __repr__(self):
+        car = object(self.car())
+        cdr = object(self.cdr())
+        if (cdr.consp()):
+            return ("(%s %s)" % ( car, cdr ))
+        else:
+            return ("(%s . %s )" % ( car, cdr))
+        
+class GeneralPtr(TPtr):
+    def __init__(self,address):
+        global global_Process
+        if (generalp(address)):
+            address = untag_general(address)
+        verify_not_tagged(address)
+        self._address = address
+        self._header_ptr = address - global_HeaderStruct._sizeof
+        err = lldb.SBError()
+        header = global_Process.ReadUnsignedFromMemory(self._header_ptr,8,err)
+        if (err.Success()):
+            self._stamp = header>>4
+            self._class = global_Kinds[self._stamp]
+            self._className = self._class._name
+    def generalp(self):
+        return True
+    
+    def __repr__(self):
+        if (self._className=="core::Symbol_O"):
+            
+        return "a %s" % self._className
+   
 def Init_test(msg):
     print("Init_test -> %s" % msg)
 
@@ -142,14 +222,17 @@ def is_int(str,base):
     except ValueError:
         return False
 
+def taggedp(tptr):
+    return (tptr&0xf)!=0
+                
 def generalp(tptr):
-    return (tptr&3==1)
+    return (tptr&0xf==1)
 
 def untag_general(tptr):
     return tptr-1
 
 def consp(tptr):
-    return (tptr&3==3)
+    return (tptr&0xf==3)
 
 def untag_cons(tptr):
     return tptr-3
@@ -221,7 +304,7 @@ def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False
     
 def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
     if (generalp(tptr)):
-        base = tptr-1
+        base = untag_general
         header_ptr = base - global_HeaderStruct._sizeof
         err = lldb.SBError()
         process = debugger.GetSelectedTarget().GetProcess()
@@ -245,6 +328,9 @@ def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
             return
         print("Error %s\n" % err)
         return
+    if (consp(tptr)):
+        cons = ConsPtr(untag_cons(tptr))
+        print("It's a cons")
     print("print_tagged_ptr handle: %s\n" % tptr)
 
 def inspect(debugger,command,result,internal_dict):
@@ -273,6 +359,10 @@ def inspect(debugger,command,result,internal_dict):
 
 def do_lldb_init_module(debugger,internal_dict,prefix):
     global global_HeaderStruct
+    global global_Debugger
+    global global_Process
+    global_Process = debugger.GetSelectedTarget().GetProcess()
+    global_Debugger = debugger
     print("In clasp_inspect")
     filename = "/tmp/clasp-layout.py"
     with open(filename, "rb") as source_file:
@@ -283,5 +373,5 @@ def do_lldb_init_module(debugger,internal_dict,prefix):
         raise "Could not find gctools::Header_s struct"
     prefix = "%s.clasp_inspect" % prefix
     debugger.HandleCommand('command script add -f %s.inspect il' % prefix)
-
+    
 

@@ -11,6 +11,7 @@ import extend_lldb
 print("Imported extend_lldb")
 
 def __lldb_init_module(debugger, internal_dict):
+    debugger.HandleCommand('command script clear')
     debugger.HandleCommand('break set -n dbg_hook')
     debugger.HandleCommand('break set -n core::lisp_error_simple')
     debugger.HandleCommand('break set -n core::lisp_error')
