@@ -270,9 +270,9 @@ namespace core {
 
   void clasp_big_register_free(Bignum_sp x);
 
-  Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y);
-  Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y);
-  Integer_sp _clasp_big_divided_by_big(const Bignum &x, const Bignum &y);
+  Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y);
+  Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y);
+  Integer_sp _clasp_big_divided_by_big(const Bignum_sp x, const Bignum_sp y);
 
   Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 

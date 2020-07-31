@@ -395,7 +395,7 @@ Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y) {
   return Bignum_O::create(zz);
 }
 
-Integer_sp _clasp_big_divided_by_big(const Bignum &a, const Bignum &b) {
+Integer_sp bignum_divide(const Bignum &a, const Bignum &b) {
   size_t size_a = CLASP_BIGNUM_ABS_SIZE(a.get_mpz_t());
   size_t size_b = CLASP_BIGNUM_ABS_SIZE(b.get_mpz_t());
   Fixnum size_z = size_a - size_b + 1;
@@ -406,14 +406,18 @@ Integer_sp _clasp_big_divided_by_big(const Bignum &a, const Bignum &b) {
   return Integer_O::create(z);
 }
 
-Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y) {
-  Bignum by(GMP_LONG(y));
-  return _clasp_big_divided_by_big(x, by);
+Integer_sp _clasp_big_divided_by_big(const Bignum_sp a, const Bignum_sp b) {
+  return bignum_divide(a->mpz_ref(), b->mpz_ref());
 }
 
-Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y) {
+Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y) {
+  Bignum by(GMP_LONG(y));
+  return bignum_divide(x->mpz_ref(), by);
+}
+
+Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y) {
   Bignum bx(GMP_LONG(x));
-  return _clasp_big_divided_by_big(bx, y);
+  return bignum_divide(bx, y->mpz_ref());
 }
 
 void clasp_big_register_free(Bignum_sp b) {
