@@ -1119,7 +1119,7 @@ void cc_error_array_out_of_bounds(T_O* index, T_O* expected_type, T_O* array)
 
 SYMBOL_EXPORT_SC_(CorePkg,case_failure);
 SYMBOL_EXPORT_SC_(KeywordPkg,possibilities);
-void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possibilities)
+__attribute__((optnone)) void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possibilities)
 {
   core::T_sp tdatum((gctools::Tagged)datum);
   core::T_sp texpected_type((gctools::Tagged)expected_type);

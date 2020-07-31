@@ -508,28 +508,98 @@ mps_addr_t obj_skip(mps_addr_t client) {
 
 
 #ifdef USE_MPS
+
+struct ValidateObjects {};
+
+template <typename Op>
+inline void operate(core::T_O** ptr) {
+  printf("%s:%d Illegal operate\n", __FILE__, __LINE__ );
+}
+
+template <>
+inline void operate<ValidateObjects>(core::T_O** ptr)
+{
+  printf("%s:%d Validate the pointer at %p\n", __FILE__, __LINE__, ptr);
+}
+
+// ------------------------------------------------------------
+//
+// The following MUST match the code in obj_scan
+//
+template <typename Op>
+inline mps_addr_t general_object_pointer_walk(mps_addr_t client)
+{
+  size_t size;
+  mps_addr_t oldClient = client;
+  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+  size_t stamp_index = header.stamp_();
+#ifdef DEBUG_VALIDATE_GUARD
+  header->validate();
+#endif
+  gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+  const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
+  if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
+    // If this is true then I think we need to call virtual functions on the client
+    // to determine the Instance_O offset and the total size of the object.
+    printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
+  }
+  if (stamp_layout.layout_op == templated_op ) {
+    size = ((core::General_O*)client)->templatedSizeof();
+  } else {
+    size = stamp_layout.size;
+  }
+  if ( stamp_layout.field_layout_start ) {
+    int num_fields = stamp_layout.number_of_fields;
+    const Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+    for ( int i=0; i<num_fields; ++i ) {
+      core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+      operate<Op>(field);
+      ++field_layout_cur;
+    }
+  }
+  if ( stamp_layout.container_layout ) {
+    const Container_layout& container_layout = *stamp_layout.container_layout;
+    size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+    size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+    size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
+    for ( int i=0; i<end; ++i ) {
+      Field_layout* field_layout_cur = container_layout.field_layout_start;
+      ASSERT(field_layout_cur);
+      const char* element = ((const char*)client + stamp_layout.data_offset + stamp_layout.element_size*i);
+      for ( int j=0; j<container_layout.number_of_fields; ++j ) {
+        core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
+        operate<Op>(field);
+        ++field_layout_cur;
+      }
+    }
+  }
+  client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
+#ifdef DEBUG_MPS_SIZE
+  {
+    size_t scan_size = ((char*)client-(char*)oldClient);
+    size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
+    if (scan_size != skip_size) {
+      printf("%s:%d The size of the object with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
+             __FILE__, __LINE__, header.stamp_(), scan_size, skip_size);
+    }
+  }
+#endif
+  return client;
+}
+
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   LOG(BF("obj_scan START client=%p limit=%p\n") % (void*)client % (void*)limit );
   mps_addr_t oldClient;
-  size_t size = 0;  // Used to store the size of the object
   size_t stamp_index;
+  size_t size;
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client < limit) {
       oldClient = (mps_addr_t)client;
       // The client must have a valid header
       const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
       const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-#if 0
-      if (reinterpret_cast<size_t>(header._stamp_wtag_mtag._value) == (size_t)(gctools::STAMP_gctools__GCVector_moveable_core__Cons_O_<<gctools::Header_s::mtag_shift)) {
-          printf("%s:%d obj_scan of STAMP_gctools__GCVector_moveable_core__Cons_O client = %p seek = %p\n", __FILE__, __LINE__, client,
-                 &_lisp->_Roots._SpecialForms->_Table);
-          gctools::Vec0<core::Cons_O>* foo = (gctools::Vec0<core::Cons_O>*)client;
-          if (foo == &_lisp->_Roots._SpecialForms->_Table) {
-              printf("%s:%d     Found SpecialForms\n", __FILE__, __LINE__ );
-          }
-      }
-#endif
       stamp_index = header.stamp_();
       LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
       tagged_stamp_t mtag = header_value.mtag();
