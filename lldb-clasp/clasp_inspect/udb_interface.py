@@ -1,3 +1,4 @@
+import struct
 import gdb
 
 from clasp_inspect.interface import Interface
@@ -14,14 +15,21 @@ class UdbInterface(Interface):
             code = compile(source_file.read(), filename, "exec")
         exec(code)
         SetupGlobals()
+        self._ByteOrder = 'little'
        
     def print_(self,msg):
         print msg
 
     def read_memory(self,address,len):
         i = gdb.inferiors()[0]
-        m = i.read_memory(address,len)
-        return m
+        #print "About to read_memory at 0x%x len: %d" % (address, len)
+        mem = i.read_memory(address,len)
+        #print "About to create fmt"
+        fmt = ('<' if self._ByteOrder == 'little' else '>') + {2: 'H', 4: 'L', 8: 'Q'}[len]
+        #print "About to struct.unpack with fmt: |%s|" % fmt
+        val = struct.unpack(fmt,mem)
+        #print "Read and unpacked mem at 0x%x len: %d with fmt: %s and got: 0x%x" % (address,len,fmt,val[0])
+        return val[0]
 
 def inspect(args):
     print "In inspect args: %s" % args
@@ -36,7 +44,7 @@ def inspect(args):
         debugger.print_("Handle register %s\n" % arg)
         return
     if (arg[0:2]=='0x' and is_int(arg,16)):
-        tptr = int(arg[3:],16)
+        tptr = int(arg[2:],16)
     elif (is_int(arg,10)):
         tptr = int(arg,10)
     else:

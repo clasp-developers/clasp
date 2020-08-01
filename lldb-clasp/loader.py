@@ -7,6 +7,7 @@
 
 
 import extend_lldb
+import clasp_inspect.lldb_interface
 
 print("Imported extend_lldb")
 
@@ -21,4 +22,5 @@ def __lldb_init_module(debugger, internal_dict):
     debugger.HandleCommand('process handle -p true -n false -s false SIGSEGV')
 
     extend_lldb.do_lldb_init_module(debugger,internal_dict,"loader")
+    clasp_inspect.lldb_interface.do_lldb_init_module(debugger,internal_dict,"loader")
 

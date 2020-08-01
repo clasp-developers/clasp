@@ -1,5 +1,21 @@
 import lldb
 
+class Machine:
+    def __init__(self):
+        pass
+
+class LldbInterface(Interface):
+    def __init__(self,debugger):
+        self._debugger = debugger
+        self._process = debugger.GetSelectedTarget().GetProcess()
+
+    def print(self,msg):
+        print(msg)
+    def read_memory(self,address,len):
+        err = lldb.SBError()
+        tptr = self._process.ReadUnsignedFromMemory(address,len,err)
+        return tptr
+    
 global_Debugger = None
 global_Process = None
 global_DataTypes = {}
@@ -238,16 +254,14 @@ def untag_cons(tptr):
     return tptr-3
 
 def read_unsigned_at_offset(debugger,verbose,base,offset):
-    process = debugger.GetSelectedTarget().GetProcess()
-    err = lldb.SBError()
-    tptr = process.ReadUnsignedFromMemory(base+offset,8,err)
-    if (verbose): print("read_unsigned_at_offset offset: %x" % (base+offset))
+    tptr = debugger.read_memory(base+offset,8)
+    if (verbose): debugger.print("read_unsigned_at_offset offset: %x" % (base+offset))
     return tptr
     
 def print_object_type(debugger,verbose,obj,type_=0):
     if (type_==0):
         print_tagged_ptr(debugger,verbose,obj,toplevel=False)
-    print("print_object_type Handle obj: %d  type: %d\n" % (obj, type_))
+    debugger.print("print_object_type Handle obj: %d  type: %d\n" % (obj, type_))
 
 def print_variable_array0(debugger,verbose,indent,class_,obj,toplevel=False):
     base = untag_general(obj)
@@ -255,50 +269,46 @@ def print_variable_array0(debugger,verbose,indent,class_,obj,toplevel=False):
     element_size = class_._variable_capacity._element_size
     length_offset = class_._variable_capacity._end_offset
     length_ = read_unsigned_at_offset(debugger,verbose,base,length_offset)
-    print("%d slots" % length_)
-    print("variable_fields -> %s" % class_._variable_fields)
+    debugger.print("%d slots" % length_)
+    debugger.print("variable_fields -> %s" % class_._variable_fields)
     for index in range(0,length_):
         element_offset = data_offset+element_size*index
-        print("element[%d]@0x%x" % (index, base+element_offset))
+        debugger.print("element[%d]@0x%x" % (index, base+element_offset))
         for field_index in class_._variable_fields:
             field = class_._variable_fields[field_index]
             field_offset = element_offset + field._field_offset
             data = read_unsigned_at_offset(debugger,verbose,base,field_offset)
-            print("%s%s -> %s" % (indent,field._field_name, valid_tptr(data)));
+            debugger.print("%s%s -> %s" % (indent,field._field_name, valid_tptr(data)));
     
 def print_simple_base_string(debugger,verbose,indent,class_,obj):
     base = untag_general(obj)
     data_offset = class_._variable_array0._offset
     length_offset = class_._variable_capacity._end_offset
     length_ = read_unsigned_at_offset(debugger,verbose,base,length_offset)
-    err = lldb.SBError()
-    process = debugger.GetSelectedTarget().GetProcess()
-    data = process.ReadMemory(base+data_offset,length_,err)
+    data = debugger.read_memory(base+data_offset,length_)
     if (err.Success()):
-        print("Data: %s "% str(data))
+        debugger.print("Data: %s "% str(data))
     else:
-        print("Data Could not read!!!")
+        debugger.print("Data Could not read!!!")
 
 def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
-    print("class dict -> %s" % class_.__dict__)
+    debugger.print("class dict -> %s" % class_.__dict__)
     
 def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False):
     if (generalp(obj)):
         base = untag_general(obj)
         header_ptr = base - global_HeaderStruct._sizeof;
-        err = lldb.SBError()
-        process = debugger.GetSelectedTarget().GetProcess()
-        header = process.ReadUnsignedFromMemory(header_ptr,8,err)
+        header = debugger.read_memory(header_ptr,8)
         if (err.Success()):
             stamp = header>>4
-            if (not toplevel and verbose): print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
+            if (not toplevel and verbose): debugger.print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
             class_ = global_Kinds[stamp]
             name = class_._name
             if (name=="core::SimpleBaseString_O"):
-                if (not toplevel and verbose): print("class_ = %s" % class_.__dict__)
+                if (not toplevel and verbose): debugger.print("class_ = %s" % class_.__dict__)
                 print_simple_base_string(debugger,verbose,indent,class_,obj)
                 return True
-            if (not toplevel and verbose): print("%sclass = %s" % (indent,name))
+            if (not toplevel and verbose): debugger.print("%sclass = %s" % (indent,name))
             return False
     return False
     
@@ -306,32 +316,30 @@ def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
     if (generalp(tptr)):
         base = untag_general
         header_ptr = base - global_HeaderStruct._sizeof
-        err = lldb.SBError()
-        process = debugger.GetSelectedTarget().GetProcess()
-        header = process.ReadUnsignedFromMemory(header_ptr,8,err)
+        header = debugger.read_memory(header_ptr,8)
         if (err.Success()):
             stamp = header>>4
-            if (verbose): print("header@%x stamp = %d" % (header_ptr,stamp))
+            if (verbose): debugger.print("header@%x stamp = %d" % (header_ptr,stamp))
             class_ = global_Kinds[stamp]
             name = class_._name
             printed = print_shallow_object_type(debugger,verbose,0,tptr,toplevel)
             if (printed): return
-            print("a %s" % name )
+            debugger.print("a %s" % name )
             if (isinstance(class_,ClassKind)):
                 for field in class_._fields.values():
                     val = read_unsigned_at_offset(debugger,verbose,base,field._field_offset)
-                    print("field %s: %s" % (field._field_name,valid_tptr(val)))
+                    debugger.print("field %s: %s" % (field._field_name,valid_tptr(val)))
                     type_ = field._data_type
                     print_shallow_object_type(debugger,verbose,"  ",val,type_,toplevel=False)
             if (class_._variable_array0):
                 print_variable_array0(debugger,verbose,"  ",class_,tptr,toplevel=False)
             return
-        print("Error %s\n" % err)
+        debugger.print("Error %s\n" % err)
         return
     if (consp(tptr)):
         cons = ConsPtr(untag_cons(tptr))
-        print("It's a cons")
-    print("print_tagged_ptr handle: %s\n" % tptr)
+        debugger.print("It's a cons")
+    debugger.print("print_tagged_ptr handle: %s\n" % tptr)
 
 def inspect(debugger,command,result,internal_dict):
     args = command.split(" ")
@@ -341,7 +349,7 @@ def inspect(debugger,command,result,internal_dict):
         verbose = True
     ptr = None
     if (arg[0:2]=='$r'):
-        print("Handle register %s\n" % arg)
+        debugger.print("Handle register %s\n" % arg)
         return
     if (is_int(arg,16)):
         tptr = int(arg,16)
@@ -349,21 +357,21 @@ def inspect(debugger,command,result,internal_dict):
         tptr = int(arg,10)
     else:
         key = lldb.frame.FindVariable(arg)
-        if (verbose): print("arg = %s" % key)
+        if (verbose): debugger.print("arg = %s" % key)
         theObject = key.GetChildMemberWithName("theObject")
         # theObject.GetValue() returns a string - why? dunno
-        if (verbose): print("theObject.GetValue() = %s" % theObject.GetValue())
+        if (verbose): debugger.print("theObject.GetValue() = %s" % theObject.GetValue())
         tptr = int(theObject.GetValue(),16)
     print_tagged_ptr(debugger,verbose,tptr,toplevel=True)
 
 
-def do_lldb_init_module(debugger,internal_dict,prefix):
+def do_lldb_init_module(debugger,prefix):
     global global_HeaderStruct
     global global_Debugger
     global global_Process
     global_Process = debugger.GetSelectedTarget().GetProcess()
     global_Debugger = debugger
-    print("In clasp_inspect")
+    debugger.print("In clasp_inspect")
     filename = "/tmp/clasp-layout.py"
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
