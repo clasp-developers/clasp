@@ -189,6 +189,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage)
                                                   linkage-name)
   "Compile the definition"
+  (when core:*debug-startup*
+    (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table
        :definition definition
