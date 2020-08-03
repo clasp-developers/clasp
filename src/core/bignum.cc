@@ -551,6 +551,25 @@ CL_DEFUN TheNextBignum_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) 
                                  result_size, result_limbs);
 }
 
+CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp right) {
+  // NOTE: The mpz_ functions detect when left = right (analogously) and use
+  // mpn_sqr instead. I don't _think_ this is required, given they're untouched anyway.
+  mp_size_t llen = left->length(), rlen = right->length();
+  mp_size_t lsize = std::abs(llen), rsize = std::abs(rlen);
+  const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
+  mp_size_t result_size = lsize + rsize;
+  mp_limb_t result_limbs[result_size];
+  mp_limb_t msl;
+  // "This function requires that s1n is greater than or equal to s2n."
+  if (rsize > lsize)
+    msl = mpn_mul(result_limbs, rlimbs, rsize, llimbs, lsize);
+  else msl = mpn_mul(result_limbs, llimbs, lsize, rlimbs, rsize);
+  if (msl == 0) --result_size;
+  return TheNextBignum_O::create(((llen < 0) ^ (rlen < 0)) ? -result_size : result_size,
+                                 0, false,
+                                 result_size, result_limbs);
+}
+
 CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
