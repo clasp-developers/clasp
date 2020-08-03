@@ -226,7 +226,7 @@ public: // Functions here
   virtual uint64_t as_uint64_() const override;
   string as_uint64_string() const;
 
-  virtual Bignum as_mpz_() const override;
+  gc::Fixnum popcount() const;
   virtual LongLongInt as_LongLongInt_() const override;
   virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const override;
