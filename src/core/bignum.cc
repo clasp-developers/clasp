@@ -570,6 +570,40 @@ CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp
                                  result_size, result_limbs);
 }
 
+CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
+                                              TheNextBignum_sp divisor) {
+  ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
+  mp_size_t dividend_length = dividend->length();
+  mp_size_t divisor_length = divisor->length();
+  mp_size_t dividend_size = std::abs(dividend_length);
+  mp_size_t divisor_size = std::abs(divisor_length);
+  const mp_limb_t *dividend_limbs = dividend->limbs();
+  const mp_limb_t *divisor_limbs = divisor->limbs();
+  mp_size_t quotient_size = dividend_size - divisor_size + 1;
+  mp_size_t remainder_size = divisor_size;
+  mp_limb_t quotient_limbs[quotient_size];
+  mp_limb_t remainder_limbs[remainder_size];
+  mpn_tdiv_qr(quotient_limbs, remainder_limbs, 0L,
+              dividend_limbs, dividend_size,
+              divisor_limbs, divisor_size);
+  // MSL of the quotient may be zero
+  if (quotient_limbs[quotient_size-1] == 0) --quotient_size;
+  // Remainder could be anywhere
+  BIGNUM_NORMALIZE(remainder_size, remainder_limbs);
+  // The quotient has the same sign as the mathematical quotient.
+  TheNextBignum_sp quotient = TheNextBignum_O::create(((dividend_length < 0)
+                                                       ^ (divisor_length < 0))
+                                                      ? -quotient_size : quotient_size,
+                                                      0, false,
+                                                      quotient_size, quotient_limbs);
+  // The remainder has the same sign as the dividend.
+  TheNextBignum_sp remainder = TheNextBignum_O::create((dividend_length < 0)
+                                                       ? -remainder_size : remainder_size,
+                                                       0, false,
+                                                       remainder_size, remainder_limbs);
+  return Values(quotient, remainder);
+}
+
 CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
