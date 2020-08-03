@@ -870,7 +870,7 @@ void run_quick_tests()
 
 __attribute__((noinline))
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-#if 1
+#if 0
     printf("%s:%d WARNING   Alignment is %lu \n",__FILE__,__LINE__, Alignment());
     printf("%s:%d           AlignUp(8) -> %lu\n", __FILE__, __LINE__, AlignUp(8));
     printf("%s:%d           AlignUp(16) -> %lu\n", __FILE__, __LINE__, AlignUp(16));
@@ -1154,7 +1154,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     my_thread = &thread_local_state;
     core::transfer_StartupInfo_to_my_thread();
     
-  // Create the allocation points
+    // Create the allocation points
     my_thread_allocation_points.initializeAllocationPoints();
     run_quick_tests();
 #ifdef DEBUG_COUNT_ALLOCATIONS
@@ -1169,11 +1169,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
       printf("%s:%d    Dying.\n", __FILE__, __LINE__);
     }
 #else
-  printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
-  test_mps_allocation();
-  exit_code = 0;
+    printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
+    test_mps_allocation();
+    exit_code = 0;
 #endif
-  my_thread_allocation_points.destroyAllocationPoints();
+    my_thread_allocation_points.destroyAllocationPoints();
   }
 #endif
   size_t finalizations;
@@ -1243,6 +1243,7 @@ void my_mps_thread_deref(mps_thr_t thread) {
 
 
 void ThreadLocalAllocationPoints::initializeAllocationPoints() {
+  // printf("%s:%d Creating allocation points for thread: %p\n", __FILE__, __LINE__, (void*)my_thread);
   mps_res_t res;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
@@ -1301,6 +1302,7 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
 
 
 void ThreadLocalAllocationPoints::destroyAllocationPoints() {
+  //  printf("%s:%d Destroying allocation points for thread: %p\n", __FILE__, __LINE__, (void*)my_thread);
   for ( int handle=global_custom_allocator_info.size()-1; handle >= 0; --handle ) {
     mps_ap_destroy(this->_custom_allocation_points[handle]);
   }
