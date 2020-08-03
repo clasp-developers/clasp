@@ -877,7 +877,6 @@ CL_DEFUN T_sp ext__symbol_macro(Symbol_sp sym, T_sp env) {
 CL_LAMBDA(variables declared-specials);
 CL_DECLARE();
 CL_DOCSTRING("classifyLetVariablesAndDeclares - return (values classified-variables num-lexicals) - For each variable name in variables and declared-specials classify each as special-var, lexical-var or declared-special using the declared-specials list");
-__attribute__((optnone))
 CL_DEFUN
 T_mv core__classify_let_variables_and_declares(List_sp variables, List_sp declaredSpecials) {
   HashTableEq_sp specialsSet = HashTableEq_O::create_default();

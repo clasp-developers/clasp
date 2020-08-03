@@ -506,7 +506,7 @@ void TargetClassifier::targetIsSubLambdaList(Argument &target, LambdaListHandler
   target._ArgTargetFrameIndex = SUB_LAMBDA_LIST;
 }
 
-__attribute__((optnone)) void TargetClassifier::classifyTarget(Argument &target) {
+void TargetClassifier::classifyTarget(Argument &target) {
   //  printf("%s:%d  TargetClassifier::classifyTarget target._ArgTarget@%p --> %p\n", __FILE__, __LINE__, &target._ArgTarget.rawRef_(), target._ArgTarget.raw_());
   Symbol_sp sym = gc::As<Symbol_sp>(target._ArgTarget);
   if (sym->specialP() || (this->_SpecialSymbols.notnilp() && gc::As<HashTable_sp>(this->_SpecialSymbols)->contains(sym))) {

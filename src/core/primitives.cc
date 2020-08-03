@@ -1160,7 +1160,6 @@ SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for mapcar");
-__attribute__((optnone))
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
   Function_sp func = coerce::functionDesignator(func_desig);
   if (lists.consp()) {

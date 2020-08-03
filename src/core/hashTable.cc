@@ -714,7 +714,7 @@ CL_DEFUN T_mv core__gethash3(T_sp key, T_sp hashTable, T_sp default_value) {
   return ht->gethash(key, default_value);
 };
 
-__attribute__((optnone)) KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index, HashGenerator& hg) {
+KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock, cl_index index, HashGenerator& hg) {
     DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d key = %s  index = %ld\n") % __FILE__ % __LINE__ % _rep_(key) % index , T_sp());});
   VERIFY_HASH_TABLE(this);
   BOUNDS_ASSERT(index<this->_Table.size());
@@ -770,7 +770,7 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   ht->rehash_no_lock(false, _NoKey<T_O>());
 }
 
-__attribute__((optnone)) T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
+T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   HT_READ_LOCK(this);
   VERIFY_HASH_TABLE(this);
