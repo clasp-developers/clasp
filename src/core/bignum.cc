@@ -456,7 +456,7 @@ string TheNextBignum_O::__repr__() const {
   const char* num_to_text = "0123456789abcdefghijklmnopqrstuvwxyz";
   mp_size_t len = this->length();
   const mp_limb_t *limbs = this->limbs();
-  unsigned char raw[4*std::abs(len)+1];
+  unsigned char raw[16*std::abs(len)+1];
   // mpn_get_str doesn't actually alter the limbs unless the base is not
   // a power of two, but C++ does not understand such subtleties.
   ss << "#<NEXT-BIGNUM length " << len << " ";
@@ -471,6 +471,16 @@ string TheNextBignum_O::__repr__() const {
 
 CL_DEFUN string core__next_string(TheNextBignum_sp num) {
   return num->__repr__();
+}
+
+CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
+  stringstream ss;
+  mp_size_t len = num->length();
+  const mp_limb_t *limbs = num->limbs();
+  ss << "#<NEXT-BIGNUM";
+  for (size_t i = 0; i < std::abs(len); ++i) ss << " " << limbs[i];
+  ss << ">";
+  return ss.str();
 }
 
 CL_DEFUN TheNextBignum_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
@@ -493,6 +503,52 @@ CL_DEFUN TheNextBignum_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
     result_len = size;
   return TheNextBignum_O::create(result_len, 0, false,
                                  std::abs(result_len), result_limbs);
+}
+
+CL_DEFUN TheNextBignum_sp core__next_lshift(TheNextBignum_sp num, Fixnum shift) {
+  ASSERT(shift >= 0);
+  mp_size_t len = num->length();
+  size_t size = std::abs(len);
+  const mp_limb_t* limbs = num->limbs();
+  unsigned int nlimbs = shift / mp_bits_per_limb;
+  unsigned int nbits = shift % mp_bits_per_limb;
+  size_t result_size = size + nlimbs + 1;
+  mp_limb_t result_limbs[result_size];
+  mp_limb_t carry;
+  // mpn shifts don't work when shift = 0, so we special case that.
+  if (nbits == 0) {
+    carry = 0;
+    // do the "carry" ourselves by copying memory
+    // FIXME: memcpy? std::copy?
+    for (size_t i = 0; i < size; ++i) result_limbs[nlimbs+i] = limbs[i];
+  }
+  else carry = mpn_lshift(&(result_limbs[nlimbs]), limbs, size, nbits);
+  if (carry == 0) --result_size;
+  else result_limbs[result_size-1] = carry;
+  for (size_t i = 0; i < nlimbs; ++i) result_limbs[i] = 0;
+  return TheNextBignum_O::create((len < 0) ? -result_size : result_size, 0, false,
+                                 result_size, result_limbs);
+}
+
+CL_DEFUN TheNextBignum_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
+  ASSERT(shift >= 0);
+  mp_size_t len = num->length();
+  size_t size = std::abs(len);
+  const mp_limb_t* limbs = num->limbs();
+  unsigned int nlimbs = shift / mp_bits_per_limb;
+  unsigned int nbits = shift % mp_bits_per_limb;
+  size_t result_size = size - nlimbs;
+  mp_limb_t result_limbs[result_size];
+  if (nbits == 0) {
+    // FIXME: memcpy? std::copy?
+    for (size_t i = 0; i < result_size; ++i) result_limbs[i] = limbs[nlimbs+i];
+    // input bignum is normalized, so high limb is not zero
+  } else {
+    mpn_rshift(result_limbs, &(limbs[nlimbs]), size, nbits); // ignore outshifted bits
+    if (result_limbs[result_size-1] == 0) --result_size;
+  }
+  return TheNextBignum_O::create((len < 0) ? -result_size : result_size, 0, false,
+                                 result_size, result_limbs);
 }
 
 CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
