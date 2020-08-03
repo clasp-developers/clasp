@@ -115,6 +115,14 @@ mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 /*! Implemented in gc_interace.cc */
 mps_addr_t obj_skip(mps_addr_t base);
 mps_addr_t obj_skip_debug(mps_addr_t base,bool debug=false);
+  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t base,
+                                     void* header,
+                                     size_t stamp_wtag_mtag,
+                                     size_t stamp,
+                                     size_t allocate_size,
+                                     size_t skip_size,
+                                     int delta);
+
 
 /*! Implemented in gc_interace.cc */
 void obj_finalize(mps_addr_t base);
