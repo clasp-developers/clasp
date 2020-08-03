@@ -270,9 +270,10 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       mps_addr_t nextClient = obj_skip((mps_addr_t)obj);
       int skip_size = (int)((char*)nextClient-(char*)obj);
       if (skip_size != allocate_size) {
-        printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %u) allocate_size -> %lu  obj_skip -> %d delta -> %d\n",
-               __FILE__, __LINE__, (void*)header, (size_t)header->_stamp_wtag_mtag._value, header->stamp_(), allocate_size, skip_size, ((int)allocate_size-(int)skip_size) );
-        mps_addr_t againNextClient = obj_skip_debug((mps_addr_t)obj,true);
+        mps_addr_t againNextClient = obj_skip_debug_wrong_size((mps_addr_t)obj,header,(size_t)header->_stamp_wtag_mtag._value,header->stamp_(),
+                                                               allocate_size,
+                                                               skip_size,
+                                                               ((int)allocate_size-(int)skip_size));
 #ifdef DEBUG_GUARD
         printf("      header-size= %lu size= %zu tail_size=%lu \n", sizeof(HeadT), size, tail_size );
 #else        

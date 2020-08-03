@@ -366,141 +366,153 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 
 #ifdef USE_MPS
 extern "C" {
-using namespace gctools;
-/*! I'm using a format_header so MPS gives me the object-pointer */
-mps_addr_t obj_skip_debug(mps_addr_t client,bool dbg) {
-  mps_addr_t oldClient = client;
-  size_t size = 0;
-  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
-  const gctools::Header_s& header = *header_ptr;
-  const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-  tagged_stamp_t mtag = header_value.mtag();
+  using namespace gctools;
+  /*! I'm using a format_header so MPS gives me the object-pointer */
+  mps_addr_t obj_skip_debug(mps_addr_t client,bool dbg) {
+    mps_addr_t oldClient = client;
+    size_t size = 0;
+    const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+    const gctools::Header_s& header = *header_ptr;
+    const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+    tagged_stamp_t mtag = header_value.mtag();
 #ifdef DEBUG_ON
-  if (dbg) {
-    LOG(BF("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n")
-        % mtag % (AlignUp(size + sizeof(Header_s))) % header.tail_size() );
-  }
+    if (dbg) {
+      LOG(BF("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n")
+          % mtag % (AlignUp(size + sizeof(Header_s))) % header.tail_size() );
+    }
 #endif
-  switch (mtag) {
-  case gctools::Header_s::stamp_tag: {
+    switch (mtag) {
+    case gctools::Header_s::stamp_tag: {
 #ifdef DEBUG_VALIDATE_GUARD
-    header->validate();
+      header->validate();
 #endif
-    gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
-    size_t stamp_index = header.stamp_();
+      gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+      size_t stamp_index = header.stamp_();
 #ifdef DEBUG_ON
-  if (dbg) {
-    LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
-  }
+      if (dbg) {
+        LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
+      }
 #endif
-    if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
+      if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
 #ifdef DEBUG_ON
-  if (dbg) {
-    LOG(BF("DerivableCxxObject\n"));
-  }
+        if (dbg) {
+          LOG(BF("DerivableCxxObject\n"));
+        }
 #endif
         // If this is true then I think we need to call virtual functions on the client
         // to determine the Instance_O offset and the total size of the object.
-      printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
-    }
-    const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleBitVector_O ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("SimpleBitVector\n"));}
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-        // Do other bitunit vectors here
-    }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte2_t_O ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte2_t_O"));}
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int2_t_O ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_int2_t_O"));}
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte4_t_O ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte4_t_O"));}
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int4_t_O ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_int4_t_O"));}
-#endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-    }
-    unlikely_if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("SimpleBaseString\n"));}
-#endif
-          // Account for the SimpleBaseString additional byte for \0
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
-      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-      goto STAMP_CONTINUE;
-    }
-    if ( stamp_layout.container_layout ) {
-#ifdef DEBUG_ON
-      if (dbg) {LOG(BF("container_layout\n"));}
-#endif
-      // special cases
-      Container_layout& container_layout = *stamp_layout.container_layout;
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-    } else {
-      if (stamp_layout.layout_op == templated_op) {
-#ifdef DEBUG_ON
-        if (dbg) {LOG(BF("templatedSizeof\n"));}
-#endif
-        size = ((core::General_O*)client)->templatedSizeof();
-      } else {
-#ifdef DEBUG_ON
-        if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
-#endif
-        size = stamp_layout.size;
+        printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
       }
+      const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
+      unlikely_if ( stamp_wtag == STAMP_core__SimpleBitVector_O ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("SimpleBitVector\n"));}
+#endif
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+        // Do other bitunit vectors here
+      }
+      unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte2_t_O ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte2_t_O"));}
+#endif
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+      }
+      unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int2_t_O ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("STAMP_core__SimpleVector_int2_t_O"));}
+#endif
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+      }
+      unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte4_t_O ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte4_t_O"));}
+#endif
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+      }
+      unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int4_t_O ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("STAMP_core__SimpleVector_int4_t_O"));}
+#endif
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+      }
+      unlikely_if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("SimpleBaseString\n"));}
+#endif
+        // Account for the SimpleBaseString additional byte for \0
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
+        size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+        goto STAMP_CONTINUE;
+      }
+      if ( stamp_layout.container_layout ) {
+#ifdef DEBUG_ON
+        if (dbg) {LOG(BF("container_layout\n"));}
+#endif
+        // special cases
+        Container_layout& container_layout = *stamp_layout.container_layout;
+        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+      } else {
+        if (stamp_layout.layout_op == templated_op) {
+#ifdef DEBUG_ON
+          if (dbg) {LOG(BF("templatedSizeof\n"));}
+#endif
+          size = ((core::General_O*)client)->templatedSizeof();
+        } else {
+#ifdef DEBUG_ON
+          if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
+#endif
+          size = stamp_layout.size;
+        }
+      }
+      STAMP_CONTINUE:
+      client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
+      break;
     }
-    STAMP_CONTINUE:
-    client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
-    break;
-  }
-  case gctools::Header_s::fwd_tag: {
-    client = (char *)(client) + header.fwdSize();
-    break;
-  }
-  case gctools::Header_s::pad_tag: {
-    if (header_value.pad1P()) {
-      client = (char *)(client) + header.pad1Size();
-    } else {
-      client = (char *)(client) + header.padSize();
+    case gctools::Header_s::fwd_tag: {
+      client = (char *)(client) + header.fwdSize();
+      break;
     }
-    break;
+    case gctools::Header_s::pad_tag: {
+      if (header_value.pad1P()) {
+        client = (char *)(client) + header.pad1Size();
+      } else {
+        client = (char *)(client) + header.padSize();
+      }
+      break;
+    }
+    case gctools::Header_s::invalid_tag: {
+      throw_hard_error_bad_client((void*)client);
+    }
+    }
+    return client;
   }
-  case gctools::Header_s::invalid_tag: {
-    throw_hard_error_bad_client((void*)client);
-  }
-  }
-  return client;
-}
 
-mps_addr_t obj_skip(mps_addr_t client) {
-  return obj_skip_debug(client,false);
-}
+  mps_addr_t obj_skip(mps_addr_t client) {
+    return obj_skip_debug(client,false);
+  }
+
+  __attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
+                                                                  void* header,
+                                                                  size_t stamp_wtag_mtag,
+                                                                  size_t stamp,
+                                                                  size_t allocate_size,
+                                                                  size_t skip_size,
+                                                                  int delta) {
+    printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
+           __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
+    return obj_skip_debug(client,true);
+  }
 
 
 };
