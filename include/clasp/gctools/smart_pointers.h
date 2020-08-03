@@ -301,25 +301,25 @@ class base_ptr /*: public tagged_ptr<T>*/ {
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  Type *operator->() {
+  inline Type *operator->() {
     GCTOOLS_ASSERT(this->theObject);
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
   };
 
-  Type *operator->() const {
+  inline Type *operator->() const {
     GCTOOLS_ASSERT(this->theObject);
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
   };
 
-  Type &operator*() const {
+  inline Type &operator*() const {
     GCTOOLS_ASSERT(this->theObject);
     GCTOOLS_ASSERT(this->objectp());
     return *(this->untag_object());
   };
 
-  Type *untag_object() const {
+  inline Type *untag_object() const {
     return ::gctools::untag_object(this->theObject);
   }
 
@@ -847,17 +847,17 @@ public:
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   /*! Dereferencing operator - remove the other tag */
-  Type *operator->() {
+  inline Type *operator->() {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
   };
 
-  Type *operator->() const {
+  inline Type *operator->() const {
     GCTOOLS_ASSERT(this->generalp());
     return untag_general(this->theObject);
   };
 
-  Type &operator*() const {
+  inline Type &operator*() const {
     GCTOOLS_ASSERT(this->objectp());
     return *(this->untag_object());
   };
@@ -1204,10 +1204,10 @@ private:
     }
     bool consp() const { return tagged_consp(ptr.raw_()); };
     bool nilp() const { return tagged_nilp(ptr.raw_()); };
-    smart_ptr<core::Cons_O> *operator->() { return &ptr; }
-    const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
-    const smart_ptr<core::Cons_O> &operator*() const { return ptr; }
-    smart_ptr<core::Cons_O> &operator*() { return ptr; }
+    inline smart_ptr<core::Cons_O> *operator->() { return &ptr; }
+    inline const smart_ptr<core::Cons_O> *operator->() const { return &ptr; }
+    inline const smart_ptr<core::Cons_O> &operator*() const { return ptr; }
+    inline smart_ptr<core::Cons_O> &operator*() { return ptr; }
     // Unsafe but fast cast of T_O* to Cons_O* - should only be done within a loop
     /* smart_ptr<core::Cons_O> operator*() { return smart_ptr<core::Cons_O>((Tagged)(ptr)); } */
   public:
@@ -1599,22 +1599,22 @@ public:
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return !tagged_nilp(this->theObject); }
 
-  Type *operator->() {
+  inline Type *operator->() {
     GCTOOLS_ASSERT(this->notnilp());
     return untag_general(this->theObject);
   };
 
-  const Type *operator->() const {
+  inline const Type *operator->() const {
     GCTOOLS_ASSERT(this->notnilp());
     return untag_general(this->theObject);
   };
 
-  const Type &operator*() const {
+  inline const Type &operator*() const {
     GCTOOLS_ASSERT(this->notnilp());
     return *(this->untag_object());
   };
 
-  Type &operator*() {
+  inline Type &operator*() {
     GCTOOLS_ASSERT(this->notnilp());
     return *(this->untag_object());
   };
