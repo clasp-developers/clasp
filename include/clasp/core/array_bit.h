@@ -78,16 +78,17 @@ namespace core {
     virtual ~BitVectorNs_O() {};
   public:
     typedef template_Vector<BitVectorNs_O, SimpleBitVector_O, ComplexVector_O> TemplatedBase;
-  BitVectorNs_O(size_t dimension,
-                T_sp fillPointer,
-                Array_sp data,
-                bool displacedToP,
-                Fixnum_sp displacedIndexOffset)
+    BitVectorNs_O(size_t rank1,
+                  size_t dimension,
+                  T_sp fillPointer,
+                  Array_sp data,
+                  bool displacedToP,
+                  Fixnum_sp displacedIndexOffset)
     : TemplatedBase(dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
-    static BitVectorNs_sp make(size_t length, simple_element_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset ) {
+    static BitVectorNs_sp make(size_t dimension, simple_element_type initialElement, bool initialElementSuppliedP, T_sp fillPointer, T_sp dataOrDisplacedTo, bool displacedToP, Fixnum_sp displacedIndexOffset ) {
       LIKELY_if (dataOrDisplacedTo.nilp())
-        dataOrDisplacedTo = simple_type::make(length,initialElement,initialElementSuppliedP);
-      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(false,length,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
+        dataOrDisplacedTo = simple_type::make(dimension,initialElement,initialElementSuppliedP);
+      auto bv = gctools::GC<BitVectorNs_O>::allocate_container(false,1/*CRANK*/,dimension,fillPointer,gc::As<Array_sp>(dataOrDisplacedTo),displacedToP,displacedIndexOffset);
       return bv;
     }
   public:
