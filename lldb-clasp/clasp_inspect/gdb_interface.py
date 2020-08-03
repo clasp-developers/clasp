@@ -1,19 +1,19 @@
 import gdb
 
 from clasp_inspect.interface import Interface
-from clasp_inspect.inspect import *
+from clasp_inspect.object_layout import *
  
 global_udb_interface = None
 
 class UdbInterface(Interface):
     def __init__(self,debugger,internal_dict,prefix):
         global global_Structs
-        print "In clasp_inspect"
+        print "In clasp_inspect for gdb_interface"
         filename = "/tmp/clasp-layout.py"
         with open(filename, "rb") as source_file:
             code = compile(source_file.read(), filename, "exec")
         exec(code)
-        SetupGlobals()
+        SetupGlobals(self)
        
     def print(self,msg):
         print msg

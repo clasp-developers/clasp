@@ -15,7 +15,6 @@ class InspectLisp (gdb.Command):
     super (InspectLisp, self).__init__ ("il", gdb.COMMAND_USER)
 
   def invoke (self, arg, from_tty):
-    print "About to invoke inspect with arg: %s" % arg
     clasp_inspect.udb_interface.inspect(arg)
 
 InspectLisp()

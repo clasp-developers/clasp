@@ -1,6 +1,6 @@
 import lldb
 from clasp_inspect.interface import Interface
-from clasp_inspect.inspect import *
+from clasp_inspect.object_layout import *
  
 global_lldb_interface = None
 
@@ -10,12 +10,12 @@ class LldbInterface(Interface):
         global global_Structs
         self._debugger = debugger
         self._process = debugger.GetSelectedTarget().GetProcess()
-        self.print("In clasp_inspect")
+        self.print("In clasp_inspect for lldb_interface")
         filename = "/tmp/clasp-layout.py"
         with open(filename, "rb") as source_file:
             code = compile(source_file.read(), filename, "exec")
         exec(code)
-        SetupGlobals()
+        SetupGlobals(self)
        
     def print_(self,msg):
         print(msg)
