@@ -1063,9 +1063,7 @@ and initialize it with an array consisting of one function pointer."
              (*current-function* startup-fn)
              (entry-bb (irc-basic-block-create "entry" startup-fn))
              (arguments (llvm-sys:get-argument-list startup-fn))
-             (values (first arguments))
-             (size (second arguments))
-             (gf-args (second arguments)))
+             (arg-values (first arguments)))
         (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (if roots-array-or-nil
@@ -1079,7 +1077,7 @@ and initialize it with an array consisting of one function pointer."
                 (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
                                                                             start ; root_address
                                                                             (jit-constant-size_t number-of-roots) ; num_roots
-                                                                            values ; initial_data
+                                                                            arg-values ; initial_data
                                                                             (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
                                                                             (jit-constant-size_t 0) ; transient_entries
                                                                             (jit-constant-size_t function-vector-length) ; function_pointer_count
@@ -1119,11 +1117,7 @@ and initialize it with an array consisting of one function pointer."
                (*irbuilder-function-alloca* irbuilder-alloca)
                (*irbuilder-function-body* irbuilder-body)
                (*current-function* shutdown-fn)
-               (entry-bb (irc-basic-block-create "entry" shutdown-fn))
-               (arguments (llvm-sys:get-argument-list shutdown-fn))
-               (values (first arguments))
-               (size (second arguments))
-               (gf-args (second arguments)))
+               (entry-bb (irc-basic-block-create "entry" shutdown-fn)))
           (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
           (with-irbuilder (irbuilder-alloca)
             (progn
