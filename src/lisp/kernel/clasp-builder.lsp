@@ -824,11 +824,8 @@ Return files."
               (push :compiling-cleavir *features*)
               (let* ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                 :system system))
-                     ;; load the inline file twice
-                     (reload-inline-files (append (copy-list files)
-                                                  (list #P"src/lisp/kernel/cleavir/inline"))))
-                (load-system reload-inline-files)))
+                                                 :system system)))
+                (load-system files)))
          (pop *features*))
        (push :cleavir *features*)
        (handler-bind
