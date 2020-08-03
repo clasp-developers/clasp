@@ -434,4 +434,112 @@ Bignum CStrToBignum(const char *str) {
   return bn;
 }
 
+CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
+  return TheNextBignum_O::create((fix < 0) ? -1 : 1, fix, true);
+}
+
+void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
+  return;
+}
+
+// Remove any high limbs that are equal to zero,
+// starting from the right (most significant)
+// Can result in zero limbs.
+#define BIGNUM_NORMALIZE(NLIMBS, LIMBS)\
+  while((NLIMBS) > 0) {\
+    if ((LIMBS)[(NLIMBS) - 1] != 0) break;\
+    (NLIMBS)--;\
+  }
+
+string TheNextBignum_O::__repr__() const {
+  stringstream ss;
+  const char* num_to_text = "0123456789abcdefghijklmnopqrstuvwxyz";
+  mp_size_t len = this->length();
+  const mp_limb_t *limbs = this->limbs();
+  unsigned char raw[4*std::abs(len)+1];
+  // mpn_get_str doesn't actually alter the limbs unless the base is not
+  // a power of two, but C++ does not understand such subtleties.
+  ss << "#<NEXT-BIGNUM length " << len << " ";
+  for (size_t i = 0; i < std::abs(len); ++i)
+    ss << limbs[i] << " ";
+  ss << "#x";
+  mp_size_t strlen = mpn_get_str(raw, 16, const_cast<mp_limb_t*>(limbs), len);
+  for (size_t i = 0; i < strlen; ++i) ss << num_to_text[raw[i]];
+  ss << ">";
+  return ss.str();
+}
+
+CL_DEFUN string core__next_string(TheNextBignum_sp num) {
+  return num->__repr__();
+}
+
+CL_DEFUN TheNextBignum_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
+  ASSERT(right != 0);
+  mp_size_t llen = left->length();
+  mp_size_t size = std::abs(llen);
+  const mp_limb_t *llimbs = left->limbs();
+  mp_size_t result_len;
+  mp_limb_t result_limbs[size+1];
+  mp_limb_t carry;
+  carry = mpn_mul_1(result_limbs, llimbs, size, right);
+  if (carry != 0) {
+    result_limbs[size] = carry;
+    ++size;
+  }
+  if ((llen < 0) ^ (right < 0))
+    // Signs don't match, so we negate.
+    result_len = -size;
+  else
+    result_len = size;
+  return TheNextBignum_O::create(result_len, 0, false,
+                                 std::abs(result_len), result_limbs);
+}
+
+CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
+  mp_size_t llen = left->length(), rlen = right->length();
+  mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
+  const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
+  
+  // Keep the larger number in the left.
+  if (absllen < absrlen) {
+    std::swap(llen, rlen);
+    std::swap(absllen, absrlen);
+    std::swap(llimbs, rlimbs);
+  }
+
+  mp_size_t result_len;
+  mp_limb_t result_limbs[1+absllen];
+  
+  if ((absllen ^ absrlen) < 0) {
+    // the lengths (and therefore the numbers) have different sign.
+    result_len = absllen;
+    if (absllen != absrlen) {
+      // left is larger, so we fear no carry.
+      mpn_sub(result_limbs, llimbs, absllen, rlimbs, absrlen);
+      BIGNUM_NORMALIZE(result_len, result_limbs);
+      if (llen < 0) result_len = -result_len;
+    } // They have the same size, so we have to do a real comparison.
+    else if (mpn_cmp(llimbs, rlimbs, absllen) < 0) {
+      // left has less magnitude, so it's the subtrahend
+      mpn_sub_n(result_limbs, rlimbs, llimbs, absllen);
+      BIGNUM_NORMALIZE(result_len, result_limbs);
+      if (llen < 0) result_len = -result_len;
+    } else {
+      // right has less magnitude
+      mpn_sub_n(result_limbs, llimbs, rlimbs, absllen);
+      BIGNUM_NORMALIZE(result_len, result_limbs);
+      if (llen < 0) result_len = -result_len;
+    }
+  } else {
+    // The numbers have the same sign, so just add them
+    mp_limb_t carry = mpn_add(result_limbs, llimbs, absllen, rlimbs, absrlen);
+    result_limbs[absllen] = carry;
+    result_len = absllen + carry; // carry is either 0 or 1
+    if (llen < 0) result_len = -result_len;
+  }
+
+  return TheNextBignum_O::create(result_len, 0, false,
+                                 std::abs(result_len), result_limbs);
+}
+
 };

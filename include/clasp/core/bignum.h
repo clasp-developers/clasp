@@ -301,18 +301,24 @@ namespace core {
 class TheNextBignum_O : public Integer_O {
   LISP_CLASS(core, CorePkg, TheNextBignum_O, "TheNextBignum",Integer_O);
 public:
-  typedef mp_limb_t limb_type;
-  TheNextBignum_O(int64_t signed_length, limb_type initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const limb_type* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
+  TheNextBignum_O(int64_t signed_length, mp_limb_t initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
   }
 private: // instance variables here
-  gctools::GCArraySignedLength_moveable<limb_type> _limbs;
+  gctools::GCArraySignedLength_moveable<mp_limb_t> _limbs;
 
 public: // Functions here
-  static TheNextBignum_sp create( int64_t signed_number_of_limbs, limb_type initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const limb_type* initialContents=NULL)
+  static TheNextBignum_sp create( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
   {
     GC_ALLOCATE_VARIADIC(TheNextBignum_O,b,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
+
+  mp_size_t length() const { return _limbs.signedLength(); }
+  const mp_limb_t* limbs() const { return &(_limbs._Data[0]);}
+
+  void sxhash_(HashGenerator &hg) const;
+
+  string __repr__() const;
 
   virtual Number_sp rational_() const {IMPLEMENT_ME();};
   
