@@ -44,6 +44,9 @@
 (defclass expose-initializer (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
+(defclass expose-terminator (expose-code function-mixin)
+  ((signature% :initform nil :initarg :signature% :accessor signature%)))
+
 (defclass expose-pregcstartup (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
@@ -267,6 +270,7 @@ This interprets the tags and generates objects that are used to generate code."
         cur-values
         enums
         initializers
+        terminators
         pregcstartups
         (namespace-to-assoc (make-hash-table :test #'equal))
         (package-to-assoc (make-hash-table :test #'equal))
@@ -683,6 +687,21 @@ This interprets the tags and generates objects that are used to generate code."
                           initializers
                           :test #'string=
                           :key #'function-name% ))))
+            (tags:cl-terminator-tag
+             (let* ((namespace (tags:namespace% cur-namespace-tag))
+                    (signature-text (tags:signature-text% tag)))
+               (multiple-value-bind (function-name full-function-name simple-function)
+                   (extract-function-name-from-signature signature-text tag)
+                 (declare (ignore function-name))
+                 (pushnew (make-instance 'expose-terminator
+                                         :namespace% namespace
+                                         :function-name% full-function-name
+                                         :file% (tags:file% tag)
+                                         :line% (tags:line% tag)
+                                         :character-offset% (tags:character-offset% tag))
+                          terminators
+                          :test #'string=
+                          :key #'function-name% ))))
             (tags:cl-pregcstartup-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
@@ -705,4 +724,4 @@ This interprets the tags and generates objects that are used to generate code."
                  e
                  tag))))
     (calculate-class-stamps-and-flags classes gc-managed-types)
-    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums pregcstartups initializers)))
+    (values (order-packages-by-use packages-to-create) functions symbols classes gc-managed-types enums pregcstartups initializers terminators)))

@@ -33,6 +33,11 @@
   ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
    (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
 
+(defclass tags:cl-terminator-tag (source-tag)
+  ((character-offset% :initform nil :initarg :character-offset% :accessor tags:character-offset%)
+   (signature-text% :initform nil :initarg :signature-text% :accessor signature-text%)))
+
+
 (defclass tags:gc-managed-type-tag (tag)
   ((c++type% :initform nil :initarg :c++type% :accessor c++type%)))
 
@@ -307,6 +312,8 @@
   (define-tag-handler cl-pregcstartup-tag "CL_PRE_GC_STARTUP_TAG" tags:cl-pregcstartup-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))  
   (define-tag-handler cl-initializer-tag "CL_INITIALIZER_TAG" tags:cl-initializer-tag
+    :signature-text% (cscrape:read-string-to-character bufs #\) t))
+  (define-tag-handler cl-terminator-tag "CL_TERMINATOR_TAG" tags:cl-terminator-tag
     :signature-text% (cscrape:read-string-to-character bufs #\) t))
   ;; Handle more tags here
   )

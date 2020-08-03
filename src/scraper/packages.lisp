@@ -36,6 +36,7 @@
    #:unknown-tag
    #:handler-code
    #:cl-initializer-tag
+   #:cl-terminator-tag
    #:cl-pregcstartup-tag
    #:lisp-base-tag
    #:lisp-class-tag
