@@ -451,6 +451,23 @@ void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
     (NLIMBS)--;\
   }
 
+// Given bignum parts, return a fixnum if that fits, or else a bignum.
+Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
+  switch (len) {
+  case 0: return clasp_make_fixnum(0);
+  case 1:
+      if (limbs[0] <= gc::most_positive_fixnum)
+        return clasp_make_fixnum(limbs[0]);
+      else break;
+  case -1:
+      if (-(limbs[0]) >= gc::most_negative_fixnum)
+        return clasp_make_fixnum(-(limbs[0]));
+      else break;
+  }
+  return TheNextBignum_O::create(len, 0, false,
+                                 std::abs(len), limbs);
+}
+
 string TheNextBignum_O::__repr__() const {
   stringstream ss;
   const char* num_to_text = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -483,8 +500,8 @@ CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
   return ss.str();
 }
 
-CL_DEFUN TheNextBignum_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
-  ASSERT(right != 0);
+CL_DEFUN Integer_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
+  if (right == 0) return clasp_make_fixnum(0);
   mp_size_t llen = left->length();
   mp_size_t size = std::abs(llen);
   const mp_limb_t *llimbs = left->limbs();
@@ -501,8 +518,9 @@ CL_DEFUN TheNextBignum_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
     result_len = -size;
   else
     result_len = size;
-  return TheNextBignum_O::create(result_len, 0, false,
-                                 std::abs(result_len), result_limbs);
+  // NOTE: This can only be a fixnum if right = -1 and left = m-p-fixnum + 1,
+  // I think. Could be smarter maybe.
+  return bignum_result(result_len, result_limbs);
 }
 
 CL_DEFUN TheNextBignum_sp core__next_lshift(TheNextBignum_sp num, Fixnum shift) {
@@ -526,11 +544,12 @@ CL_DEFUN TheNextBignum_sp core__next_lshift(TheNextBignum_sp num, Fixnum shift) 
   if (carry == 0) --result_size;
   else result_limbs[result_size-1] = carry;
   for (size_t i = 0; i < nlimbs; ++i) result_limbs[i] = 0;
+  // Since we start with a bignum, and we're making it bigger, we have a bignum.
   return TheNextBignum_O::create((len < 0) ? -result_size : result_size, 0, false,
                                  result_size, result_limbs);
 }
 
-CL_DEFUN TheNextBignum_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
+CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
   size_t size = std::abs(len);
@@ -547,8 +566,7 @@ CL_DEFUN TheNextBignum_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) 
     mpn_rshift(result_limbs, &(limbs[nlimbs]), size, nbits); // ignore outshifted bits
     if (result_limbs[result_size-1] == 0) --result_size;
   }
-  return TheNextBignum_O::create((len < 0) ? -result_size : result_size, 0, false,
-                                 result_size, result_limbs);
+  return bignum_result((len < 0) ? -result_size : result_size, result_limbs);
 }
 
 CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp right) {
@@ -565,13 +583,14 @@ CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp
     msl = mpn_mul(result_limbs, rlimbs, rsize, llimbs, lsize);
   else msl = mpn_mul(result_limbs, llimbs, lsize, rlimbs, rsize);
   if (msl == 0) --result_size;
+  // Should always be a bignum.
   return TheNextBignum_O::create(((llen < 0) ^ (rlen < 0)) ? -result_size : result_size,
                                  0, false,
                                  result_size, result_limbs);
 }
 
 CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
-                                              TheNextBignum_sp divisor) {
+                                  TheNextBignum_sp divisor) {
   ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
   mp_size_t dividend_length = dividend->length();
   mp_size_t divisor_length = divisor->length();
@@ -588,23 +607,20 @@ CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
               divisor_limbs, divisor_size);
   // MSL of the quotient may be zero
   if (quotient_limbs[quotient_size-1] == 0) --quotient_size;
-  // Remainder could be anywhere
+  // Remainder could be any size less than the divisor
   BIGNUM_NORMALIZE(remainder_size, remainder_limbs);
   // The quotient has the same sign as the mathematical quotient.
-  TheNextBignum_sp quotient = TheNextBignum_O::create(((dividend_length < 0)
-                                                       ^ (divisor_length < 0))
-                                                      ? -quotient_size : quotient_size,
-                                                      0, false,
-                                                      quotient_size, quotient_limbs);
+  Integer_sp quotient = bignum_result(((dividend_length < 0) ^ (divisor_length < 0))
+                                      ? -quotient_size : quotient_size,
+                                      quotient_limbs);
   // The remainder has the same sign as the dividend.
-  TheNextBignum_sp remainder = TheNextBignum_O::create((dividend_length < 0)
-                                                       ? -remainder_size : remainder_size,
-                                                       0, false,
-                                                       remainder_size, remainder_limbs);
+  Integer_sp remainder = bignum_result((dividend_length < 0)
+                                       ? -remainder_size : remainder_size,
+                                       remainder_limbs);
   return Values(quotient, remainder);
 }
 
-CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
+CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
   const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
@@ -646,9 +662,9 @@ CL_DEFUN TheNextBignum_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp
     result_len = absllen + carry; // carry is either 0 or 1
     if (llen < 0) result_len = -result_len;
   }
-
-  return TheNextBignum_O::create(result_len, 0, false,
-                                 std::abs(result_len), result_limbs);
+  // NOTE: If the signs match we definitely have a bignum, so hypothetically
+  // the tests in bignum_result could be skipped.
+  return bignum_result(result_len, result_limbs);
 }
 
 };
