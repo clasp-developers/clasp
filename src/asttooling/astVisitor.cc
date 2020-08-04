@@ -41,9 +41,6 @@ THE SOFTWARE.
 
 namespace asttooling {
 
-#define ARGS_ast_tooling__makeAstVisitor "(target)"
-#define DECL_ast_tooling__makeAstVisitor ""
-#define DOCS_ast_tooling__makeAstVisitor "makeAstVisitor"
 CL_DEFUN AstVisitor_sp ast_tooling__makeAstVisitor(core::T_sp target) {
   return AstVisitor_O::create(target);
 };

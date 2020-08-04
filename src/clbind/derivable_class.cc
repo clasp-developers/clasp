@@ -168,7 +168,8 @@ void derivable_class_registration::register_() const {
 
 derivable_class_base::derivable_class_base(char const *name)
     : scope_(std::unique_ptr<registration>(
-          m_registration = new derivable_class_registration(name))) {
+          m_registration = new derivable_class_registration(name)))
+    , m_init_counter(0) {
 }
 
 void derivable_class_base::init(

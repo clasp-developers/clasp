@@ -148,6 +148,21 @@ ThreadLocalState::ThreadLocalState() :
   this->_InvocationHistoryStackTop = NULL;
   this->_BufferStr8NsPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
   this->_BufferStrWNsPool.reset_();
+  this->_xorshf_x = rand();
+  this->_xorshf_y = rand();
+  this->_xorshf_z = rand();
+}
+
+size_t ThreadLocalState::random() {
+  unsigned long t;
+  this->_xorshf_x ^= this->_xorshf_x << 16;
+  this->_xorshf_x ^= this->_xorshf_x >> 5;
+  this->_xorshf_x ^= this->_xorshf_x << 1;
+  t = this->_xorshf_x;
+  this->_xorshf_x = this->_xorshf_y;
+  this->_xorshf_y = this->_xorshf_z;
+  this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
+  return this->_xorshf_z;
 }
 
 ThreadLocalState::~ThreadLocalState() {

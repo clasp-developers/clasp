@@ -368,13 +368,13 @@ string General_O::className() const {
 
 void General_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
-    hg.addAddress((void*)this);
+    hg.addGeneralAddress(this->asSmartPtr());
   }
 }
 
 void General_O::sxhash_equal(HashGenerator &hg) const {
   if (!hg.isFilling()) return;
-  hg.addAddress((void*)this);
+  hg.addGeneralAddress(this->asSmartPtr());
   return;
 }
 
@@ -390,8 +390,52 @@ bool General_O::equalp(T_sp obj) const {
   return this->equal(obj);
 }
 
+
+bool HashGenerator::addGeneralAddress(General_sp part) {
+  ASSERT(part.generalp());
+  if (this->isFull()) return false;
+  this->_Parts[this->_NextAddressIndex] = (uintptr_t)part->_badge;
+  this->_NextAddressIndex--;
+  return true;
+}
+
+bool HashGenerator::addConsAddress(Cons_sp part) {
+  ASSERT(part.consp());
+  if (this->isFull()) {
+    return false;
+  }
+  this->_Parts[this->_NextAddressIndex] = lisp_badge(part);
+  this->_NextAddressIndex--;
+  return true;
+}
+
 void Hash1Generator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);
+}
+
+  // Add an address - this may need to work with location dependency
+bool Hash1Generator::addGeneralAddress(General_sp part) {
+  ASSERT(part.generalp());
+  this->_Part = (uintptr_t)part->_badge;
+  this->_PartIsPointer = true;
+#ifdef DEBUG_HASH_GENERATOR
+  if (this->_debug) {
+    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+  }
+#endif
+  return true;
+}
+
+bool Hash1Generator::addConsAddress(Cons_sp part) {
+  ASSERT(part.consp());
+  this->_Part = lisp_badge(part);
+  this->_PartIsPointer = true;
+#ifdef DEBUG_HASH_GENERATOR
+  if (this->_debug) {
+    printf("%s:%d Added part --> %ld\n", __FILE__, __LINE__, part);
+  }
+#endif
+  return true;
 }
 
 /*! Recursive hashing of objects need to be prevented from 
@@ -553,7 +597,7 @@ void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_s
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
-//  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
+  // printf("%s:%d:%s unstamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, unstamp);
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp] = value;
 }
 Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)

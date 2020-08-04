@@ -760,9 +760,9 @@ List_sp LexicalEnvironment_O::gather_metadata(Symbol_sp key) const {
   if (this->getParentEnvironment().notnilp()) {
     parentGathered = clasp_gather_metadata(this->getParentEnvironment(), key);
   }
-  List_sp keyValue = this->_Metadata->find(key);
-  if (keyValue.notnilp()) {
-    return Cons_O::create(oCdr(keyValue), parentGathered);
+  T_mv value = this->_Metadata->gethash(key);
+  if (value.second().notnilp()) {
+    return Cons_O::create(value, parentGathered);
   }
   return parentGathered;
 }
@@ -774,22 +774,22 @@ List_sp LexicalEnvironment_O::push_metadata(Symbol_sp key, T_sp val) {
 }
 
 T_mv LexicalEnvironment_O::localMetadata(Symbol_sp key) const {
-  List_sp it = this->_Metadata->find(key);
-  if (it.nilp()) {
+  T_mv it = this->_Metadata->gethash(key);
+  if (it.second().nilp()) {
     return (Values(_Nil<T_O>(), _Nil<T_O>()));
   }
-  return (Values(oCdr(it), _lisp->_true()));
+  return (Values(it, _lisp->_true()));
 }
 
 T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
-  List_sp it = this->_Metadata->find(key);
-  if (it.nilp()) {
+  T_mv it = this->_Metadata->gethash(key);
+  if (it.second().nilp()) {
     if (this->_ParentEnvironment.nilp()) {
       return (Values(_Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()));
     }
     return gc::As<Environment_sp>(this->_ParentEnvironment)->lookupMetadata(key);
   }
-  return (Values(oCdr(it), _lisp->_true(), this->const_sharedThis<Environment_O>()));
+  return (Values(it, _lisp->_true(), this->const_sharedThis<Environment_O>()));
 }
 
 
@@ -1532,7 +1532,7 @@ void TagbodyEnvironment_O::initialize() {
 CL_LISPIFY_NAME("addTag");
 CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
   _OF();
-  ASSERTF(this->_Tags->find(tag).nilp(), BF("The tag[%s] has already been defined in this tagbody"));
+  //  ASSERTF(this->_Tags->gethash(tag).second().notnilp(), BF("The tag[%s] has already been defined in this tagbody"));
   int index = this->_TagCode.size();
   this->_Tags->hash_table_setf_gethash(tag, make_fixnum(index));
   this->_TagCode.push_back(ip);
@@ -1542,7 +1542,7 @@ CL_DEFMETHOD int TagbodyEnvironment_O::addTag(Symbol_sp tag, List_sp ip) {
 List_sp TagbodyEnvironment_O::find(Symbol_sp tag) const {
   _OF();
   DEPRECATED();
-  return this->_Tags->find(tag);
+  //  return this->_Tags->find(tag);
 }
 
 string TagbodyEnvironment_O::tagsAsString() const {
@@ -1560,9 +1560,9 @@ T_sp TagbodyEnvironment_O::getActivationFrame() const {
 
 bool TagbodyEnvironment_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
   //	printf("%s:%d searched through TagbodyEnvironment_O\n", __FILE__, __LINE__ );
-  List_sp it = this->_Tags->find(sym);
-  if (it.notnilp()) {
-    index = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it)));
+  T_mv it = this->_Tags->gethash(sym);
+  if (it.second().notnilp()) {
+    index = unbox_fixnum(gc::As<Fixnum_sp>(it));
     tagbodyEnv = this->asSmartPtr();
     return true;
   }
@@ -1580,8 +1580,8 @@ List_sp TagbodyEnvironment_O::codePos(int index) const {
 
 T_sp TagbodyEnvironment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
   _OF();
-  List_sp it = this->_Tags->find(tag);
-  if (it.notnilp()) {
+  T_mv it = this->_Tags->gethash(tag);
+  if (it.second().notnilp()) {
     return this->const_sharedThis<TagbodyEnvironment_O>();
   }
   return clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
@@ -1638,12 +1638,12 @@ string MacroletEnvironment_O::summaryOfContents() const {
 bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const {
   LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
-  List_sp fi = this->_Macros->find(sym);
-  if (fi.nilp()) {
+  T_mv fi = this->_Macros->gethash(sym);
+  if (fi.second().nilp()) {
     return this->Base::_findMacro(sym, depth, index, value);
   }
   LOG(BF(" Found binding %s") % _rep_(fi));
-  value = gc::As<Function_sp>(oCdr(fi));
+  value = gc::As<Function_sp>(fi);
   return true;
 }
 
@@ -1662,12 +1662,12 @@ CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp par
 bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const {
   LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
-  List_sp fi = this->_Macros->find(sym);
-  if (fi.nilp()) {
+  T_mv fi = this->_Macros->gethash(sym);
+  if (fi.second().nilp()) {
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
   LOG(BF(" Found binding %s") % _rep_(fi));
-  value = gc::As<Function_sp>(oCdr(fi));
+  value = gc::As<Function_sp>(fi);
   shadowed = false;
   return true;
 }

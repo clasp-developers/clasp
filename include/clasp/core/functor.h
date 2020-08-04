@@ -205,9 +205,9 @@ class Closure_O : public Function_O {
       describeFunction();
     };
   public:
-    virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; };
-    virtual void set_fdesc(FunctionDescription* fdesc) { this->_FunctionDescription = fdesc; };
-    virtual const char *describe() const { return "Closure"; };
+    virtual FunctionDescription* fdesc() const override { return this->_FunctionDescription; };
+    virtual void set_fdesc(FunctionDescription* fdesc) override { this->_FunctionDescription = fdesc; };
+    virtual const char *describe() const override { return "Closure"; };
     void describeFunction() const;
   };
 };
@@ -229,11 +229,11 @@ namespace core {
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
-    T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    virtual size_t templatedSizeof() const { return sizeof(*this); };
-    virtual const char *describe() const { return "BuiltinClosure"; };
-    bool builtinP() const { return true; };
-    T_sp lambdaListHandler() const { return this->_lambdaListHandler; };
+    T_sp closedEnvironment() const override { return _Nil<T_O>(); };
+    virtual size_t templatedSizeof() const override { return sizeof(*this); };
+    virtual const char *describe() const override { return "BuiltinClosure"; };
+    bool builtinP() const override { return true; };
+    T_sp lambdaListHandler() const override { return this->_lambdaListHandler; };
   };
 
 }
@@ -260,8 +260,8 @@ namespace core {
     ClosureType   closureType;
     gctools::GCArray_moveable<value_type> _Slots;
   public:
-    virtual const char *describe() const { return "CompiledClosure"; };
-    virtual size_t templatedSizeof() const {
+    virtual const char *describe() const override { return "CompiledClosure"; };
+    virtual size_t templatedSizeof() const override {
       printf("%s:%d templatedSizeof called on closure %s - it is probably incorrect because we don't account for the slots\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
       return sizeof(*this);
     };
@@ -279,8 +279,8 @@ namespace core {
     : Base(ptr, functionDescription),
       closureType(nclosureType),
       _Slots(capacity,_Unbound<T_O>(),true) {};
-    virtual string __repr__() const;
-    core::T_sp lambdaListHandler() const {
+    virtual string __repr__() const override;
+    core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {
       case interpretedClosure:
           return (*this)[INTERPRETED_CLOSURE_LAMBDA_LIST_HANDLER_SLOT];
@@ -291,7 +291,7 @@ namespace core {
       };
     }
     CL_DEFMETHOD T_sp interpretedSourceCode();
-    CL_DEFMETHOD T_sp closedEnvironment() const {
+    CL_DEFMETHOD T_sp closedEnvironment() const override {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT];
     };      
@@ -299,10 +299,10 @@ namespace core {
       ASSERT(this->closureType!=cclaspClosure); // Never call on a cclaspClosure
       return (*this)[ENVIRONMENT_SLOT].rawRef_();
     };      
-    bool compiledP() const {
+    bool compiledP() const override {
       return (this->closureType!=interpretedClosure);
     }
-    bool interpretedP() const {
+    bool interpretedP() const override {
       return (this->closureType==interpretedClosure);
     }
     bool openP();

@@ -296,4 +296,5 @@
  "src/lisp/kernel/cleavir/activate-clasp-readtables-for-eclector"
  "src/lisp/kernel/cleavir/define-unicode-tables"
  "src/lisp/kernel/cleavir/inline-prep" "src/lisp/kernel/cleavir/auto-compile"
- "src/lisp/kernel/cleavir/inline" "src/lisp/kernel/cleavir/transform")
+ "src/lisp/kernel/cleavir/inline"
+ "src/lisp/kernel/cleavir/transform")

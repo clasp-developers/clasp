@@ -222,6 +222,8 @@ namespace detail {
 
   private:
     derivable_class_registration *m_registration;
+  public:
+    int m_init_counter;
   };
 
 /*! This is the constructor registration for default constructors of non derivable classes,
@@ -313,7 +315,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type) : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char *name, default_constructor_type, const char* docstring="") : derivable_class_base(name), _outer_scope(&outer_scope), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
@@ -325,12 +327,12 @@ public:
     this->_outer_scope->operator,(*this);
   }
   
-  derivable_class_(scope_& outer_scope, const char *name) : derivable_class_base(name), scope(*this) {
+  derivable_class_(scope_& outer_scope, const char *name, const char* docstring="") : derivable_class_base(name), scope(*this) {
 #ifndef NDEBUG
 //            detail::check_link_compatibility();
 #endif
     init(false /* Does not have constructor */);
-    validateRackOffset(offsetof(WrappedType,_Rack));
+//    validateRackOffset(offsetof(WrappedType,_Rack));
   }
 
   template <typename... Types>
@@ -358,23 +360,13 @@ public:
     return this->def_constructor_(name, &sig, policies, arguments, declares, docstring);
   }
 
-  template <class F>
-  derivable_class_ &def(const char *name, F f,
-                        string const& docstring="",
-                        string const& arguments="",
-                        string const& declares="")
+  template <class F, class... PTypes>
+  derivable_class_ &def(const char *name, F f, PTypes... pols)
   {
-    return this->virtual_def(
-                             name, f, policies<>(), reg::null_type(), boost::mpl::true_(), "", "", "");
-
-    //                , arguments, declares, docstring);
-  }
-
-  // virtual functions
-  template <class F, class DefaultOrPolicies>
-  derivable_class_ &def(char const *name, F fn, DefaultOrPolicies default_or_policies, string const &docstring = "", string const &arguments = "", string const &declares = "") {
-    return this->virtual_def(
-                             name, fn, default_or_policies, reg::null_type(), typename is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
+    typedef policies<PTypes...> Policies;
+    Policies curPolicies;
+    walk_policy(curPolicies,pols...);
+    return this->virtual_def(name, f, curPolicies,reg::null_type());
   }
 
   template <class Getter>
@@ -623,11 +615,9 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  derivable_class_ &virtual_def(char const *name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
-                                string const &arguments, string const &declares, string const &docstring) {
-    this->add_member(
-                     new detail::memfun_registration<T, F, Policies>(
-                                                                     name, fn, Policies(), arguments, declares, docstring));
+  derivable_class_ &virtual_def(char const *name, F const &fn,
+                                Policies const &policies, reg::null_type) {
+    this->add_member( new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
 
@@ -667,6 +657,23 @@ private:
 #endif
     return *this;
   }
+
+public:
+      // static functions
+  template <typename... Types>
+  derivable_class_ &def(constructor<Types...> sig) {
+    printf("%s:%d def(expose::init...)\n", __FILE__, __LINE__ );
+    stringstream ss;
+    ss << "make-";
+    ss << this->name();
+    if (this->m_init_counter) {
+      ss << this->m_init_counter;
+    }
+    this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
+    this->m_init_counter++;
+    return *this;
+  }
+
 
 };
 }

@@ -323,7 +323,7 @@ def lbt(debugger, command, result, internal_dict):
     files = list(get_filenames(thread))
     lines = list(get_line_numbers(thread))
     addrs = list(get_pc_addresses(thread))
-
+    print("Backtrace to depth of %d" % depth)
     if thread.GetStopReason() != lldb.eStopReasonInvalid:
         desc =  "stop reason=" + stop_reason_to_str(thread.GetStopReason())
     else:
@@ -357,6 +357,7 @@ def lbt(debugger, command, result, internal_dict):
                 file=files[i], line=lines[i],
                 args=get_args_as_string(frame, showFuncName=False) if not frame.IsInlined() else '()')
                   ,file=result)
+    print("Done backtrace")
 
 def do_lldb_init_module(debugger, internal_dict,prefix):
     prefix = "%s.print_function" % prefix

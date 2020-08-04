@@ -46,7 +46,7 @@ public:
   static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[], bool expose = false);
 
 public: // virtual functions inherited from Object
-  void initialize();
+  void initialize() override;
 
 GCPRIVATE: // instance variables
            /*! Store what the the enumIndex values represent
@@ -105,7 +105,7 @@ public:
     return this->recognizesEnumIndex((int)(val));
   }
 
-  string __repr__() const;
+  string __repr__() const override;
 
   DEFAULT_CTOR_DTOR(SymbolToEnumConverter_O);
 };

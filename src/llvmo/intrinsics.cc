@@ -958,6 +958,16 @@ core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
   return NULL;
 }
 
+void cc_validate_tagged_pointer(core::T_O* ptr)
+{
+  unlikely_if ((((uintptr_t)ptr)&gctools::gc_tag)==gctools::gc_tag) {
+    uintptr_t testval = ((uintptr_t)ptr)&gctools::gc_tag;
+    uintptr_t gctag = gctools::gc_tag;
+    printf("%s:%d Invalid tagged pointer %p testval(%lu)==gctag(%lu)\n", __FILE__, __LINE__, ptr, testval,gctag );
+    abort();
+  }
+}
+
 };
 
 

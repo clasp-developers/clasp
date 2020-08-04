@@ -304,34 +304,20 @@ public:
   size_t _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
-#ifdef USE_MPS
-  mps_ld_s _LocationDependency;
-#else
-  BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here
+#ifdef CLASP_THREADS
+    mutable mp::SharedMutex_sp _Mutex;
 #endif
-
 public:
   WeakKeyHashTable(size_t length, core::Number_sp rehashSize, double rehashThreshold) : _Length(length), _RehashSize(rehashSize), _RehashThreshold(rehashThreshold) {};
   void initialize();
 public:
-  static uint sxhashKey(const value_type &key
-#ifdef USE_MPS
-                        ,
-                        mps_ld_s *locationDependencyP
-#endif
-                        );
+  static uint sxhashKey(const value_type &key);
 
   /*! Return 0 if there is no more room in the sequence of entries for the key
 	  Return 1 if the element is found or an unbound or deleted entry is found.
 	  Return the entry index in (b)
 	*/
-  static size_t find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
-#ifdef USE_MPS
-                  ,
-                  mps_ld_s *ldP
-#endif
-                  ,
-                  size_t &b
+  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key, size_t &b
 #ifdef DEBUG_FIND
                   ,
                   bool debugFind = false, stringstream *reportP = NULL
@@ -339,6 +325,7 @@ public:
                   );
 
 public:
+  void setupThreadSafeHashTable();
   size_t length() const {
     if (!this->_Keys) {
       throw_hard_error("Keys should never be null");
@@ -402,6 +389,9 @@ public:
 };
 
 
+ core::Vector_sp weak_key_hash_table_pairs(const WeakKeyHashTable& ht);
+
+
 class StrongKeyHashTable {
   friend class core::StrongKeyHashTable_O;
 
@@ -422,34 +412,16 @@ public:
   size_t    _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
-#ifdef USE_MPS
-  mps_ld_s _LocationDependency;
-#else
-  BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here
-#endif
-
 public:
   StrongKeyHashTable(size_t length) : _Rehashes(0), _Length(length) {};
   void initialize();
 public:
-  static uint sxhashKey(const value_type &key
-#ifdef USE_MPS
-                        ,
-                        mps_ld_s *locationDependencyP
-#endif
-                        );
-
+  static uint sxhashKey(const value_type &key);
   /*! Return 0 if there is no more room in the sequence of entries for the key
 	  Return 1 if the element is found or an unbound or deleted entry is found.
 	  Return the entry index in (b)
 	*/
-  static size_t find(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key
-#ifdef USE_MPS
-                  ,
-                  mps_ld_s *ldP
-#endif
-                  ,
-                  size_t &b
+  static size_t find_no_lock(gctools::tagged_pointer<KeyBucketsType> keys, const value_type &key , size_t &b
 #ifdef DEBUG_FIND
                   ,
                   bool debugFind = false, stringstream *reportP = NULL

@@ -151,9 +151,16 @@ extern "C" void add_history(char *line);
 #undef ALL_INITIALIZERS_EXTERN
 #endif
 
+#ifndef SCRAPING
+#define ALL_TERMINATORS_EXTERN
+#include TERMINATORS_INC_H
+#undef ALL_TERMINATORS_EXTERN
+#endif
+
 namespace core {
 
 CommandLineOptions *global_options;
+bool global_initialize_builtin_classes = false;
 
 bool global_Started = false;
 bool globalTheSystemIsUp = false;
@@ -321,7 +328,11 @@ void Lisp_O::finalizeSpecialSymbols() {
 }
 
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
-  initialize_clasp_Kinds();
+  {
+    global_initialize_builtin_classes = true;
+    initialize_clasp_Kinds();
+    global_initialize_builtin_classes = false;
+  }
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
@@ -2337,13 +2348,6 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
-#if 0
-#ifndef SCRAPING
-#define ALL_INITIALIZERS_CALLS
-#include INITIALIZERS_INC_H
-#undef ALL_INITIALIZERS_CALLS
-#endif
-#endif
   
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
@@ -2514,6 +2518,11 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
 }
 
 LispHolder::~LispHolder() {
+#ifndef SCRAPING
+#define ALL_TERMINATORS_CALLS
+#include TERMINATORS_INC_H
+#undef ALL_TERMINATORS_CALLS
+#endif
   this->_Lisp->shutdownLispEnvironment();
 }
 

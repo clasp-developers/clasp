@@ -45,7 +45,10 @@ THE SOFTWARE.
 #endif
 
 // Load the waf config file
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmacro-redefined"
 #include "config.h"
+#pragma clang diagnostic pop
 // Checkif we are running the static analyzer
 // Modify the preprocessor settings for the static analyzer
 // Turn on USE_MPS and turn off USE_BOEHM
@@ -489,10 +492,13 @@ struct registered_class<T const>
 std::string program_name();
 
 namespace core {
-  class T_O;
-  class Symbol_O;
-  class Cons_O;
-  class General_O;
+class T_O;
+class Symbol_O;
+class Cons_O;
+class General_O;
+class HashTableEqual_O;
+class SimpleVector_O;
+
 
   [[noreturn]]void lisp_error_sprintf(const char* file, int lineno, const char* function, const char* fmt, ... );
   [[noreturn]]void lisp_errorDereferencedNonPointer(core::T_O *objP);
@@ -1002,6 +1008,7 @@ size_t lisp_lambda_list_handler_number_of_specials(LambdaListHandler_sp lambda_l
   DebugStream *lisp_debugLog();
 /*! Return a string representation of the object */
   string lisp_rep(T_sp obj);
+size_t lisp_badge(T_sp obj);
   Symbol_sp lisp_internKeyword(const string &name);
   Symbol_sp lisp_intern(const string &name);
   Symbol_sp lisp_intern(const string &symbolName, const string &packageName);

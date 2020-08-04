@@ -44,7 +44,7 @@ int global_recursive_allocation_counter = 0;
 void GCStack::growStack() {
   size_t oldSize = (this->_StackLimit - this->_StackBottom);
   size_t newSize = oldSize * 2;
-  uintptr_t *newStack = (uintptr_t *)GC_MALLOC(newSize);
+  uintptr_t *newStack = (uintptr_t *)ALIGNED_GC_MALLOC(newSize);
   memcpy(newStack, this->_StackBottom, oldSize);    // Copy old to new
   memset(newStack + oldSize, 0, newSize - oldSize); // Zero end of new part
   long long int stack_top_offset = (char *)this->_StackCur - (char *)this->_StackBottom;
@@ -61,7 +61,7 @@ void GCStack::shrinkStack() {
   GCTOOLS_ASSERT((this->_StackCur - this->_StackBottom) < this->_StackMiddleOffset);
   size_t oldSize = (this->_StackLimit - this->_StackBottom);
   size_t newSize = oldSize / 2;
-  uintptr_t *newStack = (uintptr_t *)GC_MALLOC(newSize);
+  uintptr_t *newStack = (uintptr_t *)ALIGNED_GC_MALLOC(newSize);
   memcpy(newStack, this->_StackBottom, newSize); // Copy old to new
   long long int stack_top_offset = (char *)this->_StackCur - (char *)this->_StackBottom;
   uintptr_t *oldStack = this->_StackBottom;
@@ -89,7 +89,7 @@ void *GCStack::pushFrameImpl(size_t frameSize) {
   this->_StackCur = (uintptr_t *)((char *)this->_StackCur + headerAndFrameSize);
   GCTOOLS_ASSERT(this->_StackBottom <= this->_StackCur && this->_StackCur < this->_StackLimit);
 #else
-  uintptr_t *headerAndFrame = (uintptr_t *)GC_MALLOC(headerAndFrameSize);
+  uintptr_t *headerAndFrame = (uintptr_t *)ALIGNED_GC_MALLOC(headerAndFrameSize);
 #endif
   FRAME_HEADER_TYPE_FIELD(headerAndFrame) = frame_t;
   FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
@@ -146,7 +146,7 @@ DONE:
 void* malloc_uncollectable_and_zero(size_t size)
 {
 #ifdef USE_BOEHM
-  void* buffer = GC_MALLOC_UNCOLLECTABLE(size);
+  void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(size);
   memset( buffer, 0, size);
 #endif
 #ifdef USE_MPS

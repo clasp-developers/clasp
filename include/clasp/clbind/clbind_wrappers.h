@@ -256,6 +256,19 @@ struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+/*! Wrappers of shared_ptr need to be finalized */
+template <typename T>
+class gctools::GCStamp<clbind::Wrapper<T, std::shared_ptr<T>>> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::Stamp;
+};
+template <typename T>
+struct gctools::GCInfo<clbind::Wrapper<T, std::shared_ptr<T>>> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace translate {
 
 template <typename T>

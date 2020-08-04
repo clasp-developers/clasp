@@ -6,6 +6,9 @@ core::T_O* template_read_stamp(TTT* obj)
   int64_t stamp;
   switch (tag) {
   case FIXNUM0_TAG:
+  case FIXNUM1_TAG:
+  case FIXNUM2_TAG:
+  case FIXNUM3_TAG:
       return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_FIXNUM);
   case GENERAL_TAG: {
   // do more stuff to get the stamp
@@ -40,10 +43,8 @@ core::T_O* template_read_stamp(TTT* obj)
   case CONS_TAG:
       ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_CONS));
       return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_CONS);
-  case FIXNUM1_TAG:
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_FIXNUM));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_FIXNUM);
-  case VASLIST_TAG:
+  case VASLIST0_TAG:
+  case VASLIST1_TAG:
       ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_VA_LIST_S));
       return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_VA_LIST_S);
   case SINGLE_FLOAT_TAG:

@@ -1021,17 +1021,16 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (apply-arguments-adjusters compilation-tool-database tool)
       ;;    (ast-tooling:run tool factory)
       (format t "Loading ASTs for the files: ~a~%" files)
-      (time 
-       (multiple-value-bind (num asts)
-           (ast-tooling:build-asts tool)
-         (if (> num 0)
-             (progn
-               (format t "build-asts result: ~s ~s~%" num asts)
-               (setq *asts* asts))
-             (progn
-               (setq *asts* nil)
-               (format t "NO ASTS WERE LOADED!!!!~%")))
-         (format t "Built asts: ~a~%" asts))))))
+      (multiple-value-bind (num asts)
+          (ast-tooling:build-asts tool)
+        (if (> num 0)
+            (progn
+              (format t "build-asts result: ~s ~s~%" num asts)
+              (setq *asts* asts))
+            (progn
+              (setq *asts* nil)
+              (format t "NO ASTS WERE LOADED!!!!~%")))
+        (format t "Built asts: ~a~%" asts)))))
 
 (defun safe-add-dynamic-matcher (match-finder compiled-matcher callback &key matcher-sexp)
   (or (ast-tooling:add-dynamic-matcher match-finder compiled-matcher callback)
@@ -1051,9 +1050,9 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                            (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
                            mf))
            (factory (ast-tooling:new-frontend-action-factory match-finder)))
-      (time (if (not run-and-save)
-                (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
-                (ast-tooling:run-and-save *match-refactoring-tool* factory)))
+      (if (not run-and-save)
+          (ast-tooling:clang-tool-run *match-refactoring-tool* factory)
+          (ast-tooling:run-and-save *match-refactoring-tool* factory))
       (format t "Number of matches ~a~%" *match-counter*))))
 
 (defstruct multitool
@@ -1136,9 +1135,9 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
         (let ((initializer (single-tool-initializer tool)))
           (when initializer (funcall (single-tool-initializer tool)))))
       (format t "About to run!  run-and-save -> ~a~%" run-and-save)
-      (time (if run-and-save
+      (if run-and-save
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)
-                (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))
+                (ast-tooling:clang-tool-run *match-refactoring-tool* factory))
       (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
       (format t "Total number of matches ~a~%" *match-counter*)
       (print-report))))
@@ -1184,9 +1183,9 @@ Limit the number of times you call the callback with counter-limit."
 Compile the match-sexp and run it on the loaded ASTs and count how many times it matches.
 Limit the number of times you match."
   (with-unmanaged-object (callback (make-instance 'count-match-callback))
-         (time (run-matcher-on-loaded-asts match-sexp
+    (run-matcher-on-loaded-asts match-sexp
                             :callback callback
-                            :counter-limit limit))))
+                            :counter-limit limit)))
 
 
 (defun match-dump-loaded-asts (match-sexp &key limit (tag :whole) &allow-other-keys)
@@ -1198,9 +1197,9 @@ Limit the number of times you match."
 Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole"
   (with-unmanaged-object (callback (make-instance 'dump-match-callback))
     (let ((*match-dump-tag* tag))
-      (time (run-matcher-on-loaded-asts match-sexp
+      (run-matcher-on-loaded-asts match-sexp
                          :callback callback
-                         :counter-limit limit)))))
+                         :counter-limit limit))))
 
 (defun match-comments-loaded-asts (match-sexp &key match-comments code &allow-other-keys)
   "* Arguments
@@ -1218,8 +1217,8 @@ and match them to the match-comments regex.  If they match, run the code."
                                                              match-comments)
                                     :code code))
     (let ((*match-source-location* nil))
-      (time (run-matcher-on-loaded-asts match-sexp
-                         :callback callback))
+      (run-matcher-on-loaded-asts match-sexp
+                         :callback callback)
       (format t "Matched the desired location: ~a~%" *match-source-location*))))
 
 
@@ -1232,9 +1231,9 @@ and match them to the match-comments regex.  If they match, run the code."
 I'm guessing at what this function does!!!!!
 Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and for each match, extract the associated comments
 and match them to the match-comments regex.  If they match, run the code."
-  (time (run-matcher-on-loaded-asts match-sexp
+  (run-matcher-on-loaded-asts match-sexp
                      :callback callback
-                     :counter-limit limit)))
+                     :counter-limit limit))
 
 (defun batch-match-run (match-sexp &key compilation-tool-database limit the-code-match-callback run-and-save)
   "* Arguments
@@ -1247,10 +1246,10 @@ Run the-code-match-callback (a functionRun the match-sexp on the loaded ASTs and
 and match them to the match-comments regex.  If they match, run the code."
   "Run code on every match in every filename in batch mode"
   (or the-code-match-callback (error "You must provide the-code-match-callback to batch-match-run"))
-  (time (batch-run-matcher match-sexp
+  (batch-run-matcher match-sexp
                            :compilation-tool-database compilation-tool-database
                            :callback the-code-match-callback
-			   :run-and-save run-and-save)))
+			   :run-and-save run-and-save))
 
 
 #| ----------------------------------------------------------------------
@@ -1530,7 +1529,7 @@ correspond to the environment names superclasses that are also part of the clang
 (defvar *use-dynamic-ast-matcher-library* t)
 (defun compile-matcher-safe (sexp)
   (let ((matcher-cform (cform-matcher sexp)))
-    (format t "Converted matcher to: ~a~%" matcher-cform)
+;;;    (format t "Converted matcher to: ~a~%" matcher-cform)
     (ast-tooling:parse-dynamic-matcher matcher-cform)))
   
 

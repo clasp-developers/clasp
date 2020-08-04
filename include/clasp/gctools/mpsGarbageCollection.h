@@ -24,6 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+
+#define USE_BADGES 1
+
+#ifndef USE_BADGES
+#define USE_LOCATION_DEPENDENCY 1
+#else
+// do nothing
+#endif
+
 #ifndef _clasp_mpsGarbageCollection_H
 #define _clasp_mpsGarbageCollection_H
 
@@ -98,7 +107,7 @@ extern "C" {
 void mps_park();
 void mps_release();
 
-void my_mps_finalize(void* client);
+  void my_mps_finalize(core::T_O* client);
 
 /*! Implemented in gc_interace.cc */
 mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
@@ -106,6 +115,14 @@ mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 /*! Implemented in gc_interace.cc */
 mps_addr_t obj_skip(mps_addr_t base);
 mps_addr_t obj_skip_debug(mps_addr_t base,bool debug=false);
+  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t base,
+                                     void* header,
+                                     size_t stamp_wtag_mtag,
+                                     size_t stamp,
+                                     size_t allocate_size,
+                                     size_t skip_size,
+                                     int delta);
+
 
 /*! Implemented in gc_interace.cc */
 void obj_finalize(mps_addr_t base);
@@ -129,7 +146,7 @@ namespace gctools {
 //#define NON_MOVING_POOL_ALLOCATION_POINT global_non_moving_allocation_point; //_global_mvff_allocation_point
 
 extern mps_pool_t global_amc_pool;
-extern mps_pool_t global_amc_cons_pool;
+extern mps_pool_t global_cons_pool;
 //    extern mps_pool_t _global_mvff_pool;
 extern mps_pool_t global_amcz_pool;
 extern mps_pool_t global_non_moving_pool;
@@ -187,6 +204,7 @@ class smart_ptr;
       if (MPS_FIX1(ss, tagged_obj)) {\
         gctools::Tagged obj = gctools::untag_object<gctools::Tagged>(tagged_obj);\
         gctools::Tagged tag = gctools::ptag<gctools::Tagged>(tagged_obj);\
+        /*printf("%s:%d fixing obj@%p tag@0x%zx\n", __FILE__, __LINE__, (void*)obj, tag);*/ \
         mps_res_t res = MPS_FIX2(ss, reinterpret_cast<mps_addr_t *>(&obj));\
         if (res != MPS_RES_OK) return res;\
         obj = obj | tag;\
@@ -199,7 +217,7 @@ class smart_ptr;
 #define TAGGED_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
 // Get rid of SIMPLE_POINTER_FIX - its a terrible name
 #define SIMPLE_POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
-#define POINTER_REF_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+//#define POINTER_REF_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
 #define POINTER_FIX(_ptr_) PTRFIX(reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {
@@ -243,7 +261,7 @@ struct ThreadLocalAllocationPoints {
   void initializeAllocationPoints();
   void destroyAllocationPoints();
     mps_ap_t _automatic_mostly_copying_allocation_point;
-    mps_ap_t _amc_cons_allocation_point;
+    mps_ap_t _cons_allocation_point;
     mps_ap_t _automatic_mostly_copying_zero_rank_allocation_point;
     mps_ap_t _non_moving_allocation_point;
     mps_ap_t _weak_link_allocation_point;

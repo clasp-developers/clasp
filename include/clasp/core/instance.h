@@ -106,8 +106,8 @@ namespace core {
     } Slots;
 
   public:
-    bool fieldsp() const;
-    void fields(Record_sp node);
+    bool fieldsp() const override;
+    void fields(Record_sp node) override;
   public: // ctor/dtor for classes with shared virtual base
     Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
@@ -206,27 +206,27 @@ namespace core {
     size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
 
-    Instance_sp _instanceClass() const { return this->_Class; };
+    Instance_sp _instanceClass() const override { return this->_Class; };
 
-    T_sp instanceClassSet(Instance_sp mc);
+    T_sp instanceClassSet(Instance_sp mc) override;
 
-    virtual T_sp instanceSigSet();
-    virtual T_sp instanceSig() const;
+    virtual T_sp instanceSigSet() override;
+    virtual T_sp instanceSig() const override;
 
 
-    virtual bool equalp(T_sp obj) const;
-    virtual void sxhash_equalp(HashGenerator &hg) const;
+    virtual bool equalp(T_sp obj) const override;
+    virtual void sxhash_equalp(HashGenerator &hg) const override;
 
   /*! Return the value of a slot */
-    T_sp instanceRef(size_t idx) const;
+    T_sp instanceRef(size_t idx) const override;
   /*! Set the value of a slot and return the new value */
-    T_sp instanceSet(size_t idx, T_sp val);
+    T_sp instanceSet(size_t idx, T_sp val) override;
 
-    string __repr__() const;
+    string __repr__() const override;
 
-    virtual void describe(T_sp stream);
+    virtual void describe(T_sp stream) override;
 
-    void __write__(T_sp sout) const; // Look in write_ugly.cc
+    void __write__(T_sp sout) const override; // Look in write_ugly.cc
 
 
 

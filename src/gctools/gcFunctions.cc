@@ -456,8 +456,20 @@ struct ReachableMPSObject {
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
+    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)header,gctools::Alignment());
+    abort();
+  }
+  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
+    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)client,gctools::Alignment());
+    abort();
+  }
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
+  // Very expensive to validate every object on the heap
   if (header->stampP()) {
+    header->validate();
     ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
@@ -561,7 +573,7 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
   patternStack = core::Cons_O::create(pattern, patternStack);
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #endif
 };
@@ -581,7 +593,7 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
     mps_pat = mps_alloc_pattern_ramp_collect_all();
   }
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #endif
   return pattern;
@@ -765,7 +777,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 #endif
 #ifdef USE_MPS
   if (object.generalp() || object.consp()) {
-    my_mps_finalize((void*)&*object);
+    my_mps_finalize(object.raw_());
   }
 #endif
 };
@@ -917,12 +929,12 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ).str();
 
-  bool mps_recognize_all_tags = false;
-#ifdef MPS_RECOGNIZE_ALL_TAGS
-  mps_recognize_all_tags = true;
-  debugging = true;
+  bool mps_cons_awl_pool = false;
+#ifdef MPS_CONS_AWL_POOL
+  mps_cons_awl_pool = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("MPS-CONS-AWL-POOL"), features);
 #endif
-  if (buildReport) ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("MPS_CONS_AWL_POOL = %s\n") % (mps_cons_awl_pool ? "**DEFINED**" : "undefined") ).str();
 
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
@@ -957,6 +969,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
 #endif
   if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_alloc_alignment = false;
+#ifdef DEBUG_ALLOC_ALIGNMENT
+  debug_alloc_alignment = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_ALLOC_ALIGNMENT = %s\n") % (debug_alloc_alignment ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_stackmaps = false;
 #ifdef DEBUG_STACKMAPS
@@ -1257,6 +1276,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_DTRACE_LOCK_PROBE = %s\n") % (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_stores = false;
+#ifdef DEBUG_STORES
+  debug_stores = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-STORES"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_STORES = %s\n") % (debug_stores ? "**DEFINED**" : "undefined") ).str();
+
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;
@@ -1354,6 +1381,9 @@ CL_DEFUN void gctools__configuration()
 
 CL_DEFUN void gctools__thread_local_cleanup()
 {
+#ifdef DEBUG_FINALIZERS
+  printf("%s:%d:%s  called to cleanup thread local resources\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   core::thread_local_invoke_and_clear_cleanup();
 }
 

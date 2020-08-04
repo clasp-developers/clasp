@@ -822,9 +822,9 @@ Return files."
        (unwind-protect
             (progn
               (push :compiling-cleavir *features*)
-              (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                :system system)))
+              (let* ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                 #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                 :system system)))
                 (load-system files)))
          (pop *features*))
        (push :cleavir *features*)

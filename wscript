@@ -238,12 +238,14 @@ DEBUG_OPTIONS = [
     "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
     "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
     "DEBUG_THREADS",
+    "DEBUG_STORES", # insert a call to cc_validate_tagged_pointer everytime something is written to memory
     "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
     "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
     "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
-    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_RECURSIVE_ALLOCATIONS", # Catch allocations within allocations - MPS hates these
+    "DEBUG_ALLOC_ALIGNMENT", # catch misaligned allocations
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",

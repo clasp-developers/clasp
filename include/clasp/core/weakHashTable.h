@@ -73,33 +73,33 @@ public: // instance variables here
 public:
   WeakKeyHashTable_O(size_t sz, Number_sp rehashSize, double rehashThreshold ) : _HashTable(sz,rehashSize, rehashThreshold) {};
   WeakKeyHashTable_O();
-  void initialize(); 
+  void initialize() override; 
 public:
-  size_t hashTableCount() const { return this->_HashTable.tableSize();};
+  size_t hashTableCount() const override { return this->_HashTable.tableSize();};
   cl_index size() const { return this->hashTableCount(); };
-  size_t hashTableSize() const { return this->_HashTable.length();};
+  size_t hashTableSize() const override { return this->_HashTable.length();};
 
-  T_sp hash_table_setf_gethash(T_sp key, T_sp value);
+  T_sp hash_table_setf_gethash(T_sp key, T_sp value) override;
 
   bool fullp();
 
-  void describe(T_sp stream);
+  void describe(T_sp stream) override;
   virtual T_sp hashTableTest() const { return cl::_sym_eq; };
   bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
 
   void maphashLowLevel(std::function<void(T_sp, T_sp)> const &fn);
-  void maphash(T_sp functionDesig); 
+  void maphash(T_sp functionDesig) override; 
 
-  T_mv gethash(T_sp key, T_sp defaultValue = _Nil<T_O>());
-  bool remhash(T_sp key);
-  T_sp clrhash();
-  Number_sp rehash_size();
-  double rehash_threshold();
-  T_sp hash_table_test();
+  T_mv gethash(T_sp key, T_sp defaultValue= _Nil<T_O>()) override;
+  bool remhash(T_sp key) override;
+  T_sp clrhash() override;
+  Number_sp rehash_size() override;
+  double rehash_threshold() override;
+  T_sp hash_table_test() override;
 
-  string __repr__() const;
+  string __repr__() const override;
 };
 }; /* core */
 
