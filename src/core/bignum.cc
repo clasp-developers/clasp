@@ -439,7 +439,12 @@ CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
 }
 
 void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
-  return;
+  mp_size_t len = this->length();
+  if (!(hg.addValue(len))) return;
+  mp_size_t size = std::abs(len);
+  const mp_limb_t* limbs = this->limbs();
+  for (mp_size_t i = 0; i < size; ++i)
+    if (!(hg.addValue(limbs[i]))) return;
 }
 
 // Remove any high limbs that are equal to zero,
