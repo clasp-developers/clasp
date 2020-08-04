@@ -323,6 +323,7 @@ public: // Functions here
   string __repr__() const;
 
   virtual Number_sp rational_() const override {IMPLEMENT_ME();};
+  gc::Fixnum popcount() const;
   
 }; // TheNextBignum class
 

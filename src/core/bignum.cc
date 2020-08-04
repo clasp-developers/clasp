@@ -495,6 +495,26 @@ CL_DEFUN string core__next_string(TheNextBignum_sp num) {
   return num->__repr__();
 }
 
+gc::Fixnum TheNextBignum_O::popcount() const {
+  mp_size_t length = this->length();
+  const mp_limb_t* limbs = this->limbs();
+  if (length > 0)
+    return mpn_popcount(limbs, length);
+  else {
+    // (Note that the size of a bignum is never zero - that's a fixnum.)
+    // The signed magnitude representation used by mpn functions
+    // makes this a little annoying.
+    // (= (logcount x) (logcount (- (+ x 1)))) implies
+    // (= (logcount (- y)) (logcount (- y 1))).
+    mp_size_t size = -length;
+    mp_limb_t sublimbs[size];
+    mpn_sub_1(sublimbs, limbs, size, (mp_limb_t)1); // sublimbs = (-this)-1
+    // The most significant limb may be zero, but that won't affect
+    // the popcount obviously. Borrow is zero since -this > 0.
+    return mpn_popcount(sublimbs, size);
+  }
+}
+
 CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();
