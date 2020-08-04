@@ -508,7 +508,10 @@ CL_DEFUN Integer_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
   mp_size_t result_len;
   mp_limb_t result_limbs[size+1];
   mp_limb_t carry;
-  carry = mpn_mul_1(result_limbs, llimbs, size, right);
+  // NOTE that std::abs will be undefined if the result isn't representable,
+  // which will happen if right is INT_MIN or whatever. So this will break if
+  // most_negative_fixnum is that negative (which it isn't hopefully).
+  carry = mpn_mul_1(result_limbs, llimbs, size, std::abs(right));
   if (carry != 0) {
     result_limbs[size] = carry;
     ++size;
@@ -635,7 +638,7 @@ CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right
   mp_size_t result_len;
   mp_limb_t result_limbs[1+absllen];
   
-  if ((absllen ^ absrlen) < 0) {
+  if ((llen ^ rlen) < 0) {
     // the lengths (and therefore the numbers) have different sign.
     result_len = absllen;
     if (absllen != absrlen) {
@@ -648,7 +651,7 @@ CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right
       // left has less magnitude, so it's the subtrahend
       mpn_sub_n(result_limbs, rlimbs, llimbs, absllen);
       BIGNUM_NORMALIZE(result_len, result_limbs);
-      if (llen < 0) result_len = -result_len;
+      if (rlen < 0) result_len = -result_len;
     } else {
       // right has less magnitude
       mpn_sub_n(result_limbs, llimbs, rlimbs, absllen);
