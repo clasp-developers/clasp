@@ -978,7 +978,7 @@ CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, size_t
 
 CL_DEFUN void core__verify_simple_vector_layout(size_t length_offset, size_t data_offset)
 {
-  size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._Length);
+  size_t cxx_length_offset = offsetof(SimpleVector_O,_Data._MaybeSignedLength);
   size_t cxx_data_offset = offsetof(SimpleVector_O,_Data._Data);
   if (length_offset!=cxx_length_offset)
     SIMPLE_ERROR(BF("length_offset %lu does not match cxx_length_offset %lu") % length_offset % cxx_length_offset );
@@ -1002,7 +1002,7 @@ CL_DEFUN void core__verify_mdarray_layout(T_sp alist)
   expect_offset(kw::_sym_Data,alist,offsetof(MDArray_O,_Data)-gctools::general_tag);
   expect_offset(kw::_sym_DisplacedIndexOffset,alist,offsetof(MDArray_O,_DisplacedIndexOffset)-gctools::general_tag);
   expect_offset(kw::_sym_Flags,alist,offsetof(MDArray_O,_Flags)-gctools::general_tag);
-  expect_offset(kw::_sym_Rank,alist,offsetof(MDArray_O,_Dimensions._Length)-gctools::general_tag);
+  expect_offset(kw::_sym_Rank,alist,offsetof(MDArray_O,_Dimensions._MaybeSignedLength)-gctools::general_tag);
   expect_offset(kw::_sym_Dimensions,alist,offsetof(MDArray_O,_Dimensions._Data)-gctools::general_tag);
 }
 
