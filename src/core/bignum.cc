@@ -435,7 +435,7 @@ Bignum CStrToBignum(const char *str) {
 }
 
 CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
-  return TheNextBignum_O::create((fix < 0) ? -1 : 1, fix, true);
+  return TheNextBignum_O::create((fix < 0) ? -1 : 1, std::abs(fix), true);
 }
 
 void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
