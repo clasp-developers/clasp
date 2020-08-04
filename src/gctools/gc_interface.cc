@@ -460,7 +460,10 @@ extern "C" {
 #endif
         // special cases
         Container_layout& container_layout = *stamp_layout.container_layout;
-        size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+        // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
+        // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
+        // Because of this we need to take the absolute value to get the number of entries.
+        size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
         size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
       } else {
         if (stamp_layout.layout_op == templated_op) {
@@ -572,9 +575,18 @@ inline mps_addr_t general_object_pointer_walk(mps_addr_t client)
   }
   if ( stamp_layout.container_layout ) {
     const Container_layout& container_layout = *stamp_layout.container_layout;
-    size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+    // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
+    // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
+    // Because of this we need to take the absolute value to get the number of entries so that we can calculate the
+    // size of this object properly. We also need to do this in obj_skip
+    size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
     size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-    size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
+    size_t end = capacity;
+    if (stamp_layout.end_offset!=stamp_layout.capacity_offset) {
+      // This is a GCVector_moveable and it has an extra 'end' slot that represents the actual number of
+      // values that we need to scan.  end <= capacity
+      size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
+    }
     for ( int i=0; i<end; ++i ) {
       Field_layout* field_layout_cur = container_layout.field_layout_start;
       ASSERT(field_layout_cur);

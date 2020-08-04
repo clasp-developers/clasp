@@ -207,7 +207,7 @@ string FunctionFrame_O::asString() const {
 CL_DEFUN void core__verify_value_frame_layout(size_t parent_offset, size_t length_offset, size_t data_offset)
 {
   size_t cxx_parent_offset = offsetof(ValueFrame_O,_Parent);
-  size_t cxx_length_offset = offsetof(ValueFrame_O,_Objects._Length);
+  size_t cxx_length_offset = offsetof(ValueFrame_O,_Objects._MaybeSignedLength);
   size_t cxx_data_offset = offsetof(ValueFrame_O,_Objects._Data);
   if (parent_offset!=cxx_parent_offset)
     SIMPLE_ERROR(BF("parent_offset %lu does not match cxx_parent_offset %lu") % parent_offset % cxx_parent_offset );
