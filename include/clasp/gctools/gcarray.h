@@ -40,8 +40,8 @@ class GCArray_moveable : public GCContainer {
  typedef value_type container_value_type;
  typedef T *iterator;
  typedef T const *const_iterator;
- uint64_t _Length; // Index one beyond the total number of elements allocated
- T _Data[0];      // Store _Length numbers of T structs/classes starting here
+  int64_t _MaybeSignedLength; // Index one beyond the total number of elements allocated
+ T _Data[0];      // Store llabs(_MaybeSignedLength) numbers of T structs/classes starting here
  // This is the deepest part of the array allocation machinery.
  // The arguments here don't exactly match make-array's, though. Having both is ok here.
  // initialElement is used most of the time.
@@ -49,14 +49,14 @@ class GCArray_moveable : public GCContainer {
  // But it's used for unsafe_subseq (which cl:subseq does use), among other things.
  // Providing both initialElement and initialContents is done when resizing arrays
  // (i.e. allocating new arrays based on old ones).
- GCArray_moveable(size_t length, const T& initialElement, bool initialElementSupplied,
-                  size_t initialContentsSize=0, const T* initialContents=NULL) : _Length(length) {
+ GCArray_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
+                  size_t initialContentsSize=0, const T* initialContents=NULL) : _MaybeSignedLength(length) {
    GCTOOLS_ASSERT(initialContentsSize<=length);
    for ( size_t h(0); h<initialContentsSize; ++h ) {
      this->_Data[h] = initialContents[h];
    }
 #if 1
-   for (size_t i(initialContentsSize); i<this->length(); ++i)
+   for (size_t i(initialContentsSize); i<std::llabs(this->_MaybeSignedLength); ++i)
      new(&(this->_Data[i])) value_type(initialElement);
 #else
    // You can use this to leave arrays uninitialized if there's no :initial-element.
@@ -66,7 +66,7 @@ class GCArray_moveable : public GCContainer {
    // An initial element must be supplied if T involves pointers, for GC reasons.
    // All code that uses GCArray_moveable must ensure this.
    if (initialElementSupplied) {
-     for ( size_t i(initialContentsSize); i<this->_Length; ++i ) {
+     for ( size_t i(initialContentsSize); i<std::llabs(this->_MaybeSignedLength); ++i ) {
        new(&(this->_Data[i])) value_type(initialElement);
      }
    }
@@ -74,7 +74,7 @@ class GCArray_moveable : public GCContainer {
  }
  public:
  inline uint64_t size() const { return this->length(); };
-  inline uint64_t length() const { return static_cast<uint64_t>(this->_Length); };
+ inline uint64_t length() const { return static_cast<uint64_t>(this->_MaybeSignedLength); };
  value_type *data() { return this->_Data; };
  value_type &operator[](size_t i) { return this->_Data[i]; };
  const value_type &operator[](size_t i) const { return this->_Data[i]; };
@@ -132,10 +132,10 @@ class GCArraySignedLength_moveable : public GCArray_moveable<T> {
 public:
   GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
                                size_t initialContentsSize=0, const T* initialContents=NULL) : GCArray_moveable<T>(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {}
-  inline int64_t signedLength() const { return this->_Length; };
-  inline size_t length() const { return std::abs(this->_Length); };
+  inline int64_t signedLength() const { return this->_MaybeSignedLength; };
+  inline size_t length() const { return std::llabs(this->_MaybeSignedLength); };
   inline size_t size() const { return this->length(); };
-  inline int64_t sign() const { return this->_Length>0 ? 1 : (this->_Length<0 ? -1 : 0); }
+  inline int64_t sign() const { return this->_MaybeSignedLength>0 ? 1 : (this->_MaybeSignedLength<0 ? -1 : 0); }
 };
 
 } // namespace gctools
