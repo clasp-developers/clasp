@@ -734,11 +734,12 @@ to expose."
 (defun codegen-variable-part (stream variable-fields analysis)
   (let* ((array (offset-field-with-name variable-fields "_Data"))
          (length (or (offset-field-with-name variable-fields "_Length")
+                     (offset-field-with-name variable-fields "_MaybeSignedLength")
                      (offset-field-with-name variable-fields "_Capacity")))
          (end (or (offset-field-with-name variable-fields "_End") length))
          (gcbitunit-ctype (find-gcbitunit-array-moveable-ctype array)))
     (unless length
-      (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+      (error "Could not find _Length or _MaybeSignedLength in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
     (let ((*print-pretty* nil))
       (if gcbitunit-ctype
           (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
@@ -2989,7 +2990,8 @@ Otherwise return nil."
              (ctype-key (container-key ctype))
              (container-cclass (gethash ctype-key (project-classes project)))
              (capacity-field (or (field-with-name container-cclass "_Capacity")
-                                 (field-with-name container-cclass "_Length"))))
+                                 (field-with-name container-cclass "_Length")
+                                 (field-with-name container-cclass "_MaybeSignedLength"))))
         (format t "      var-part ctype: ~a~%" ctype)
         (format t "           ctype-key: ~a~%" ctype-key)
         (format t "    container-cclass: ~a~%" container-cclass)
