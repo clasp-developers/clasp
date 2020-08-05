@@ -743,6 +743,6 @@ precalculated-vector and returns the index."
                             :value index-or-immediate)
               (change-class ltv 'precalc-value-reference-ast
                             :index index-or-immediate
-                            :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 9999912)
+                            :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 999901)
                             :original-object form)))))
     ast))
