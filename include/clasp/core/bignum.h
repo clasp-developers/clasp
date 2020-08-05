@@ -320,10 +320,19 @@ public: // Functions here
 
   void sxhash_(HashGenerator &hg) const;
 
-  string __repr__() const;
+  string __repr__() const override;
 
-  virtual Number_sp rational_() const override {IMPLEMENT_ME();};
+  Number_sp signum_() const override;
+  Number_sp abs_() const override;
+
+  Number_sp rational_() const final { return this->asSmartPtr(); };
+
+  virtual bool zerop_() const override { return false; }
+  virtual bool plusp_() const override { return (this->length() > 0); }
+  virtual bool minusp_() const override { return (this->length() < 0); }
   gc::Fixnum popcount() const;
+
+  virtual bool eql_(T_sp obj) const override;
   
 }; // TheNextBignum class
 

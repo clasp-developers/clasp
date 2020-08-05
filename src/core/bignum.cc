@@ -495,6 +495,36 @@ CL_DEFUN string core__next_string(TheNextBignum_sp num) {
   return num->__repr__();
 }
 
+Number_sp TheNextBignum_O::signum_() const {
+  // There are no zero bignums, so this is easy.
+  if (this->length() < 0)
+    return clasp_make_fixnum(-1);
+  else return clasp_make_fixnum(1);
+}
+
+Number_sp TheNextBignum_O::abs_() const {
+  // NOTE: We assume that abs of a bignum is never a fixnum.
+  // This will be true for two's complement systems.
+  mp_size_t length = this->length();
+  if (length < 0) // negative
+    return TheNextBignum_O::create(-length, 0, false,
+                                   -length, this->limbs());
+  else return this->asSmartPtr();
+}
+
+bool TheNextBignum_O::eql_(T_sp obj) const {
+  if (gc::IsA<TheNextBignum_sp>(obj)) {
+    TheNextBignum_sp other = gc::As_unsafe<TheNextBignum_sp>(obj);
+    mp_size_t len = this->length();
+    if (len != other->length()) return false;
+    // Maybe faster than a word-by-word comparison?
+    return (mpn_cmp(this->limbs(), other->limbs(), std::abs(len)) == 0);
+  }
+  // Non bignums never eql bignums; in particular bignums in the
+  // fixnum size range don't exist.
+  else return false;
+}
+
 gc::Fixnum TheNextBignum_O::popcount() const {
   mp_size_t length = this->length();
   const mp_limb_t* limbs = this->limbs();
@@ -694,5 +724,5 @@ CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right
   // the tests in bignum_result could be skipped.
   return bignum_result(result_len, result_limbs);
 }
-
-};
+  
+}; // namespace core
