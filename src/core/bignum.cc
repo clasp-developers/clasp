@@ -545,6 +545,25 @@ gc::Fixnum TheNextBignum_O::popcount() const {
   }
 }
 
+gc::Fixnum TheNextBignum_O::bit_length_() const {
+  mp_size_t length = this->length();
+  const mp_limb_t* limbs = this->limbs();
+  if (length > 0)
+    return mpn_sizeinbase(limbs, length, 2);
+  else {
+    // Since mpn_sizeinbase doesn't know about negative numbers,
+    // we have to do as in the above, taking advantage of the
+    // facts that (integer-length (lognot x)) = (integer-length x)
+    // and (lognot x) = (- (+ x 1)).
+    mp_size_t size = -length;
+    mp_limb_t sublimbs[size];
+    mpn_sub_1(sublimbs, limbs, size, (mp_limb_t)1);
+    // mpn_sizeinbase does require the msl is not zero though.
+    if (sublimbs[size-1] == 0) --size;
+    return mpn_sizeinbase(sublimbs, size, 2);
+  }
+}
+
 CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();

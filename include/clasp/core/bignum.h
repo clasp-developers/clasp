@@ -331,6 +331,7 @@ public: // Functions here
   virtual bool plusp_() const override { return (this->length() > 0); }
   virtual bool minusp_() const override { return (this->length() < 0); }
   gc::Fixnum popcount() const;
+  virtual gc::Fixnum bit_length_() const override;
 
   virtual bool eql_(T_sp obj) const override;
   
