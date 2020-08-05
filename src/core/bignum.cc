@@ -778,6 +778,14 @@ CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right
   return bignum_result(result_size, result_limbs);
 }
 
+CL_DEFUN Integer_sp core__next_fgcd(TheNextBignum_sp big, Fixnum small) {
+  if (small == 0) return big;
+  // Don't think mpn_gcd_1 understands negatives.
+  if (small < 0) small = -small;
+  return clasp_make_fixnum(mpn_gcd_1(big->limbs(), std::abs(big->length()),
+                                     small));
+}
+
 CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
