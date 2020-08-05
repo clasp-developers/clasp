@@ -678,6 +678,106 @@ CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
   return Values(quotient, remainder);
 }
 
+CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right) {
+  // This one is rather nontrivial due to two properties of mpn_gcd:
+  // 1) Both source operands are destroyed.
+  //    So we have to copy the operands, as Lisp bignums are immutable.
+  // 2) At least one operand must be odd.
+  //    So we shift out any low zero bits,
+  //    using the properties that gcd(x*2^n, y*2^n) = gcd(x,y)*2^n
+  //    and gcd(2u,v) = gcd(u,2v) = gcd(u,v) for odd u and v.
+  // Also note that we can ignore sign due to Lisp's always-positive GCD result.
+  mp_size_t lsize = std::abs(left->length());
+  const mp_limb_t* llimbs = left->limbs();
+  mp_size_t rsize = std::abs(right->length());
+  const mp_limb_t* rlimbs = right->limbs();
+
+  // Shift zeroes out of the left.
+  // (Also, remember that bignums are never zero, so this terminates fine.)
+  mp_size_t n_left_zero_limbs = 0, n_left_zero_bits;
+  while (llimbs[0] == 0) {
+    ++n_left_zero_limbs; --lsize;
+    ++llimbs; // llimbs = &(llimbs[1]); essentially
+  }
+  // NOTE: We assume mp_limb_t = long long. Unfortunate.
+  n_left_zero_bits = __builtin_ctzll(llimbs[0]);
+  mp_limb_t llimbs_copy[lsize];
+  if (n_left_zero_bits == 0) {
+    // FIXME: Could memcpy/whatever.
+    for (mp_size_t i = 0; i < lsize; ++i) llimbs_copy[i] = llimbs[i];
+  } else {
+    mpn_rshift(llimbs_copy, llimbs, lsize, n_left_zero_bits);
+    if (llimbs_copy[lsize-1] == 0) --lsize;
+  }
+
+  // Ditto for the right.
+  mp_size_t n_right_zero_limbs = 0, n_right_zero_bits;
+  while (rlimbs[0] == 0) {
+    ++n_right_zero_limbs; --rsize;
+    ++rlimbs;
+  }
+  n_right_zero_bits = __builtin_ctzll(rlimbs[0]);
+  mp_limb_t rlimbs_copy[rsize];
+  if (n_right_zero_bits == 0) {
+    for (mp_size_t i = 0; i < rsize; ++i) rlimbs_copy[i] = rlimbs[i];
+  } else {
+    mpn_rshift(rlimbs_copy, rlimbs, rsize, n_right_zero_bits);
+    if (rlimbs_copy[rsize-1] == 0) --rsize;
+  }
+
+  // Now figure out how many zero bits in the result (the min of both)
+  mp_size_t n_result_zero_limbs, n_result_zero_bits;
+  if (n_left_zero_limbs > n_right_zero_limbs) {
+    n_result_zero_limbs = n_right_zero_limbs;
+    n_result_zero_bits = n_right_zero_bits;
+  } else if (n_left_zero_limbs < n_right_zero_limbs) {
+    n_result_zero_limbs = n_left_zero_limbs;
+    n_result_zero_bits = n_right_zero_bits;
+  } else { // equal
+    n_result_zero_limbs = n_left_zero_limbs;
+    n_result_zero_bits = std::min(n_left_zero_bits, n_right_zero_bits);
+  }
+
+  // Now we are ready to do the actual GCD.
+  // The left must have at least as many limbs as the right.
+  // Though not in the documentation, the mpz_gcd code suggests
+  // that the left must be actually bigger than the right, so we
+  // check the most significant limb as well.
+  // Also, we reuse one of the operands as the destination, which
+  // is apparently allowed.
+  mp_size_t gcd_size;
+  mp_limb_t* gcd_limbs = rlimbs_copy;
+  if ((lsize < rsize)
+      || ((lsize == rsize)
+          && (llimbs_copy[lsize-1] < rlimbs_copy[rsize-1])))
+    gcd_size = mpn_gcd(gcd_limbs, rlimbs_copy, rsize, llimbs_copy, lsize);
+  else
+    gcd_size = mpn_gcd(gcd_limbs, llimbs_copy, lsize, rlimbs_copy, rsize);
+
+  // Now we need to shift the shared bits back in to the result
+  // and otherwise construct it.
+  mp_limb_t result_size = gcd_size + n_result_zero_limbs;
+  mp_limb_t result_limbs[result_size+1]; // +1 for space to shift into.
+  for (mp_size_t i = 0; i < n_result_zero_limbs; ++i)
+    result_limbs[i] = 0;
+  if (n_result_zero_bits == 0) {
+    // FIXME blabla memcpy
+    for (mp_size_t i = 0; i < gcd_size; ++i)
+      result_limbs[i+n_result_zero_limbs] = gcd_limbs[i];
+  } else {
+    mp_limb_t carry;
+    carry = mpn_lshift(&(result_limbs[n_result_zero_limbs]),
+                       gcd_limbs, gcd_size, n_result_zero_bits);
+    if (carry != 0) {
+      result_limbs[result_size] = carry;
+      ++result_size;
+    }
+  }
+
+  // Finally, construct the result.
+  return bignum_result(result_size, result_limbs);
+}
+
 CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
