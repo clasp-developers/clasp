@@ -491,10 +491,6 @@ string TheNextBignum_O::__repr__() const {
   return ss.str();
 }
 
-CL_DEFUN string core__next_string(TheNextBignum_sp num) {
-  return num->__repr__();
-}
-
 Number_sp TheNextBignum_O::signum_() const {
   // There are no zero bignums, so this is easy.
   if (this->length() < 0)
