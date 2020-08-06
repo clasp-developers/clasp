@@ -867,4 +867,41 @@ CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
   return bignum_result(result_len, result_limbs);
 }
 
+double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
+  // MPN does not seem to export a float conversion function,
+  // so we roll our own. FIXME: Could get bad with float rounding
+  // or otherwise as I'm making this up as I go.
+  mp_size_t size = std::abs(len);
+
+  // There are no length zero bignums.
+  // If the bignum is only one long, we just convert directly.
+  if (size == 1)
+    return static_cast<double>(limbs[0]);
+
+  // Otherwise, we just use the most significant two limbs.
+  // Assuming the float format has at most 128 bits of significand,
+  // the lower limbs ought to be irrelevant.
+  // (In fact one 64-bit number would probably be enough,
+  //  but it's possible the high bits of this number are all zero.)
+  double ultimate = static_cast<double>(limbs[size-1]);
+  double penultimate = static_cast<double>(limbs[size-2]);
+  // Compiler is smart enough to make exp2(constant) constant, hopefully.
+  // In C++17 we could use a hexadecimal float literal
+  // without any loss of precision.
+  double soon = penultimate + ultimate * std::exp2(64);
+  return soon * std::exp2(64*(size-2)) * ((len < 0) ? -1e0 : 1e0);
+}
+
+float TheNextBignum_O::as_float_() const {
+  return static_cast<float>(next_to_double(this->length(), this->limbs()));
+}
+
+double TheNextBignum_O::as_double_() const {
+  return next_to_double(this->length(), this->limbs());
+}
+
+LongFloat TheNextBignum_O::as_long_float_() const {
+  return static_cast<LongFloat>(next_to_double(this->length(), this->limbs()));
+}
+
 }; // namespace core

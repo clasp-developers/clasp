@@ -110,6 +110,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
       break;
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
   case number_Ratio:
     switch (ty) {
     case number_SingleFloat:
@@ -143,6 +144,7 @@ CL_DEFUN Number_sp cl__numerator(Number_sp x) {
     break;
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     break;
   default:
     QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Rational_O);
@@ -160,6 +162,7 @@ CL_DEFUN Number_sp cl__denominator(Number_sp x) {
     break;
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     x = clasp_make_fixnum(1);
     break;
   default:
@@ -173,6 +176,7 @@ Real_mv clasp_floor1(Real_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     v0 = x;
     v1 = clasp_make_fixnum(0);
     break;

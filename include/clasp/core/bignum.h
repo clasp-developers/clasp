@@ -325,6 +325,9 @@ public: // Functions here
   Number_sp abs_() const override;
 
   Number_sp rational_() const final { return this->asSmartPtr(); };
+  virtual float as_float_() const override;
+  virtual double as_double_() const override;
+  virtual LongFloat as_long_float_() const override;
 
   virtual bool zerop_() const override { return false; }
   virtual bool plusp_() const override { return (this->length() > 0); }
