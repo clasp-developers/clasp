@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/num_arith.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/mathDispatch.h>
 
 namespace core {
 
@@ -99,6 +100,10 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   return gcd;
 }
 
+// NOTE: C++17 defines a gcd which could hypothetically be faster than
+// Euclid's algorithm. (Probably not though, machine integers are small.)
+// In any case we should probably use it, if C++ implementations ever
+// reliably get that far.
 gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 {
     if (a == 0)
@@ -107,29 +112,32 @@ gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 }
 
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
-  switch (clasp_t_of(x)) {
-  case number_Fixnum: {
-    if (clasp_t_of(y) == number_Fixnum)
-      return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-    Bignum_sp big(Bignum_O::create(x.unsafe_fixnum()));
-    x = big;
-  }
-  case number_Bignum:
-    break;
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(yidx, x, cl::_sym_Integer_O);
-  }
-  switch (clasp_t_of(y)) {
-  case number_Fixnum: {
-    Bignum_sp big(Bignum_O::create(y.unsafe_fixnum()));
-    y = big;
-  }
-  case number_Bignum:
-    break;
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(1 + yidx, y, cl::_sym_Integer_O);
-  }
-  Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y)));
+  MATH_DISPATCH_BEGIN(x, y) {
+  case_Fixnum_v_Fixnum :
+    return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
+  case_Fixnum_v_NextBignum :
+    return core__next_fgcd(gc::As_unsafe<TheNextBignum_sp>(y),
+                           x.unsafe_fixnum());
+  case_NextBignum_v_Fixnum :
+    return core__next_fgcd(gc::As_unsafe<TheNextBignum_sp>(x),
+                           y.unsafe_fixnum());
+  case_NextBignum_v_NextBignum :
+    return core__next_gcd(gc::As_unsafe<TheNextBignum_sp>(x),
+                          gc::As_unsafe<TheNextBignum_sp>(y));
+  case_Fixnum_v_Bignum : {
+      x = Bignum_O::create(x.unsafe_fixnum());
+      break;
+    }
+  case_Bignum_v_Fixnum : {
+      y = Bignum_O::create(y.unsafe_fixnum());
+      break;
+    }
+    default:
+        QERROR_WRONG_TYPE_NTH_ARG(yidx, x, cl::_sym_Integer_O);
+  };
+  MATH_DISPATCH_END();
+  Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x),
+                                                    gc::As<Bignum_sp>(y)));
   if (temp->fits_sint_p())
     return clasp_make_fixnum(temp->as_int());
   else return temp;
