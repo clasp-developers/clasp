@@ -839,5 +839,32 @@ CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right
   // the tests in bignum_result could be skipped.
   return bignum_result(result_len, result_limbs);
 }
-  
+
+CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
+  // Easier than above since we know abs(right) < abs(left) and the result size.
+  mp_size_t len = left->length();
+  mp_size_t size = std::abs(len);
+  const mp_limb_t* limbs = left->limbs();
+
+  mp_limb_t result_len = size;
+  mp_limb_t result_limbs[size+1];
+
+  if ((len < 0) ^ (right < 0)) {
+    // Different signs - subtract
+    mpn_sub_1(result_limbs, limbs, size, right);
+    // Quick normalize
+    if (result_limbs[size-1] == 0) --result_len;
+  } else {
+    // signs match
+    mp_limb_t carry = mpn_add_1(result_limbs, limbs, size, right);
+    if (carry != 0) {
+      ++result_len;
+      result_limbs[size] = carry;
+    }
+  }
+  // Result has the same sign as the bigger number (so, the bignum)
+  if (len < 0) result_len = -result_len;
+  return bignum_result(result_len, result_limbs);
+}
+
 }; // namespace core

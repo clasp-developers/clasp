@@ -44,6 +44,7 @@ THE SOFTWARE.
 #define MDL(na, nb) ((int)(na) * (int)(number_NUM) + (int)(nb))
 #define case_Fixnum_v_Fixnum case MDL(number_Fixnum, number_Fixnum)
 #define case_Fixnum_v_Bignum case MDL(number_Fixnum, number_Bignum)
+#define case_Fixnum_v_NextBignum case MDL(number_Fixnum, number_NextBignum)
 #define case_Fixnum_v_ShortFloat case MDL(number_Fixnum, number_ShortFloat)
 #define case_Fixnum_v_SingleFloat case MDL(number_Fixnum, number_SingleFloat)
 #define case_Fixnum_v_DoubleFloat case MDL(number_Fixnum, number_DoubleFloat)
@@ -53,6 +54,7 @@ THE SOFTWARE.
 
 #define case_Bignum_v_Fixnum case MDL(number_Bignum, number_Fixnum)
 #define case_Bignum_v_Bignum case MDL(number_Bignum, number_Bignum)
+#define case_Bignum_v_NextBignum case MDL(number_Bignum, number_NextBignum)
 #define case_Bignum_v_ShortFloat case MDL(number_Bignum, number_ShortFloat)
 #define case_Bignum_v_SingleFloat case MDL(number_Bignum, number_SingleFloat)
 #define case_Bignum_v_DoubleFloat case MDL(number_Bignum, number_DoubleFloat)
@@ -60,8 +62,19 @@ THE SOFTWARE.
 #define case_Bignum_v_Ratio case MDL(number_Bignum, number_Ratio)
 #define case_Bignum_v_Complex case MDL(number_Bignum, number_Complex)
 
+#define case_NextBignum_v_Fixnum case MDL(number_NextBignum, number_Fixnum)
+#define case_NextBignum_v_Bignum case MDL(number_NextBignum, number_Bignum)
+#define case_NextBignum_v_NextBignum case MDL(number_NextBignum, number_NextBignum)
+#define case_NextBignum_v_ShortFloat case MDL(number_NextBignum, number_ShortFloat)
+#define case_NextBignum_v_SingleFloat case MDL(number_NextBignum, number_SingleFloat)
+#define case_NextBignum_v_DoubleFloat case MDL(number_NextBignum, number_DoubleFloat)
+#define case_NextBignum_v_LongFloat case MDL(number_NextBignum, number_LongFloat)
+#define case_NextBignum_v_Ratio case MDL(number_NextBignum, number_Ratio)
+#define case_NextBignum_v_Complex case MDL(number_NextBignum, number_Complex)
+
 #define case_ShortFloat_v_Fixnum case MDL(number_ShortFloat, number_Fixnum)
 #define case_ShortFloat_v_Bignum case MDL(number_ShortFloat, number_Bignum)
+#define case_ShortFloat_v_NextBignum case MDL(number_ShortFloat, number_NextBignum)
 #define case_ShortFloat_v_ShortFloat case MDL(number_ShortFloat, number_ShortFloat)
 #define case_ShortFloat_v_SingleFloat case MDL(number_ShortFloat, number_SingleFloat)
 #define case_ShortFloat_v_DoubleFloat case MDL(number_ShortFloat, number_DoubleFloat)
@@ -71,6 +84,7 @@ THE SOFTWARE.
 
 #define case_SingleFloat_v_Fixnum case MDL(number_SingleFloat, number_Fixnum)
 #define case_SingleFloat_v_Bignum case MDL(number_SingleFloat, number_Bignum)
+#define case_SingleFloat_v_NextBignum case MDL(number_SingleFloat, number_NextBignum)
 #define case_SingleFloat_v_ShortFloat case MDL(number_SingleFloat, number_ShortFloat)
 #define case_SingleFloat_v_SingleFloat case MDL(number_SingleFloat, number_SingleFloat)
 #define case_SingleFloat_v_DoubleFloat case MDL(number_SingleFloat, number_DoubleFloat)
@@ -80,6 +94,7 @@ THE SOFTWARE.
 
 #define case_DoubleFloat_v_Fixnum case MDL(number_DoubleFloat, number_Fixnum)
 #define case_DoubleFloat_v_Bignum case MDL(number_DoubleFloat, number_Bignum)
+#define case_DoubleFloat_v_NextBignum case MDL(number_DoubleFloat, number_NextBignum)
 #define case_DoubleFloat_v_ShortFloat case MDL(number_DoubleFloat, number_ShortFloat)
 #define case_DoubleFloat_v_SingleFloat case MDL(number_DoubleFloat, number_SingleFloat)
 #define case_DoubleFloat_v_DoubleFloat case MDL(number_DoubleFloat, number_DoubleFloat)
@@ -89,6 +104,7 @@ THE SOFTWARE.
 
 #define case_LongFloat_v_Fixnum case MDL(number_LongFloat, number_Fixnum)
 #define case_LongFloat_v_Bignum case MDL(number_LongFloat, number_Bignum)
+#define case_LongFloat_v_NextBignum case MDL(number_LongFloat, number_NextBignum)
 #define case_LongFloat_v_ShortFloat case MDL(number_LongFloat, number_ShortFloat)
 #define case_LongFloat_v_SingleFloat case MDL(number_LongFloat, number_SingleFloat)
 #define case_LongFloat_v_DoubleFloat case MDL(number_LongFloat, number_DoubleFloat)
@@ -98,6 +114,7 @@ THE SOFTWARE.
 
 #define case_Ratio_v_Fixnum case MDL(number_Ratio, number_Fixnum)
 #define case_Ratio_v_Bignum case MDL(number_Ratio, number_Bignum)
+#define case_Ratio_v_NextBignum case MDL(number_Ratio, number_NextBignum)
 #define case_Ratio_v_ShortFloat case MDL(number_Ratio, number_ShortFloat)
 #define case_Ratio_v_SingleFloat case MDL(number_Ratio, number_SingleFloat)
 #define case_Ratio_v_DoubleFloat case MDL(number_Ratio, number_DoubleFloat)
@@ -107,6 +124,7 @@ THE SOFTWARE.
 
 #define case_Complex_v_Fixnum case MDL(number_Complex, number_Fixnum)
 #define case_Complex_v_Bignum case MDL(number_Complex, number_Bignum)
+#define case_Complex_v_NextBignum case MDL(number_Complex, number_NextBignum)
 #define case_Complex_v_ShortFloat case MDL(number_Complex, number_ShortFloat)
 #define case_Complex_v_SingleFloat case MDL(number_Complex, number_SingleFloat)
 #define case_Complex_v_DoubleFloat case MDL(number_Complex, number_DoubleFloat)

@@ -336,6 +336,16 @@ public: // Functions here
   
 }; // TheNextBignum class
 
+Integer_sp core__next_fmul(TheNextBignum_sp, Fixnum);
+TheNextBignum_sp core__next_mul(TheNextBignum_sp, TheNextBignum_sp);
+TheNextBignum_sp core__next_lshift(TheNextBignum_sp, Fixnum);
+Integer_sp core__next_rshift(TheNextBignum_sp, Fixnum);
+T_mv core__next_truncate(TheNextBignum_sp, TheNextBignum_sp);
+Integer_sp core__next_gcd(TheNextBignum_sp, TheNextBignum_sp);
+Integer_sp core__next_fgcd(TheNextBignum_sp, Fixnum);
+Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);
+Integer_sp core__next_fadd(TheNextBignum_sp, Fixnum);
+
 }; // core namespace
 
 
