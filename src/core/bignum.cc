@@ -426,14 +426,6 @@ void clasp_big_register_free(Bignum_sp b) {
   return;
 }
 
-Bignum CStrToBignum(const char *str) {
-  Bignum bn = 0;
-  for (const unsigned char *cp = (const unsigned char *)str; *cp; ++cp) {
-    bn = (bn << 7) | ((*cp) & 0x7f);
-  }
-  return bn;
-}
-
 CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
   return TheNextBignum_O::create((fix < 0) ? -1 : 1, std::abs(fix), true);
 }
