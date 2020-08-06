@@ -85,13 +85,14 @@ namespace core
 
   typedef enum { number_Fixnum = 0,
 		 number_Bignum = 1,
+                 number_NextBignum = 8, // temp
 		 number_Ratio = 2,
 		 number_ShortFloat = 3,
 		 number_SingleFloat = 4,
 		 number_DoubleFloat = 5,
 		 number_LongFloat = 6,
 		 number_Complex = 7,
-		 number_NUM = 8 } NumberType;
+		 number_NUM = 9 } NumberType;
 
   // TYPE TEMPLATES
 
