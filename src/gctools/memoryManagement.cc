@@ -148,6 +148,7 @@ void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* threa
   thread->_RecursiveAllocationCounter = x;
   if (x!=1) {
     printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
+    dbg_safe_backtrace();
     abort();
   }
 #endif
