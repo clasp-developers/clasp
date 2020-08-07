@@ -1062,4 +1062,23 @@ LongFloat TheNextBignum_O::as_long_float_() const {
   return static_cast<LongFloat>(next_to_double(this->length(), this->limbs()));
 }
 
+CL_DEFUN int core__next_compare(TheNextBignum_sp left,
+                                TheNextBignum_sp right) {
+  mp_size_t llen = left->length(), rlen = right->length();
+  const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
+
+  if (llen < rlen) return -1;
+  else if (llen > rlen) return 1;
+  else { // actual comparison
+    // mpn_cmp is only defined to return "a negative value" etc.,
+    // so we normalize it to -1, 0, or 1.
+    int cmp = mpn_cmp(llimbs, rlimbs, std::abs(llen));
+    if (cmp < 0) {
+      if (llen < 0) return 1; else return -1;
+    } else if (cmp > 0) {
+      if (llen < 0) return -1; else return 1;
+    } else return 0;
+  }
+}
+
 }; // namespace core

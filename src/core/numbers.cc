@@ -943,6 +943,14 @@ int basic_compare(Number_sp na, Number_sp nb) {
         return 0;
       return 1;
     }
+  case_Fixnum_v_NextBignum : {
+      // Bignums are outside the range of fixnums, so this is easy.
+      // That is, negative bignums are < all fixnums,
+      // and positive bignums are > all fixnums.
+      TheNextBignum_sp bb = gc::As_unsafe<TheNextBignum_sp>(nb);
+      if (bb->minusp_()) return 1;
+      else return -1;
+    }
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
@@ -985,6 +993,10 @@ int basic_compare(Number_sp na, Number_sp nb) {
         return 0;
       return 1;
     }
+  case_NextBignum_v_Fixnum : {
+      TheNextBignum_sp bb = gc::As_unsafe<TheNextBignum_sp>(nb);
+      if (bb->plusp_()) return 1; else return -1;
+    }
   case_Bignum_v_Bignum : {
       mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
       mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
@@ -995,6 +1007,9 @@ int basic_compare(Number_sp na, Number_sp nb) {
       if (za > zb)
         return 1;
     }
+  case_NextBignum_v_NextBignum :
+    return core__next_compare(gc::As_unsafe<TheNextBignum_sp>(na),
+                              gc::As_unsafe<TheNextBignum_sp>(nb));
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
       float a = clasp_to_float(na);
