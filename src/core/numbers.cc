@@ -257,9 +257,9 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
+      mpz_class zb_den = clasp_to_mpz(rb->denominator());
       mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled + rb->numerator_as_mpz();
+      mpz_class zr = za_scaled + clasp_to_mpz(rb->numerator());
       return Rational_O::create(zr, zb_den);
     }
   case_NextBignum_v_Ratio : {
@@ -303,9 +303,10 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class res = ra->numerator_as_mpz() + z;
-      return Rational_O::create(res, ra->denominator_as_mpz());
+      mpz_class den = clasp_to_mpz(ra->denominator());
+      mpz_class z = den * clasp_to_mpz(nb);
+      mpz_class res = clasp_to_mpz(ra->numerator()) + z;
+      return Rational_O::create(res, den);
     }
   case_Ratio_v_NextBignum : {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
@@ -319,10 +320,12 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
       // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
+      mpz_class z1
+        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
+      mpz_class z
+        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
       z = z1 + z;
-      z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
+      z1 = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->denominator());
       return Rational_O::create(z, z1);
     }
   case_SingleFloat_v_Fixnum:
@@ -411,9 +414,9 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
+      mpz_class zb_den = clasp_to_mpz(rb->denominator());
       mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
+      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
       return Rational_O::create(zr, zb_den);
     }
   case_Fixnum_v_SingleFloat : {
@@ -441,17 +444,20 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class res = ra->numerator_as_mpz() - z;
-      return Rational_O::create(res, ra->denominator_as_mpz());
+      mpz_class den = clasp_to_mpz(ra->denominator());
+      mpz_class z = den * clasp_to_mpz(nb);
+      mpz_class res = clasp_to_mpz(ra->numerator()) - z;
+      return Rational_O::create(res, den);
     }
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
+      mpz_class aden = clasp_to_mpz(ra->denominator());
+      mpz_class bden = clasp_to_mpz(rb->denominator());
+      mpz_class z1 = clasp_to_mpz(ra->numerator()) * bden;
+      mpz_class z = aden * clasp_to_mpz(rb->numerator());
       z = z1 - z;
-      z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
+      z1 = aden * bden;
       return Rational_O::create(z, z1);
     }
   case_SingleFloat_v_Fixnum:
@@ -540,8 +546,8 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zr = za * rb->numerator_as_mpz();
-      return Rational_O::create(zr, rb->denominator_as_mpz());
+      mpz_class zr = za * clasp_to_mpz(rb->numerator());
+      return Rational_O::create(zr, clasp_to_mpz(rb->denominator()));
     }
   case_NextBignum_v_Ratio : {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
@@ -581,7 +587,8 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_Ratio_v_Bignum : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       mpz_class z = clasp_to_mpz(nb);
-      return Rational_O::create(z * ra->numerator_as_mpz(), ra->denominator_as_mpz());
+      return Rational_O::create(z * clasp_to_mpz(ra->numerator()),
+                                clasp_to_mpz(ra->denominator()));
     }
   case_Ratio_v_NextBignum : {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
@@ -592,7 +599,11 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      return Rational_O::create(ra->numerator_as_mpz() * rb->numerator_as_mpz(), ra->denominator_as_mpz() * rb->denominator_as_mpz());
+      mpz_class num
+        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->numerator());
+      mpz_class den
+        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->denominator());
+      return Rational_O::create(num, den);
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -936,9 +947,9 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * rb->denominator_as_mpz();
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
+      mpz_class zb_den = clasp_to_mpz(rb->denominator());
+      mpz_class za_scaled = za * zb_den;
+      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
       if (zr < 0)
         return -1;
       if (zr == 0)
@@ -1007,8 +1018,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class raz = ra->numerator_as_mpz();
+      mpz_class z = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(nb);
+      mpz_class raz = clasp_to_mpz(ra->numerator());
       if (raz < z)
         return -1;
       if (raz == z)
@@ -1018,8 +1029,10 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
+      mpz_class z1
+        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
+      mpz_class z
+        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
       if (z1 < z)
         return -1;
       if (z1 == z)
@@ -1184,9 +1197,9 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_Bignum_v_Ratio : {
       mpz_class za(clasp_to_mpz(na));
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * rb->denominator_as_mpz();
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
+      mpz_class zb_den = clasp_to_mpz(rb->denominator());
+      mpz_class za_scaled = za * zb_den;
+      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
       return (zr == 0);
     }
   case_Fixnum_v_SingleFloat : {
@@ -1224,15 +1237,17 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class raz = ra->numerator_as_mpz();
+      mpz_class z = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(nb);
+      mpz_class raz = clasp_to_mpz(ra->numerator());
       return raz == z;
     }
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
+      mpz_class z1
+        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
+      mpz_class z
+        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
       return (z1 == z);
     }
   case_SingleFloat_v_Fixnum:
@@ -1897,14 +1912,6 @@ string Ratio_O::__repr__() const {
   stringstream ss;
   ss << _rep_(this->_numerator) << "/" << _rep_(this->_denominator);
   return ss.str();
-}
-
-mpz_class Ratio_O::numerator_as_mpz() const {
-  return clasp_to_mpz(this->_numerator);
-}
-
-mpz_class Ratio_O::denominator_as_mpz() const {
-  return clasp_to_mpz(this->_denominator);
 }
 
 Number_sp Ratio_O::abs_() const {

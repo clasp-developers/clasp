@@ -699,8 +699,6 @@ namespace core {
     Integer_sp denominator() const { return this->_denominator; };
     Integer_sp num() const { return this->_numerator; };
     Integer_sp den() const { return this->_denominator; };
-    mpz_class numerator_as_mpz() const;
-    mpz_class denominator_as_mpz() const;
 
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
