@@ -697,8 +697,6 @@ namespace core {
     virtual Number_sp negate_() const override { return Ratio_O::create(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
     Integer_sp denominator() const { return this->_denominator; };
-    Integer_sp num() const { return this->_numerator; };
-    Integer_sp den() const { return this->_denominator; };
 
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
