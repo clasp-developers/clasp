@@ -152,8 +152,7 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
       y = Bignum_O::create(y.unsafe_fixnum());
       break;
     }
-    default:
-        QERROR_WRONG_TYPE_NTH_ARG(yidx, x, cl::_sym_Integer_O);
+    default: break;
   };
   MATH_DISPATCH_END();
   Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x),
