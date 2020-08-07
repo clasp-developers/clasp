@@ -1933,7 +1933,7 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
     }
     return;
   }
-  if (clasp_to_mpz(denom) < 0) {
+  if (clasp_minusp(idenom)) {
     this->_numerator = gc::As<Integer_sp>(clasp_negate(num));
     this->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
   } else {
@@ -2066,8 +2066,12 @@ Number_sp Bignum_O::sqrt_() const {
   }
 }
 
+Number_sp TheNextBignum_O::reciprocal_() const {
+  return Ratio_O::create(clasp_make_fixnum(1), this->asSmartPtr());
+}
+
 Number_sp Bignum_O::reciprocal_() const {
-  return Rational_O::create(clasp_to_mpz(clasp_make_fixnum(1)), this->_value);
+  return Ratio_O::create(clasp_make_fixnum(1), this->asSmartPtr());
 }
 
 CL_LAMBDA(arg);
