@@ -1416,7 +1416,37 @@ Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
 }
 
 Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
-  return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
+  if (num.fixnump()) {
+    Fixnum fnum = num.unsafe_fixnum();
+    if (denom.fixnump()) {
+      Fixnum fdenom = denom.unsafe_fixnum();
+      switch (fdenom) {
+      case 0: ERROR_DIVISION_BY_ZERO(num, denom);
+      case 1: return num;
+      case -1: return gc::As_unsafe<Integer_sp>(clasp_negate(num));
+      default: {
+      // check if they divide.
+      // (Note that the case of fnum == 0 is covered here.)
+        if ((fnum % fdenom) == 0)
+          return clasp_make_fixnum(fnum / fdenom);
+        else return Ratio_O::create(num, denom); // no
+      }
+      }
+    } else {
+      // Fixnum divided by a bignum.
+      // This will never be exact except in the exceptional case
+      // that num = most-negative-fixnum, denom = -num,
+      // or if fnum == 0.
+      if (fnum == 0) return clasp_make_fixnum(0);
+      else if (fnum == gc::most_negative_fixnum) {
+        Number_sp ndenom = clasp_negate(denom);
+        if (ndenom.fixnump()
+            && (ndenom.unsafe_fixnum() == gc::most_negative_fixnum))
+          return clasp_make_fixnum(-1);
+      }
+      return Ratio_O::create(num, denom);
+    }
+  } else return num->ratdivide(denom);
 }
 
 CL_DOCSTRING("Return a number that is NAN");

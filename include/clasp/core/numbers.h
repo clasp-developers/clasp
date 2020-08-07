@@ -351,6 +351,10 @@ namespace core {
     virtual gc::Fixnum bit_length_() const { SUBIMP(); };
     virtual gc::Fixnum popcount() const { SUBIMP(); };
 
+    // Divide this integer by another,
+    // returning an exact, reduced rational.
+    virtual Rational_sp ratdivide(Integer_sp) const { SUBIMP(); };
+
     /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
     virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };

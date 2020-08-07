@@ -328,6 +328,10 @@ gc::Fixnum Bignum_O::popcount() const {
     return mpz_popcount(x.get_mpz_t());
 }
 
+Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
+  return Rational_O::create(this->mpz(), clasp_to_mpz(divisor));
+}
+
 /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
 Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
@@ -721,7 +725,8 @@ Integer_sp fix_divided_by_next(Fixnum dividend, TheNextBignum_sp divisor) {
   else return clasp_make_fixnum(0);
 }
 
-CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right) {
+Integer_sp next_gcd(const mp_limb_t* llimbs, mp_size_t lsize,
+                    const mp_limb_t* rlimbs, mp_size_t rsize) {
   // This one is rather nontrivial due to two properties of mpn_gcd:
   // 1) Both source operands are destroyed.
   //    So we have to copy the operands, as Lisp bignums are immutable.
@@ -729,11 +734,8 @@ CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right
   //    So we shift out any low zero bits,
   //    using the properties that gcd(x*2^n, y*2^n) = gcd(x,y)*2^n
   //    and gcd(2u,v) = gcd(u,2v) = gcd(u,v) for odd u and v.
-  // Also note that we can ignore sign due to Lisp's always-positive GCD result.
-  mp_size_t lsize = std::abs(left->length());
-  const mp_limb_t* llimbs = left->limbs();
-  mp_size_t rsize = std::abs(right->length());
-  const mp_limb_t* rlimbs = right->limbs();
+  // Also note that we can ignore sign due to Lisp's always-positive
+  // GCD result.
 
   // Shift zeroes out of the left.
   // (Also, remember that bignums are never zero, so this terminates fine.)
@@ -821,12 +823,132 @@ CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right
   return bignum_result(result_size, result_limbs);
 }
 
+CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right) {
+  return next_gcd(left->limbs(), std::abs(left->length()),
+                  right->limbs(), std::abs(right->length()));
+}
+
 CL_DEFUN Integer_sp core__next_fgcd(TheNextBignum_sp big, Fixnum small) {
   if (small == 0) return big;
   // Don't think mpn_gcd_1 understands negatives.
   if (small < 0) small = -small;
   return clasp_make_fixnum(mpn_gcd_1(big->limbs(), std::abs(big->length()),
                                      small));
+}
+
+Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
+  // FIXME?: Some of the bignum_results in here might always
+  // end up with bignums and so could be direct create calls instead.
+  mp_size_t len = this->length();
+  mp_size_t size = std::abs(len);
+  const mp_limb_t* limbs = this->limbs();
+  
+  if (divisor.fixnump()) {
+    Fixnum fdivisor = divisor.unsafe_fixnum();
+    if (fdivisor == 0) ERROR_DIVISION_BY_ZERO(this->asSmartPtr(), divisor);
+    Fixnum result_sign = ((len < 0) ^ (fdivisor < 0)) ? -1 : 1;
+    Fixnum adivisor = std::abs(fdivisor);
+    mp_limb_t gcd = mpn_gcd_1(limbs, size, adivisor);
+    if (gcd == adivisor) { // exact division
+      if (result_sign == 1)
+        return this->asSmartPtr();
+      else return bignum_result(-len, limbs);
+    } else { // need a ratio
+      Fixnum adenom = adivisor/gcd;
+      mp_limb_t num[size];
+      mpn_divexact_1(num, limbs, size, gcd);
+      // quick normalize
+      mp_limb_t num_length;
+      if (num[size-1] == 0)
+        num_length = result_sign * (size-1);
+      else num_length = result_sign * size;
+      return Ratio_O::create(bignum_result(num_length, num),
+                             clasp_make_fixnum(adenom));
+    }
+  } else {
+    // divisor is a bignum.
+    // TODO: Switch to As_unsafe once old bignums are gone.
+    TheNextBignum_sp bdivisor = gc::As<TheNextBignum_sp>(divisor);
+    mp_size_t divlen = bdivisor->length();
+    mp_size_t divsize = std::abs(divlen);
+    const mp_limb_t* divlimbs = bdivisor->limbs();
+    Fixnum result_sign = ((len < 0) ^ (divlen < 0)) ? -1 : 1;
+
+    // FIXME?: We could save some memory by not consing up an
+    // actual bignum for the gcd and just working with limbs
+    // stored on the stack.
+    Integer_sp gcd = next_gcd(limbs, size, divlimbs, divsize);
+
+    if (gcd.fixnump()) {
+      Fixnum fgcd = gcd.unsafe_fixnum();
+
+      // Pick off the specialest case
+      if (fgcd == 1) {
+        Integer_sp num;
+        if (divlen < 0) num = gc::As_unsafe<Integer_sp>(this->negate_());
+        else num = this->asSmartPtr();
+        return Ratio_O::create(num, divisor);
+      }
+
+      // Nope, have to do some divisions.
+      // Compute the numerator
+      mp_limb_t numsize = size;
+      mp_limb_t numlimbs[numsize];
+      mpn_divexact_1(numlimbs, limbs, size, fgcd);
+      if (numlimbs[numsize-1] == 0) --numsize;
+      Integer_sp numerator = bignum_result(result_sign * numsize,
+                                           numlimbs);
+
+      // Compute the denominator
+      mp_limb_t densize = divsize;
+      mp_limb_t denlimbs[densize];
+      mpn_divexact_1(denlimbs, divlimbs, divsize, fgcd);
+      if (denlimbs[densize-1] == 0) --densize;
+      // If the denominator is 1, return the numerator
+      if ((densize == 1) && (denlimbs[0] == 1)) return numerator;
+      // Nope, making a fraction.
+      // Denominator is always positive.
+      Integer_sp denominator = bignum_result(densize, denlimbs);
+
+      return Ratio_O::create(numerator, denominator);
+    } else {
+      // GCD is a bignum.
+      // NOTE: If MPN had a divexact we could use it,
+      // but it doesn't seem to, so we just use tdiv_qr
+      // and ignore the remainder.
+      TheNextBignum_sp bgcd = gc::As_unsafe<TheNextBignum_sp>(gcd);
+      mp_size_t gcd_size = bgcd->length(); // necessarily positive
+      const mp_limb_t* gcd_limbs = bgcd->limbs();
+      
+      mp_limb_t remainder_limbs[gcd_size];
+
+      // Compute the numerator
+      mp_size_t numsize = size - gcd_size + 1;
+      mp_limb_t numlimbs[numsize];
+      mpn_tdiv_qr(numlimbs, remainder_limbs, (mp_size_t)0,
+                  limbs, size, gcd_limbs, gcd_size);
+      // Numerator MSL may be zero
+      if (numlimbs[numsize-1] == 0) --numsize;
+      Integer_sp numerator = bignum_result(result_sign * numsize, numlimbs);
+
+      // Compute the denominator
+      mp_size_t densize = divsize - gcd_size + 1;
+      mp_limb_t denlimbs[densize];
+      mpn_tdiv_qr(denlimbs, remainder_limbs, (mp_size_t)0,
+                  divlimbs, divsize, gcd_limbs, gcd_size);
+      // Denominator MSL may be zero
+      if (denlimbs[densize-1] == 0) --densize;
+
+      // If the denominator is one, just return the numerator
+      if ((densize == 1) && (denlimbs[0] == 1))
+        return numerator;
+
+      // Nope, make a fraction
+      // Denominator still always positive
+      Integer_sp denominator = bignum_result(densize, denlimbs);
+      return Ratio_O::create(numerator, denominator);
+    }
+  }
 }
 
 CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {

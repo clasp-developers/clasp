@@ -227,6 +227,7 @@ public: // Functions here
   string as_uint64_string() const;
 
   gc::Fixnum popcount() const;
+  Rational_sp ratdivide(Integer_sp) const override;
   virtual LongLongInt as_LongLongInt_() const override;
   virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const override;
@@ -334,6 +335,7 @@ public: // Functions here
   virtual bool plusp_() const override { return (this->length() > 0); }
   virtual bool minusp_() const override { return (this->length() < 0); }
   gc::Fixnum popcount() const;
+  Rational_sp ratdivide(Integer_sp) const override;
   virtual gc::Fixnum bit_length_() const override;
 
   virtual bool eql_(T_sp obj) const override;
