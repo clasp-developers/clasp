@@ -1402,17 +1402,15 @@ bool Number_O::equal(T_sp obj) const {
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
   mpz_class q, r;
-  ASSERT(denom != 0);
   if (denom == 0)
     ERROR_DIVISION_BY_ZERO(Integer_O::create(num),Integer_O::create(denom));
-  if (denom == 1) {
-    return Integer_O::create(num);
+  else if (denom == 1) return Integer_O::create(num);
+  else {
+    mpz_tdiv_qr(q.get_mpz_t(), r.get_mpz_t(),
+                num.get_mpz_t(), denom.get_mpz_t());
+    if (r == 0) return Integer_O::create(q);
+    else return Ratio_O::create(num, denom);
   }
-  mpz_cdiv_qr(q.get_mpz_t(), r.get_mpz_t(), num.get_mpz_t(), denom.get_mpz_t());
-  if (r == 0) {
-    return Integer_O::create(q);
-  }
-  return Ratio_O::create(num, denom);
 }
 
 Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
