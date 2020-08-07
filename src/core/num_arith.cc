@@ -52,32 +52,52 @@ THE SOFTWARE.
 
 namespace core {
 
-SYMBOL_EXPORT_SC_(CorePkg, integer_divide);
+// This is a truncating division.
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
-  NumberType tx, ty;
-  tx = clasp_t_of(x);
-  ty = clasp_t_of(y);
-  if (tx == number_Fixnum) {
-    if (ty == number_Fixnum) {
-      if (y.unsafe_fixnum() == 0)
+  MATH_DISPATCH_BEGIN(x, y) {
+  case_Fixnum_v_Fixnum : {
+      Fixnum fy = y.unsafe_fixnum();
+      if (fy == 0)
         ERROR_DIVISION_BY_ZERO(x, y);
-      return (clasp_make_fixnum(x.unsafe_fixnum() / y.unsafe_fixnum()));
-    } else if (ty == number_Bignum) {
-      return _clasp_fix_divided_by_big(x.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(y));
-    } else {
-      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 2, y, cl::_sym_Integer_O);
+      else
+        // Note that / truncates towards zero as of C++11, as we want.
+        return clasp_make_fixnum(x.unsafe_fixnum() / fy);
     }
-  }
-  if (tx == number_Bignum) {
-    if (ty == number_Bignum) {
-      return _clasp_big_divided_by_big(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
-    } else if (ty == number_Fixnum) {
-      return _clasp_big_divided_by_fix(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
-    } else {
-      QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Integer_O);
+  case_Fixnum_v_Bignum :
+    return _clasp_fix_divided_by_big(x.unsafe_fixnum(),
+                                     gc::As_unsafe<Bignum_sp>(y));
+  case_Bignum_v_Fixnum : {
+      Fixnum fy = y.unsafe_fixnum();
+      if (fy == 0)
+        ERROR_DIVISION_BY_ZERO(x, y);
+      else
+        return _clasp_big_divided_by_fix(gc::As_unsafe<Bignum_sp>(x),
+                                         y.unsafe_fixnum());
     }
-  }
-  ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 1, x, cl::_sym_Integer_O);
+  case_Bignum_v_Bignum :
+    return _clasp_big_divided_by_big(gc::As_unsafe<Bignum_sp>(x),
+                                     gc::As_unsafe<Bignum_sp>(y));
+  case_Fixnum_v_NextBignum :
+    return fix_divided_by_next(x.unsafe_fixnum(),
+                               gc::As_unsafe<TheNextBignum_sp>(x));
+  case_NextBignum_v_Fixnum : {
+      T_mv trunc = core__next_ftruncate(gc::As_unsafe<TheNextBignum_sp>(x),
+                                        y.unsafe_fixnum());
+      T_sp quotient = trunc;
+      return gc::As_unsafe<Integer_sp>(trunc);
+    }
+  case_NextBignum_v_NextBignum : {
+      // FIXME: MPN doesn't export a quotient-only division that I can see,
+      // but we could call a version of truncate that doesn't cons up the
+      // actual bignum for the remainder, hypothetically.
+      // Would save some heap allocation.
+      T_mv trunc = core__next_truncate(gc::As_unsafe<TheNextBignum_sp>(x),
+                                       gc::As_unsafe<TheNextBignum_sp>(y));
+      T_sp quotient = trunc;
+      return gc::As_unsafe<Integer_sp>(trunc);
+    }
+  };
+  MATH_DISPATCH_END();
   UNREACHABLE();
 }
 

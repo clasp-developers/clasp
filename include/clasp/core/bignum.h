@@ -344,6 +344,8 @@ TheNextBignum_sp core__next_mul(TheNextBignum_sp, TheNextBignum_sp);
 TheNextBignum_sp core__next_lshift(TheNextBignum_sp, Fixnum);
 Integer_sp core__next_rshift(TheNextBignum_sp, Fixnum);
 T_mv core__next_truncate(TheNextBignum_sp, TheNextBignum_sp);
+Integer_sp fix_divided_by_next(Fixnum, TheNextBignum_sp);
+T_mv core__next_ftruncate(TheNextBignum_sp, Fixnum);
 Integer_sp core__next_gcd(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fgcd(TheNextBignum_sp, Fixnum);
 Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);

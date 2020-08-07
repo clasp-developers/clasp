@@ -685,6 +685,42 @@ CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
   return Values(quotient, remainder);
 }
 
+// Truncating a fixnum by a bignum will always get you zero
+// so there's no function for that.
+CL_DEFUN T_mv core__next_ftruncate(TheNextBignum_sp dividend,
+                                   Fixnum divisor) {
+  if (divisor == 0)
+    ERROR_DIVISION_BY_ZERO(dividend, clasp_make_fixnum(divisor));
+  mp_limb_t positive_divisor = std::abs(divisor);
+  mp_size_t len = dividend->length();
+  mp_size_t size = std::abs(len);
+  const mp_limb_t* limbs = dividend->limbs();
+  mp_size_t quotient_size = size;
+  mp_limb_t quotient_limbs[quotient_size];
+  // GMP docs don't mark the third argument const but it seems to be.
+  mp_limb_t remainder = mpn_divrem_1(quotient_limbs, (mp_size_t)0,
+                                     limbs, size, positive_divisor);
+  BIGNUM_NORMALIZE(quotient_size, quotient_limbs);
+  return Values(bignum_result(((len < 0) ^ (divisor < 0))
+                              ? -quotient_size : quotient_size,
+                              quotient_limbs),
+                // the remainder is at most the divisor,
+                // but with abs(m-n-fixnum) != m-p-fixnum I wanna be careful.
+                bignum_result((len < 0) ? -1 : 1, &positive_divisor));
+}
+
+Integer_sp fix_divided_by_next(Fixnum dividend, TheNextBignum_sp divisor) {
+  // Assuming two's complement representation, the magnitude of a fixnum
+  // is always less than that of a bignum, except for one case:
+  // when the fixnum is most-negative-fixnum and the bignum is
+  // -most-negative-fixnum.
+  if ((dividend == gc::most_negative_fixnum)
+      && (divisor->length() == 1)
+      && ((divisor->limbs())[0] == -gc::most_negative_fixnum))
+    return clasp_make_fixnum(-1);
+  else return clasp_make_fixnum(0);
+}
+
 CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right) {
   // This one is rather nontrivial due to two properties of mpn_gcd:
   // 1) Both source operands are destroyed.
