@@ -1246,27 +1246,6 @@ namespace core {
     return num->isinf_();
   }
 
-#if 0
-  CL_LISPIFY_NAME(general-two-arg-_PLUS_);
-  CL_ EXTERN_ DEFUN(&core::contagen_add);
-  CL_LISPIFY_NAME(general-two-arg-_MINUS_);
-  CL_ EXTERN_ DEFUN(&core::contagen_sub);
-  CL_LISPIFY_NAME(general-two-arg-_TIMES_);
-  CL_ EXTERN_ DEFUN(&core::contagen_mul);
-  CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
-  CL_ EXTERN_ DEFUN(&core::contagen_div);
-  CL_LISPIFY_NAME(general-two-arg-_LT_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__LT_);
-  CL_LISPIFY_NAME(general-two-arg-_LE_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__LE_);
-  CL_LISPIFY_NAME(general-two-arg-_GT_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__GT_);
-  CL_LISPIFY_NAME(general-two-arg-_GE_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__GE_);
-  CL_LISPIFY_NAME(general-two-arg-_EQ_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__EQ_);
-#endif
-
 };
 
 #endif //]
