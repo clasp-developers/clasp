@@ -184,7 +184,7 @@ namespace gctools {
                                                ARGS &&... args) {
     gc::smart_ptr<Cons> tagged_obj;
     { RAII_DISABLE_INTERRUPTS();
-      RAII_DEBUG_RECURSIVE_ALLOCATIONS();
+      RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
       // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
       mps_addr_t addr;
       Cons* cons;
@@ -224,7 +224,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    RAII_DEBUG_RECURSIVE_ALLOCATIONS();
+    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_UNSHIFT_MTAG(the_header._value));
     PTR_TYPE tagged_obj;
     T* obj;
     size_t allocate_size = AlignUp(size);
@@ -298,7 +298,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     mps_addr_t addr;
     T* myAddress;
     { RAII_DISABLE_INTERRUPTS();
-      RAII_DEBUG_RECURSIVE_ALLOCATIONS();
+      RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_UNUSED);
       size = AlignUp(size);
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, size);

@@ -92,6 +92,7 @@ namespace gctools {
 #endif
 #if defined(DEBUG_RECURSIVE_ALLOCATIONS)
     int                    _RecursiveAllocationCounter;
+    size_t                 _RecursiveAllocationHeaderValue;
 #endif
     ThreadLocalStateLowLevel(void* stack_top);
     ~ThreadLocalStateLowLevel();
@@ -104,7 +105,7 @@ extern THREAD_LOCAL gctools::ThreadLocalStateLowLevel *my_thread_low_level;
 #endif
 
 namespace gctools {
-  void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread);
+void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread,size_t header_value);
   void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread);
 };
 
@@ -130,8 +131,8 @@ namespace gctools {
 namespace gctools {
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
 struct RecursiveAllocationCounter {
-  RecursiveAllocationCounter() {
-    lisp_increment_recursive_allocation_counter(my_thread_low_level);
+  RecursiveAllocationCounter(size_t header_value) {
+    lisp_increment_recursive_allocation_counter(my_thread_low_level,header_value);
   };
   ~RecursiveAllocationCounter() {
     lisp_decrement_recursive_allocation_counter(my_thread_low_level);
@@ -142,7 +143,7 @@ struct RecursiveAllocationCounter {
 
 
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
-#define RAII_DEBUG_RECURSIVE_ALLOCATIONS() ::gctools::RecursiveAllocationCounter _rac_;
+#define RAII_DEBUG_RECURSIVE_ALLOCATIONS(header_value) ::gctools::RecursiveAllocationCounter _rac_(header_value);
 #else
 #define RAII_DEBUG_RECURSIVE_ALLOCATIONS()
 #endif
