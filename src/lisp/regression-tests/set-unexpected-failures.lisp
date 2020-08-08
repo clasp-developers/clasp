@@ -20,6 +20,6 @@
         READ-PRINT-CONSISTENCY-ARRAYS
         SBCL-CROSS-COMPILE-4 ;;;not important
         INCLUDE-LEVEL-2A INCLUDE-LEVEL-2B INCLUDE-LEVEL-3 ;;; a problem for sbcl x-compiling
-        TEST-ISSUE-946 TEST-ISSUE-950 
+        TEST-ISSUE-946 ;TEST-ISSUE-950 
         )
       )

@@ -98,3 +98,18 @@
 (defmethod find-method-gf-02 ((x (eql 1234567890))) 'a)
 (test find-method-eql
       (find-method #'find-method-gf-02 nil (list '(eql 1234567890))))
+
+
+(defclass %foo-1 ()
+  ((a :initform :a)))
+
+(defmethod initialize-instance ((me  %foo-1) &rest initargs &key policy provider (hash-test 'eql) &allow-other-keys)
+  (declare (ignore initargs))
+  (call-next-method)
+  23)
+
+(test  test-issue-1031
+  (not (numberp (make-instance ' %foo-1 :a 1))))
+ 
+
+
