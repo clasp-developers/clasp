@@ -145,7 +145,7 @@ struct RecursiveAllocationCounter {
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
 #define RAII_DEBUG_RECURSIVE_ALLOCATIONS(header_value) ::gctools::RecursiveAllocationCounter _rac_(header_value);
 #else
-#define RAII_DEBUG_RECURSIVE_ALLOCATIONS()
+#define RAII_DEBUG_RECURSIVE_ALLOCATIONS(header_value)
 #endif
 
 
