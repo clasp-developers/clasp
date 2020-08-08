@@ -183,6 +183,10 @@ public:
 public:
   inline void unsafe_set_end(size_t e) { this->_Contents->unsafe_set_end(e); }
 
+#if 0
+private:
+  GCVector<T, Allocator>(const GCVector<T, Allocator> &that);
+#else
 public:
   // Copy Ctor
   GCVector<T, Allocator>(const GCVector<T, Allocator> &that) 
@@ -201,7 +205,8 @@ public:
       this->_Contents.reset_();
     }
   }
-
+#endif
+  
 public:
   // Assignment operator must destroy the existing contents
   GCVector<T, Allocator> &operator=(const GCVector<T, Allocator> &that) {
