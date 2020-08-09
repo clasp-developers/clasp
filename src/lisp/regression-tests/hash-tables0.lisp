@@ -171,3 +171,9 @@
         (equalp
          (sort result #'< :key #'first)
          '((23 (1 . 2)) (24 (3 . 4)) (25 (4 . 5))))))
+
+(test test-issue-1042
+      (let ()
+        (make-hash-table :size 128 :test #'eq :weakness :key)
+        (gctools:garbage-collect)
+        t))
