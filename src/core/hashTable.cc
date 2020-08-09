@@ -238,7 +238,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
       if (test == cl::_sym_eq || test == cl::_sym_eq->symbolFunction()) {
-        return core__make_weak_key_hash_table(clasp_make_fixnum(size));
+        return core__make_weak_key_hash_table(size);
       } else {
         SIMPLE_ERROR(BF("Weak hash tables non-EQ tests are not yet supported"));
       }
