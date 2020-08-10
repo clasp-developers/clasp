@@ -385,6 +385,15 @@ Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
 }
 
+Integer_mv big_truncate(Bignum_sp a, Bignum_sp b) {
+  Bignum mpzq, mpzr;
+  mpz_tdiv_qr(mpzq.get_mpz_t(),
+              mpzr.get_mpz_t(),
+              a->mpz().get_mpz_t(),
+              b->mpz().get_mpz_t());
+  return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
+}
+
 Integer_mv big_floor(Bignum_sp a, Bignum_sp b) {
   Bignum_sp q = my_thread->bigRegister0();
   Bignum_sp r = my_thread->bigRegister1();
@@ -710,7 +719,7 @@ CL_DEFUN T_mv core__next_ftruncate(TheNextBignum_sp dividend,
                               quotient_limbs),
                 // the remainder is at most the divisor,
                 // but with abs(m-n-fixnum) != m-p-fixnum I wanna be careful.
-                bignum_result((len < 0) ? -1 : 1, &positive_divisor));
+                bignum_result((len < 0) ? -1 : 1, &remainder));
 }
 
 Integer_sp fix_divided_by_next(Fixnum dividend, TheNextBignum_sp divisor) {
