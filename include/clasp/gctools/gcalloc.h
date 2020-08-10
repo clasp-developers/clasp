@@ -553,15 +553,15 @@ extern "C" {
 };
 
 namespace gctools {
-  extern void boehm_general_finalizer(void* object, void* dummy);
+  extern void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* dummy);
   
 #ifdef USE_BOEHM
 template <class OT>
 void BoehmFinalizer(void *base, void *data) {
   //        printf("%s:%d Finalizing ptr=%p\n", __FILE__, __LINE__, obj);
-  boehm_general_finalizer(base,data);
-  OT *obj = BasePtrToMostDerivedPtr<OT>(base);
-  obj->~OT();
+  OT *client = BasePtrToMostDerivedPtr<OT>(base);
+  boehm_general_finalizer_from_BoehmFinalizer((void*)client,data);
+  client->~OT();
 }
 #endif
 

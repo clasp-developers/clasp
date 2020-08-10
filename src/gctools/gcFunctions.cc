@@ -769,7 +769,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
-//  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
+//  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object,finalizers);
     // Register the finalizer with the GC
 #ifdef USE_BOEHM

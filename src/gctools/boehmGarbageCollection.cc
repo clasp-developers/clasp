@@ -74,36 +74,66 @@ void run_finalizers(core::T_sp obj, void* data)
   // GC UNCOLLECTABLE memory that contains the list of finalizers that we would otherwise have
   // looked up in the *finalizers* weak-key-hash-table
   // if data is NULL then there are no finalizers to run
-  if (data == NULL) {
-//    printf("%s:%d There were no finalizers to run for %p\n", __FILE__, __LINE__, (void*)obj.tagged_());
-    return;
-  }
+  //
+  // The GCInfo NeedsFinalization = true will call in here and if data is NULL
+  // then we want to immediately return.
+  if (data == NULL) return;
   gctools::Tagged finalizers_tagged = *reinterpret_cast<gctools::Tagged*>(data);
   core::List_sp finalizers = core::T_sp(finalizers_tagged);
-//  printf("%s:%d  looked up finalizer list for %p length -> %d  list head -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), core::cl__length(finalizers), (void*)finalizers.tagged_());
+//  printf("%s:%d  looked up finalizer list for %p length -> %lu  list head -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), core::cl__length(finalizers), (void*)finalizers.tagged_());
   for ( auto cur : finalizers ) {
     core::T_sp func = oCar(cur);
+    if (((uintptr_t)obj.raw_() & ptag_mask) == 0) {
+      printf("%s:%d   The obj %p must be tagged\n", __FILE__, __LINE__, obj.raw_());
+      abort();
+    }
+//    printf("%s:%d     calling finalizer %p with obj %p\n", __FILE__, __LINE__, func.raw_(), obj.raw_());
     core::eval::funcall(func,obj);
   }
   // Now release the memory pointed to by data
   GC_FREE(data);
 }
 
+void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
+{
+//  printf("%s:%d general_finalizer for %p\n", __FILE__, __LINE__, (void*)base);
+  if ((uintptr_t)client&gctools::ptag_mask) {
+    printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
+    abort();
+  }
+  core::T_sp obj((gctools::Tagged)tag_general((core::T_O*)client));
+  if (data!=NULL) {
+    run_finalizers(obj,data);
+  }
+}
+
 void boehm_general_finalizer(void* base, void* data)
 {
 //  printf("%s:%d general_finalizer for %p\n", __FILE__, __LINE__, (void*)base);
-  void* object = BasePtrToMostDerivedPtr<core::T_O>(base);
-  core::T_sp obj((core::T_O*)object);
-//  printf("%s:%d cons_finalizer for tagged General -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_());
-  run_finalizers(obj,data);
+  void* client = BasePtrToMostDerivedPtr<core::T_O>(base);
+  if ((uintptr_t)client&gctools::ptag_mask) {
+    printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
+    abort();
+  }
+  core::T_sp obj((gctools::Tagged)tag_general((core::T_O*)client));
+  if (data!=NULL) {
+    run_finalizers(obj,data);
+  } else {
+//    printf("%s:%d:%s  data was NULL and so could not run finalizers\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
 }
 
 void boehm_cons_finalizer(void* base, void* data)
 {
-  void* object = base; // no header on Cons_O
-  core::Cons_sp obj((core::Cons_O*)object);
-//  printf("%s:%d cons_finalizer for tagged Cons -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_());
-  run_finalizers(obj,data);
+  ASSERT(CONS_HEADER_SIZE==0);
+  if (data!=NULL) {
+    void* client = base; // no header on Cons_O
+    core::Cons_sp obj((core::Cons_O*)client);
+//    printf("%s:%d boehm_cons_finalizer for tagged Cons -> %p  client -> %p\n", __FILE__, __LINE__, (void*)obj.tagged_(), client );
+    run_finalizers(obj,data);
+  } else {
+//    printf("%s:%d:%s  data was NULL and so could not run finalizers\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
 }
 
 
@@ -140,7 +170,8 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
     // Write the finalizers list into the UNCOLLECTABLE space
     *(reinterpret_cast<gctools::Tagged*>(data)) = finalizers.tagged_();
     if (orig_finalizer) {
-        // There was already a finalizer - restore it
+        // If there is already a finalizer function then it will be the BoehmFinalizer<CLASS>
+        // This will call the boehm_general_finalizer and then call the dtor for the class
       GC_register_finalizer_no_order(base,orig_finalizer,data,&dummy_finalizer,&dummy_data);
 //      printf("%s:%d base = %p set orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, base, (void*)orig_finalizer, (void*)data);
     } else {
@@ -152,9 +183,10 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
     GC_finalization_proc orig_finalizer, dummy_finalizer;
     void* data;
     void* dummy_data;
-    void* base = (void*)&*object;
+    ASSERT(CONS_HEADER_SIZE==0);
+    void* base = (void*)&*object; // CONS objects have no header currently
     GC_register_finalizer_no_order(base,(GC_finalization_proc)0, 0,&orig_finalizer,&data);
-//    printf("%s:%d base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, base, (void*)orig_finalizer, (void*)data);
+//    printf("%s:%d object -> %p base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, object.raw_(), base, (void*)orig_finalizer, (void*)data);
     if (data==NULL) {
       gctools::Tagged* new_data = reinterpret_cast<gctools::Tagged*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::Cons_O*)));
       data = (void*)new_data;
@@ -162,6 +194,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
     }
     // Write the finalizers list into the UNCOLLECTABLE space
     *(reinterpret_cast<gctools::Tagged*>(data)) = finalizers.tagged_();
+    ASSERT(!orig_finalizer||(orig_finalizer==boehm_cons_finalizer));
     GC_register_finalizer_no_order(base,boehm_cons_finalizer,data,&dummy_finalizer,&dummy_data);
 //    printf("%s:%d base = %p set boehm_cons_finalizer=%p  data=%p  dummy_finalizer=%p  dummy_data = %p\n", __FILE__, __LINE__, base, (void*)boehm_cons_finalizer, (void*)data, dummy_finalizer, dummy_data);
   }
@@ -172,6 +205,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
 */
 void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 {
+//  printf("%s:%d:%s  obj -> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)object_tagged);
   core::T_sp object(object_tagged);
     // With the Boehm GC we keep track of the finalizer list in the data pointer that is passed to the finalizer
   // we need to now check if that data pointer is defined and if so - free the UNCOLLECTABLE memory
@@ -182,7 +216,7 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
     void* data;
     void* base = SmartPtrToBasePtr(object);
     GC_register_finalizer_no_order(base,NULL,NULL,&orig_finalizer,&data);
-//    printf("%s:%d orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
+//    printf("%s:%d boehm_clear_finalizer_list orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, (void*)orig_finalizer, (void*)data);
     if ( data != NULL ) {
       gctools::Tagged list_tagged = *reinterpret_cast<gctools::Tagged*>(data);
 //      printf("%s:%d definalize - wiping out the finalizer list in the UNCOLLECTABLE memory -> %p\n", __FILE__, __LINE__, (void*)list_tagged);
