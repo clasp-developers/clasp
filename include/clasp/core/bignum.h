@@ -249,6 +249,7 @@ namespace core {
 
   Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
   Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
+  Integer_mv big_truncate(Bignum_sp, Bignum_sp);
 
   inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
     return Integer_O::create(x->mpz_ref());
