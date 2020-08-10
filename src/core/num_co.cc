@@ -226,7 +226,7 @@ void clasp_truncate(Real_sp dividend, Real_sp divisor,
       remainder = clasp_make_single_float(p * n - q * n);
       break;
     }
-  caes_Fixnum_v_DoubleFloat: {
+  case_Fixnum_v_DoubleFloat: {
       double n = gc::As_unsafe<DoubleFloat_sp>(divisor)->get();
       double p = dividend.unsafe_fixnum() / n;
       double q = std::trunc(p);
@@ -349,7 +349,7 @@ void clasp_truncate(Real_sp dividend, Real_sp divisor,
 #ifdef CLASP_LONG_FLOAT
   case_Ratio_v_LongFloat:
 #endif
-  case_Ratio_SingleFloat:
+  case_Ratio_v_SingleFloat:
   case_Ratio_v_DoubleFloat: {
       // Given (truncate x (* y z)) = q, r,
       // (truncate x/y z) = q, r/y.
