@@ -351,9 +351,11 @@ void clasp_truncate(Real_sp dividend, Real_sp divisor,
 #endif
   case_Ratio_SingleFloat:
   case_Ratio_v_DoubleFloat: {
+      // Given (truncate x (* y z)) = q, r,
+      // (truncate x/y z) = q, r/y.
       Ratio_sp rx = gc::As_unsafe<Ratio_sp>(dividend);
       Integer_sp den = rx->denominator();
-      Real_sp ndiv = gc::As_unsafe<Real_sp>(clasp_times(den, dividend));
+      Real_sp ndiv = gc::As_unsafe<Real_sp>(clasp_times(den, divisor));
       Real_sp subr;
       clasp_truncate(rx->numerator(), ndiv, quotient, subr);
       remainder = gc::As_unsafe<Real_sp>(clasp_divide(subr, den));
