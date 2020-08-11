@@ -343,6 +343,16 @@ public: // Functions here
   
 }; // TheNextBignum class
 
+// Remove any high limbs that are equal to zero,
+// starting from the right (most significant)
+// Can result in zero limbs.
+#define BIGNUM_NORMALIZE(NLIMBS, LIMBS)\
+  while((NLIMBS) > 0) {\
+    if ((LIMBS)[(NLIMBS) - 1] != 0) break;\
+    (NLIMBS)--;\
+  }
+
+Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
 Integer_sp core__next_fmul(TheNextBignum_sp, Fixnum);
 TheNextBignum_sp core__next_mul(TheNextBignum_sp, TheNextBignum_sp);
 TheNextBignum_sp core__next_lshift(TheNextBignum_sp, Fixnum);

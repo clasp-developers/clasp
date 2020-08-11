@@ -5,6 +5,7 @@
 #include <clasp/core/array.h>
 #include <clasp/core/bits.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/bignum.h>
 
 /* -*- mode: c; c-basic-offset: 8 -*- */
 /*
@@ -26,89 +27,778 @@ If you're looking for bit array stuff, try array_bit.cc.
 
 namespace core {
 
+mp_size_t next_clr(mp_limb_t* result,
+                   const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  return 0;
+}
+
+// next_add where t1 is negative, t2 is positive.
+mp_size_t next_addneg(mp_limb_t* result,
+                      const mp_limb_t* t1, mp_size_t size1,
+                      const mp_limb_t* t2, mp_size_t size2) {
+  // t1 is positive, t2 is negative.
+  // result will be positive (think of the infinite left bits)
+  // x & (-y) = x & ~(y-1)
+  // t1 controls the high limbs, since its high limbs are always zero
+  // and zero & anything = 0.
+  mp_limb_t temp[size2];
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  mp_size_t result_size = std::min(size1, size2);
+  mpn_andn_n(result, t1, t2, result_size);
+  BIGNUM_NORMALIZE(result_size, result);
+  return -result_size;
+}
+
+mp_size_t next_and(mp_limb_t* result,
+                   const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // Both operands are positive so this is simple.
+      mp_size_t result_len = std::min(len1, len2);
+      mpn_and_n(result, s1, s2, result_len);
+      BIGNUM_NORMALIZE(result_len, result);
+      return result_len;
+    } else if (len2 < 0) return next_addneg(result, s1, len1, s2, -len2);
+    else return 0; // s2 = 0
+  } else if (len1 < 0) {
+    if (len2 > 0) return next_addneg(result, s2, len2, s1, -len1);
+    else if (len2 < 0) {
+      // Both are negative.
+      // -((-x) & (-y)) = -(~(x-1) & ~(y-1))
+      // = ~(~(x-1) & ~(y-1)) + 1
+      // = ((x-1) | (y-1)) + 1 [de morgan]
+      // Note that this can expand, e.g. (logand -3 -2) = -4
+      // and 4 needs one more bit to represent.
+      mp_size_t size1 = -len1, size2 = -len2;
+      mp_size_t result_size;
+
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+
+      if (size1 < size2) {
+        result_size = size2;
+        mpn_ior_n(result, s1, s2, size1);
+        // FIXME memcpy sth
+        for (size_t i = size1; i < size2; ++i)
+          result[i] = s2[i];
+      } else {
+        result_size = size1;
+        mpn_ior_n(result, s1, s2, size2);
+        // FIXME memcpy sth
+        for (size_t i = size2; i < size1; ++i)
+          result[i] = s1[i];
+      }
+
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      BIGNUM_NORMALIZE(result_size, result);
+      return -result_size;
+    } else return 0; // s2 = 0
+  } else return 0; // s1 = 0
+}
+
+mp_size_t next_andc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                     const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // Positive result, easy.
+      if (len1 < len2) {
+        mpn_andn_n(result, s1, s2, len1);
+        BIGNUM_NORMALIZE(len1, result);
+        return len1;
+      } else {
+        mpn_andn_n(result, s1, s2, len2);
+        BIGNUM_NORMALIZE(len2, result);
+        return len2;
+      }
+    } else if (len2 < 0) {
+      // x & ~(-y) = x & ~(~(y-1)) = x & (y-1)
+      mp_size_t size2 = -len2;
+      mp_limb_t temp[size2];
+      mpn_sub_1(temp, s2, size2, (mp_limb_t)1);
+      if (len1 < size2) {
+        mpn_and_n(result, s1, s2, len1);
+        BIGNUM_NORMALIZE(len1, result);
+        return len1;
+      } else {
+        mpn_and_n(result, s1, s2, size2);
+        BIGNUM_NORMALIZE(size2, result);
+        return size2;
+      }
+    } else { // len2 = 0, and a&~0 = a
+      mpn_copyi(result, s1, len1);
+      return len1;
+    }
+  } else if (len1 < 0) {
+    if (len2 > 0) {
+      // Negative result.
+      // -(-x & ~y) = -(~(x-1) & ~y) = ~(~(x-1) & ~y) + 1 = ((x-1) | y) + 1
+      mp_size_t size1 = -len1, result_size;
+      mp_limb_t temp[size1];
+      mpn_sub_1(temp, s1, size1, (mp_limb_t)1);
+      if (size1 < len2) {
+        result_size = len2;
+        mpn_ior_n(result, temp, s2, size1);
+        for (mp_size_t i = size1; i < len2; ++i) // FIXME memcpy
+          result[i] = s2[i];
+      } else {
+        result_size = size1;
+        mpn_ior_n(result, temp, s2, len2);
+        for (mp_size_t i = len2; i < size1; ++i) // FIXME memcpy
+          result[i] = s1[i];
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      BIGNUM_NORMALIZE(result_size, result);
+      return result_size;
+    } else if (len2 < 0) {
+      // Positive
+      // -x & ~(-y) = ~(x-1) & ~(~(y-1)) = ~(x-1) & (y-1)
+      mp_size_t size1 = -len1;
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+
+      mp_size_t size2 = -len2;
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+
+      mp_size_t result_size = std::min(size1, size2);
+      mpn_andn_n(result, temp2, temp1, result_size);
+      BIGNUM_NORMALIZE(result_size, result);
+      return result_size;
+    } else { // len2 = 0, len1 negative
+      mpn_copyi(result, s1, -len1);
+      return len1;
+    }
+  } else return 0; // len1 = 0, so result is zero
+}
+
+mp_size_t next_1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                 const mp_limb_t* s2, mp_size_t len2) {
+  // mpn gives us the ability to copy increasingly or decreasingly,
+  // but I don't think it matters which we do here.
+  if (len1 != 0)
+    mpn_copyi(result, s1, std::abs(len1));
+  return len1;
+}
+
+mp_size_t next_andc1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                     const mp_limb_t* s2, mp_size_t len2) {
+  return next_andc2(result, s2, len2, s1, len1);
+}
+
+mp_size_t next_2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                 const mp_limb_t* s2, mp_size_t len2) {
+  return next_1(result, s2, len2, s1, len1);
+}
+
+mp_size_t next_xorneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
+                      const mp_limb_t* t2, mp_size_t size2) {
+  // t1 positive, t2 negative.
+  // result negative because we have infinite 0^-1 on the left.
+  // -(a ^ (-b)) = -(a ^ ~(b-1))
+  // = ~(a ^ ~(b-1)) + 1
+  // = (a ^ (b-1)) + 1
+  mp_limb_t temp[size2];
+  mp_limb_t result_size;
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  if (size1 < size2) {
+    result_size = size2;
+    mpn_xor_n(result, t1, temp, size1);
+    for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy sth
+      result[i] = temp[i];
+  } else {
+    result_size = size1;
+    mpn_xor_n(result, t1, temp, size2);
+    // s2's high limbs are all -1 and -1^x = ~x
+    for (mp_size_t i = size2; i < size1; ++i) // FIXME mpn_com?
+      result[i] = ~(t1[i]);
+  }
+  mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+  if (carry != 0) { // e.g. (logxor 3 -1) => -4
+    result[result_size] = carry;
+    ++result_size;
+  }
+  BIGNUM_NORMALIZE(result_size, result);
+  return -result_size;
+}
+
+mp_size_t next_xor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // both positive. simple.
+      if (len1 < len2) {
+        mpn_xor_n(result, s1, s2, len1);
+        // FIXME memcpy sth
+        for (mp_size_t i = len1; i < len2; ++i)
+          result[i] = s2[i];
+        BIGNUM_NORMALIZE(len2, result);
+        return len2;
+      } else {
+        mpn_xor_n(result, s1, s2, len2);
+        //FIXME memcpy sth
+        for (mp_size_t i = len2; i < len1; ++i)
+          result[i] = s1[i];
+        BIGNUM_NORMALIZE(len1, result);
+        return len1;
+      }
+    } else if (len2 < 0) return next_xorneg(result, s1, len1, s2, -len2);
+    else { // s2 = 0, so s1 ^ s2 = s1
+      mpn_copyi(result, s1, len1); // remember len1 is positive & nonzero
+      return len1;
+    }
+  } else if (len1 < 0) {
+    if (len2 < 0) {
+      // Both negative. Result is positive.
+      // (-x) ^ (-y) = ~(x-1) ^ ~(y-1) = (x-1) ^ (y-1)
+      mp_size_t size1 = -len1, size2 = -len2, result_size;
+
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)2);
+
+      if (size1 < size2) {
+        result_size = size2;
+        mpn_xor_n(result, temp1, temp2, size1);
+        for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy
+          result[i] = temp2[i];
+      } else {
+        result_size = size1;
+        mpn_xor_n(result, temp1, temp2, size2);
+        for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+          result[i] = temp1[i];
+      }
+      BIGNUM_NORMALIZE(result_size, result);
+      return result_size;
+    } else if (len2 > 0) return next_xorneg(result, s2, len2, s1, -len1);
+    else { // len2 = 0 (and len1 is negative & nonzero)
+      mpn_copyi(result, s1, -len1);
+      return len1;
+    }
+  } else { // len1 = 0
+    if (len2 != 0)
+      mpn_copyi(result, s2, std::abs(len2));
+    return len2;
+  }
+}
+
+mp_size_t next_iorneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
+                      const mp_limb_t* t2, mp_size_t size2) {
+  // Result is negative since we have 0|-1 = -1 on the left.
+  // -(x | -y) = -(x | ~(y-1)) = ~(x | ~(y-1)) + 1
+  // = ~x & (y-1) + 1
+  mp_limb_t temp[size2];
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  mp_size_t result_size = size2;
+  if (size1 < size2) {
+    mpn_andn_n(result, temp, t1, size1);
+    // Fill in high limbs of the and - (~0)&x = x
+    for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy
+      result[i] = temp[i];
+  } else {
+    mpn_andn_n(result, temp, t1, size2);
+    // high limbs of y-1 are zero, and 0&x = 0, so no fill
+  }
+  mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+  if (carry != 0) { // FIXME: Is this actually possible?
+    result[result_size] = carry;
+    ++result_size;
+  }
+  BIGNUM_NORMALIZE(result_size, result);
+  return result_size;
+}
+
+mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // both positive, easy.
+      if (len1 < len2) {
+        mpn_ior_n(result, s1, s2, len2);
+        for (mp_size_t i = len1; i < len2; ++i) // FIXME memcpy
+          result[i] = s2[i];
+        return len2;
+      } else {
+        mpn_ior_n(result, s1, s2, len1);
+        for (mp_size_t i = len2; i < len1; ++i) // FIXME memcpy
+          result[i] = s1[i];
+        return len1;
+      }
+    } else if (len2 < 0) return next_iorneg(result, s1, len1, s2, -len2);
+    else { // len2 = 0
+      mpn_copyi(result, s1, len1);
+      return len1;
+    }
+  } else if (len1 < 0) {
+    if (len2 > 0) return next_iorneg(result, s2, len2, s1, -len1);
+    else if (len2 < 0) {
+      // Both negative. Result is also negative due to -1|-1 on left.
+      // -(-x | -y) = -(~(x-1) | ~(y-1)) = ~(~(x-1) | ~(y-1)) + 1
+      // = ((x-1) & (y-1)) + 1
+      mp_size_t size1 = -len1, size2 = -len2;
+      mp_size_t result_size = std::min(size1, size2);
+
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+
+      mpn_and_n(result, temp1, temp2, result_size);
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) { // FIXME: Is this possible?
+        result[result_size] = carry;
+        ++result_size;
+      }
+      BIGNUM_NORMALIZE(result_size, result);
+      return result_size;
+    } else { // len2 = 0, len1 negative
+      mpn_copyi(result, s1, -len1);
+      return len1;
+    }
+  } else { // len1 = 0
+    if (len2 != 0)
+      mpn_copyi(result, s2, std::abs(len2));
+    return len2;
+  }
+}
+
+mp_size_t next_com(mp_limb_t* result, const mp_limb_t* s, mp_size_t size) {
+  if (size > 0) {
+    // -~x = ~~x + 1 = x + 1
+    mp_limb_t result_size = size;
+    mp_limb_t carry = mpn_add_1(result, s, result_size, (mp_limb_t)1);
+    if (carry != 0) {
+      result[result_size] = carry;
+      ++result_size;
+    }
+    return result_size;
+  } else if (size < 0) {
+    // ~-x = ~~(x - 1) = x - 1
+    mp_size_t result_size = -size;
+    mpn_sub_1(result, s, result_size, (mp_limb_t)1);
+    BIGNUM_NORMALIZE(result_size, result);
+    return result_size;
+  } else { // ~0 = -1
+    result[0] = 1;
+    return -1;
+  }
+}
+
+mp_size_t next_norneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
+                       const mp_limb_t* t2, mp_size_t size2) {
+  // -~(x | -y) = -~(x | ~(y-1)) = ~~(x | ~(y-1)) + 1 = (x | ~(y-1)) + 1
+  mp_size_t result_size;
+  mp_limb_t temp[size2];
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  if (size1 < size2) {
+    result_size = size2;
+    for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy
+      result[i] = temp[i];
+  } else {
+    result_size = size1;
+    for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+      result[i] = t1[i];
+  }
+  mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+  if (carry != 0) {
+    result[result_size] = carry;
+    ++result_size;
+  } else BIGNUM_NORMALIZE(result_size, result);
+  return -result_size;
+}
+
+mp_size_t next_nor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // Negation of high limbs means the result is negative.
+      // -~(x | y) = ~~(x | y) + 1 = (x | y) + 1
+      mp_size_t result_size;
+      if (len1 < len2) {
+        result_size = len2;
+        mpn_ior_n(result, s1, s2, len1);
+        for (mp_size_t i = len1; i < len2; ++i) // FIXME memcpy
+          result[i] = s2[i];
+      } else {
+        result_size = len1;
+        mpn_ior_n(result, s1, s2, len2);
+        for (mp_size_t i = len2; i < len1; ++i) // FIXME memcpy
+          result[i] = s1[i];
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else if (len2 < 0) return next_norneg(result, s1, len1, s2, -len2);
+    else return next_com(result, s1, len1);
+  } else if (len1 < 0) {
+    if (len2 > 0) return next_norneg(result, s2, len2, s1, -len1);
+    else if (len2 < 0) {
+      // ~(-x | -y) = ~(~(x-1) | ~(y-1)) = (x-1) & (y-1)
+      mp_size_t size1 = -len1, size2 = -len2;
+      mp_size_t result_size = std::min(size1, size2);
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+      mpn_and_n(result, temp1, temp2, result_size);
+      return result_size;
+    } else return next_com(result, s1, len1);
+  } else return next_com(result, s2, len2); // s1 = 0
+}
+
+mp_size_t next_eqvneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
+                      const mp_limb_t* t2, mp_size_t size2) {
+  // ~(0^-1) = 0 so the result is positive.
+  // ~(x ^ -y) = ~(x ^ ~(y - 1)) = x ^ (y - 1)
+  mp_limb_t temp[size2];
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  if (size1 < size2) {
+    mpn_xor_n(result, t1, temp, size1);
+    for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy
+      result[i] = temp[i];
+    return size2;
+  } else {
+    mpn_xor_n(result, t1, temp, size2);
+    for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+      result[i] = t1[i];
+    return size1;
+  }
+}
+
+// eqv is xnor if that wasn't clear
+mp_size_t next_eqv(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // Both positive. Result is negative because ~(0^0) = -1.
+      // -~(x ^ y) = ~(x ^ y)+ 1
+      mp_size_t result_size;
+      if (len1 < len2) {
+        result_size = len2;
+        mpn_xnor_n(result, s1, s2, len1);
+        for (mp_size_t i = len1; i < len2; ++i) // FIXME memcpy
+          result[i] = s2[i];
+      } else {
+        result_size = len1;
+        mpn_xnor_n(result, s1, s2, len2);
+        for (mp_size_t i = len2; i < len1; ++i) // FIXME memcpy
+          result[i] = s1[i];
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      return -result_size;
+    } else if (len2 < 0) return next_eqvneg(result, s1, len1, s2, -len2);
+    else return next_com(result, s1, len1);
+  } else if (len1 < 0) {
+    if (len2 > 0) return next_eqvneg(result, s2, len2, s1, -len1);
+    else if (len2 < 0) {
+      // Both negative. ~(-1^-1) = -1 so result is negative.
+      // -~(-x ^ -y) = ~~(-x ^ -y) + 1 = (-x ^ -y) + 1
+      // = (~(x-1) ^ ~(y-1)) + 1 = ((x-1) ^ (y-1)) + 1
+      mp_size_t size1 = -len1;
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+      mp_size_t size2 = -len2;
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+      mp_size_t result_size;
+      if (size1 < size2) {
+        result_size = size2;
+        mpn_xor_n(result, temp1, temp2, size1);
+        for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy
+          result[i] = temp2[i];
+      } else {
+        result_size = size1;
+        mpn_xor_n(result, temp1, temp2, size2);
+        for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+          result[i] = temp1[i];
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else return next_com(result, s1, len1);
+  } else return next_com(result, s2, len2);
+}
+
+mp_size_t next_c2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                  const mp_limb_t* s2, mp_size_t len2) {
+  return next_com(result, s2, len2);
+}
+
+mp_size_t next_orc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                    const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // 0|~0 = -1, negative result
+      // -(x | ~y) = ~(x | ~y) + 1 = (~x & y) + 1
+      mp_size_t result_size = len2;
+      if (len1 < len2) {
+        mpn_andn_n(result, s2, s1, len1);
+        // High bits of ~x are 1, so copy in y
+        for (mp_size_t i = len1; i < len2; ++i)
+          result[i] = s2[i];
+      } else mpn_andn_n(result, s2, s1, len2); // high bits of y are 0
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else if (len2 < 0) {
+      // 0|~-1 = 0, positive result
+      // x | ~-y = x | ~(~(y-1)) = x | (y-1)
+      mp_size_t size2 = -len2;
+      mp_limb_t temp[size2];
+      mpn_sub_1(temp, s2, size2, (mp_limb_t)1);
+      mp_size_t result_size;
+      if (len1 < size2) {
+        mpn_ior_n(result, s1, temp, len1);
+        for (mp_size_t i = 0; i < size2; ++i) // FIXME memcpy
+          result[i] = temp[i];
+        return size2;
+      } else {
+        mpn_ior_n(result, s1, temp, size2);
+        for (mp_size_t i = 0; i < size2; ++i) // FIXME memcpy
+          result[i] = s1[i];
+        return len1;
+      }
+    } else { // s2 = 0. x|~0 = ~0
+      result[0] = 1;
+      return -1;
+    }
+  } else if (len1 < 0) {
+    if (len2 > 0) {
+      // -1|~0 = -1, negative result
+      // -(-x | ~y) = -(~(x-1) | ~y) = ~(~(x-1) | ~y) + 1
+      // = ((x-1) & y) + 1
+      mp_size_t size1 = -len1;
+      mp_limb_t temp[size1];
+      mpn_sub_1(temp, s1, size1, (mp_limb_t)1);
+      mp_size_t result_size = std::min(size1, len2);
+      mpn_and_n(result, temp, s2, result_size);
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else if (len2 < 0) {
+      // 1|~1 = 1, negative result
+      // -(-x | ~-y) = -(~(x-1) | ~(~(y-1))) = -(~(x-1) | (y-1))
+      // = ~(~(x-1) | (y-1)) + 1 = ((x-1) & ~(y-1)) + 1
+      mp_size_t size1 = -len1, size2 = -len2, result_size = size1;
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)2);
+      if (size1 < size2) {
+        mpn_andn_n(result, temp1, temp2, size1);
+      } else { // high bits of ~(y-1) are 1
+        mpn_andn_n(result, temp1, temp2, size2);
+        for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+          result[i] = temp1[i];
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else { // x|~0 = ~0
+      result[0] = 1;
+      return -1;
+    }
+  } else return next_com(result, s2, len2);
+}
+
+mp_size_t next_c1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                  const mp_limb_t* s2, mp_size_t len2) {
+  return next_com(result, s1, len1);
+}
+
+mp_size_t next_orc1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                    const mp_limb_t* s2, mp_size_t len2) {
+  return next_orc1(result, s2, len2, s1, len1);
+}
+
+mp_size_t next_nandneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
+                       const mp_limb_t* t2, mp_size_t size2) {
+  // ~(0&-1) = ~0 = -1, negative result
+  // -(~(x & -y)) = ~(~(x & -y)) + 1 = (x & -y) + 1
+  // = (x & ~(y-1)) + 1
+  mp_limb_t temp[size2];
+  mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
+  mp_size_t result_size = size1;
+  if (size1 < size2) mpn_andn_n(result, t1, temp, size1);
+  else {
+    mpn_andn_n(result, t1, temp, size2);
+    for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
+      result[i] = t1[i];
+  }
+  mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+  if (carry != 0) {
+    result[result_size] = carry;
+    ++result_size;
+  }
+  return -result_size;
+}
+
+mp_size_t next_nand(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                    const mp_limb_t* s2, mp_size_t len2) {
+  if (len1 > 0) {
+    if (len2 > 0) {
+      // ~(0&0) = ~0 = -1, negative result
+      // -(~(x & y)) = ~(~(x & y)) + 1 = (x & y) + 1
+      mp_size_t result_size;
+      if (len1 < len2) {
+        result_size = len1;
+        mpn_and_n(result, s1, s2, len1);
+      } else {
+        result_size = len2;
+        mpn_and_n(result, s1, s2, len2);
+      }
+      mp_limb_t carry = mpn_add_1(result, result, result_size, (mp_limb_t)1);
+      if (carry != 0) {
+        result[result_size] = carry;
+        ++result_size;
+      }
+      return -result_size;
+    } else if (len2 < 0) return next_nandneg(result, s1, len1, s2, -len2);
+    else { // ~(x&0) = ~0 = -1
+      result[0] = -1;
+      return 1;
+    }
+  } else if (len1 < 0) {
+    if (len2 > 0) return next_nandneg(result, s2, len2, s1, -len1);
+    else if (len2 < 0) {
+      // ~(-1&-1) = ~(-1) = 0, positive result
+      // ~(-x & -y) = ~(~(x-1) & ~(y-1)) = (x-1) | (y-1)
+      mp_size_t size1 = -len1, size2 = -len2;
+      mp_limb_t temp1[size1];
+      mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
+      mp_limb_t temp2[size2];
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
+      if (size1 < size2) {
+        mpn_ior_n(result, temp1, temp2, size1);
+        for (mp_size_t i = size1; i < size2; ++i)
+          result[i] = temp2[i];
+        return size2;
+      } else {
+        mpn_ior_n(result, temp1, temp2, size2);
+        for (mp_size_t i = size2; i < size1; ++i)
+          result[i] = temp1[i];
+        return size1;
+      }
+    } else {
+      result[0] = -1;
+      return -1;
+    }
+  } else {
+    result[0] = -1;
+    return -1;
+  }
+}
+
+mp_size_t next_set(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
+                   const mp_limb_t* s2, mp_size_t len2) {
+  result[0] = -1;
+  return -1;
+}
+
+typedef mp_size_t (*next_bit_operator)(mp_limb_t*, const mp_limb_t*, mp_size_t,
+                                       const mp_limb_t*, mp_size_t);
+
+static next_bit_operator next_operations[boolOpsMax] = {
+    next_clr,
+    next_and,
+    next_andc2,
+    next_1,
+    next_andc1,
+    next_2,
+    next_xor,
+    next_ior,
+    next_nor,
+    next_eqv,
+    next_c2,
+    next_orc2,
+    next_c1,
+    next_orc1,
+    next_nand,
+    next_set};
+
+// ----------------------------------------------------------------------
+
 /*
  * BIT OPERATIONS FOR FIXNUMS
  */
 
 static gctools::Fixnum
-ior_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i | j);
-}
+ior_op(gctools::Fixnum i, gctools::Fixnum j) { return (i | j); }
 
 static gctools::Fixnum
-xor_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i ^ j);
-}
+xor_op(gctools::Fixnum i, gctools::Fixnum j) { return (i ^ j); }
 
 static gctools::Fixnum
-and_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i & j);
-}
+and_op(gctools::Fixnum i, gctools::Fixnum j) { return (i & j); }
 
 static gctools::Fixnum
-eqv_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (~(i ^ j));
-}
+eqv_op(gctools::Fixnum i, gctools::Fixnum j) { return (~(i ^ j)); }
 
 static gctools::Fixnum
-nand_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (~(i & j));
-}
+nand_op(gctools::Fixnum i, gctools::Fixnum j) { return (~(i & j)); }
 
 static gctools::Fixnum
-nor_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (~(i | j));
-}
+nor_op(gctools::Fixnum i, gctools::Fixnum j) { return (~(i | j)); }
 
 static gctools::Fixnum
-andc1_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return ((~i) & j);
-}
+andc1_op(gctools::Fixnum i, gctools::Fixnum j) { return ((~i) & j); }
 
 static gctools::Fixnum
-andc2_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i & (~j));
-}
+andc2_op(gctools::Fixnum i, gctools::Fixnum j) { return (i & (~j)); }
 
 static gctools::Fixnum
-orc1_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return ((~i) | j);
-}
+orc1_op(gctools::Fixnum i, gctools::Fixnum j) { return ((~i) | j); }
 
 static gctools::Fixnum
-orc2_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i | (~j));
-}
+orc2_op(gctools::Fixnum i, gctools::Fixnum j) { return (i | (~j)); }
 
 static gctools::Fixnum
-b_clr_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (0);
-}
+b_clr_op(gctools::Fixnum i, gctools::Fixnum j) { return (0); }
 
 static gctools::Fixnum
-b_set_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (-1);
-}
+b_set_op(gctools::Fixnum i, gctools::Fixnum j) { return (-1); }
 
 static gctools::Fixnum
-b_1_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (i);
-}
+b_1_op(gctools::Fixnum i, gctools::Fixnum j) { return (i); }
 
 static gctools::Fixnum
-b_2_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (j);
-}
+b_2_op(gctools::Fixnum i, gctools::Fixnum j) { return (j); }
 
 static gctools::Fixnum
-b_c1_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (~i);
-}
+b_c1_op(gctools::Fixnum i, gctools::Fixnum j) { return (~i); }
 
 static gctools::Fixnum
-b_c2_op(gctools::Fixnum i, gctools::Fixnum j) {
-  return (~j);
-}
+b_c2_op(gctools::Fixnum i, gctools::Fixnum j) { return (~j); }
 
 typedef gctools::Fixnum (*bit_operator)(gctools::Fixnum, gctools::Fixnum);
 
@@ -129,6 +819,132 @@ static bit_operator fixnum_operations[boolOpsMax] = {
     orc1_op,
     nand_op,
     b_set_op};
+
+// ----------------------------------------------------------------------
+
+Integer_sp next_operation_rest(boole_ops op, List_sp integers) {
+  // integers must not be nil.
+  mp_size_t max_size = 0; // 0 here means fixnum.
+  for (auto cur : integers) {
+    Integer_sp e = gc::As<Integer_sp>(oCar(cur));
+    if (!(e.fixnump())) {
+      // FIXME: switch to As_unsafe once old bignums are gone.
+      TheNextBignum_sp big = gc::As<TheNextBignum_sp>(e);
+      max_size = std::max(max_size, std::abs(big->length()));
+    }
+  }
+  // Now we know the sizes of all the integers,
+  // and incidentally, that they are integers (because of As).
+  if (max_size == 0) { // all fixnums
+    Fixnum result = oCar(integers).unsafe_fixnum();
+    bit_operator bop = fixnum_operations[op];
+    for (auto cur : (List_sp)oCdr(integers))
+      result = bop(result, oCar(cur).unsafe_fixnum());
+    return clasp_make_fixnum(result);
+  } else { // at least one bignum, so in general the result is a bignum
+    // Because of the sign-magnitude representation of bignums, these
+    // operations can sometimes require more space in the result than
+    // in the operands, because e.g. (logand -2 -3) = -4 and 4 has
+    // one more bit than 2 or 3.
+    mp_limb_t result_limbs[max_size+1];
+    mp_size_t result_len;
+    // Now stick in the first integer
+    Integer_sp first = gc::As_unsafe<Integer_sp>(oCar(integers));
+    if (first.fixnump()) {
+      Fixnum ffirst = first.unsafe_fixnum();
+      if (ffirst < 0) {
+        result_len = -1;
+        result_limbs[0] = -ffirst;
+      } else {
+        result_len = 1;
+        result_limbs[0] = ffirst;
+      }
+    } else {
+      // FIXME: switch to As_unsafe once old bignums are gone
+      TheNextBignum_sp bfirst = gc::As<TheNextBignum_sp>(first);
+      mp_size_t first_len = bfirst->length();
+      mp_size_t first_size = std::abs(first_len);
+      const mp_limb_t* first_limbs = bfirst->limbs();
+      result_len = first_len;
+      // FIXME: use memcpy or something
+      for (mp_size_t i = 0; i < first_size; ++i)
+        result_limbs[i] = first_limbs[i];
+    }
+    // Now loop.
+    next_bit_operator bop = next_operations[op];
+    for (auto cur : (List_sp)oCdr(integers)) {
+      Integer_sp icur = gc::As_unsafe<Integer_sp>(oCar(cur));
+      if (icur.fixnump()) {
+        Fixnum fcur = icur.unsafe_fixnum();
+        if (fcur < 0) {
+          mp_limb_t acur = -fcur;
+          result_len = bop(result_limbs,
+                           result_limbs, result_len, &acur, -1);
+        } else {
+          mp_limb_t acur = fcur;
+          result_len = bop(result_limbs,
+                           result_limbs, result_len, &acur, 1);
+        }
+      } else {
+        // FIXME switch to As_unsafe once etc
+        TheNextBignum_sp bcur = gc::As<TheNextBignum_sp>(icur);
+        result_len = bop(result_limbs,
+                         result_limbs, result_len,
+                         bcur->limbs(), bcur->length());
+      }
+    }
+    // Loop over, return result.
+    return bignum_result(result_len, result_limbs);
+  }
+}
+
+Integer_sp next_boole_mixed(next_bit_operator op,
+                            TheNextBignum_sp big, Fixnum small) {
+  // FIXME: to As_unsafe once old bignums are gone
+  mp_size_t len = big->length();
+  mp_limb_t result[len + 1];
+  mp_limb_t flimb;
+  mp_size_t rlen;
+  if (small < 0) {
+    flimb = -small;
+    rlen = op(result, big->limbs(), len, &flimb, -1);
+  } else if (small > 0) {
+    flimb = small;
+    rlen = op(result, big->limbs(), len, &flimb, 1);
+  } else {
+    flimb = 0;
+    rlen = op(result, big->limbs(), len, &flimb, 0);
+  }
+  return bignum_result(rlen, result);
+}
+
+CL_DEFUN Integer_sp core__next_boole(Fixnum op, Integer_sp i1, Integer_sp i2) {
+  if (i1.fixnump()) {
+    if (i2.fixnump()) {
+      bit_operator bop = fixnum_operations[op];
+      return clasp_make_fixnum(bop(i1.unsafe_fixnum(), i2.unsafe_fixnum()));
+    } else {
+      return next_boole_mixed(next_operations[op],
+                              // FIXME: to As_unsafe once old bignums gone
+                              gc::As<TheNextBignum_sp>(i2),
+                              i1.unsafe_fixnum());
+    }
+  } else {
+    if (i2.fixnump()) {
+      return next_boole_mixed(next_operations[op],
+                              gc::As<TheNextBignum_sp>(i1),
+                              i2.unsafe_fixnum());
+    } else {
+      TheNextBignum_sp left = gc::As<TheNextBignum_sp>(i1);
+      TheNextBignum_sp right = gc::As<TheNextBignum_sp>(i2);
+      mp_size_t llen = left->length(), rlen = right->length();
+      mp_limb_t result[std::max(std::abs(llen), std::abs(rlen))];
+      next_bit_operator bop = next_operations[op];
+      mp_size_t res_len = bop(result, left->limbs(), llen, right->limbs(), rlen);
+      return bignum_result(res_len, result);
+    }
+  }
+}
 
 // ----------------------------------------------------------------------
 

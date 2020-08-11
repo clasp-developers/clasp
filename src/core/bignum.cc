@@ -452,15 +452,6 @@ void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
     if (!(hg.addValue(limbs[i]))) return;
 }
 
-// Remove any high limbs that are equal to zero,
-// starting from the right (most significant)
-// Can result in zero limbs.
-#define BIGNUM_NORMALIZE(NLIMBS, LIMBS)\
-  while((NLIMBS) > 0) {\
-    if ((LIMBS)[(NLIMBS) - 1] != 0) break;\
-    (NLIMBS)--;\
-  }
-
 // Given bignum parts, return a fixnum if that fits, or else a bignum.
 Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
   switch (len) {
