@@ -599,12 +599,95 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
+};
+
+#ifdef USE_MPS
+struct MemoryMeasure {
+  size_t _Count;
+  size_t _Size;
+  MemoryMeasure() : _Count(0), _Size(0) {};
+};
+
+struct MemoryCopy {
+  uintptr_t _address;
+  MemoryCopy(uintptr_t start) : _address(start) {};
+};
+
+extern "C" {
+
+void amc_apply_measure(mps_addr_t client, void *p, size_t s) {
+  MemoryMeasure* count = (MemoryMeasure*)p;
+  count->_Count++;
+  mps_addr_t next = obj_skip(client);
+  count->_Size += ((size_t)next-(size_t)client);
+}
+
+void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
+  MemoryCopy* cpy = (MemoryCopy*)p;
+  mps_addr_t next = obj_skip(client);
+  size_t size = ((size_t)next-(size_t)client);
+  void* header = reinterpret_cast<void*>(gctools::ClientPtrToBasePtr(client));
+  memcpy((void*)cpy->_address,(void*)header,size);
+  cpy->_address += size;
+};
+
+};
+#endif // USE_MPS
+
+
+extern "C" {
+
+#define SCAN_STRUCT_T int
+#define ADDR_T mps_addr_t
+#define OBJECT_SCAN fixup_objects
+#define SCAN_BEGIN(xxx)
+#define SCAN_END(xxx)
+#define POINTER_FIX(field)
+#define GC_OBJECT_SCAN
+__attribute__((optnone))
+#include "obj_scan.cc"
+#undef GC_OBJ_SCAN
+#undef OBJ_SCAN
+#undef SCAN_STRUCT_T
+
+};
+
+namespace gctools {
+
+#ifdef USE_MPS
+void walk_memory(mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
+  mps_arena_park(global_arena);
+  mps_amc_apply(global_amc_pool, stepper, pdata, psize);
+  mps_amc_apply(global_amcz_pool, stepper, pdata, psize);
+  mps_arena_release(global_arena);
+}
+
+CL_DEFUN core::T_mv gctools__measure_memory() {
+  MemoryMeasure count;
+  walk_memory(amc_apply_measure,(void*)&count,sizeof(count));
+  return Values(core::make_fixnum(count._Count),core::make_fixnum(count._Size));
+}
+
+CL_DEFUN void gctools__copy_memory() {
+  MemoryMeasure measure;
+  walk_memory(amc_apply_measure,(void*)&measure,sizeof(measure));
+  uintptr_t buffer = (uintptr_t)malloc(measure._Size+100000);
+  MemoryCopy cpy(buffer);
+  walk_memory(amc_apply_copy,(void*)&cpy,sizeof(cpy));
+  uintptr_t start = buffer+sizeof(gctools::Header_s);
+  uintptr_t stop = cpy._address+sizeof(gctools::Header_s);
+  fixup_objects(0,(void*)start,(void*)stop);
+  free((void*)buffer);
+}
+#endif // USE_MPS
+
 CL_LAMBDA(&optional x);
 CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
 #ifdef USE_MPS
+  mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
@@ -614,6 +697,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
   mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
+  mps_arena_release(global_arena);
   OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   OutputStream << std::setw(12) << numCollections << " collections\n";
