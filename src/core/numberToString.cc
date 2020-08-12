@@ -104,22 +104,22 @@ CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, TheNextBignum_sp bn,
                                          str_size+negative+2);
     unsigned char *bufferStart = (unsigned char*)&(*buffer8)[buffer8->fillPointer()];
     unsigned char *significandStart = bufferStart + negative;
-    mpn_get_str(significandStart, ibase, copy_limbs, size);
+    mp_size_t actual_str_size = mpn_get_str(significandStart, ibase, copy_limbs, size);
     if (negative == 1) bufferStart[0] = '-';
-    for (size_t i = 0; i < str_size; ++i)
+    for (size_t i = 0; i < actual_str_size; ++i)
       significandStart[i] = num_to_text[significandStart[i]];
-    if (bufferStart[str_size + negative - 1] == '\0') {
-      buffer8->fillPointerSet(buffer8->fillPointer()+str_size+negative-1);
+    if (bufferStart[actual_str_size + negative - 1] == '\0') {
+      buffer8->fillPointerSet(buffer8->fillPointer()+actual_str_size+negative-1);
     } else {
-      buffer8->fillPointerSet(buffer8->fillPointer()+str_size+negative);
+      buffer8->fillPointerSet(buffer8->fillPointer()+actual_str_size+negative);
     }
   } else if (StrWNs_sp bufferw = buffer.asOrNull<StrWNs_O>()) {
     bufferw->ensureSpaceAfterFillPointer(clasp_make_character(' '),
                                          str_size+negative);
     unsigned char cpbuffer[str_size+1]; // use a stack allocated array for this
-    mpn_get_str(cpbuffer, ibase, copy_limbs, size);
+    mp_size_t actual_str_size = mpn_get_str(cpbuffer, ibase, copy_limbs, size);
     if (negative == 1) bufferw->vectorPushExtend('-');
-    for (size_t idx(0); idx < str_size; ++idx)
+    for (size_t idx(0); idx < actual_str_size; ++idx)
       bufferw->vectorPushExtend(num_to_text[cpbuffer[idx]]);
   } else {
     SIMPLE_ERROR(BF("The buffer for the bignum must be a string with a fill-pointer"));
