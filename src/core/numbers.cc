@@ -254,14 +254,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
     return core__next_fadd(gc::As_unsafe<TheNextBignum_sp>(nb),
                            na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = clasp_to_mpz(rb->denominator());
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled + clasp_to_mpz(rb->numerator());
-      return Rational_O::create(zr, zb_den);
-    }
+  case_Bignum_v_Ratio:
   case_NextBignum_v_Ratio : {
       // NOTE: All of the numbers are either fixnums or bignums,
       // so this could be more efficient maybe.
@@ -301,14 +294,8 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
     }
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class den = clasp_to_mpz(ra->denominator());
-      mpz_class z = den * clasp_to_mpz(nb);
-      mpz_class res = clasp_to_mpz(ra->numerator()) + z;
-      return Rational_O::create(res, den);
-    }
-  case_Ratio_v_NextBignum : {
+  case_Ratio_v_Bignum:
+  case_Ratio_v_NextBignum: {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
       Integer_sp den = rat->denominator();
       Integer_sp new_num
@@ -320,13 +307,12 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
       // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-      mpz_class z1
-        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
-      mpz_class z
-        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
-      z = z1 + z;
-      z1 = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->denominator());
-      return Rational_O::create(z, z1);
+      Number_sp n1 = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp n2 = contagen_mul(ra->denominator(), rb->numerator());
+      Number_sp d = contagen_mul(ra->denominator(), rb->denominator());
+      Number_sp n = contagen_add(n1, n2);
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -413,12 +399,12 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio:
   case_NextBignum_v_Ratio: {
-      mpz_class za(clasp_to_mpz(na));
+      // x - a/b = xb/b - a/b = (xb-a)/b
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = clasp_to_mpz(rb->denominator());
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
-      return Rational_O::create(zr, zb_den);
+      Number_sp n1 = contagen_mul(na, rb->denominator());
+      Number_sp n = contagen_sub(n1, rb->numerator());
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                rb->denominator());
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
@@ -451,23 +437,25 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
     return core__next_add(gc::As_unsafe<TheNextBignum_sp>(na),
                           gc::As_unsafe<TheNextBignum_sp>(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum: {
+  case_Ratio_v_Bignum:
+  case_Ratio_v_NextBignum: {
+      // a/b - x = a/b - xb/b = (a-xb)/b
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class den = clasp_to_mpz(ra->denominator());
-      mpz_class z = den * clasp_to_mpz(nb);
-      mpz_class res = clasp_to_mpz(ra->numerator()) - z;
-      return Rational_O::create(res, den);
+      Number_sp n2 = contagen_mul(nb, ra->denominator());
+      Number_sp n = contagen_sub(ra->numerator(), n2);
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                ra->denominator());
     }
   case_Ratio_v_Ratio : {
+      // a/b - c/d = (ad-bc)/bd
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class aden = clasp_to_mpz(ra->denominator());
-      mpz_class bden = clasp_to_mpz(rb->denominator());
-      mpz_class z1 = clasp_to_mpz(ra->numerator()) * bden;
-      mpz_class z = aden * clasp_to_mpz(rb->numerator());
-      z = z1 - z;
-      z1 = aden * bden;
-      return Rational_O::create(z, z1);
+      Number_sp n1 = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp n2 = contagen_mul(ra->denominator(), rb->numerator());
+      Number_sp n = contagen_add(n1, n2);
+      Number_sp d = contagen_mul(ra->denominator(), rb->denominator());
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -553,12 +541,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
     return core__next_fmul(gc::As_unsafe<TheNextBignum_sp>(nb),
                            na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zr = za * clasp_to_mpz(rb->numerator());
-      return Rational_O::create(zr, clasp_to_mpz(rb->denominator()));
-    }
+  case_Bignum_v_Ratio:
   case_NextBignum_v_Ratio : {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
       Integer_sp new_num
@@ -586,20 +569,17 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() * gc::As<Bignum_sp>(nb)->mpz_ref());
     }
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
+  case_NextBignum_v_SingleFloat:
+  case_Ratio_v_SingleFloat: {
       return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
     }
   case_Bignum_v_DoubleFloat:
+  case_NextBignum_v_DoubleFloat:
   case_Ratio_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
     }
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = clasp_to_mpz(nb);
-      return Rational_O::create(z * clasp_to_mpz(ra->numerator()),
-                                clasp_to_mpz(ra->denominator()));
-    }
+  case_Ratio_v_Bignum:
   case_Ratio_v_NextBignum : {
       Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
       Integer_sp new_num
@@ -609,20 +589,21 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class num
-        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->numerator());
-      mpz_class den
-        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->denominator());
-      return Rational_O::create(num, den);
+      Number_sp num = contagen_mul(ra->numerator(), rb->numerator());
+      Number_sp den = contagen_mul(ra->denominator(), rb->denominator());
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(num),
+                                gc::As_unsafe<Integer_sp>(num));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
+  case_SingleFloat_v_NextBignum:
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
+  case_DoubleFloat_v_NextBignum:
   case_DoubleFloat_v_Ratio:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
@@ -630,6 +611,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
   case_Bignum_v_LongFloat:
+  case_NextBignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
