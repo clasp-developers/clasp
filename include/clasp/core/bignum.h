@@ -314,6 +314,8 @@ public: // Functions here
     return b;
   };
 
+  static TheNextBignum_sp make(const string &value_in_string);
+
   mp_size_t length() const { return _limbs.signedLength(); }
   const mp_limb_t* limbs() const { return &(_limbs._Data[0]);}
 

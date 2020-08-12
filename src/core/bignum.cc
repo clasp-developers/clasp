@@ -487,6 +487,32 @@ string TheNextBignum_O::__repr__() const {
   return ss.str();
 }
 
+
+TheNextBignum_sp TheNextBignum_O::make(const string& str) {
+  const char *cstr = str.c_str();
+  size_t strsize = str.size();
+  bool negative = false;
+  if (str[0] == '-') {
+    negative = true;
+    --strsize;
+    cstr = &(cstr[1]);
+  }
+  unsigned char s[strsize];
+  for (size_t i = 0; i < strsize; ++i) s[i] = cstr[i] - '0';
+  // Number of GMP limbs per decimal digit, approximately.
+  // i.e. (/ (log 10 2) (log (expt 2 bits-per-limb) 2))
+  double convert = log2(10) / mp_bits_per_limb;
+  mp_size_t nlimbs = std::ceil(strsize*convert) + 2;
+  mp_limb_t limbs[nlimbs];
+  nlimbs = mpn_set_str(limbs, s, strsize, 10);
+  return TheNextBignum_O::create(negative ? -nlimbs : nlimbs, 0, false,
+                                 nlimbs, limbs);
+}
+
+CL_DEFUN TheNextBignum_sp core__next_from_string(const string& str) {
+  return TheNextBignum_O::make(str);
+}
+
 Number_sp TheNextBignum_O::signum_() const {
   // There are no zero bignums, so this is easy.
   if (this->length() < 0)
