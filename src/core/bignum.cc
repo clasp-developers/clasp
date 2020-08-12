@@ -638,6 +638,13 @@ CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
   return bignum_result((len < 0) ? -result_size : result_size, result_limbs);
 }
 
+Integer_sp TheNextBignum_O::shift_(Fixnum shift) const {
+  TheNextBignum_sp sthis = this->asSmartPtr();
+  if (shift > 0) return core__next_lshift(sthis, shift);
+  else if (shift < 0) return core__next_rshift(sthis, -shift);
+  else return sthis;
+}
+
 CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp right) {
   // NOTE: The mpz_ functions detect when left = right (analogously) and use
   // mpn_sqr instead. I don't _think_ this is required, given they're untouched anyway.
