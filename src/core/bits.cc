@@ -312,7 +312,7 @@ mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
 mp_size_t next_com(mp_limb_t* result, const mp_limb_t* s, mp_size_t size) {
   if (size > 0)
     // -~x = ~~x + 1 = x + 1
-    return next_addone_aux(result, s, size);
+    return -next_addone_aux(result, s, size);
   else if (size < 0) {
     // ~-x = ~~(x - 1) = x - 1
     mp_size_t result_size = -size;
@@ -370,19 +370,8 @@ mp_size_t next_eqv(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
   if (len1 > 0) {
     if (len2 > 0) {
       // Both positive. Result is negative because ~(0^0) = -1.
-      // -~(x ^ y) = ~(x ^ y) + 1
-      mp_size_t result_size;
-      if (len1 < len2) {
-        result_size = len2;
-        mpn_xnor_n(result, s1, s2, len1);
-        for (mp_size_t i = len1; i < len2; ++i) // FIXME memcpy
-          result[i] = s2[i];
-      } else {
-        result_size = len1;
-        mpn_xnor_n(result, s1, s2, len2);
-        for (mp_size_t i = len2; i < len1; ++i) // FIXME memcpy
-          result[i] = s1[i];
-      }
+      // -~(x ^ y) = ~~(x ^ y) + 1 = (x ^ y) + 1
+      mp_size_t result_size = next_xor_aux(result, s1, len1, s2, len2);
       return -next_addone_aux(result, result, result_size);
     } else if (len2 < 0) return next_eqvneg(result, s1, len1, s2, -len2);
     else return next_com(result, s1, len1);
