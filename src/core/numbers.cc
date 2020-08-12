@@ -2108,6 +2108,9 @@ Number_sp Complex_O::sqrt_() const {
   return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
 
+// NOTE: The following two definitions are wrong. CLHS specifies we can return only
+// a single or a rational. Double is not allowed. That's kind of dumb but it's
+// pretty explicitly what it says.
 Number_sp Bignum_O::sqrt_() const {
   // Could move the <0 logic out to another function, to share
   // Might try to convert to a double-float, if this does not fit into a single-float
@@ -2115,7 +2118,7 @@ Number_sp Bignum_O::sqrt_() const {
   if (std::isinf (z)) {
     double z1 = this->as_double_();
     if (z1 < 0)
-      return clasp_make_complex(clasp_make_double_float(0.0), clasp_make_double_float(sqrt(-z)));
+      return clasp_make_complex(clasp_make_double_float(0.0), clasp_make_double_float(sqrt(-z1)));
     else
       return clasp_make_double_float(sqrt(z1));
   } else {
@@ -2123,6 +2126,24 @@ Number_sp Bignum_O::sqrt_() const {
       return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
     else
       return clasp_make_single_float(sqrt(z));
+  }
+}
+
+Number_sp TheNextBignum_O::sqrt_() const {
+  // ditto the above.
+  // hypothetically we could use mpn_sqrtrem instead, but i imagine it's slower.
+  float z = this->as_float_();
+  if (std::isinf(z)) {
+    double z1 = this->as_double_();
+    if (z1 < 0)
+      return clasp_make_complex(clasp_make_double_float(0.0),
+                                clasp_make_double_float(sqrt(-z1)));
+    else return clasp_make_double_float(sqrt(z1));
+  } else {
+    if (z < 0)
+      return clasp_make_complex(clasp_make_single_float(0.0),
+                                clasp_make_single_float(sqrt(-z)));
+    else return clasp_make_single_float(sqrt(z));
   }
 }
 
@@ -2903,6 +2924,26 @@ Number_sp Bignum_O::log1_() const {
   }
 }
 
+Number_sp TheNextBignum_O::log1_() const {
+  TheNextBignum_sp bignum = this->asSmartPtr();
+  if (this->minusp_())
+    return clasp_log1_complex_inner(bignum, clasp_make_fixnum(0));
+  else {
+    // In order to avoid floating point overflow,
+    // we take the log of (x/2^n), n being the number of bits in the bignum,
+    // and add back to the result.
+    // FIXME: This can probably be accomplished more efficiently, though.
+    // For example, take the most significant two words of the bignum, as we
+    // do when converting bignums to floats (as of this writing), but don't
+    // shift the result.
+    Fixnum length = clasp_integer_length(bignum) - 1;
+    Integer_sp ash = clasp_ash(make_fixnum(1), length);
+    Rational_sp rational = clasp_make_rational(bignum, ash);
+    float d = logf(clasp_to_float(rational)) + length * logf(2.0);
+    return clasp_make_single_float(d);
+  }
+}
+
 Number_sp Rational_O::log1_() const {
   float f = this->as_float_();
   if (f < 0)
@@ -3459,7 +3500,7 @@ size_t clasp_to_size_t( core::T_sp x )
     LIKELY_if ( bx->mpz_ref()>=0 && bx->mpz_ref() <= gc::most_positive_size) {
       return static_cast<size_t>(bx->mpz_ref().get_ui());
     }
-  }    
+  }
   TYPE_ERROR(x, Cons_O::create(cl::_sym_UnsignedByte, Bignum_O::create((uint64_t)gc::most_positive_size)));
 }
 

@@ -332,6 +332,8 @@ public: // Functions here
   Number_sp oneMinus_() const override;
   Number_sp onePlus_() const override;
 
+  Number_sp log1_() const override;
+  Number_sp sqrt_() const override;
   Number_sp reciprocal_() const override;
   Number_sp rational_() const final { return this->asSmartPtr(); };
   virtual float as_float_() const override;
