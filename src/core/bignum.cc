@@ -586,7 +586,7 @@ CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();
   const mp_limb_t *limbs = num->limbs();
-  ss << "#<NEXT-BIGNUM";
+  ss << "#<NEXT-BIGNUM (size " << len << ")";
   for (size_t i = 0; i < std::abs(len); ++i) ss << " " << limbs[i];
   ss << ">";
   return ss.str();
