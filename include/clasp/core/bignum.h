@@ -327,6 +327,10 @@ public: // Functions here
 
   Number_sp signum_() const override;
   Number_sp abs_() const override;
+  Number_sp negate_() const override;
+
+  Number_sp oneMinus_() const override;
+  Number_sp onePlus_() const override;
 
   Number_sp reciprocal_() const override;
   Number_sp rational_() const final { return this->asSmartPtr(); };
@@ -365,6 +369,7 @@ Integer_sp fix_divided_by_next(Fixnum, TheNextBignum_sp);
 T_mv core__next_ftruncate(TheNextBignum_sp, Fixnum);
 Integer_sp core__next_gcd(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fgcd(TheNextBignum_sp, Fixnum);
+Integer_sp next_add(const mp_limb_t*, mp_size_t, const mp_limb_t*, mp_size_t);
 Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fadd(TheNextBignum_sp, Fixnum);
 int core__next_compare(TheNextBignum_sp, TheNextBignum_sp);

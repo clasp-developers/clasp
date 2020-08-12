@@ -530,6 +530,17 @@ Number_sp TheNextBignum_O::abs_() const {
   else return this->asSmartPtr();
 }
 
+Number_sp TheNextBignum_O::negate_() const {
+  mp_size_t len = this->length();
+  const mp_limb_t* limbs = this->limbs();
+  // This can be a fixnum, if we are -most_negative_fixnum.
+  if ((len == 1) && (limbs[0] == -gc::most_negative_fixnum))
+    return clasp_make_fixnum(gc::most_negative_fixnum);
+  else
+    return TheNextBignum_O::create(-len, 0, false,
+                                   std::abs(len), limbs);
+}
+
 bool TheNextBignum_O::eql_(T_sp obj) const {
   if (gc::IsA<TheNextBignum_sp>(obj)) {
     TheNextBignum_sp other = gc::As_unsafe<TheNextBignum_sp>(obj);
@@ -984,10 +995,9 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
   }
 }
 
-CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
-  mp_size_t llen = left->length(), rlen = right->length();
+Integer_sp next_add(const mp_limb_t *llimbs, mp_size_t llen,
+                    const mp_limb_t* rlimbs, mp_size_t rlen) {
   mp_size_t absllen = std::abs(llen), absrlen = std::abs(rlen);
-  const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
   
   // Keep the larger number in the left.
   if (absllen < absrlen) {
@@ -1031,11 +1041,13 @@ CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right
   return bignum_result(result_len, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
+CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
+  return next_add(left->limbs(), left->length(), right->limbs(), right->length());
+}
+
   // Easier than above since we know abs(right) < abs(left) and the result size.
-  mp_size_t len = left->length();
+Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len, Fixnum right) {
   mp_size_t size = std::abs(len);
-  const mp_limb_t* limbs = left->limbs();
 
   mp_limb_t result_len = size;
   mp_limb_t result_limbs[size+1];
@@ -1056,6 +1068,18 @@ CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
   // Result has the same sign as the bigger number (so, the bignum)
   if (len < 0) result_len = -result_len;
   return bignum_result(result_len, result_limbs);
+}
+
+CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
+  return next_fadd(left->limbs(), left->length(), right);
+}
+
+Number_sp TheNextBignum_O::oneMinus_() const {
+  return next_fadd(this->limbs(), this->length(), -1);
+}
+
+Number_sp TheNextBignum_O::onePlus_() const {
+  return next_fadd(this->limbs(), this->length(), 1);
 }
 
 double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
