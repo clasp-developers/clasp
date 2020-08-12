@@ -656,29 +656,44 @@ __attribute__((optnone))
 namespace gctools {
 
 #ifdef USE_MPS
-void walk_memory(mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
+void walk_memory(mps_pool_t pool, mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
   mps_arena_park(global_arena);
-  mps_amc_apply(global_amc_pool, stepper, pdata, psize);
-  mps_amc_apply(global_amcz_pool, stepper, pdata, psize);
+  mps_amc_apply(pool, stepper, pdata, psize);
   mps_arena_release(global_arena);
 }
 
 CL_DEFUN core::T_mv gctools__measure_memory() {
   MemoryMeasure count;
-  walk_memory(amc_apply_measure,(void*)&count,sizeof(count));
+  walk_memory(global_amc_pool, amc_apply_measure,(void*)&count,sizeof(count));
+  walk_memory(global_amcz_pool, amc_apply_measure,(void*)&count,sizeof(count));
   return Values(core::make_fixnum(count._Count),core::make_fixnum(count._Size));
 }
 
 CL_DEFUN void gctools__copy_memory() {
-  MemoryMeasure measure;
-  walk_memory(amc_apply_measure,(void*)&measure,sizeof(measure));
-  uintptr_t buffer = (uintptr_t)malloc(measure._Size+100000);
-  MemoryCopy cpy(buffer);
-  walk_memory(amc_apply_copy,(void*)&cpy,sizeof(cpy));
-  uintptr_t start = buffer+sizeof(gctools::Header_s);
-  uintptr_t stop = cpy._address+sizeof(gctools::Header_s);
-  fixup_objects(0,(void*)start,(void*)stop);
-  free((void*)buffer);
+  MemoryMeasure amc_measure;
+  {
+    walk_memory(global_amc_pool,amc_apply_measure,(void*)&amc_measure,sizeof(amc_measure));
+    uintptr_t amc_buffer = (uintptr_t)malloc(amc_measure._Size+100000);
+    MemoryCopy cpy(amc_buffer);
+    walk_memory(global_amc_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    uintptr_t start = amc_buffer+sizeof(gctools::Header_s);
+    uintptr_t stop = cpy._address+sizeof(gctools::Header_s);
+    printf("%s:%d  fixup_objects from %p to %p\n", __FILE__, __LINE__, (void*)start, (void*)stop);
+    // AMC pool needs fixup
+    fixup_objects(0,(void*)start,(void*)stop);
+    free((void*)amc_buffer);
+  }
+  // AMCZ pool doesn't need to be fixedup
+  MemoryMeasure amcz_measure;
+  {
+    walk_memory(global_amcz_pool,amc_apply_measure,(void*)&amcz_measure,sizeof(amcz_measure));
+    uintptr_t amcz_buffer = (uintptr_t)malloc(amcz_measure._Size+100000);
+    MemoryCopy cpy(amcz_buffer);
+    walk_memory(global_amcz_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    free((void*)amcz_buffer);
+  }
+  printf("%s:%d Copied and fixed up %lu bytes from AMC and copied %lu bytes from AMCZ\n",
+         __FILE__, __LINE__, amc_measure._Size, amcz_measure._Size );
 }
 #endif // USE_MPS
 

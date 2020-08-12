@@ -77,8 +77,8 @@ GC_RESULT OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
           size_t scan_size = ((char*)client-(char*)oldClient);
           size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
           if (scan_size != skip_size) {
-            printf("%s:%d The size of the object with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, header.stamp_(), scan_size, skip_size);
+            printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
+                   __FILE__, __LINE__, (void*)oldClient, header.stamp_(), scan_size, skip_size);
             obj_skip(oldClient);
           }
         }
