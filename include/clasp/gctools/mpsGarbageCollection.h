@@ -123,6 +123,10 @@ mps_addr_t obj_skip_debug(mps_addr_t base,bool debug=false);
                                      size_t skip_size,
                                      int delta);
 
+/*! Implemented in gcweak.h */
+mps_addr_t weak_obj_skip(mps_addr_t base);
+mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t base, size_t allocate_size, size_t skip_size);
+
 
 /*! Implemented in gc_interace.cc */
 void obj_finalize(mps_addr_t base);
