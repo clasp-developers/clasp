@@ -1070,6 +1070,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // Create the AWL pool for weak hash tables here
   MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);
