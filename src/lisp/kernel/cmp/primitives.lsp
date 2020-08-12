@@ -97,6 +97,7 @@
     (primitive         "ltvc_make_fixnum" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %uintptr_t%) :ltvc t)
     (primitive         "ltvc_make_package" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t) 
     (primitive         "ltvc_make_bignum" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)
+    (primitive         "ltvc_make_next_bignum" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)
     (primitive         "ltvc_make_bitvector" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)
     (primitive         "ltvc_make_symbol" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %t*%) :ltvc t)
     (primitive         "ltvc_make_character" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %uintptr_t%) :ltvc t)
