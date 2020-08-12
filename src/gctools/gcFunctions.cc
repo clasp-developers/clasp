@@ -637,6 +637,7 @@ void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
 
 extern "C" {
 
+#ifdef USE_MPS
 #define SCAN_STRUCT_T int
 #define ADDR_T mps_addr_t
 #define OBJECT_SCAN fixup_objects
@@ -649,7 +650,7 @@ __attribute__((optnone))
 #undef GC_OBJ_SCAN
 #undef OBJ_SCAN
 #undef SCAN_STRUCT_T
-
+#endif // USE_MPS
 };
 
 namespace gctools {
