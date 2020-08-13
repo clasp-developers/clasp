@@ -217,14 +217,6 @@ public: // Functions here
   virtual size_t as_size_t() const override;
   virtual ssize_t as_ssize_t() const override;
 
-  // --- THESE FUNCTIONS RETAINED FOR COMPATIBILITY ---
-  // TODO: Code Cleanup: Replace with newer translation functions above
-  // frgo, 2016-09-06
-
-  virtual int64_t as_int64_() const override;
-  virtual uint64_t as_uint64_() const override;
-  string as_uint64_string() const;
-
   gc::Fixnum popcount() const;
   Rational_sp ratdivide(Integer_sp) const override;
   virtual LongLongInt as_LongLongInt_() const override;

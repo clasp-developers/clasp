@@ -54,7 +54,7 @@ LongLongInt Bignum_O::as_LongLongInt_() const {
 
 unsigned long long Bignum_O::as_unsigned_long_long_() const {
   if (sizeof(unsigned long long) == sizeof(uint64_t)) {
-    return this->as_uint64_();
+    return this->as_uint64_t();
   }
   SIMPLE_ERROR(BF("Handle unsigned long long != uint64_t"));
   //	TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_unsigned_long_long)));
@@ -62,81 +62,6 @@ unsigned long long Bignum_O::as_unsigned_long_long_() const {
 
 void Bignum_O::sxhash_(HashGenerator &hg) const {
   hg.addValue(this->_value);
-}
-
-int64_t Bignum_O::as_int64_() const
-{
-  size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
-
-  if ( sizeinbase2 > 64 )
-  {
-    goto BAD;
-  }
-  else
-  {
-    int64_t   val   = 0;
-    size_t    count = 0;
-    int       sign  = 0;
-
-    int64_t * valP  = (int64_t *)::mpz_export( &val,
-                                               &count,
-                                               _lisp->integer_ordering()._mpz_import_word_order,
-                                               sizeof(int64_t),
-                                               _lisp->integer_ordering()._mpz_import_endian,
-                                               0,
-                                               this->_value.get_mpz_t() );
-
-    sign = mpz_sgn(this->_value.get_mpz_t());
-    if ( sign < 0 )
-    {
-      val = -val;
-    }
-
-    return val;
-  }
-
- BAD:
-
-  SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % _rep_(this->asSmartPtr()));
-
-}
-
-uint64_t Bignum_O::as_uint64_() const
-{
-  size_t sizeinbase2 = mpz_sizeinbase( this->_value.get_mpz_t(), 2 );
-
-  if ( sizeinbase2 > 64 )
-  {
-    goto BAD;
-  }
-  else
-  {
-    uint64_t   val    = 0;
-    size_t     count  = 0;
-
-    uint64_t * valP   = (uint64_t *)::mpz_export( &val,
-                                                  &count,
-                                                  _lisp->integer_ordering()._mpz_import_word_order,
-                                                  sizeof(uint64_t),
-                                                  _lisp->integer_ordering()._mpz_import_endian,
-                                                  0,
-                                                  this->_value.get_mpz_t() );
-    return val;
-  }
-
- BAD:
-
-  SIMPLE_ERROR(BF("The value %s won't fit into an uint64_t") % _rep_(this->asSmartPtr()));
-
-}
-
-/*! This helps us debug the as_uint64 function by returning a string representation of the uint64 */
-CL_LISPIFY_NAME("core:asUint64String");
-CL_DEFMETHOD string Bignum_O::as_uint64_string() const {
-  uint64_t ui64 = clasp_to_uint64(this->asSmartPtr());
-  stringstream ss;
-  ss << ui64;
-  return ((ss.str()));
 }
 
 CL_LISPIFY_NAME("core:fitsSintP");
@@ -182,14 +107,14 @@ inline long long Bignum_O::as_longlong() const {
 #ifdef CLASP_MS_WINDOWS_HOST
 #error "Add support for windows and long long bignum conversions"
 #endif
-  return this->as_int64_();
+  return this->as_int64_t();
 }
 
 inline unsigned long long Bignum_O::as_ulonglong() const {
 #ifdef CLASP_MS_WINDOWS_HOST
 #error "Add support for windows and unsigned long long bignum conversions"
 #endif
-  return this->as_uint64_();
+  return this->as_uint64_t();
 }
 
 // -- INT8 --
@@ -225,11 +150,65 @@ inline uint32_t Bignum_O::as_uint32_t() const {
 // -- INT64 --
 
 inline int64_t Bignum_O::as_int64_t() const {
-  return static_cast<int64_t>( this->as_int64_() );
+  size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);
+
+  if ( sizeinbase2 > 64 )
+  {
+    goto BAD;
+  }
+  else
+  {
+    int64_t   val   = 0;
+    size_t    count = 0;
+    int       sign  = 0;
+
+    int64_t * valP  = (int64_t *)::mpz_export( &val,
+                                               &count,
+                                               _lisp->integer_ordering()._mpz_import_word_order,
+                                               sizeof(int64_t),
+                                               _lisp->integer_ordering()._mpz_import_endian,
+                                               0,
+                                               this->_value.get_mpz_t() );
+
+    sign = mpz_sgn(this->_value.get_mpz_t());
+    if ( sign < 0 )
+    {
+      val = -val;
+    }
+
+    return val;
+  }
+
+ BAD:
+
+  SIMPLE_ERROR(BF("The value %s won't fit into an int64_t") % _rep_(this->asSmartPtr()));
 }
 
 inline uint64_t Bignum_O::as_uint64_t() const {
-  return static_cast<uint64_t>( this->as_uint64_() );
+  size_t sizeinbase2 = mpz_sizeinbase( this->_value.get_mpz_t(), 2 );
+
+  if ( sizeinbase2 > 64 )
+  {
+    goto BAD;
+  }
+  else
+  {
+    uint64_t   val    = 0;
+    size_t     count  = 0;
+
+    uint64_t * valP   = (uint64_t *)::mpz_export( &val,
+                                                  &count,
+                                                  _lisp->integer_ordering()._mpz_import_word_order,
+                                                  sizeof(uint64_t),
+                                                  _lisp->integer_ordering()._mpz_import_endian,
+                                                  0,
+                                                  this->_value.get_mpz_t() );
+    return val;
+  }
+
+ BAD:
+
+  SIMPLE_ERROR(BF("The value %s won't fit into an uint64_t") % _rep_(this->asSmartPtr()));
 }
 
 // -- UINTPTR_T --

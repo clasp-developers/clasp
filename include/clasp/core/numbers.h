@@ -383,9 +383,6 @@ namespace core {
     virtual int64_t as_int64_t() const { SUBIMP(); };
     virtual uint64_t as_uint64_t() const { SUBIMP(); };
 
-    virtual int64_t as_int64_() const { SUBIMP(); };
-    virtual uint64_t as_uint64_() const { SUBIMP(); };
-
     virtual uintptr_t as_uintptr_t() const { SUBIMP(); };
     virtual size_t as_size_t() const { SUBIMP(); };
     virtual ssize_t as_ssize_t() const { SUBIMP(); };
