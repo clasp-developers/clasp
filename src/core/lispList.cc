@@ -192,7 +192,7 @@ CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
     // should return nil on positive bignums
     LIKELY_if (arg.consp()) {
       if (idx.fixnump()) {
-	gc::Fixnum n = clasp_to_fixnum(idx);
+	gc::Fixnum n = idx.unsafe_fixnum();
 	if (n < 0) 
 	  TYPE_ERROR(idx, cl::_sym_UnsignedByte);
         else return arg.unsafe_cons()->onth(n);
@@ -214,7 +214,7 @@ CL_DOCSTRING("See CLHS nthcdr");
 CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
     LIKELY_if (arg.consp()) {
       if (idx.fixnump()) {
-	gc::Fixnum n = clasp_to_fixnum(idx);
+	gc::Fixnum n = idx.unsafe_fixnum();
 	if (n < 0) 
 	  TYPE_ERROR(idx, cl::_sym_UnsignedByte);
 	else return arg.unsafe_cons()->onthcdr(n);
@@ -248,7 +248,7 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
    if (ll.nilp())
     return ll;
    if (in.fixnump()) {
-     gc::Fixnum n = clasp_to_fixnum(in);
+     gc::Fixnum n = in.unsafe_fixnum();
      if (n < 0) 
        TYPE_ERROR(in, cl::_sym_UnsignedByte);
      // n is postive fixnum
@@ -292,7 +292,7 @@ CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
   if (l.nilp())
   return l;
   if (in.fixnump()) {
-    gc::Fixnum n = clasp_to_fixnum(in);
+    gc::Fixnum n = in.unsafe_fixnum();
 	  if (n < 0) {
 		TYPE_ERROR(in, cl::_sym_UnsignedByte);
 	  }
@@ -364,7 +364,7 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
     return list;
   //drmeister says we should test the common case fixnum first
   if (in.fixnump()) {
-     gc::Fixnum n = clasp_to_fixnum(in);
+    gc::Fixnum n = in.unsafe_fixnum();
      if (n < 0) TYPE_ERROR(in, cl::_sym_UnsignedByte);
      if (Cons_sp clist =  gc::As<Cons_sp>(list))
        return clist->last(n);
