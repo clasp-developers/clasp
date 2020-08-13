@@ -330,7 +330,7 @@ namespace core {
     // static Integer_sp create( int v );
     // static Integer_sp create( unsigned int v );
     //
-    // static Integer_sp create( long v );
+    static Integer_sp create( long v ) { return Integer_O::create((Fixnum)v); }
     // static Integer_sp create( unsigned long v );
     //
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
@@ -873,8 +873,6 @@ namespace core {
 #define clasp_lower(x, y) (clasp_number_compare((x), (y)) < 0)
 #define clasp_greater(x, y) (clasp_number_compare((x), (y)) > 0)
 
-  unsigned char clasp_toUint8(T_sp n);
-  signed char clasp_toSignedInt8(T_sp n);
   cl_index clasp_toSize(T_sp f);
 
   gctools::Fixnum fixint(T_sp x);
@@ -1102,14 +1100,9 @@ namespace core {
   uint32_t            clasp_to_uint32_t( core::T_sp );
   int64_t             clasp_to_int64_t( core::T_sp );
   uint64_t            clasp_to_uint64_t( core::T_sp );
-
-  // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
-  // frgo, 2017-01-21
-
-
   uintptr_t         clasp_to_uintptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
-  cl_index            clasp_to_size( core::T_sp );
+  size_t            clasp_to_size( core::T_sp );
 
   float               clasp_to_float( core::Number_sp );
   double              clasp_to_double( core::Number_sp );
