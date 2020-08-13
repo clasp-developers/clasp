@@ -222,7 +222,6 @@ namespace core {
     virtual bool operator>(T_sp obj) const;
     virtual bool operator>=(T_sp obj) const;
 */
-    virtual gc::Fixnum as_int_() const { SUBIMP(); }
     virtual uint as_uint_() const { SUBIMP(); }
     virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
     virtual float as_float_() const { SUBIMP(); };
@@ -268,7 +267,6 @@ namespace core {
     static Rational_sp create(Integer_sp num, Integer_sp denom);
 
   public:
-    virtual gc::Fixnum as_int_() const override { SUBIMP(); };
     virtual Number_sp log1_() const override;
     virtual Number_sp log1p_() const override;
     //	virtual Number_sp sqrt_() const;
@@ -364,7 +362,7 @@ namespace core {
     virtual short as_short() const { SUBIMP(); };
     virtual unsigned short as_ushort() const { SUBIMP(); };
 
-    virtual int as_int() const { return this->as_int_(); };
+    virtual int as_int() const { SUBIMP(); };
     virtual unsigned int as_uint() const { SUBIMP(); };
 
     virtual long as_long() const { SUBIMP(); };

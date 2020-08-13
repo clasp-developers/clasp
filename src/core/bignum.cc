@@ -64,14 +64,6 @@ void Bignum_O::sxhash_(HashGenerator &hg) const {
   hg.addValue(this->_value);
 }
 
-gc::Fixnum Bignum_O::as_int_() const {
-  IMPLEMENT_MEF("Implement conversion of Bignum to Fixnum");
-  if (this->_value.fits_sint_p()) {
-    return ((this->_value.get_si()));
-  }
-  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
-}
-
 int64_t Bignum_O::as_int64_() const
 {
   size_t sizeinbase2 = mpz_sizeinbase(this->_value.get_mpz_t(),2);

@@ -221,7 +221,6 @@ public: // Functions here
   // TODO: Code Cleanup: Replace with newer translation functions above
   // frgo, 2016-09-06
 
-  virtual gc::Fixnum as_int_() const override;
   virtual int64_t as_int64_() const override;
   virtual uint64_t as_uint64_() const override;
   string as_uint64_string() const;
