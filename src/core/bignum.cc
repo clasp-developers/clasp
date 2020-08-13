@@ -893,19 +893,16 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
     Fixnum result_sign = ((len < 0) ^ (fdivisor < 0)) ? -1 : 1;
     Fixnum adivisor = std::abs(fdivisor);
     mp_limb_t gcd = mpn_gcd_1(limbs, size, adivisor);
-    if (gcd == adivisor) { // exact division
-      if (result_sign == 1)
-        return this->asSmartPtr();
-      else return bignum_result(-len, limbs);
-    } else { // need a ratio
+    mp_limb_t num[size];
+    mpn_divexact_1(num, limbs, size, gcd);
+    // quick normalize
+    mp_limb_t num_length;
+    if (num[size-1] == 0) num_length = result_sign * (size - 1);
+    else num_length = result_sign * size;
+    if (gcd == adivisor) // exact division
+      return bignum_result(num_length, num);
+    else { // need a ratio
       Fixnum adenom = adivisor/gcd;
-      mp_limb_t num[size];
-      mpn_divexact_1(num, limbs, size, gcd);
-      // quick normalize
-      mp_limb_t num_length;
-      if (num[size-1] == 0)
-        num_length = result_sign * (size-1);
-      else num_length = result_sign * size;
       return Ratio_O::create(bignum_result(num_length, num),
                              clasp_make_fixnum(adenom));
     }
@@ -960,6 +957,10 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
       // NOTE: If MPN had a divexact we could use it,
       // but it doesn't seem to, so we just use tdiv_qr
       // and ignore the remainder.
+      // (eta) Actually there's an mpz_divexact that uses an
+      // mpn_divexact function, but this latter isn't documented.
+      // Might be worth looking into - apparently the exact division
+      // algorithm is a few times faster than the usual one.
       TheNextBignum_sp bgcd = gc::As_unsafe<TheNextBignum_sp>(gcd);
       mp_size_t gcd_size = bgcd->length(); // necessarily positive
       const mp_limb_t* gcd_limbs = bgcd->limbs();
