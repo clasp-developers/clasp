@@ -272,7 +272,6 @@ public:
     return (*this->_Contents)[n];
   };
 
-  __attribute__((optnone))
   void push_back(const value_type &x) {
     if (!this->_Contents) {
       this->reserve(GCVectorPad);
