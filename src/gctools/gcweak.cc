@@ -1023,7 +1023,7 @@ __attribute__((noinline))  mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t 
                                                                      size_t allocate_size,
                                                                      size_t skip_size) {
   int64_t delta = (int64_t)allocate_size - (int64_t)skip_size;
-  printf("%s:%d weak_obj_skip_debug_wrong_size bad size calc allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
+  printf("%s:%d weak_obj_skip_debug_wrong_size bad size calc allocate_size -> %lu  obj_skip -> %lu delta -> %lld\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
          __FILE__, __LINE__, allocate_size, skip_size, delta );
   return weak_obj_skip_debug(client,true);
 }
