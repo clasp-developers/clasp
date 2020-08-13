@@ -179,6 +179,39 @@ public: // Functions here
  public:
   // --- TRANSLATION METHODS ---
 
+  template<typename integral>
+  integral to_integral() const {
+    // KLUDGE: Doesn't work for types bigger than u/slong,
+    // because mpz doesn't really provide a way to extract.
+    static_assert(std::is_signed<integral>::value
+                  ? ((std::numeric_limits<integral>::min()
+                      >= std::numeric_limits<signed long>::min())
+                     && (std::numeric_limits<integral>::max()
+                         <= std::numeric_limits<signed long>::max()))
+                  : (std::numeric_limits<integral>::max()
+                     <= std::numeric_limits<unsigned long>::max()),
+                  "Conversion of bignums to large integral types not implemented");
+    mpz_class m = this->mpz();
+    if (std::is_signed<integral>::value) {
+      if (m.fits_slong_p()) {
+        signed long s = m.get_si();
+        if ((s >= std::numeric_limits<integral>::min())
+            && (s <= std::numeric_limits<integral>::max()))
+          return s;
+      }
+    } else // unsigned
+      if (m.fits_ulong_p()) {
+        unsigned long u = m.get_ui();
+        if (u <= std::numeric_limits<integral>::max())
+          return u;
+      }
+    // Bignum doesn't fit
+    TYPE_ERROR(this->asSmartPtr(),
+               Cons_O::createList(cl::_sym_Integer_O,
+                                  Integer_O::create(std::numeric_limits<integral>::min()),
+                                  Integer_O::create(std::numeric_limits<integral>::max())));
+  };
+  
   virtual short as_short() const override;
   virtual unsigned short as_ushort() const override;
 
@@ -329,6 +362,29 @@ public: // Functions here
   Integer_sp shift_(gc::Fixnum) const override;
 
   virtual bool eql_(T_sp obj) const override;
+
+  template<typename integral>
+  integral to_integral() const {
+    integral mn = std::numeric_limits<integral>::min();
+    integral mx = std::numeric_limits<integral>::max();
+    // First, if integral can only hold fixnums, conversion will always fail.
+    if (!((mn >= gc::most_negative_fixnum) && (mx <= gc::most_positive_fixnum))) {
+      // integral is big enough to hold some bignums.
+      // The actual conversion is a KLUDGE right now.
+      // We assume the type is exactly big enough to fit one mp_limb_t.
+      mp_size_t len = this->length();
+      const mp_limb_t* limbs = this->limbs();
+      if (std::is_signed<integral>::value) {
+        if (len == 1) return limbs[0];
+        else if (len == -1) return -(limbs[0]);
+      } else if (len == 1) return limbs[0];
+    }
+    // Fell through: Bignum is out of range
+    TYPE_ERROR(this->asSmartPtr(),
+               Cons_O::createList(cl::_sym_Integer_O,
+                                  Integer_O::create(mn),
+                                  Integer_O::create(mx)));
+  };
   
 }; // TheNextBignum class
 
@@ -355,6 +411,27 @@ Integer_sp next_add(const mp_limb_t*, mp_size_t, const mp_limb_t*, mp_size_t);
 Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fadd(TheNextBignum_sp, Fixnum);
 int core__next_compare(TheNextBignum_sp, TheNextBignum_sp);
+
+template<typename integral>
+integral clasp_to_integral(T_sp obj) {
+  static_assert(std::is_integral<integral>::value,
+                "clasp_to_integral needs an integral type");
+  integral mn = std::numeric_limits<integral>::min();
+  integral mx = std::numeric_limits<integral>::max();
+  if (obj.fixnump()) {
+    gc::Fixnum f = obj.unsafe_fixnum();
+    if ((mn <= f) && (f <= mx)) return f;
+    else TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O,
+                                            Integer_O::create(mn),
+                                            Integer_O::create(mx)));
+  } else if (gc::IsA<Bignum_sp>(obj))
+    return (gc::As_unsafe<Bignum_sp>(obj))->template to_integral<integral>();
+  else if (gc::IsA<TheNextBignum_sp>(obj))
+    return (gc::As_unsafe<TheNextBignum_sp>(obj))->template to_integral<integral>();
+  else TYPE_ERROR(obj, Cons_O::createList(cl::_sym_Integer_O,
+                                          Integer_O::create(mn),
+                                          Integer_O::create(mx)));
+};
 
 }; // core namespace
 
