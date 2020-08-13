@@ -283,25 +283,27 @@ public:
       throw_hard_error("The end should NEVER be beyond the capacity");
     };
 #endif
-    if (this->_Contents->_End == this->_Contents->_Capacity) {
+    size_t contents_end = this->_Contents->_End;
+    size_t contents_capacity = this->_Contents->_Capacity;
+    if (contents_end == contents_capacity) {
       // This is where we grow the Vector
-      size_t newCapacity = this->_Contents->_Capacity * GCVectorGrow;
+      size_t new_capacity = contents_capacity * GCVectorGrow;
       GC_LOG(("Increasing capacity to %zu\n", newCapacity));
 #ifdef DEBUG_ASSERT
-      if (newCapacity > 65536) {
+      if (new_capacity > 65536) {
         printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
       }
 #endif
-      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
-      new (&*vec) GCVector_moveable<T>(newCapacity);
-      for (size_t zi(0); zi < this->_Contents->_End; ++zi) {
+      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),new_capacity);
+      new (&*vec) GCVector_moveable<T>(new_capacity);
+      for (size_t zi(0); zi < contents_end; ++zi) {
         // the array at newAddress is undefined - placement new to copy
         alloc.construct(&((*vec)[zi]), (*this->_Contents)[zi]);
       };
-      vec->_End = this->_Contents->_End;
+      vec->_End = contents_end;
     }
     // Placement new in the incoming value of x
-    alloc.construct(&((*vec)[this->_Contents->_End]), x);
+    alloc.construct(&((*vec)[contents_end]), x);
     ++vec->_End;
     if (vec != this->_Contents) {
       // Save the old vector impl
