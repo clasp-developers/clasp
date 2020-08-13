@@ -451,8 +451,6 @@ namespace core {
     bool isinf_() const override { return std::isinf(this->_Value); };
 
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& strVal );
     //	virtual	bool	eqn(T_sp obj) const;
     virtual bool eql_(T_sp obj) const override;
     virtual Number_sp reciprocal_() const override;
@@ -522,8 +520,6 @@ namespace core {
     bool isinf_() const override { return std::isinf(this->_Value); };
 
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& strVal );
     virtual bool eql_(T_sp obj) const override;
 
     // math routines shared by all numbers
@@ -622,8 +618,6 @@ namespace core {
     bool isnan_() const;
     Number_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& str);
     //	virtual	bool	eqn(T_sp obj) const;
     virtual bool eql_(T_sp obj) const override;
 
@@ -680,11 +674,6 @@ namespace core {
     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
       return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
     }
-    static Ratio_sp create(const char *str) {
-      GC_ALLOCATE(Ratio_O, r);
-      r->setFromString(str);
-      return r;
-    }
   public:
     // Only useful for creating Ratio in fasl files.
     void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
@@ -706,8 +695,6 @@ namespace core {
     bool isnan_() const;
 
   public:
-    //	virtual	string	valueAsString_() const;
-    void setFromString(const string &str);
     virtual bool eql_(T_sp obj) const override;
 
     Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagen_add(this->_numerator, this->_denominator)), this->_denominator); };

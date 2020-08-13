@@ -146,8 +146,6 @@ public: // Functions here
     return ss.str();
   };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
-  Bignum get() const;
-  Bignum get_or_if_nil_default(Bignum default_value) const;
   Number_sp abs_() const override;
   Number_sp log1_() const override;
   Number_sp sqrt_() const override;
@@ -179,13 +177,6 @@ public: // Functions here
   virtual bool eql_(T_sp obj) const override;
 
  public:
-  virtual string valueAsString() const {
-    stringstream ss;
-    ss << this->_value;
-    return ss.str();
-  };
-  virtual void setFromString(const string &strVal);
-
   // --- TRANSLATION METHODS ---
 
   virtual short as_short() const override;
@@ -219,8 +210,6 @@ public: // Functions here
 
   gc::Fixnum popcount() const;
   Rational_sp ratdivide(Integer_sp) const override;
-  virtual LongLongInt as_LongLongInt_() const override;
-  virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual LongFloat as_long_float_() const override;

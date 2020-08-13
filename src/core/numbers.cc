@@ -1761,10 +1761,6 @@ Number_sp LongFloat_O::copy() const {
   return LongFloat_O::create(this->_Value);
 }
 
-void LongFloat_O::setFromString(const string &str) {
-  this->_Value = atof(str.c_str());
-}
-
 Number_sp LongFloat_O::reciprocal_() const {
   return LongFloat_O::create(1.0 / this->_Value);
 }
@@ -1961,17 +1957,6 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
     this->_denominator = denom;
   }
 }
-
-void Ratio_O::setFromString(const string &str) {
-  vector<string> parts = split(str, "/");
-  ASSERT(parts.size() == 2);
-  Integer_sp num = Integer_O::create(parts[0]);
-  Integer_sp denom = Integer_O::create(parts[1]);
-  this->setf_numerator_denominator(num,denom);
-}
-
-
-
 
 // --------------------------------------------------------------------------------
 

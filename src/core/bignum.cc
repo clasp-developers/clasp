@@ -45,21 +45,6 @@ CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   return ((bn));
 };
 
-LongLongInt Bignum_O::as_LongLongInt_() const {
-  LIKELY_if (this->_value.fits_sint_p()) {
-    return ((this->_value.get_si()));
-  }
-  SIMPLE_ERROR(BF("Cannot convert Bignum %s to long long") % this->__repr__());
-}
-
-unsigned long long Bignum_O::as_unsigned_long_long_() const {
-  if (sizeof(unsigned long long) == sizeof(uint64_t)) {
-    return this->as_uint64_t();
-  }
-  SIMPLE_ERROR(BF("Handle unsigned long long != uint64_t"));
-  //	TYPE_ERROR(this->asSmartPtr(),Cons_O::createList(cl::_sym_Integer_O,make_fixnum(0),Integer_O::create(gc::most_positive_unsigned_long_long)));
-}
-
 void Bignum_O::sxhash_(HashGenerator &hg) const {
   hg.addValue(this->_value);
 }
@@ -267,10 +252,6 @@ LongFloat Bignum_O::as_long_float_() const {
 }
 
 // --- END OF TRANSLATION METHODS ---
-
-void Bignum_O::setFromString(const string &strVal) {
-  this->_value = strVal;
-}
 
 gc::Fixnum Bignum_O::bit_length_() const {
   Bignum x = this->_value;
