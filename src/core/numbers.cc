@@ -944,17 +944,15 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else return -1;
     }
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
+  case_Bignum_v_Ratio:
+  case_NextBignum_v_Ratio: {
+      // x <=> a/b is equivalent to xa <=> b
+      // FIXME: Rather than multiplying, and consing up a potentially
+      // huge bignum, we should just divide the ratio through.
+      // Look at how e.g. SBCL does it.
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = clasp_to_mpz(rb->denominator());
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
-      if (zr < 0)
-        return -1;
-      if (zr == 0)
-        return 0;
-      return 1;
+      Number_sp left = contagen_mul(na, rb->denominator());
+      return basic_compare(left, rb->numerator());
     }
   case_Fixnum_v_SingleFloat : {
       float a = clasp_to_float(na);
@@ -1003,6 +1001,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     return core__next_compare(gc::As_unsafe<TheNextBignum_sp>(na),
                               gc::As_unsafe<TheNextBignum_sp>(nb));
   case_Bignum_v_SingleFloat:
+  case_NextBignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
       float a = clasp_to_float(na);
       float b = clasp_to_float(nb);
@@ -1013,6 +1012,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 1;
     }
   case_Bignum_v_DoubleFloat:
+  case_NextBignum_v_DoubleFloat:
   case_Ratio_v_DoubleFloat : {
       double a = clasp_to_double(na);
       double b = clasp_to_double(nb);
@@ -1023,31 +1023,25 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 1;
     }
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
+  case_Ratio_v_Bignum:
+  case_Ratio_v_NextBignum: {
+      // FIXME: See above FIXME
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(nb);
-      mpz_class raz = clasp_to_mpz(ra->numerator());
-      if (raz < z)
-        return -1;
-      if (raz == z)
-        return 0;
-      return 1;
+      Number_sp right = contagen_mul(ra->denominator(), nb);
+      return basic_compare(ra->numerator(), right);
     }
   case_Ratio_v_Ratio : {
+      // a/b <=> c/d is equivalent to ad <=> bc
+      // FIXME: probably also can be done by division instead.
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1
-        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
-      mpz_class z
-        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
-      if (z1 < z)
-        return -1;
-      if (z1 == z)
-        return 0;
-      return 1;
+      Number_sp left = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp right = contagen_mul(rb->numerator(), ra->denominator());
+      return basic_compare(left, right);
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
+  case_SingleFloat_v_NextBignum:
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_SingleFloat : {
       float a = clasp_to_float(na);
@@ -1063,6 +1057,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     break;
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Bignum:
+  case_DoubleFloat_v_NextBignum:
   case_DoubleFloat_v_Ratio:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat : {
@@ -1082,6 +1077,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     return -long_double_fix_compare(gc::As<Fixnum_sp>(nb)->get(), na.as<LongFloat_O>()->get());
     break;
   case_Bignum_v_LongFloat:
+  case_NextBignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
@@ -1195,20 +1191,20 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
       return fa == fb;
     }
-  case_Fixnum_v_Bignum : {
-      mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
-      return za == zb;
-    }
+  case_Fixnum_v_Bignum:
+  case_Bignum_v_Fixnum:
+  case_Fixnum_v_NextBignum:
+  case_NextBignum_v_Fixnum:
+    // bignums are never in fixnum range.
+    return false;
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = clasp_to_mpz(rb->denominator());
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled - clasp_to_mpz(rb->numerator());
-      return (zr == 0);
-    }
+  case_Ratio_v_Fixnum:
+  case_Bignum_v_Ratio:
+  case_Ratio_v_Bignum:
+  case_NextBignum_v_Ratio:
+  case_Ratio_v_NextBignum:
+    // Normalized ratios are never integers.
+    return false;
   case_Fixnum_v_SingleFloat : {
       float a = clasp_to_float(na);
       float b = clasp_to_float(nb);
@@ -1219,46 +1215,35 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       double b = clasp_to_double(nb);
       return a == b;
     }
-  case_Bignum_v_Fixnum : {
-      mpz_class &za(gc::As<Bignum_sp>(na)->mpz_ref());
-      mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-      return za == zb;
-    }
   case_Bignum_v_Bignum : {
       mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
       mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
       return (za == zb);
     }
   case_Bignum_v_SingleFloat:
+  case_NextBignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
       float a = clasp_to_float(na);
       float b = clasp_to_float(nb);
       return a == b;
     }
   case_Bignum_v_DoubleFloat:
+  case_NextBignum_v_DoubleFloat:
   case_Ratio_v_DoubleFloat : {
       double a = clasp_to_double(na);
       double b = clasp_to_double(nb);
       return a == b;
     }
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(nb);
-      mpz_class raz = clasp_to_mpz(ra->numerator());
-      return raz == z;
-    }
-  case_Ratio_v_Ratio : {
+  case_Ratio_v_Ratio: {
+      // ratios are normalized
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1
-        = clasp_to_mpz(ra->numerator()) * clasp_to_mpz(rb->denominator());
-      mpz_class z
-        = clasp_to_mpz(ra->denominator()) * clasp_to_mpz(rb->numerator());
-      return (z1 == z);
+      return (basic_equalp(ra->numerator(), rb->numerator())
+              && basic_equalp(ra->denominator(), rb->denominator()));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
+  case_SingleFloat_v_NextBignum:
   case_SingleFloat_v_Ratio:
   case_SingleFloat_v_SingleFloat : {
       float a = clasp_to_float(na);
@@ -1268,6 +1253,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
+  case_DoubleFloat_v_NextBignum:
   case_DoubleFloat_v_Ratio:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat : {
@@ -1277,6 +1263,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_LongFloat:
   case_Bignum_v_LongFloat:
+  case_NextBignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
@@ -1293,6 +1280,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_Complex_v_LongFloat:
   case_Complex_v_Fixnum:
   case_Complex_v_Bignum:
+  case_Complex_v_NextBignum:
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
@@ -1303,6 +1291,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Complex:
   case_Bignum_v_Complex:
+  case_NextBignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
