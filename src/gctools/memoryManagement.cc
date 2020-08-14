@@ -372,6 +372,13 @@ void Header_s::validate() const {
     signal_invalid_object(this,"Not a normal object");
   }
 }
+
+
+CL_DEFUN void gctools__validate_object(core::T_sp obj) {
+  if (obj.generalp()) {
+    client_validate_General_O_ptr(obj.unsafe_general());
+  }
+}
 };
 
 
