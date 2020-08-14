@@ -744,6 +744,7 @@ namespace core {
   };
 
   Number_sp cl__expt(Number_sp x, Number_sp y);
+  Real_sp cl__mod(Real_sp, Real_sp);
 
   Integer_sp clasp_ash(Integer_sp x, int bits);
 
