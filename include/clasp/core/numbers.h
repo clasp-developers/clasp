@@ -330,7 +330,9 @@ namespace core {
     // static Integer_sp create( int v );
     // static Integer_sp create( unsigned int v );
     //
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
     static Integer_sp create( long v ) { return Integer_O::create((Fixnum)v); }
+#endif
     // static Integer_sp create( unsigned long v );
     //
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
