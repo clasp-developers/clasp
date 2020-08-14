@@ -374,10 +374,11 @@ void Header_s::validate() const {
 }
 
 
-CL_DEFUN void gctools__validate_object(core::T_sp obj) {
+CL_DEFUN core::T_sp gctools__ensure_valid_object(core::T_sp obj) {
   if (obj.generalp()) {
     client_validate_General_O_ptr(obj.unsafe_general());
   }
+  return obj;
 }
 };
 
