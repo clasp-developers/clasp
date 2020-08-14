@@ -3243,10 +3243,7 @@ CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
     double     d;
     uint64_t   i;
   } converter;
-  if (integer.fixnump())
-    converter.i = unbox_fixnum(integer);
-  else // bignum
-    converter.i = integer->as_uint64_t();
+  converter.i = clasp_to_uint64_t(integer);
   return clasp_make_double_float(converter.d);
 }
 

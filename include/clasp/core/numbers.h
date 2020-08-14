@@ -359,36 +359,6 @@ namespace core {
       If BITS < 0 shift right, if BITS >0 shift left. */
     virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
 
-    virtual short as_short() const { SUBIMP(); };
-    virtual unsigned short as_ushort() const { SUBIMP(); };
-
-    virtual int as_int() const { SUBIMP(); };
-    virtual unsigned int as_uint() const { SUBIMP(); };
-
-    virtual long as_long() const { SUBIMP(); };
-    virtual unsigned long as_ulong() const { SUBIMP(); };
-
-    virtual long long as_longlong() const { SUBIMP(); };
-    virtual unsigned long long as_ulonglong() const { SUBIMP(); };
-
-    virtual int8_t as_int8_t() const { SUBIMP(); };
-    virtual uint8_t as_uint8_t() const { SUBIMP(); };
-
-    virtual int16_t as_int16_t() const { SUBIMP(); };
-    virtual uint16_t as_uint16_t() const { SUBIMP(); };
-
-    virtual int32_t as_int32_t() const { SUBIMP(); };
-    virtual uint32_t as_uint32_t() const { SUBIMP(); };
-
-    virtual int64_t as_int64_t() const { SUBIMP(); };
-    virtual uint64_t as_uint64_t() const { SUBIMP(); };
-
-    virtual uintptr_t as_uintptr_t() const { SUBIMP(); };
-    virtual size_t as_size_t() const { SUBIMP(); };
-    virtual ssize_t as_ssize_t() const { SUBIMP(); };
-
-    virtual ptrdiff_t as_ptrdiff_t() const { SUBIMP(); };
-
     virtual void __write__(T_sp strm) const override;
     Integer_O(){};
     virtual ~Integer_O(){};
@@ -1100,9 +1070,10 @@ namespace core {
   uint32_t            clasp_to_uint32_t( core::T_sp );
   int64_t             clasp_to_int64_t( core::T_sp );
   uint64_t            clasp_to_uint64_t( core::T_sp );
-  uintptr_t         clasp_to_uintptr_t( core::T_sp );
+  uintptr_t           clasp_to_uintptr_t( core::T_sp );
+  intptr_t            clasp_to_intptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
-  size_t            clasp_to_size( core::T_sp );
+  size_t            clasp_to_size_t( core::T_sp );
 
   float               clasp_to_float( core::Number_sp );
   double              clasp_to_double( core::Number_sp );

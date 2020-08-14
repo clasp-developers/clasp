@@ -136,9 +136,6 @@ public: // Functions here
 
   Number_sp signum_() const override;
 
-  /*! Return true if the number fits in a signed int */
-  bool fits_sint_p();
-
   //virtual Number_sp copy() const;
   string description() const override {
     stringstream ss;
@@ -211,35 +208,6 @@ public: // Functions here
                                   Integer_O::create(std::numeric_limits<integral>::min()),
                                   Integer_O::create(std::numeric_limits<integral>::max())));
   };
-  
-  virtual short as_short() const override;
-  virtual unsigned short as_ushort() const override;
-
-  virtual int as_int() const override;
-  virtual unsigned int as_uint() const override;
-
-  virtual long as_long() const override;
-  virtual unsigned long as_ulong() const override;
-
-  virtual long long as_longlong() const override;
-  virtual unsigned long long as_ulonglong() const override;
-
-  virtual int8_t as_int8_t() const override;
-  virtual uint8_t as_uint8_t() const override;
-
-  virtual int16_t as_int16_t() const override;
-  virtual uint16_t as_uint16_t() const override;
-
-  virtual int32_t as_int32_t() const override;
-  virtual uint32_t as_uint32_t() const override;
-
-  virtual int64_t as_int64_t() const override;
-  virtual uint64_t as_uint64_t() const override;
-
-  virtual uintptr_t as_uintptr_t() const override;
-  virtual ptrdiff_t as_ptrdiff_t() const override;
-  virtual size_t as_size_t() const override;
-  virtual ssize_t as_ssize_t() const override;
 
   gc::Fixnum popcount() const;
   Rational_sp ratdivide(Integer_sp) const override;

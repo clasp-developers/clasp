@@ -262,7 +262,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
     T_sp value((gctools::Tagged)object.unsafe_fixnum());
     return value;
   } if (gc::IsA<Bignum_sp>(object)) {
-    size_t val = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
+    size_t val = clasp_to_size_t(object);
     T_sp value((gctools::Tagged)val);
     return value;
   }
