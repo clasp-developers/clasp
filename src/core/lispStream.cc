@@ -48,6 +48,9 @@ THE SOFTWARE.
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <poll.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/fileSystem.h>
@@ -5160,7 +5163,24 @@ CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) {
 static int
 file_listen(T_sp stream, int fileno) {
 #if !defined(CLASP_MS_WINDOWS_HOST)
-#if defined(HAVE_SELECT)
+#if defined(HAVE_POLL)
+  struct pollfd fds[1];
+  int retv;
+  fds[0].fd = fileno;
+  fds[0].events = POLLIN;
+  fds[0].revents = 0;
+  retv = poll(fds,1,0);
+  if (UNLIKELY(retv < 0))
+    file_libc_error(core::_sym_simpleStreamError, stream, "Error while listening to stream.", 0);
+  else if (retv > 0)
+    if (fds[0].revents == POLLIN) {
+      return CLASP_LISTEN_AVAILABLE;
+    } else {
+      SIMPLE_ERROR(BF("Illegal revents value from poll -> %d") % fds[0].revents);
+    }
+  else
+    return CLASP_LISTEN_NO_CHAR;
+#elif defined(HAVE_SELECT)
   fd_set fds;
   int retv;
   struct timeval tv = {0, 0};

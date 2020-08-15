@@ -2164,7 +2164,7 @@ SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
 SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
 SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
 
-
+#if defined(HAVE_SELECT)
 void error_bad_fd(int fd) {
   SIMPLE_ERROR(BF("Invalid file-descriptor %d") % fd);
 }
@@ -2176,14 +2176,20 @@ FdSet_O::FdSet_O() {
 
 CL_LISPIFY_NAME(fd_clr);
 CL_DEFMETHOD void FdSet_O::fd_clr_(int fd) {
+  SIMPLE_ERROR(BF("FD_CLR causes problems with Xcode 11.4 - remove this message once it works again"));
+#if 0
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   FD_CLR(fd,&this->_fd_set);
+#endif
 }
 
 CL_LISPIFY_NAME(fd_set);
 CL_DEFMETHOD void FdSet_O::fd_set_(int fd) {
+  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this message once it works again"));
+#if 0
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   FD_SET(fd,&this->_fd_set);
+#endif
 }
 
 CL_LISPIFY_NAME(fd_copy);
@@ -2193,8 +2199,11 @@ CL_DEFMETHOD void FdSet_O::fd_copy_(FdSet_sp copy) {
 
 CL_LISPIFY_NAME(fd_isset);
 CL_DEFMETHOD bool FdSet_O::fd_isset_(int fd) {
+  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this message once it works again"));
+#if 0
   if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
   return FD_ISSET(fd,&this->_fd_set);
+#endif
 }
 
 CL_LISPIFY_NAME(fd_zero);
@@ -2220,6 +2229,8 @@ CL_DEFUN FdSet_sp core__make_fd_set() {
   GC_ALLOCATE(FdSet_O,fdset);
   return fdset;
 }
+#endif // defined(HAVE_SELECT)
+
 
 CL_LAMBDA(filedescriptor);
 CL_DECLARE();

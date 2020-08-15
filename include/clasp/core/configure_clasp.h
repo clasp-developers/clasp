@@ -219,9 +219,10 @@ typedef int  claspCharacter;
 #define CLASP_CHAR_CODE_NEWLINE '\n'
 #define CLASP_CHAR_CODE_RETURN '\r'
 
-// This should be set up by autoconf or bjam
-
-#define HAVE_SELECT 1
+// Use unix 'select' or 'poll'
+// select has problems in Xcode 11.4.1 (
+//#define HAVE_SELECT 1
+#define HAVE_POLL 1
 #define HAVE_FSEEKO 1
 
 #ifndef HAVE_FSEEKO

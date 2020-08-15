@@ -82,6 +82,7 @@ namespace core {
     int sigset_sigaddset(SignalEnum sym);
   }; // Sigset class
 
+#if 0
   FORWARD(FdSet);
   class FdSet_O : public General_O {
     CL_DOCSTRING(R"(Wraps the unix fdset data type used by select.)");
@@ -99,7 +100,7 @@ namespace core {
     void fd_zero_();
     
   }; // fdset class
-
+#endif
   
 }; // core namespace
 

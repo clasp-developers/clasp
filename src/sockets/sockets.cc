@@ -769,15 +769,24 @@ CL_DEFUN void sockets_internal__fdset_zero(core::Pointer_sp p)
 }
 
 CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) {
+  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+#if 0
   FD_SET(fd,(fd_set*)fdset->ptr());
+#endif
 }
 
 CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) {
+  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+#if 0
   FD_CLR(fd,(fd_set*)fdset->ptr());
+#endif
 }
 
 CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) {
+  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this error message once it's working again"));
+#if 0
   return FD_ISSET(fd,(fd_set*)fdset->ptr());
+#endif
 }
 
 CL_DEFUN core::T_sp sockets_internal__get_host_name() {
