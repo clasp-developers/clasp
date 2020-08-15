@@ -230,10 +230,9 @@ And convert everything to JIT constants."
          (args (list* closure
                       (%size_t (length arguments))
                       real-args))
+         (function-type (cmp:irc-lisp-function-type (length arguments)))
          (result-in-registers
-           (if cmp::*current-unwind-landing-pad-dest*
-               (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
-               (cmp:irc-create-call entry-point args label))))
+           (cmp:irc-call-or-invoke function-type entry-point args cmp:*current-unwind-landing-pad-dest* label)))
     (store-tmv result-in-registers return-value)))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
@@ -245,10 +244,9 @@ And convert everything to JIT constants."
                       'llvm-sys::external-linkage
                       intrinsic-name
                       cmp:*the-module*))))
+         (function-type (cmp:irc-lisp-function-type (length args)))
          (result-in-registers
-           (if cmp::*current-unwind-landing-pad-dest*
-               (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
-               (cmp::irc-create-call func args))))
+           (cmp:irc-call-or-invoke function-type func args cmp:*current-unwind-landing-pad-dest*)))
     (store-tmv result-in-registers return-value)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
@@ -257,6 +255,7 @@ And convert everything to JIT constants."
                               (%intrinsic-invoke-if-landing-pad-or-call
                                (clasp-ffi::from-translator-name type) (list arg)))
                             (second foreign-types) args))
+         (function-type (cmp:function-type-create-on-the-fly foreign-types))
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (cmp:irc-function-create
                     (cmp:function-type-create-on-the-fly foreign-types)
@@ -266,9 +265,9 @@ And convert everything to JIT constants."
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (cmp::irc-call-or-invoke func arguments)
+          (cmp:irc-call-or-invoke function-type func arguments)
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil))
-        (let ((foreign-result (cmp::irc-call-or-invoke func arguments)))
+        (let ((foreign-result (cmp:irc-call-or-invoke function-type func arguments)))
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result))))))
 
 (defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi &key (label ""))
@@ -287,7 +286,7 @@ And convert everything to JIT constants."
     ;;; FIXME: Do these calls also need an INVOKE version if landing-pad is set????
     (if (eq :void (first foreign-types))
         (progn
-          (cmp::irc-call-or-invoke function-pointer arguments)
+          (cmp:irc-call-or-invoke function-type function-pointer arguments)
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) nil))
-        (let ((result-in-t* (cmp::irc-call-or-invoke function-pointer arguments)))
+        (let ((result-in-t* (cmp:irc-call-or-invoke function-type function-pointer arguments)))
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list result-in-t*))))))

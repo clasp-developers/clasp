@@ -33,6 +33,7 @@
             *current-function*
             *current-function-name*
             *current-function-description*
+            *current-unwind-landing-pad-dest*
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
@@ -162,12 +163,14 @@
             alloca-return
             alloca-va_list
             alloca-temp-values
+            irc-lisp-function-type
             irc-and
             irc-basic-block-create
             irc-begin-block
             irc-br
             irc-branch-to-and-begin-block
             irc-cond-br
+            irc-call-or-invoke
             irc-intrinsic-call
             irc-intrinsic-invoke
             irc-bit-cast

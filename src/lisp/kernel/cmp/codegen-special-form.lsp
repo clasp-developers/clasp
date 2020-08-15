@@ -1292,8 +1292,9 @@ jump to blocks within this tagbody."
                         'llvm-sys::External-linkage
                         intrinsic-name
                         *the-module*))))
+           (function-type (llvm-sys:get-function-type func))
            (result-in-registers
-             (irc-call-or-invoke func (nreverse args))))
+             (irc-call-or-invoke function-type func (nreverse args))))
       (irc-tmv-result result-in-registers result)))
   (irc-low-level-trace :flow))
 
@@ -1333,14 +1334,15 @@ jump to blocks within this tagbody."
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
     (let* ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))
+           (function-type (function-type-create-on-the-fly foreign-types))
            (func (or (llvm-sys:get-function *the-module* intrinsic-name)
                      (irc-function-create
-                      (function-type-create-on-the-fly foreign-types)
+                      function-type
                       'llvm-sys::External-linkage
                       intrinsic-name
                       *the-module*)))
            (foreign-result
-            (irc-call-or-invoke func (nreverse args)))
+            (irc-call-or-invoke function-type function-type func (nreverse args)))
            (result-in-t*
             (if (eq :void (first foreign-types))
                 (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
@@ -1367,7 +1369,7 @@ jump to blocks within this tagbody."
              (pointer-t* (irc-load temp-result))
              (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
              (foreign-result
-              (cmp::irc-call-or-invoke function-pointer (nreverse args)))
+              (irc-call-or-invoke function-type function-pointer (nreverse args)))
              (result-in-t*
               (if (eq :void (first foreign-types))
                   (irc-intrinsic-call (clasp-ffi::to-translator-name (first foreign-types)) nil) ; returns :void
@@ -1427,6 +1429,7 @@ jump to blocks within this tagbody."
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
                    (cl-result (irc-funcall-results-in-registers
+                               c-function-type
                                closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro

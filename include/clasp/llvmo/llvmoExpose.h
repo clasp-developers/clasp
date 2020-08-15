@@ -2685,6 +2685,7 @@ struct gctools::GCInfo<llvmo::IRBuilder_O> {
 
 namespace llvmo {
 FORWARD(IRBuilder);
+FORWARD(FunctionType);
 class IRBuilder_O : public IRBuilderBase_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::IRBuilder<>, IRBuilder_O, "IRBUILDER", IRBuilderBase_O);
   typedef llvm::IRBuilder<> ExternalType;
@@ -2701,7 +2702,7 @@ public:
   static IRBuilder_sp make(LLVMContext_sp context);
 
 public:
-  llvm::InvokeInst *CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name = "");
+  llvm::InvokeInst *CreateInvoke(FunctionType_sp function_type, llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name = "");
   llvm::Value* CreateConstGEP2_32(llvm::Type* ty, llvm::Value *ptr, int idx0, int idx1, const llvm::Twine &Name);
   llvm::Value* CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
   llvm::Value *CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
@@ -4228,56 +4229,12 @@ struct from_object<llvm::IntegerType *, std::true_type> {
     this->_v = static_cast<llvm::IntegerType *>(gc::As<llvmo::IntegerType_sp>(object)->wrappedPtr());
   }
 };
-
 };
-    ;
-
-namespace llvmo {
-FORWARD(CompositeType);
-class CompositeType_O : public Type_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CompositeType, CompositeType_O, "CompositeType", Type_O);
-  typedef llvm::CompositeType ExternalType;
-  typedef llvm::CompositeType *PointerToExternalType;
-
-public:
-  PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  CompositeType_O() : Base(){};
-  ~CompositeType_O() {}
-
-public: // static methods
-  static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
-}; // CompositeType_O
-}; // llvmo
-/* from_object translators */
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::CompositeType *> {
-  static core::T_sp convert(llvm::CompositeType *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::CompositeType_O, llvm::CompositeType *>(ptr)));
-  };
-};
-template <>
-struct from_object<llvm::CompositeType *, std::true_type> {
-  typedef llvm::CompositeType *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) {
-    this->_v = static_cast<llvm::CompositeType *>(gc::As<llvmo::CompositeType_sp>(object)->wrappedPtr());
-  }
-};
-
-};
-    ;
 
 namespace llvmo {
 FORWARD(StructType);
-class StructType_O : public CompositeType_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::StructType, StructType_O, "StructType", CompositeType_O);
+class StructType_O : public Type_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::StructType, StructType_O, "StructType", Type_O);
   typedef llvm::StructType ExternalType;
   typedef llvm::StructType *PointerToExternalType;
 
@@ -4320,54 +4277,12 @@ struct from_object<llvm::StructType *, std::true_type> {
 };
 
 };
-    ;
 
-namespace llvmo {
-FORWARD(SequentialType);
-class SequentialType_O : public CompositeType_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::SequentialType, SequentialType_O, "SequentialType", CompositeType_O);
-  typedef llvm::SequentialType ExternalType;
-  typedef llvm::SequentialType *PointerToExternalType;
-
-public:
-  PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  SequentialType_O() : Base(){};
-  ~SequentialType_O() {}
-
-public: // static methods
-  static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
-}; // SequentialType_O
-}; // llvmo
-/* from_object translators */
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::SequentialType *> {
-  static core::T_sp convert(llvm::SequentialType *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::SequentialType_O, llvm::SequentialType *>(ptr)));
-  };
-};
-template <>
-struct from_object<llvm::SequentialType *, std::true_type> {
-  typedef llvm::SequentialType *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) {
-    this->_v = static_cast<llvm::SequentialType *>(gc::As<llvmo::SequentialType_sp>(object)->wrappedPtr());
-  }
-};
-
-};
-    ;
 
 namespace llvmo {
 FORWARD(PointerType);
-class PointerType_O : public SequentialType_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PointerType, PointerType_O, "PointerType", SequentialType_O);
+class PointerType_O : public Type_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PointerType, PointerType_O, "PointerType", Type_O);
   typedef llvm::PointerType ExternalType;
   typedef llvm::PointerType *PointerToExternalType;
 
@@ -4411,8 +4326,8 @@ struct from_object<llvm::PointerType *, std::true_type> {
 
 namespace llvmo {
 FORWARD(ArrayType);
-class ArrayType_O : public SequentialType_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ArrayType, ArrayType_O, "ArrayType", SequentialType_O);
+class ArrayType_O : public Type_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::ArrayType, ArrayType_O, "ArrayType", Type_O);
   typedef llvm::ArrayType ExternalType;
   typedef llvm::ArrayType *ArrayToExternalType;
 
@@ -4453,8 +4368,8 @@ struct from_object<llvm::ArrayType *, std::true_type> {
 
 namespace llvmo {
 FORWARD(VectorType);
-class VectorType_O : public SequentialType_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::VectorType, VectorType_O, "VectorType", SequentialType_O);
+class VectorType_O : public Type_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::VectorType, VectorType_O, "VectorType", Type_O);
   typedef llvm::VectorType ExternalType;
   typedef llvm::VectorType *VectorToExternalType;
 

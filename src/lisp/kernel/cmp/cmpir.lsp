@@ -74,6 +74,8 @@
 (defun irc-add-case (switch val block)
   (llvm-sys:add-case switch val block))
 
+(defun irc-lisp-function-type (number-arguments)
+  (llvm-sys:function-type-get %return-type% (list %t*% %i64% %t*% %t*% %t*% %t*%) t))
 
 (defun irc-gep (array indices &optional (name "gep"))
   (let ((indices (mapcar (lambda (x) (if (fixnump x) (jit-constant-intptr_t x) x)) indices)))
@@ -692,7 +694,7 @@ Otherwise do a variable shift."
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
-  ;; Mismatch in store type sis a very common bug we hit when rewriting codegen.
+  ;; Mismatch in store type is a very common bug we hit when rewriting codegen.
   ;; LLVM doesn't deal with it gracefully except with a debug build, so we just
   ;; check it ourselves. We also check that types are in the same context-
   ;; another reasonably common issue.
@@ -700,6 +702,7 @@ Otherwise do a variable shift."
   ;; Fix code so it doesn't pass a label here, if possible, then remove the parameter.
   (let ((val-type (llvm-sys:get-type val))
         (dest-contained-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
+    ;;(bformat t "irc-store val-type: %s    dest-contained-type: %s%N" val-type dest-contained-type)
     (cond ((llvm-sys:type-equal val-type dest-contained-type)
            (llvm-sys:create-store *irbuilder* val destination is-volatile))
           ((llvm-sys:llvmcontext-equal
@@ -1230,16 +1233,20 @@ and then the irbuilder-alloca, irbuilder-body."
                                      args)))
     real-args))
 
-(defun irc-funcall-results-in-registers (closure args &optional (label ""))
+(defun irc-funcall-results-in-registers-wft (function-type closure args &optional (label ""))
+  ;; (bformat t "irc-funcall-results-in-register-wft closure: %s%N" closure)
   (let* ((entry-point         (irc-calculate-entry closure label))
          (real-args           (irc-calculate-real-args args))  ; fill in NULL for missing register arguments
-         (result-in-registers (irc-call-or-invoke entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
+         (result-in-registers (irc-call-or-invoke function-type entry-point (list* closure (jit-constant-size_t (length args)) real-args) *current-unwind-landing-pad-dest*)))
+    ;;(bformat t "function-type: %s%N" function-type)
+    ;;(bformat t "result-in-registers -> %s%N" result-in-registers)
     result-in-registers))
 
 (defun irc-funcall (result closure args &optional label)
   (unless label
     (setf label "unlabeled-function"))
-  (let ((result-in-registers (irc-funcall-results-in-registers closure args label)))
+  (let* ((function-type (irc-lisp-function-type (length args)))
+         (result-in-registers (irc-funcall-results-in-registers-wft function-type closure args label)))
     (irc-tmv-result result-in-registers result)))
 
 ;----------------------------------------------------------------------
@@ -1275,7 +1282,8 @@ and then the irbuilder-alloca, irbuilder-body."
               (setq i (1+ i)))
           required-args-ty passed-args-ty args)))
 
-(defun irc-create-invoke (entry-point args unwind-dest &optional (label ""))
+(defun irc-create-invoke-wft (function-type entry-point args unwind-dest &optional (label ""))
+  ;;(bformat t "irc-create-invoke-wft entry-point: %s%N" entry-point)
   (unless unwind-dest (error "unwind-dest should not be nil"))
   (unless (null (stringp entry-point)) (error "entry-point for irc-create-invoke cannot be a string - it is ~a" entry-point))
   (let ((normal-dest (irc-basic-block-create "normal-dest")))
@@ -1287,26 +1295,26 @@ and then the irbuilder-alloca, irbuilder-body."
                (if (llvm-sys:get-insert-block *irbuilder*)
                    (llvm-sys:get-name (llvm-sys:get-insert-block *irbuilder*))
                    "NIL")))
-    (let ((code (llvm-sys:create-invoke *irbuilder* entry-point normal-dest unwind-dest args label)))
+    (let* ((code (llvm-sys:create-invoke *irbuilder* function-type entry-point normal-dest unwind-dest args label)))
       (irc-begin-block normal-dest)
       (unless code (error "irc-create-invoke returning nil"))
       code)))
 
-(defun irc-create-call (entry-point args &optional (label ""))
+(defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   ;;(throw-if-mismatched-arguments function-name args)
-  (llvm-sys:create-call-array-ref *irbuilder* entry-point args label nil))
+  ;;(bformat t "irc-create-call-wft entry-point: %s%N" entry-point)
+  (llvm-sys:create-call-array-ref *irbuilder* function-type entry-point args label nil))
 
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
-  (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
+  (irc-create-invoke-wft (llvm-sys:get-function-type function-name) function-name args *current-unwind-landing-pad-dest* label))
 
-(defun irc-call-or-invoke (function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
-                                        ;  (bformat t "irc-call-or-invoke function: %s%N" function)
+(defun irc-call-or-invoke (function-type function args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
   (if landing-pad
       (progn
-        (irc-create-invoke function args landing-pad label))
+        (irc-create-invoke-wft function-type function args landing-pad label))
       (progn
-        (irc-create-call function args label))))
+        (irc-create-call-wft function-type function args label))))
 
 (defun irc-intrinsic-call-or-invoke (function-name args &optional (label "") (landing-pad *current-unwind-landing-pad-dest*))
   "landing-pad is either a landing pad or NIL (depends on function)"
@@ -1314,11 +1322,12 @@ and then the irbuilder-alloca, irbuilder-body."
   (multiple-value-bind (the-function primitive-info)
       (get-or-declare-function-or-error *the-module* function-name)
     (let* ((function-throws (not (llvm-sys:does-not-throw the-function)))
+           (function-type (llvm-sys:get-function-type the-function))
            (code            (cond
                               ((and landing-pad function-throws)
-                               (irc-create-invoke the-function args landing-pad label))
+                               (irc-create-invoke-wft function-type the-function args landing-pad label))
                               (t
-                               (irc-create-call the-function args label))))
+                               (irc-create-call-wft function-type the-function args label))))
            (_               (when (llvm-sys:does-not-return the-function)
                               (irc-unreachable)
                               (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))

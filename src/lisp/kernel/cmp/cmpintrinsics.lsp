@@ -842,7 +842,7 @@ have it call the main-function"
           (with-landing-pad nil
             (with-irbuilder (irbuilder-body)
               (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                     (_                (irc-create-call ctor-fn nil))
+                     (_                (irc-create-call-wft %fn-ctor% ctor-fn nil))
                      (_                (irc-ret-void))))))
           (add-llvm.used *the-module* outer-fn)))
       ctor-fn)))

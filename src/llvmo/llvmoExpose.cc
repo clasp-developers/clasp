@@ -82,6 +82,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/Function.h>
 #include <llvm/IR/CallingConv.h>
+#include <llvm/IR/AbstractCallSite.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IntrinsicInst.h>
@@ -1860,7 +1861,7 @@ namespace llvmo {
 
 CL_DEFUN llvm::Instruction* llvm_sys__replace_call_keep_args(llvm::Function* func, llvm::Instruction* callOrInvoke) {
 //  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
-  llvm::CallSite CS(callOrInvoke);
+//  llvm::CallSite CS(callOrInvoke);
   llvm::Instruction *NewCI = NULL;
   if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
     llvm::CallInst* callInst = llvm::cast<llvm::CallInst>(callOrInvoke);
@@ -1888,7 +1889,7 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call_keep_args(llvm::Function* fun
 
 CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::Instruction* callOrInvoke, llvm::ArrayRef<llvm::Value *> args) {
 //  printf("%s:%d In llvm-sys::replace-call\n",__FILE__, __LINE__);
-  llvm::CallSite CS(callOrInvoke);
+//  llvm::CallSite CS(callOrInvoke);
   llvm::Instruction *NewCI = NULL;
   if (llvm::isa<llvm::CallInst>(callOrInvoke)) {
     llvm::CallInst* NewCall = llvm::CallInst::Create(func,args);
@@ -2403,7 +2404,7 @@ CL_DEFUN IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
 };
 
 CL_LISPIFY_NAME("CreateInvoke");
-CL_DEFMETHOD llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name) {
+CL_DEFMETHOD llvm::InvokeInst *IRBuilder_O::CreateInvoke(FunctionType_sp function_type, llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_Args;
   for (auto cur : Args) {
     if (Value_sp val = oCar(cur).asOrNull<Value_O>()) {
@@ -2413,7 +2414,8 @@ CL_DEFMETHOD llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, ll
     }
   }
   llvm::ArrayRef<llvm::Value *> array_ref_vector_Args(vector_Args);
-  return this->wrappedPtr()->CreateInvoke(Callee, NormalDest, UnwindDest, array_ref_vector_Args, Name);
+  llvm::FunctionCallee function_callee(function_type->wrapped(),Callee);
+  return this->wrappedPtr()->CreateInvoke(function_callee, NormalDest, UnwindDest, array_ref_vector_Args, Name);
 }
 
 CL_LISPIFY_NAME(CreateConstGEP2_32);
@@ -2675,8 +2677,8 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value* (IRBuilderBase_O::ExternalTyp
   CL_LISPIFY_NAME(CreatePHI);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePHI);
 CL_LISPIFY_NAME(CreateCallArrayRef);
-CL_LAMBDA(irbuilder callee args name &optional (fpmathtag nil));
-CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::CallInst *(IRBuilderBase_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilderBase_O::ExternalType::CreateCall);
+CL_LAMBDA(irbuilder function-type callee args name &optional (fpmathtag nil));
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::CallInst *(IRBuilderBase_O::ExternalType::*)(llvm::FunctionType* type, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilderBase_O::ExternalType::CreateCall);
 
 
 // (llvm::FunctionType *FTy, Value *Callee, ArrayRef< Value * > Args, const Twine &Name="", MDNode *FPMathTag=nullptr)
@@ -3045,11 +3047,12 @@ CL_DEFMETHOD core::Integer_sp Type_O::getArrayNumElements() const {
   core::Integer_sp ival = core::Integer_O::create(v64);
   return ival;
 }
+#if 0
 CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getSequentialElementType);
 
 CL_LISPIFY_NAME(getSequentialElementType);
 CL_EXTERN_DEFMETHOD(Type_O, &llvm::Type::getSequentialElementType);;
-
+#endif
   CL_LISPIFY_NAME("type-get-void-ty");
   CL_EXTERN_DEFUN((llvm::Type * (*) (llvm::LLVMContext &C)) &llvm::Type::getVoidTy);
   CL_LISPIFY_NAME("type-get-float-ty");
@@ -3368,14 +3371,13 @@ CL_LISPIFY_NAME(createModuleDebugInfoPrinterPass);
 CL_EXTERN_DEFUN( &llvm::createModuleDebugInfoPrinterPass);
 CL_LISPIFY_NAME(createMemDepPrinter);
 CL_EXTERN_DEFUN( &llvm::createMemDepPrinter);
-  //    core::af_def(LlvmoPkg,"createInstructionCombiningPass",&llvm::createInstructionCombiningPass);
   //    core::af_def(LlvmoPkg,"createReassociatePass",&llvm::createReassociatePass);
   //    core::af_def(LlvmoPkg,"createPostDomTree",&llvm::createPostDomTree);
   CL_LISPIFY_NAME(InitializeNativeTarget);
   CL_EXTERN_DEFUN( &llvm::InitializeNativeTarget);
 
-CL_LISPIFY_NAME(createThreadSanitizerLegacyPassPass);
-CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
+//CL_LISPIFY_NAME(createThreadSanitizerLegacyPassPass);
+//CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
   CL_LISPIFY_NAME(createAggressiveDCEPass);
   CL_EXTERN_DEFUN( &llvm::createAggressiveDCEPass);
   CL_LISPIFY_NAME(createCFGSimplificationPass);
@@ -3387,7 +3389,7 @@ CL_EXTERN_DEFUN(&llvm::createThreadSanitizerLegacyPassPass);
   CL_LISPIFY_NAME(createIndVarSimplifyPass);
   CL_EXTERN_DEFUN( &llvm::createIndVarSimplifyPass);
   CL_LISPIFY_NAME(createInstructionCombiningPass);
-CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(bool))&llvm::createInstructionCombiningPass);
+CL_EXTERN_DEFUN( (llvm::FunctionPass* (*)(unsigned))&llvm::createInstructionCombiningPass);
   CL_LISPIFY_NAME(createJumpThreadingPass);
   CL_EXTERN_DEFUN( &llvm::createJumpThreadingPass);
 #if 0
@@ -4354,7 +4356,8 @@ void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupI
   llvm::StringRef sbuffer((const char*)rbuffer,bytes);
   stringstream sname;
   sname << "of" << global_objectFileCounter++;
-  llvm::StringRef name(sname.str());
+  std::string ssname = sname.str();
+  llvm::StringRef name(ssname);
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
