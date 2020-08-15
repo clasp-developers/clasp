@@ -285,13 +285,15 @@ class TheNextBignum_O : public Integer_O {
 public:
   TheNextBignum_O(int64_t signed_length, mp_limb_t initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
   }
+public:
+  typedef mp_limb_t value_type;
 private: // instance variables here
   gctools::GCArraySignedLength_moveable<mp_limb_t> _limbs;
 
 public: // Functions here
   static TheNextBignum_sp create( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
   {
-    GC_ALLOCATE_VARIADIC(TheNextBignum_O,b,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
+    auto b = gctools::GC<TheNextBignum_O>::allocate_container(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
 
