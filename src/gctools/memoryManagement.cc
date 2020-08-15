@@ -374,9 +374,14 @@ void Header_s::validate() const {
 }
 
 
-CL_DEFUN core::T_sp gctools__ensure_valid_object(core::T_sp obj) {
+CL_DEFUN core::T_mv gctools__ensure_valid_object(core::T_mv obj) {
   if (obj.generalp()) {
     client_validate_General_O_ptr(obj.unsafe_general());
+  }
+  for ( size_t ii = 1; ii<obj.number_of_values(); ++ii ) {
+    if (obj.valueGet_(ii).generalp()) {
+      client_validate_General_O_ptr(obj.valueGet_(ii).unsafe_general());
+    }
   }
   return obj;
 }
