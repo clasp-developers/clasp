@@ -14,6 +14,7 @@ void initialize_gc_functions();
 
 Fixnum core__header_kind(core::T_sp obj);
 Fixnum core__header_stamp(core::T_sp obj);
+core::T_sp gctools__ensure_valid_object(core::T_sp obj);
 
 
 };
