@@ -293,7 +293,7 @@
         ;; deranged and bad things would happen. There should be an additional value to
         ;; distinguish frames - some arbitrary integer, like a counter or the time.
         (cmp:irc-bit-cast
-         (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
+         (%intrinsic-call "llvm.frameaddress.p0i8" (list (%i32 0)) "frame")
          cmp:%t*%)))
 
 (defmethod translate-simple-instruction
