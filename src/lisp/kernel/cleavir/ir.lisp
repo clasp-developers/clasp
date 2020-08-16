@@ -244,7 +244,8 @@ And convert everything to JIT constants."
                       'llvm-sys::external-linkage
                       intrinsic-name
                       cmp:*the-module*))))
-         (function-type (cmp:irc-lisp-function-type (length args)))
+         (function-type (llvm-sys:get-function-type func)) ;; (cmp:irc-lisp-function-type (length args)))
+         #+(or)(_ (format t "About to irc-call-or-invoke function-type: ~s  func: ~s   args: ~s~%" function-type func args))
          (result-in-registers
            (cmp:irc-call-or-invoke function-type func args cmp:*current-unwind-landing-pad-dest*)))
     (store-tmv result-in-registers return-value)))
