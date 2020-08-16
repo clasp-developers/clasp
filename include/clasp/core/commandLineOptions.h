@@ -62,6 +62,7 @@ struct CommandLineOptions {
   bool _Interactive;
   bool _Version;
   bool _SilentStartup;
+  std::string _RCFileName;
   bool _NoRc;
   bool _PauseForDebugger;
   std::string _ResourceDir;

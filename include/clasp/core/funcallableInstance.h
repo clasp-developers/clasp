@@ -58,46 +58,33 @@ namespace core {
   FuncallableInstance_O(FunctionDescription* fdesc) :
     Base(funcallable_entry_point)
       , _Class(_Nil<Instance_O>())
-      , _Sig(_Nil<T_O>())
       , _FunctionDescription(fdesc)
-      , _CallHistory(_Nil<T_O>())
-      , _SpecializerProfile(_Nil<T_O>())
-//      _Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>())),
       , _CompiledDispatchFunction(_Nil<T_O>()) {};
     explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
     Base(funcallable_entry_point),
       _Class(metaClass)
-      ,_Sig(_Unbound<T_O>())
-      ,_FunctionDescription(fdesc)
-      , _CallHistory(_Nil<T_O>())
-      ,_SpecializerProfile(_Nil<T_O>())
-//      ,_Lock(mp::SharedMutex_O::make_shared_mutex(_Nil<T_O>()))
+      , _FunctionDescription(fdesc)
       , _CompiledDispatchFunction(_Nil<T_O>())
+    {};
+    FuncallableInstance_O(FunctionDescription* fdesc, Instance_sp cl, Rack_sp rack)
+      : Base(funcallable_entry_point),
+        _Class(cl),
+        _Rack(rack),
+        _FunctionDescription(fdesc),
+        _CompiledDispatchFunction(_Nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
   public:
     // The order MUST be
-    // entry (inherited from Function_O)
-    // _Class   (matches offset of Instance_O)
-    // _Rack    (matches offset of Instance_O)
-    Instance_sp _Class;
+    // entry (inherited from Function_O, matches offset)
+    // _Rack (matches offset in Instance_O)
     Rack_sp _Rack;
-    T_sp   _Sig;
+    Instance_sp _Class;
     FunctionDescription* _FunctionDescription;
-    std::atomic<size_t>        _Compilations;
     std::atomic<size_t>        _InterpretedCalls;
-    gc::atomic_wrapper<T_sp>   _CallHistory;
-    gc::atomic_wrapper<T_sp>   _SpecializerProfile;
-//    T_sp   _Lock;
-    gc::atomic_wrapper<T_sp>   _CompiledDispatchFunction;
+    std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
-    T_sp GFUN_SPECIALIZER_PROFILE() const { return this->_SpecializerProfile.load(); };
-    T_sp GFUN_SPECIALIZER_PROFILE_compare_exchange(T_sp expected, T_sp new_value);
-    T_sp GFUN_CALL_HISTORY() const { return this->_CallHistory.load(); };
-    T_sp GFUN_CALL_HISTORY_compare_exchange(T_sp expected, T_sp new_value);
 
-//    mp::SharedMutex_sp GFUN_LOCK() const { return gc::As<mp::SharedMutex_sp>(this->_Lock);};
-//    void GFUN_LOCK_set(T_sp l) { this->_Lock = l; };
     T_sp GFUN_DISPATCHER() const { return this->_CompiledDispatchFunction.load(); };
     void GFUN_DISPATCHER_set(T_sp val) { this->_CompiledDispatchFunction.store(val); };
   public:
@@ -122,12 +109,13 @@ namespace core {
     virtual int column() const { return 0; };
     virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();
 
   public: // Functions here
+    Rack_sp rack() const { return this->_Rack; }
     Fixnum stamp() const;
     void stamp_set(Fixnum s);
     size_t numberOfSlots() const;
@@ -145,15 +133,11 @@ namespace core {
 
     string __repr__() const;
 
-    T_sp copyInstance() const;
-
     T_sp setFuncallableInstanceFunction(T_sp functionOrT);
 
-    size_t increment_calls () { return this->_InterpretedCalls++; };
+    size_t increment_calls () { return this->_InterpretedCalls++; }
+    size_t interpreted_calls () { return this->_InterpretedCalls; }
 
-    void increment_compilations() { this->_Compilations++; };
-    size_t compilations() const { return this->_Compilations.load(); };
-    
     void describe(T_sp stream);
 
     void __write__(T_sp sout) const; // Look in write_ugly.cc

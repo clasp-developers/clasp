@@ -174,6 +174,30 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index)
+{NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
+  void* functionDescription = holder->lookup_function_description(function_index);
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
+                                                              llvm_func,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
+  LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
+  NO_UNWIND_END();
+}
+
+void ltvc_make_runtime_closurette(gctools::GCRootsInModule* holder, size_t index, void* function, void* functionDescription) {
+//  core::write_bf_stream(BF("%s:%d ltvc_make_runtime_closurette\n") % __FILE__ % __LINE__ );
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
+                                                              (core::claspFunction)function,
+                                                              (core::FunctionDescription*)functionDescription,
+                                                              core::ClosureWithSlots_O::cclaspClosure);
+  holder->setTaggedIndex( LITERAL_TAG_CHAR, index, functoid.tagged_());
+}
+
+  
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
@@ -399,15 +423,6 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
   NO_UNWIND_END();
 }
 
-
-LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* class_name_t )
-{
-  core::Symbol_sp class_name((gctools::Tagged)class_name_t);
-  core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  LTVCRETURN holder->setTaggedIndex(tag,index,cl.tagged_());
-}
-
-
 LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f)
 {NO_UNWIND_BEGIN();
   core::T_sp val = clasp_make_single_float(f);
@@ -428,7 +443,7 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
 
 LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName, size_t function_index)
 {NO_UNWIND_BEGIN();
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+//  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
   void* functionDescription = holder->lookup_function_description(function_index);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
@@ -438,12 +453,6 @@ LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
-}
-
-LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* klass) {
-  core::T_sp myklass((gctools::Tagged)klass);
-  core::T_sp object = core::eval::funcall(cl::_sym_allocate_instance, myklass);
-  LTVCRETURN holder->setTaggedIndex(tag,index, object.tagged_());
 }
 
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {
@@ -599,6 +608,7 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list
     result << gc::smart_ptr<core::T_O>((gc::Tagged)tagged_obj);
   }
   va_end(rargs);
+  MAYBE_VERIFY_ALIGNMENT(&*(result.result()));
   return result.result().raw_();
   NO_UNWIND_END();
 }
@@ -1109,7 +1119,7 @@ void cc_error_array_out_of_bounds(T_O* index, T_O* expected_type, T_O* array)
 
 SYMBOL_EXPORT_SC_(CorePkg,case_failure);
 SYMBOL_EXPORT_SC_(KeywordPkg,possibilities);
-void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possibilities)
+__attribute__((optnone)) void cc_error_case_failure(T_O* datum, T_O* expected_type, T_O* name, T_O* possibilities)
 {
   core::T_sp tdatum((gctools::Tagged)datum);
   core::T_sp texpected_type((gctools::Tagged)expected_type);

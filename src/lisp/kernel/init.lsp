@@ -161,6 +161,12 @@
 (import 'core:quit :ext)
 (import 'core:btcl :ext)
 (import 'core:ihs-argument :ext)
+(import 'core:getpid :ext)
+(import 'core:argc :ext)
+(import 'core:argv :ext)
+(import 'core:rmdir :ext)
+(import 'core:mkstemp :ext)
+
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
@@ -205,7 +211,9 @@
           ihs-argument
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
-          get-signal-handler set-signal-handler))
+          get-signal-handler set-signal-handler
+          ;;; for asdf and slime and trivial-garbage to use ext:
+          getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -758,12 +766,11 @@ the stage, the +application-name+ and the +bitcode-name+"
 (export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
-  (if (not (member :no-rc *features*))
-      (let ((clasprc (make-pathname :name ""
-                                    :type "clasprc"
+  (if (not (core:no-rc-p))
+      (let ((clasprc (make-pathname :name (core:rc-file-name)
                                     :defaults (user-homedir-pathname))))
         (if (probe-file clasprc)
-            (load clasprc)))))
+            (core:load-source clasprc)))))
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))

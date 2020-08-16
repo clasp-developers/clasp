@@ -1,14 +1,11 @@
 /*! byte-code interpreter included here.
 
 To build the machine use:
-(0) change the #if 1 below to #if 0
+(0) Erase the code below
 (1) ./waf build_rboehm
 (2) (literal::build-c++-machine)
 (3) copy the result below
-
  */
-#if 1
-
 #ifdef DEFINE_PARSERS
 void parse_ltvc_make_nil(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_nil\n", __FILE__, __LINE__, __FUNCTION__);
@@ -190,19 +187,12 @@ void parse_ltvc_enclose(gctools::GCRootsInModule* roots, T_sp fin, bool log, siz
   size_t arg3 = ltvc_read_size_t( fin, log, byte_index );
   ltvc_enclose( roots, tag, index, arg2, arg3);
 };
-void parse_ltvc_allocate_instance(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_allocate_instance\n", __FILE__, __LINE__, __FUNCTION__);
+void parse_ltvc_make_closurette(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_make_closurette\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_allocate_instance( roots, tag, index, arg2);
-};
-void parse_ltvc_find_class(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_find_class\n", __FILE__, __LINE__, __FUNCTION__);
-  char tag = ltvc_read_char( fin, log, byte_index );
-  size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_find_class( roots, tag, index, arg2);
+  size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
+  ltvc_make_closurette( roots, tag, index, arg2);
 };
 void parse_ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_set_mlf_creator_funcall\n", __FILE__, __LINE__, __FUNCTION__);
@@ -217,6 +207,22 @@ void parse_ltvc_mlf_init_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
   size_t arg0 = ltvc_read_size_t( fin, log, byte_index );
   string arg1 = ltvc_read_string( fin, log, byte_index );
   ltvc_mlf_init_funcall( roots, arg0, arg1.c_str());
+};
+void parse_ltvc_mlf_init_basic_call(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_mlf_init_basic_call\n", __FILE__, __LINE__, __FUNCTION__);
+  T_O* arg0 = ltvc_read_object(roots,  fin, log, byte_index );
+  size_t index = ltvc_read_size_t( fin, log, byte_index );
+  Cons_O* varargs = ltvc_read_list( roots, index, fin, log, byte_index );
+  ltvc_mlf_init_basic_call_varargs( roots, arg0, index, varargs);
+};
+void parse_ltvc_mlf_create_basic_call(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_mlf_create_basic_call\n", __FILE__, __LINE__, __FUNCTION__);
+  char tag = ltvc_read_char( fin, log, byte_index );
+  size_t index = ltvc_read_size_t( fin, log, byte_index );
+  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
+  size_t arg3 = ltvc_read_size_t( fin, log, byte_index );
+  Cons_O* varargs = ltvc_read_list( roots, arg3, fin, log, byte_index );
+  ltvc_mlf_create_basic_call_varargs( roots, tag, index, arg2, arg3, varargs);
 };
 void parse_ltvc_set_ltv_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_set_ltv_funcall\n", __FILE__, __LINE__, __FUNCTION__);
@@ -284,18 +290,18 @@ void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
            break;
   case 89: parse_ltvc_enclose(roots,fin,log,byte_index);
            break;
-  case 90: parse_ltvc_allocate_instance(roots,fin,log,byte_index);
+  case 90: parse_ltvc_make_closurette(roots,fin,log,byte_index);
            break;
-  case 91: parse_ltvc_find_class(roots,fin,log,byte_index);
+  case 91: parse_ltvc_set_mlf_creator_funcall(roots,fin,log,byte_index);
            break;
-  case 92: parse_ltvc_set_mlf_creator_funcall(roots,fin,log,byte_index);
+  case 92: parse_ltvc_mlf_init_funcall(roots,fin,log,byte_index);
            break;
-  case 93: parse_ltvc_mlf_init_funcall(roots,fin,log,byte_index);
+  case 93: parse_ltvc_mlf_init_basic_call(roots,fin,log,byte_index);
            break;
-  case 94: parse_ltvc_set_ltv_funcall(roots,fin,log,byte_index);
+  case 94: parse_ltvc_mlf_create_basic_call(roots,fin,log,byte_index);
            break;
-  case 95: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
+  case 95: parse_ltvc_set_ltv_funcall(roots,fin,log,byte_index);
+           break;
+  case 96: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
            break;
 #endif // DEFINE_SWITCH
-
-#endif

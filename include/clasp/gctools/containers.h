@@ -57,10 +57,10 @@ public:
   typedef const value_type &const_reference;
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
-
 public:
   vector_type _Vector;
-
+  Vec0_impl() {
+  };
 public:
   typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
 
@@ -142,7 +142,15 @@ template <class T>
 class Vec0 : public Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> {
 public:
   typedef Vec0_impl<GCVector<T, GCContainerAllocator<GCVector_moveable<T>>>> Base;
-  Vec0() : Base(){};
+  Vec0() : Base() {};
+};
+
+template <class T>
+class Vec0_uncopyable : public Vec0<T> {
+public:
+  typedef Vec0<T> Base;
+  Vec0_uncopyable() : Base(){};
+  Vec0_uncopyable(const Vec0_uncopyable<T>& orig) :Base() {};
 };
 
 template <class K, class V>
@@ -164,6 +172,20 @@ public:
   }
 
   SmallMultimap() : Base(){};
+};
+
+template <class K, class V, class Compare>
+class SmallMultimap_uncopyable : public SmallMultimap<K,V,Compare> {
+public:
+  typedef SmallMultimap<K,V,Compare> Base;
+public:
+  void insert2(K key, V value) {
+    pair<K, V> key_value(key, value);
+    this->insert(key_value);
+  }
+
+  SmallMultimap_uncopyable() : Base(){};
+  SmallMultimap_uncopyable(const SmallMultimap_uncopyable<K,V,Compare>& other) : Base() {};
 };
 
 template <class K>

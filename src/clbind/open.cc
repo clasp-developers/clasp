@@ -130,17 +130,16 @@ CLBIND_API void initialize_clbind() {
   globalClassIdMap = new detail::class_id_map();
   globalCastGraph = new detail::cast_graph();
 #if 1
-  package("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"})
-    [
-     class_<Test>("Test")
-     .def_readwrite("multiplier",&Test::multiplier)
-     .def("set2",&Test::set2)
-     .def("set3",&Test::set3)
-     .def("set4",&Test::set4)
-     .def("set5",&Test::set5)
-     .def("set6",&Test::set6)
-     .def("print-numbers",&Test::print_numbers)
-     ];
+  clbind::package_ pkg("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"});
+  clbind::scope_& m = pkg.scope();
+  class_<Test>(m,"Test")
+    .def_readwrite("multiplier",&Test::multiplier)
+    .def("set2",&Test::set2)
+    .def("set3",&Test::set3)
+    .def("set4",&Test::set4)
+    .def("set5",&Test::set5)
+    .def("set6",&Test::set6)
+    .def("print-numbers",&Test::print_numbers);
 #endif
 }
 

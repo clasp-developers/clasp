@@ -698,28 +698,14 @@ CL_LAMBDA(form);
 CL_DECLARE();
 CL_DOCSTRING("eval");
 CL_DEFUN T_mv cl__eval(T_sp form) {
-  form = cl__macroexpand(form, _Nil<T_O>());
-  if (form.generalp()) {
-    if (gc::IsA<Symbol_sp>(form)) {
-      Symbol_sp sform = gc::As_unsafe<Symbol_sp>(form);
-      if (sform.nilp()) return _Nil<T_O>();
-      return sform->symbolValue();
-    }
-    // Any other general object is an atom
-    return form;
+  if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
+      !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
+      core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
+      ) {
+    return eval::evaluate(form, _Nil<T_O>());
+  } else {
+    return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
   }
-  if (form.consp()) {
-    if (core::_sym_STAReval_with_env_hookSTAR.unboundp() ||
-        !core::_sym_STAReval_with_env_hookSTAR->boundP() ||
-        core::_sym_STARuseInterpreterForEvalSTAR->symbolValue().isTrue()
-        ) {
-      return eval::evaluate(form, _Nil<T_O>());
-    } else {
-      return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
-    }
-  }
-  // Anything else is an atom
-  return form;
 };
 
 CL_DECLARE();
@@ -772,33 +758,11 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
-      T_sp olambdaList = oCadr(carg);
-      List_sp body = oCdr(oCdr(arg));
-      List_sp declares;
-      gc::Nilable<String_sp> docstring;
-      List_sp code;
-      eval::parse_lambda_body(body, declares, docstring, code);
-      T_sp name = cl::_sym_lambda;
-      for ( auto cur : declares ) {
-        T_sp declare = oCar(cur);
-        if ( declare.consp() ) {
-          T_sp head = oCar(declare);
-          if ( head == core::_sym_lambdaName ) {
-            name = oCadr(declare);
-          }
-        }
-      }
-      LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-      ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
-                                                                            kw::_sym_function,
-                                                                            olambdaList,
-                                                                            llh,
-                                                                            declares,
-                                                                            docstring,
-                                                                            code,
-                                                                            _Nil<T_O>(), SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      return ic;
+      // Really, this will always return a function, but we'll sanity check.
+      // NOTE: Hypothetically we could speed this up a bit by using the parts
+      // of the evaluator that make functions directly, but then it's hard to
+      // use the Cleavir hooks, and for not much reason.
+      return gc::As<Function_sp>(cl__eval(arg));
     }
   }
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
@@ -1393,7 +1357,7 @@ namespace core {
             TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
             ValueFrame_sp vframe = gc::As<ValueFrame_sp>(tagbodyEnv->getActivationFrame());
             Cons_sp thandle = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-            vframe->operator[](0) = thandle;
+            (*vframe)[0] = thandle;
             T_O* handle = thandle.raw_();
             //
             // Find all the tags and tell the TagbodyEnvironment where they are in the list of forms.
@@ -1413,13 +1377,11 @@ namespace core {
                 T_sp tagOrForm = CONS_CAR(ip);
                 if ((tagOrForm).consp()) {
                     try {
-                        eval::evaluate(tagOrForm, tagbodyEnv);
+                      eval::evaluate(tagOrForm, tagbodyEnv);
                     } catch (DynamicGo &dgo) {
-                        if (dgo.getHandle() != handle) {
-                            throw dgo;
-                        }
-                        int index = dgo.index();
-                        ip = tagbodyEnv->codePos(index);
+                      if (dgo.getHandle() != handle) throw;
+                      int index = dgo.index();
+                      ip = tagbodyEnv->codePos(index);
                     }
                 }
                 ip = CONS_CDR(ip);
@@ -1440,7 +1402,7 @@ namespace core {
                 SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
             }
             ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
-            T_sp thandle = af->operator[](0);
+            T_sp thandle = (*af)[0];
             T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
             DynamicGo go(thandle.raw_(), index);
             throw go;

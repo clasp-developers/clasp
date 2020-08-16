@@ -1,47 +1,6 @@
 (in-package "CLOS")
 
-;;; Outcomes
-
-(defstruct (outcome (:type vector) :named))
-(defstruct (optimized-slot-reader (:type vector) (:include outcome) :named)
-  index slot-name method class)
-(defstruct (optimized-slot-writer (:type vector) (:include outcome) :named)
-  index slot-name method class)
-(defstruct (fast-method-call (:type vector) (:include outcome) :named) function)
-;; see closfastgf.lsp's find-existing-emf for use of applicable-methods slot
-(defstruct (effective-method-outcome (:type vector) (:include outcome) :named)
-  applicable-methods (form nil) (function nil))
-;;; Used for custom generation outside of CLOS per se. See cmpfastgf.
-;;; NOTE: These never take a vaslist at the moment.
-(defstruct (custom-outcome (:type vector) (:include outcome) :named)
-  generator (data nil) (requires-vaslist-p nil))
-
-(defun outcome= (outcome1 outcome2)
-  (or (eq outcome1 outcome2) ; covers effective-method-outcome due to closfastgf caching
-      (cond ((optimized-slot-reader-p outcome1)
-             (and (optimized-slot-reader-p outcome2)
-                  ;; could also do class slot locations somehow,
-                  ;; but it doesn't seem like a big priority.
-                  (fixnump (optimized-slot-reader-index outcome1))
-                  (fixnump (optimized-slot-reader-index outcome2))
-                  (= (optimized-slot-reader-index outcome1)
-                     (optimized-slot-reader-index outcome2))))
-            ((optimized-slot-writer-p outcome1)
-             (and (optimized-slot-writer-p outcome2)
-                  (fixnump (optimized-slot-writer-index outcome1))
-                  (fixnump (optimized-slot-writer-index outcome2))
-                  (= (optimized-slot-writer-index outcome1)
-                     (optimized-slot-writer-index outcome2))))
-            ((fast-method-call-p outcome1)
-             (and (fast-method-call-p outcome2)
-                  (eq (fast-method-call-function outcome1)
-                      (fast-method-call-function outcome2))))
-            (t nil))))
-
 ;;; Misc
-
-(defun eql-specializer-p (spec) (consp spec))
-(defun eql-specializer-value (spec) (car spec))
 
 (defun insert-sorted (item lst &optional (test #'<) (key #'identity))
   (if (null lst)
@@ -57,14 +16,6 @@
 
 (defstruct (test (:type vector) :named) (paths nil))
 (defstruct (skip (:type vector) :named) next)
-
-;; note: if we used actual specializers, this could just be eq.
-(defun specializer= (s1 s2)
-  (if (eql-specializer-p s1)
-      (and (eql-specializer-p s2)
-           (eql (eql-specializer-value s1) (eql-specializer-value s2)))
-      ;; for classes:
-      (eq s1 s2)))
 
 ;;; Make a new subtree with only one path, starting with the ith specializer.
 (defun remaining-subtree (specializers outcome sprofile speclength i)
@@ -91,8 +42,7 @@
        (add-entry (skip-next node) specializers outcome sprofile speclength (1+ i)))
       ((test-p node)
        (let* ((spec (svref specializers i))
-              (pair (assoc spec (test-paths node)
-                           :test #'specializer=)))
+              (pair (assoc spec (test-paths node))))
          (if pair
              ;; our entry is so far identical to an existing one;
              ;; continue the search.
@@ -109,7 +59,7 @@
 (defun basic-tree (call-history specializer-profile)
   (assert (not (null call-history)))
   (let ((last-specialized (position nil specializer-profile :from-end t :test-not #'eq))
-        (first-specialized (position t specializer-profile)))
+        (first-specialized (position-if #'identity specializer-profile)))
     (when (null last-specialized)
       ;; no specialization - we go immediately to the outcome
       ;; (we could assert all outcomes are identical)
@@ -188,7 +138,7 @@
         with other-classes = nil
         for pair in paths
         for spec = (car pair)
-        do (cond ((eql-specializer-p spec) (push pair eqls))
+        do (cond ((safe-eql-specializer-p spec) (push pair eqls))
                  ((tag-spec-p spec)
                   (setf (svref tags-vector (class-tag spec)) (cdr pair)))
                  ((< (core:class-stamp-for-instances spec) cmp:+c++-stamp-max+)
@@ -203,11 +153,8 @@
 
 ;;; tag tests
 
-(defvar *tag-tests* (llvm-sys:tag-tests)) ; a list of (:foo-tag pseudostamp tag)
 (defun tags-vector () (make-array (length *tag-tests*) :initial-element nil))
 
-(defun tag-spec-p (class) ; is CLASS one that's manifested as a tag test?
-  (member (core:class-stamp-for-instances class) *tag-tests* :key #'second))
 (defun class-tag (class) ; what tag corresponds to CLASS?
   (third (find (core:class-stamp-for-instances class) *tag-tests* :key #'second)))
 
@@ -267,7 +214,10 @@
 ;;; eql tests
 
 (defun compile-eql-search (eqls next)
-  (make-eql-search :objects (map 'simple-vector #'caar eqls)
+  (make-eql-search :objects (map 'simple-vector (lambda (pair)
+                                                  (eql-specializer-object
+                                                   (car pair)))
+                                 eqls)
                    :nexts (map 'simple-vector (lambda (pair)
                                                 (compile-tree (cdr pair)))
                                eqls)
@@ -282,7 +232,8 @@
   '((miss 0) (advance 1) (tag-test 2) (stamp-read 3)
     (<-branch 4) (=-check 5) (range-check 6) (eql 7)
     (optimized-slot-reader 8) (optimized-slot-writer 9)
-    (fast-method-call 10) (effective-method-outcome 11)))
+    (car 10) (rplaca 11)
+    (effective-method-outcome 12)))
 
 (defun opcode (inst)
   (or (second (assoc inst *isa*))
@@ -360,56 +311,25 @@
                    (collect (opcode 'miss))
                    (cont))
                   ((optimized-slot-reader-p tree)
-                   (collect (opcode 'optimized-slot-reader)
-                            (optimized-slot-reader-index tree)
-                            (optimized-slot-reader-slot-name tree)
-                            (optimized-slot-reader-class tree))
+                   (collect
+                    (if (core:fixnump (optimized-slot-reader-index tree))
+                        (opcode 'optimized-slot-reader) ; instance
+                        (opcode 'car)) ; class
+                    (optimized-slot-reader-index tree)
+                    (optimized-slot-reader-slot-name tree))
                    (cont))
                   ((optimized-slot-writer-p tree)
-                   (collect (opcode 'optimized-slot-writer)
-                            (optimized-slot-writer-index tree))
-                   (cont))
-                  ((fast-method-call-p tree)
-                   (collect (opcode 'fast-method-call)
-                            (fast-method-call-function tree))
+                   (collect
+                    (if (core:fixnump (optimized-slot-writer-index tree))
+                        (opcode 'optimized-slot-writer) ; instance
+                        (opcode 'rplaca)) ; class
+                    (optimized-slot-writer-index tree))
                    (cont))
                   ((effective-method-outcome-p tree)
                    (collect (opcode 'effective-method-outcome)
                             (effective-method-outcome-function tree))
                    (cont))
-                  ((custom-outcome-p tree)
-                   (error "BUG: Custom outcome ended up in the interpreter somehow."))
                   (t (error "BUG: Unknown dtree: ~a" tree)))))))
-
-;;; used in cmpfastgf
-;;; T if any outcomes require a vaslist to run
-;;; dtree must be a compiled tree
-
-(defun dtree-requires-vaslist-p (dtree)
-  (cond ((custom-outcome-p dtree)
-         (custom-outcome-requires-vaslist-p dtree))
-        ((effective-method-outcome-p dtree) t)
-        ((outcome-p dtree) nil) ; other outcomes are fine
-        ((advance-p dtree)
-         (dtree-requires-vaslist-p (advance-next dtree)))
-        ((tag-test-p dtree)
-         (or (dtree-requires-vaslist-p (tag-test-default dtree))
-             (some #'dtree-requires-vaslist-p (tag-test-tags dtree))))
-        ((stamp-read-p dtree)
-         (or (dtree-requires-vaslist-p (stamp-read-c++ dtree))
-             (dtree-requires-vaslist-p (stamp-read-other dtree))))
-        ((<-branch-p dtree)
-         (or (dtree-requires-vaslist-p (<-branch-left dtree))
-             (dtree-requires-vaslist-p (<-branch-right dtree))))
-        ((=-check-p dtree)
-         (dtree-requires-vaslist-p (=-check-next dtree)))
-        ((range-check-p dtree)
-         (dtree-requires-vaslist-p (range-check-next dtree)))
-        ((eql-search-p dtree)
-         (or (dtree-requires-vaslist-p (eql-search-default dtree))
-             (some #'dtree-requires-vaslist-p (eql-search-nexts dtree))))
-        ((miss-p dtree) nil)
-        (t (error "BUG: Unknown dtree: ~a" dtree))))
 
 ;;; SIMPLE ENTRY POINTS
 
@@ -422,3 +342,11 @@
          (linear (linearize compiled))
          (final (coerce linear 'vector)))
     final))
+
+(defun interpreted-discriminator (generic-function)
+  (let ((program (compute-dispatch-program
+                  (safe-gf-call-history generic-function)
+                  (safe-gf-specializer-profile generic-function))))
+    (lambda (core:&va-rest args)
+      (declare (core:lambda-name interpreted-discriminating-function))
+      (clos:interpret-dtree-program program generic-function args))))

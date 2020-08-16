@@ -9,13 +9,10 @@ FRAMES=${3:-4000}
 #else
 #   cp /tmp/out-$1.user_stacks /tmp/out-symbol-$1.user_stacks
 #fi
-if [[ "$OSTYPE" == "darwin"* ]]; then
-
-./scripts/profile_throw $PID $TIME $FRAMES
-
-elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-
-exec ./do-perf $PID $TIME $RATE $FRAMES
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    exec ./do-perf $PID $TIME $RATE $FRAMES
+else
+    ./scripts/profile_throw $PID $TIME $FRAMES
 fi
 
 if [ -f /tmp/perf-$PID.map ]; then

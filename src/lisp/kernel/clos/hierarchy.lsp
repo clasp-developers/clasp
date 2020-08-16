@@ -40,28 +40,22 @@
     ;; They need to have those locations, even in user subclasses of this class.
     ;; Also note that boot.lsp ignores these locations for effective slots, just
     ;; using the position in the list here; so that must match the :location.
-    '((flag :initform nil :accessor eql-specializer-flag)
-      (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
-                                      :location 3)
+    ;; It checks this.
+    '((direct-methods :initform nil :reader specializer-direct-methods
+                      :accessor %specializer-direct-methods)
+      (call-history-generic-functions
+       :initform nil
+       :reader specializer-call-history-generic-functions
+       :location 1)
       (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex :location 4)
+                         :accessor specializer-mutex :location 2)
       ;;; Any changes to the slots above need to be reflected in instance.h
       )))
 
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
   (defparameter +eql-specializer-slots+
-    ;; We don't splice in +specializer-slots+ because we need the :initform t for flag.
-    ;; Nonetheless, these slots should match those of specializer, plus the slot for the object.
-    '((flag :initform t :accessor eql-specializer-flag)
-      (direct-methods :initform nil :accessor specializer-direct-methods)
-      (direct-generic-functions :initform nil :accessor specializer-direct-generic-functions)
-      (call-history-generic-functions :initform nil :accessor specializer-call-history-generic-functions
-                                      :location 3)
-      (specializer-mutex :initform (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-                         :accessor specializer-mutex :location 4)
-      (object :initarg :object :accessor eql-specializer-object))))
+    `(,@+specializer-slots+
+      (object :initarg :object :reader eql-specializer-object))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Class METHOD-COMBINATION
@@ -80,27 +74,32 @@
     ;; Any changes involving adding, removing, rearranging slots below need to be reflected in instance.h.
     ;; See comment in +specializer-slots+ about locations.
     `(,@+specializer-slots+
-      (name :initarg :name :initform nil :accessor class-id :location 5)
+      (name :initarg :name :initform nil :reader class-name :location 3)
       (direct-superclasses :initarg :direct-superclasses :initform nil
-			   :accessor class-direct-superclasses :location 6)
-      (direct-subclasses :initform nil :accessor class-direct-subclasses :location 7)
-      (slots :accessor class-slots :location 8)
-      (precedence-list :accessor class-precedence-list :location 9)
-      (direct-slots :initarg :direct-slots :accessor class-direct-slots :location 10)
-      (direct-default-initargs :initarg :direct-default-initargs :location 11
-			       :initform nil :accessor class-direct-default-initargs)
-      (default-initargs :accessor class-default-initargs :location 12)
-      ;; FIXME: is the writer supposed to be exported? I don't think so!
-      (finalized :initform nil :accessor class-finalized-p :location 13)
-      (docstring :initarg :documentation :initform nil :location 14)
+			   :reader class-direct-superclasses :location 4
+                           :accessor %class-direct-superclasses)
+      (direct-subclasses :initform nil  :location 5
+                         :reader class-direct-subclasses
+                         :accessor %class-direct-subclasses)
+      (slots :reader class-slots :accessor %class-slots :location 6)
+      (precedence-list :reader class-precedence-list
+                       :accessor %class-precedence-list :location 7)
+      (direct-slots :initarg :direct-slots :reader class-direct-slots :location 8
+                    :accessor %class-direct-slots)
+      (direct-default-initargs :initarg :direct-default-initargs :location 9
+			       :initform nil :reader class-direct-default-initargs)
+      (default-initargs :reader class-default-initargs
+                        :accessor %class-default-initargs :location 10)
+      (finalized :initform nil :reader class-finalized-p
+                 :accessor %class-finalized-p :location 11)
+      (docstring :initarg :documentation :initform nil :location 12)
       (size :accessor class-size)
       (prototype)
-      (dependents :initform nil :accessor class-dependents :location 17)
+      (dependents :initform nil :accessor class-dependents :location 15)
       (valid-initargs :accessor class-valid-initargs)
-      (slot-table :accessor slot-table)
-      (location-table :initform nil :accessor class-location-table :location 20)
-      (stamp-for-instances :accessor stamp-for-instances :location 21)
-      (creator :accessor creator :location 22)
+      (location-table :initform nil :accessor class-location-table :location 17)
+      (stamp-for-instances :accessor stamp-for-instances :location 18)
+      (creator :accessor creator :location 19)
       (source-position :initform nil :initarg :source-position :accessor class-source-position)
       ;;; Any changes to the slots above need to be reflected in instance.h and metaClass.h
       )))
@@ -120,22 +119,37 @@
     ;; hypothetically reorganize things.
     ;; We also don't really need any of these slots, but it might be good to have
     ;; some kind of structure to represent descriptions of structures later.
-    (append +class-slots+
-	    '((slot-descriptions)
-	      (initial-offset)
-	      (constructors)))))
+    `(,@+class-slots+
+      (slot-descriptions)
+      (initial-offset)
+      (constructors))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-GENERIC-FUNCTION
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (defparameter +standard-generic-function-slots+
-    '((spec-list :initform nil :accessor generic-function-spec-list)
+    '(;; A description of how the methods on this generic function are
+      ;; specialized. It's a simple-vector with as many elements as the gf
+      ;; has required arguments. If a parameter is unspecialized (i.e.
+      ;; all methods' specializers there are T), that element is NIL.
+      ;; If one or more methods have an eql specializer at that position,
+      ;; the element is a list of their eql specializer objects.
+      ;; Otherwise (i.e. the parameter is specialized with non eql
+      ;; specializers) the element is T.
+      (specializer-profile :initform nil
+                           :accessor generic-function-specializer-profile)
+      ;; An alist of (specializer-key . outcome) representing previously
+      ;; seen calls to this function. A specializer-key is a vector of
+      ;; the direct specializers of the required arguments in the call,
+      ;; and an outcome is as in outcome.lsp.
+      (call-history :initform nil :accessor generic-function-call-history)
       (method-combination
        :initarg :method-combination
        :initform (find-method-combination (class-prototype (find-class 'standard-generic-function))
                   'standard nil)
-       :accessor generic-function-method-combination)
+       :reader generic-function-method-combination
+       :accessor %generic-function-method-combination)
       ;; NOTE about generic function lambda lists.
       ;; AMOP says rather specifically that the original lambda list
       ;; passed to ensure-generic-function can be read, and that the
@@ -144,34 +158,45 @@
       ;; display. That's what maybe-augment in method.lsp deals with,
       ;; and what ext:function-lambda-list returns.
       (lambda-list :initarg :lambda-list
-                   :accessor generic-function-lambda-list)
+                   :reader generic-function-lambda-list)
       (argument-precedence-order 
        :initarg :argument-precedence-order
        :initform nil
-       :accessor generic-function-argument-precedence-order)
+       :reader generic-function-argument-precedence-order
+       :accessor %generic-function-argument-precedence-order)
       (method-class
        :initarg :method-class
        :initform (find-class 'standard-method))
-      (methods :initform nil :accessor generic-function-methods)
+      (methods :initform nil :reader generic-function-methods
+               :accessor %generic-function-methods)
       (a-p-o-function :initform nil :accessor generic-function-a-p-o-function)
       (declarations
        :initarg :declarations
        :initform nil
-       :accessor generic-function-declarations)
+       :reader generic-function-declarations)
       (dependents :initform nil :accessor generic-function-dependents))))
 
 ;;; ----------------------------------------------------------------------
 ;;; STANDARD-METHOD
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
+  ;;; Class to be a superclass of both standard-method and effective accessors.
+  (defparameter +std-method-slots+
+    '((the-function :initarg :function :reader method-function)))
+  
   (defparameter +standard-method-slots+
-    '((the-generic-function :initarg :generic-function :initform nil
-       :accessor method-generic-function)
+    `(,@+std-method-slots+
+      (the-generic-function :initarg :generic-function :initform nil
+                            :reader method-generic-function
+                            ;; Writer rather than accessor for the somewhat KLUDGEy
+                            ;; reason that satiate-readers (in satiate.lsp) would try to
+                            ;; satiate it for effective-*-method otherwise, and they don't
+                            ;; have a method on it.
+                            :writer (setf %method-generic-function))
       (lambda-list :initarg :lambda-list
-       :accessor method-lambda-list)
-      (specializers :initarg :specializers :accessor method-specializers)
-      (qualifiers :initform nil :initarg :qualifiers :accessor method-qualifiers)
-      (the-function :initarg :function :accessor method-function)
+                   :reader method-lambda-list)
+      (specializers :initarg :specializers :reader method-specializers)
+      (qualifiers :initform nil :initarg :qualifiers :reader method-qualifiers)
       (docstring :initarg :documentation :initform nil)
       ;; Usually we just use the function's source position, but
       ;; sometimes this is inadequate, e.g. for accessors, which share
@@ -185,14 +210,28 @@
       (aok-p :initform nil :initarg :aok-p :accessor method-allows-other-keys-p)
       ;; leaf-method-p is T if the method form doesn't call call-next-method or next-method-p
       ;; our custom initargs are internal symbols, as per MOP "The defmethod macros"
-      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)
-      (fast-method-function :initform nil :initarg fast-method-function :reader fast-method-function)))
+      (leaf-method-p :initform nil :initarg leaf-method-p :reader leaf-method-p)))
 
   (defparameter +standard-accessor-method-slots+
-    (append +standard-method-slots+
-	    '((slot-definition :initarg :slot-definition
-                               :initform nil
-                               :reader accessor-method-slot-definition)))))
+    `(,@+standard-method-slots+
+      (slot-definition :initarg :slot-definition
+                       :initform nil
+                       :reader accessor-method-slot-definition)))
+
+  ;; This is for direct-reader-method and direct-writer-method, classes used
+  ;; internally to represent when an access method can be done directly
+  ;; (with standard-location-access, basically) instead of through slot-value.
+  ;; These methods are never actually associated with a generic function
+  ;; through add-method generic-function-methods etc., though they do have
+  ;; the method-generic-function set.
+  ;; NOTE that they do not have their own slots, instead proxying through
+  ;; the original, except for the function.
+  (defparameter +effective-accessor-method-slots+
+    `(,@+std-method-slots+
+      (original :initarg :original ; the accessor method this is based on.
+                :reader effective-accessor-method-original)
+      (location :initarg :location
+                :reader effective-accessor-method-location))))
 
 ;;; ----------------------------------------------------------------------
 ;;; SLOT-DEFINITION
@@ -200,17 +239,32 @@
 
 (eval-when (:compile-toplevel :execute  #+clasp :load-toplevel)
   (core:defconstant-equal +slot-definition-slots+
-    '((name :initarg :name :initform nil :accessor slot-definition-name)
-      (initform :initarg :initform :initform +initform-unsupplied+ :accessor slot-definition-initform)
-      (initfunction :initarg :initfunction :initform nil :accessor slot-definition-initfunction)
-      (declared-type :initarg :type :initform t :accessor slot-definition-type)
-      (allocation :initarg :allocation :initform :instance :accessor slot-definition-allocation)
-      (initargs :initarg :initargs :initform nil :accessor slot-definition-initargs)
-      (readers :initarg :readers :initform nil :accessor slot-definition-readers)
-      (writers :initarg :writers :initform nil :accessor slot-definition-writers)
+    '((name :initarg :name :initform nil :reader slot-definition-name)
+      (initform :initarg :initform :initform +initform-unsupplied+
+                :reader slot-definition-initform)
+      (initfunction :initarg :initfunction :initform nil
+                    :reader slot-definition-initfunction)
+      (declared-type :initarg :type :initform t :reader slot-definition-type)
+      (allocation :initarg :allocation :initform :instance :reader slot-definition-allocation)
+      (initargs :initarg :initargs :initform nil :reader slot-definition-initargs)
+      (readers :initarg :readers :initform nil :reader slot-definition-readers)
+      (writers :initarg :writers :initform nil :reader slot-definition-writers)
       (docstring :initarg :documentation :initform nil :accessor slot-definition-documentation)
-      (location :initarg :location :initform nil :accessor slot-definition-location)
+      (location :initarg :location :initform nil :reader slot-definition-location
+                :accessor %slot-definition-location)
       )))
+
+;;; ----------------------------------------------------------------------
+;;; %METHOD-FUNCTION
+;;;
+;;; See method.lsp for use.
+
+(eval-when (:compile-toplevel :execute #+clasp :load-toplevel)
+  (core:defconstant-equal +%method-function-slots+
+    '((fast-method-function :initarg :fmf :initform nil
+                            :reader %mf-fast-method-function)
+      (contf :initarg :contf :initform nil
+             :reader %mf-contf))))
 
 ;;; ----------------------------------------------------------------------
 (eval-when (:compile-toplevel :execute #+clasp :load-toplevel )
@@ -398,11 +452,15 @@
          :direct-superclasses (std-class)
          :direct-slots #1#)
         ,@(loop for (name . rest) in +builtin-classes-list+
-             for index from 1
-             collect (list name :metaclass 'built-in-class
-                           :direct-superclasses (or rest '(core:general))))
+                for index from 1
+                collect (list name
+                              :metaclass 'built-in-class
+                              :direct-superclasses (or rest '(core:general))))
         (funcallable-standard-object
-         :direct-superclasses (standard-object function))
+         :direct-superclasses (standard-object function)
+         ;; MOP technically says the metaclass is standard-class,
+         ;; but that's probably a mistake.
+         :metaclass funcallable-standard-class)
         (generic-function
          :metaclass funcallable-standard-class
          :direct-superclasses (metaobject funcallable-standard-object))
@@ -412,8 +470,11 @@
          :metaclass funcallable-standard-class)
         (method
          :direct-superclasses (metaobject))
-        (standard-method
+        (std-method
          :direct-superclasses (method)
+         :direct-slots #.+std-method-slots+)
+        (standard-method
+         :direct-superclasses (std-method)
          :direct-slots #.+standard-method-slots+)
         (standard-accessor-method
          :direct-superclasses (standard-method)
@@ -424,6 +485,12 @@
         (standard-writer-method
          :direct-superclasses (standard-accessor-method)
          :direct-slots #2#)
+        (effective-reader-method
+         :direct-superclasses (std-method)
+         :direct-slots #4=#.+effective-accessor-method-slots+)
+        (effective-writer-method
+         :direct-superclasses (std-method)
+         :direct-slots #4#)
         (structure-class
          :direct-superclasses (class)
          :direct-slots #.+structure-class-slots+)
@@ -434,11 +501,19 @@
          :direct-superclasses (class)
          :direct-slots #.+standard-class-slots+)
         (core:derivable-cxx-class
-         :direct-superclasses (class)
+         :direct-superclasses (std-class)
          :direct-slots #.+standard-class-slots+)
         (derivable-cxx-object
          :metaclass core:derivable-cxx-class
          :direct-superclasses (standard-object))
+        (%method-function
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots #.+%method-function-slots+)
+        (%no-next-method-continuation
+         :metaclass funcallable-standard-class
+         :direct-superclasses (funcallable-standard-object)
+         :direct-slots nil)
         ))))
 
 (eval-when (:compile-toplevel :execute)

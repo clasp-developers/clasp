@@ -70,9 +70,14 @@
                                                     (symbol-value slots)
                                                     slots)
                           for index from 0
-                          for accessor = (or (getf slotd :accessor) (getf slotd :reader))
+                          ;; KLUDGE: The early slots sometimes have both readers and
+                          ;; accessors so that only one is exported. In this case the
+                          ;; reader usually has the name with no % and we use that in
+                          ;; the code, so we prefer the reader here.
+                          for accessor = (or (getf slotd :reader) (getf slotd :accessor))
                           when accessor
-                            collect `(,accessor (object) `(si::instance-ref ,object ,,index))))
+                            collect `(,accessor (object)
+                                       `(standard-instance-access ,object ,,index))))
      ,@body))
 
 ;;;
@@ -84,7 +89,7 @@
   (when (symbolp slots)
     (setf slots (symbol-value slots)))
   `(let* ((%class ,class)
-          (,object (core:allocate-new-instance %class ,(length slots))))
+          (,object (core:allocate-standard-instance %class ,(length slots))))
      (declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
@@ -108,7 +113,7 @@
     (setf slots (symbol-value slots)))
   `(let* ((%class ,class)
           ;; Identical to above macro except here. (FIXME: rewrite more nicely.)
-          (,object (core:allocate-new-funcallable-instance %class ,(length slots))))
+          (,object (core:allocate-funcallable-standard-instance %class ,(length slots))))
      (declare (type standard-object ,object))
      ,@(flet ((initializerp (name list)
                 (not (eq (getf list name 'wrong) 'wrong))))
@@ -127,21 +132,17 @@
        ,@body)))
 
 ;;;
-;;; ECL classes store slots in a hash table for faster access. The
+;;; Clasp classes store slots in a hash table for faster access. The
 ;;; following functions create the cache and allow us to locate the
 ;;; slots rapidly.
 ;;;
 (defun std-create-slots-table (class)
   (with-slots ((all-slots slots)
-	       (slot-table slot-table)
 	       (location-table location-table))
       class
-    (let* ((size (max 32 (* 2 (length all-slots))))
-	   (table (make-hash-table :size size)))
-      (dolist (slotd all-slots)
-	(setf (gethash (slot-definition-name slotd) table) slotd))
-      (let ((metaclass (si::instance-class class))
-	    (locations nil))
+    (let ((size (max 32 (* 2 (length all-slots))))
+          (metaclass (si::instance-class class))
+          (locations nil))
 	(when (or (eq metaclass (find-class 'standard-class))
 		  (eq metaclass (find-class 'funcallable-standard-class))
 		  (eq metaclass (find-class 'structure-class)))
@@ -149,24 +150,7 @@
 	  (dolist (slotd all-slots)
 	    (setf (gethash (slot-definition-name slotd) locations)
 		  (slot-definition-location slotd))))
-	(setf slot-table table
-	      location-table locations)))))
-
-(defun find-slot-definition (class slot-name)
-  (with-slots ((slots slots) (slot-table slot-table))
-      class
-    (if (or (eq (si:instance-class class)
-                #+clasp (let ((x (load-time-value (list nil))))
-                          (or (car x) (car (rplaca x (find-class 'clos:standard-class)))))
-                #+(or)(load-time-value (find-class 'clos:standard-class))
-                #+ecl +the-standard-class+)
-	    (eq (si:instance-class class)
-                #+clasp (let ((x (load-time-value (list nil))))
-                          (or (car x) (car (rplaca x (find-class 'clos:funcallable-standard-class)))))
-                #+(or)(load-time-value (find-class 'clos:funcallable-standard-class))
-                #+ecl +the-funcallable-standard-class+))
-	(gethash slot-name slot-table nil)
-	(find slot-name slots :key #'slot-definition-name))))
+	(setf location-table locations))))
 
 ;;;
 ;;; STANDARD-CLASS INTERFACE
@@ -180,25 +164,38 @@
 ;;; not deal with that, but we can.
 
 (defun standard-instance-access (instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-ref instance (the fixnum location)))
-        ((consp location)
-         ;; shared slot
-         (car location))
-        (t
-         (invalid-slot-location instance location))))
+  (core:rack-ref (core:instance-rack instance) location))
 
 (defun (setf standard-instance-access) (val instance location)
-  (cond ((si:fixnump location)
-         ;; local slot
-         (si:instance-set instance (the fixnum location) val))
-        ((consp location)
-         ;; shared slot
-         (setf (car location) val))
-        (t
-         (invalid-slot-location instance location)))
-  val)
+  (setf (core:rack-ref (core:instance-rack instance) location) val))
+
+#+threads
+(mp::define-simple-cas-expander clos:standard-instance-access core::instance-cas
+  (instance location)
+  "The requirements of the normal STANDARD-INSTANCE-ACCESS writer
+must be met, including that the slot has allocation :instance, and is
+bound before the operation.
+If there is a CHANGE-CLASS concurrent with this operation the
+consequences are not defined.")
+
+;;; On Clasp, funcallable instances and regular instances store
+;;; their slots identically, at the moment.
+(defun funcallable-standard-instance-access (instance location)
+  (core:rack-ref (core:instance-rack instance) location))
+
+(defun (setf funcallable-standard-instance-access) (val instance location)
+  (setf (core:rack-ref (core:instance-rack instance) location) val))
+
+;;; This works on both class locations (conses) and instance ones.
+(defun standard-location-access (instance location)
+  (if (core:fixnump location)
+      (core:rack-ref (core:instance-rack instance) location)
+      (car location)))
+
+(defun (setf standard-location-access) (val instance location)
+  (if (core:fixnump location)
+      (setf (core:rack-ref (core:instance-rack instance) location) val)
+      (setf (car location) val)))
 
 (defun slot-value (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -208,7 +205,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(let ((value (standard-instance-access self location)))
+		(let ((value (standard-location-access self location)))
 		  (if (si:sl-boundp value)
 		      value
 		      (values (slot-unbound class self slot-name))))
@@ -229,8 +226,11 @@
 		(values (slot-missing class self slot-name 'SLOT-VALUE))))))))
 
 (defun slot-exists-p (self slot-name)
-  (and (find-slot-definition (class-of self) slot-name)
-       t))
+  (with-slots ((slots slots) (location-table location-table))
+      (class-of self)
+    (if location-table ; only for direct instances of standard-class, etc
+        (values (gethash slot-name location-table nil))
+        (find slot-name slots :key #'slot-definition-name))))
 
 (defun slot-boundp (self slot-name)
   (with-early-accessors (+standard-class-slots+
@@ -240,7 +240,7 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-		(si:sl-boundp (standard-instance-access self location))
+		(si:sl-boundp (standard-location-access self location))
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))
 	  (let ((slotd
                   #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
@@ -254,6 +254,28 @@
 		(slot-boundp-using-class class self slotd)
 		(values (slot-missing class self slot-name 'SLOT-BOUNDP))))))))
 
+(defun slot-makunbound (self slot-name)
+  (with-early-accessors (+standard-class-slots+
+                         +slot-definition-slots+)
+    (let* ((class (class-of self))
+	   (location-table (class-location-table class)))
+      (if location-table
+	  (let ((location (gethash slot-name location-table nil)))
+	    (if location
+		(setf (standard-location-access self location) (si:unbound))
+		(slot-missing class self slot-name 'slot-makunbound)))
+	  (let ((slotd
+                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
+                  ;; Can't break this out into a function because again, local macro.
+                  ;; FIXME
+                  (loop for prospect in (class-slots class)
+                        for prospect-name = (slot-definition-name prospect)
+                        when (eql slot-name prospect-name)
+                          return prospect)))
+	    (if slotd
+		(slot-makunbound-using-class class self slotd)
+		(slot-missing class self slot-name 'SLOT-BOUNDP))))))
+  self)
 
 ;;; 7.7.12 slot-missing
 ;;; If slot-missing returns, its values will be treated as follows:
@@ -267,24 +289,40 @@
       (if location-table
 	  (let ((location (gethash slot-name location-table nil)))
 	    (if location
-                (setf (standard-instance-access self location) value)
+                (setf (standard-location-access self location) value)
                 (slot-missing class self slot-name 'SETF value)))
 	  (let ((slotd
                  #+(or) (find slot-name (class-slots class) :key #'slot-definition-name)
                  (loop for prospect in (class-slots class)
-                    for prospect-name = (slot-definition-name prospect)
-                    when (eql slot-name prospect-name)
-                    return prospect)))
+                       for prospect-name = (slot-definition-name prospect)
+                       when (eql slot-name prospect-name)
+                         return prospect)))
 	    (if slotd
 		(setf (slot-value-using-class class self slotd) value)
 		(slot-missing class self slot-name 'SETF value))))))
   value)
 
+;;; FIXME: (cas slot-value) would be a better name.
+#+threads
+(defun cas-slot-value (old new object slot-name)
+  (let* ((class (class-of object))
+         (location-table (class-location-table class)))
+    (if location-table
+        (let ((location (gethash slot-name location-table)))
+          (if location
+              (core::instance-cas old new object location)
+              (slot-missing class object slot-name
+                            'cas (list old new))))
+        (let ((slotd (find slot-name (clos:class-slots class)
+                           :key #'clos:slot-definition-name)))
+          (if slotd
+              (cas-slot-value-using-class old new class object slotd)
+              (slot-missing class object slot-name
+                            'cas (list old new)))))))
 
-;;;
-;;; 2) Overloadable methods on which the previous functions are based
-;;;
-
-(defun invalid-slot-location (instance location)
-  (error "Invalid location ~A when accessing slot of class ~A"
-	 location (class-of location)))
+#+threads
+(mp::define-simple-cas-expander slot-value cas-slot-value (object slot-name)
+  "See SLOT-VALUE-USING-CLASS documentation for constraints.
+If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
+with operation = mp:cas, and new-value a list of OLD and NEW.
+If SLOT-MISSING returns, its primary value is returned.")

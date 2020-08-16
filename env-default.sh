@@ -8,8 +8,8 @@
 #   to the empty string like this:
 #   ASDF_OUTPUT_TRANSLATIONS=""
 
-export ASDF_OUTPUT_TRANSLATIONS=/:
-export CLASP_QUICKLISP_DIRECTORY=/opt/clasp/lib/clasp/src/lisp/modules/quicklisp
+export ASDF_OUTPUT_TRANSLATIONS=${ASDF_OUTPUT_TRANSLATIONS-/:}
+export CLASP_QUICKLISP_DIRECTORY=${CLASP_QUICKLISP_DIRECTORY-/opt/clasp/lib/clasp/src/lisp/modules/quicklisp}
 
 export CLASP_WANT_CANDO=1
 # implies CLASP_WANT_CANDO

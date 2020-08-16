@@ -19,13 +19,16 @@
   (declare (ignore initargs))
   (error "The built-in class (~A) cannot be instantiated" class))
 
+(defmethod allocate-instance ((class built-in-class) &rest initargs)
+  (declare (ignore initargs))
+  (error "The built-in class (~A) cannot be instantiated" class))
+
 (defmethod ensure-class-using-class ((class null) name core:&va-rest rest)
   (clos::gf-log "In ensure-class-using-class (class null)%N")
   (clos::gf-log "     class -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (setf class (apply #'make-instance metaclass :name name options))
-    (invalidate-generic-functions-with-class-selector class)
     (when name
       (si:create-type-name name)
       (setf (find-class name) class))))
@@ -60,13 +63,18 @@
   (declare (ignore class self slotd))
   nil)
 
+#+threads
+(defmethod cas-slot-value-using-class
+    (old new (class built-in-class) object slotd)
+  (error "Cannot modify slots of object with built-in-class"))
+
 ;;; ======================================================================
 ;;; STRUCTURES
 ;;;
 
 (defmethod allocate-instance ((class structure-class) &rest initargs)
   (declare (ignore initargs))
-  (core:allocate-new-instance class (class-size class)))
+  (core:allocate-raw-instance class (make-rack-for-class class)))
 
 ;;; structure-classes cannot be instantiated (but could be, as an extension)
 (defmethod make-instance ((class structure-class) &rest initargs)

@@ -96,7 +96,10 @@
                           (source-position-info->source-location method-spi
                                                                  'defmethod))
                          nil))
-         (sls (or method-sls (source-location (clos:method-function method) t)))
+         (sls (or method-sls
+                  (source-location (clos::fast-method-function method) t)
+                  (source-location (clos::contf-method-function method) t)
+                  (source-location (clos:method-function method) t)))
          (description
            (ignore-errors
             (append (method-qualifiers method)

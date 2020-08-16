@@ -1,7 +1,7 @@
 (in-package :clasp-cleavir)
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-kildall-type-inference:insert-type-checks))
+    ((quality (eql 'insert-type-checks))
      optimize
      (environment clasp-cleavir::clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)
@@ -20,6 +20,7 @@
 
 (defmethod cleavir-policy:policy-qualities append ((env clasp-global-environment))
   '((save-register-args boolean t)
+    (insert-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
@@ -27,6 +28,7 @@
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
+    (insert-type-checks boolean t)
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)

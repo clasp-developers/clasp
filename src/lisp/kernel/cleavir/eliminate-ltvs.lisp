@@ -51,7 +51,6 @@
 
 ;;; Main entry point.
 (defun eliminate-load-time-value-inputs (initial-instruction system env)
-  (assert (typep initial-instruction 'cleavir-ir:top-level-enter-instruction))
   (cleavir-ir:reinitialize-data initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (instruction)

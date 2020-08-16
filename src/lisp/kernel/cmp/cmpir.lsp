@@ -489,20 +489,31 @@ representing a tagged fixnum."
           (error "The val ~s type ~s is not a t* or fixnum " val (type-of val)))))
 
 
+(defun irc-rack-address (instance-tagged)
+  (let ((instance* (irc-untag-general instance-tagged %instance*%)))
+    (irc-struct-gep %instance% instance* +instance.rack-index+)))
+
 (defun irc-rack (instance-tagged)
-  (let* ((instance* (irc-untag-general instance-tagged %instance*%))
-         (rack (irc-load-atomic (irc-struct-gep %instance% instance* +instance.rack-index+) "rack-tagged")))
-    rack))
+  (irc-load-atomic (irc-rack-address instance-tagged) "rack-tagged"))
+
+(defun irc-rack-set (instance-tagged rack)
+  (irc-store-atomic rack (irc-rack-address instance-tagged)))
+
+(defun irc-rack-slot-address (rack-tagged index)
+  (let* ((rack* (irc-untag-general rack-tagged %rack*%))
+         ;; Address of the start of the data vector.
+         (data0* (irc-struct-gep %rack% rack* +rack.data-index+)))
+    (irc-gep data0* (list 0 index))))
 
 (defun irc-instance-slot-address (instance index)
   "Return a %t**% a pointer to a slot in the rack of an instance"
-  (let* ((rack-tagged (irc-rack instance))
-         (rack* (irc-untag-general rack-tagged %rack*%))
-         (data0* (irc-struct-gep %rack% rack* +rack.data-index+))
-         (dataN* (irc-gep data0* (list 0 index))))
-    dataN*))
+  (irc-rack-slot-address (irc-rack instance) index))
 
+(defun irc-rack-read (rack index)
+  (irc-load-atomic (irc-rack-slot-address rack index)))
 
+(defun irc-rack-write (rack index value)
+  (irc-store-atomic value (irc-rack-slot-address rack index)))
 
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
@@ -743,6 +754,29 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   ;; Of course we might want to work with the flag directly instead, but that's
   ;; a reorganization at a higher level.
   (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
+
+(defun translate-rmw-op (op)
+  (cond ((eq op :xchg) 'llvm-sys:xchg)
+        ((eq op :add)  'llvm-sys:add)
+        ((eq op :sub)  'llvm-sys:sub)
+        ((eq op :and)  'llvm-sys:and)
+        ((eq op :nand) 'llvm-sys:nand)
+        ((eq op :or)   'llvm-sys:or)
+        ((eq op :xor)  'llvm-sys:xor)
+        ((eq op :max)  'llvm-sys:max)
+        ((eq op :min)  'llvm-sys:min)
+        ((eq op :umax) 'llvm-sys:umax)
+        ((eq op :umin) 'llvm-sys:umin)
+        ((eq op :fadd) 'llvm-sys:fadd)
+        ((eq op :fsub) 'llvm-sys:fsub)
+        (t (error "Unknown atomic RMW operation: ~s" op))))
+
+(defun irc-atomicrmw (pointer value operation &optional (label "old"))
+  (llvm-sys:create-atomic-rmw *irbuilder*
+                              (translate-rmw-op operation)
+                              pointer value
+                              'llvm-sys:sequentially-consistent
+                              1 #+(or)'llvm-sys:system))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
@@ -1104,7 +1138,11 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun alloca-t* (&optional (label "")) (alloca %t*% 1 label))
 (defun alloca-tmv (&optional (label "")) (alloca %tmv% 1 label))
 (defun alloca-af* (&key (label "")) (alloca %af*% 1 label))
-(defun alloca-i8 (size &optional (label "var")) (alloca %i8% size label))
+(defun alloca-i8 (size &key (alignment 8) (label "var"))
+  (let ((al (alloca %i8% size label)))
+    (llvm-sys:set-alignment al alignment)
+    al))
+
 (defun alloca-i8* (&optional (label "i8*-")) (alloca %i8*% 1 label))
 (defun alloca-i32 (&optional (label "i32-")) (alloca %i32% 1 label))
 (defun alloca-va_list (&optional (label "va_list")) (alloca %va_list% 1 label))
@@ -1115,7 +1153,9 @@ and then the irbuilder-alloca, irbuilder-body."
   ;; Unlike most allocas, we want dx object allocas to be done inline with the code,
   ;; as the length will have been computed at runtime. Kinda like a C VLA.
   ;; So we use *irbuilder*, and don't send the length through constantization.
-  (llvm-sys:create-alloca *irbuilder* %cons% length label))
+  (let ((instr (llvm-sys:create-alloca *irbuilder* %cons% length label)))
+    (llvm-sys:set-alignment instr +alignment+)
+    instr))
 
 (defun alloca-temp-values (size &optional (label "temp-values"))
   ;; Also VLA

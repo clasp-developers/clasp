@@ -42,14 +42,14 @@ GCPROTECTED:
   core::Instance_sp Class_;
 
 public:
-  virtual core::Instance_sp _instanceClass() const { return this->Class_; };
+  virtual core::Instance_sp _instanceClass() const override { return this->Class_; };
   virtual T_sp _instanceClassSet(Instance_sp mc);
   void _setInstanceClassUsingSymbol(core::Symbol_sp classSymbol);
 public:
 CL_LISPIFY_NAME("validp");
 CL_DEFMETHOD   virtual bool validp() const { SUBIMP(); };
-  virtual size_t templatedSizeof() const { SUBIMP(); };
-  virtual bool eql_(core::T_sp obj) const;
+  virtual size_t templatedSizeof() const override { SUBIMP(); };
+  virtual bool eql_(core::T_sp obj) const override;
   virtual void *mostDerivedPointer() const {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();

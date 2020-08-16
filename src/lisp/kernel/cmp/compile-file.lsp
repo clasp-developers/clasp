@@ -83,6 +83,7 @@
 ;;;
 ;;; Compile-file pathnames
 
+;;; I wonder, why that doesn't take core:*clasp-build-mode* into account
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
@@ -94,6 +95,9 @@
     ((eq output-type :fasp) "fasp")
     ((eq output-type :executable) #-windows "" #+windows "exe")
     (t (error "unsupported output-type ~a" output-type))))
+
+(if (or *generate-faso* (eq *clasp-build-mode* :faso))
+                                               :fasp :fasl)
 
 (defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
@@ -295,8 +299,8 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-lineno 0)
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
-                              (output-type (if (or *generate-faso* (eq *clasp-build-mode* :faso))
-                                               :fasp :fasl) output-type-p)
+                              ;; logic needs to be consistent with compile-file-serial and cfp-output-extension
+                              (output-type (if *generate-faso* :fasp :fasl) output-type-p)
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -422,7 +426,7 @@ Compile a lisp source file into an LLVM module."
            (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
                                                   'llvm-sys:code-gen-file-type-object-file
                                                   (reloc-model))))
-             (core:write-faso (make-pathname :type "fasp" :defaults output-file) (list stream) :start-object-id position))))
+             (core:write-faso output-file (list stream) :start-object-id position))))
         ((eq output-type :fasl)
          (let ((temp-bitcode-file (compile-file-pathname input-file
                                                          :output-file output-file :output-type :bitcode)))

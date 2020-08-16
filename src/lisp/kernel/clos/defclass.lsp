@@ -48,18 +48,11 @@
                            (push (gen-note `(setf ,value)) result))))
           finally (return result))))
 
-(defmacro defclass (&whole form &rest args)
-  (unless (>= (length args) 3)
-    (si::simple-program-error "Illegal defclass form: the class name, the superclasses and the slots should always be provided"))
-  (let* ((name (pop args))
-	 (superclasses (pop args))
-	 (slots (pop args))
-         ;; Throw in source info if there is any.
-         ;; FIXME: We basically write out the load-form ourselves.
-         ;; This is because we can't define a make-load-form method until extraclasses
-	 (options (if core:*current-source-pos-info*
-                      (list* (cons :source-position core:*current-source-pos-info*) args)
-                      args)))
+(defmacro defclass (name superclasses slots &rest options)
+  (let (;; Throw in source info if there is any.
+        (options (if core:*current-source-pos-info*
+                     (list* (cons :source-position core:*current-source-pos-info*) options)
+                     options)))
     (unless (and (listp superclasses) (listp slots))
       (si::simple-program-error "Illegal defclass form: superclasses and slots should be lists"))
     (unless (and (symbolp name) (every #'symbolp superclasses))
@@ -77,8 +70,14 @@
   (let ((options '())
 	(processed-options '()))
     (dolist (option class-args)
+      (unless (consp option)
+        (si:simple-program-error
+         "Option ~s for DEFCLASS has invalid syntax: not a cons" option))
       (let ((option-name (first option))
 	    option-value)
+        (unless (symbolp option-name)
+          (si:simple-program-error
+           "~s is not a valid DEFCLASS option: not a symbol" option-name))
 	(if (member option-name processed-options)
 	    (si:simple-program-error
 	     "Option ~s for DEFCLASS specified more than once"

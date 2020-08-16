@@ -246,7 +246,7 @@ DONT_OPTIMIZE_ALWAYS void lisp_errorUnexpectedType(class_id expectedTyp, class_i
   }
   core::Symbol_sp expectedSym = _lisp->classSymbolsHolder()[expectedTyp];
   if (expectedSym.nilp()) {
-    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("expected class_id %d symbol was not defined") % expectedTyp);
+    core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, boost::format("unexpected type for object %p givenTyp %d could not find expectedTyp %d because symbol was not defined") % (void*)objP % givenTyp % expectedTyp);
   }
 
   if (givenTyp >= _lisp->classSymbolsHolder().size()) {
@@ -424,6 +424,7 @@ If the name has neither of the above forms then use the package_name to construc
 */
 std::string magic_name(const std::string& name,const std::string& package_name)
 {
+  // printf("%s:%d magic_name -> %s\n", __FILE__, __LINE__, name.c_str());
   std::size_t found = name.find(":");
   if ( found != std::string::npos ) {
     if ( package_name != "" ) {
@@ -502,6 +503,11 @@ MultipleValues &lisp_multipleValues() {
 string lisp_currentPackageName() {
   string pkg = _lisp->getCurrentPackage()->packageName();
   return pkg;
+}
+
+string lisp_packageName(T_sp tpkg) {
+  Package_sp pkg = gc::As<Package_sp>(tpkg);
+  return pkg->packageName();
 }
 
 Symbol_sp lispify_intern_keyword(string const &name) {
@@ -1624,6 +1630,22 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
     cur = cur->previous();
     ++count;
   }
+}
+
+size_t lisp_badge(T_sp object) {
+  if (object.consp()) {
+#ifdef USE_BOEHM
+    return (size_t)object.raw_();
+#else
+    // USE_MPS
+# ifdef MPS_CONS_AWL_POOL    
+    return (size_t)object.unsafe_cons();
+# else
+    return (size_t)object.unsafe_cons()->_badge;
+# endif
+#endif    
+  }
+  return object.unsafe_general()->_badge;
 }
 
 };

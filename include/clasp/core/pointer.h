@@ -48,10 +48,10 @@ namespace core {
 
   public: // Functions here
     void *ptr() const { return this->m_raw_data; };
-    virtual bool eql_(T_sp obj) const;
+    virtual bool eql_(T_sp obj) const override;
     bool in_pointer_range(Pointer_sp other, intptr_t size) { return ((char*)this->m_raw_data>=(char*)other->m_raw_data) && (char*)this->m_raw_data<((char*)other->m_raw_data+size); };
     bool in_pointer_range(Pointer_sp low, Pointer_sp high) { return ((char*)this->m_raw_data>=(char*)low->m_raw_data) && (char*)this->m_raw_data<((char*)high->m_raw_data);  };
-    string __repr__() const;
+    string __repr__() const override;
 
     Integer_sp pointer_integer() const;
   }; // Pointer class

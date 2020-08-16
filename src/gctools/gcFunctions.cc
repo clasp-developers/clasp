@@ -456,8 +456,20 @@ struct ReachableMPSObject {
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+  if (((uintptr_t)header&gctools::ptag_mask)!=0) {
+    printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)header,gctools::Alignment());
+    abort();
+  }
+  if (((uintptr_t)client&gctools::ptag_mask)!=0) {
+    printf("%s:%d The client at %p is not aligned to %lu\n", __FILE__, __LINE__,
+           (void*)client,gctools::Alignment());
+    abort();
+  }
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
+  // Very expensive to validate every object on the heap
   if (header->stampP()) {
+    header->validate();
     ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
@@ -561,7 +573,7 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
   patternStack = core::Cons_O::create(pattern, patternStack);
   gctools::_sym_STARallocPatternStackSTAR->setf_symbolValue(patternStack);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
-  mps_ap_alloc_pattern_begin(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_begin(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_begin(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
 #endif
 };
@@ -581,11 +593,109 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
     mps_pat = mps_alloc_pattern_ramp_collect_all();
   }
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_zero_rank_allocation_point,mps_pat);
-  mps_ap_alloc_pattern_end(my_thread_allocation_points._amc_cons_allocation_point, mps_pat);
+  mps_ap_alloc_pattern_end(my_thread_allocation_points._cons_allocation_point, mps_pat);
   mps_ap_alloc_pattern_end(my_thread_allocation_points._automatic_mostly_copying_allocation_point, mps_pat);
 #endif
   return pattern;
 };
+
+};
+
+#ifdef USE_MPS
+struct MemoryMeasure {
+  size_t _Count;
+  size_t _Size;
+  MemoryMeasure() : _Count(0), _Size(0) {};
+};
+
+struct MemoryCopy {
+  uintptr_t _address;
+  MemoryCopy(uintptr_t start) : _address(start) {};
+};
+
+extern "C" {
+
+void amc_apply_measure(mps_addr_t client, void *p, size_t s) {
+  MemoryMeasure* count = (MemoryMeasure*)p;
+  count->_Count++;
+  mps_addr_t next = obj_skip(client);
+  count->_Size += ((size_t)next-(size_t)client);
+}
+
+void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
+  MemoryCopy* cpy = (MemoryCopy*)p;
+  mps_addr_t next = obj_skip(client);
+  size_t size = ((size_t)next-(size_t)client);
+  void* header = reinterpret_cast<void*>(gctools::ClientPtrToBasePtr(client));
+  memcpy((void*)cpy->_address,(void*)header,size);
+  cpy->_address += size;
+};
+
+};
+#endif // USE_MPS
+
+
+extern "C" {
+
+#ifdef USE_MPS
+#define SCAN_STRUCT_T int
+#define ADDR_T mps_addr_t
+#define OBJECT_SCAN fixup_objects
+#define SCAN_BEGIN(xxx)
+#define SCAN_END(xxx)
+#define POINTER_FIX(field)
+#define GC_OBJECT_SCAN
+__attribute__((optnone))
+#include "obj_scan.cc"
+#undef GC_OBJ_SCAN
+#undef OBJ_SCAN
+#undef SCAN_STRUCT_T
+#endif // USE_MPS
+};
+
+namespace gctools {
+
+#ifdef USE_MPS
+void walk_memory(mps_pool_t pool, mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
+  mps_arena_park(global_arena);
+  mps_amc_apply(pool, stepper, pdata, psize);
+  mps_arena_release(global_arena);
+}
+
+CL_DEFUN core::T_mv gctools__measure_memory() {
+  MemoryMeasure count;
+  walk_memory(global_amc_pool, amc_apply_measure,(void*)&count,sizeof(count));
+  walk_memory(global_amcz_pool, amc_apply_measure,(void*)&count,sizeof(count));
+  return Values(core::make_fixnum(count._Count),core::make_fixnum(count._Size));
+}
+
+CL_DEFUN void gctools__copy_memory() {
+  MemoryMeasure amc_measure;
+  {
+    walk_memory(global_amc_pool,amc_apply_measure,(void*)&amc_measure,sizeof(amc_measure));
+    uintptr_t amc_buffer = (uintptr_t)malloc(amc_measure._Size+100000);
+    MemoryCopy cpy(amc_buffer);
+    walk_memory(global_amc_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    uintptr_t start = amc_buffer+sizeof(gctools::Header_s);
+    uintptr_t stop = cpy._address+sizeof(gctools::Header_s);
+    printf("%s:%d  fixup_objects from %p to %p\n", __FILE__, __LINE__, (void*)start, (void*)stop);
+    // AMC pool needs fixup
+    fixup_objects(0,(void*)start,(void*)stop);
+    free((void*)amc_buffer);
+  }
+  // AMCZ pool doesn't need to be fixedup
+  MemoryMeasure amcz_measure;
+  {
+    walk_memory(global_amcz_pool,amc_apply_measure,(void*)&amcz_measure,sizeof(amcz_measure));
+    uintptr_t amcz_buffer = (uintptr_t)malloc(amcz_measure._Size+100000);
+    MemoryCopy cpy(amcz_buffer);
+    walk_memory(global_amcz_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    free((void*)amcz_buffer);
+  }
+  printf("%s:%d Copied and fixed up %lu bytes from AMC and copied %lu bytes from AMCZ\n",
+         __FILE__, __LINE__, amc_measure._Size, amcz_measure._Size );
+}
+#endif // USE_MPS
 
 CL_LAMBDA(&optional x);
 CL_DECLARE();
@@ -593,6 +703,7 @@ CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
 #ifdef USE_MPS
+  mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
@@ -602,6 +713,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
   mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
+  mps_arena_release(global_arena);
   OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   OutputStream << std::setw(12) << numCollections << " collections\n";
@@ -757,7 +869,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
-//  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
+//  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object,finalizers);
     // Register the finalizer with the GC
 #ifdef USE_BOEHM
@@ -765,7 +877,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 #endif
 #ifdef USE_MPS
   if (object.generalp() || object.consp()) {
-    my_mps_finalize((void*)&*object);
+    my_mps_finalize(object.raw_());
   }
 #endif
 };
@@ -917,12 +1029,12 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ).str();
 
-  bool mps_recognize_all_tags = false;
-#ifdef MPS_RECOGNIZE_ALL_TAGS
-  mps_recognize_all_tags = true;
-  debugging = true;
+  bool mps_cons_awl_pool = false;
+#ifdef MPS_CONS_AWL_POOL
+  mps_cons_awl_pool = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("MPS-CONS-AWL-POOL"), features);
 #endif
-  if (buildReport) ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "**DEFINED**" : "undefined") ).str();
+  if (buildReport) ss << (BF("MPS_CONS_AWL_POOL = %s\n") % (mps_cons_awl_pool ? "**DEFINED**" : "undefined") ).str();
 
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
@@ -957,6 +1069,13 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = true;
 #endif
   if (buildReport) ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "**DEFINED**" : "undefined") ).str();
+
+  bool debug_alloc_alignment = false;
+#ifdef DEBUG_ALLOC_ALIGNMENT
+  debug_alloc_alignment = true;
+  debugging = true;
+#endif
+  if (buildReport) ss << (BF("DEBUG_ALLOC_ALIGNMENT = %s\n") % (debug_alloc_alignment ? "**DEFINED**" : "undefined") ).str();
 
   bool debug_stackmaps = false;
 #ifdef DEBUG_STACKMAPS
@@ -1257,6 +1376,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_DTRACE_LOCK_PROBE = %s\n") % (debug_dtrace_lock_probe ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_stores = false;
+#ifdef DEBUG_STORES
+  debug_stores = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("DEBUG-STORES"),features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_STORES = %s\n") % (debug_stores ? "**DEFINED**" : "undefined") ).str();
+
   bool disable_type_inference = false;
 #ifdef DISABLE_TYPE_INFERENCE
   disable_type_inference = true;
@@ -1354,6 +1481,9 @@ CL_DEFUN void gctools__configuration()
 
 CL_DEFUN void gctools__thread_local_cleanup()
 {
+#ifdef DEBUG_FINALIZERS
+  printf("%s:%d:%s  called to cleanup thread local resources\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   core::thread_local_invoke_and_clear_cleanup();
 }
 

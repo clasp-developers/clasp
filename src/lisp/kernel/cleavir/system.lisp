@@ -119,7 +119,6 @@
 (defvar *ct-liveness*)
 (defvar *ct-optimize-stack-enclose*)
 (defvar *ct-mark-dynamic-extent*)
-(defvar *ct-thes->typeqs*)
 (defvar *ct-infer-types*)
 (defvar *ct-prune-typeqs*)
 (defvar *ct-delete-the*)
@@ -137,7 +136,6 @@
      *ct-liveness*
      *ct-optimize-stack-enclose*
      *ct-mark-dynamic-extent*
-     *ct-thes->typeqs*
      *ct-infer-types*
      *ct-prune-typeqs*
      *ct-delete-the*
@@ -166,7 +164,6 @@
          (*ct-liveness* 0)
          (*ct-optimize-stack-enclose* 0)
          (*ct-mark-dynamic-extent* 0)
-         (*ct-thes->typeqs* 0)
          (*ct-infer-types* 0)
          (*ct-prune-typeqs* 0)
          (*ct-delete-the* 0)
@@ -188,7 +185,6 @@
                 (float (/ *ct-liveness* internal-time-units-per-second)) "*ct-liveness*"
                 (float (/ *ct-optimize-stack-enclose* internal-time-units-per-second)) "*ct-optimize-stack-enclose*"
                 (float (/ *ct-mark-dynamic-extent* internal-time-units-per-second)) "*ct-mark-dynamic-extent*"
-                (float (/ *ct-thes->typeqs* internal-time-units-per-second)) "*ct-thes->typeqs*"
                 (float (/ *ct-infer-types* internal-time-units-per-second)) "*ct-infer-types*"
                 (float (/ *ct-prune-typeqs* internal-time-units-per-second)) "*ct-prune-typeqs*"
                 (float (/ *ct-delete-the* internal-time-units-per-second)) "*ct-delete-the*"

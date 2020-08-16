@@ -958,6 +958,16 @@ core::T_O** activationFrameReferenceFromClosure(core::T_O* closureRaw)
   return NULL;
 }
 
+void cc_validate_tagged_pointer(core::T_O* ptr)
+{
+  unlikely_if ((((uintptr_t)ptr)&gctools::gc_tag)==gctools::gc_tag) {
+    uintptr_t testval = ((uintptr_t)ptr)&gctools::gc_tag;
+    uintptr_t gctag = gctools::gc_tag;
+    printf("%s:%d Invalid tagged pointer %p testval(%lu)==gctag(%lu)\n", __FILE__, __LINE__, ptr, testval,gctag );
+    abort();
+  }
+}
+
 };
 
 
@@ -975,13 +985,6 @@ void initialize_raw_translators( void )
 
 void initialize_intrinsics( void )
 {
-  // FuncallableInstance and Instance have the rack pointer at the same place
-  if ((offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack))) {
-    printf("%s:%d  The Instance_O._Rack offset %lu and FuncallableInstance_O._Rack offset %lu are not at the same\n", __FILE__, __LINE__,
-           offsetof(Instance_O,_Rack), offsetof(FuncallableInstance_O,_Rack));
-    abort();
-  }
-
   return;
 }
 

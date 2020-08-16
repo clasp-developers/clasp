@@ -442,7 +442,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruc
   ObjectFileInfo* cur = global_object_files.load();
   size_t count;
   char* ptr = (char*)instruction_pointer->ptr();
-  if (!cur) {
+  if ((!cur) && verbose){
     core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)ptr);
   }
   while (cur) {

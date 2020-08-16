@@ -4,6 +4,12 @@
             with-debug-info-source-position
             with-interpreter
             module-report
+            codegen-startup-shutdown
+            jit-startup-function-name
+            irc-simple-function-create
+            *primitives*
+            primitive-argument-types
+            primitive-varargs
             *track-inlined-functions*
             *track-inlinee-name*
             *debug-link-options* ;; A list of strings to inject into link commands
@@ -56,8 +62,15 @@
             *the-module*
             +header-size+
             +cons-tag+
-            +fixnum-tag+
-            +vaslist-tag+
+            +fixnum-mask+
+            +fixnum00-tag+
+            +fixnum01-tag+
+            +fixnum10-tag+
+            +fixnum11-tag+
+            +alignment+
+            +vaslist-ptag-mask+
+            +vaslist0-tag+
+            +vaslist1-tag+
             +single-float-tag+
             +character-tag+
             +general-tag+
@@ -66,6 +79,7 @@
             +rack-where-tag+
             +wrapped-where-tag+
             +header-where-tag+
+            +literal-tag-char-code+
             *startup-primitives-as-list*
             %i1%
             %exception-struct%
@@ -236,6 +250,10 @@
             gen-%array-dimension
             irc-vaslist-va_list-address
             irc-vaslist-remaining-nargs-address
+            gen-instance-rack
+            gen-instance-rack-set
+            gen-rack-ref
+            gen-rack-set
             gen-vaslist-pop
             gen-vaslist-length
             jit-constant-i1
@@ -299,7 +317,6 @@
             irc-get-terminate-landing-pad-block
             irc-function-cleanup-and-return
             %RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE%
-            codegen-startup-shutdown
             compute-rest-alloc
             compile-tag-check
             compile-header-check
@@ -332,6 +349,7 @@
           next-value-table-holder-name
           make-literal-node-call
           make-literal-node-creator
+          setup-literal-machine-function-vectors
           run-all-add-node
           literal-node-runtime-p
           literal-node-runtime-index
@@ -339,6 +357,7 @@
           literal-node-closure-p
           literal-node-creator-p
           literal-node-creator-index
+          literal-node-creator-object
           literal-node-creator-name
           literal-node-creator-arguments
           literal-node-side-effect-p
@@ -368,5 +387,24 @@
           with-top-level-form
           with-literal-table
           generate-run-time-code-for-closurette))
+
+(in-package :clasp-ffi)
+(export '(with-foreign-object
+          with-foreign-objects
+          %foreign-alloc
+          %foreign-free
+          %mem-ref
+          %mem-set
+          %foreign-funcall
+          %foreign-funcall-pointer
+          %load-foreign-library
+          %close-foreign-library
+          %foreign-symbol-pointer
+          %foreign-type-size
+          %foreign-type-alignment
+          %defcallback
+          %callback
+          %get-callback
+          safe-translator-type))
 
 (use-package :literal :cmp)

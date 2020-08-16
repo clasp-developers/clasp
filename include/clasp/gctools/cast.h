@@ -25,6 +25,10 @@ namespace gctools {
   template <class T>
     class GCArray_moveable;
   template <class T>
+    class GCArray_atomic;
+  template <class T>
+    class GCArraySignedLength_moveable;
+  template <class T>
     class GCVector_moveable;
   template <size_t N, bool s>
     class GCBitUnitArray_moveable;

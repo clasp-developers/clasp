@@ -199,7 +199,7 @@ namespace core {
 #define CLASP_LISTEN_AVAILABLE 1
 #define CLASP_LISTEN_EOF -1
 
-typedef claspCharacter (*cl_eformat_decoder)(T_sp stream);
+typedef claspCharacter (*cl_eformat_decoder)(T_sp stream,unsigned char **buffer,unsigned char *buffer_end);
 typedef int (*cl_eformat_encoder)(T_sp stream, unsigned char *buffer, claspCharacter c);
 typedef cl_index (*cl_eformat_read_byte8)(T_sp object, unsigned char *buffer, cl_index n);
 
@@ -347,8 +347,9 @@ GCPROTECTED:
   T_sp _ElementType;
 
 public: // Functions here
-  virtual string __repr__() const;
-  T_sp filename() const { return this->_Filename; };
+  virtual string __repr__() const override;
+  T_sp filename() const override { return this->_Filename; };
+  virtual bool has_file_position() const;
 }; // FileStream class
 };
 
@@ -385,6 +386,7 @@ public: // Functions here
 
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
+  virtual bool has_file_position() const override;
 };
 };
 
@@ -493,6 +495,7 @@ public: // instance variables here
 public: // Functions here
   static T_sp make(const string &str);
   string peer(size_t len);
+  string peerFrom(size_t start,size_t len);
 }; // StringStream class
 };
 
@@ -520,8 +523,8 @@ public:
   }
 
 public: // Functions here
-  virtual string __repr__() const;
-  T_sp filename() const;
+  virtual string __repr__() const override;
+  T_sp filename() const override;
 
 }; // SynonymStream class
 

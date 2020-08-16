@@ -331,12 +331,6 @@ List_sp Cons_O::subseq(cl_index start, T_sp end) const {
 //
 // Constructor
 //
-Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
-{
-  ASSERTNOTNULL(this->ocar());
-  ASSERTNOTNULL(this->cdr());
-}
-
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
   _OF();
@@ -686,5 +680,15 @@ SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
   SYMBOL_SC_(CorePkg, put_f);
+
+
+CL_DEFUN void core__verify_cons_layout(size_t cons_size, size_t cons_car_offset, size_t cons_cdr_offset)
+{
+  if (cons_size!=sizeof(Cons_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp cons_size %lu does not match sizeof(Cons_O) %lu") % cons_size % sizeof(Cons_O));
+   if (cons_car_offset!=offsetof(Cons_O,_Car))
+     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Car,Cons_O) %lu") % cons_car_offset % offsetof(Cons_O,_Car));
+   if (cons_cdr_offset!=offsetof(Cons_O,_Cdr))
+     SIMPLE_ERROR(BF("cons_rack_offset %lu does not match offsetof(_Cdr,Cons_O) %lu") % cons_cdr_offset % offsetof(Cons_O,_Cdr));
+}
 
 };

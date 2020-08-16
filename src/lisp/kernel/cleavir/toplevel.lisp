@@ -1,22 +1,11 @@
 (in-package :clasp-cleavir)
 
+#-cst
 (defun augment-environment-with-declares (declares &optional env)
   ;; FIXME: Cleavir should export some interface.
   (cleavir-generate-ast::augment-environment-with-declarations
    env
    (cleavir-generate-ast::canonicalize-declarations (list (cons 'declare declares)) env)))
-
-(defun augment-environment-with-macrolet (macros env)
-  (mapc (lambda (macro)
-          (setq env (cleavir-environment:add-local-macro env (car macro) (cdr macro))))
-        macros)
-  env)
-
-(defun augment-environment-with-symbol-macrolet (macros env)
-  (mapc (lambda (macro)
-          (setq env (cleavir-environment:add-local-symbol-macro env (car macro) (cdr macro))))
-        macros)
-  env)
 
 ;;; Attempts to evaluate the given form in the given environment.
 ;;; On complex enough forms, it will call DEFAULT on the form and
@@ -86,6 +75,7 @@
                    (when (or (member :execute situations)
                              (member 'eval situations))
                      (eval-progn body env))))
+                #-cst
                 ((locally)
                  (multiple-value-bind (decls body) (core:process-declarations args nil)
                    (eval-progn body (augment-environment-with-declares decls env))))

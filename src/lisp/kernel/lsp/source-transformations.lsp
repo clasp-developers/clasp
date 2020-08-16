@@ -1,4 +1,17 @@
-(in-package :core)
+(in-package #:ext)
+
+;;; Must be synced with constantp in primitives.cc
+(defun constant-form-value (form &optional env)
+  "If (constantp form env) is true, returns the constant value of the form in the environment."
+  (declare (ignore env))
+  (cond ((symbolp form) (symbol-value form))
+        ((consp form)
+         ;; (assert (eql (first form) 'quote))
+         (second form))
+        ;; self-evaluating
+        (t form)))
+
+(in-package #:core)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   ;; proper-list-p code from Robert Strandh's Cleavir code

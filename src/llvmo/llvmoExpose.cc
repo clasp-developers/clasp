@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
+#include <iomanip>
 #include <clasp/core/foundation.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
@@ -169,8 +170,11 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream,llvm::SmallString<1024>& 
   } else if (core::IOStreamStream_sp iostr = stream.asOrNull<core::IOStreamStream_O>()) {
     FILE *f = iostr->file();
     ostreamP = new llvm::raw_fd_ostream(fileno(f), false, true);
+  } else if (core::SynonymStream_sp sstr = stream.asOrNull<core::SynonymStream_O>()) {
+    core::Symbol_sp sym = sstr->_SynonymSymbol;
+    return llvm_stream(sym->symbolValue(),stringOutput,stringOutputStream);
   } else {
-    SIMPLE_ERROR(BF("Illegal file type %s for addPassesToEmitFileAndRunPassManager") % _rep_(stream));
+    SIMPLE_ERROR(BF("Illegal file type %s for llvm_stream") % _rep_(stream));
   }
   return ostreamP;
 }
@@ -367,6 +371,8 @@ CL_DEFMETHOD void JITDylib_O::dump(core::T_sp stream) {
   this->wrappedPtr()->dump(*ostreamP);
   if (core::StringOutputStream_sp sos = stream.asOrNull<core::StringOutputStream_O>()) {
     sos->fill(stringOutput.c_str());
+  } else {
+    core::clasp_write_string(stringOutput.c_str(),stream);
   }
 };
 
@@ -895,6 +901,11 @@ namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
 };
+
+CL_DEFMETHOD LLVMContext_sp Value_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
+}
+
 }
 
 namespace llvmo {
@@ -1209,6 +1220,10 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
   return self;
 };
+
+CL_DEFMETHOD LLVMContext_sp Module_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
+}
 
 std::string Module_O::__repr__() const {
   stringstream ss;
@@ -2225,7 +2240,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPInt(core::Integer_sp value) {
     // It's a bignum so lets convert the bignum to a string and put it into an APInt
     char *asString = NULL;
     core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
-    mpz_class &mpz_val = bignum_value->ref();
+    mpz_class &mpz_val = bignum_value->mpz_ref();
     int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(), 2);
     asString = ::mpz_get_str(NULL, 10, mpz_val.get_mpz_t());
     self->_value = llvm::APInt(mpz_size_in_bits, llvm::StringRef(asString, strlen(asString)), 10);
@@ -2266,7 +2281,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
     // It's a bignum so lets convert the bignum to a string and put it into an APInt
     char *asString = NULL;
     core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
-    mpz_class &mpz_val = bignum_value->ref();
+    mpz_class &mpz_val = bignum_value->mpz_ref();
     int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(), 2);
     asString = ::mpz_get_str(NULL, 10, mpz_val.get_mpz_t());
     apint = llvm::APInt(width, llvm::StringRef(asString, strlen(asString)), 10);
@@ -2867,6 +2882,10 @@ CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind A
   this->wrappedPtr()->addAttribute(llvm::AttributeList::ReturnIndex, Attr);
 }
 
+CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
+  return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
+}
+
 CL_LISPIFY_NAME("getArgumentList");
 CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   ql::list l;
@@ -3234,14 +3253,27 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
 }
 
 
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine) {
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name) {
   // Stuff to support MCJIT
     llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
     printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     finalizeEngineAndTime(engine);
-    engine->runStaticConstructorsDestructors(false);
+    if (gc::IsA<core::String_sp>(startup_name)) {
+      core::String_sp str = gc::As_unsafe<core::String_sp>(startup_name);
+      std::string sstr = str->get_std_string();
+      llvm::StringRef strref = sstr;
+      void* fn = engine->getPointerToNamedFunction(strref);
+      typedef void (*fptr)();
+      fptr ffn = (fptr)fn;
+      printf("%s:%d About to run function %s at %p\n", __FILE__, __LINE__, sstr.c_str(), fn);
+      ffn();
+    } else if (startup_name.nilp()) {
+      engine->runStaticConstructorsDestructors(false);
+    } else {
+      SIMPLE_ERROR(BF("Only NIL or a function name are allowed as the startup_name - you provided %s") % _rep_(startup_name));
+    }
     if ( core::startup_functions_are_waiting() ) {
       core::startup_functions_invoke(NULL);
     } else {
@@ -3968,6 +4000,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
             if (name == startup_name) {
               my_thread->_ObjectFileStartUp = (void*)((char*)section_address+address);
+//              printf("%s:%d Found _ObjectFileStartUp -> %p\n", __FILE__, __LINE__, my_thread->_ObjectFileStartUp );
             }
 //          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
 //          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
@@ -4134,10 +4167,11 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 
-CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& replName, const string& startupName, const string& shutdownName, core::T_sp initialData) {
+CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData) {
+  // Stuff to support MCJIT
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction replName-> %s\n") % replName);
+    MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n") % startupName);
   }
 #endif
   // As of May 2019 we use a static ctor to register the startup function
@@ -4175,6 +4209,50 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   }
   return functoid;
 }
+
+
+
+CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp dylib, const string& cxxName) {
+#if 0
+  // Run the static constructors
+  // The static constructor should call the startup function
+  //  but ORC doesn't seem to do this as of llvm9
+  //    So use the code below
+  llvm::ExitOnError ExitOnErr;
+  ExitOnErr(jit->_Jit->runConstructors());
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid;
+  if (core::startup_functions_are_waiting()) {
+    core::T_O* replPtrRaw = core::startup_functions_invoke(initialData.raw_());
+    core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(replPtrRaw);
+    functoid = core::ClosureWithSlots_O::make_bclasp_closure( core::_sym_repl,
+                                                              lisp_funcPtr,
+                                                              kw::_sym_function,
+                                                              _Nil<core::T_O>(),
+                                                              _Nil<core::T_O>() );
+  } else {
+    printf("%s:%d No startup functions were available!!!\n", __FILE__, __LINE__);
+    abort();
+  }
+#else
+  // So the cxxName is of an external linkage function that is
+  // always unique 
+  core::Pointer_sp startupPtr;
+  void* ptr;
+  bool found = jit->do_lookup(*dylib->wrappedPtr(),cxxName,ptr);
+  if (!found) {
+    SIMPLE_ERROR(BF("Could not find function %s") % cxxName );
+  }
+  voidStartUp startup = reinterpret_cast<voidStartUp>(ptr);
+//    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
+  startup();
+  // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
+  if ( core::startup_functions_are_waiting() ) {
+    core::startup_functions_invoke(NULL);
+  }
+#endif  
+}
+
+
 };
 
 
@@ -4281,7 +4359,6 @@ ClaspJIT_O::~ClaspJIT_O()
 }
 
 bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr) {
-//  printf("%s:%d:%s Name = %s\n", __FILE__, __LINE__, __FUNCTION__, Name.c_str());
   llvm::ExitOnError ExitOnErr;
 //  llvm::ArrayRef<llvm::orc::JITDylib*>  dylibs(&this->ES->getMainJITDylib());
   std::string mangledName = Name;
@@ -4301,7 +4378,8 @@ bool ClaspJIT_O::do_lookup(JITDylib& dylib, const std::string& Name, void*& ptr)
   
   llvm::Expected<llvm::JITEvaluatedSymbol> symbol = this->_LLJIT->lookup(dylib,mangledName);
   if (!symbol) {
-      return false;
+    printf("%s:%d could not find external linkage symbol named: %s\n", __FILE__, __LINE__, mangledName.c_str() );
+    return false;
   }
 //  printf("%s:%d:%s !!symbol -> %d  symbol->getAddress() -> %p\n", __FILE__, __LINE__, __FUNCTION__, !!symbol, (void*)symbol->getAddress());
   ptr = (void*)symbol->getAddress();
@@ -4339,7 +4417,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
     
 
 
-CL_DEFMETHOD void ClaspJIT_O::addIRModule(Module_sp module, ThreadSafeContext_sp context) {
+CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
 //  printf("%s:%d:%s  module added\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -4458,4 +4536,41 @@ SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t A
   GC_ALLOCATE_VARIADIC(SectionedAddress_O, sa, SectionIndex, Address);
   return sa;
 }
+
+
+void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset)
+{
+  if (comma) fprintf(fout, ",");
+  fprintf(fout, "[ \"%s\", %d, %lu ]\n", name, dt, offset );
+}
+
+void dump_objects_for_lldb(FILE* fout)
+{
+  fprintf(fout,"Init_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", sizeof(gctools::Header_s));
+  python_dump_field(fout,"_stamp_wtag_mtag",false,gctools::ctype_size_t,offsetof(gctools::Header_s,_stamp_wtag_mtag));
+#ifdef DEBUG_GUARD
+  python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
+  python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
+  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard));
+  python_dump_field(fout,"_dup_tail_start",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_start));
+  python_dump_field(fout,"_dup_tail_size",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_size));
+  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
+#endif
+  fprintf(fout,"] )\n");
+  fprintf(fout,"Init_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", sizeof(llvmo::ObjectFileInfo));
+  python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
+  python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
+  python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
+  python_dump_field(fout,"_object_file_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_object_file_start));
+  python_dump_field(fout,"_object_file_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_object_file_size));
+  python_dump_field(fout,"_text_segment_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_text_segment_start));
+  python_dump_field(fout,"_text_segment_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_size));
+  python_dump_field(fout,"_text_segment_SectionID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_text_segment_SectionID));
+  python_dump_field(fout,"_stackmap_start",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_stackmap_start));
+  python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
+  python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
+  fprintf(fout,"] )\n");
+};
+  
 }; // namespace llvmo, SectionedAddress_O

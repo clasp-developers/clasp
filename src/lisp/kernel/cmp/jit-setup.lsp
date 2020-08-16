@@ -68,6 +68,37 @@
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
+(defun dso-handle-module (dylib)
+  (let* ((dso-handle-name "__dso_handle")
+         (module (llvm-create-module dso-handle-name)))
+    (llvm-sys:make-global-variable
+     module
+     %i32%                              ; type
+     nil                                ; isConstant
+     'llvm-sys:external-linkage         ; linkage
+     (jit-constant-i32 0)
+     dso-handle-name)
+    (llvm-sys:add-irmodule llvm-sys:*jit-engine*
+                           dylib
+                           module
+                           *thread-safe-context*)
+    module))
+
+
+(defun load-ir-run-c-function (filename function-name)
+  (let* ((pathname (merge-pathnames (pathname filename)))
+         (bc-file (make-pathname :type "bc" :defaults pathname))
+         (ll-file (make-pathname :type "ll" :defaults pathname))
+         (module (if (probe-file ll-file)
+                     (llvm-sys:parse-irfile ll-file (thread-local-llvm-context))
+                     (if (probe-file bc-file)
+                         (llvm-sys:parse-bitcode-file bc-file (thread-local-llvm-context))
+                         (error "Could not find file ~a or ~a" ll-file bc-file))))
+         (dylib (llvm-sys:create-and-register-jitdylib llvm-sys:*jit-engine* (namestring pathname))))
+    (dso-handle-module dylib)
+    (llvm-sys:add-irmodule llvm-sys:*jit-engine* dylib module *thread-safe-context*)
+    (llvm-sys:jit-finalize-run-cxx-function llvm-sys:*jit-engine* dylib function-name)))
+
 
 (defun load-bitcode (filename &key print)
   (format t "load-bitcode ~a~%" filename)
@@ -90,7 +121,7 @@
         (if print (core:bformat t "Loading %s%N" input-name))
         (llvm-sys:parse-bitcode-file input-name context))))
 
-(export '(write-bitcode load-bitcode parse-bitcode))
+(export '(write-bitcode load-bitcode parse-bitcode load-ir-run-c-function))
 
 (defun get-builtins-module ()
   (if *thread-local-builtins-module*
@@ -677,6 +708,11 @@ The passed module is modified as a side-effect."
         (progn
           #+threads(mp:giveup-lock *jit-log-lock*)))))
 
+;;; It's too early for (in-package :cmp) to work but if we want slime to compile
+;;; the code below we need it - so uncomment this as needed...
+
+;;;(in-package :cmp)
+(defparameter *dump-compile-module* nil)
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
@@ -691,31 +727,23 @@ The passed module is modified as a side-effect."
     (let ((module original-module))
       (irc-verify-module-safe module)
       (let ((jit-engine llvm-sys:*jit-engine*)
-            (repl-name (if main-fn (llvm-sys:get-name main-fn) nil))
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
             (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
-        (if (or (null repl-name) (string= repl-name ""))
-            (error "Could not obtain the name of the repl function ~s - got ~s" main-fn repl-name))
         (if (or (null startup-name) (string= startup-name ""))
             (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
         (with-track-llvm-time
             (unwind-protect
                  (progn
-                  #+(or)
-                   (progn
-                     #+(or)(core:bformat t "*jit-lock* -> %s    jit-engine -> %s   module -> %s   *thread-safe-context* -> %s%N"
-                                         *jit-lock*
-                                         jit-engine
-                                         module
-                                         *thread-safe-context*)
-                     (core:bformat t "About to dump module%N")
-                     (llvm-sys:dump-module module)
-                     (core:bformat t "startup-name |%s|%N" startup-name)
-                     (core:bformat t "Done dump module%N")
-                     )
+                   (if *dump-compile-module*
+                       (progn
+                         (core:bformat t "About to dump module%N")
+                         (llvm-sys:dump-module module)
+                         (core:bformat t "startup-name |%s|%N" startup-name)
+                         (core:bformat t "Done dump module%N")
+                         ))
                    (mp:get-lock *jit-lock*)
-                   (llvm-sys:add-irmodule jit-engine module *thread-safe-context*)
-                   (llvm-sys:jit-finalize-repl-function jit-engine repl-name startup-name shutdown-name literals-list))
+                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context*)
+                   (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
               (progn
                 (gctools:thread-local-cleanup)
                 (mp:giveup-lock *jit-lock*))))))))

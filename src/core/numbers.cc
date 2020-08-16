@@ -267,11 +267,11 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
     }
   case_Bignum_v_Fixnum : {
       mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->ref() + zb;
+      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() + zb;
       return Integer_O::create(zc);
     }
   case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->ref() + gc::As<Bignum_sp>(nb)->ref());
+      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() + gc::As<Bignum_sp>(nb)->mpz_ref());
     }
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
@@ -376,7 +376,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Bignum : {
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zc = za - gc::As<Bignum_sp>(nb)->ref();
+      mpz_class zc = za - gc::As<Bignum_sp>(nb)->mpz_ref();
       return Integer_O::create(zc);
     }
   case_Fixnum_v_Ratio:
@@ -396,11 +396,11 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
     }
   case_Bignum_v_Fixnum : {
       mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->ref() - zb;
+      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() - zb;
       return Integer_O::create(zc);
     }
   case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->ref() - gc::As<Bignum_sp>(nb)->ref());
+      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() - gc::As<Bignum_sp>(nb)->mpz_ref());
     }
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
@@ -502,7 +502,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Bignum : {
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zc = za * gc::As<Bignum_sp>(nb)->ref();
+      mpz_class zc = za * gc::As<Bignum_sp>(nb)->mpz_ref();
       return Integer_O::create(zc);
     }
   case_Fixnum_v_Ratio:
@@ -520,11 +520,11 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
     }
   case_Bignum_v_Fixnum : {
       mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->ref() * zb;
+      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() * zb;
       return Integer_O::create(zc);
     }
   case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->ref() * gc::As<Bignum_sp>(nb)->ref());
+      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() * gc::As<Bignum_sp>(nb)->mpz_ref());
     }
   case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat : {
@@ -866,7 +866,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Bignum : {
       mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->ref();
+      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
       if (za < zb)
         return -1;
       if (za == zb)
@@ -907,7 +907,7 @@ int basic_compare(Number_sp na, Number_sp nb) {
 */
     }
   case_Bignum_v_Fixnum : {
-      mpz_class &za(gc::As<Bignum_sp>(na)->ref());
+      mpz_class &za(gc::As<Bignum_sp>(na)->mpz_ref());
       mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       if (za < zb)
         return -1;
@@ -916,8 +916,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
       return 1;
     }
   case_Bignum_v_Bignum : {
-      mpz_class &za = gc::As<Bignum_sp>(na)->ref();
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->ref();
+      mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
+      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
       if (za < zb)
         return -1;
       if (za == zb)
@@ -1118,7 +1118,7 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Bignum : {
       mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->ref();
+      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
       return za == zb;
     }
   case_Fixnum_v_Ratio:
@@ -1141,13 +1141,13 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       return a == b;
     }
   case_Bignum_v_Fixnum : {
-      mpz_class &za(gc::As<Bignum_sp>(na)->ref());
+      mpz_class &za(gc::As<Bignum_sp>(na)->mpz_ref());
       mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
       return za == zb;
     }
   case_Bignum_v_Bignum : {
-      mpz_class &za = gc::As<Bignum_sp>(na)->ref();
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->ref();
+      mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
+      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
       return (za == zb);
     }
   case_Bignum_v_SingleFloat:
@@ -1472,7 +1472,7 @@ Integer_sp Integer_O::create( uintptr_t v) {
  */
 
 Integer_sp Integer_O::create(float v) {
-  if (v >= (float)gc::most_negative_fixnum && v < (float)gc::most_positive_fixnum) {
+  if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
 
@@ -1482,7 +1482,7 @@ Integer_sp Integer_O::create(float v) {
 }
 
 Integer_sp Integer_O::create(double v) {
-  if (v >= (double)gc::most_negative_fixnum && v < (double)gc::most_positive_fixnum) {
+  if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
   Bignum rop;
@@ -1491,7 +1491,7 @@ Integer_sp Integer_O::create(double v) {
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
-  if (v >= (LongFloat)gc::most_negative_fixnum && v < (LongFloat)gc::most_positive_fixnum) {
+  if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
   }
   Bignum rop;
@@ -1741,10 +1741,64 @@ float Ratio_O::as_float_() const {
   return d;
 }
 
+// translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
+static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *exponent) {
+  /* We have to cook our own routine because GMP does not round. The
+   * recipe is simple: we multiply the numerator by a large enough
+   * number so that the integer length of the division by the
+   * denominator is equal to the number of digits of the mantissa of
+   * the floating point number. The result is scaled back by the
+   * appropriate exponent.
+   */
+  bool negative = false;
+  if (num->minusp_()) {
+    negative = true;
+    num = gc::As<Bignum_sp>(num->negate_());
+  }
+  gc::Fixnum num_digits = clasp_integer_length(num);
+  gc::Fixnum den_digits = clasp_integer_length(den);
+  gc::Fixnum scale = digits+1 - (num_digits - den_digits);
+  /* Scale the numerator in the correct range so that the quotient
+   * truncated to an integer has a length of digits+1 or digits+2. If
+   * scale is negative, we simply shift out unnecessary digits of num,
+   * which don't affect the quotient. */
+  num = gc::As<Bignum_sp>(clasp_ash(num, scale));
+  Integer_sp quotient = clasp_integer_divide(num, den);
+  if (clasp_integer_length(quotient) > digits+1) {
+    /* quotient is too large, shift out an unnecessary digit */
+    scale--;
+    quotient = clasp_ash(quotient, -1);
+  }
+  /* round quotient */
+  if (clasp_oddp(quotient)) {
+    quotient = gc::As<Integer_sp>(clasp_one_plus(quotient));
+  }
+  /* shift out the remaining unnecessary digit of quotient */
+  quotient = clasp_ash(quotient, -1);
+  /* fix the sign */
+  if (negative) {
+    quotient = gc::As<Integer_sp>(clasp_negate(quotient));
+  }
+  *exponent = 1 - scale;
+  return quotient;
+}
+
 double Ratio_O::as_double_() const {
-  double d = clasp_to_double(this->_numerator);
-  d /= clasp_to_double(this->_denominator);
-  return d;
+  if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
+    gc::Fixnum exponent;
+    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &exponent);
+    double output;
+    if (mantissa.fixnump())
+      output = gc::As<Fixnum_sp>(mantissa).unsafe_fixnum();
+    else
+      output = mantissa->as_double_();
+    return ldexp(output, exponent);
+  }
+  else {
+    double d = clasp_to_double(this->_numerator);
+    d /= clasp_to_double(this->_denominator);
+    return d;
+  }
 }
 
 LongFloat Ratio_O::as_long_float_() const {
@@ -2713,13 +2767,15 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
   return clasp_make_complex(a, p);
 }
 
-Number_sp Bignum_O::log1() const {
-  if (clasp_minusp(this->asSmartPtr())) {
-    return clasp_log1_complex_inner(this->const_sharedThis<Bignum_O>(), make_fixnum(0));
+Number_sp Bignum_O::log1_() const {
+  Bignum_sp bignum = this->asSmartPtr();
+  if (clasp_minusp(bignum)) {
+    return clasp_log1_complex_inner(bignum, make_fixnum(0));
   } else {
-    Fixnum l = clasp_integer_length(this->const_sharedThis<Bignum_O>()) - 1;
-    Number_sp r = clasp_make_ratio(this->asSmartPtr(), clasp_ash(make_fixnum(1), l));
-    float d = logf(clasp_to_float(r)) + l * logf(2.0);
+    Fixnum length = clasp_integer_length(bignum) - 1;
+    Integer_sp ash = clasp_ash(make_fixnum(1), length);
+    Rational_sp rational = clasp_make_rational(bignum, ash);
+    float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
 }
@@ -2743,7 +2799,7 @@ Number_sp DoubleFloat_O::log1_() const {
 }
 
 #ifdef CLASP_LONG_FLOAT
-Number_sp LongFloat_O::log1() const {
+Number_sp LongFloat_O::log1_() const {
   LongFloat f = this->as_long_float();
   if (std::isnan(f))
     return this->asSmartPtr();
@@ -2887,6 +2943,22 @@ CL_DOCSTRING("integerLength");
 CL_DEFUN gc::Fixnum cl__integer_length(Integer_sp i) {
   return clasp_integer_length(i);
 };
+
+CL_LAMBDA(i);
+CL_DECLARE();
+CL_DOCSTRING("Return the number of bits in the 2's complement representation"
+             "of I that are 'on', i.e. distinct from the sign bit.");
+CL_DEFUN gc::Fixnum cl__logcount(Integer_sp i) {
+  // Builtins aren't very helpful for negative numbers, so we use the
+  // (logcount x) = (logcount (lognot x)) identity.
+  if (i.fixnump()) {
+    gc::Fixnum x(i.unsafe_fixnum());
+    if (x < 0) x = ~x;
+    return fixnum_popcount(x);
+  } else { // bignum
+    return i->popcount();
+  }
+}
 
 CL_LAMBDA(i);
 CL_DECLARE();
@@ -3049,7 +3121,7 @@ unsigned long long clasp_to_ulonglong( core::T_sp x )
 int8_t clasp_to_int8( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() < gc::most_positive_int8);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() <= gc::most_positive_int8);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3063,7 +3135,7 @@ int8_t clasp_to_int8( core::T_sp x )
 uint8_t clasp_to_uint8( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint8);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint8);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3090,7 +3162,7 @@ uint8_t clasp_to_uint8_t( core::T_sp x )
 int16_t clasp_to_int16( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() < gc::most_positive_int16);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() <= gc::most_positive_int16);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3104,7 +3176,7 @@ int16_t clasp_to_int16( core::T_sp x )
 uint16_t clasp_to_uint16( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint16);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint16);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3130,7 +3202,7 @@ uint16_t clasp_to_uint16_t( core::T_sp x )
 int32_t clasp_to_int32( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() < gc::most_positive_int32);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() <= gc::most_positive_int32);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3144,7 +3216,7 @@ int32_t clasp_to_int32( core::T_sp x )
 uint32_t clasp_to_uint32( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint32);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint32);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3170,7 +3242,7 @@ int32_t clasp_to_int32_t( core::T_sp x )
 int64_t clasp_to_int64_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() < gc::most_positive_int64);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() <= gc::most_positive_int64);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3184,7 +3256,7 @@ int64_t clasp_to_int64_t( core::T_sp x )
 uint64_t clasp_to_uint64_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() < gc::most_positive_uint64);
+    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint64);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3200,7 +3272,7 @@ uint64_t clasp_to_uint64_t( core::T_sp x )
 uintptr_t clasp_to_uintptr_t( core::T_sp x )
 {
   if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() < gc::most_positive_uintptr);
+    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() <= gc::most_positive_uintptr);
     return x.unsafe_fixnum();
   } else if (gc::IsA<Bignum_sp>(x)) {
     Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
@@ -3235,7 +3307,7 @@ mpz_class clasp_to_mpz( core::T_sp x )
     mpz_class z = GMP_LONG(fn);
     return z;
   }
-  return (gc::As< Integer_sp >(x))->as_mpz_();
+  return (gc::As<Bignum_sp>(x))->mpz_ref();
 }
 
   // --- LONG LONG ---
@@ -3302,7 +3374,7 @@ ssize_t clasp_to_ssize( core::T_sp x )
 
   // --- FLOAT ---
 
-float clasp_to_float( core::Number_sp x )
+float clasp_to_float(core::Number_sp x)
 {
   if (x.fixnump())
   {
@@ -3313,25 +3385,6 @@ float clasp_to_float( core::Number_sp x )
     return (float) x.unsafe_single_float();
   }
   return x->as_float_();
-}
-
-
-float clasp_to_float( core::T_sp x )
-{
-  if (x.fixnump()) return (float) x.unsafe_fixnum();
-  else if (x.single_floatp()) return (float) x.unsafe_single_float();
-  else if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
-}
-
-float clasp_to_float( core::General_sp x )
-{
-  if (gc::IsA<Number_sp>(x)) {
-    return gc::As_unsafe<Number_sp>(x)->as_float_();
-  }
-  TYPE_ERROR(x,cl::_sym_Number_O);
 }
 
 // --- DOUBLE ---

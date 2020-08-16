@@ -49,16 +49,8 @@
 ;;; to avoid eclector.parse-result::*stack* being unbound, when *client* is bound to a parse-result-client
 ;;; Not sure whether this a a fortunate design in eclector
 
-(defclass clasp-non-cst-elector-client () ())
+(defclass clasp-non-cst-elector-client (clasp-cleavir::clasp-eclector-client-mixin) ())
 (defvar *clasp-normal-eclector-client* (make-instance 'clasp-non-cst-elector-client))
-
-(defmethod eclector.reader:find-character ((client clasp-non-cst-elector-client) name)
-  (or (call-next-method)
-      (gethash name clasp-cleavir::*additional-clasp-character-names*)
-      (clasp-cleavir::simple-unicode-name name)))
-
-(defmethod eclector.reader:make-structure-instance ((client clasp-non-cst-elector-client) name initargs)
-  (core::make-structure name initargs))
 
 ;;; From eclector macro functions:
 ;;; So we need a way for readers for lists and vectors to explicitly
@@ -82,7 +74,7 @@
         (eclector.reader::*backquote-in-subforms-allowed-p* t))
     (eclector.reader:read input-stream eof-error-p eof-value recursive-p)))
 
-;;; to avoid th cl:*readtable* and eclector.readtable:*readtable* get out of sync
+;;; to avoid cl:*readtable* and eclector.readtable:*readtable* get out of sync
 (defun read-preserving-whitespace-with-readtable-synced (&optional
                                                            (input-stream *standard-input*)
                                                            (eof-error-p t)
@@ -95,7 +87,6 @@
 
 ;;; need also sync in clasp-cleavir::cclasp-loop-read-and-compile-file-forms
 
-
 (defun cl:read-from-string (string
                             &optional (eof-error-p t) eof-value
                             &key (start 0) (end (length string))
@@ -105,14 +96,30 @@
     (eclector.reader:read-from-string string eof-error-p eof-value
                                       :start start :end end :preserve-whitespace preserve-whitespace)))
 
+;;;does not work yet properly
+#+(or)
+(defun cl:read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
+  (let ((eclector.readtable:*readtable* cl:*readtable*)
+        (eclector.reader:*client* *clasp-normal-eclector-client*))
+    (eclector.reader:read-delimited-list char input-stream recursive-p)))
+
+(defun core::set-eclector-reader-readmacros (readtable)
+  (eclector.reader::set-standard-macro-characters readtable)
+  (eclector.reader::set-standard-dispatch-macro-characters readtable)
+  (cl:set-dispatch-macro-character #\# #\a 'core:sharp-a-reader readtable)
+  (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader readtable)
+  (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object readtable)
+  (cl:set-dispatch-macro-character #\# #\! 'core::sharp-!-reader readtable)
+  ;;; see issue https://github.com/s-expressionists/Eclector/issues/59
+  ;;; sharpsign-single-quote/relaxed will be exported, but isn't yet
+  (cl:set-dispatch-macro-character #\# #\' (if (fboundp 'eclector.reader::sharpsign-single-quote/relaxed)
+                                               'eclector.reader::sharpsign-single-quote/relaxed
+                                               'eclector.reader::sharpsign-single-quote)
+                                               readtable))
+
 (defun init-clasp-as-eclector-reader ()
   (setq eclector.readtable:*readtable* cl:*readtable*)
-  (eclector.reader::set-standard-macro-characters cl:*readtable*)
-  (eclector.reader::set-standard-dispatch-macro-characters cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\a 'core:sharp-a-reader cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\A 'core:sharp-a-reader cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\I 'core::read-cxx-object cl:*readtable*)
-  (cl:set-dispatch-macro-character #\# #\! 'core::sharp-!-reader cl:*readtable*)
+  (core::set-eclector-reader-readmacros cl:*readtable*)
   ;;; also change read 
   (setq core:*read-hook* 'read-with-readtable-synced)
   (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced)
@@ -120,8 +127,6 @@
   )
 
 (eclector.readtable::init-clasp-as-eclector-reader)  
-
-
 
 (defun patch-object (client value-old seen-objects mapping)
   (multiple-value-bind (value-new found-p)
@@ -136,6 +141,3 @@
   (let ((patcher (core:make-record-patcher (lambda (object)
                                              (patch-object client object seen-objects mapping)))))
     (core:patch-object object patcher)))
-
-
-

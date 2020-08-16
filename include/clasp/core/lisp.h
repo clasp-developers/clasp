@@ -67,6 +67,7 @@ namespace core {
 
 
 extern CommandLineOptions *global_options;
+extern bool global_initialize_builtin_classes;
 
 class Bundle;
 class CallStack;
@@ -371,9 +372,11 @@ public:
   bool _Interactive;
   string _FunctionName;
   /*! Define the name of a source file that is evaluated
-	 * before everything else to extend the environment
-	 */
+   * before everything else to extend the environment
+   */
+  string _InitFileName;
   string _RCFileName;
+  bool _NoRc;
   bool _IgnoreInitImage;
   bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
   /*! Keep track of every new environment that is created */

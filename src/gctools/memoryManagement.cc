@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/array.h>
+#include <clasp/core/hashTable.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gc_boot.h>
@@ -110,7 +111,7 @@ GC_MANAGED_TYPE(gctools::GCArray_moveable<unsigned short>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<1, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<2, false>);
 GC_MANAGED_TYPE(gctools::GCBitUnitArray_moveable<4, false>);
-GC_MANAGED_TYPE(gctools::GCVector_moveable<core::Cons_O>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<core::KeyValuePair>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::AuxArgument>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::CacheRecord>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<core::DynamicBinding>);
@@ -126,6 +127,7 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<double>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<float>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>);
+GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::KeyValuePair>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>);
@@ -139,15 +141,17 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Sy
 GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
 
 namespace gctools {
-void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread)
+void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value)
 {
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   int x = thread->_RecursiveAllocationCounter+1;
   thread->_RecursiveAllocationCounter = x;
   if (x!=1) {
-    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
+    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n     The outer header_value is %lu and the inner one is %lu\n", __FILE__, __LINE__, thread->_RecursiveAllocationHeaderValue, header_value);
+    dbg_safe_backtrace();
     abort();
   }
+  thread->_RecursiveAllocationHeaderValue = header_value;
 #endif
 }
 void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread)
@@ -343,33 +347,32 @@ void Header_s::signal_invalid_object(const Header_s* header, const char* msg)
 
 
 void Header_s::validate() const {
+  if (((uintptr_t)this&ptag_mask)!=0) {
+    printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
+    abort();
+  }
   if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"header is 0");
+#ifdef DEBUG_GUARD  
+  if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
+#endif
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
+    if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
+    if ( this->_guard2!= 0xAAAAAAAAAAAAAAAA) signal_invalid_object(this,"normal object bad header guard2");
 #endif
     if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->_tail_start & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_start");
-    if ( this->_tail_size & 0xffffffffff000000 ) signal_invalid_object(this,"bad tail_size");
+    if ( this->_tail_start != this->_dup_tail_start) signal_invalid_object(this,"normal object bad header tail_start");
+    if ( this->_tail_size != this->_dup_tail_size) signal_invalid_object(this,"normal object bad header tail_size");
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
     }
 #endif
+  } else {
+    signal_invalid_object(this,"Not a normal object");
   }
-#ifdef USE_MPS
-#ifdef DEBUG_GUARD
-  if ( this->fwdP() ) {
-    if ( this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad fwdP guard");
-    for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
-            *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
-      if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
-    }
-  }
-#endif
-#endif
 }
 };
 
@@ -522,7 +525,7 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
   core::T_O** module_mem = shadow_mem;
 #endif
 #ifdef USE_MPS
-  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(NULL);
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(0);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*this->_capacity));
 #endif
   this->_boehm_shadow_memory = shadow_mem;

@@ -30,28 +30,60 @@ THE SOFTWARE.
 
 #ifndef CLBIND_FUNCTION2_081014_HPP
 #define CLBIND_FUNCTION2_081014_HPP
-#include <clasp/clbind/clbindPackage.h>
-#include <clasp/clbind/policies.h>
-#include <clasp/clbind/details.h>
-#include <clasp/clbind/scope.h>
+
+#if 0
+# define DEBUG_SCOPE 1
+# define LOG_SCOPE(xxx) printf xxx;
+#else
+# define LOG_SCOPE(xxx)
+#endif
+
+
+//#include "clbind/prefix.h"
+#include <clasp/clbind/config.h>
+#include <clasp/clbind/cl_include.h>
+#include <memory>
 
 namespace clbind {
 
-class GoofBase {};
-template <typename F>
-class Goof : public GoofBase {};
+struct scope_;
 
-template <>
-class Goof<int(int, int)> : public GoofBase {
+} // namespace clbind
+
+namespace clbind {
+namespace detail {
+
+struct CLBIND_API registration {
+  registration();
+  virtual ~registration();
+
 public:
-  typedef int (*F)(int, int);
-  Goof(F y){};
+  virtual gc::smart_ptr<core::Creator_O> registerDefaultConstructor_() const { HARD_SUBCLASS_MUST_IMPLEMENT(); };
+  virtual std::string name() const = 0;
+  virtual std::string kind()const  = 0;
+protected:
+  virtual void register_() const = 0;
+
+private:
+  friend struct ::clbind::scope_;
+  registration *m_next;
 };
+}
+} // namespace clbind::detail
+
+
+#include <clasp/clbind/clbindPackage.h>
+#include <clasp/clbind/policies.h>
+#include <clasp/clbind/details.h>
+//#include <clasp/clbind/scope.h>
+#include <clasp/core/arguments.h>
+
+namespace clbind {
 
 template <typename FunctionPtrType, typename Policies>
-class VariadicFunctor : public core::Function_O {
+class VariadicFunctor : public core::BuiltinClosure_O {
 public:
-  typedef core::Function_O TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
@@ -81,22 +113,30 @@ struct CountFunctionArguments<RT (*)(ARGS...)> {
   enum { value = sizeof...(ARGS) };
 };
 
-template <class FunctionPointerType, class Policies>
+template <class FunctionPointerType, class Policies=policies<>>
 struct function_registration : registration {
-  function_registration(char const *name, FunctionPointerType f, Policies const &policies, string const &lambdalist, string const &declares, string const &docstring)
-      : name(name), functionPtr(f), policies(policies), m_lambdalist(lambdalist), m_declares(declares), m_docstring(docstring) {}
+  function_registration(char const *name, FunctionPointerType f, Policies const &policies) // , string const &lambdalist, string const &declares, string const &docstring)
+    : m_name(name), functionPtr(f), m_policies(policies) {
+    this->m_lambdalist = policies.lambdaList();
+    this->m_docstring = policies.docstring();
+    this->m_declares = policies.declares();
+  }
 
   void register_() const {
-    core::Symbol_sp symbol = core::lispify_intern(name, core::lisp_currentPackageName());
+    LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
+    core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
     core::FunctionDescription* fdesc = makeFunctionDescription(symbol);
     core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);
   }
 
-  char const *name;
+  virtual std::string name() const { return this->m_name;}
+  virtual std::string kind() const { return "function_registration"; };
+  
+  char const *m_name;
   FunctionPointerType functionPtr;
-  Policies policies;
+  Policies m_policies;
   string m_lambdalist;
   string m_declares;
   string m_docstring;
@@ -104,17 +144,18 @@ struct function_registration : registration {
 
 } // namespace detail
 
+#if 0
 template <typename F, class Policies>
-scope def(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+scope_* fndef(char const *name, F f, Policies const &policies, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
   return scope(std::unique_ptr<detail::registration>(
-      new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
+                                                     new detail::function_registration<F, Policies>(name, f, policies, lambdalist, declares, docstring)));
 }
 
 template <class F>
-scope def(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
-  return def(name, f, policies<>(), lambdalist, declares, docstring);
+scope_* fndef(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  return fndef(name, f, policies<>(), lambdalist, declares, docstring);
 }
-
+#endif
 } // namespace clbind
 
 #endif // CLBIND_FUNCTION2_081014_HPP

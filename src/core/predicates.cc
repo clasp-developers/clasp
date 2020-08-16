@@ -137,16 +137,6 @@ CL_DEFUN bool clos__classp(T_sp obj) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("classp");
-CL_DEFUN bool core__built_in_class_p(T_sp obj) {
-  if (!clos__classp(obj))
-    return false;
-  Instance_sp c = gc::As<Instance_sp>(obj);
-  return c->builtInClassP();
-};
-
-CL_LAMBDA(arg);
-CL_DECLARE();
 CL_DOCSTRING("Predicate for the object being an Instance (C++ class used for standard-object etc)");
 CL_DEFUN bool core__instancep(T_sp obj) {
   return gc::IsA<Instance_sp>(obj) || gc::IsA<FuncallableInstance_sp>(obj);

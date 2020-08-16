@@ -48,8 +48,8 @@ class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
   friend T_sp cl__delete_package(T_sp pobj);
  public: // virtual functions inherited from Object
-  void initialize();
-  string __repr__() const;
+  void initialize() override;
+  string __repr__() const override;
  public: // instance variables
   HashTableEqual_sp _InternalSymbols;
   HashTableEqual_sp _ExternalSymbols;

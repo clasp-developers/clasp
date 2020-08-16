@@ -1,6 +1,6 @@
 (in-package #:static-gfs)
 
-(defun make-instance-form (class keys params)
+(defun make-instance-form (class class-form keys params)
   (let ((patch-list
           (list
            (cons (find-method #'make-instance nil (list (find-class 'class)))
@@ -10,14 +10,14 @@
         (static-effective-method
          #'make-instance methods (list class keys params) patch-list
          (reconstruct-arguments keys params))
-        (default-make-instance-form class keys params))))
+        (default-make-instance-form class class-form keys params))))
 
-(defun default-make-instance-form (class keys params)
+(defun default-make-instance-form (class class-form keys params)
   ;; This is strictly worse than not inlining,
   ;; but it's rare to define methods on make-instance.
   `(locally
        (declare (notinline make-instance))
-     (make-instance (find-class ',(class-name class))
+     (make-instance class-form
                     ,@(loop for key in keys for param in params
                             collect `',key collect param))))
 
@@ -48,7 +48,8 @@
                              ,class
                              ,@(loop for key in keys for param in params
                                      collect `',key collect param))))
-             ,(initialize-instance-form class instance keys params)))))))
+             ,(initialize-instance-form class instance keys params)
+             ,instance))))))
 
 ;; Returns a defaulted list of keys and list of params, as well as a list
 ;; of bindings for any new params to the default values.

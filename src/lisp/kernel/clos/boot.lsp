@@ -34,7 +34,7 @@
 ;; (Because if ensure-boot-class is called again with the same name,
 ;;  it'll just find-class the existing one.)
 (defun allocate-boot-class (metaclass slot-count name)
-  (let ((class (core:allocate-new-instance metaclass slot-count)))
+  (let ((class (core:allocate-standard-instance metaclass slot-count)))
     (core:class-new-stamp class name)
     class))
 
@@ -49,7 +49,7 @@
                   (debug-boot "    About to allocate-boot-class~%")
                   (or (find-class name nil)
                       (allocate-boot-class the-metaclass #.(length +standard-class-slots+) name)))))
-    ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-id                  class) name))))
+    ;;    (debug-boot "About to with-early-accessors -> macroexpand = ~a~%" (macroexpand '(with-early-accessors (+standard-class-slots+) (setf (class-name                  class) name))))
     (debug-boot "    About to with-early-accessors~%")
     (with-early-accessors (+standard-class-slots+)
       (let ((existing-slots (class-slots class)))
@@ -59,16 +59,14 @@
                    (not (zerop (length existing-slots))))
           (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
                  'ensure-boot-class name (length direct-slots) (length existing-slots))))
-      ;;      (debug-boot "  (get-setf-expansion '(class-id class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-id class))))
-      (setf (class-id                  class) name)
-      (debug-boot "    (class-id class) -> ~a    name -> ~a~%" (class-id class) name)
+      ;;      (debug-boot "  (get-setf-expansion '(class-name class) ENV) -> ~a~%" (macrolet ((hack (form &environment e) `',(multiple-value-list (get-setf-expansion form e)))) (hack '(class-name class))))
+      (setf (class-name                 class) name)
+      (debug-boot "    (class-name class) -> ~a    name -> ~a~%" (class-name class) name)
       ;; FIXME: This duplicates the :initform specifications in hierarchy.lsp.
-      (setf (eql-specializer-flag       class) nil
-            (specializer-direct-methods class) nil
-            (specializer-direct-generic-functions class) nil
+      (setf (specializer-direct-methods class) nil
             (specializer-call-history-generic-functions class) nil
             (specializer-mutex class) (mp:make-shared-mutex 'call-history-generic-functions-mutex)
-            (class-id                  class) name
+            (class-name                 class) name
             ;; superclasses below
             (class-direct-subclasses   class) nil
             ;; slots by add-slots below
@@ -111,24 +109,27 @@
   ;; because CANONICAL-SLOT-TO-DIRECT-SLOT will make simple slots.
   (with-early-accessors (+standard-class-slots+
 			 +slot-definition-slots+)
-    (let* ((table (make-hash-table :size (if slots 24 0)))
-	   (location-table (make-hash-table :size (if slots 24 0)))
+    (let* ((location-table (make-hash-table :size (if slots 24 0)))
            (direct-slot-class (find-class 'standard-direct-slot-definition nil))
 	   (direct-slots (loop for slotd in slots
                                collect (apply #'make-simple-slotd direct-slot-class slotd)))
            (effective-slot-class (find-class 'standard-effective-slot-definition nil))
 	   (effective-slots (loop for i from 0
-			       for slotd in slots
-			       for name = (getf slotd :name)
-			       for s = (apply #'make-simple-slotd effective-slot-class slotd)
-			       do (setf (slot-definition-location s) i
-					(gethash name location-table) i
-					(gethash name table) s)
-			       collect s)))
+                                  for slotd in slots
+                                  for name = (getf slotd :name)
+                                  for declared-location = (getf slotd :location)
+                                  for s = (apply #'make-simple-slotd effective-slot-class slotd)
+                                  do (setf (slot-definition-location s) i
+                                           (gethash name location-table) i)
+                                  ;; do a sanity check on :location
+                                  when (and declared-location
+                                            (/= i declared-location))
+                                    do (error "BUG: Primitive slot ~a has incorrect :location"
+                                              name)
+                                  collect s)))
       (setf (class-slots class) effective-slots
 	    (class-direct-slots class) direct-slots
-	    (class-size class) (length slots)
-	    (slot-table class) table)
+	    (class-size class) (length slots))
       (setf (class-location-table class) location-table))))
 
 

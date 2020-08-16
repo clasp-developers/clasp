@@ -58,4 +58,13 @@
                    (ext:file-stream-file-descriptor 23)
                    :type type-error)
 
+(test
+ FileStream_O__repr__
+ (multiple-value-bind
+       (errno pid-or-error-message stream)
+     (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t)
+   (if stream
+       (write stream)
+       nil)))
+
 

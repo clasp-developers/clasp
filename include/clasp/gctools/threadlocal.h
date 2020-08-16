@@ -91,6 +91,9 @@ namespace core {
     Fixnum                 _BacktraceStamp;
     int                    _BacktraceFd;
 #endif
+    size_t                 _xorshf_x; // Marsaglia's xorshf generator
+    size_t                 _xorshf_y;
+    size_t                 _xorshf_z;
     CleanupFunctionNode*   _CleanupFunctions;
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
@@ -121,6 +124,7 @@ namespace core {
     Bignum_sp bigRegister0() { return this->_BignumRegister0; };
     Bignum_sp bigRegister1() { return this->_BignumRegister1; };
     Bignum_sp bigRegister2() { return this->_BignumRegister2; };
+    size_t random();
     ~ThreadLocalState();
   };
 

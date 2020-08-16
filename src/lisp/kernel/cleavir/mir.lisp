@@ -23,7 +23,7 @@
 ;;; Generates code for characterp
 ;;;
 
-(defclass characterp-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
+(defclass characterp-instruction (cleavir-ir:multiple-successors-mixin cleavir-ir:instruction) ())
 
 (defun make-characterp-instruction (input successors)
   (make-instance 'characterp-instruction
@@ -37,7 +37,7 @@
 ;;; Generates code for single-float-p
 ;;;
 
-(defclass single-float-p-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
+(defclass single-float-p-instruction (cleavir-ir:multiple-successors-mixin cleavir-ir:instruction) ())
 
 (defun make-single-float-p-instruction (input successors)
   (make-instance 'single-float-p-instruction
@@ -51,7 +51,7 @@
 ;;; Generates code for core:generalp
 ;;;
 
-(defclass generalp-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin) ())
+(defclass generalp-instruction (cleavir-ir:multiple-successors-mixin cleavir-ir:instruction) ())
 
 (defun make-generalp-instruction (input successors)
   (make-instance 'generalp-instruction
@@ -65,7 +65,7 @@
 ;;; Branch based on the type header of an object.
 ;;;
 
-(defclass headerq-instruction (cleavir-ir:instruction cleavir-ir:multiple-successors-mixin)
+(defclass headerq-instruction (cleavir-ir:multiple-successors-mixin cleavir-ir:instruction)
   ((%header-value-min-max :initarg :hvmm :accessor header-value-min-max)))
 
 (defun make-headerq-instruction (header-value-min-max input successors)
@@ -81,11 +81,26 @@
 ;;; Allocate a marker for the frame so that it can be unwound to.
 ;;; The marker is not an actual mir input/output, just in the function-info.
 
-(defclass save-frame-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin) ())
+(defclass save-frame-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction) ())
 
 (defun make-save-frame-instruction (&optional (successor nil successor-p))
   (make-instance 'save-frame-instruction
                  :successors (if successor-p (list successor) nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction CLASP-SAVE-VALUES-INSTRUCTION
+;;;
+;;; Allocate storage for the current return values and put em in.
+;;; The values can be restored by a local unwind.
+;;; Has four outputs: The dynamic environment (a nothingburger),
+;;;  the stack pointer (from llvm.stacksave),
+;;;  the number of values, and a variable array for storing those values.
+;;; Note that the last three will not be T*-typed in LLVM, so be cautious.
+;;; Lowered from CLEAVIR-IR:SAVE-VALUES-INSTRUCTION.
+
+(defclass clasp-save-values-instruction (cleavir-ir:save-values-instruction)
+  ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -95,7 +110,7 @@
 ;;; Inputs are: address, comparison value, new value.
 ;;; Outputs are: loaded value.
 
-(defclass memcas2-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass memcas2-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ((%offset :initarg :offset :reader cleavir-ir:offset)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

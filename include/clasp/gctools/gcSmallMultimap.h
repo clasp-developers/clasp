@@ -64,7 +64,7 @@ public:
   }
 
   const_iterator find(Key k) const {
-    const_iterator it;
+    iterator it;
     for (it = this->begin(); it != this->end(); ++it) {
       int order = key_compare::order(k, it->first);
       if (order == 0)

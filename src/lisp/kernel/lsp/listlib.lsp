@@ -23,6 +23,7 @@
 (defun union (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Returns, as a list, the union of elements in LIST1 and in LIST2."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (first) (last))
       ((null x)
@@ -38,6 +39,7 @@ Returns, as a list, the union of elements in LIST1 and in LIST2."
 (defun nunion (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Destructive UNION.  Both LIST1 and LIST2 may be destroyed."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (first) (last))
       ((null x)
@@ -51,6 +53,7 @@ Destructive UNION.  Both LIST1 and LIST2 may be destroyed."
 
 (defun adjoin (item list &key key (test #'eql) test-not)
   "Add ITEM to LIST unless it is already a member."
+  (declare (optimize safety))
   (when test-not
     (setq test (complement test-not)))
   (if (member (apply-key key item) list :key key :test test)
@@ -62,6 +65,7 @@ Destructive UNION.  Both LIST1 and LIST2 may be destroyed."
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Returns a list consisting of those objects that are elements of both LIST1 and
 LIST2."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (ans))
       ((null x)
@@ -72,6 +76,7 @@ LIST2."
 (defun nintersection (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Destructive INTERSECTION.  Only LIST1 may be destroyed."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (first) (last))
       ((null x)
@@ -86,6 +91,7 @@ Destructive INTERSECTION.  Only LIST1 may be destroyed."
 (defun set-difference (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Returns, as a list, those elements of LIST1 that are not elements of LIST2."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (ans))
       ((null x) (nreverse ans))
@@ -95,6 +101,7 @@ Returns, as a list, those elements of LIST1 that are not elements of LIST2."
 (defun nset-difference (list1 list2 &key test test-not key)
   "Args: (list1 list2 &key (key #'identity) (test #'eql) test-not)
 Destructive SET-DIFFERENCE.  Only LIST1 may be destroyed."
+  (declare (optimize safety))
   (do ((x list1 (cdr x))
        (first) (last))
       ((null x)
@@ -134,28 +141,34 @@ otherwise."
 (defun rassoc-if (test alist &key key)
   "Returns the first pair in ALIST whose cdr satisfies TEST. Returns NIL if no
 such pair exists."
+  (declare (optimize safety))
   (rassoc test alist :test #'funcall :key key))
 (defun rassoc-if-not (test alist &key key)
   "Returns the first pair in ALIST whose cdr does not satisfy TEST.  Returns NIL
 if no such pair exists."
+  (declare (optimize safety))
   (rassoc test alist :test-not #'funcall :key key))
 
 (defun assoc-if (test alist &key key)
   "Returns the first pair in ALIST whose car satisfies TEST.  Returns NIL if no
 such pair exists."
+  (declare (optimize safety))
   (assoc test alist :test #'funcall :key key))
 (defun assoc-if-not (test alist &key key)
   "Returns the first pair in ALIST whose car does not satisfy TEST.  Returns NIL
 if no such pair exists."
+  (declare (optimize safety))
   (assoc test alist :test-not #'funcall :key key))
 
 (defun member-if (test list &key key)
   "Searches LIST for an element that satisfies TEST.  If found, returns the
 sublist of LIST that begins with the element.  If not found, returns NIL."
+  (declare (optimize safety))
   (member test list :test #'funcall :key key))
 (defun member-if-not (test list &key key)
   "Searches LIST for an element that does not satisfy TEST.  If found, returns
 the sublist of LIST that begins with the element.  If not found, returns NIL."
+  (declare (optimize safety))
   (member test list :test-not #'funcall :key key))
 
 (defun subst (new old tree &key key (test #'eql) test-not)
@@ -176,17 +189,21 @@ the sublist of LIST that begins with the element.  If not found, returns NIL."
 (defun subst-if (new test tree &key key)
   "Substitutes NEW for subtrees of TREE that satisfy TEST and returns the result.
 The original TREE is not destroyed."
+  (declare (optimize safety))
   (subst new test tree :test #'funcall :key key))
 (defun subst-if-not (new test tree &key key)
   "Substitutes NEW for subtrees of TREE that do not satisfy TEST and returns the
 result.  The original TREE is not destroyed."
+  (declare (optimize safety))
   (subst new test tree :test-not #'funcall :key key))
 
 (defun nsubst-if (new test tree &key key)
   "Destructive SUBST-IF. TREE may be modified."
+  (declare (optimize safety))
   (nsubst new test tree :test #'funcall :key key))
 (defun nsubst-if-not (new test tree &key key)
   "Destructive SUBST-IF-NOT. TREE may be modified."
+  (declare (optimize safety))
   (nsubst new test tree :test-not #'funcall :key key))
 
 ;;;

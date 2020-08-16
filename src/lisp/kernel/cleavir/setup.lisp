@@ -13,6 +13,7 @@ when this is t a lot of graphs will be generated.")
 (defvar *form* nil)
 (defvar *ast* nil)
 (defvar *hir* nil)
+(defvar *save-hir* nil)
 (defvar *mir* nil)
 
 ;;; FIXME: Move this earlier
@@ -31,14 +32,17 @@ when this is t a lot of graphs will be generated.")
                                                               default-source
                                                               (cst:source cst))))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
  (core:create-tagged-immediate-value-or-nil n))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
+#-cst
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
@@ -46,14 +50,17 @@ when this is t a lot of graphs will be generated.")
 ;;; ------------------------------------------------------------
 ;;;
 ;;; cst-to-ast methods for convert-constant-to-immediate
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
   ;; convert fixnum into immediate but bignums return nil
   (core:create-tagged-immediate-value-or-nil n))
 
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
+#+cst
 (defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
@@ -279,6 +286,13 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-env:type-expand ((environment null) type-specifier)
   (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
 
+;;; Needed because the default method ends up with classes,
+;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier symbol) environment (system clasp))
+  (declare (ignore environment))
+  type-specifier)
+
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
 (defmethod cleavir-env:has-extended-char-p ((environment null))
@@ -333,12 +347,7 @@ when this is t a lot of graphs will be generated.")
                (cond (core:*use-interpreter-for-eval*
                       (lambda (form env)
                         (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter*
-                      (lambda (form env)
-                        (handler-case
-                            (ast-interpret-form form env)
-                          (interpret-ast:cannot-interpret ()
-                            (cclasp-eval-with-env form env)))))
+                     (*use-ast-interpreter* #'ast-interpret-form)
                      (t #'cclasp-eval-with-env))))
 
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
@@ -359,21 +368,12 @@ when this is t a lot of graphs will be generated.")
                        (cond (core:*use-interpreter-for-eval*
                               (lambda (cst env)
                                 (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
-                             (*use-ast-interpreter*
-                              (lambda (cst env)
-                                (handler-case
-                                    (ast-interpret-cst cst env)
-                              (interpret-ast:cannot-interpret ()
-                                (cclasp-eval-with-env (cst:raw cst) env)))))
+                             (*use-ast-interpreter* #'ast-interpret-cst)
                              (t (lambda (cst env)
                                   (cclasp-eval-with-env (cst:raw cst) env)))))
       (cond (core:*use-interpreter-for-eval*
              (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
-            (*use-ast-interpreter*
-             (handler-case
-                 (ast-interpret-cst cst env)
-               (interpret-ast:cannot-interpret ()
-                 (cclasp-eval-with-env (cst:raw cst) env))))
+            (*use-ast-interpreter* (ast-interpret-cst cst env))
             (t (cclasp-eval-with-env (cst:raw cst) env)))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
@@ -415,7 +415,7 @@ when this is t a lot of graphs will be generated.")
                            :optimize nil)
           (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
             (literal:with-rtv
-                (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+                (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
                        (cst (cst:cst-from-expression form))
                        (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
                        (hoisted-ast (clasp-cleavir::hoist-ast ast))
@@ -424,6 +424,7 @@ when this is t a lot of graphs will be generated.")
                   (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
     result))
 
+#-cst
 (defun draw-form-ast-hir (form)
   "Generate a HIR graph for the form using the ast compiler"
   (cmp::with-compiler-env ()

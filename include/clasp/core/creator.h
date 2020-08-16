@@ -39,19 +39,19 @@ namespace core {
   public:
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators
-    virtual FunctionDescription* fdesc() const { return this->_FunctionDescription; }
-    virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
+    virtual FunctionDescription* fdesc() const override { return this->_FunctionDescription; }
+    virtual void set_fdesc(FunctionDescription* address) override { this->_FunctionDescription = address; };
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
-    T_sp functionName() const { return _Nil<T_O>(); };
-    T_sp closedEnvironment() const { return _Nil<T_O>(); };
-    T_sp lambdaListHandler() const { return _Nil<T_O>(); };
+    T_sp functionName() const override { return _Nil<T_O>(); };
+    T_sp closedEnvironment() const override { return _Nil<T_O>(); };
+    T_sp lambdaListHandler() const override { return _Nil<T_O>(); };
     T_sp lambda_list() const { return _Nil<T_O>(); };
     T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column ) {return _Nil<T_O>();};
     virtual int duplicationLevel() const { return 0; };
     virtual bool creates_classes() const { return false; };
     CL_NAME("CORE:CREATOR-TEMPLATED-SIZE");
-    virtual CL_DEFMETHOD size_t templatedSizeof() const = 0;
+    virtual CL_DEFMETHOD size_t templatedSizeof() const override= 0;
     virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
       printf("Subclass must implement Creator::duplicateForClassName\n");
       abort();
@@ -102,8 +102,8 @@ namespace core {
     Instance_sp _class;
   public:
   InstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
-    T_sp creator_allocate();
-    virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
+    T_sp creator_allocate() override;
+    virtual size_t templatedSizeof() const override { return sizeof(InstanceCreator_O); };
   };
 };
 
@@ -114,8 +114,8 @@ namespace core {
     Instance_sp _class;
   public:
   FuncallableInstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
-    T_sp creator_allocate();
-    virtual size_t templatedSizeof() const { return sizeof(FuncallableInstanceCreator_O); };
+    T_sp creator_allocate() override;
+    virtual size_t templatedSizeof() const override { return sizeof(FuncallableInstanceCreator_O); };
   };
 };
 
@@ -124,8 +124,8 @@ namespace core {
     LISP_CLASS(core,CorePkg,StandardClassCreator_O,"StandardClassCreator",Creator_O);
   public:
   StandardClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
-    T_sp creator_allocate();
-    virtual size_t templatedSizeof() const { return sizeof(StandardClassCreator_O); };
+    T_sp creator_allocate() override;
+    virtual size_t templatedSizeof() const override { return sizeof(StandardClassCreator_O); };
   };
 };
 
@@ -134,8 +134,8 @@ namespace core {
     LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
   public:
   DerivableCxxClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
-    T_sp creator_allocate();
-    virtual size_t templatedSizeof() const { return sizeof(DerivableCxxClassCreator_O); };
+    T_sp creator_allocate() override;
+    virtual size_t templatedSizeof() const override { return sizeof(DerivableCxxClassCreator_O); };
   };
 };
 
@@ -144,8 +144,8 @@ namespace core {
     LISP_CLASS(core,CorePkg,ClassRepCreator_O,"ClassRepCreator",Creator_O);
   public:
   ClassRepCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
-    T_sp creator_allocate();
-    virtual size_t templatedSizeof() const { return sizeof(ClassRepCreator_O); };
+    T_sp creator_allocate() override;
+    virtual size_t templatedSizeof() const override { return sizeof(ClassRepCreator_O); };
   };
 };
 

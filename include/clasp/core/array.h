@@ -221,8 +221,8 @@ namespace core {
       through the _Length[0] array to read the first size_t element
       which is the Length/FillPointer for vectors and a Dummy value for arrays */
     size_t length() const { return this->_Length[0]; };
-    virtual bool equal(T_sp other) const = 0;
-    virtual bool equalp(T_sp other) const = 0;
+    virtual bool equal(T_sp other) const override = 0;
+    virtual bool equalp(T_sp other) const override = 0;
     virtual size_t arrayTotalSize() const = 0;
     virtual void rowMajorAset(size_t idx, T_sp value) = 0;
     virtual T_sp rowMajorAref(size_t idx) const = 0;
@@ -247,8 +247,8 @@ namespace core {
     virtual size_t arrayDimension(size_t axisNumber) const = 0;
   /*! Return the value at the indices */
     virtual T_sp replaceArray(T_sp other) = 0;
-    virtual void __write__(T_sp strm) const;
-    virtual string __repr__() const;
+    virtual void __write__(T_sp strm) const override;
+    virtual string __repr__() const override;
   // ------------------------------------------------------------
   //
   // String functions
@@ -274,8 +274,8 @@ namespace core {
       return this->unsafe_setf_subseq(p.start,p.end,newVec);
     }
     void fillInitialContents(T_sp initialContents);
-    virtual void sxhash_(HashGenerator& hg) const = 0;
-    virtual void sxhash_equalp(HashGenerator &hg) const;
+    virtual void sxhash_(HashGenerator& hg) const override = 0;
+    virtual void sxhash_equalp(HashGenerator &hg) const override;
   // --------------------------------------------------
   // Ranged operations with explicit limits
     virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
@@ -336,10 +336,10 @@ namespace core {
   public:
     virtual size_t elementSizeInBytes() const override { return this->_Data->elementSizeInBytes(); };
     virtual void* rowMajorAddressOfElement_(size_t index) const override { return this->_Data->rowMajorAddressOfElement_(index+this->_DisplacedIndexOffset); };
-    virtual bool adjustableArrayP() const { return true; };
-    virtual bool displacedToP() const { return this->_Flags.displacedToP(); };
+    virtual bool adjustableArrayP() const override { return true; };
+    virtual bool displacedToP() const override { return this->_Flags.displacedToP(); };
   public:
-    virtual size_t arrayTotalSize() const { return this->_ArrayTotalSize; };
+    virtual size_t arrayTotalSize() const override { return this->_ArrayTotalSize; };
     virtual T_sp displacedTo() const {
       if (this->_Flags.displacedToP()) return this->_Data;
       return _Nil<T_O>();
@@ -358,20 +358,20 @@ namespace core {
     virtual size_t displacedIndexOffset() const override {return this->_DisplacedIndexOffset;}
     virtual bool arrayHasFillPointerP() const override { return this->_Flags.fillPointerP(); };
     virtual T_sp replaceArray(T_sp other) override;
-    virtual void sxhash_(HashGenerator& hg) const;
-    void fillPointerSet(size_t idx) {
+    virtual void sxhash_(HashGenerator& hg) const override;
+    void fillPointerSet(size_t idx) override {
       // This better not be bigger than the vector size (must be a vector)
       if (idx > this->_ArrayTotalSize)
            SIMPLE_ERROR(BF("Attempt to set fill-pointer %d past vector size %d")
                  % idx % this->_ArrayTotalSize);
       this->_FillPointerOrLengthOrDummy = idx;
     };
-    size_t fillPointer() const {
+    size_t fillPointer() const override {
       return this->_FillPointerOrLengthOrDummy;
     };
     virtual bool equalp(T_sp other) const override;
-    virtual std::string get_std_string() const {notStringError(this->asSmartPtr()); }
-    virtual vector<size_t> arrayDimensionsAsVector() const {
+    virtual std::string get_std_string() const override {notStringError(this->asSmartPtr()); }
+    virtual vector<size_t> arrayDimensionsAsVector() const override {
       vector<size_t> dims;
       for (size_t i(0); i<this->_Dimensions.length(); ++i ) {
         dims.push_back(this->_Dimensions[i]);
@@ -401,7 +401,7 @@ class ComplexVector_O : public MDArray_O {
                  bool displacedToP,
                  Fixnum_sp displacedIndexOffset) : MDArray_O(Rank1(),dimension,fillPointer,data,displacedToP,displacedIndexOffset) {};
  public:
-    virtual void __write__(T_sp strm) const;
+    virtual void __write__(T_sp strm) const override;
 };
 };
 
@@ -417,9 +417,9 @@ namespace core {
                     Array_sp data) : MDArray_O(rank,dimensions,data,false,clasp_make_fixnum(0)) {};
   public:
     virtual T_sp array_type() const override {return cl::_sym_simple_array;};
-    virtual bool adjustableArrayP() const { return false; };
+    virtual bool adjustableArrayP() const override { return false; };
     virtual bool fillPointerP() const { return false; };
-    virtual bool displacedToP() const { return false; };
+    virtual bool displacedToP() const override { return false; };
   };
 };
 
@@ -439,9 +439,9 @@ namespace core {
     virtual T_sp array_type() const override { return cl::_sym_simple_array; };
   public:
     virtual Array_sp data() { return gc::As_unsafe<Array_sp>(this->asSmartPtr()); };
-    virtual size_t arrayTotalSize() const { return this->length(); };
-    virtual void rowMajorAset(size_t idx, T_sp value) = 0;
-    virtual T_sp rowMajorAref(size_t idx) const = 0;
+    virtual size_t arrayTotalSize() const override { return this->length(); };
+    virtual void rowMajorAset(size_t idx, T_sp value) override = 0;
+    virtual T_sp rowMajorAref(size_t idx) const override = 0;
     virtual void vset(size_t idx, T_sp value) = 0;
     virtual T_sp vref(size_t idx) const = 0;
     virtual size_t rank() const override { return 1; };
@@ -463,13 +463,13 @@ namespace core {
     };
     virtual void sxhash_(HashGenerator& hg) const override {this->General_O::sxhash_(hg);}
     virtual bool equal(T_sp other) const override { return this->eq(other);};
-    virtual bool equalp(T_sp other) const;
+    virtual bool equalp(T_sp other) const override;
     void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const override {
       sv = this->asSmartPtr();
       start = 0;
       end = this->length();
     }
-    virtual vector<size_t> arrayDimensionsAsVector() const {
+    virtual vector<size_t> arrayDimensionsAsVector() const override {
       vector<size_t> dims;
       dims.push_back(this->length());
       return dims;
@@ -613,14 +613,14 @@ namespace core {
     CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final {return to_object((*this)[idx]);}
     CL_METHOD_OVERLOAD virtual void vset(size_t idx, T_sp value) final {(*this)[idx] = from_object(value);}
     CL_METHOD_OVERLOAD virtual T_sp vref(size_t idx) const final {return to_object((*this)[idx]);}
-    Array_sp unsafe_subseq(size_t start, size_t end) const {
+    Array_sp unsafe_subseq(size_t start, size_t end) const override {
       BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
       leaf_smart_ptr_type sbv = leaf_type::make(end-start);
       for (size_t i(0),iEnd(end-start);i<iEnd;++i)
         (*sbv)[i] = (*this)[start+i];
       return sbv;
     }
-    Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) {
+    Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) override {
       BOUNDS_ASSERT(0<=start&&start<end&&end<=this->length());
       for (size_t i = start, ni = 0; i < end; ++i, ++ni)
         (*this)[i] = from_object(other->rowMajorAref(ni));
@@ -855,7 +855,9 @@ namespace core {
     // FIXME: This will be mildly inefficient for bit vectors, as the array total size is not
     // always the number of elements for which space is allocated. Probably add a capacity()
     // non virtual function or something, to get the actual size.
-    Fixnum_sp vectorPushExtend(simple_element_type newElement, size_t extension = 0) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winconsistent-missing-override"
+    virtual Fixnum_sp vectorPushExtend(simple_element_type newElement, size_t extension = 0) {
       unlikely_if (!this->_Flags.fillPointerP()) noFillPointerSpecializedArrayError(this->asSmartPtr());
       cl_index idx = this->_FillPointerOrLengthOrDummy;
       unlikely_if (idx >= this->_ArrayTotalSize) {
@@ -871,6 +873,7 @@ namespace core {
       ++this->_FillPointerOrLengthOrDummy;
       return make_fixnum(idx);
     }
+#pragma clang diagnostic pop
   };
 };
 

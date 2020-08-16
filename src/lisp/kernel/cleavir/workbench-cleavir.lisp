@@ -230,7 +230,7 @@ clasp-cleavir::*saved-compile-file-info*
 
 *csts*
 (length *csts*)
-(defparameter *ast* (let ((cleavir-generate-ast:*compiler* 'cl:compile-file))
+(defparameter *ast* (let ((cleavir-cst-to-ast:*compiler* 'cl:compile-file))
                       (cleavir-cst-to-ast:cst-to-ast (car *csts*) nil clasp-cleavir:*clasp-system*)))
 (defparameter *hast* (clasp-cleavir-ast:hoist-load-time-value *ast* clasp-cleavir:*clasp-system*))
 (defparameter *hir* (cleavir-ast-to-hir:compile-toplevel *ast*))

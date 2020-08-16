@@ -719,7 +719,7 @@ Return files."
                  (epilogue-files (out-of-date-bitcodes #P"src/lisp/kernel/tag/min-pre-epilogue" #P"src/lisp/kernel/tag/min-end" :system system)))
             (let ((cmp::*activation-frame-optimize* t)
                   (core:*cache-macroexpand* (make-hash-table :test #'equal)))
-              (compile-system files :reload t :parallel-jobs (min *number-of-jobs* 16) :total-files (length system) :file-order file-order)
+              (compile-system files :reload nil #| RELOAD USED T HERE |# :parallel-jobs (min *number-of-jobs* 16) :total-files (length system) :file-order file-order)
               ;;  Just compile the following files and don't reload, they are needed to link
               (compile-system pre-files :reload nil :file-order file-order :total-files (length system))
               (if epilogue-files (compile-system epilogue-files
@@ -822,9 +822,9 @@ Return files."
        (unwind-protect
             (progn
               (push :compiling-cleavir *features*)
-              (let ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
-                                                #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
-                                                :system system)))
+              (let* ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
+                                                 #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
+                                                 :system system)))
                 (load-system files)))
          (pop *features*))
        (push :cleavir *features*)

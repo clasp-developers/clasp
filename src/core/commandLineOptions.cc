@@ -62,7 +62,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              "--noinform           - Don't print startup banner text\n"
              "--noprint            - Don't prompt or print in read-eval loop\n"
              "-D/--disable-debugger - If the default debugger would be entered, Clasp instead quits\n"
-             "-N/--non-interactive - Suppress all repls\n"
+             "--quit               - Don't start a REPL\n"
+             "-N/--non-interactive - Short for --disable-debugger --quit\n"
              "-m/--disable-mpi     - Don't use mpi even if built with mpi\n"
              "-v/--version         - Print version\n"
              "--resource-dir       - Options directory is treated as the executable directory\n"
@@ -71,7 +72,8 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
              "-l/--load {file}     - LOAD the file\n"
-             "-r/--norc            - Don't load the ~/.clasprc file\n"
+             "--rc {file}          - Specify name of the RC file (default .clasprc)\n"
+             "-r/--norc            - Don't load the RC file\n"
              "-n/--noinit          - Don't load the init.lsp (very minimal environment)\n"
              "-S/--seed #          - Seed the random number generator\n"
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
@@ -93,6 +95,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
+             "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
              "export CLASP_OPTIMIZATION_LEVEL=0|1|2|3 Set the llvm optimization level for compiled code\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
@@ -110,7 +113,12 @@ void process_clasp_arguments(CommandLineOptions* options)
              "export CLASP_BACKTRACE_ALLOCATIONS <stamp-val> # generate a backtrace to /tmp/stamp<stamp-val>.backtraces\n"
              "                      # everytime a <stamp-val> object is allocates (VERY EXPENSIVE)\n"
              "# to control MPS\n"
-             "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
+             "export CLASP_MPS_CONFIG=\"320 320 6400 80 25600 50\" \n"
+             "                        \"32 32 16 80 32 80 64\" # for lots of GC's\n"
+             "       # these values are:\n"
+             "       # arenaMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, \n"
+             "       #   generation1Kb, generation1MortalityPercent, keyExtendByKb\n"
+             );
       exit(0);
     } else if (arg == "-U" || arg == "--unpack-faso") {
       if (iarg+1<endArg) {
@@ -138,11 +146,16 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_NoPrint = true;
     } else if (arg == "-D" || arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
+    } else if (arg == "--quit") {
+      options->_Interactive = false;
     } else if (arg == "-N" || arg == "--non-interactive") {
       options->_DebuggerDisabled = true;
       options->_Interactive = false;
     } else if (arg == "-R" || arg == "--resource-dir") {
       options->_ResourceDir = options->_RawArguments[iarg+1];
+      iarg++;
+    } else if (arg == "--rc") {
+      options->_RCFileName = options->_RawArguments[iarg+1];
       iarg++;
     } else if (arg == "-r" || arg == "--norc") {
       options->_NoRc = true;
@@ -212,6 +225,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _Interactive(true),
     _Version(false),
     _SilentStartup(true),
+    _RCFileName(".clasprc"),
     _NoRc(false),
     _PauseForDebugger(false)
 

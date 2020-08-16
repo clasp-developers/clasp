@@ -1,4 +1,4 @@
-;;;
+;;
 ;;;    File: cmpintrinsics.lsp
 ;;;
 
@@ -183,6 +183,7 @@ names to offsets."
 
 (define-symbol-macro %size_t% #+64-bit %i64%
                               #+32-bit %i32%)
+(define-symbol-macro %badge% %size_t%)
 (define-symbol-macro %atomic<size_t>% %size_t%)
 (define-symbol-macro %size_t*% (llvm-sys:type-get-pointer-to %size_t%))
 (define-symbol-macro %size_t**% (llvm-sys:type-get-pointer-to %size_t*%))
@@ -298,11 +299,12 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %i64%     ; 1 _Stamp_;
-         %t*%      ; 2 Class_;
+         %badge%   ; 1 Badge
+         %i64%     ; 2 _Stamp_;
+         %t*%      ; 3 Class_;
          )
    nil))
-(defconstant +wrapped-pointer.stamp-index+ 1)
+(defconstant +wrapped-pointer.stamp-index+ 2)
 (define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
 
 ;;; MUST match Instance_O layout
@@ -310,7 +312,7 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %t*%      ; 1 _Sig
+         %badge%   ; 1 badge
          %t*%      ; 2 _Class
          %t*%      ; 3 _Rack
          )
@@ -324,31 +326,35 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %size_t%  ; 1 length
-         %tsp[0]%  ; 2 zeroth element of data
+         %badge%   ; 1 badge
+         %size_t%  ; 2 length
+         %tsp[0]%  ; 3 zeroth element of data
          )
    nil))
-(defconstant +simple-vector.length-index+ 1)
-(defconstant +simple-vector.data-index+ 2)
+(defconstant +simple-vector.length-index+ 2)
+(defconstant +simple-vector.data-index+ 3)
 
 (define-symbol-macro %rack%
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
+         %badge%   ; 1 badge
          %tsp%     ; 2 Stamp
-         %size_t%  ; 1 length
-         %t*[0]%  ; 3 zeroth element of data
+         %tsp%     ; 3 Sig
+         %size_t%  ; 4 length
+         %t*[0]%   ; 5 zeroth element of data
          )
    nil))
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
-(defconstant +rack.stamp-index+ 1)
-(defconstant +rack.length-index+ 2)
-(defconstant +rack.data-index+ 3)
+(defconstant +rack.stamp-index+ 2)
+(defconstant +rack.length-index+ 4)
+(defconstant +rack.data-index+ 5)
 
 
 (define-c++-struct %mdarray% +general-tag+
   ((%i8*% :vtable)
+   (%badge% :badge)
    (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
    (%size_t% :Array-Total-Size)
    (%t*%     :Data)
@@ -363,15 +369,16 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %tsp%     ; 1 _Parent
-         %size_t%  ; 2 length
-         %tsp[0]%  ; 3 zeroth element of data
+         %badge%   ; 1 badge
+         %tsp%     ; 2 _Parent
+         %size_t%  ; 3 length
+         %tsp[0]%  ; 4 zeroth element of data
          )
    nil))
 (define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
-(defconstant +value-frame.parent-index+ 1)
-(defconstant +value-frame.length-index+ 2)
-(defconstant +value-frame.data-index+ 3)
+(defconstant +value-frame.parent-index+ 2)
+(defconstant +value-frame.length-index+ 3)
+(defconstant +value-frame.data-index+ 4)
 
 
 
@@ -380,16 +387,13 @@ Boehm and MPS use a single pointer"
   (llvm-sys:struct-type-get
    (thread-local-llvm-context)
    (list %i8*%     ; 0 vtable
-         %i8*%     ; 1 entry (From Function_O)
-         %t*%      ; 2 _Class
+         %badge%   ; 1 badge
+         %i8*%     ; 2 entry (From Function_O)
          %t*%      ; 3 _Rack
-         %t*%      ; 4 _Sig
+         %t*%      ; 4 _Class
          %function-description*%   ; 5  FunctionDescription*
-         %atomic<size_t>%          ; 6  _Compilations
-         %atomic<size_t>%          ; 7  _InterpretedCalls
-         %atomic<tsp>%             ; 8  _CallHistory
-         %atomic<tsp>%             ; 9  _SpecializerProfile
-         %atomic<tsp>%             ; 10 _CompiledDispatchFunction
+         %atomic<size_t>%          ; 6  _InterpretedCalls
+         %atomic<tsp>%             ; 7 _CompiledDispatchFunction
          )
    nil))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
@@ -401,6 +405,7 @@ Boehm and MPS use a single pointer"
 ;;;
 (define-c++-struct %symbol% +general-tag+
   ((%i8*% :sym-vtable)
+   (%badge% :badge)
    (%t*% :name)
    (%t*% :home-package)
    (%t*% :global-value)
@@ -410,15 +415,28 @@ Boehm and MPS use a single pointer"
    (%i32% :flags)
    (%t*% :property-list)))
 
-(defconstant +symbol.function-index+ 4)
-(defconstant +symbol.setf-function-index+ 5)
+(defconstant +symbol.function-index+ 5)
+(defconstant +symbol.setf-function-index+ 6)
 
 (define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %t*% %t*%) nil))
+(define-symbol-macro %cons% (llvm-sys:struct-type-get
+                             (thread-local-llvm-context)
+                             (smart-pointer-fields %t*% %t*%
+                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%
+                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%) nil))
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
+
+(defconstant +cons.car-index+ 0)
+(defconstant +cons.cdr-index+ 1)
+(let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %cons%))
+       (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
+       (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
+       (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
+      (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
+
 
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
@@ -529,7 +547,7 @@ Boehm and MPS use a single pointer"
   (error "I need a va_list struct definition for this system")
 
   (define-symbol-macro %va_list*% (llvm-sys:type-get-pointer-to %va_list%))
-  (define-c++-struct %vaslist% +vaslist-tag+
+  (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
     ((%va_list% va_list)
      (%size_t% remaining-nargs)))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
@@ -718,10 +736,11 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %Function%
     (llvm-sys:struct-type-get
      (thread-local-llvm-context)
-     (list %i8*%    ; vtable
-           %fn-prototype*%     ; entry
+     (list %i8*%            ; 0 vtable
+           %badge%          ; 1 badge
+           %fn-prototype*%  ; 2 entry
            ) nil))
-(defconstant +function.entry-index+ 1)
+(defconstant +function.entry-index+ 2)
 
 (define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
 (define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
@@ -749,6 +768,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 
 (define-c++-struct %closure-with-slots% +general-tag+
   ((%i8*% vtable)
+   (%badge% :badge)
    (%fn-prototype*% entry)
    (%function-description*% function-description)
    (%i32% closure-type)
@@ -1043,9 +1063,7 @@ and initialize it with an array consisting of one function pointer."
              (*current-function* startup-fn)
              (entry-bb (irc-basic-block-create "entry" startup-fn))
              (arguments (llvm-sys:get-argument-list startup-fn))
-             (values (first arguments))
-             (size (second arguments))
-             (gf-args (second arguments)))
+             (arg-values (first arguments)))
         (cmp:irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
         (with-irbuilder (irbuilder-alloca)
           (let ((start (if roots-array-or-nil
@@ -1053,27 +1071,38 @@ and initialize it with an array consisting of one function pointer."
                                     (list (jit-constant-size_t 0)
                                           (jit-constant-size_t 0)))
                            (llvm-sys:constant-pointer-null-get %t**%))))
-            (when gcroots-in-module
-              (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
-                                                                          start ; root_address
-                                                                          (jit-constant-size_t number-of-roots) ; num_roots
-                                                                          values ; initial_data
-                                                                          (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
-                                                                          (jit-constant-size_t 0) ; transient_entries
-                                                                          (jit-constant-size_t 0) ; function_pointer_count
-                                                                          (irc-bit-cast (llvm-sys:constant-pointer-null-get %fn-prototype*%) %i8**%) ; fptrs
-                                                                          (irc-bit-cast (llvm-sys:constant-pointer-null-get %function-description*%) %i8**%) ; fdescs
-                                                                          )))
+            (multiple-value-bind (function-vector-length function-vector function-descs)
+                (literal:setup-literal-machine-function-vectors cmp:*the-module*)
+              (when gcroots-in-module
+                (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
+                                                                            start ; root_address
+                                                                            (jit-constant-size_t number-of-roots) ; num_roots
+                                                                            arg-values ; initial_data
+                                                                            (llvm-sys:constant-pointer-null-get %i8**%) ; transient_alloca
+                                                                            (jit-constant-size_t 0) ; transient_entries
+                                                                            (jit-constant-size_t function-vector-length) ; function_pointer_count
+                                                                            (irc-bit-cast
+                                                                             (cmp:irc-gep function-vector
+                                                                                          (list (cmp:jit-constant-size_t 0)
+                                                                                                (cmp:jit-constant-size_t 0)))
+                                                                             %i8**%) ; fptrs
+                                                                            (irc-bit-cast
+                                                                             (cmp:irc-gep function-descs
+                                                                                          (list (cmp:jit-constant-size_t 0)
+                                                                                                (cmp:jit-constant-size_t 0)))
+                                                                             %i8**%) ; fdescs
+                                                                            ))))
             ;; If the constant/literal list is provided - then we may need to generate code for closurettes
             (when ordered-literals
               (setf ordered-raw-literals-list (mapcar (lambda (x)
                                                         (cond
                                                           ((literal-node-runtime-p x)
                                                            (literal-node-runtime-object x))
-                                                          ((literal:literal-node-closure-p x)
-                                                           (literal:generate-run-time-code-for-closurette x irbuilder-alloca array)
+                                                          ((and (literal:literal-node-creator-p x)
+                                                                (literal:literal-node-closure-p (literal:literal-node-creator-object x)))
+                                                           (literal:generate-run-time-code-for-closurette x)
                                                            nil)
-                                                          (t (error "Illegal object ~s in ordered-literals list" x))))
+                                                          (t (error "Illegal object in ordered-literals-list it is: ~s" x))))
                                                       ordered-literals))) 
             (when gcroots-in-module
               (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
@@ -1088,11 +1117,7 @@ and initialize it with an array consisting of one function pointer."
                (*irbuilder-function-alloca* irbuilder-alloca)
                (*irbuilder-function-body* irbuilder-body)
                (*current-function* shutdown-fn)
-               (entry-bb (irc-basic-block-create "entry" shutdown-fn))
-               (arguments (llvm-sys:get-argument-list shutdown-fn))
-               (values (first arguments))
-               (size (second arguments))
-               (gf-args (second arguments)))
+               (entry-bb (irc-basic-block-create "entry" shutdown-fn)))
           (irc-set-insert-point-basic-block entry-bb irbuilder-alloca)
           (with-irbuilder (irbuilder-alloca)
             (progn

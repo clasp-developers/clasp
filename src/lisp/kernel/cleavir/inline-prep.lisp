@@ -37,7 +37,8 @@
     (funcall *code-walker* form environment)))
 
 (defun code-walk-using-cleavir (code-walker-function form env)
-  (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+  (let* (#+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
+         #-cst (cleavir-generate-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)
          (*code-walker* code-walker-function))
     (handler-bind

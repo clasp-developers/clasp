@@ -40,6 +40,7 @@
     (cleavir-primop:cdr codegen-cdr convert-cdr)
     (cleavir-primop:funcall codegen-primop-funcall convert-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable convert-unreachable)
+    (cleavir-primop:case codegen-primop-case convert-primop-case)
     (core:vaslist-pop codegen-vaslist-pop convert-vaslist-pop)
     (core:vaslist-length codegen-vaslist-length convert-vaslist-length)
     (core::header-stamp-case codegen-header-stamp-case convert-header-stamp-case)
@@ -50,6 +51,10 @@
     (core:instance-ref codegen-instance-ref convert-instance-ref)
     (core:instance-set codegen-instance-set convert-instance-set)
     (core::instance-cas codegen-instance-cas convert-instance-cas)
+    (core:instance-rack codegen-instance-rack convert-instance-rack)
+    (core:instance-rack-set codegen-instance-rack-set convert-instance-rack-set)
+    (core:rack-ref codegen-rack-ref convert-rack-rev)
+    (core:rack-set codegen-rack-set convert-rack-set)
     (llvm-inline codegen-llvm-inline convert-llvm-inline)
     (:gc-profiling codegen-gc-profiling convert-gc-profiling)
     (core::debug-message codegen-debug-message convert-debug-message)
@@ -304,6 +309,20 @@
 
 ;;; LET, LET*
 
+(defun new-notinlines (declarations)
+  ;; NOTE: If there are duplicates in the code this will have
+  ;; them as well, but that shouldn't meaningfully affect anything.
+  (append *notinlines*
+          ;; This REMOVE gets all the NOTINLINE declarations.
+          ;; ...but we can't use it since we don't have REMOVE yet.
+          #+(or)
+          (mapcar #'second
+                  (remove 'notinline :test-not #'eq :key #'car))
+          (let ((result nil))
+            (dolist (decl declarations result)
+              (when (eq (first decl) 'notinline)
+                (push (second decl) result))))))
+
 (defun codegen-fill-let-environment (new-env reqvars
                                      exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
@@ -389,7 +408,8 @@ and put the values into the activation frame for new-env."
                  traceid)
             (multiple-value-bind (reqvars)
                 (process-lambda-list-handler lambda-list-handler)
-              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler)))
+              (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
+                    (*notinlines* (new-notinlines declares)))
                 (if (core:special-variables lambda-list-handler)
                     (with-try "TRY.let/let*"
                       (progn
@@ -438,7 +458,7 @@ and put the values into the activation frame for new-env."
       (codegen value object env)
       (let ((object-raw (irc-load value)))
         (case type
-          ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum-tag+ thenb elseb))
+          ((fixnum) (compile-tag-check object-raw +fixnum-mask+ +fixnum00-tag+ thenb elseb))
           ((cons) (compile-tag-check object-raw +immediate-mask+ +cons-tag+ thenb elseb))
           ((character) (compile-tag-check object-raw +immediate-mask+ +character-tag+ thenb elseb))
           ((single-float) (compile-tag-check object-raw +immediate-mask+ +single-float-tag+ thenb elseb))
@@ -457,7 +477,7 @@ and put the values into the activation frame for new-env."
        (codegen value object env)
        (compile-tag-check (irc-load value) ,mask ,tag thenb elseb))))
 
-(define-tag-check compile-fixnump +fixnum-mask+ +fixnum-tag+)
+(define-tag-check compile-fixnump +fixnum-mask+ +fixnum00-tag+)
 (define-tag-check compile-consp +immediate-mask+ +cons-tag+)
 (define-tag-check compile-characterp +immediate-mask+ +character-tag+)
 (define-tag-check compile-single-float-p +immediate-mask+ +single-float-tag+)
@@ -842,7 +862,8 @@ jump to blocks within this tagbody."
 	(let ((evaluate-env (cond
 			      ((eq operator-symbol 'flet) env)
 			      ((eq operator-symbol 'labels) function-env)
-			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol)))))
+			      (t (error "flet/labels doesn't understand operator symbol[~a]" operator-symbol))))
+              (*notinlines* (new-notinlines declares)))
 	  (irc-branch-to-and-begin-block (irc-basic-block-create
 					  (bformat nil "%s-start"
 						   (symbol-name operator-symbol))))
@@ -883,7 +904,8 @@ jump to blocks within this tagbody."
     (multiple-value-bind (declares code docstring specials )
 	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
-      (codegen-progn result code macro-env))))
+      (let ((*notinlines* (new-notinlines declares)))
+        (codegen-progn result code macro-env)))))
 
 ;;; SYMBOL-MACROLET
 
@@ -922,7 +944,8 @@ jump to blocks within this tagbody."
       (let ((new-env (irc-new-unbound-value-environment-of-size
 		      env
 		      :number-of-arguments (length specials)
-		      :label "locally-env")))
+		      :label "locally-env"))
+            (*notinlines* (new-notinlines declarations)))
 	;; TODO: A runtime environment will be created with space for the specials
 	;; but they aren't used - get rid of them
         (irc-make-value-frame-set-parent new-env 0 env) ; (irc-intrinsic "setParentOfActivationFrame" (irc-renv new-env) (irc-renv env))
@@ -1071,6 +1094,38 @@ jump to blocks within this tagbody."
     (codegen vaslist form env)
     (irc-t*-result (gen-vaslist-pop (irc-load vaslist)) result)))
 
+;;; CLEAVIR-PRIMOP:CASE
+;;; CL:CASE when all the keys are immediates. Generated by the compiler macro.
+;;; Always has a default. Keys are always lists of objects.
+
+(defun codegen-primop-case (result rest env)
+  (let* ((keyform (first rest)) (cases (rest rest))
+         (default (rest (first (last cases))))
+         (defaultb (irc-basic-block-create "case-default"))
+         (mergeb (irc-basic-block-create "case-merge"))
+         (main-cases (butlast cases))
+         (ncases (let ((sum 0))
+                   (dolist (case main-cases sum)
+                     (incf sum (length (first case))))))
+         (keyt (alloca-t* "case-key")))
+    (codegen keyt keyform env)
+    (let* ((key64 (irc-ptr-to-int (irc-load keyt) %i64%))
+           (sw (irc-switch key64 defaultb ncases)))
+      (dolist (case main-cases)
+        (let ((keys (first case))
+              (body (rest case))
+              (block (irc-basic-block-create "case-case")))
+          (dolist (key keys)
+            (let ((val (core:create-tagged-immediate-value-or-nil key)))
+              (irc-add-case sw (jit-constant-i64 val) block)))
+          (irc-begin-block block)
+          (codegen-progn result body env)
+          (irc-branch-if-no-terminator-inst mergeb)))
+      (irc-begin-block defaultb)
+      (codegen-progn result default env)
+      (irc-branch-if-no-terminator-inst mergeb))
+    (irc-begin-block mergeb)))
+
 ;;; (CORE:HEADER-STAMP-CASE stamp b1 b2 b3 b4)
 ;;; Branch to one of four places depending on the where tag.
 
@@ -1147,8 +1202,7 @@ jump to blocks within this tagbody."
     (irc-t*-result (irc-derivable-stamp (irc-load object)) result)))
 
 ;;; CORE:INSTANCE-REF
-;;; the gen- are for cclasp. At the moment they're unused, but that's just because
-;;; the runtime fastgf compiler uses bclasp so it's a bit lower priority.
+
 (defun gen-instance-ref (instance index)
   (irc-read-slot instance (irc-untag-fixnum index %size_t% "slot-location")))
 
@@ -1187,8 +1241,8 @@ jump to blocks within this tagbody."
    old new))
 
 (defun codegen-instance-cas (result rest env)
-  (let ((instance (first rest)) (index (second rest))
-        (old (third rest)) (new (fourth rest))
+  (let ((old (first rest)) (new (second rest))
+        (instance (third rest)) (index (fourth rest))
         (instancet (alloca-t* "instance")) (indext (alloca-t* "index"))
         (oldt (alloca-t* "old")) (newt (alloca-t* "new")))
     (codegen instancet instance env)
@@ -1198,6 +1252,64 @@ jump to blocks within this tagbody."
     (irc-t*-result
      (gen-instance-cas (irc-load instancet) (irc-load indext)
                        (irc-load oldt) (irc-load newt))
+     result)))
+
+;;; CORE:INSTANCE-RACK
+
+(defun gen-instance-rack (instance) (irc-rack instance))
+
+(defun codegen-instance-rack (result rest env)
+  (let ((instance (first rest))
+        (instancet (alloca-t* "instance-rack-instance")))
+    (codegen instancet instance env)
+    (irc-t*-result (gen-instance-rack (irc-load instancet)) result)))
+
+;;; CORE:INSTANCE-RACK-SET
+
+(defun gen-instance-rack-set (instance rack)
+  (irc-rack-set instance rack)
+  rack)
+
+(defun codegen-instance-rack-set (result rest env)
+  (let ((instance (first rest)) (rack (second rest))
+        (instancet (alloca-t* "instance"))
+        (rackt (alloca-t* "rack")))
+    (codegen instancet instance env)
+    (codegen rackt rack env)
+    (irc-t*-result
+     (gen-instance-rack-set (irc-load instancet) (irc-load rackt))
+     result)))
+
+;;; CORE:RACK-REF
+
+(defun gen-rack-ref (rack index)
+  (irc-rack-read rack (irc-untag-fixnum index %size_t% "slot-location")))
+
+(defun codegen-rack-ref (result rest env)
+  (let ((rack (first rest)) (index (second rest))
+        (rackt (alloca-t* "rack-ref-rack"))
+        (indext (alloca-t* "rack-ref-index")))
+    (codegen rackt rack env)
+    (codegen indext index env)
+    (irc-t*-result (gen-rack-ref (irc-load rackt) (irc-load indext))
+                   result)))
+
+;;; CORE:RACK-SET
+
+(defun gen-rack-set (rack index value)
+  (irc-rack-write rack (irc-untag-fixnum index %size_t% "slot-location") value)
+  value)
+
+(defun codegen-rack-set (result rest env)
+  (let ((rack (first rest)) (index (second rest)) (value (third rest))
+        (rackt (alloca-t* "rack-set-rack"))
+        (indext (alloca-t* "rack-set-index"))
+        (valuet (alloca-t* "rack-set-value")))
+    (codegen rackt rack env)
+    (codegen indext index env)
+    (codegen valuet value env)
+    (irc-t*-result
+     (gen-rack-set (irc-load rackt) (irc-load indext) (irc-load valuet))
      result)))
 
 ;;; DBG-i32
@@ -1260,7 +1372,8 @@ jump to blocks within this tagbody."
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
               ;; See comment in cleavir bind-va-list w/r/t safep.
-              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil)))
+              (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
+                    (*notinlines* (new-notinlines canonical-declares)))
                 (irc-intrinsic-call "llvm.va_end" (list (irc-pointer-cast local-va_list* %i8*%)))
                 (codegen-let/let* (car new-body) result (cdr new-body) new-env)))))))))
 
@@ -1385,14 +1498,14 @@ jump to blocks within this tagbody."
 ;;; to a Lisp closure, then translates the primary return value of that function
 ;;; back to C and returns it (or if the C function is return type void, doesn't).
 (defun gen-defcallback (c-name convention
-                        return-type return-translator-name
-                        argument-types argument-translator-names
+                        return-type-name return-translator-name
+                        argument-type-names argument-translator-names
                         parameters place-holder closure-value)
   (declare (ignore convention))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
-  (unless (= (length argument-types) (length parameters) (length argument-translator-names))
+  (unless (= (length argument-type-names) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
-  ;;; Generate a variable and put the closure in it.
+;;; Generate a variable and put the closure in it.
   (let* ((closure-literal-slot-index (literal:lookup-literal-index place-holder))
          (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
     (irc-t*-result closure-value (literal:constants-table-reference closure-literal-slot-index))
@@ -1400,6 +1513,8 @@ jump to blocks within this tagbody."
     ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.
     (with-landing-pad nil ; Since we're in a new function (which should never be an unwind dest)
       (let* ((c-argument-names (mapcar #'string parameters))
+             (return-type (clasp-ffi:safe-translator-type return-type-name))
+             (argument-types (mapcar #'clasp-ffi:safe-translator-type argument-type-names))
              (c-function-type (llvm-sys:function-type-get return-type argument-types))
              (new-func (llvm-sys:function-create c-function-type
                                                  'llvm-sys:external-linkage
@@ -1407,6 +1522,15 @@ jump to blocks within this tagbody."
                                                  *the-module*))
              (*current-function* new-func)
              (*current-function-name* c-name))
+        (unless (llvm-sys:llvmcontext-equal (llvm-sys:get-context *the-module*)
+                                            (llvm-sys:get-context new-func))
+          (error "The llvm-context for the~%module ~s~%the thread LLVMContext is ~s~% doesn't match the one for the new-func ~s~%the c-function-type context is ~s~% The function return-type context is: ~s~% The argument types are ~s~%"
+                 (llvm-sys:get-context *the-module*)
+                 (cmp:thread-local-llvm-context)
+                 (llvm-sys:get-context new-func)
+                 (llvm-sys:get-context c-function-type)
+                 (llvm-sys:get-context return-type)
+                 (mapcar #'llvm-sys:get-context argument-types)))
         (with-irbuilder ((llvm-sys:make-irbuilder (thread-local-llvm-context)))
           (let ((bb (irc-basic-block-create "entry" new-func)))
             (irc-set-insert-point-basic-block bb)
@@ -1440,7 +1564,8 @@ jump to blocks within this tagbody."
                                    ;; get the 0th value.
                                    (list (irc-tmv-primary cl-result))
                                    "c-result")))
-                    (irc-ret c-result))))))))))
+                    (irc-ret c-result)))
+              )))))))
 
 (defun codegen-defcallback (result form env)
   (declare (ignore result))             ; no return value

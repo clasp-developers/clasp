@@ -96,9 +96,8 @@ class ClassRep_O : public core::Instance_O {
   friend struct class_registration;
 
 public:
-  bool cxxClassP() const { return true; };
-  bool cxxDerivableClassP() const { return this->m_derivable; };
-  bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->CLASS_get_creator())->duplicationLevel() == 0; };
+  bool cxxClassP() const  override{ return true; };
+  bool cxxDerivableClassP() const  override{ return this->m_derivable; };
 
 #if 0
  ClassRep_O() : Instance_O(core::lisp_class_rep_class()/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/) {

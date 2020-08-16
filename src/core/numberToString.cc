@@ -143,7 +143,7 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
     }
     return buffer;
   } else if (Bignum_sp bi = integer.asOrNull<Bignum_O>()) {
-    core__bignum_to_string(buffer, bi->get(), base);
+    core__bignum_to_string(buffer, bi->mpz_ref(), base);
   } else {
     QERROR_WRONG_TYPE_NTH_ARG(2, base, cl::_sym_integer);
   }

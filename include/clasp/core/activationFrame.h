@@ -180,13 +180,13 @@ public:
 //  T_sp *argArray() { return this->_Objects.data(); };
 
   /*! Return the number of arguments */
-  size_t length() const { return this->_Objects.length(); };
+  size_t length() const override { return this->_Objects.length(); };
 
 //  T_sp _lookupValue(int depth, int index);
 //  T_sp &lookupValueReference(int depth, int index);
 
-  virtual bool _updateValue(Symbol_sp sym, T_sp obj);
-  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const;
+  virtual bool _updateValue(Symbol_sp sym, T_sp obj) override;
+  virtual bool _findValue(T_sp sym, int &depth, int &index, bool& crossesFunction, ValueKind &valueKind, T_sp &value, T_sp& env) const override;
 
   inline bool boundp_entry(uint idx) const {
     return !(*this)[idx].unboundp();
@@ -209,9 +209,9 @@ public:
   void fillRestOfEntries(int istart, List_sp values);
 
   /*! Method for interogating ActivationFrames as Environments */
-  virtual string summaryOfContents() const;
+  virtual string summaryOfContents() const override;
 
-  string asString() const;
+  string asString() const override;
 };
 };
 
@@ -259,7 +259,7 @@ public:
   virtual ~FunctionFrame_O() {}
 public:
   /*! Return the number of arguments */
-  size_t length() const { return this->_Objects.length(); };
+  size_t length() const override { return this->_Objects.length(); };
   //	T_sp* argArray() { return this->_Objects.argArray(); };
 
 
@@ -284,10 +284,10 @@ public:
   const T_sp &entryReference(int idx) const { return (*this)[idx];};
   T_sp &entryReference(int idx) { return (*this)[idx];};
 
-  string asString() const;
+  string asString() const override;
 
   /*! Method for interogating ActivationFrames as Environments */
-  virtual string summaryOfContents() const;
+  virtual string summaryOfContents() const override;
 
 //  virtual Function_sp _lookupFunction(int depth, int index) const;
 };

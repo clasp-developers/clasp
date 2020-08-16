@@ -55,27 +55,21 @@
     (flet ((get-it ()
              (or (gethash object table nil)
                  (setf (gethash object table)
-                       ;; KLUDGE to avoid compiler macro, see fixup.lsp
-                       (apply #'make-instance 'eql-specializer :object object nil)
-                       #+(or)
-                       (make-instance 'eql-specializer :object object)))))
+                       ;; See note on initargs-updater in fixup.lsp.
+                       (with-early-make-instance +eql-specializer-slots+
+                         (e (find-class 'eql-specializer) :object object)
+                         e)))))
       #+threads (mp:with-lock (*eql-specializer-lock*) (get-it))
       #-threads (get-it))))
 
 (defmethod add-direct-method ((spec specializer) (method method))
-  (pushnew method (specializer-direct-methods spec))
-  (let ((gf (method-generic-function method)))
-    (pushnew gf (specializer-direct-generic-functions spec)))
+  (pushnew method (%specializer-direct-methods spec))
   (values))
 
 (defmethod remove-direct-method ((spec specializer) (method method))
-  (let* ((gf (method-generic-function method))
-	 (methods (delete method (specializer-direct-methods spec))))
-    (setf (specializer-direct-methods spec) methods)
-    (unless (find gf methods :key #'method-generic-function)
-      (setf (specializer-direct-generic-functions spec)
-	    (delete gf (specializer-direct-generic-functions spec))))
-    (values)))
+  (setf (%specializer-direct-methods spec)
+        (delete method (specializer-direct-methods spec)))
+  (values))
 
 #+threads
 (defmethod remove-direct-method ((spec eql-specializer) (method method))
@@ -92,3 +86,9 @@
       (remhash spec *eql-specializer-hash*))
   (values))
 
+(defmethod specializer-direct-generic-functions ((specializer specializer))
+  (loop with result = nil
+        for method in (specializer-direct-methods specializer)
+        for gf = (method-generic-function method)
+        do (pushnew gf result :test #'eq)
+        finally (return result)))

@@ -58,10 +58,6 @@ typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &m
 
 namespace gctools {
 
-template <typename T>
-constexpr size_t depreciatedAlignmentT() { return alignof(T); };
-template <typename T>
-constexpr size_t depreciatedAlignUpT(size_t size) { return (size + depreciatedAlignmentT<T>() - 1) & ~(depreciatedAlignmentT<T>() - 1); };
 };
 
 // ----------------------------------------------------------------------
@@ -82,11 +78,12 @@ extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 };
 
-#define STAMP_MTAG   BOOST_BINARY(00)
-#define INVALID_MTAG        BOOST_BINARY(01)
-#define FWD_MTAG            BOOST_BINARY(10)
+#define STAMP_MTAG   0b00
+#define INVALID_MTAG        0b01
+#define FWD_MTAG            0b10
 #define STAMP_SHIFT  2
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<STAMP_SHIFT)|STAMP_MTAG)
+#define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>STAMP_SHIFT)
 // ADJUST_STAMP values are left unshifted
 #define ADJUST_STAMP(unshifted_stamp) (unshifted_stamp) // (unshifted_stamp<<STAMP_PARTIAL_SHIFT_REST_FIXNUM)|STAMP_MTAG)
 // ISA_ADJUST_STAMP must be shifted so that they match header values when they are read
@@ -214,7 +211,15 @@ namespace gctools {
 
 };
 
+namespace gctools {
+  constexpr size_t Alignment() {
+//  return sizeof(Header_s);
+//    return alignof(Header_s);
+    return 16;
+  };
+  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
+};
 
 
 
@@ -308,31 +313,31 @@ namespace gctools {
 
   class Header_s {
   public:
-    static const tagged_stamp_t mtag_mask      =  BOOST_BINARY(0011);
+    static const tagged_stamp_t mtag_mask      =  0b0011;
       static const size_t mtag_width = 2;
-    static const tagged_stamp_t where_mask     =  BOOST_BINARY(1100);
+    static const tagged_stamp_t where_mask     =  0b1100;
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
     static const tagged_stamp_t where_tag_width=  4; 
     // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
-    static const tagged_stamp_t derivable_wtag =  BOOST_BINARY(0000);
-    static const tagged_stamp_t rack_wtag      =  BOOST_BINARY(0100);
-    static const tagged_stamp_t wrapped_wtag   =  BOOST_BINARY(1000);
-    static const tagged_stamp_t header_wtag    =  BOOST_BINARY(1100);
-    static const tagged_stamp_t max_wtag       =  BOOST_BINARY(1100);
+    static const tagged_stamp_t derivable_wtag =  0b0000;
+    static const tagged_stamp_t rack_wtag      =  0b0100;
+    static const tagged_stamp_t wrapped_wtag   =  0b1000;
+    static const tagged_stamp_t header_wtag    =  0b1100;
+    static const tagged_stamp_t max_wtag       =  0b1100;
     static const tagged_stamp_t wtag_width     = 2;
     
     static const tagged_stamp_t invalid_tag=  INVALID_MTAG; // indicates not header
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs
     static const tagged_stamp_t stamp_tag  =  STAMP_MTAG;
     static const tagged_stamp_t fwd_tag    =  FWD_MTAG;
-    static const tagged_stamp_t pad_mask   = BOOST_BINARY(111);
-    static const tagged_stamp_t pad_test   = BOOST_BINARY(011);
+    static const tagged_stamp_t pad_mask   = 0b111;
+    static const tagged_stamp_t pad_test   = 0b011;
     static const int pad_shift = 3; // 3 bits for pad tag
-    static const tagged_stamp_t pad_tag    = BOOST_BINARY(011);
-    static const tagged_stamp_t pad1_tag   = BOOST_BINARY(111);
+    static const tagged_stamp_t pad_tag    = 0b011;
+    static const tagged_stamp_t pad1_tag   = 0b111;
     static const tagged_stamp_t fwd_ptr_mask = ~mtag_mask;
-    static const tagged_stamp_t stamp_mask    = ~mtag_mask; // BOOST_BINARY(11...11111111111100);
+    static const tagged_stamp_t stamp_mask    = ~mtag_mask; // 0b11...11111111111100;
     static const int stamp_shift = STAMP_SHIFT;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>stamp_shift;
   public:
@@ -348,10 +353,11 @@ namespace gctools {
         return (start+(1<<stamp_shift))&(~mtag_mask);
       }
       static bool is_unshifted_stamp(uint64_t unknown) {
+        size_t sm = STAMP_max;
         // This is the only test that makes sense.
-        if (is_header_stamp(unknown) && unknown <= STAMP_max) return true;
+        if (is_header_stamp(unknown) && unknown <= sm) return true;
         // Otherwise it's an assigned stamp and it must be in the range below.
-        if (STAMP_max<unknown && unknown<global_NextUnshiftedStamp) return true;
+        if (sm<unknown && unknown<global_NextUnshiftedStamp) return true;
         return false;
       }
       static bool is_shifted_stamp(uint64_t unknown) {
@@ -404,6 +410,8 @@ namespace gctools {
         #ifdef DEBUG_ASSERT
         if (!is_unshifted_stamp(us)) {
           printf("%s:%d:%s the argument %lu must be an unshifted stamp\n", __FILE__, __LINE__, __FUNCTION__, us );
+          bool result = is_unshifted_stamp(us);
+          printf("%s:%d   After running is_unshifted_stamp(%lu) -> %d and it should be 1\n", __FILE__, __LINE__, us, result);
           abort();
         }
         #endif
@@ -447,10 +455,13 @@ namespace gctools {
         return static_cast<ShiftedStamp>( this->_value );
       }
       inline UnshiftedStamp unshifted_stamp() const {
+        //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
         return static_cast<UnshiftedStamp>( unshift_shifted_stamp(this->_value) );
       }
       inline size_t nowhere_stamp() const {
-        return make_nowhere_stamp(this->unshifted_stamp());
+        size_t us = this->unshifted_stamp();
+        // printf("%s:%d  unshifted_stamp -> %lu\n", __FILE__, __LINE__, us);
+        return make_nowhere_stamp(us);
       }
     };
   public:
@@ -461,7 +472,7 @@ namespace gctools {
 #ifdef DEBUG_QUICK_VALIDATE
       if ( this->stampP() ) {
 #ifdef DEBUG_GUARD    
-        if (this->guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
+        if (this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"bad head guard");
         if (this->_tail_size>0) {
           const unsigned char* tail = (const unsigned char*)this+this->_tail_start;
           if ((*tail) != 0xcc) signal_invalid_object(this,"bad tail not 0xcc");
@@ -478,23 +489,38 @@ namespace gctools {
     StampWtagMtag _stamp_wtag_mtag;
     // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
     tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
+    uintptr_t     _header_badge;
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
-    tagged_stamp_t guard;
+    tagged_stamp_t _guard;
+    int _dup_tail_start;
+    int _dup_tail_size;
+    StampWtagMtag _dup_stamp_wtag_mtag;
+    tagged_stamp_t _guard2;
+    uintptr_t _guard3; // Header needs to be size aligned - so add another guard to get to 64 bytes
 #endif
   public:
 #if !defined(DEBUG_GUARD)
     
-  Header_s(const StampWtagMtag& k) : _stamp_wtag_mtag(k) {}
+  Header_s(const StampWtagMtag& k) :
+      _stamp_wtag_mtag(k),
+      _header_badge(0xDeadDeadBeefBeef)
+    {}
 #endif
 #if defined(DEBUG_GUARD)
     inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
   Header_s(const StampWtagMtag& k,size_t tstart, size_t tsize, size_t total_size) 
     : _stamp_wtag_mtag(k),
+      _header_badge(0xDeadDeadBeefBeef),
       _tail_start(tstart),
       _tail_size(tsize),
-      guard(0xFEEAFEEBDEADBEEF)
+      _guard(0xFEEAFEEBDEADBEEF),
+      _dup_tail_start(tstart),
+      _dup_tail_size(tsize),
+      _dup_stamp_wtag_mtag(k),
+      _guard2(0xAAAAAAAAAAAAAAAA),
+      _guard3(0xDDDDDDDDDDDDDDDD)
       {
         this->fill_tail();
       };
@@ -527,7 +553,7 @@ namespace gctools {
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
     void setPad(tagged_stamp_t p) { this->_stamp_wtag_mtag._value = p; };
   /*! Return the pad1 size */
-    tagged_stamp_t pad1Size() const { return alignof(Header_s); };
+    tagged_stamp_t pad1Size() const { return Alignment(); };
   /*! Return the size of the pad block - without the header */
     tagged_stamp_t padSize() const { return (this->additional_data[0]); };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
@@ -585,8 +611,8 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
     if ( given != STAMP_null ) {
       return Header_s::StampWtagMtag::shift_unshifted_stamp(given)|where;
     }
-    if (global_NextUnshiftedStamp.load() < Header_s::largest_possible_stamp) {
-      UnshiftedStamp stamp = global_NextUnshiftedStamp.fetch_add(4);
+    UnshiftedStamp stamp = global_NextUnshiftedStamp.fetch_add(4);
+    if (stamp < Header_s::largest_possible_stamp) {
 #ifdef DEBUG_ASSERT
       if (!(Header_s::StampWtagMtag::is_unshifted_stamp(stamp)) && (stamp&3)!=0) {
         printf("%s:%d NextStampWtag is about to return a stamp that is illegal: stamp: %lu\n", __FILE__, __LINE__, stamp);
@@ -621,12 +647,6 @@ namespace core {
 #include <clasp/gctools/tagged_cast.h>
 
 namespace gctools {
-
-  constexpr size_t Alignment() {
-//  return sizeof(Header_s);
-    return alignof(Header_s);
-  };
-  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
   // ----------------------------------------------------------------------
   //! Calculate the size of an object + header for allocation
@@ -697,8 +717,7 @@ namespace gctools {
 
 
 namespace gctools {
-
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
 #else
 #define EXHAUSTIVE_VALIDATE(ptr)
@@ -842,6 +861,7 @@ extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 #define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate(__VA_ARGS__)
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
+#define GC_NON_RECURSIVE_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points
@@ -944,19 +964,17 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 
   inline core::T_O* ensure_valid_object(core::T_O* tagged_object) {
-#ifdef DEBUG_ENSURE_VALID_OBJECT
   // Only validate general objects for now
     if (tagged_generalp(tagged_object)) {
       core::T_O* untagged_object = gc::untag_general(tagged_object);
       Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
       header->quick_validate();
     }
-#endif
     return tagged_object;
   }
   template <typename OT>
     inline gctools::smart_ptr<OT> ensure_valid_object(gctools::smart_ptr<OT> tagged_object) {
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
   // Only validate general objects for now
     if (tagged_generalp(tagged_object.raw_())) {
       core::T_O* untagged_object = gc::untag_general(tagged_object.raw_());
@@ -975,7 +993,7 @@ void gc_park();
 void gc_release();
 };
 
-#ifdef DEBUG_ENSURE_VALID_OBJECT
+#ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define EVO(x) (gctools::ensure_valid_object(x))
 #else

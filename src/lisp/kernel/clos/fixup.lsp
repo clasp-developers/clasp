@@ -49,12 +49,7 @@
   ;; the function-to-method-temp entry to *early-methods*. but then we unbind
   ;; that, so things are a bit screwy. We do it more manually.
   (let* ((f (ensure-generic-function 'function-to-method-temp)) ; FIXME: just make an anonymous one?
-         (mf (lambda (.method-args. .next-methods.)
-               (declare (core:lambda-name function-to-method.lambda))
-               (mlog "In function-to-method.lambda  about to call %s with args %s%N"
-                     function (core:list-from-va-list .method-args.))
-               (apply function .method-args.)))
-         (fmfp (lambda-list-fast-callable-p lambda-list))
+         (mf (make-%method-function-fast function))
          (method
            (make-method (find-class 'standard-method)
                         nil
@@ -62,18 +57,17 @@
                         lambda-list
                         mf
                         (list
-                         'leaf-method-p t
-                         'fast-method-function (if fmfp function nil)))))
+                         'leaf-method-p t))))
     ;; we're still using the old add-method, which adds things to *early-methods*.
     ;; We don't want to do that here, so we rebind *early-methods* and discard the value.
     (let ((*early-methods* nil))
       (add-method f method))
     ;; Put in a call history to speed things up a little.
-    (loop ;; either a fast method function, or just the method function.
-          with outcome = (if fmfp
-                             (make-fast-method-call :function function)
-                             (make-effective-method-outcome
-                              :applicable-methods (list method) :function mf))
+    (loop with outcome = (make-effective-method-outcome
+                          :methods (list method)
+                          :form `(call-method ,method)
+                          ;; Is a valid EMF.
+                          :function function)
           for specializers in satiation-specializers
           collect (cons (map 'vector #'find-class specializers) outcome)
             into new-call-history
@@ -136,8 +130,7 @@
 ;;; before calling add-direct-method below
 
 (dolist (method-info *early-methods*)
-  (setup-specializer-profile
-   (fdefinition (car method-info))))
+  (compute-gf-specializer-profile (fdefinition (car method-info))))
 
 (mlog "About to satiate%N")
 
@@ -154,10 +147,7 @@
 (eval-when (:execute)
   (satiate-minimal-generic-functions))
 (eval-when (:load-toplevel)
-  (macrolet ((find-method (&rest args)
-               `(early-find-method ,@args)))
-    (with-early-accessors (+standard-method-slots+)
-      (satiate-clos))))
+  (satiate-clos))
 
 (mlog "Done satiating%N")
 
@@ -327,44 +317,31 @@ and cannot be added to ~A." method other-gf gf)))
       (when found
 	(remove-method gf found))))
   ;;
-  ;; We install the method by:
-  ;;  i) Adding it to the list of methods
-  (push method (generic-function-methods gf))
-  (setf (method-generic-function method) gf)
-  ;;  FIXME!!!  Method specializers should be implemented shouldn't they? meister
-  ;;  ii) Updating the specializers list of the generic function. Notice that
-  ;;  we should call add-direct-method for each specializer but specializer
-  ;;  objects are not yet implemented
-  #+(or)
-  (dolist (spec (method-specializers method))
-    (add-direct-method spec method))
-  ;;  iii) Computing a new discriminating function... Well, since the core
-  ;;  ECL does not need the discriminating function because we always use
-  ;;  the same one, we just update the spec-how list of the generic function.
-  (compute-g-f-spec-list gf)
-  ;; Clasp must update the specializer-profile
-  #+clasp
-  (progn
-    (update-specializer-profile gf (method-specializers method))
-    (update-generic-function-call-history-for-add-method gf method))
-  (set-funcallable-instance-function gf (compute-discriminating-function gf))
-  ;;  iv) Update dependents.
-  (update-dependents gf (list 'add-method method))
-  ;;  v) Register with specializers
+  ;; Per AMOP's description of ADD-METHOD, we install the method by:
+  ;;  i) Adding it to the list of methods.
+  (push method (%generic-function-methods gf))
+  (setf (%method-generic-function method) gf)
+  ;;  ii) Adding the method to each specializer's direct-methods.
   (register-method-with-specializers method)
+  ;;  iii) Computing a new discriminating function.
+  ;;       Though in this case it will be the invalidated function.
+  (update-gf-specializer-profile gf (method-specializers method))
+  (compute-a-p-o-function gf)
+  (update-generic-function-call-history-for-add-method gf method)
+  (set-funcallable-instance-function gf (compute-discriminating-function gf))
+  ;;  iv) Updating dependents.
+  (update-dependents gf (list 'add-method method))
   gf)
 
 (defun remove-method (gf method)
-  (setf (generic-function-methods gf)
+  (setf (%generic-function-methods gf)
 	(delete method (generic-function-methods gf))
-	(method-generic-function method) nil)
+	(%method-generic-function method) nil)
   (loop for spec in (method-specializers method)
      do (remove-direct-method spec method))
-  (compute-g-f-spec-list gf)
-  #+clasp
-  (progn
-    (compute-and-set-specializer-profile gf)
-    (update-generic-function-call-history-for-remove-method gf method))
+  (compute-gf-specializer-profile gf)
+  (compute-a-p-o-function gf)
+  (update-generic-function-call-history-for-remove-method gf method)
   (set-funcallable-instance-function gf (compute-discriminating-function gf))
   (update-dependents gf (list 'remove-method method))
   gf)
@@ -468,22 +445,27 @@ and cannot be added to ~A." method other-gf gf)))
 ;;; used in the expansion of the defclass below.
 ;;; Most MAKE-LOAD-FORMs are in print.lsp.
 
-(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+(defmethod make-load-form ((object core:file-scope) &optional env)
+  (declare (ignore env))
   (values
-   `(core:make-cxx-object 'core:source-pos-info
-                          :sfi (core:decode (core:make-cxx-object 'core:file-scope)
-                                            ',(core:encode (core:file-scope
-                                                            (core:source-pos-info-file-handle object))))
+   `(core:make-cxx-object ,(find-class 'core:file-scope))
+   `(core:decode
+     ,object
+     ',(core:encode object))))
+
+(defmethod make-load-form ((object core:source-pos-info) &optional environment)
+  (declare (ignore environment))
+  (values
+   `(core:make-cxx-object ,(find-class 'core:source-pos-info)
+                          :sfi ,(core:file-scope
+                                 (core:source-pos-info-file-handle object))
                           :fp ,(core:source-pos-info-filepos object)
                           :l ,(core:source-pos-info-lineno object)
                           :c ,(core:source-pos-info-column object))
-   `(progn
-      (core:setf-source-pos-info-inlined-at
-       ',object
-       ',(core:source-pos-info-inlined-at object))
-      (core:setf-source-pos-info-function-scope
-       ',object
-       ',(core:source-pos-info-function-scope object)))))
+   `(core:setf-source-pos-info-extra
+     ',object
+     ',(core:source-pos-info-inlined-at object)
+     ',(core:source-pos-info-function-scope object))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -548,9 +530,12 @@ and cannot be added to ~A." method other-gf gf)))
         (when (classp spec) ; sanity check against eql specialization
           (recursively-update-class-initargs-cache spec))))))
 
-;; KLUDGE: bclasp doesn't respect notinline, so we do this.
-;; (It needs to be notinline - we haven't booted static-gfs yet.)
-(let ((x (apply #'make-instance 'initargs-updater nil)))
+;; NOTE that we can't use MAKE-INSTANCE since the
+;; compiler macro in static-gfs will put in code
+;; that the loader can't handle yet.
+;; We could use NOTINLINE now that bclasp handles it,
+;; but we don't need to go through make-instance's song and dance anyway.
+(let ((x (with-early-make-instance () (x (find-class 'initargs-updater)) x)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
@@ -559,6 +544,13 @@ and cannot be added to ~A." method other-gf gf)))
 (function-to-method 'make-method-lambda
                     '(gf method lambda-form environment)
                     '(standard-generic-function standard-method t t))
+
+;; ditto
+(function-to-method 'expand-apply-method
+                    '(method method-arguments arguments env)
+                    '(standard-method t t t)
+                    nil
+                    #'std-expand-apply-method)
 
 (function-to-method 'compute-discriminating-function '(gf)
                     '(standard-generic-function)

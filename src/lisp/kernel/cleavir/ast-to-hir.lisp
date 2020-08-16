@@ -13,54 +13,6 @@
   (make-instance 'clasp-cleavir-hir:debug-break-instruction 
 		 :successors (cleavir-ast-to-hir::successors context)))
 
-
-;;; We have to shadow Cleavir's method, as we have to save and load multiple values explicitly.
-(defmethod cleavir-ast-to-hir:compile-ast :around
-    ((ast cleavir-ast:multiple-value-prog1-ast) context)
-  (let ((cleavir-ir:*policy* (cleavir-ast:policy ast))
-        (cleavir-ir:*origin* (cleavir-ast:origin ast))
-        (cleavir-ir:*dynamic-environment*
-          (cleavir-ast-to-hir::dynamic-environment context)))
-    (with-accessors ((results cleavir-ast-to-hir::results)
-                     (successors cleavir-ast-to-hir::successors))
-        context
-      (cond ((null (cleavir-ast:form-asts ast)) ; trivial case
-             (cleavir-ast-to-hir:compile-ast (cleavir-ast:first-form-ast ast) context))
-            ((typep results 'cleavir-ir:values-location) ; hard case
-             (let* (;; Values location for the first form. Despite the hoopla, means nothing
-                    ;; in the runtime.
-                    (mv (cleavir-ir:make-values-location))
-                    ;; These two (lexical!) temporaries store the values.
-                    ;; They will be typed in hir-to-mir, and are not used for anything else.
-                    (nvals-temp (cleavir-ir:new-temporary))
-                    (values-temp (cleavir-ir:new-temporary))
-                    ;; Our final instruction - load the temporaries back into the values location.
-                    (load (clasp-cleavir-hir:make-load-values-instruction
-                           (list nvals-temp values-temp) results (first successors)))
-                    ;; Now we're set up to compile the rest forms.
-                    (next (loop with successor = load
-                                for form-ast in (reverse (cleavir-ast:form-asts ast))
-                                do (setf successor
-                                         (cleavir-ast-to-hir:compile-ast
-                                          form-ast
-                                          (cleavir-ast-to-hir:clone-context
-                                           context
-                                           :results '()
-                                           :successors (list successor))))
-                                finally (return successor)))
-                    ;; This instruction stores the result(s) of the first form into the temporaries.
-                    (store (clasp-cleavir-hir:make-save-values-instruction
-                            mv (list nvals-temp values-temp) next)))
-               ;; Finally, we can compile the first form.
-               (cleavir-ast-to-hir:compile-ast
-                (cleavir-ast:first-form-ast ast)
-                (cleavir-ast-to-hir:clone-context
-                 context
-                 :results mv
-                 :successors (list store)))))
-            (t ; simple case - results are just lexical locations - no special effort needed
-             (call-next-method))))))
-
 (defmethod cleavir-ast-to-hir:compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
@@ -228,6 +180,19 @@
   (clasp-cleavir-ast:cmp-ast cleavir-ast:value-ast
                              cleavir-ast:object-ast cleavir-ast:slot-number-ast))
 
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:instance-rack-ast clasp-cleavir-hir:instance-rack-instruction
+  (cleavir-ast:object-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:instance-rack-set-ast clasp-cleavir-hir:instance-rack-set-instruction
+  (cleavir-ast:object-ast cleavir-ast:value-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:rack-read-ast clasp-cleavir-hir:rack-read-instruction
+  (cleavir-ast:object-ast cleavir-ast:slot-number-ast))
+(cleavir-ast-to-hir::define-compile-functional-ast
+    cc-ast:rack-write-ast clasp-cleavir-hir:rack-write-instruction
+  (cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast))
+
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:bind-va-list-ast) context)
   (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast
@@ -324,7 +289,7 @@
      (first (cleavir-ast-to-hir::results context))
      :successor (first (cleavir-ast-to-hir::successors context))
      :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
-     :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999990)
+     :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999910)
      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -22,7 +22,10 @@ def run_program(binary, *args):
 
 def run_program_echo(binary, *args):
     log.debug("run_program_echo for %s %s", binary, args)
-    proc = subprocess.Popen([binary] + list(args), shell = False, universal_newlines = True)
+    cmd = "%s %s" % (binary, " ".join('"{0}"'.format(w.replace('"',r'\"')) for w in args))
+    print(" cmd = %s" % cmd )
+    subprocess.call(["/bin/sh","-c",cmd])
+    # proc = subprocess.Popen([binary] + list(args), shell = False, universal_newlines = True)
 
 def get_git_commit(cfg):
     return run_program(cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD").strip()

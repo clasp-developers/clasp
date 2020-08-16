@@ -116,7 +116,7 @@ public:
 public:
   string __repr__() const;
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   bool LLVMContext_equal(core::T_sp obj) const;
@@ -124,10 +124,8 @@ public:
   ;
   LLVMContext_O() : Base(), _ptr(NULL){};
   ~LLVMContext_O() {
-    if (_ptr != NULL) {
-      delete _ptr;
-      _ptr = NULL;
-    };
+    delete _ptr;
+    _ptr = NULL;
   }
 
 }; // LLVMContext_O
@@ -178,17 +176,15 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static ThreadSafeContext_sp create_thread_safe_context();
   llvm::LLVMContext* getContext();
   ThreadSafeContext_O() : Base(), _ptr(NULL){};
   ~ThreadSafeContext_O() {
-    if (_ptr != NULL) {
-      delete _ptr;
-      _ptr = NULL;
-    };
+    delete _ptr;
+    _ptr = NULL;
   }
 
 }; // ThreadSafeContext_O
@@ -256,14 +252,13 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   Linker_O() : Base(), _ptr(NULL){};
   ~Linker_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
 }; // Linker_O
@@ -306,14 +301,13 @@ public:
   void dump(core::T_sp stream);
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   JITDylib_O() : Base(), _ptr(NULL){};
   ~JITDylib_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
 }; // JITDylib_O
@@ -367,14 +361,13 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   Pass_O() : Base(), _ptr(NULL){};
   ~Pass_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
 }; // Pass_O
@@ -488,8 +481,7 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL)
-      delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
   Triple_O() : Base(), _ptr(NULL){};
@@ -571,9 +563,7 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL) {
-      delete this->_ptr;
-    }
+    delete this->_ptr;
     this->_ptr = ptr;
   }
 
@@ -651,14 +641,13 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   Target_O() : Base(), _ptr(NULL){};
   ~Target_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
 }; // Target_O
@@ -711,14 +700,13 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   MCSubtargetInfo_O() : Base(), _ptr(NULL){};
   ~MCSubtargetInfo_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
 }; // MCSubtargetInfo_O
@@ -760,7 +748,7 @@ class TargetSubtargetInfo_O : public MCSubtargetInfo_O {
 public:
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
 
@@ -893,7 +881,7 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   
@@ -972,7 +960,7 @@ class LLVMTargetMachine_O : public TargetMachine_O {
 public:
   PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
 
@@ -1018,7 +1006,7 @@ class FunctionPass_O : public Pass_O {
 public:
   PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   FunctionPass_O() : Base(){};
@@ -1079,7 +1067,7 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL ) delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
 
@@ -1144,7 +1132,7 @@ class ModulePass_O : public Pass_O {
 public:
   PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ModulePass_O() : Base(){};
@@ -1185,7 +1173,7 @@ class ImmutablePass_O : public ModulePass_O {
 public:
   PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ImmutablePass_O() : Base(){};
@@ -1245,8 +1233,7 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL)
-      delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
   PassManagerBase_O() : Base(), _ptr(NULL){};
@@ -1314,17 +1301,18 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static Value_sp create(llvm::Value *ptr);
   ;
   Value_O() : Base(), _ptr(NULL){};
   ~Value_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
+  LLVMContext_sp getContext() const;
+
   bool llvm_sys_value_p() const { return true; };
   string __repr__() const;
   bool valid() const;
@@ -1399,16 +1387,15 @@ public:
 
 public:
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static Metadata_sp create(llvm::Metadata *ptr);
   ;
   Metadata_O() : Base(), _ptr(NULL){};
   ~Metadata_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
   //	string __repr__() const;
   //	bool valid() const;
@@ -1472,7 +1459,7 @@ class User_O : public Value_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   User_O() : Base(){};
@@ -1492,7 +1479,7 @@ class MetadataAsValue_O : public Value_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   MetadataAsValue_O() : Base(){};
@@ -1749,7 +1736,7 @@ class Constant_O : public User_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static Constant_sp create(llvm::Constant *ptr);
@@ -1963,7 +1950,7 @@ public:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   GlobalVariable_O() : Base(){};
@@ -2021,16 +2008,15 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   string __repr__() const;
 
   ExecutionEngine_O() : Base(), _ptr(NULL){};
   ~ExecutionEngine_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
   void addModule(Module_sp module);
@@ -2084,15 +2070,13 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  Module_O() : Base(), _ptr(NULL), _Id(++global_NextModuleId) {};
   ~Module_O() {
-    if (_ptr != NULL) {
-      // delete _ptr;   // Don't delete the module Delete the module when it's not used
-      _ptr = NULL;
-    };
+    // delete _ptr;   // Don't delete the module Delete the module when it's not used
+    _ptr = NULL;
   }
   std::string __repr__() const;
   CL_DEFMETHOD size_t module_id() const { return this->_Id;};
@@ -2107,6 +2091,8 @@ public:
 public:
   /*! Return a list of all functions as a cons */
   core::List_sp getFunctionList() const;
+
+  LLVMContext_sp getContext() const;
 
   /*! Wrap the Module::getFunction function */
   llvm::Function *getFunction(core::String_sp dispatchName);
@@ -2196,11 +2182,11 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    //	    if (this->_ptr != NULL ) delete this->_ptr;
+    // delete this->_ptr;
     this->_ptr = ptr;
   }
   TargetLibraryInfoWrapperPass_O() : Base(){};
-  ~TargetLibraryInfoWrapperPass_O() { /*if (this->_ptr) delete this->_ptr;*/
+  ~TargetLibraryInfoWrapperPass_O() { /* delete this->_ptr;*/
   }
 }; // TargetLibraryInfoWrapperPass_O
 }; // llvmo
@@ -2254,8 +2240,7 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL)
-      delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
   FunctionPassManager_O() : Base(){};
@@ -2324,8 +2309,7 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL)
-      delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
   PassManager_O() : Base(){};
@@ -2390,7 +2374,7 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
 CL_LISPIFY_NAME("error_string");
@@ -2399,9 +2383,8 @@ CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
   static EngineBuilder_sp make(Module_sp module);
 
@@ -2453,7 +2436,6 @@ class PassManagerBuilder_O : public core::ExternalObject_O {
 
 protected:
   PointerToExternalType _ptr;
-  string _ErrorStr; // store creation errors here
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -2465,13 +2447,24 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL ) delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
-  string error_string() const { return this->_ErrorStr; };
-
-  PassManagerBuilder_O() : Base(), _ptr(NULL){};
+  PassManagerBuilder_O() : Base(), _ptr(NULL){
+#ifdef DEBUG_FINALIZERS
+    printf("%s:%d:%s creating PassManagerBuilder_O at %p  badge: 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, this, this->_badge);
+#endif
+  };
+#ifdef DEBUG_FINALIZERS  
+  PassManagerBuilder_O(const PassManagerBuilder_O& orig) : core::ExternalObject_O(orig) {
+    printf("%s:%d:%s copy ctor PassManagerBuilder_O from %p to %p\n", __FILE__, __LINE__, __FUNCTION__, &orig, this);
+    this->_ptr = orig._ptr;
+  }
+#endif
   ~PassManagerBuilder_O() {
+#ifdef DEBUG_FINALIZERS    
+    printf("%s:%d:%s destructor for object this=%p this->_ptr=%p\n", __FILE__, __LINE__, __FUNCTION__, this, this->_ptr );
+#endif
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
       core::thread_local_register_cleanup([ptr] (void) {
@@ -2619,7 +2612,7 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static IRBuilderBase_sp create(llvm::IRBuilderBase *ptr);
@@ -2694,7 +2687,7 @@ class IRBuilder_O : public IRBuilderBase_O {
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    if (this->_ptr != NULL ) delete this->_ptr;
+    delete this->_ptr;
     this->_ptr = ptr;
   }
   IRBuilder_O() : Base(){};
@@ -2728,7 +2721,7 @@ class Instruction_O : public User_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   core::T_sp getNextNode(); // instruction or nil
@@ -2785,7 +2778,7 @@ class StoreInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   void setAlignment(core::T_sp align);
@@ -2827,7 +2820,7 @@ class FenceInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   FenceInst_O() : Base(){};
@@ -2868,7 +2861,7 @@ class AtomicCmpXchgInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   AtomicCmpXchgInst_O() : Base(){};
@@ -2909,7 +2902,7 @@ class AtomicRMWInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   AtomicRMWInst_O() : Base(){};
@@ -2950,7 +2943,7 @@ class PHINode_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   PHINode_O() : Base(){};
@@ -2992,7 +2985,7 @@ class CallBase_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   CallBase_O() : Base(){};
@@ -3014,7 +3007,7 @@ public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   core::List_sp getArgumentList() const;
@@ -3058,7 +3051,7 @@ class LandingPadInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   LandingPadInst_O() : Base(){};
@@ -3099,7 +3092,7 @@ class UnaryInstruction_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   UnaryInstruction_O() : Base(){};
@@ -3120,7 +3113,7 @@ class AllocaInst_O : public UnaryInstruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   void setAlignment(core::T_sp align);
@@ -3162,7 +3155,7 @@ class VAArgInst_O : public UnaryInstruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   VAArgInst_O() : Base(){};
@@ -3203,7 +3196,7 @@ class LoadInst_O : public UnaryInstruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   void setAlignment(core::T_sp align);
@@ -3246,7 +3239,7 @@ class BranchInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   BranchInst_O() : Base(){};
@@ -3287,7 +3280,7 @@ class SwitchInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   SwitchInst_O() : Base(){};
@@ -3330,7 +3323,7 @@ class IndirectBrInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   IndirectBrInst_O() : Base(){};
@@ -3372,7 +3365,7 @@ public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   core::List_sp getArgumentList() const;
@@ -3416,7 +3409,7 @@ class ResumeInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ResumeInst_O() : Base(){};
@@ -3457,7 +3450,7 @@ class UnreachableInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   UnreachableInst_O() : Base(){};
@@ -3498,7 +3491,7 @@ class ReturnInst_O : public Instruction_O {
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ReturnInst_O() : Base(){};
@@ -3540,7 +3533,7 @@ public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static ConstantFP_sp create(llvm::ConstantFP *ptr);
@@ -3577,7 +3570,7 @@ public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static ConstantInt_sp create(llvm::ConstantInt *ptr);
@@ -3613,7 +3606,7 @@ public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static ConstantStruct_sp create(llvm::ConstantStruct *ptr);
@@ -3649,7 +3642,7 @@ public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static UndefValue_sp create(llvm::UndefValue *ptr);
@@ -3685,7 +3678,7 @@ public:
   PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static ConstantPointerNull_sp create(llvm::ConstantPointerNull *ptr);
@@ -3738,7 +3731,7 @@ class MDNode_O : public Metadata_O {
 public:
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   MDNode_O() : Base(){};
@@ -3782,7 +3775,7 @@ class MDString_O : public Metadata_O {
 public:
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   MDString_O() : Base(){};
@@ -3828,7 +3821,7 @@ class ValueAsMetadata_O : public Metadata_O {
 public:
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ValueAsMetadata_O() : Base(){};
@@ -3877,7 +3870,7 @@ protected:
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   NamedMDNode_O() : Base(){};
@@ -3931,7 +3924,7 @@ public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   PointerToExternalType wrappedPtr() const { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   string __repr__() const;
@@ -3939,6 +3932,8 @@ public:
   ~Function_O() {}
 
   bool Function_equal(core::T_sp obj) const;
+
+  LLVMContext_sp getContext() const;
 
   void addReturnAttr(typename llvm::Attribute::AttrKind);
   core::List_sp getArgumentList();
@@ -4003,7 +3998,7 @@ class BasicBlock_O : public Value_O {
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   BasicBlock_O() : Base(){};
@@ -4051,7 +4046,7 @@ class Argument_O : public Value_O {
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   Argument_O() : Base(){};
@@ -4101,16 +4096,15 @@ public:
 public:
   PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   static Type_sp create(llvm::Type *ptr);
   ;
   Type_O() : Base(), _ptr(NULL){};
   ~Type_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 
   core::Integer_sp getArrayNumElements() const;
@@ -4159,7 +4153,7 @@ class FunctionType_O : public Type_O {
 public:
   PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   FunctionType_O() : Base(){};
@@ -4201,7 +4195,7 @@ class IntegerType_O : public Type_O {
 public:
   PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   IntegerType_O() : Base(){};
@@ -4241,7 +4235,7 @@ class StructType_O : public Type_O {
 public:
   PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   StructType_O() : Base(){};
@@ -4289,7 +4283,7 @@ class PointerType_O : public Type_O {
 public:
   PointerToExternalType wrapped() { return static_cast<PointerToExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   PointerType_O() : Base(){};
@@ -4334,7 +4328,7 @@ class ArrayType_O : public Type_O {
 public:
   ArrayToExternalType wrapped() { return static_cast<ArrayToExternalType>(this->_ptr); };
   void set_wrapped(ArrayToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   ArrayType_O() : Base(){};
@@ -4376,7 +4370,7 @@ class VectorType_O : public Type_O {
 public:
   VectorToExternalType wrapped() { return static_cast<VectorToExternalType>(this->_ptr); };
   void set_wrapped(VectorToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
   VectorType_O() : Base(){};
@@ -4523,7 +4517,7 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 };
 
 namespace llvmo {
-  void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine);
+void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp startup_name);
 
   Module_sp llvm_sys__parseBitcodeFile(core::T_sp filename, LLVMContext_sp context);
   Module_sp llvm_sys__parseIRFile(core::T_sp filename, LLVMContext_sp context);
@@ -4557,7 +4551,6 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 
 namespace llvmo {
 
-
 struct ObjectFileInfo {
   const char* _faso_filename;
   size_t    _faso_index;
@@ -4577,7 +4570,7 @@ class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
 public:
-  void addIRModule(Module_sp cM,ThreadSafeContext_sp context);
+  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
@@ -4592,7 +4585,7 @@ public:
 public:
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
 #ifdef USE_JITLINKER
-  llvm::org::JITLinker* LinkLayer;
+  llvm::org::JITLinker* _LinkLayer;
 #else
   #if _TARGET_OS_DARWIN
   llvm::orc::ObjectLinkingLayer *LinkLayer;
@@ -4664,7 +4657,7 @@ public:
   virtual void *externalObject() const { return this->_ptr; };
   PointerToExternalType wrappedPtr() const { return this->_ptr; }
   void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
+    /* delete this->_ptr; */
     this->_ptr = ptr;
   }
  public:
@@ -4672,9 +4665,8 @@ public:
  ObjectFile_O(PointerToExternalType ptr) : Base(), _ptr(ptr){};
  ObjectFile_O() : Base(), _ptr(NULL){};
   ~ObjectFile_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
-      _ptr = NULL;
-    };
+    /* delete _ptr;*/
+    _ptr = NULL;
   }
 }; // ObjectFile_O class def
 }; // llvmo
@@ -4752,5 +4744,9 @@ struct from_object<llvm::Optional<T>> {
    }
  };
 }
+
+namespace llvmo {
+void dump_objects_for_lldb(FILE* fout);
+};
 
 #endif //]

@@ -28,7 +28,10 @@
 ;;;; the CLOS condition system exists. Most of this file will be redefined
 ;;;; in compiler-conditions.lsp.
 
+
 (in-package :cmp)
+
+
 
 (defvar *global-function-defs*)
 (defvar *global-function-refs*)
@@ -132,6 +135,8 @@
     (fresh-line stream)
     (bformat stream ";;; %s%N" msg)
     (bformat stream ";;;     at %s %N" (describe-source-location (compiler-message-source-pos-info c)))))
+
+;;; (setq core::*echo-repl-read* t)
 
 (defmacro with-compiler-env ((&rest options) &rest body)
   "Initialize the environment to protect nested compilations from each other"
@@ -294,3 +299,4 @@
       (with-atomic-file-rename (temp-pathname output-path)
         (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
 
+;;;(setq core::*echo-repl-read* t)

@@ -2,16 +2,11 @@
 
 ;;; Do you want CST?
 (pushnew :cst *features*)
-
-
 (progn
-  
   (load "sys:kernel;clasp-builder.lsp")
-
   (defun cleavir-system ()
     (with-open-file (fin "source-dir:tools-for-build;cleavir-file-list.lisp" :direction :input)
       (read fin)))
-
   (defun load-cleavir ()
     (let* ((system (cleavir-system))
            (last (position-if (lambda (x) (search "inline-prep" x)) system))
@@ -35,5 +30,6 @@
       (compile-file "sys:kernel;lsp;setf.lsp" :output-file "/tmp/setf.fasl")))
   )
 
-;;; Start cleavir
 (start-cleavir)
+;;; Start cleavir with no inline
+(load-cleavir-no-inline)

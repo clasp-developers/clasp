@@ -53,13 +53,36 @@ THE SOFTWARE.
 
 namespace core {
 
-Rack_sp Rack_O::make(size_t numSlots, T_sp initialValue )
+Rack_sp Rack_O::make(size_t numSlots, T_sp sig, T_sp initialValue )
 {
-  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,initialValue,true);
+  auto bs = gctools::GC<Rack_O>::allocate_container(false,numSlots,sig,initialValue,true);
   return bs;
 }
 
-CL_LAMBDA(instance func);
+CL_DEFUN T_sp core__make_rack(size_t numSlots, T_sp sig, T_sp stamp, T_sp initialValue) {
+  Rack_sp r = Rack_O::make(numSlots, sig, initialValue);
+  r->stamp_set((gctools::ShiftedStamp)(stamp.raw_()));
+  return r;
+}
+
+CL_DEFUN T_sp core__stamp_of_rack(Rack_sp rack) {
+  core::T_sp stamp((gctools::Tagged)(rack->_ShiftedStamp));
+  return stamp;
+}
+
+CL_DEFUN T_sp core__rack_sig(Rack_sp rack) {
+  return rack->_Sig;
+}
+
+CL_DEFUN T_sp core__rack_ref(Rack_sp rack, size_t i) {
+  return rack->low_level_rackRef(i);
+}
+
+CL_DEFUN void core__rack_set(Rack_sp rack, size_t i, T_sp val) {
+  rack->low_level_rackSet(i, val);
+}
+
+CL_LAMBDA(instance class);
 CL_DECLARE();
 CL_DOCSTRING("instanceClassSet");
 CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
@@ -69,46 +92,15 @@ CL_DEFUN T_sp core__instance_class_set(T_sp obj, Instance_sp mc) {
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Instance_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
-CL_DEFUN T_sp core__copy_instance(T_sp obj) {
-  if (gc::IsA<Instance_sp>(obj)) {
-    Instance_sp iobj = gc::As_unsafe<Instance_sp>(obj);
-    Instance_sp cp = gc::As_unsafe<Instance_sp>(iobj->copyInstance());
-    return cp;
-  }
-  SIMPLE_ERROR(BF("copy-instance doesn't support copying %s") % _rep_(obj));
-};
-
-void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, size_t numberOfSlots) {
+void Instance_O::initializeSlots(gctools::ShiftedStamp stamp, T_sp sig,
+                                 size_t numberOfSlots) {
   ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
-  this->_Rack = Rack_O::make(numberOfSlots,_Unbound<T_O>());
+  this->_Rack = Rack_O::make(numberOfSlots,sig,_Unbound<T_O>());
   this->stamp_set(stamp);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 //  printf("%s:%d  Make sure you initialize slots for classes this->_Class -> %s\n", __FILE__, __LINE__, _rep_(this->_Class).c_str());
-}
-
-CL_DEFUN void core__specializer_call_history_generic_functions_push_new(T_sp tclass_, T_sp generic_function)
-{
-  Instance_sp class_ = gc::As<Instance_sp>(tclass_);
-  class_->CLASS_call_history_generic_functions_push_new(generic_function);
-}
-
-void Instance_O::CLASS_call_history_generic_functions_push_new(T_sp generic_function) {
-  if (this->instanceRef(REF_SPECIALIZER_MUTEX).unboundp()) {
-    SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
-    SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
-    this->instanceSet(REF_SPECIALIZER_MUTEX,mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
-  }
-  ClassWriteLock(gc::As<mp::SharedMutex_sp>(this->instanceRef(REF_SPECIALIZER_MUTEX)));
-  List_sp gflist = gc::As<List_sp>(this->instanceRef(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS));
-  if (gflist.consp()) {
-    if (gflist.unsafe_cons()->memberEq(generic_function).notnilp()) return;
-  }
-  this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS,Cons_O::create(generic_function,gflist));
 }
 
 void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
@@ -121,6 +113,9 @@ void Instance_O::CLASS_set_stamp_for_instances(gctools::ShiftedStamp s) {
 void Instance_O::initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp stamp) {
   // Should match clos/hierarchy.lsp
   ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
+  SimpleBaseString_sp sbsr = SimpleBaseString_O::make("CALHISR");
+  SimpleBaseString_sp sbsw = SimpleBaseString_O::make("CALHISW");
+  this->instanceSet(REF_SPECIALIZER_MUTEX, mp::SharedMutex_O::make_shared_mutex(sbsr,sbsw));
   this->instanceSet(REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, _Nil<T_O>());
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, _Nil<T_O>());
@@ -155,32 +150,29 @@ CL_DEFUN List_sp core__class_slot_sanity_check()
   return sanity;
 }
 
+// FIXME: Exists solely for cases where the list of slotds is hard to get.
 CL_LAMBDA(class slot-count);
-CL_DEFUN T_sp core__allocate_new_instance(Instance_sp cl, size_t slot_count) {
-  // cl is known to be a standard-class.
+CL_DEFUN T_sp core__allocate_standard_instance(Instance_sp cl, size_t slot_count) {
+  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl);
+  obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
+  return obj;
+}
+
+CL_LAMBDA(class rack);
+CL_DEFUN Instance_sp core__allocate_raw_instance(Instance_sp cl, Rack_sp rack) {
+  GC_ALLOCATE_VARIADIC(Instance_O, obj, cl, rack);
+  return obj;
+}
+
+CL_LAMBDA(class rack);
+CL_DEFUN Instance_sp core__allocate_raw_general_instance(Instance_sp cl, Rack_sp rack) {
+  // This function allocates using the creator.
   ASSERT(cl->CLASS_has_creator());
   Creator_sp creator = gctools::As<Creator_sp>(cl->CLASS_get_creator());
   Instance_sp obj = gc::As_unsafe<Instance_sp>(creator->creator_allocate());
   obj->_Class = cl;
-  /* Unlike other slots, the stamp must be initialized in the allocator,
-   * as it's required for dispatch. */
-  obj->initializeSlots(cl->CLASS_stamp_for_instances(), slot_count);
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  gctools::count_allocation(cl->CLASS_stamp_for_instances());
-#endif
-  obj->_Sig = cl->slots();
+  obj->_Rack = rack;
   return obj;
-}
-
-// Give an instance a new class and rack. Used by change-class.
-CL_DEFUN Instance_sp core__reallocate_instance(Instance_sp instance, Instance_sp new_class, size_t new_size) {
-  instance->_Class = new_class;
-  instance->initializeSlots(new_class->CLASS_stamp_for_instances(), new_size); // set the rack
-#ifdef DEBUG_COUNT_ALLOCATIONS
-  gctools::count_allocation(new_class->CLASS_stamp_for_instances());
-#endif
-  instance->_Sig = new_class->slots();
-  return instance;
 }
 
 SYMBOL_EXPORT_SC_(ExtPkg,fieldsp);
@@ -199,45 +191,50 @@ void Instance_O::fields(Record_sp node) {
   eval::funcall(ext::_sym_fields,this->asSmartPtr(),node);
 }
 
+CL_DEFUN Rack_sp core__instance_rack(Instance_sp instance) {
+  return instance->rack();
+}
 
+CL_DEFUN void core__instance_rack_set(Instance_sp instance, Rack_sp rack) {
+  instance->_Rack = rack;
+}
 
 size_t Instance_O::rack_stamp_offset() {
   return offsetof(Rack_O,_ShiftedStamp);
 }
 
 Fixnum Instance_O::stamp() const {
-  return this->_Rack->stamp_get();
+  return rack()->stamp_get();
 };
 
 void Instance_O::stamp_set(gctools::ShiftedStamp s) {
   ASSERT(s==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(s));
-  this->_Rack->stamp_set(s);
+  rack()->stamp_set(s);
 };
 
 size_t Instance_O::numberOfSlots() const {
-  return this->_Rack->length();
+  return rack()->length();
 };
 
 
 T_sp Instance_O::instanceSigSet() {
-  T_sp classSlots(_Nil<T_O>());
   Instance_sp mc = this->_instanceClass();
-  classSlots = mc->slots();
-  this->_Sig = classSlots;
+  T_sp classSlots = mc->slots();
+  rack()->_Sig = classSlots;
   return ((classSlots));
 }
 
 T_sp Instance_O::instanceSig() const {
 #if DEBUG_CLOS >= 2
   stringstream ssig;
-  if (this->_Sig) {
-    ssig << this->_Sig->__repr__();
+  if (rack()->_Sig) {
+    ssig << rack()->_Sig->__repr__();
   } else {
     ssig << "UNDEFINED ";
   }
   printf("\nMLOG INSTANCE-SIG of Instance %p \n", (void *)(this));
 #endif
-  return ((this->_Sig));
+  return ((rack()->_Sig));
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
@@ -246,18 +243,18 @@ T_sp Instance_O::instanceClassSet(Instance_sp mc) {
   this->_Class = mc;
   return (this->sharedThis<Instance_O>());
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 }
 
 T_sp Instance_O::instanceRef(size_t idx) const {
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
 #if DEBUG_CLOS >= 2
-  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), this->_Rack[idx]->__repr__().c_str());
+  printf("\nMLOG INSTANCE-REF[%d] of Instance %p --->%s\n", idx, (void *)(this), rack()[idx]->__repr__().c_str());
 #endif
-  T_sp val = low_level_instanceRef(this->_Rack,idx);
+  T_sp val = low_level_instanceRef(rack(),idx);
 #if 0
   if (idx==5) {
     printf("%s:%d Read slot 5 with %s\n", __FILE__, __LINE__, _safe_rep_(val).c_str());
@@ -265,16 +262,14 @@ T_sp Instance_O::instanceRef(size_t idx) const {
 #endif
   return val;
 
-//  return ((*this->_Rack)[idx+RACK_SLOT_START]);
 }
 T_sp Instance_O::instanceSet(size_t idx, T_sp val) {
 #if DEBUG_CLOS >= 2
   printf("\nMLOG SI-INSTANCE-SET[%d] of Instance %p to val: %s\n", idx, (void *)(this), val->__repr__().c_str());
 #endif
-  low_level_instanceSet(this->_Rack,idx,val);
-  // (*this->_Rack)[idx+RACK_SLOT_START] = val;
+  low_level_instanceSet(rack(),idx,val);
 #ifdef DEBUG_GUARD_VALIDATE
-  client_validate(this->_Rack);
+  client_validate(rack());
 #endif
   return val;
 }
@@ -294,7 +289,7 @@ string Instance_O::__repr__() const {
     //    ss << " #slots[" << this->numberOfSlots() << "]";
 #if 0
     for (size_t i(1); i < this->numberOfSlots(); ++i) {
-      T_sp obj = this->_Rack[i];
+      T_sp obj = low_level_instanceRef(rack(), i);
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
@@ -323,15 +318,6 @@ string Instance_O::__repr__() const {
   return ss.str();
 }
 
-T_sp Instance_O::copyInstance() const {
-  Instance_sp cl = this->_Class;
-  Instance_sp copy = gc::As_unsafe<Instance_sp>(cl->CLASS_get_creator()->creator_allocate());
-  copy->_Class = cl;
-  copy->_Rack = this->_Rack;
-  copy->_Sig = this->_Sig;
-  return copy;
-}
-
 SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
@@ -345,8 +331,10 @@ bool Instance_O::equalp(T_sp obj) const {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class) return false;
     if (this->stamp() != iobj->stamp()) return false;
-    for (size_t i(0), iEnd(this->_Rack->length()); i < iEnd; ++i) {
-      if (!cl__equalp((*this->_Rack)[i], (*iobj->_Rack)[i])) return false;
+    for (size_t i(0), iEnd(rack()->length()); i < iEnd; ++i) {
+      if (!cl__equalp(low_level_instanceRef(rack(), i),
+                      low_level_instanceRef(iobj->rack(), i)))
+        return false;
     }
     return true;
   }
@@ -371,8 +359,8 @@ void Instance_O::describe(T_sp stream) {
   stringstream ss;
   ss << (BF("Instance\n")).str();
   ss << (BF("_Class: %s\n") % _rep_(this->_Class).c_str()).str();
-  for (int i(0); i < this->_Rack->length(); ++i) {
-    ss << (BF("_Rack[%d]: %s\n") % i % _rep_((*this->_Rack)[i]).c_str()).str();
+  for (int i(0); i < rack()->length(); ++i) {
+    ss << (BF("_Rack[%d]: %s\n") % i % _rep_(low_level_instanceRef(rack(), i)).c_str()).str();
   }
   clasp_write_string(ss.str(), stream);
 }
@@ -395,12 +383,14 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
   GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
   gctools::ShiftedStamp class_stamp = 0;
+  T_sp sig = _Unbound<T_O>();
   if (!metaClass.unboundp()) {
     class_stamp = metaClass->CLASS_stamp_for_instances();
+    sig = metaClass->slots();
     ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(class_stamp));
   }
   // class_stamp may be 0 if metaClass.unboundp();
-  oclass->initializeSlots(class_stamp,number_of_slots);
+  oclass->initializeSlots(class_stamp,sig,number_of_slots);
   oclass->initializeClassSlots(creator,stamp);
   return oclass;
 };
@@ -419,7 +409,12 @@ void Instance_O::accumulateSuperClasses(HashTableEq_sp supers, ComplexVector_T_s
   if (supers->contains(mc))
     return;
   Fixnum arraySuperLength = arrayedSupers->length();
-  supers->setf_gethash(mc, clasp_make_fixnum(arraySuperLength));
+  //  printf("%s:%d arraySuperLength = %ld\n", __FILE__, __LINE__, arraySuperLength);
+  T_sp index = clasp_make_fixnum(arraySuperLength);
+  supers->setf_gethash(mc, index);
+  //  printf("%s:%d dumping supers hash-table\n", __FILE__, __LINE__ );
+  // supers->hash_table_early_dump();
+  //  printf("%s:%d associating %s with %s\n", __FILE__, __LINE__, _rep_(mc).c_str(), _rep_(index).c_str());
   arrayedSupers->vectorPushExtend(mc);
   List_sp directSuperclasses = mc->directSuperclasses();
   //	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
@@ -449,8 +444,11 @@ void Instance_O::lowLevel_calculateClassPrecedenceList() {
       Fixnum_sp fnValue(gc::As<Fixnum_sp>(value));
       int mcIndex = unbox_fixnum(fnValue);
       Instance_sp mc = gc::As<Instance_sp>(key);
+      //      printf("%s:%d Superclasses -> %s\n", __FILE__, __LINE__, _rep_(mc->directSuperclasses()).c_str());
       for (auto mit : (List_sp)(mc->directSuperclasses())) {
-        T_sp val = this->supers->gethash(oCar(mit));
+        T_sp key = oCar(mit);
+        T_sp val = this->supers->gethash(key);
+        //        printf("%s:%d lookup key@%p -> %s  val -> %s\n", __FILE__, __LINE__, key.raw_(), _rep_(key).c_str(), _rep_(val).c_str());
         ASSERT(val.notnilp());
         Fixnum_sp fnval = gc::As<Fixnum_sp>(val);
         int aSuperIndex = unbox_fixnum(fnval);
@@ -734,7 +732,7 @@ CL_DEFUN bool ext__class_unboundp(ClassHolder_sp holder) {
 
 CL_DEFUN void core__verify_instance_layout(size_t instance_size, size_t instance_rack_offset)
 {
-  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O)") % instance_size % sizeof(Instance_O));
+  if (instance_size!=sizeof(Instance_O)) SIMPLE_ERROR(BF("The cmpintrinsics.lsp instance_size %lu does not match sizeof(Instance_O) %lu") % instance_size % sizeof(Instance_O));
   if (instance_rack_offset!=offsetof(Instance_O,_Rack))
     SIMPLE_ERROR(BF("instance_rack_offset %lu does not match offsetof(_Rack,Instance_O) %lu") % instance_rack_offset % offsetof(Instance_O,_Rack));
 }

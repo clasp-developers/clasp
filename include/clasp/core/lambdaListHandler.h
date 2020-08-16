@@ -107,7 +107,7 @@ class LambdaListHandler_O : public General_O {
   LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",General_O);
 
 public: // virtual functions inherited from Object
-  void initialize();
+  void initialize() override;
              //	string	__repr__() const;
 GCPROTECTED: // instance variables
   /*! If _CreatesBindings is true then no bindings will be set by this
@@ -289,7 +289,7 @@ public:
 	  */
   T_mv processLambdaListHandler() const;
 
-  string __repr__() const;
+  string __repr__() const override;
   string partsAsString() const;
 
   /*! For compatibility with Cleavir we need to do some lambda-list transformations.

@@ -297,6 +297,13 @@
               :datum object
               :expected-type ',structure-name)))
 
+(defun defstruct-class-cas-body (structure-name element-type location)
+  (declare (ignore element-type))
+  `(mp::get-cas-expansion (list 'clos::standard-instance-access
+                                object
+                                ,location)
+                          env))
+
 (defun defstruct-vector-reader-body (structure-name element-type location)
   (declare (ignore element-type) ; maybe later.
            (ignore structure-name))
@@ -315,7 +322,7 @@
   `(setf (nth ,location object) new))
 
 (defun gen-defstruct-accessor (structure-name element-type slotd location
-                               gen-read gen-write otype)
+                               gen-read gen-write gen-cas otype)
   (destructuring-bind (slot-name &key (type t) reader accessor
                        &allow-other-keys)
       slotd
@@ -328,11 +335,14 @@
          `(defun ,accessor (object)
             ,(funcall gen-read structure-name element-type location))
          (unless read-only
-           (list
+           (list*
             `(declaim (ftype (function (,type ,otype) ,type) (setf ,accessor))
                       (inline (setf ,accessor)))
             `(defun (setf ,accessor) (new object)
-               ,(funcall gen-write structure-name element-type location)))))))))
+               ,(funcall gen-write structure-name element-type location))
+            (when gen-cas
+              `((mp::define-cas-expander ,accessor (object &environment env)
+                  ,(funcall gen-cas structure-name element-type location)))))))))))
 
 (defun process-boa-lambda-list (original-lambda-list slot-descriptions)
   (let ((lambda-list (copy-list original-lambda-list))
@@ -583,18 +593,22 @@
                    (when doc `((:documentation ,doc))))
                (:metaclass structure-class))))
        ,@(let ((result nil))
-           (multiple-value-bind (gen-read gen-write otype)
+           (multiple-value-bind (gen-read gen-write gen-cas otype)
                (case type-base
                  (structure-object (values #'defstruct-class-reader-body
                                            #'defstruct-class-writer-body
+                                           #+cclasp #'defstruct-class-cas-body
+                                           #-cclasp nil
                                            name))
                  (vector (values #'defstruct-vector-reader-body
                                  #'defstruct-vector-writer-body
+                                 nil
                                  `(simple-array
                                    ,element-type
                                    (,(length slot-descriptions)))))
                  (list (values #'defstruct-list-reader-body
                                #'defstruct-list-writer-body
+                               nil
                                'list)))
              (do ((slotds slot-descriptions (rest slotds))
                   (location 0 (1+ location)))
@@ -603,7 +617,7 @@
                  (setq result (nconc (gen-defstruct-accessor
                                       name element-type
                                       (first slotds) location
-                                      gen-read gen-write otype)
+                                      gen-read gen-write gen-cas otype)
                                      result))))))
        ,@(mapcar (defstruct-option-expander name type-base element-type
                    included-size slot-descriptions)

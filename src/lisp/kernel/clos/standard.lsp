@@ -27,14 +27,14 @@
 
 (defmethod reinitialize-instance ((instance T ) &rest initargs)
   (declare (dynamic-extent initargs))
-  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY does not reuse rest lists.
-  ;; If it did, a method on #'shared-initialize, or whatever, could potentially let the rest list escape.
-  (check-initargs (class-of instance) initargs
-		  (valid-keywords-from-methods
-                   (compute-applicable-methods
-                    #'reinitialize-instance (list instance))
-                   (compute-applicable-methods
-                    #'shared-initialize (list instance t))))
+  ;; NOTE: This dynamic extent declaration relies on the fact clasp's APPLY
+  ;; does not reuse rest lists. If it did, a method on #'shared-initialize,
+  ;; or whatever, could potentially let the rest list escape.
+  (when initargs
+    (check-initargs-uncached
+     (class-of instance) initargs
+     (list (list #'reinitialize-instance (list instance))
+           (list #'shared-initialize (list instance t)))))
   (apply #'shared-initialize instance '() initargs))
 
 (defmethod shared-initialize ((instance T) slot-names #+(or)&rest core:&va-rest initargs)
@@ -99,6 +99,13 @@
         when (eq (slot-definition-allocation slotd) :instance)
           sum 1))
 
+(defun make-rack-for-class (class)
+  (let (;; FIXME: Read this information from the class in one go, atomically.
+        (slotds (class-slots class))
+        (size (class-size class))
+        (stamp (core:class-stamp-for-instances class)))
+    (core:make-rack size slotds stamp (core:unbound))))
+
 (defmethod allocate-instance ((class standard-class) &rest initargs)
   (declare (ignore initargs))
   ;; CLHS says allocate-instance finalizes the class first.
@@ -110,17 +117,11 @@
   ;; class-size (also computed during finalization) will be unbound and error
   ;; before anything terrible can happen.
   ;; So we don't finalize here.
-  (dbg-standard "About to allocate-new-instance class->~a~%" class)
-  (let ((x (core:allocate-new-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
-    x))
+  (core:allocate-raw-instance class (make-rack-for-class class)))
 
 (defmethod allocate-instance ((class derivable-cxx-class) &rest initargs)
   (declare (ignore initargs))
-  ;; derivable cxx objects are Instance_O's, so this is _probably_ okay.
-  ;; (And allocate-new-instance uses the creator, so it'll do any C++ junk.)
-  (core:allocate-new-instance class (class-size class)))
+  (core:allocate-raw-general-instance class (make-rack-for-class class)))
 
 (defun uninitialized-funcallable-instance-closure (funcallable-instance)
   (lambda (core:&va-rest args)
@@ -131,15 +132,14 @@
 
 (defmethod allocate-instance ((class funcallable-standard-class) &rest initargs)
   (declare (ignore initargs))
-  (dbg-standard "About to allocate-new-funcallable-instance class->~a~%" class)
-  (let ((x (core:allocate-new-funcallable-instance class (class-size class))))
-    (dbg-standard "Done allocate-new-funcallable-instance unbound x ->~a~%" (eq (core:unbound) x))
-    (mlog "In allocate-instance  x -> %s\n" x)
+  (let ((instance (core:allocate-raw-funcallable-instance
+                   class (make-rack-for-class class))))
     ;; MOP says if you call a funcallable instance before setting its function,
     ;; the effects are undefined. (In the entry for set-funcallable-instance-function.)
     ;; But we can be nice.
-    (set-funcallable-instance-function x (uninitialized-funcallable-instance-closure x))
-    x))
+    (set-funcallable-instance-function
+     instance (uninitialized-funcallable-instance-closure instance))
+    instance))
 
 (defmethod make-instance ((class class) &rest initargs)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
@@ -156,7 +156,7 @@
 			(class-valid-initargs class))
 		      (progn
 			(precompute-valid-initarg-keywords class)))))
-    (check-initargs class initargs nil (class-slots class) keywords))
+    (check-initargs class initargs keywords))
   (let ((instance (apply #'allocate-instance class initargs)))
     #+mlog(or instance (error "allocate-instance returned NIL!!!!!!! class -> ~a initargs -> ~a" class initargs))
     (dbg-standard "standard.lsp:143   allocate-instance class -> ~a  instance checking if unbound -> ~a~%" class (eq instance (core:unbound)))
@@ -236,7 +236,8 @@
   (core:class-new-stamp class)
   class)
 
-(defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
+(defmethod shared-initialize ((class class) slot-names
+                              &rest initargs &key direct-superclasses)
   (declare (dynamic-extent initargs)) ; see NOTE in reinitialize-instance/T
   ;; verify that the inheritance list makes sense
   (dbg-standard "standard.lsp:200 shared-initialize of class-> ~a direct-superclasses-> ~a~%" class direct-superclasses)
@@ -250,7 +251,7 @@
     (loop for c in (class-direct-superclasses class)
           unless (member c direct-superclasses :test #'eq)
             do (remove-direct-subclass c class))
-    (setf (class-direct-superclasses class) direct-superclasses)
+    (setf (%class-direct-superclasses class) direct-superclasses)
     (loop for c in direct-superclasses
           do (add-direct-subclass c class))
 
@@ -284,11 +285,11 @@
      #'(lambda (dep) (apply #'update-dependent object dep initargs)))))
 
 (defmethod add-direct-subclass ((parent class) child)
-  (pushnew child (class-direct-subclasses parent)))
+  (pushnew child (%class-direct-subclasses parent)))
 
 (defmethod remove-direct-subclass ((parent class) child)
-  (setf (class-direct-subclasses parent)
-	(remove child (class-direct-subclasses parent))))
+  (setf (%class-direct-subclasses parent)
+	(remove child (%class-direct-subclasses parent))))
 
 (defun check-direct-superclasses (class supplied-superclasses)
   (dbg-standard "check-direct-superclasses class -> ~a  supplied-superclasses->~a  (type-of ~a) -> ~a~%" class supplied-superclasses class (type-of class))
@@ -329,9 +330,6 @@ argument was supplied for metaclass ~S." (class-of class))))))))
       ;; Extensible sequences
       (eq superclass (find-class 'sequence))))
 
-;;; Should it be standard-class only?
-(defmethod validate-superclass ((class class) (superclass core:derivable-cxx-class)) t)
-
 ;;; ----------------------------------------------------------------------
 ;;; FINALIZATION OF CLASS INHERITANCE
 ;;;
@@ -361,12 +359,12 @@ because it contains a reference to the undefined class~%  ~A"
       (unless (or (null x) (eq x class))
 	(return-from finalize-inheritance
 	  (finalize-inheritance x))))
-    (setf (class-precedence-list class) cpl)
+    (setf (%class-precedence-list class) cpl)
     (let ((slots (compute-slots class)))
-      (setf (class-slots class) slots
+      (setf (%class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
-	    (class-default-initargs class) (compute-default-initargs class)
-	    (class-finalized-p class) t)))
+	    (%class-default-initargs class) (compute-default-initargs class)
+	    (%class-finalized-p class) t)))
   ;;
   ;; We have to clear the different type caches
   ;; for type comparisons and so on.
@@ -431,52 +429,56 @@ because it contains a reference to the undefined class~%  ~A"
       (slot-definition-location slotd)
       default))
 
+(defmethod compute-effective-slot-definition-initargs ((class class) direct-slotds)
+  ;;; See CLHS 7.5.3 for the explanation of how slot options are inherited.
+  (let (name initform initfunction allocation documentation
+        (readers nil) (writers nil) (initargs nil) location
+        (type t)
+        (namep nil) (initp nil) (documentationp nil) (allocp nil))
+    (dolist (slotd direct-slotds)
+      (unless namep (setf name (slot-definition-name slotd)))
+      (unless initp
+        (let ((f (slot-definition-initfunction slotd)))
+          (when f
+            (setf initp t initfunction f
+                  initform (slot-definition-initform slotd)))))
+      (unless documentationp
+        (let ((doc (slot-definition-documentation slotd)))
+          (when doc
+            (setf documentationp t documentation doc))))
+      (unless allocp
+        (setf allocp t allocation (slot-definition-allocation slotd)))
+      (setf initargs (union (slot-definition-initargs slotd) initargs)
+            readers (union (slot-definition-readers slotd) readers)
+            writers (union (slot-definition-writers slotd) writers)
+            ;; FIXME! we should be more smart then this:
+            type (let ((new-type (slot-definition-type slotd)))
+                   (cond ((subtypep new-type type) new-type)
+                         ((subtypep type new-type) type)
+                         (T `(and ,new-type ,type)))))
+      ;;; Clasp extension: :location can be specified.
+      (let ((new-loc (safe-slot-definition-location slotd)))
+        (if location
+            (when new-loc
+              (unless (eql location new-loc)
+                (error 'simple-error
+                       :format-control "You have specified two conflicting slot locations:~%~D and ~F~%for slot ~A"
+                       :format-arguments (list location new-loc name)))))
+        (setf location new-loc)))
+    (list :name name
+          :initform initform
+          :initfunction initfunction
+          :type type
+          :allocation allocation
+          :initargs initargs
+          :readers readers :writers writers
+          :documentation documentation
+          :location location)))
+
 (defmethod compute-effective-slot-definition ((class class) name direct-slots)
-  (flet ((direct-to-effective (old-slot)
-	   (if (consp old-slot)
-	       (copy-list old-slot)
-	       (let ((initargs (slot-definition-to-plist old-slot)))
-		 (apply #'make-instance
-			(apply #'effective-slot-definition-class class initargs)
-			initargs))))
-	 (combine-slotds (new-slotd old-slotd)
-	   (let* ((new-type (slot-definition-type new-slotd))
-		  (old-type (slot-definition-type old-slotd))
-		  (loc1 (safe-slot-definition-location new-slotd))
-		  (loc2 (safe-slot-definition-location old-slotd)))
-	     (when loc2
-	       (if loc1
-		   (unless (eql loc1 loc2)
-		     (error 'simple-error
-			    :format-control "You have specified two conflicting slot locations:~%~D and ~F~%for slot ~A"
-			    :format-arguments (list loc1 loc2 name)))
-		   (progn
-		     #+(or)
-		     (format t "~%Assigning a default location ~D for ~A in ~A."
-			     loc2 name (class-name class))
-		     (setf (slot-definition-location new-slotd) loc2))))
-	     (setf (slot-definition-initargs new-slotd)
-		   (union (slot-definition-initargs new-slotd)
-			  (slot-definition-initargs old-slotd)))
-	     (unless (slot-definition-initfunction new-slotd)
-	       (setf (slot-definition-initform new-slotd)
-		     (slot-definition-initform old-slotd)
-		     (slot-definition-initfunction new-slotd)
-		     (slot-definition-initfunction old-slotd)))
-	     (setf (slot-definition-readers new-slotd)
-		   (union (slot-definition-readers new-slotd)
-			  (slot-definition-readers old-slotd))
-		   (slot-definition-writers new-slotd)
-		   (union (slot-definition-writers new-slotd)
-			  (slot-definition-writers old-slotd))
-		   (slot-definition-type new-slotd)
-		   ;; FIXME! we should be more smart then this:
-		   (cond ((subtypep new-type old-type) new-type)
-			 ((subtypep old-type new-type) old-type)
-			 (T `(and ,new-type ,old-type))))
-	     new-slotd)))
-    (reduce #'combine-slotds (rest direct-slots)
-	    :initial-value (direct-to-effective (first direct-slots)))))
+  (let* ((initargs (compute-effective-slot-definition-initargs class direct-slots))
+         (slotd-class (apply #'effective-slot-definition-class class initargs)))
+    (apply #'make-instance slotd-class initargs)))
 
 (defmethod compute-default-initargs ((class class))
   (let ((all-initargs (mapappend #'class-direct-default-initargs
@@ -493,7 +495,8 @@ because it contains a reference to the undefined class~%  ~A"
 ;;; shared by the metaclasses STANDARD-CLASS and STRUCTURE-CLASS.
 ;;;
 (defmethod ensure-class-using-class ((class class) name core:&va-rest rest
-				     &key direct-slots direct-default-initargs)
+				     &key direct-slots direct-default-initargs
+                                       &allow-other-keys)
   (declare (ignore direct-default-initargs direct-slots))
   (clos::gf-log "In ensure-class-using-class (class class) %N")
   (clos::gf-log "     name -> %s%N" name)
@@ -564,7 +567,7 @@ because it contains a reference to the undefined class~%  ~A"
           do (loop while (aref aux index)
                    do (incf index)
                    finally (setf (aref aux index) i
-                                 (slot-definition-location i) index)))
+                                 (%slot-definition-location i) index)))
     slots))
 
 (defmethod compute-slots :around ((class class))
@@ -579,7 +582,7 @@ because it contains a reference to the undefined class~%  ~A"
 	      ((find name direct-slots :key #'slot-definition-name) ; new shared slot
 	       (let* ((initfunc (slot-definition-initfunction slotd))
 	              (value (if initfunc (funcall initfunc) (unbound))))
-	         (setf (slot-definition-location slotd) (list value))))
+	         (setf (%slot-definition-location slotd) (list value))))
 	      (t			; inherited shared slot
 	       (dolist (c (class-precedence-list class))
 		 (unless (eql c class)
@@ -588,7 +591,7 @@ because it contains a reference to the undefined class~%  ~A"
 				      :key #'slot-definition-name)))
 		     (when (and other
 				(eq (slot-definition-allocation other) allocation)
-				(setf (slot-definition-location slotd)
+				(setf (%slot-definition-location slotd)
 				      (slot-definition-location other)))
 		       (return)))))))))
     slots))
@@ -653,13 +656,12 @@ because it contains a reference to the undefined class~%  ~A"
      return t
      nconc methods))
 
-(defun check-initargs (class initargs &optional methods
-		       (slots (class-slots class))
-                       cached-keywords)
+(defun check-initargs (class initargs cached-keywords
+		       &optional (slots (class-slots class)))
   ;; First get all initargs which have been declared in the given
   ;; methods, then check the list of initargs declared in the slots
   ;; of the class.
-  (unless (or (eq methods t) (eq cached-keywords t))
+  (unless (eq cached-keywords t)
     (do* ((name-loc initargs (cddr name-loc))
 	  (allow-other-keys nil)
 	  (allow-other-keys-found nil)
@@ -681,9 +683,55 @@ because it contains a reference to the undefined class~%  ~A"
 	      ((member name slots :test #'member :key #'slot-definition-initargs))
 	      ;; The initialization argument has been declared in some method
               ((member name cached-keywords))
-	      ((and methods (member name methods :test #'member :key #'method-keywords)))
 	      (t
 	       (push name unknown-key-names)))))))
+
+(defun check-initargs-uncached (class initargs
+                                &optional calls (slots (class-slots class)))
+  ;; We try to avoid calling compute-applicable-methods since that's work.
+  ;; (In simple tests, avoiding it gave a speedup of 2-3 times.)
+  ;; So we first check if all the initargs correspond to slots. If they do,
+  ;; great. If not we compute-applicable-methods to get more valid keywords.
+  ;; This assumes that the likely case is all the initargs corresponding to
+  ;; slots, but it shouldn't really be any slower if they don't.
+  ;; CALLS is a list of (function arglist). These can be passed directly
+  ;; to compute-applicable-methods.
+  (do* ((name-loc initargs (cddr name-loc))
+        (allow-other-keys nil)
+        (allow-other-keys-found nil)
+        (unknown-key-names nil)
+        (methods nil)
+        (methods-initialized-p nil))
+       ((null name-loc)
+        (when (and (not allow-other-keys) unknown-key-names)
+          (simple-program-error "Unknown initialization options ~S for class ~A."
+                                (nreverse unknown-key-names) class)))
+    (let ((name (first name-loc)))
+      (cond ((null (cdr name-loc))
+             (simple-program-error "No value supplied for the init-name ~S." name))
+            ;; This check must be here, because :ALLOW-OTHER-KEYS is a valid
+            ;; slot-initarg.
+            ((and (eql name :ALLOW-OTHER-KEYS)
+                  (not allow-other-keys-found))
+             (setf allow-other-keys (second name-loc)
+                   allow-other-keys-found t))
+            ;; Check if the arguments is associated with a slot
+            ((member name slots :test #'member :key #'slot-definition-initargs))
+            ;; OK, doesn't correspond to a slot, so check the methods.
+            ((progn
+               (unless methods-initialized-p
+                 (setf methods-initialized-p t
+                       methods
+                       (loop for call in calls
+                             for methods
+                               = (apply #'compute-applicable-methods call)
+                             for methods2 = (valid-keywords-from-methods
+                                             methods)
+                             when (eq methods2 t) ; allow-other-keys
+                               do (return-from check-initargs-uncached)
+                             nconcing methods2)))
+               (member name methods :test #'member :key #'method-keywords)))
+            (t (push name unknown-key-names))))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Methods

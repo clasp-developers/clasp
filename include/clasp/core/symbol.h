@@ -116,9 +116,9 @@ public:
   void setf_specialP(bool m) { setFlag(m, IS_SPECIAL); }
   void makeSpecial(); // TODO: Redundant, remove?
  public: // Hashing
-  void sxhash_(HashGenerator &hg) const;
-  void sxhash_equal(HashGenerator &hg) const;
-  void sxhash_equalp(HashGenerator &hg) const {this->sxhash_equal(hg);};
+  void sxhash_(HashGenerator &hg) const override;
+  void sxhash_equal(HashGenerator &hg) const override;
+  void sxhash_equalp(HashGenerator &hg) const override {this->sxhash_equal(hg);};
 
  public: // Miscellaneous
   bool isKeywordSymbol();
@@ -295,11 +295,11 @@ public:
   /*! Convenience function, export yourself and return yourself */
   Symbol_sp exportYourself(bool doit = true);
 
-  void dump();
+  void dump() override;
 
-  void __write__(T_sp stream) const; // in write_symbol.cc
+  void __write__(T_sp stream) const override; // in write_symbol.cc
 
-  string __repr__() const;
+  string __repr__() const override;
 
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */

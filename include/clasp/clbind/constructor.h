@@ -38,7 +38,7 @@ namespace clbind {
 template <typename... SIGS>
 struct constructor {};
 
-typedef enum { no_default_constructor } no_default_constructor_type;
+typedef enum { create_default_constructor } default_constructor_type;
 
 typedef constructor<> default_constructor;
 
@@ -180,4 +180,10 @@ public:
   static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Stamp;
 };
 
+
+namespace clbind {
+template <typename... SIGS>
+using init = constructor<SIGS...>;
+
+};
 #endif

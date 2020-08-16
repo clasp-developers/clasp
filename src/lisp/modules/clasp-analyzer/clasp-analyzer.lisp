@@ -13,6 +13,7 @@
    #:serial-search-all
    #:serial-search/generate-code
    #:parallel-search/generate-code
+   #:parallel-search-all-threaded
    #:analyze-project
    #:generate-code
    #:build-arguments-adjuster))
@@ -733,60 +734,75 @@ to expose."
 (defun codegen-variable-part (stream variable-fields analysis)
   (let* ((array (offset-field-with-name variable-fields "_Data"))
          (length (or (offset-field-with-name variable-fields "_Length")
+                     (offset-field-with-name variable-fields "_MaybeSignedLength")
                      (offset-field-with-name variable-fields "_Capacity")))
          (end (or (offset-field-with-name variable-fields "_End") length))
          (gcbitunit-ctype (find-gcbitunit-array-moveable-ctype array)))
     (unless length
-      (error "Could not find _Length in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+      (error "Could not find _Length or _MaybeSignedLength in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
     (let ((*print-pretty* nil))
       (if gcbitunit-ctype
-          (format stream " {  variable_bit_array0, ~a, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+          (format stream " {  variable_bit_array0, ~a, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
                   (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype) :test #'eql :key #'gc-template-argument-index))
                   (offset-base-ctype array)
                   (layout-offset-field-names array)
                   (layout-offset-field-names array))          
-          (format stream " {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
-              (offset-base-ctype array)
-              (layout-offset-field-names array)
-              (layout-offset-field-names array)))
-      (format stream " {  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
+          (format stream " {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+                  (offset-base-ctype array)
+                  (layout-offset-field-names array)
+                  (layout-offset-field-names array)))
+      (format stream " {  variable_capacity, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
               (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
               (offset-base-ctype array)
               (layout-offset-field-names end)
               (offset-base-ctype array)
               (layout-offset-field-names length))
       (dolist (one (elements array))
-        (let ((field-names (layout-offset-field-names one)))
-          (if field-names
-              (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                     (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
-                     (is-std-atomic (is-atomic one stream))
-                     (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-                     (expose-it (and fixable good-name))
-                     (*print-pretty* nil))
-      (dolist (iv (fields one))
-        (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
-                (instance-field-access iv)
-                (instance-field-ctype iv)))
-                (format stream "~a    {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
-                        (if expose-it "" "// not-exposed-yet ")
-                        (offset-type-c++-identifier one)
-                        (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                        (ctype-key (base one))
-                        (layout-offset-field-names one :drop-last is-std-atomic)
-                        (layout-offset-field-names one :drop-last is-std-atomic)
-                        is-std-atomic
-                        public
-                        fixable
-                        good-name))
-              (progn
-                (let ((*print-pretty* nil))
-                  (format stream "// one -> ~s~%" one))
-                (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
-                        (offset-type-c++-identifier one)
-                        (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
-                        ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                        #+(or)(ctype-key (base one))))))))))
+        (let* ((field-names (layout-offset-field-names one))
+               (ctype-key (ctype-key (base one)))
+               (atomic-smart-ptr-p (let* ((atomic-smart-ptr-string "std::atomic<gctools::smart_ptr<")
+                                          (atomic-smart-ptr-string-length #.(length "std::atomic<gctools::smart_ptr<")))
+                                     (string= atomic-smart-ptr-string ctype-key :start2 0 :end2 atomic-smart-ptr-string-length)))) 
+          (format stream "/* (base one) -> ~s~%*/~%" (base one))
+          (format stream "/* (ctype-key (base one)) -> ~s~%*/~%" (ctype-key (base one)))
+          (format stream "// atomic-smart-ptr-p -> ~s~%" atomic-smart-ptr-p)
+          (cond
+            (atomic-smart-ptr-p
+             (let ((*print-pretty* nil))
+               (format stream "// one -> ~s~%" one))
+             (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                     (offset-type-c++-identifier one)
+                     (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                     ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                     #+(or)(ctype-key (base one))))
+            (field-names
+             (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+                    (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
+                    (is-std-atomic (is-atomic one stream))
+                    (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
+                    (expose-it (and fixable good-name))
+                    (*print-pretty* nil))
+               (dolist (iv (fields one))
+                 (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%" (instance-field-access iv) (instance-field-ctype iv)))
+               (format stream "~a    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+                       (if expose-it "" "// not-exposed-yet ")
+                       (offset-type-c++-identifier one)
+                       (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                       (ctype-key (base one))
+                       (layout-offset-field-names one :drop-last is-std-atomic)
+                       (layout-offset-field-names one :drop-last is-std-atomic)
+                       is-std-atomic
+                       public
+                       fixable
+                       good-name)))
+            (t (progn
+                 (let ((*print-pretty* nil))
+                   (format stream "// one -> ~s~%" one))
+                 (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                         (offset-type-c++-identifier one)
+                         (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+                         ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                         #+(or)(ctype-key (base one)))))))))))
 
 
 (defun expose-fixed-field-type (type-name)
@@ -807,7 +823,7 @@ to expose."
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
     (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
+           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
            (is-std-atomic (is-atomic one stream))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and fixable
@@ -819,7 +835,7 @@ to expose."
         (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
                 (instance-field-access iv)
                 (instance-field-ctype iv)))
-      (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
+      (format stream "~a {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it   "" "// not-exposing")
               (offset-type-c++-identifier one)
               (or (offset-ctype one) "UnknownType")
@@ -1070,21 +1086,21 @@ Generate offsets for every array element that exposes the fields in elements."
 (defun template-arg-as-string (template-arg)
   (let* ((template-arg-kind (cast:get-kind template-arg)))
     (case template-arg-kind
-      (ast-tooling:argkind-type
+      (clang-ast:argkind-type
 ;;       (cast:get-as-string (cast:get-as-type template-arg))
        (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg))))
-      (ast-tooling:argkind-integral
+      (clang-ast:argkind-integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
-      (ast-tooling:argkind-pack
+      (clang-ast:argkind-pack
        (let ((pack-size (cast:pack-size template-arg)))
          (if (eql pack-size 0)
              ""
              (format nil "TEMPLATE_ARG_PACK_SIZE~a" pack-size))))
-      (ast-tooling:argkind-template
+      (clang-ast:argkind-template
        "TEMPLATE_ARG_AS_STRING::TEMPLATE")
-      (ast-tooling:argkind-expression
+      (clang-ast:argkind-expression
        "TEMPLATE_ARG_AS_STRING::EXPRESSION")
-      (ast-tooling:argkind-declaration
+      (clang-ast:argkind-declaration
        "TEMPLATE_ARG_AS_STRING::DECLARATION")
       (otherwise
        (error "Add support for template-arg-as-string of kind: ~a" template-arg-kind)))))
@@ -1148,7 +1164,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
              (template-arg-kind (cast:get-kind arg))
              classified integral-value)
         (case template-arg-kind
-          (ast-tooling:argkind-type
+          (clang-ast:argkind-type
            (let* ((qtarg (cast:get-as-type arg))
                   (tsty-new (cast:get-type-ptr-or-null qtarg)))
              (if (and qtarg tsty-new)
@@ -1157,7 +1173,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
                    (setq classified (classify-ctype tsty-new)))
                  (format t "!!classify-template-args - could not classify arg: ~s  qtarg: ~s  (cast:get-as-string qtarg): ~s~%" arg qtarg (cast:get-as-string qtarg))
                  )))
-          (ast-tooling:argkind-integral
+          (clang-ast:argkind-integral
            (setf integral-value (template-arg-as-string arg)
                  classified nil))
           (otherwise
@@ -1196,7 +1212,12 @@ can be saved and reloaded within the project for later analysis"
            ((string= name "GCVector_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
-              (gclog "          Found a smart_ptr~%")
+              (gclog "          Found a GCVector_moveable~%")
+              (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "GCVector_atomic")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (gclog "          Found a GCVector_atomic~%")
               (make-gcvector-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCBitUnitArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
@@ -1207,7 +1228,17 @@ can be saved and reloaded within the project for later analysis"
            ((string= name "GCArray_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
-              (gclog "          Found a smart_ptr~%")
+              (gclog "          Found a GCArray_moveable~%")
+              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "GCArraySignedLength_moveable")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (gclog "          Found a GCArraySignedLength_moveable~%")
+              (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "GCArray_atomic")
+            (let* ((arg (cast:template-argument-list-get args 0))
+                   (qtarg (cast:get-as-type arg)))
+              (gclog "          Found a GCArray_atomic~%")
               (make-gcarray-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
            ((string= name "GCString_moveable")
             (let* ((arg (cast:template-argument-list-get args 0))
@@ -1555,7 +1586,7 @@ can be saved and reloaded within the project for later analysis"
                    (gclog "    record-key -> ~a~%" record-key)
                    (unless (or (typep class-node 'cast:class-template-partial-specialization-decl) ; ignore partial specializations
                                (and (typep class-node 'cast:class-template-specialization-decl) ; ignore template specializations that have undeclared specialization alloc
-                                    (eq (cast:get-specialization-kind class-node) 'ast-tooling:tsk-undeclared))
+                                    (eq (cast:get-specialization-kind class-node) 'clang-ast:tsk-undeclared))
                                (gethash record-key results)) ; ignore if we've seen it before
                      (gclog "About to call %%new-class-callback~%")
                      (%%new-class-callback match-info class-node record-key template-specializer))))))
@@ -2210,6 +2241,8 @@ so that they don't have to be constantly recalculated"
   (push species (manager-species manager))
   species)
 
+(defparameter *unknown-aclass* nil)
+(defparameter *manager* nil)
 (defun identify-species (manager aclass)
   (let (hits)
     (dolist (species (manager-species manager))
@@ -2217,7 +2250,7 @@ so that they don't have to be constantly recalculated"
         (push species hits)))
     (cond
       ((> (length hits) 1)
-       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))p
+       (format t "Identifies as multiple species: ~s~%" (mapcar #'species-name hits))
        (error "The class ~a could not be uniquely distinguished between the species: ~a" aclass hits))
       ((eql (length hits) 1)
        (car hits))
@@ -2225,8 +2258,11 @@ so that they don't have to be constantly recalculated"
         (manager-ignore-discriminator manager)
         (funcall (manager-ignore-discriminator manager) aclass))
        nil)
-      (t (error " Could not identify species for ~a" aclass)
-         nil))))
+      (t
+       (setf *unknown-aclass* aclass
+             *manager* manager)
+       (error " Could not identify species for ~a~%Check *unknown-aclass* and *manager*~%Species:~%~{~s~%~}" aclass (manager-species manager))
+       nil))))
 
 (defun alloc-template-specializer-p (alloc analysis)
   (let ((alloc-class (gethash (alloc-key alloc) (project-classes (analysis-project analysis)))))
@@ -2350,7 +2386,7 @@ so that they don't have to be constantly recalculated"
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names))
     (let ((reverse-names (nreverse names)))
-      (format nil " { ~a, offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
+      (format nil " { ~a, __builtin_offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
               prefix
               key
               reverse-names
@@ -2407,7 +2443,10 @@ so that they don't have to be constantly recalculated"
       (format fout "     // stamp value ~a~%" (stamp-value% stamp))
       (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
       ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+      (format fout "#pragma clang diagnostic push~%")
+      (format fout "#pragma clang diagnostic ignored \"-Wignored-qualifiers\"~%")
       (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
+      (format fout "#pragma clang diagnostic pop~%")
       (format fout "    goto finalize_done;~%"))))
 
 
@@ -2951,7 +2990,8 @@ Otherwise return nil."
              (ctype-key (container-key ctype))
              (container-cclass (gethash ctype-key (project-classes project)))
              (capacity-field (or (field-with-name container-cclass "_Capacity")
-                                 (field-with-name container-cclass "_Length"))))
+                                 (field-with-name container-cclass "_Length")
+                                 (field-with-name container-cclass "_MaybeSignedLength"))))
         (format t "      var-part ctype: ~a~%" ctype)
         (format t "           ctype-key: ~a~%" ctype-key)
         (format t "    container-cclass: ~a~%" container-cclass)
@@ -3687,53 +3727,69 @@ Run searches in *tools* on the source files in the compilation database."
 
 (defstruct parallel-job id filename)
 (defstruct parallel-result id filename result)
-    
-(defun one-search-process (compilation-tool-database tools jobid job-queue)
-  (let* ((log-file (open (format nil "/tmp/process~a.log" jobid) :direction :output :if-exists :supersede))
-         (*standard-output* log-file))
-    (format t "Starting process ~a~%" jobid)
+
+(defclass job-group ()
+  ((jobs :initform nil :accessor jobs)
+   (results :initform (make-project) :accessor results)))
+
+
+(defun one-search-process (compilation-tool-database job-group-index job-group)
+  (let* ((tools (setup-tools compilation-tool-database))
+         (log-file (open (format nil "/tmp/process~a-output.log" job-group-index) :direction :output :if-exists :supersede))
+         (err-file (open (format nil "/tmp/process~a-error.log" job-group-index) :direction :output :if-exists :supersede))
+         (*standard-output* log-file)
+         (*error-output* err-file))
+    (format t "Starting process ~a~%" job-group-index)
+    (setf (clang-tool:multitool-results tools) (results job-group))
     (clang-tool:with-compilation-tool-database compilation-tool-database
-      (loop while (> (core:queue-count job-queue) 0)
-         do (let ((one-job (core:dequeue job-queue)))
-              (when one-job
-                (format t "Running search on ~a ~a~%" (parallel-job-id one-job) (parallel-job-filename one-job))
-                (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list (parallel-job-filename one-job)))))))
-    (close log-file)))
+      (loop for one-job in (jobs job-group)
+            for id = (parallel-job-id one-job)
+            for filename = (parallel-job-filename one-job)
+            do (progn
+                 (format *terminal-io* "Running search on ~a ~a~%" id filename)
+                 (format t "Running search on ~a ~a~%" id filename)
+                 (clang-tool:batch-run-multitool tools compilation-tool-database :source-namestrings (list filename)))))
+    (close log-file)
+    (close err-file)))
 
 (defun parallel-search-all-threaded (compilation-tool-database
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
-                              (jobs 2))
+                              (threads 8))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
 * Description
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
-  (let ((tools (setup-tools compilation-tool-database))
-        (all-jobs source-namestrings)
-        (job-queue (core:make-queue :analyze-queue)))
-    (setf (clang-tool:multitool-results tools) (make-project))
-    (save-data all-jobs (make-pathname :type "lst" :defaults output-file))
+  (let ((all-jobs source-namestrings)
+        (job-groups (loop for idx from 0 below threads
+                          collect (make-instance 'job-group))))
+;; Distribute the jobs to the job-groups
+(loop for job in all-jobs
+      for job-index from 0
+      for job-group-index = (mod job-index threads)
+      for job-group = (elt job-groups job-group-index)
+      for job-info = (make-parallel-job :id job-index :filename job)
+      do (push job-info (jobs job-group)))
+
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
-    (loop for job in all-jobs
-       for id from 0
-       do (core:atomic-enqueue job-queue (make-parallel-job :id id :filename job)))
     (format t "Starting processes~%")
-    (let ((processes (loop for x from 0 below jobs
-                        do (format t "loop for process ~a~%" x)
-                        collect (prog1
-                                    (mp:process-run-function
-                                     nil
-                                     (lambda ()
-                                       (one-search-process compilation-tool-database tools x job-queue)))
+    (let ((processes (loop for job-group-index from 0 below threads
+                           for job-group = (elt job-groups job-group-index)
+                           do (format t "loop for process ~a~%" job-group-index)
+                           collect (prog1
+                                       (mp:process-run-function
+                                        nil
+                                        (lambda ()
+                                          (one-search-process compilation-tool-database job-group-index job-group)))
                                   (sleep 2)))))
       (loop for process in processes
            do (mp:process-join process))
-      (format t "All processes done~%")
-      (when save-project
+      (format t "All processes done  merge everything here~%")
+      #+(or)(when save-project
         (let ((project (clang-tool:multitool-results tools)))
           (save-data project output-file)
           (values project output-file))))))

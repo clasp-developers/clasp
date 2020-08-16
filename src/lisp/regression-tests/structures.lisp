@@ -152,12 +152,12 @@
 
 ;;; Should find it , if conc-name leads to different accessor name
 (defstruct (valued-nodea (:conc-name nodea-) (:include node)))
+
 (test include-level-2a
-      (fboundp 'nodea-tail-p))
+      (progn
+        (eval '(defstruct (combination (:include valued-node))))
+        (fboundp 'combination-tail-p)))
 
-(defstruct (valued-node (:conc-name node-) (:include node)))
-
-(defstruct (combination (:include valued-node)))
 ;;; should generate combination-tailp, but doesn't
 ;;; That breaks cross-compiling sbcl
 ;;; Might be wrong in fix-old-slotd
@@ -206,3 +206,25 @@
          (setf (sub-sub-blah1-b object) 23)
          (setf (sub-sub-blah1-b object) 42)
          object)))
+
+
+;;; include slots with :named
+(defstruct  (struct-test-55 (:type list)
+                            (:initial-offset 2)
+                            :named)
+  a55 b55 c55)
+
+(defstruct (struct-test-56 (:type list)
+                           (:initial-offset 3)
+                           (:include struct-test-55)
+                           :named)
+  d56 e56)
+
+(test struct-test-56
+      (let ((s (make-struct-test-56 :a55 1 :b55 2 :c55 3 :d56 4 :e56 5)))
+        (and (struct-test-56-p s)
+             (= (struct-test-56-a55 s) 1)
+             (= (struct-test-56-b55 s) 2)
+             (= (struct-test-56-c55 s) 3)
+             (= (struct-test-56-d56 s) 4)
+             (= (struct-test-56-e56 s) 5))))

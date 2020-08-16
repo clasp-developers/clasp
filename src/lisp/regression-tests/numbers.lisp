@@ -594,9 +594,64 @@
 
 (test log-bignum
       (labels ((factorial (n)(if (<= n 1) 1 (* n (factorial (1- n))))))
-        (typep (log (factorial 200)) 'float)))
+        (let ((result (log (factorial 200)))) 
+          (and (floatp result)
+               (not (ext:float-nan-p result))))))
 
 (test load-log-bignum
       (labels ((factorial (n)(if (<= n 1) 1 (* n (factorial (1- n))))))
-        (loop for x from 1 to 500 collect
-             (log (factorial x)))))
+        (every #'(lambda(result)
+                   (and (floatp result)
+                        (not (ext:float-nan-p result))))
+               (loop for x from 1 to 500 collect
+                        (log (factorial x))))))
+
+(test big-ratio-coerce
+      (let ((result
+              (COERCE 6795704571147613088400718678381656244393117734249898937417419069310191575883868986428455446312916068568665979830007649804543533991572608932250835738151489076845330821569858726908084574701882988127547528934585469826755385222874837210418773111903651670205662000421193529634355863606092768847694362480173879256904596515653328461457501880112334566400744016842783001773321772818609367618076742443023275354232092047563787771643659430278130974461062642384241926963624924919867161137264969829092223075246982819340445538562498073940878705520674737984170082956322173496241162764552348099573721983300906273607793253095492671040351/2500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 'SINGLE-FLOAT)))
+        (and (floatp result)
+             (not (ext:float-nan-p result)))))
+             
+;;; cannot be run yet, because of https://github.com/clasp-developers/clasp/issues/961        
+#+(or)
+(progn
+  (test-expect-error
+   integer_decode_float_infinity_short_positive
+   (integer-decode-float #.ext:short-float-positive-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_single_positive
+   (integer-decode-float #.ext:single-float-positive-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_double_positive
+   (integer-decode-float #.ext:double-float-positive-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_long_positive
+   (integer-decode-float #.ext:long-float-positive-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_short_negative
+   (integer-decode-float #.ext:short-float-negative-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_single_negative
+   (integer-decode-float #.ext:single-float-negative-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_double_negative
+   (integer-decode-float #.ext:double-float-negative-infinity)
+   :type arithmetic-error)
+
+  (test-expect-error
+   integer_decode_float_infinity_long_negative
+   (integer-decode-float #.ext:long-float-negative-infinity)
+   :type arithmetic-error)
+  )

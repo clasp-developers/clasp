@@ -43,76 +43,91 @@ public:
   size_t _Capacity; // Index one beyond the total number of elements allocated
   size_t _End;
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
-
   template <typename Uty>
   struct GCVector_moveable_iterator {
     typedef GCVector_moveable_iterator<Uty> Iterator;
     typedef Uty value_type;
-    mutable Uty *_TaggedCurP;
-    GCVector_moveable_iterator() : _TaggedCurP(NULL){};
-    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _TaggedCurP(tag_general<Uty *>(&(vec->_Data[index]))){};
-    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _TaggedCurP(tag_general<Uty *>(&(vec->_Data[index]))){};
+    tagged_pointer<GCVector_moveable<T>> _Vec;
+    mutable size_t _Index;
+    GCVector_moveable_iterator() : _Index(0) {};
+    GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _Vec(vec), _Index(index) {
+      //      printf("%s:%d initializing %p\n", __FILE__, __LINE__, _Vec.raw_() );
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+    };
+    GCVector_moveable_iterator(GCVector_moveable<T> *vec, size_t index) : _Vec(gctools::tag_general<GCVector_moveable<T>*>(vec)), _Index(index) {
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+    };
+#if 0
     const Iterator &operator=(const Iterator &other) const {
       if (&other == this)
         return *this;
-      this->_TaggedCurP = other._TaggedCurP;
+      this->_Vec = other._Vec;
+      if (!this->_Vec) {
+        printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
+      }
+      this->_Index = other._Index;
       return *this;
     }
-    Uty *operator->() { return (untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty &operator*() { return *(untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty const *operator->() const { return (untag_general<Uty *>(this->_TaggedCurP)); };
-    Uty const &operator*() const { return *(untag_general<Uty *>(this->_TaggedCurP)); };
+#endif    
+    Uty *operator->() { return &(*this->_Vec)[this->_Index]; };
+    Uty &operator*() { return (*this->_Vec)[this->_Index]; };
+    Uty const *operator->() const { return &(*this->_Vec)[this->_Index]; };
+    Uty const &operator*() const { return (*this->_Vec)[this->_Index]; };
     size_t operator-(const Iterator &other) const {
-      return (this->_TaggedCurP - other._TaggedCurP);
+      return (this->_Index - other._Index);
     }
     Iterator operator+(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._TaggedCurP += num;
+      clone._Index += num;
       return clone;
     }
     Iterator operator-(size_t num) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      clone._TaggedCurP -= num;
+      clone._Index -= num;
       return clone;
     }
     bool operator==(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP == other._TaggedCurP;
+      return (this->_Vec == other._Vec) && (this->_Index == other._Index);
     }
     bool operator>(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP > other._TaggedCurP;
+      return this->_Index > other._Index;
     }
     bool operator>=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP >= other._TaggedCurP;
+      return this->_Index >= other._Index;
     }
     bool operator<(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP < other._TaggedCurP;
+      return this->_Index < other._Index;
     }
     bool operator<=(const GCVector_moveable_iterator<Uty> &other) const {
-      return this->_TaggedCurP <= other._TaggedCurP;
+      return this->_Index <= other._Index;
     }
     bool operator!=(const GCVector_moveable_iterator<Uty> &other) const {
       return !(*this == other);
     }
     const GCVector_moveable_iterator<Uty> &operator++() const {
-      ++this->_TaggedCurP;
+      ++this->_Index;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator++(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      ++this->_TaggedCurP;
+      ++this->_Index;
       return clone;
     }
     GCVector_moveable_iterator<Uty> &operator--() {
-      --this->_TaggedCurP;
+      --this->_Index;
       return *this;
     }
     const GCVector_moveable_iterator<Uty> &operator--() const {
-      --this->_TaggedCurP;
+      --this->_Index;
       return *this;
     }
     GCVector_moveable_iterator<Uty> operator--(int) const {
       GCVector_moveable_iterator<Uty> clone(*this);
-      --this->_TaggedCurP;
+      --this->_Index;
       return clone;
     }
   };
@@ -168,6 +183,10 @@ public:
 public:
   inline void unsafe_set_end(size_t e) { this->_Contents->unsafe_set_end(e); }
 
+#if 0
+private:
+  GCVector<T, Allocator>(const GCVector<T, Allocator> &that);
+#else
 public:
   // Copy Ctor
   GCVector<T, Allocator>(const GCVector<T, Allocator> &that) 
@@ -186,7 +205,8 @@ public:
       this->_Contents.reset_();
     }
   }
-
+#endif
+  
 public:
   // Assignment operator must destroy the existing contents
   GCVector<T, Allocator> &operator=(const GCVector<T, Allocator> &that) {
@@ -263,25 +283,27 @@ public:
       throw_hard_error("The end should NEVER be beyond the capacity");
     };
 #endif
-    if (this->_Contents->_End == this->_Contents->_Capacity) {
+    size_t contents_end = this->_Contents->_End;
+    size_t contents_capacity = this->_Contents->_Capacity;
+    if (contents_end == contents_capacity) {
       // This is where we grow the Vector
-      size_t newCapacity = this->_Contents->_Capacity * GCVectorGrow;
+      size_t new_capacity = contents_capacity * GCVectorGrow;
       GC_LOG(("Increasing capacity to %zu\n", newCapacity));
 #ifdef DEBUG_ASSERT
-      if (newCapacity > 65536) {
+      if (new_capacity > 65536) {
         printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
       }
 #endif
-      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),newCapacity);
-      new (&*vec) GCVector_moveable<T>(newCapacity);
-      for (size_t zi(0); zi < this->_Contents->_End; ++zi) {
+      vec = alloc.allocate_kind(Header_s::StampWtagMtag::make<impl_type>(),new_capacity);
+      new (&*vec) GCVector_moveable<T>(new_capacity);
+      for (size_t zi(0); zi < contents_end; ++zi) {
         // the array at newAddress is undefined - placement new to copy
         alloc.construct(&((*vec)[zi]), (*this->_Contents)[zi]);
       };
-      vec->_End = this->_Contents->_End;
+      vec->_End = contents_end;
     }
     // Placement new in the incoming value of x
-    alloc.construct(&((*vec)[this->_Contents->_End]), x);
+    alloc.construct(&((*vec)[contents_end]), x);
     ++vec->_End;
     if (vec != this->_Contents) {
       // Save the old vector impl

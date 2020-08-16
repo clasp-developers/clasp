@@ -337,7 +337,7 @@ struct Mutex {
 #endif
 
   
-  void* start_thread(void* claspProcess);
+void* start_thread(void* info);
 
   inline void ClaspThreads_exit() {
 //    printf("%s:%d Exiting pthread\n", __FILE__, __LINE__ );

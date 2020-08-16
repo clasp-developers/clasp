@@ -238,12 +238,14 @@ DEBUG_OPTIONS = [
     "DEBUG_FASTGF",   # generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**
     "DEBUG_SLOT_ACCESSORS", # GF accessors have extra debugging added to them
     "DEBUG_THREADS",
+    "DEBUG_STORES", # insert a call to cc_validate_tagged_pointer everytime something is written to memory
     "DEBUG_ENSURE_VALID_OBJECT",  #Defines ENSURE_VALID_OBJECT(x)->x macro - sprinkle these around to run checks on objects
     "DEBUG_QUICK_VALIDATE",    # quick/cheap validate if on and comprehensive validate if not
     "DEBUG_MPS_SIZE",   # check that the size of the MPS object will be calculated properly by obj_skip
     "DEBUG_MPS_UNDERSCANNING",   # Very expensive - does a mps_arena_collect/mps_arena_release for each allocation
     "DEBUG_DONT_OPTIMIZE_BCLASP",  # Optimize bclasp by editing llvm-ir
-    "DEBUG_RECURSIVE_ALLOCATIONS",
+    "DEBUG_RECURSIVE_ALLOCATIONS", # Catch allocations within allocations - MPS hates these
+    "DEBUG_ALLOC_ALIGNMENT", # catch misaligned allocations
     "DEBUG_LLVM_OPTIMIZATION_LEVEL_0",
     "DEBUG_SLOW",    # Code runs slower due to checks - undefine to remove checks
     "USE_HUMAN_READABLE_BITCODE",
@@ -285,10 +287,10 @@ def update_dependencies(cfg):
 #                       "master")
     fetch_git_revision("src/lisp/kernel/contrib/sicl",
                        "https://github.com/Bike/SICL.git",
-                       "628ef27abda0588563c69fd883c653aae43a0552")
+                       "e37e6c465c4072a19cefc5271e02e73c848c2524")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "f4100714fd90805ba30221dc8dafa5a99f3cf6a0")
+                       "3524caff0894cb5bf6ea51abac53b520cc5580c3")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -297,7 +299,8 @@ def update_dependencies(cfg):
                        "dd15c86b0866fc5d8b474be0da15c58a3c04c45c")
     fetch_git_revision("src/lisp/kernel/contrib/Eclector",
                        "https://github.com/clasp-developers/Eclector.git",
-                       "363c495ea3c4dc11274cccb1964ab95ab53b3966")
+                       "fa652c5d9750c4cbdc43082a3e07243bd2e265e4")
+                       # "7e9561c410897d499b581f6a8e98cbbd17cd7a81")
 #"66cf5e2370eef4be659212269272a5e79a82fa1c")
 #                      "7b63e7bbe6c60d3ad3413a231835be6f5824240a") works with AST clasp
     fetch_git_revision("src/lisp/kernel/contrib/alexandria",
@@ -333,6 +336,7 @@ def analyze_clasp(cfg):
     output_file = generate_output_filename(cfg.extensions_clasp_gc_names)
     run_search = '(run-search "%s")' % output_file
     run_program_echo("build/boehm/iclasp-boehm",
+                     "-N", "-D",
                      "--feature", "ignore-extensions",
                      "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer.lisp",
                      "--eval", run_search,
@@ -789,9 +793,9 @@ def configure(cfg):
         llvm_config_binary = cfg.env.LLVM_CONFIG_BINARY
         if (len(llvm_config_binary) == 0):
             if (cfg.env['DEST_OS'] == DARWIN_OS ):
-                llvm_paths = glob.glob("/usr/local/Cellar/llvm/%s*" % LLVM_VERSION)
+                llvm_paths = glob.glob("/usr/local/opt/llvm@%s/bin/llvm-config" % LLVM_VERSION)
                 if (len(llvm_paths) >= 1):
-                    llvm_config_binary = "%s/bin/llvm-config" % llvm_paths[0]
+                    llvm_config_binary = llvm_paths[0]
                 else:
                     raise Exception("You need to install llvm@%s" % LLVM_VERSION)
                 log.info("On darwin looking for %s" % llvm_config_binary)

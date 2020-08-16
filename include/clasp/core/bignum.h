@@ -127,60 +127,56 @@ public: // Functions here
 
  public:
 
-  NumberType number_type_() const { return number_Bignum; };
+  NumberType number_type_() const override { return number_Bignum; };
 
-  mpz_class &ref() { return this->_value; };
-  mpz_class &mpz_ref() { return this->_value; };
+  mpz_class mpz() const { return this->_value; };
+  mpz_class& mpz_ref() { return this->_value; };
 
-  string __repr__() const;
+  string __repr__() const override;
 
-  Number_sp signum_() const;
+  Number_sp signum_() const override;
 
   /*! Return true if the number fits in a signed int */
   bool fits_sint_p();
 
-  virtual void increment() { ++this->_value; };
-  virtual void decrement() { --this->_value; };
   //virtual Number_sp copy() const;
-  string description() const {
+  string description() const override {
     stringstream ss;
     ss << this->_value;
     return ss.str();
   };
-  void set(gc::Fixnum val) { this->_value = static_cast<long>(val); };
   void setFixnum(gctools::Fixnum val) { this->_value = static_cast<long>(val); };
   Bignum get() const;
   Bignum get_or_if_nil_default(Bignum default_value) const;
-  Number_sp abs_() const;
-  Number_sp sqrt_() const;
-  Number_sp reciprocal_() const;
+  Number_sp abs_() const override;
+  Number_sp log1_() const override;
+  Number_sp sqrt_() const override;
+  Number_sp reciprocal_() const override;
   Number_sp rational_() const final { return this->asSmartPtr(); };
-  void increment(gc::Fixnum i) { this->_value += static_cast<long>(i); };
-  int sign() const { return this->_value > 0 ? 1 : (this->_value < 0 ? -1 : 0); };
 
-  virtual bool zerop_() const { return ((this->_value == 0)); }
-  virtual bool plusp_() const { return ((this->_value > 0)); }
-  virtual bool minusp_() const { return ((this->_value < 0)); }
+  virtual bool zerop_() const override { return ((this->_value == 0)); }
+  virtual bool plusp_() const override { return ((this->_value > 0)); }
+  virtual bool minusp_() const override { return ((this->_value < 0)); }
 
-  virtual Number_sp negate_() const {
+  virtual Number_sp negate_() const override {
     return Integer_O::create(-this->_value);
   }
 
-  virtual Number_sp oneMinus_() const {
+  virtual Number_sp oneMinus_() const override {
     return Integer_O::create(this->_value - 1);
   }
-  virtual Number_sp onePlus_() const {
+  virtual Number_sp onePlus_() const override {
     return Integer_O::create(this->_value + 1);
   }
 
-  virtual gc::Fixnum bit_length_() const;
+  virtual gc::Fixnum bit_length_() const override;
 
   /*! Return the value shifted by BITS bits.
 	  If BITS < 0 shift right, if BITS >0 shift left. */
-  Integer_sp shift_(gc::Fixnum bits) const;
+  Integer_sp shift_(gc::Fixnum bits) const override;
 
   //	virtual	bool	eqn(T_sp obj) const;
-  virtual bool eql_(T_sp obj) const;
+  virtual bool eql_(T_sp obj) const override;
 
  public:
   virtual string valueAsString() const {
@@ -192,80 +188,61 @@ public: // Functions here
 
   // --- TRANSLATION METHODS ---
 
-  virtual short as_short() const;
-  virtual unsigned short as_ushort() const;
+  virtual short as_short() const override;
+  virtual unsigned short as_ushort() const override;
 
-  virtual int as_int() const;
-  virtual unsigned int as_uint() const;
+  virtual int as_int() const override;
+  virtual unsigned int as_uint() const override;
 
-  virtual long as_long() const;
-  virtual unsigned long as_ulong() const;
+  virtual long as_long() const override;
+  virtual unsigned long as_ulong() const override;
 
-  virtual long long as_longlong() const;
-  virtual unsigned long long as_ulonglong() const;
+  virtual long long as_longlong() const override;
+  virtual unsigned long long as_ulonglong() const override;
 
-  virtual int8_t as_int8_t() const;
-  virtual uint8_t as_uint8_t() const;
+  virtual int8_t as_int8_t() const override;
+  virtual uint8_t as_uint8_t() const override;
 
-  virtual int16_t as_int16_t() const;
-  virtual uint16_t as_uint16_t() const;
+  virtual int16_t as_int16_t() const override;
+  virtual uint16_t as_uint16_t() const override;
 
-  virtual int32_t as_int32_t() const;
-  virtual uint32_t as_uint32_t() const;
+  virtual int32_t as_int32_t() const override;
+  virtual uint32_t as_uint32_t() const override;
 
-  virtual int64_t as_int64_t() const;
-  virtual uint64_t as_uint64_t() const;
+  virtual int64_t as_int64_t() const override;
+  virtual uint64_t as_uint64_t() const override;
 
-  virtual uintptr_t as_uintptr_t() const;
-  virtual ptrdiff_t as_ptrdiff_t() const;
-  virtual size_t as_size_t() const;
-  virtual ssize_t as_ssize_t() const;
+  virtual uintptr_t as_uintptr_t() const override;
+  virtual ptrdiff_t as_ptrdiff_t() const override;
+  virtual size_t as_size_t() const override;
+  virtual ssize_t as_ssize_t() const override;
 
   // --- THESE FUNCTIONS RETAINED FOR COMPATIBILITY ---
   // TODO: Code Cleanup: Replace with newer translation functions above
   // frgo, 2016-09-06
 
-  virtual gc::Fixnum as_int_() const;
-  virtual int64_t as_int64_() const;
-  virtual uint64_t as_uint64_() const;
+  virtual gc::Fixnum as_int_() const override;
+  virtual int64_t as_int64_() const override;
+  virtual uint64_t as_uint64_() const override;
   string as_uint64_string() const;
 
-  virtual Bignum as_mpz_() const;
-  virtual LongLongInt as_LongLongInt_() const;
+  gc::Fixnum popcount() const;
+  virtual LongLongInt as_LongLongInt_() const override;
   virtual unsigned long long as_unsigned_long_long_() const;
-  virtual float as_float_() const;
-  virtual double as_double_() const;
-  virtual LongFloat as_long_float_() const;
+  virtual float as_float_() const override;
+  virtual double as_double_() const override;
+  virtual LongFloat as_long_float_() const override;
 
   // --- END OF TRANSLATION METHODS ---
 
-  void sxhash_(HashGenerator &hg) const;
+  void sxhash_(HashGenerator &hg) const override;
 
-  virtual bool evenp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
-  virtual bool oddp_() const { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
-
-  Number_sp log1() const;
+  virtual bool evenp_() const override { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) == 0; };
+  virtual bool oddp_() const override { return (mpz_get_ui(this->_value.get_mpz_t()) & 1) != 0; };
 
 }; // Bignum class
 
 }; // core namespace
-
-namespace translate {
-  template <>
-    struct from_object<const Bignum &, std::true_type> {
-    typedef Bignum DeclareType;
-    DeclareType _v;
-    from_object(core::T_sp o) {
-      _G();
-      if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
-        _v = bn->ref();
-        ;
-        return;
-      }
-      SIMPLE_ERROR_SPRINTF("Handle conversions of %s to Bignum", _rep_(o).c_str());
-    }
-  };
-};
 
 namespace core {
 
@@ -273,7 +250,7 @@ namespace core {
   Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
 
   inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
-    return Integer_O::create(x->get());
+    return Integer_O::create(x->mpz_ref());
   }
 
   inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
@@ -294,9 +271,9 @@ namespace core {
 
   void clasp_big_register_free(Bignum_sp x);
 
-  Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y);
-  Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y);
-  Integer_sp _clasp_big_divided_by_big(const Bignum &x, const Bignum &y);
+  Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y);
+  Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y);
+  Integer_sp _clasp_big_divided_by_big(const Bignum_sp x, const Bignum_sp y);
 
   Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 
@@ -324,13 +301,13 @@ struct gctools::GCInfo<core::TheNextBignum_O> {
 
 namespace core {
 class TheNextBignum_O : public Integer_O {
-  LISP_CLASS(core, ClPkg, TheNextBignum_O, "TheNextBignum",Integer_O);
+  LISP_CLASS(core, CorePkg, TheNextBignum_O, "TheNextBignum",Integer_O);
 public:
   typedef mp_limb_t limb_type;
   TheNextBignum_O(int64_t signed_length, limb_type initialElement=0, bool initialElementSupplied=false,size_t initialContentsSize=0, const limb_type* initialContents=NULL) : _limbs(signed_length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {
   }
 private: // instance variables here
-  gctools::GCSignedLengthArray_moveable<limb_type> _limbs;
+  gctools::GCArraySignedLength_moveable<limb_type> _limbs;
 
 public: // Functions here
   static TheNextBignum_sp create( int64_t signed_number_of_limbs, limb_type initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const limb_type* initialContents=NULL)
@@ -339,7 +316,7 @@ public: // Functions here
     return b;
   };
 
-  virtual Number_sp rational_() const {IMPLEMENT_ME();};
+  virtual Number_sp rational_() const override {IMPLEMENT_ME();};
   
 }; // TheNextBignum class
 

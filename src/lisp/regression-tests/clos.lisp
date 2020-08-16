@@ -36,3 +36,80 @@
       (eq 'bar
           (let ((obj (make-instance 'slot-missing-class-01)))
             (setf (slot-value obj 'foo) 'bar))))
+
+(defstruct foo-make-load-form-saving-slots a b c)
+
+(test make-load-form-saving-slots-defstruct
+      (let ((object (make-foo-make-load-form-saving-slots :a 'foo :b '(1 2) :c 23)))
+        (multiple-value-bind
+              (form-allocation form-initialisation)
+            (make-load-form-saving-slots object)
+          (let ((new-object (eval form-allocation)))
+            (eval (subst new-object object form-initialisation))
+            (eq (class-of object) (class-of new-object))))))
+
+(defclass foo-make-load-form-saving-slots-class ()((a :initform :a)))
+
+(test make-load-form-saving-slots-class
+      (let ((object (make-instance 'foo-make-load-form-saving-slots-class)))
+        (multiple-value-bind
+              (form-allocation form-initialisation)
+            (make-load-form-saving-slots object)
+          (let ((new-object (eval form-allocation)))
+            (eval (subst new-object object form-initialisation))
+            (eq (class-of object) (class-of new-object))))))
+            
+(test-expect-error
+ defclass-error-options-1
+ (eval '(defclass erroneous-class.13 ()
+         (a b c)
+         (#.(gensym))))
+ :type program-error)
+
+(test-expect-error
+ defclass-error-options-2
+ (eval '(defclass erroneous-class.13 ()
+         (a b c)
+         (:illegal-option nil)))
+ :type program-error)
+
+(test slot-exists-p-gives-single-value-slot-exists
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (make-instance 'test) 'foo)))))
+
+(test slot-exists-p-gives-single-value-slot-not-exists
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (make-instance 'test) 'fooasdasdasd)))))
+
+(test slot-exists-p-gives-single-value-slot-not-exists-build-in-class
+      (null (cdr
+             (multiple-value-list
+              (slot-exists-p (find-class 'test) 'fooasdasdasd)))))
+
+(test slot-exists-p-other-arguments
+      (notany  #'(lambda(object)
+                   (slot-exists-p object 'foo))
+               (list 42 42.0 'c "324789" (code-char 65)
+                     (vector 1 2 3) (make-hash-table))))
+
+(defgeneric find-method-gf-02 (x))
+(defmethod find-method-gf-02 ((x (eql 1234567890))) 'a)
+(test find-method-eql
+      (find-method #'find-method-gf-02 nil (list '(eql 1234567890))))
+
+
+(defclass %foo-1 ()
+  ((a :initform :a)))
+
+(defmethod initialize-instance ((me  %foo-1) &rest initargs &key policy provider (hash-test 'eql) &allow-other-keys)
+  (declare (ignore initargs))
+  (call-next-method)
+  23)
+
+(test  test-issue-1031
+  (not (numberp (make-instance ' %foo-1 :a 1))))
+ 
+
+

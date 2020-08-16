@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <iomanip>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -133,6 +134,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 #ifdef CLASP_THREADS
 #include <clasp/core/mpPackage.h>
@@ -149,9 +151,16 @@ extern "C" void add_history(char *line);
 #undef ALL_INITIALIZERS_EXTERN
 #endif
 
+#ifndef SCRAPING
+#define ALL_TERMINATORS_EXTERN
+#include TERMINATORS_INC_H
+#undef ALL_TERMINATORS_EXTERN
+#endif
+
 namespace core {
 
 CommandLineOptions *global_options;
+bool global_initialize_builtin_classes = false;
 
 bool global_Started = false;
 bool globalTheSystemIsUp = false;
@@ -225,6 +234,7 @@ Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB
                    _Bundle(NULL),
                    _DebugStream(NULL),
                    _SingleStepLevel(UndefinedUnsignedInt),
+                   _NoRc(false),
                    _Interactive(true),
                    _BootClassTableIsValid(true),
                    _PathMax(CLASP_MAXPATHLEN) {
@@ -249,9 +259,7 @@ void Lisp_O::shutdownLispEnvironment() {
   this->_Roots._TrueObject.reset_();
 
   //    this->_ClassesByClassSymbol.clear();
-  if (this->_Bundle != NULL) {
-    delete this->_Bundle;
-  }
+  delete this->_Bundle;
   if (this->_DebugStream != NULL) {
     this->_DebugStream->endNode(DEBUG_TOPLEVEL);
     delete this->_DebugStream;
@@ -320,7 +328,11 @@ void Lisp_O::finalizeSpecialSymbols() {
 }
 
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
-  initialize_clasp_Kinds();
+  {
+    global_initialize_builtin_classes = true;
+    initialize_clasp_Kinds();
+    global_initialize_builtin_classes = false;
+  }
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
@@ -457,11 +469,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     if (offsetof(Instance_O,_Rack)!=offsetof(FuncallableInstance_O,_Rack)) {
       printf("%s:%d  The offsetf(Instance_O,_Rack)/%lu!=offsetof(FuncallableInstance_O,_Rack)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Rack),offsetof(FuncallableInstance_O,_Rack) );
-      printf("        These must match for Clasp to be able to function\n");
-      abort();
-    }
-    if (offsetof(Instance_O,_Class)!=offsetof(FuncallableInstance_O,_Class)) {
-      printf("%s:%d  The offsetf(Function_O,_Class)/%lu!=offsetof(FuncallableInstance_O,_Class)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Instance_O,_Class),offsetof(FuncallableInstance_O,_Class) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }
@@ -1286,7 +1293,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
 
   //	this->_FunctionName = execName;
-  this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
+  this->_InitFileName = "sys:" KERNEL_NAME ";init.lsp";
 
   this->_IgnoreInitImage = options._DontLoadImage;
   this->_IgnoreInitLsp = options._DontLoadInitLsp;
@@ -1308,17 +1315,8 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   this->_NoPrint = options._NoPrint;
   this->_DebuggerDisabled = options._DebuggerDisabled;
   this->_Interactive = options._Interactive;
-  if (this->_Interactive) {
-    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-    features = Cons_O::create(KW("interactive"), features);
-    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  }
-  if (options._NoRc) {
-    List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-    features = Cons_O::create(KW("no-rc"), features);
-    cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-  }
-
+  this->_RCFileName = options._RCFileName;
+  this->_NoRc = options._NoRc;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
   } else {
@@ -1328,6 +1326,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_MPS 
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
+    llvmo::dump_objects_for_lldb(fout);
     fclose(fout);
     printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
     exit(0);
@@ -1423,8 +1422,7 @@ CL_DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl
 CL_DEFUN void core__low_level_repl() {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   if ( features.notnilp() ) {
-    List_sp interactive = gc::As<Cons_sp>(features)->memberEq(kw::_sym_interactive);
-    if ( interactive.notnilp() ) {
+    if (_lisp->_Interactive) {
       _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
     }
   }
@@ -1456,23 +1454,15 @@ CL_DEFUN bool core__is_interactive_lisp() {
   return _lisp->_Interactive;
 }
 
-CL_DEFUN void core__set_interactive_lisp(bool interactive) {
-  List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-  // Remove any old :interactive feature
-  ql::list edited_features;
-  for ( T_sp cur = features; cur.consp(); cur = oCdr(cur) ) {
-    T_sp feature = CONS_CAR(cur);
-    if (feature != kw::_sym_interactive) {
-      edited_features << feature;
-    }
-  }
-  _lisp->_Interactive = interactive;
-  if (interactive) {
-    cl::_sym_STARfeaturesSTAR->defparameter(Cons_O::create(kw::_sym_interactive,edited_features.cons()));
-  } else {
-    cl::_sym_STARfeaturesSTAR->defparameter(edited_features.cons());
-  }
-};
+// This conses, which is kind of stupid, but we only call it once.
+CL_DEFUN String_sp core__rc_file_name() {
+  // FIXME: Unicode filenames?
+  return SimpleBaseString_O::make(_lisp->_RCFileName);
+}
+
+CL_DEFUN bool core__no_rc_p() {
+  return _lisp->_NoRc;
+}
 
 void Lisp_O::readEvalPrintInteractive() {
   Cons_sp expression;
@@ -2081,7 +2071,7 @@ CL_LAMBDA(&optional condition);
 CL_DECLARE();
 CL_DOCSTRING("invokeInternalDebugger");
 [[noreturn]] CL_DEFUN void core__invoke_internal_debugger(T_sp condition) {
-  write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s") % __FILE__ % __LINE__ % _rep_(condition).c_str());
+  write_bf_stream(BF("%s:%d core__invoke_internal_debugger --> %s\n") % __FILE__ % __LINE__ % _rep_(condition).c_str());
   core__call_with_backtrace(_sym_start_debugger_with_backtrace->symbolFunction(),false);
   printf("%s:%d Cannot continue\n", __FILE__, __LINE__);
   abort();
@@ -2358,13 +2348,6 @@ int Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
-#if 0
-#ifndef SCRAPING
-#define ALL_INITIALIZERS_CALLS
-#include INITIALIZERS_INC_H
-#undef ALL_INITIALIZERS_CALLS
-#endif
-#endif
   
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
@@ -2414,8 +2397,8 @@ int Lisp_O::run() {
     // we want an interactive script
     //
       {
-        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_RCFileName);
-        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_RCFileName));
+        _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_InitFileName);
+        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_InitFileName));
         T_mv result = core__load_no_package_set(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
@@ -2535,6 +2518,11 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
 }
 
 LispHolder::~LispHolder() {
+#ifndef SCRAPING
+#define ALL_TERMINATORS_CALLS
+#include TERMINATORS_INC_H
+#undef ALL_TERMINATORS_CALLS
+#endif
   this->_Lisp->shutdownLispEnvironment();
 }
 

@@ -82,31 +82,35 @@
       :ISO-8859-1 :LATIN-1 :DEFAULT)
      encoding)
     ((:iso-8859-2 :iso-8859-3 :iso-8859-4 :iso-8859-5
-                  :iso-8859-6 :iso-8859-7 :iso-8859-8 :iso-8859-9
-                  :iso-8859-10 :iso-8859-13 :iso-8859-14 :iso-8859-15
-                  :koi8-r
-                  :dos-cp437
-                  :dos-cp850
-                  :dos-cp852
-                  :dos-cp855
-                  :dos-cp857
-                  :dos-cp860
-                  :dos-cp861
-                  :dos-cp862
-                  :dos-cp863
-                  :dos-cp864
-                  :dos-cp865
-                  :dos-cp866
-                  :dos-cp869
-                  :windows-cp1250
-                  :windows-cp1251
-                  :windows-cp1252
-                  :windows-cp1253
-                  :windows-cp1254
-                  :windows-cp1255
-                  :windows-cp1256
-                  :windows-cp1257
-                  :windows-cp1258)
+      :iso-8859-6 :iso-8859-7 :iso-8859-8 :iso-8859-9
+      :iso-8859-10 :iso-8859-13 :iso-8859-14 :iso-8859-15
+      :koi8-r
+      :dos-cp437
+      :dos-cp850
+      :dos-cp852
+      :dos-cp855
+      :dos-cp857
+      :dos-cp860
+      :dos-cp861
+      :dos-cp862
+      :dos-cp863
+      :dos-cp864
+      :dos-cp865
+      :dos-cp866
+      :dos-cp869
+      :windows-cp1250
+      :windows-cp1251
+      :windows-cp1252
+      :windows-cp1253
+      :windows-cp1254
+      :windows-cp1255
+      :windows-cp1256
+      :windows-cp1257
+      :windows-cp1258
+      :windows-cp932
+      :windows-cp936
+      :windows-cp949
+      :windows-cp950)
      (ext:generate-encoding-hashtable encoding))
     (:latin-2 (ext:generate-encoding-hashtable :iso-8859-2))
     (:latin-3 (ext:generate-encoding-hashtable :iso-8859-3))
@@ -204,25 +208,93 @@
                               :direction :output
                               :if-does-not-exist :create)
         (format stream "(in-package :ext)~2%")
-        (format stream
-                "(defun generate-encoding-hashtable (encoding)
-  (let ((mappings
-          (load-time-value
-           (list~%")
+        (format stream "(defvar *encoding-data* ~%  (list~%")
         (dolist (specs (reverse result-alist))
           (let ((name (first specs))
                 (mappings (second specs)))
-            (format stream "            (list ~s ~%            (list ~%" name)
+            (format stream "   (list ~s ~%         (list ~%" name)
             (dolist (mapping (reverse mappings))
-              (format stream "                   (list ~s (code-char ~s))~%" (first mapping)(char-code (second mapping))))
-            (format stream "                   ))~%")))
-        (format stream "            ))))
-    (let ((spec (assoc encoding mappings)))
-      (when spec
-        (let ((table (make-hash-table)))
-          (dolist (pair (second spec))
-            (let ((key (first pair))
-                  (value (second pair)))
-              (setf (gethash key table) value)
-              (setf (gethash value table) key)))
-          table)))))")))))
+              (format stream "          (cons ~s (code-char ~s))~%" (first mapping)(char-code (second mapping))))
+            (format stream "          ))~%")))
+        (format stream "  ))~2%")
+        (format stream
+                "(defvar *encoding-cache* (make-hash-table))
+
+(defun generate-encoding-hashtable (encoding)
+  (let ((hash (gethash encoding *encoding-cache*)))
+    (if hash
+        hash
+        (let ((spec (assoc encoding *encoding-data*)))
+          (when spec
+            (let ((table (make-hash-table)))
+              (dolist (pair (second spec))
+                (let ((key (first pair))
+                      (value (rest pair)))
+                  (setf (gethash key table) value)
+                  (setf (gethash value table) key)))
+              (setf (gethash encoding *encoding-cache*) table)
+              table))))))")))))
+
+;;; load this in ecl to generate generated-encodings.lsp
+;;; (create-encodings-file-from-ecl "/Users/karstenpoeck/lisp/compiler/clasp-karsten/tools-for-build/encodingdata.txt")
+#+ecl
+(defun create-encodings-file-from-ecl (path)
+  (let ((encodings
+         (list :iso-8859-2 :iso-8859-3 :iso-8859-4 :iso-8859-5
+               :iso-8859-6 :iso-8859-7 :iso-8859-8 :iso-8859-9
+               :iso-8859-10 :iso-8859-13 :iso-8859-14 :iso-8859-15
+
+               :koi8-r
+
+               :dos-cp437
+               :dos-cp850
+               :dos-cp852
+               :dos-cp855
+               :dos-cp857
+               :dos-cp860
+               :dos-cp861
+               :dos-cp862
+               :dos-cp863
+               :dos-cp864
+               :dos-cp865
+               :dos-cp866
+               :dos-cp869
+
+               :windows-cp932
+               :windows-cp936
+               :windows-cp949
+               :windows-cp950
+
+               :windows-cp1250
+               :windows-cp1251
+               :windows-cp1252
+               :windows-cp1253
+               :windows-cp1254
+               :windows-cp1255
+               :windows-cp1256
+               :windows-cp1257
+               :windows-cp1258
+               ))
+        (result-alist nil))
+    (dolist (name encodings)
+      (let ((table (ext:make-encoding name))
+            (mappings nil))
+        (maphash #'(lambda(key value)
+                     (when (and (numberp key)(characterp value))
+                       (push (list key value) mappings)))
+                 table)
+        ;;; note the result table
+        (push (list name mappings) result-alist)))
+    ;;; note generate the mapping function
+    (let ((file path))
+      (when (probe-file file)
+        (delete-file file))
+      (with-open-file (stream file
+                              :direction :output
+                              :if-does-not-exist :create)
+        (dolist (specs (reverse result-alist))
+          (let ((name (first specs))
+                (mappings (second specs)))
+            (dolist (mapping (reverse mappings))
+              (format stream "~s;~s;~s;~%" name (first mapping)(char-code (second mapping))))))))))
+  

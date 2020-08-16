@@ -25,7 +25,7 @@
   ;; compiler; see cmp/cmpliteral.lsp ALLOCATE-INSTANCE-FORM-P
   (declare (ignore environment))
   (do* ((class (class-of object))
-	(initialization (list 'progn))
+	(initialization (list object 'load-instance))
 	(slots (class-slots class) (cdr slots)))
       ((endp slots)
        (values `(allocate-instance ,class) (nreverse initialization)))
@@ -35,9 +35,16 @@
 		     (eq (slot-definition-allocation slot) :instance))
 		(member slot-name slot-names))
         (when (slot-boundp object slot-name)
-          (push `(setf (slot-value ,object ',slot-name)
-                       ',(slot-value object slot-name))
-                initialization))))))
+          (push `',slot-name initialization)
+          (push `',(slot-value object slot-name) initialization))))))
+
+;;; This function basically exists so that cmpliteral can handle
+;;; make-load-form-saving-slots forms without compiling them recursively.
+;;; We used to use a progn of setf slot-values, but that's more complex.
+(defun load-instance (instance &rest slot-names-values)
+  (loop for (name value) on slot-names-values by #'cddr
+        do (setf (slot-value instance name) value))
+  (values))
 
 (defun need-to-make-load-form-p (object env)
   "Return T if the object cannot be externalized using the lisp
@@ -129,6 +136,53 @@ printer and we should rather use MAKE-LOAD-FORM."
 (defmethod make-load-form ((package package) &optional environment)
   (declare (ignore environment))
   `(find-package ,(package-name package)))
+
+;;; Extension. (Allowed per CLHS 3.2.4.3.)
+;;; This is required for a lot of satiation.lsp to function.
+(defmethod make-load-form ((method method) &optional environment)
+  (declare (ignore environment))
+  ;; FIXME: Should spruce up cmpliteral so it doesn't compile calls with
+  ;; all constant arguments.
+  `(load-method
+    ',(generic-function-name (method-generic-function method))
+    ',(method-qualifiers method)
+    ',(method-specializers method)))
+
+;;; Also an extension, to support the above.
+(defmethod make-load-form ((spec eql-specializer) &optional environment)
+  (declare (ignore environment))
+  `(intern-eql-specializer ',(eql-specializer-object spec)))
+
+(defun class-slotd-form (slot-name class &optional earlyp)
+  (let ((form
+          `(or (find ',slot-name (class-slots ,class) :key #'slot-definition-name)
+               (error "Probably a BUG: slot ~a in ~a stopped existing between compile and load"
+                      ',slot-name ,class))))
+    (if earlyp
+        `(with-early-accessors (+standard-class-slots+ +slot-definition-slots+)
+           (flet ((slot-definition-name (sd) (slot-definition-name sd))) ; macro, so.
+             ,form))
+        form)))
+
+(defmethod make-load-form ((method effective-reader-method)
+                           &optional environment)
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-reader-method))
+           'early-intern-effective-reader
+           'intern-effective-reader)
+      ',orig
+      ',(effective-accessor-method-location method))))
+
+(defmethod make-load-form ((method effective-writer-method)
+                           &optional environment)
+  (declare (ignore environment))
+  (let ((orig (effective-accessor-method-original method)))
+    `(,(if (eq (class-of orig) (find-class 'standard-writer-method))
+           'early-intern-effective-writer
+           'intern-effective-writer)
+      ',orig
+      ',(effective-accessor-method-location method))))
 
 ;;; ----------------------------------------------------------------------
 ;;; Printing

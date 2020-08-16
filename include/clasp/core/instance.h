@@ -50,21 +50,23 @@ FORWARD(Rack);
     LISP_CLASS(core,CorePkg,Rack_O,"Rack",core::General_O);
   public:
     gctools::ShiftedStamp     _ShiftedStamp;
+    T_sp _Sig; // A list of slotds, used in change-class.
     typedef core::T_sp value_type;
-    gctools::GCArray_moveable<value_type> _Slots;
+    gctools::GCArray_atomic<value_type> _Slots;
   public:
-    Rack_O(size_t length, value_type initialElement=T_sp(), bool initialElementSupplied=true) : _Slots(length,initialElement,initialElementSupplied) {};
+    Rack_O(size_t length, T_sp sig,
+           value_type initialElement=T_sp(), bool initialElementSupplied=true)
+      : _Sig(sig),
+        _Slots(length,initialElement,initialElementSupplied) {};
 
-    static Rack_sp make(size_t numberOfSlots, T_sp value);
+    static Rack_sp make(size_t numberOfSlots, T_sp sig, value_type value);
     size_t length() const { return this->_Slots.length(); };
-        inline T_sp &operator[](size_t idx) {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
-    inline const T_sp &operator[](size_t idx) const {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
-      return this->_Slots[idx];
-    };
+    inline value_type low_level_rackRef(size_t i) {
+      return _Slots.load(i);
+    }
+    inline void low_level_rackSet(size_t i, value_type value) {
+      _Slots.store(i, value);
+    }
     inline void stamp_set(gctools::ShiftedStamp stamp) {
       ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
       this->_ShiftedStamp = stamp;
@@ -82,11 +84,11 @@ namespace core {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
     // Store the stamp in slot 0 - so offset all the other slots
   // These must be exposed in core__class_slot_sanity_check()
-#define NUMBER_OF_SPECIALIZER_SLOTS 5
+#define NUMBER_OF_SPECIALIZER_SLOTS 3
 #define CLASS_SLOT_OFFSET NUMBER_OF_SPECIALIZER_SLOTS
     typedef enum {
-        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 3,
-        REF_SPECIALIZER_MUTEX = 4,
+        REF_SPECIALIZER_CALL_HISTORY_GENERIC_FUNCTIONS = 1,
+        REF_SPECIALIZER_MUTEX = 2,
         REF_CLASS_CLASS_NAME = (0 + CLASS_SLOT_OFFSET),
         REF_CLASS_DIRECT_SUPERCLASSES = (1+CLASS_SLOT_OFFSET),
         REF_CLASS_DIRECT_SUBCLASSES = (2+CLASS_SLOT_OFFSET),
@@ -98,35 +100,28 @@ namespace core {
         REF_CLASS_FINALIZED = (8+CLASS_SLOT_OFFSET),
         REF_CLASS_DOCSTRING = (9+CLASS_SLOT_OFFSET),
         REF_CLASS_DEPENDENTS = (12+CLASS_SLOT_OFFSET),
-        REF_CLASS_LOCATION_TABLE = (15+CLASS_SLOT_OFFSET),
-        REF_CLASS_STAMP_FOR_INSTANCES_ = (16+CLASS_SLOT_OFFSET),
-        REF_CLASS_CREATOR = (17+CLASS_SLOT_OFFSET)
+        REF_CLASS_LOCATION_TABLE = (14+CLASS_SLOT_OFFSET),
+        REF_CLASS_STAMP_FOR_INSTANCES_ = (15+CLASS_SLOT_OFFSET),
+        REF_CLASS_CREATOR = (16+CLASS_SLOT_OFFSET)
     } Slots;
 
   public:
-    bool fieldsp() const;
-    void fields(Record_sp node);
+    bool fieldsp() const override;
+    void fields(Record_sp node) override;
   public: // ctor/dtor for classes with shared virtual base
-  Instance_O() : _Sig(_Unbound<T_O>()), _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
+    Instance_O() : _Class(_Nil<Instance_O>()), _Rack(_Unbound<Rack_O>()) {};
     explicit Instance_O(Instance_sp metaClass) :
-      _Sig(_Unbound<T_O>())
-      ,_Class(metaClass)
-        ,_Rack(_Unbound<Rack_O>())
-      
-//    ,_NumberOfSlots(slots)
+      _Class(metaClass)
+      ,_Rack(_Unbound<Rack_O>())
     {};
+    Instance_O(Instance_sp cl, Rack_sp rack) : _Class(cl), _Rack(rack) {};
     virtual ~Instance_O(){};
   public:
     // The order MUST be:
-    // _Sig
-    // _Class (matches offset of FuncallableInstance_O)
-    // _Rack  (matches offset of FuncallableInstance_O)
-    T_sp _Sig;
+    // _Class (as large as FuncallableInstance_O's entry slot)
+    // _Rack  (matches offset in FuncallableInstance_O)
     Instance_sp _Class;
     Rack_sp _Rack;
-  /*! Mimicking ECL instance->sig generation signature
-        This is pointed to the class slots in case they change 
-        - then the instances can be updated*/
   public:
     static Instance_sp createClassUncollectable(gctools::ShiftedStamp is,Instance_sp metaClass, size_t number_of_slots, Creator_sp creator);
     static Instance_sp create(Symbol_sp symbol,Instance_sp metaClass,Creator_sp creator);
@@ -134,8 +129,6 @@ namespace core {
   /*! Setup the instance nil value */
   //	void setupInstanceNil();
 
-  public:
-    virtual bool isCallable() const { return false; };
   public:
     // Functions from Instance_O
     string _classNameAsString() const;
@@ -152,9 +145,6 @@ namespace core {
     };
     void CLASS_set_stamp_for_instances(gctools::UnshiftedStamp s);
 
-    void CLASS_call_history_generic_functions_push_new(T_sp generic_function);
-    void CLASS_call_history_generic_functions_remove(T_sp list_ofgeneric_functions);
-    
     string dumpInfo();
 
   /*! Return the direct superclasses */
@@ -179,8 +169,6 @@ namespace core {
     string instanceClassName() const { return this->getPackagedName(); };
 
     T_sp make_instance();
-  /*! predicate if this is a BuiltInClass class */
-    virtual bool builtInClassP() const { return this == &*core::lisp_built_in_class(); };
 
   /*! predicate if this is a raw C++ class that is wrapped with clbind
           - it can only be used to derive other classes if cxxDerivableClassP is true */
@@ -189,10 +177,6 @@ namespace core {
   /*! cxxDerivableClass is a class that inherits from a raw C++ class and
           the clbind::Adapter class - this allows it to be derived from */
     virtual bool cxxDerivableClassP() const { return false; };
-
-  /*! primaryCxxDerivableClassP is a predicate that returns true if
-          this class is the primary derivable C++ class */
-    virtual bool primaryCxxDerivableClassP() const { return false; };
 
     void setInstanceBaseClasses(List_sp classes);
     void __setup_stage1_with_sharedPtr_lisp_sid(T_sp theThis, Symbol_sp instanceClassSymbol) {
@@ -207,50 +191,57 @@ namespace core {
 
     void addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl);
   public: // The hard-coded indexes above are defined below to be used by Class
-    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots);
+    void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
+    // Used by clbind
+    void initializeSlots(gctools::ShiftedStamp is, size_t numberOfSlots) {
+      initializeSlots(is, _Unbound<T_O>(), numberOfSlots);
+    }
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
   public:
     static size_t rack_stamp_offset();
   public: // Functions here
+    Rack_sp rack() const { return this->_Rack; };
     Fixnum stamp() const;
     void stamp_set(gctools::ShiftedStamp s);
     size_t numberOfSlots() const;
   /*! Return number of slots if not nil otherwise nil */
 
-    Instance_sp _instanceClass() const { return this->_Class; };
+    Instance_sp _instanceClass() const override { return this->_Class; };
 
-    T_sp instanceClassSet(Instance_sp mc);
+    T_sp instanceClassSet(Instance_sp mc) override;
 
-    virtual T_sp instanceSigSet();
-    virtual T_sp instanceSig() const;
+    virtual T_sp instanceSigSet() override;
+    virtual T_sp instanceSig() const override;
 
 
-    virtual bool equalp(T_sp obj) const;
-    virtual void sxhash_equalp(HashGenerator &hg) const;
+    virtual bool equalp(T_sp obj) const override;
+    virtual void sxhash_equalp(HashGenerator &hg) const override;
 
   /*! Return the value of a slot */
-    T_sp instanceRef(size_t idx) const;
+    T_sp instanceRef(size_t idx) const override;
   /*! Set the value of a slot and return the new value */
-    T_sp instanceSet(size_t idx, T_sp val);
+    T_sp instanceSet(size_t idx, T_sp val) override;
 
-    string __repr__() const;
+    string __repr__() const override;
 
-    virtual T_sp copyInstance() const;
+    virtual void describe(T_sp stream) override;
 
-    virtual void describe(T_sp stream);
-
-    void __write__(T_sp sout) const; // Look in write_ugly.cc
+    void __write__(T_sp sout) const override; // Look in write_ugly.cc
 
 
 
   }; // Instance class
 
-  #define OPTIMIZED_SLOT_INDEX_INDEX 1
+#define OPTIMIZED_SLOT_INDEX_INDEX 1
 
-    template <class RackType_sp>
-    inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) { return (*rack)[index]; }
-  template <class RackType_sp>
-    inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) { (*rack)[index] = value; }
+template <class RackType_sp>
+inline T_sp low_level_instanceRef(RackType_sp rack, size_t index) {
+  return rack->low_level_rackRef(index);
+}
+template <class RackType_sp>
+inline void low_level_instanceSet(RackType_sp rack, size_t index, T_sp value) {
+  rack->low_level_rackSet(index, value);
+}
 
 }; // core namespace
 
@@ -285,10 +276,6 @@ namespace gctools {
       return NULL;
     }
   };
-};
-
-namespace core {
-  T_sp core__allocate_new_instance(Instance_sp theClass, size_t numberOfSlots);
 };
 
 namespace core {

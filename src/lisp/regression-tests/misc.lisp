@@ -211,3 +211,21 @@
       (block nil
         (mp:with-lock (lock)
           (apply (lambda (id) (return id)) (list 4)))))))
+
+(test flet-lambda-error
+      (functionp (lambda ()
+        (flet ((foo () 23))
+          (lambda (&key (a #'foo))
+            a)))))
+
+(test type-inference-error
+      (handler-case
+          (dotimes (x 10 t)
+            (funcall (compile nil '(lambda()
+                                    (let* ((a nil)
+                                           (b (first a))
+                                           (c (second a))
+                                           (d (third a)))
+                                      (format t "Ignoring everything~%"))))))
+        (error (e)
+          (values nil e))))

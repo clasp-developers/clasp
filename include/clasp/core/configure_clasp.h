@@ -70,6 +70,9 @@ typedef uint64_t   bit_array_word; // "word" for bit array purposes (see gcbitar
 
 typedef int64_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT64 1  // == true
+#define fixnum_popcount __builtin_popcountll
+#define fixnum_clz __builtin_clzll
+#define fixnum_clrsb __builtin_clrsbll
 
 #if defined( _TARGET_OS_DARWIN )
 #define Ptagged_stamp_t PRIuPTR
@@ -107,6 +110,9 @@ typedef int64_t    Fixnum; // Signed Fixnum immediate value
 
 typedef int32_t    Fixnum; // Signed Fixnum immediate value
 #define CLASP_FIXNUM_IS_INT32 1  // == true
+#define fixnum_popcount __builtin_popcountl
+#define fixnum_clz __builtin_clzl
+#define fixnum_clrsb __builtin_clrsbl
 
 #define PRu "lu"
 #define PRi "ld"

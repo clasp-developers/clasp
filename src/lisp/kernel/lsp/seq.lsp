@@ -419,25 +419,26 @@ Creates and returns a sequence of TYPE with K elements, with the N-th element
 being the value of applying FUNCTION to the N-th elements of the given
 SEQUENCEs, where K is the minimum length of the given SEQUENCEs."
   (declare (dynamic-extent more-sequences))
-  (if result-type
-      (multiple-value-bind (kind length exactp success)
-          (sequence-type-maker-info result-type)
-        (if (and success (eq kind 'list))
-            (let ((result (apply #'map-to-list
-                                 function sequence more-sequences)))
-              (unless (not length)
-                (let ((l (length result)))
-                  (unless (if exactp (eq l length) (>= l length))
-                    (error-sequence-length result result-type l))))
-              result)
-            ;; ditto note in CONCATENATE above
-            (let ((length
-                    (reduce #'min more-sequences
-                            :initial-value (length sequence)
-                            :key #'length)))
-              (apply #'map-into (make-sequence result-type length)
-                     function sequence more-sequences))))
-      (apply #'map-for-effect function sequence more-sequences)))
+  (let ((function (coerce-fdesignator function)))
+    (if result-type
+        (multiple-value-bind (kind length exactp success)
+            (sequence-type-maker-info result-type)
+          (if (and success (eq kind 'list))
+              (let ((result (apply #'map-to-list
+                                   function sequence more-sequences)))
+                (unless (not length)
+                  (let ((l (length result)))
+                    (unless (if exactp (eq l length) (>= l length))
+                      (error-sequence-length result result-type l))))
+                result)
+              ;; ditto note in CONCATENATE above
+              (let ((length
+                      (reduce #'min more-sequences
+                              :initial-value (length sequence)
+                              :key #'length)))
+                (apply #'map-into (make-sequence result-type length)
+                       function sequence more-sequences))))
+        (apply #'map-for-effect function sequence more-sequences))))
 
 (defun map-to-list (function &rest sequences)
   (declare (type function function))

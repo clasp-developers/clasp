@@ -10,6 +10,12 @@
     (1 `(cons ,(first elements) nil))
     (t form)))
 
+(define-compiler-macro list* (&whole form object &rest more-objects)
+  (case (length more-objects)
+    (0 object)
+    (1 `(cons ,object ,(first more-objects)))
+    (t form)))
+
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
 (define-compiler-macro nthcdr (&whole whole index list &environment env)

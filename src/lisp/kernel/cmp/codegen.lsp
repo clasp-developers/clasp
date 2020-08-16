@@ -188,7 +188,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage)
                                                   linkage-name)
-  "Compile the definition"
+  "Compile the definition using the bclasp compiler"
+  (when core:*debug-startup*
+    (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
   (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
       (compile-to-module-with-run-time-table
        :definition definition
@@ -274,6 +276,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'cleavir-primop:funcall) t)
          ((eq sym 'cleavir-primop:unreachable) t)
+         ((eq sym 'cleavir-primop:case) t)
          ((eq sym 'core:vaslist-pop) t)
          ((eq sym 'core:vaslist-length) t)
          ((eq sym 'core::local-block) t)
@@ -286,6 +289,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:instance-ref) t)
          ((eq sym 'core:instance-set) t)
          ((eq sym 'core::instance-cas) t)
+         ((eq sym 'core:instance-rack) t)
+         ((eq sym 'core:instance-rack-set) t)
+         ((eq sym 'core:rack-ref) t)
+         ((eq sym 'core:rack-set) t)
          ((eq sym 'core:defcallback) t)
          (t (special-operator-p sym)))))
 
@@ -309,6 +316,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((and (not (core:lexical-function head env))
             (not (core:lexical-macro-function head env))
             (not (core:declared-global-notinline-p head))
+            (not (member head *notinlines*))
             (let ((expansion (core:compiler-macroexpand form env)))
               (if (eq expansion form)
                   nil

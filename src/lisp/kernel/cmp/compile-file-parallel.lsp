@@ -166,7 +166,9 @@ multithreaded performance that we should explore."
         (form-index (core:next-startup-position))
         (form-counter 0)
         (eof-value (gensym))
-        #+cclasp(cleavir-generate-ast:*compiler* 'cl:compile-file)
+        #+cclasp (#-cst cleavir-generate-ast:*compiler*
+                  #+cst cleavir-cst-to-ast:*compiler*
+                  'cl:compile-file)
         #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
         #+cclasp(eclector.readtable:*readtable* cl:*readtable*)
@@ -198,7 +200,10 @@ multithreaded performance that we should explore."
                       (*package* . ',*package*)
                       (*compile-file-pathname* . ',*compile-file-pathname*)
                       (*compile-file-truename* . ',*compile-file-truename*)
-                      #+cclasp(cleavir-generate-ast:*compiler* . ',cleavir-generate-ast:*compiler*)
+                      #+cclasp(#-cst cleavir-generate-ast:*compiler*
+                               #+cst cleavir-cst-to-ast:*compiler*
+                               . #-cst ',cleavir-generate-ast:*compiler*
+                                 #+cst ',cleavir-cst-to-ast:*compiler*)
                       #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
       (unwind-protect
@@ -219,17 +224,22 @@ multithreaded performance that we should explore."
                     #+cst
                     (form (cst:raw cst))
                     #+cst
-                    (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::cst->ast cst))
-                             (clasp-cleavir::cst->ast cst)))
+                    (pre-ast
+                      (if cmp::*debug-compile-file*
+                          (clasp-cleavir::compiler-time
+                           (clasp-cleavir::cst->ast cst))
+                          (clasp-cleavir::cst->ast cst)))
                     #-cst
                     (form (read source-sin nil eof-value))
                     #-cst
                     (_ (when (eq form eof-value) (return nil)))
                     #-cst
-                    (ast (if cmp::*debug-compile-file*
-                             (clasp-cleavir::compiler-time (clasp-cleavir::generate-ast form))
-                             (clasp-cleavir::generate-ast form))))
+                    (pre-ast
+                      (if cmp::*debug-compile-file*
+                          (clasp-cleavir::compiler-time
+                           (clasp-cleavir::generate-ast form))
+                          (clasp-cleavir::generate-ast form)))
+                    (ast (clasp-cleavir::wrap-ast pre-ast)))
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
                                             :current-source-pos-info current-source-pos-info
@@ -381,7 +391,7 @@ Each bitcode filename will contain the form-index.")
                                 ((:source-debug-offset *compile-file-source-debug-offset*) 0)
                                 ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
-                                (output-type :fasl output-type-p)
+                                (output-type (if *generate-faso* :fasp :fasl) output-type-p)
                                 ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp

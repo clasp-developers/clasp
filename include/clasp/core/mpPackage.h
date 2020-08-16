@@ -83,6 +83,16 @@ namespace mp {
 #define DEFAULT_THREAD_STACK_SIZE 8388608
 namespace mp {
 
+// NOTE DO NOT PUT GC managed pointers in here unless you designate this
+// as containing roots!!!!!!!!!!
+// This struct is to pass info from the parent thread to the child thread.
+struct ThreadStartInfo {
+  uintptr_t _UniqueID;
+  ThreadStartInfo(uintptr_t id) : _UniqueID(id) {};
+};
+
+extern std::atomic<uintptr_t> global_process_UniqueID;
+
   typedef enum {Inactive=0,Booting,Active,Suspended,Exiting} ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
@@ -102,6 +112,7 @@ namespace mp {
       return p;
     };
   public:
+    uintptr_t   _UniqueID;
     core::T_sp  _Name;
     core::T_sp  _Function;
     core::List_sp  _Arguments;
@@ -123,7 +134,7 @@ namespace mp {
     Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments,
               core::List_sp initialSpecialBindings=_Nil<core::T_O>(),
               size_t stack_size=8*1024*1024)
-      : _Name(name), _Function(function), _Arguments(arguments),
+      : _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL),
         _ReturnValuesList(_Nil<core::T_O>()), _Aborted(false),
         _AbortCondition(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting),
@@ -140,11 +151,12 @@ namespace mp {
       result = pthread_attr_setstacksize(&attr,this->_StackSize);
       if (result!=0) return result;
       this->_Phase = Booting;
-      result = pthread_create(&this->_Thread, &attr, start_thread, (void*)this );
+      ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
+      result = pthread_create(&this->_Thread, &attr, start_thread, (void*)info);
       pthread_attr_destroy(&attr);
       return result;
     }
-    string __repr__() const;
+    string __repr__() const override;
     string phase_as_string() const;
   };
 };
@@ -188,7 +200,7 @@ namespace mp {
     gctools::Fixnum counter() const{
       return this->_Mutex.counter();
     }
-    string __repr__() const;
+    string __repr__() const override;
   };
 };
 
@@ -243,7 +255,7 @@ void write_unlock(bool release_read_lock=false) {
       this->_SharedMutex.readUnlock();
     };
     void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
-    string __repr__() const;
+    string __repr__() const override;
   };
 };
 
@@ -302,7 +314,7 @@ namespace mp {
     CL_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;
     }
-    string __repr__() const;
+    string __repr__() const override;
   };
   void mp__interrupt_process(Process_sp process, core::T_sp func);
 };
