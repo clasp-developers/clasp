@@ -849,7 +849,8 @@ void initialize_clangTooling() {
         .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
         .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST);
     m.def("match", &ast_tooling__match);
-    m.def("runToolOnCode", &clang::tooling::runToolOnCode);
+    // First argument is now a UniquePtr - so we have to handle it specially
+//    m.def("runToolOnCode", &clang::tooling::runToolOnCode);
     class_<clang::ast_matchers::MatchFinder::MatchCallback> cl_bb(m,"MatchCallback-abstract");
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback> cl_bc(m,"MatchCallback",create_default_constructor);
     cl_bc.def("run", &DerivableMatchCallback::default_run)
