@@ -1194,6 +1194,10 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       double b = clasp_to_double(nb);
       return a == b;
     }
+  case_NextBignum_v_NextBignum : {
+      return (core__next_compare(gc::As_unsafe<TheNextBignum_sp>(na),
+                                 gc::As_unsafe<TheNextBignum_sp>(nb)) == 0);
+    }
   case_Bignum_v_Bignum : {
       mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
       mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
