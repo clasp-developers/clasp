@@ -337,6 +337,8 @@ public: // Functions here
   Integer_sp shift_(gc::Fixnum) const override;
 
   virtual bool eql_(T_sp obj) const override;
+  virtual bool evenp_() const override { return !((this->limbs())[0] & 1); }
+  virtual bool oddp_() const override { return (this->limbs())[0] & 1; }
 
   template<typename integral>
   integral to_integral() const {
