@@ -592,7 +592,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       Number_sp num = contagen_mul(ra->numerator(), rb->numerator());
       Number_sp den = contagen_mul(ra->denominator(), rb->denominator());
       return Rational_O::create(gc::As_unsafe<Integer_sp>(num),
-                                gc::As_unsafe<Integer_sp>(num));
+                                gc::As_unsafe<Integer_sp>(den));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
