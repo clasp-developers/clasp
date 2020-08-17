@@ -240,7 +240,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Bignum :
     return two_arg__PLUS_FB(na.unsafe_fixnum(),
                             gctools::reinterpret_cast_smart_ptr<Bignum_O>(nb));
-  case_Fixnum_v_NexBignum :
+  case_Fixnum_v_NextBignum :
     return core__next_fadd(gc::As_unsafe<TheNextBignum_sp>(nb),
                            na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
