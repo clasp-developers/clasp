@@ -1519,14 +1519,14 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
     char tag = ttag.unsafe_character();
     clasp_write_char(tag,stream);
     index += 1;
-    uintptr_t data;
+    size_t data;
     if (ttag.unsafe_character()=='l'||ttag.unsafe_character()=='t') {
       data = index_or_immediate.unsafe_fixnum();
     } else {
       // Immediate data.
       // Note that the immediate may be signed, so we have to convert
       // it to an unsigned like this.
-      data = clasp_to_intptr_t(index_or_immediate);
+      data = clasp_to_ssize_t(index_or_immediate);
     }
     compact_write_size_t(data,stream,index);
     return index;

@@ -1075,8 +1075,9 @@ namespace core {
   uint64_t            clasp_to_uint64_t( core::T_sp );
   uintptr_t           clasp_to_uintptr_t( core::T_sp );
   intptr_t            clasp_to_intptr_t( core::T_sp );
+  size_t              clasp_to_size_t( core::T_sp );
+  ssize_t             clasp_to_ssize_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
-  size_t            clasp_to_size_t( core::T_sp );
 
   float               clasp_to_float( core::Number_sp );
   double              clasp_to_double( core::Number_sp );

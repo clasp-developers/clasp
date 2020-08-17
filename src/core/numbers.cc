@@ -3080,10 +3080,8 @@ uint64_t clasp_to_uint64_t(T_sp x) { return clasp_to_integral<uint64_t>(x); }
 intptr_t clasp_to_intptr_t(T_sp x) { return clasp_to_integral<intptr_t>(x); }
 uintptr_t clasp_to_uintptr_t(T_sp x) { return clasp_to_integral<uintptr_t>(x); }
 ptrdiff_t clasp_to_ptrdiff_t(T_sp x) { return clasp_to_integral<ptrdiff_t>(x); }
-unsigned long long clasp_to_unsigned_long_long(T_sp x) {
-  return clasp_to_integral<unsigned long long>(x);
-}
 size_t clasp_to_size_t(T_sp x) { return clasp_to_integral<size_t>(x); }
+// FIXME: Replace all uses with clasp_to_size_t
 size_t clasp_to_size(T_sp x) { return clasp_to_integral<size_t>(x); }
 ssize_t clasp_to_ssize_t(T_sp x) { return clasp_to_integral<ssize_t>(x); }
 ssize_t clasp_to_ssize(T_sp x) { return clasp_to_integral<ssize_t>(x); }
