@@ -3070,21 +3070,13 @@ unsigned long clasp_to_ulong(T_sp x) { return clasp_to_integral<unsigned long>(x
 long long clasp_to_longlong(T_sp x) { return clasp_to_integral<long long>(x); }
 unsigned long long clasp_to_ulonglong(T_sp x) { return clasp_to_integral<unsigned long long>(x); }
 int8_t clasp_to_int8_t(T_sp x) { return clasp_to_integral<int8_t>(x); }
-int8_t clasp_to_int8(T_sp x) { return clasp_to_integral<int8_t>(x); }
 uint8_t clasp_to_uint8_t(T_sp x) { return clasp_to_integral<uint8_t>(x); }
-uint8_t clasp_to_uint8(T_sp x) { return clasp_to_integral<uint8_t>(x); }
 int16_t clasp_to_int16_t(T_sp x) { return clasp_to_integral<int16_t>(x); }
-int16_t clasp_to_int16(T_sp x) { return clasp_to_integral<int16_t>(x); }
 uint16_t clasp_to_uint16_t(T_sp x) { return clasp_to_integral<uint16_t>(x); }
-uint16_t clasp_to_uint16(T_sp x) { return clasp_to_integral<uint16_t>(x); }
 int32_t clasp_to_int32_t(T_sp x) { return clasp_to_integral<int32_t>(x); }
-int32_t clasp_to_int32(T_sp x) { return clasp_to_integral<int32_t>(x); }
 uint32_t clasp_to_uint32_t(T_sp x) { return clasp_to_integral<uint32_t>(x); }
-uint32_t clasp_to_uint32(T_sp x) { return clasp_to_integral<uint32_t>(x); }
 int64_t clasp_to_int64_t(T_sp x) { return clasp_to_integral<int64_t>(x); }
-int64_t clasp_to_int64(T_sp x) { return clasp_to_integral<int64_t>(x); }
 uint64_t clasp_to_uint64_t(T_sp x) { return clasp_to_integral<uint64_t>(x); }
-uint64_t clasp_to_uint64(T_sp x) { return clasp_to_integral<uint64_t>(x); }
 intptr_t clasp_to_intptr_t(T_sp x) { return clasp_to_integral<intptr_t>(x); }
 uintptr_t clasp_to_uintptr_t(T_sp x) { return clasp_to_integral<uintptr_t>(x); }
 ptrdiff_t clasp_to_ptrdiff_t(T_sp x) { return clasp_to_integral<ptrdiff_t>(x); }
