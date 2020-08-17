@@ -2208,10 +2208,10 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
     }
     apint = llvm::APInt(width, fixnum_value, sign);
     numbits = gc::fixnum_bits;
-  } else {
+  } else if (gc::IsA<core::Bignum_sp>(value)) {
     // It's a bignum so lets convert the bignum to a string and put it into an APInt
     char *asString = NULL;
-    core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
+    core::Bignum_sp bignum_value = gc::As_unsafe<core::Bignum_sp>(value);
     mpz_class &mpz_val = bignum_value->mpz_ref();
     int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(), 2);
     asString = ::mpz_get_str(NULL, 10, mpz_val.get_mpz_t());
@@ -2222,6 +2222,15 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
       string numstr = asString;
       SIMPLE_ERROR(BF("You tried to create an unsigned I%d with a value[%s] that requires %d bits to represent") % width % numstr % mpz_size_in_bits);
     }
+  } else {
+    core::TheNextBignum_sp bignum_value = gc::As<core::TheNextBignum_sp>(value);
+    mp_size_t len = bignum_value->length();
+    const mp_limb_t* limbs = bignum_value->limbs();
+    ASSERT(len > 0);
+    uint64_t words[len];
+    for (size_t i = 0; i < len; ++i) words[i] = limbs[i];
+    // Note that APInt has its own storage, so it's fine that words expires.
+    apint = llvm::APInt(width, llvm::makeArrayRef(words, len));
   }
   self->_value = apint;
   return self;
