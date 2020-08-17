@@ -202,7 +202,7 @@ void clasp_big_register_free(Bignum_sp b) {
 }
 
 CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
-  return TheNextBignum_O::create((fix < 0) ? -1 : 1, std::abs(fix), true);
+  return TheNextBignum_O::create_from_fixnum(fix);
 }
 
 void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
@@ -462,6 +462,23 @@ CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp
   return TheNextBignum_O::create(((llen < 0) ^ (rlen < 0)) ? -result_size : result_size,
                                  0, false,
                                  result_size, result_limbs);
+}
+
+CL_DEFUN TheNextBignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
+  mp_limb_t llimb;
+  mp_size_t llen;
+  if (left < 0) {
+    llen = -1; llimb = -left;
+  } else {
+    llen = 1; llimb = left;
+  }
+  mp_size_t result_size = 2;
+  mp_limb_t result_limbs[2];
+  mp_limb_t msl = mpn_mul_1(result_limbs, &llimb, llen, std::abs(right));
+  if (msl == 0) --result_size;
+  return TheNextBignum_O::create(((llen < 0) ^ (right < 0))
+                                 ? -result_size : result_size,
+                                 0, false, result_size, result_limbs);
 }
 
 CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,

@@ -296,6 +296,11 @@ public: // Functions here
     auto b = gctools::GC<TheNextBignum_O>::allocate_container(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
+  // NOTE: Can't just be create because then create(Fixnum) calls are ambiguous
+  // if Fixnum is int64_t, as it often is.
+  static TheNextBignum_sp create_from_fixnum(gc::Fixnum fix) {
+    return TheNextBignum_O::create((fix < 0) ? -1 : 1, std::abs(fix), true);
+  }
 
   static TheNextBignum_sp make(const string &value_in_string);
 
@@ -370,6 +375,7 @@ public: // Functions here
 Integer_sp bignum_result(mp_size_t, const mp_limb_t*);
 Integer_sp core__next_fmul(TheNextBignum_sp, Fixnum);
 TheNextBignum_sp core__next_mul(TheNextBignum_sp, TheNextBignum_sp);
+TheNextBignum_sp core__mul_fixnums(Fixnum, Fixnum);
 TheNextBignum_sp core__next_lshift(TheNextBignum_sp, Fixnum);
 Integer_sp core__next_rshift(TheNextBignum_sp, Fixnum);
 T_mv core__next_truncate(TheNextBignum_sp, TheNextBignum_sp);
