@@ -863,33 +863,46 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
 }
 
 /*! Copied from ECL */
-CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
-  // Arguments and Values:p - a non-negative integer,  x - an integer.
-  if (clasp_minusp(p))
-      // Expected type for p is (Integer 0 *) or cl::_sym_UnsignedByte
-    TYPE_ERROR(p, cl::_sym_UnsignedByte);
-  bool i;
-  if (p.fixnump()) {
-    cl_index n = clasp_to_size(p);
-    if (x.fixnump()) {
-      gctools::Fixnum y = x.unsafe_fixnum();
-      if (n >= FIXNUM_BITS) {
-        i = (y < 0);
-      } else {
-        i = ((y >> n) & 1);
+CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
+  if (clasp_minusp(index))
+      // Expected type for index is (integer 0) = unsigned-byte
+    TYPE_ERROR(index, cl::_sym_UnsignedByte);
+  if (index.fixnump()) {
+    cl_index n = clasp_to_size(index);
+    if (i.fixnump()) {
+      gc::Fixnum fi = i.unsafe_fixnum();
+      if (n >= FIXNUM_BITS) return (fi < 0);
+      else return ((fi >> n) & 1);
+    } else if (gc::IsA<Bignum_sp>(i))
+      return mpz_tstbit(gc::As_unsafe<Bignum_sp>(i)->mpz().get_mpz_t(), n);
+    else { // TODO: switch to GC_unsafe after bignum switch
+      TheNextBignum_sp bi = gc::As<TheNextBignum_sp>(i);
+      mp_size_t len = bi->length();
+      mp_size_t size = std::abs(len);
+      const mp_limb_t* limbs = bi->limbs();
+      mp_size_t limb_index = n / mp_bits_per_limb;
+      const mp_limb_t* limbptr = &(limbs[limb_index]);
+      mp_limb_t limb = *limbptr;
+      if (limb_index > size) // index out of range
+        return (len < 0);
+      else if (len < 0) {
+        limb = -limb; // two's complement
+        while (limbptr != limbs) {
+          limbptr--;
+          if (*limbptr != 0) {
+            limb--; // one's complement instead
+            break;
+          }
+        }
       }
-    } else {
-      i = mpz_tstbit(gc::As<Bignum_sp>(x)->mpz().get_mpz_t(), n);
+      return ((limb >> (n % mp_bits_per_limb)) & 1);
     }
   } else {
-    if (x.fixnump())
-      i = (x.unsafe_fixnum() < 0);
-    else
-      if (clasp_minusp(x))
-        i = true;
-      else i = false;
+    // Index is a bignum.
+    // We don't support bignums with that many bits, so we're out of range.
+    if (clasp_minusp(i)) return true;
+    else return false;
   }
-  return i ? _lisp->_true() : _Nil<T_O>();
 }
 
 CL_LAMBDA(op arg1 arg2);
