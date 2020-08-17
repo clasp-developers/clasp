@@ -1429,15 +1429,8 @@ size_t compact_read_size_t(T_sp stream, size_t& index) {
 CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(size_t,stream,index);
-  if (object.fixnump()) {
-    size_t data = object.unsafe_fixnum();
-    compact_write_size_t(data,stream,index);
-  } else if (gc::IsA<Bignum_sp>(object)) {
-    size_t data = clasp_to_size_t(object);
-    compact_write_size_t(data,stream,index);
-  } else {
-    SIMPLE_ERROR(BF("Expected integer got %s") % _rep_(object));
-  }
+  size_t data = clasp_to_size_t(object);
+  compact_write_size_t(data, stream, index);
   return index;
 }
 
