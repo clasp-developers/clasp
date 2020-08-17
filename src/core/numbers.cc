@@ -219,18 +219,8 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
 }
 
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
-inline CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb)
-{
-  Fixnum fc = fa + fb;
-  if (fc >= gc::most_negative_fixnum
-      && fc <= gc::most_positive_fixnum) {
-    return make_fixnum(fc);
-  }
-    // Overflow case
-  mpz_class za(static_cast<long>(fa));
-  mpz_class zb(static_cast<long>(fb));
-  mpz_class zc = za + zb;
-  return Integer_O::create(zc);
+CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) {
+  return Integer_O::create(fa + fb);
 }
 
 CL_NAME("TWO-ARG-+-FIXNUM-BIGNUM");
@@ -1460,14 +1450,10 @@ T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
 }
 
 
-Integer_sp Integer_O::create( gctools::Fixnum v )
-{
-  if ( v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum )
-  {
+Integer_sp Integer_O::create(gctools::Fixnum v) {
+  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum)
     return make_fixnum(v);
-  }
-  Bignum z(GMP_LONG(v));
-  return Bignum_O::create( z );
+  else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create( int8_t v)
