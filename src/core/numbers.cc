@@ -517,10 +517,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       Fixnum fr;
       bool overflow = __builtin_mul_overflow(fa,fb,&fr);
       if (!overflow) return Integer_O::create(fr);
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = za * zb;
-      return Integer_O::create(zc);
+      return core__mul_fixnums(fa, fb);
     }
   case_Fixnum_v_Bignum : {
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
@@ -1457,7 +1454,7 @@ T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
 Integer_sp Integer_O::create(gctools::Fixnum v) {
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum)
     return make_fixnum(v);
-  else return Bignum_O::create(v);
+  else return TheNextBignum_O::create(v);
 }
 
 Integer_sp Integer_O::create( int8_t v)
@@ -1494,30 +1491,24 @@ Integer_sp Integer_O::create( uint32_t v )
 Integer_sp Integer_O::create( int64_t v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
     return Integer_O::create(static_cast<Fixnum>(v));
-  }
-
-  return Bignum_O::create( v );
+  else return TheNextBignum_O::create( v );
 }
 #endif
 
 Integer_sp Integer_O::create( uint64_t v )
 {
-  if (v <= gc::most_positive_fixnum) {
+  if (v <= gc::most_positive_fixnum)
     return Integer_O::create(static_cast<Fixnum>(v));
-  }
-  return Bignum_O::create( v );
+  else return TheNextBignum_O::create( v );
 }
 
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
 Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
     return clasp_make_fixnum((Fixnum) v );
-  }
-  return Bignum_O::create( v );
+  else return TheNextBignum_O::create( v );
 }
 #endif
 
@@ -1525,19 +1516,16 @@ Integer_sp Integer_O::create( long long v )
 Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
-  {
     return clasp_make_fixnum((Fixnum)v);
-  }
-  return Bignum_O::create( v );
+  else return TheNextBignum_O::create( v );
 }
 #endif
 
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
 Integer_sp Integer_O::create( uintptr_t v) {
-  if ( v <= gc::most_positive_fixnum ) {
+  if ( v <= gc::most_positive_fixnum )
     return clasp_make_fixnum((Fixnum)v);
-  }
-  return Bignum_O::create( (uint64_t)v );
+  else return TheNextBignum_O::create( (uint64_t)v );
 }
 #endif
 
@@ -1550,27 +1538,26 @@ Integer_sp Integer_O::create( uintptr_t v) {
 Integer_sp Integer_O::create(float v) {
   if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  } else return Bignum_O::create(v);
+  } else return TheNextBignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(double v) {
   if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  } else return Bignum_O::create(v);
+  } else return TheNextBignum_O::create(v);
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
   if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  } else return Bignum_O::create(v);
+  } else return TheNextBignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(const mpz_class &v) {
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
     Fixnum fv = mpz_get_si(v.get_mpz_t());
     return make_fixnum(fv);
-  }
-  return Bignum_O::create(v);
+  } else return TheNextBignum_O::create(v);
 }
 
 }; // namespace core

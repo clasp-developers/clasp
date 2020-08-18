@@ -236,7 +236,7 @@
       (let ((bignum-test
               (if (and (null bignum-low) (null bignum-high)) ; none
                   'nil
-                  `(if (cleavir-primop:typeq object bignum)
+                  `(if (cleavir-primop:typeq object core:the-next-bignum)
                        (and ,@(cond ((null bignum-low) ; no negative bignums
                                      `((core:two-arg-> object ,most-positive-fixnum)))
                                     ((eq bignum-low '*) ; all negative bignums
