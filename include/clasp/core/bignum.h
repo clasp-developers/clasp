@@ -297,16 +297,17 @@ private: // instance variables here
   gctools::GCArraySignedLength_moveable<mp_limb_t> _limbs;
 
 public: // Functions here
-  static TheNextBignum_sp create( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
+  // NOTE: Not just create since (a) it's the lowest level, and
+  // (b) it would cause ambiguity with create(fixnum).
+  static TheNextBignum_sp create_from_limbs( int64_t signed_number_of_limbs, mp_limb_t initialElement=0, bool initialElementSupplied=false, size_t initialContentsSize=0, const mp_limb_t* initialContents=NULL)
   {
     auto b = gctools::GC<TheNextBignum_O>::allocate_container(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
   static TheNextBignum_sp create(const mpz_class&);
-  // NOTE: Can't just be create because then create(Fixnum) calls are ambiguous
-  // if Fixnum is int64_t, as it often is.
-  static TheNextBignum_sp create_from_fixnum(gc::Fixnum fix) {
-    return TheNextBignum_O::create((fix < 0) ? -1 : 1, std::abs(fix), true);
+  static TheNextBignum_sp create(gc::Fixnum fix) {
+    return TheNextBignum_O::create_from_limbs((fix < 0) ? -1 : 1,
+                                              std::abs(fix), true);
   }
 
   static TheNextBignum_sp make(const string &value_in_string);
