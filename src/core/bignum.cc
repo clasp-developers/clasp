@@ -233,19 +233,17 @@ Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
 
 string TheNextBignum_O::__repr__() const {
   stringstream ss;
-  const char* num_to_text = "0123456789abcdefghijklmnopqrstuvwxyz";
   mp_size_t len = this->length();
+  mp_size_t size = std::abs(len);
   const mp_limb_t *limbs = this->limbs();
-  unsigned char raw[16*std::abs(len)+1];
-  // mpn_get_str doesn't actually alter the limbs unless the base is not
-  // a power of two, but C++ does not understand such subtleties.
-  ss << "#<NEXT-BIGNUM length " << len << " ";
-  for (size_t i = 0; i < std::abs(len); ++i)
-    ss << limbs[i] << " ";
-  ss << "#x";
-  mp_size_t strlen = mpn_get_str(raw, 16, const_cast<mp_limb_t*>(limbs), len);
-  for (size_t i = 0; i < strlen; ++i) ss << num_to_text[raw[i]];
-  ss << ">";
+  mp_limb_t copylimbs[size];
+  for (mp_size_t i = 0; i < size; ++i) copylimbs[i] = limbs[i];
+  size_t prestrsize = mpn_sizeinbase(limbs, size, 10);
+  unsigned char raw[prestrsize+1];
+  mp_size_t strsize = mpn_get_str(raw, 10, copylimbs, size);
+  // Now write
+  if (len < 0) ss << '-';
+  for (size_t i = 0; i < strsize; ++i) ss << (unsigned char)(raw[i] + '0');
   return ss.str();
 }
 
