@@ -244,16 +244,16 @@ Integer_sp next_mpz_to_integer(const mpz_class& c) {
   return bignum_result(count * mpz_sgn(c.get_mpz_t()), dest);
 }
 
-CL_DEFUN Integer_sp core__next_to_old(TheNextBignum_sp n) {
-  mp_size_t len = n->length();
+mpz_class TheNextBignum_O::mpz() const {
+  mp_size_t len = this->length();
   mpz_class m;
   mpz_import(m.get_mpz_t(), std::abs(len), -1, sizeof(mp_limb_t), 0, GMP_NAIL_BITS,
-             n->limbs());
+             this->limbs());
   if (len < 0) {
     mpz_class r;
     mpz_neg(r.get_mpz_t(), m.get_mpz_t());
-    return Integer_O::create(r);
-  } else return Integer_O::create(m);
+    return r;
+  } else return m;
 }
 
 string TheNextBignum_O::__repr__() const {

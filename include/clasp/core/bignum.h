@@ -317,6 +317,8 @@ public: // Functions here
 
   void sxhash_(HashGenerator &hg) const;
 
+  mpz_class mpz() const;
+
   string __repr__() const override;
 
   Number_sp signum_() const override;
