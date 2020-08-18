@@ -292,16 +292,12 @@ namespace core {
     static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
     static Integer_sp create(const mpz_class &v);
     static Integer_sp create(gctools::Fixnum v);
-    static Integer_sp create(const string &v) {
-      return Integer_O::create(v.c_str());
+    static Integer_sp create(const string &v, int base = 0) {
+      return create(v.c_str(), base);
     };
-    static Integer_sp create(const char *v) {
-      if (v[0] == '+') {
-	// Skip leading +
-	mpz_class zv(&v[1]);
-	return create(zv);
-      }
-      mpz_class zv(v);
+    static Integer_sp create(const char *v, int base = 0) {
+      if (v[0] == '+') v = &v[1]; // skip leading +
+      mpz_class zv(v, base);
       return create(zv);
     };
 
