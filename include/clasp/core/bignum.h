@@ -306,8 +306,22 @@ public: // Functions here
   };
   static TheNextBignum_sp create(const mpz_class&);
   static TheNextBignum_sp create(gc::Fixnum fix) {
-    return TheNextBignum_O::create_from_limbs((fix < 0) ? -1 : 1,
-                                              std::abs(fix), true);
+    return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true);
+  }
+#if !defined(CLASP_FIXNUM_IS_INT64)
+  static TheNextBignum_sp create(int64_t v) {
+    return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true);
+  }
+#endif
+  static TheNextBignum_sp create(uint64_t v) {
+    return create_from_limbs(1, v, true);
+  }
+  static TheNextBignum_sp create(double d) {
+    // KLUDGE: there is no mpn function for converting from a double.
+    // However, this conses, which we shouldn't need to do.
+    mpz_class rop;
+    mpz_set_d(rop.get_mpz_t(), d);
+    return create(rop);
   }
 
   static TheNextBignum_sp make(const string &value_in_string);
