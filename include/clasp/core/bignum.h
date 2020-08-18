@@ -395,6 +395,7 @@ Integer_sp next_add(const mp_limb_t*, mp_size_t, const mp_limb_t*, mp_size_t);
 Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fadd(TheNextBignum_sp, Fixnum);
 int core__next_compare(TheNextBignum_sp, TheNextBignum_sp);
+Integer_sp next_mpz_to_integer(const mpz_class&);
 
 template<typename integral>
 integral clasp_to_integral(T_sp obj) {
