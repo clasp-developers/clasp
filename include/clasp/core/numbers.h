@@ -343,6 +343,7 @@ namespace core {
 
   public:
 
+    virtual mpz_class mpz() const {SUBIMP();};
     virtual bool evenp_() const { SUBIMP(); };
     virtual bool oddp_() const { SUBIMP(); };
 
