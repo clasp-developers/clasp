@@ -125,6 +125,12 @@ public: // Functions here
 
 #endif
 
+  static Bignum_sp create(double d) {
+    Bignum rop;
+    mpz_set_d(rop.get_mpz_t(), d);
+    return Bignum_O::create(rop);
+  }
+
  public:
 
   NumberType number_type_() const override { return number_Bignum; };

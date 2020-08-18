@@ -1550,29 +1550,19 @@ Integer_sp Integer_O::create( uintptr_t v) {
 Integer_sp Integer_O::create(float v) {
   if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(double v) {
   if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
   if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(const mpz_class &v) {
