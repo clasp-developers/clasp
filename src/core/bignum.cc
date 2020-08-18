@@ -231,6 +231,20 @@ Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
                                  std::abs(len), limbs);
 }
 
+CL_DEFUN Integer_sp core__next_from_old(Bignum_sp old) {
+  const mp_size_t limbsize = sizeof(mp_limb_t);
+  const size_t nails = GMP_NAIL_BITS;
+  const mpz_class& c = old->mpz_ref();
+  // copied from gmp docs
+  size_t numb = 8*limbsize - nails;
+  size_t count = (mpz_sizeinbase(c.get_mpz_t(), 2) + numb - 1) / numb;
+  mp_limb_t dest[count];
+  // These parameters are chosen in order to hopefully
+  // just let GMP copy its limbs directly.
+  mpz_export(dest, &count, -1, limbsize, 0, nails, c.get_mpz_t());
+  return bignum_result(count * mpz_sgn(c.get_mpz_t()), dest);
+}
+
 string TheNextBignum_O::__repr__() const {
   stringstream ss;
   mp_size_t len = this->length();
