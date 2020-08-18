@@ -302,6 +302,7 @@ public: // Functions here
     auto b = gctools::GC<TheNextBignum_O>::allocate_container(false/*static_vector_p*/,signed_number_of_limbs,initialElement,initialElementSupplied,initialContentsSize,initialContents);
     return b;
   };
+  static TheNextBignum_sp create(const mpz_class&);
   // NOTE: Can't just be create because then create(Fixnum) calls are ambiguous
   // if Fixnum is int64_t, as it often is.
   static TheNextBignum_sp create_from_fixnum(gc::Fixnum fix) {
@@ -397,7 +398,6 @@ Integer_sp next_add(const mp_limb_t*, mp_size_t, const mp_limb_t*, mp_size_t);
 Integer_sp core__next_add(TheNextBignum_sp, TheNextBignum_sp);
 Integer_sp core__next_fadd(TheNextBignum_sp, Fixnum);
 int core__next_compare(TheNextBignum_sp, TheNextBignum_sp);
-Integer_sp next_mpz_to_integer(const mpz_class&);
 
 template<typename integral>
 integral clasp_to_integral(T_sp obj) {

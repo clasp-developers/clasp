@@ -205,6 +205,20 @@ CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
   return TheNextBignum_O::create_from_fixnum(fix);
 }
 
+TheNextBignum_sp TheNextBignum_O::create(const mpz_class& c) {
+  const mp_size_t limbsize = sizeof(mp_limb_t);
+  const size_t nails = GMP_NAIL_BITS;
+  // copied from gmp docs
+  size_t numb = 8*limbsize - nails;
+  size_t count = (mpz_sizeinbase(c.get_mpz_t(), 2) + numb - 1) / numb;
+  mp_limb_t dest[count];
+  // These parameters are chosen in order to hopefully
+  // just let GMP copy its limbs directly.
+  mpz_export(dest, &count, -1, limbsize, 0, nails, c.get_mpz_t());
+  mp_size_t len = count * mpz_sgn(c.get_mpz_t());
+  return create(len, 0, false, count, dest);
+}
+
 void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
   mp_size_t len = this->length();
   if (!(hg.addValue(len))) return;
@@ -229,19 +243,6 @@ Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
   }
   return TheNextBignum_O::create(len, 0, false,
                                  std::abs(len), limbs);
-}
-
-Integer_sp next_mpz_to_integer(const mpz_class& c) {
-  const mp_size_t limbsize = sizeof(mp_limb_t);
-  const size_t nails = GMP_NAIL_BITS;
-  // copied from gmp docs
-  size_t numb = 8*limbsize - nails;
-  size_t count = (mpz_sizeinbase(c.get_mpz_t(), 2) + numb - 1) / numb;
-  mp_limb_t dest[count];
-  // These parameters are chosen in order to hopefully
-  // just let GMP copy its limbs directly.
-  mpz_export(dest, &count, -1, limbsize, 0, nails, c.get_mpz_t());
-  return bignum_result(count * mpz_sgn(c.get_mpz_t()), dest);
 }
 
 mpz_class TheNextBignum_O::mpz() const {
