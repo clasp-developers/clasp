@@ -308,6 +308,15 @@ public: // Functions here
   static TheNextBignum_sp create(gc::Fixnum fix) {
     return create_from_limbs((fix < 0) ? -1 : 1, std::abs(fix), true);
   }
+  static TheNextBignum_sp create(unsigned long long ull) {
+    ASSERT(sizeof(unsigned long long)<=sizeof(mp_limb_t));
+    return create_from_limbs(1, ull, true);
+  }
+  static TheNextBignum_sp create(long long ll) {
+    ASSERT(sizeof(long long)<=sizeof(mp_limb_t));
+    return create_from_limbs((ll < 0) ? -1 : 1, std::abs(ll), true);
+  }
+
 #if !defined(CLASP_FIXNUM_IS_INT64)
   static TheNextBignum_sp create(int64_t v) {
     return create_from_limbs((v < 0) ? -1 : 1, std::abs(v), true);
