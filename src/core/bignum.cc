@@ -847,15 +847,24 @@ Integer_sp next_add(const mp_limb_t *llimbs, mp_size_t llen,
   return bignum_result(result_len, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left, TheNextBignum_sp right) {
-  return next_add(left->limbs(), left->length(), right->limbs(), right->length());
+CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left,
+                                   TheNextBignum_sp right) {
+  return next_add(left->limbs(), left->length(),
+                  right->limbs(), right->length());
 }
 
-  // Easier than above since we know abs(right) < abs(left) and the result size.
-Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len, Fixnum right) {
+CL_DEFUN Integer_sp core__next_sub(TheNextBignum_sp left,
+                                   TheNextBignum_sp right) {
+  return next_add(left->limbs(), left->length(),
+                  right->limbs(), -(right->length()));
+}
+
+// Easier than above since we know abs(right) < abs(left) and the result size.
+Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len,
+                     Fixnum right) {
   mp_size_t size = std::abs(len);
 
-  mp_limb_t result_len = size;
+  mp_size_t result_len = size;
   mp_limb_t result_limbs[size+1];
 
   if ((len < 0) ^ (right < 0)) {
@@ -878,6 +887,12 @@ Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len, Fixnum right) {
 
 CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
   return next_fadd(left->limbs(), left->length(), right);
+}
+
+// bignum - fixnum is trivially bignum +-fixnum, but fixnum - bignum
+// is very slightly trickier
+CL_DEFUN Integer_sp core__next_fsub(Fixnum left, TheNextBignum_sp right) {
+  return next_fadd(right->limbs(), -(right->length()), left);
 }
 
 Number_sp TheNextBignum_O::oneMinus_() const {

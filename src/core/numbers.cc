@@ -420,11 +420,14 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_NextBignum_v_DoubleFloat: {
       return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
     }
+  case_Fixnum_v_NextBignum:
+    return core__next_fsub(na.unsafe_fixnum(),
+                           gc::As_unsafe<TheNextBignum_sp>(na));
   case_NextBignum_v_Fixnum:
     return core__next_fadd(gc::As_unsafe<TheNextBignum_sp>(na),
                            -(nb.unsafe_fixnum()));
   case_NextBignum_v_NextBignum:
-    return core__next_add(gc::As_unsafe<TheNextBignum_sp>(na),
+    return core__next_sub(gc::As_unsafe<TheNextBignum_sp>(na),
                           gc::As_unsafe<TheNextBignum_sp>(nb));
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum:
