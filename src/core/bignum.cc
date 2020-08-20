@@ -862,6 +862,7 @@ CL_DEFUN Integer_sp core__next_sub(TheNextBignum_sp left,
 // Easier than above since we know abs(right) < abs(left) and the result size.
 Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len,
                      Fixnum right) {
+  Fixnum aright = std::abs(right);
   mp_size_t size = std::abs(len);
 
   mp_size_t result_len = size;
@@ -869,12 +870,12 @@ Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len,
 
   if ((len < 0) ^ (right < 0)) {
     // Different signs - subtract
-    mpn_sub_1(result_limbs, limbs, size, right);
+    mpn_sub_1(result_limbs, limbs, size, aright);
     // Quick normalize
     if (result_limbs[size-1] == 0) --result_len;
   } else {
     // signs match
-    mp_limb_t carry = mpn_add_1(result_limbs, limbs, size, right);
+    mp_limb_t carry = mpn_add_1(result_limbs, limbs, size, aright);
     if (carry != 0) {
       ++result_len;
       result_limbs[size] = carry;
