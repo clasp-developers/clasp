@@ -2224,13 +2224,16 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
     }
   } else {
     core::TheNextBignum_sp bignum_value = gc::As<core::TheNextBignum_sp>(value);
-    mp_size_t len = std::abs(bignum_value->length());
+    mp_size_t len = bignum_value->length();
+    mp_size_t size = std::abs(len);
     const mp_limb_t* limbs = bignum_value->limbs();
-    ASSERT(len > 0);
-    uint64_t words[len];
-    for (size_t i = 0; i < len; ++i) words[i] = limbs[i];
+    uint64_t words[size];
+    if (len < 0)
+      for (size_t i = 0; i < size; ++i) words[i] = -(limbs[i]);
+    else
+      for (size_t i = 0; i < size; ++i) words[i] = limbs[i];
     // Note that APInt has its own storage, so it's fine that words expires.
-    apint = llvm::APInt(width, llvm::makeArrayRef(words, len));
+    apint = llvm::APInt(width, llvm::makeArrayRef(words, size));
   }
   self->_value = apint;
   return self;

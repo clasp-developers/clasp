@@ -504,6 +504,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     v0 = x;
     v1 = clasp_make_fixnum(0);
     break;
@@ -569,6 +570,7 @@ Real_mv clasp_truncate1(Real_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     v0 = x;
     v1 = clasp_make_fixnum(0);
     break;
@@ -662,6 +664,7 @@ Real_mv clasp_round1(Real_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     v0 = x;
     v1 = clasp_make_fixnum(0);
     break;
@@ -710,6 +713,7 @@ Real_mv clasp_round2(Real_sp x, Real_sp y) {
   switch (clasp_t_of(q)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
     v0 = q;
     v1 = clasp_make_fixnum(0);
     break;
@@ -1062,6 +1066,7 @@ CL_DEFUN Real_sp cl__realpart(Number_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
   case number_Ratio:
   case number_SingleFloat:
   case number_DoubleFloat:
@@ -1086,6 +1091,7 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   switch (clasp_t_of(x)) {
   case number_Fixnum:
   case number_Bignum:
+  case number_NextBignum:
   case number_Ratio:
     x = clasp_make_fixnum(0);
     break;

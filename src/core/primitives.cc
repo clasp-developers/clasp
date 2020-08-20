@@ -249,7 +249,7 @@ CL_DECLARE();
 CL_DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
 CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
-    return Integer_O::create((gc::Fixnum)object.raw_());
+    return Integer_O::create((uint64_t)object.raw_());
   }
   return _Nil<T_O>();
 };
