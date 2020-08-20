@@ -251,8 +251,8 @@
                       (or (eql high most-positive-fixnum)
                           (and (listp high) (eql (car high) (1+ most-positive-fixnum)))))
                  (progn (setf low '* high '*) '(fixnum))
-                 '(fixnum bignum)))
-            ((rational) '(fixnum bignum ratio))
+                 '(fixnum bignum core:the-next-bignum)))
+            ((rational) '(fixnum bignum core:the-next-bignum ratio))
             ;; singles and doubles always exist.
             ;; if shorts don't exist, they're singles. same with long and double.
             #+short-float ((short-float) '(short-float))
@@ -261,7 +261,7 @@
             ((#-long-float long-float double-float) '(double-float))
             ((float) '(#+short-float short-float single-float
                        double-float #+long-float long-float))
-            ((real) '(fixnum bignum ratio #+short-float short-float
+            ((real) '(fixnum bignum core:the-next-bignum ratio #+short-float short-float
                       single-float double-float #+long-float long-float))
             (otherwise (error "BUG: Unknown type head ~a passed to gen-interval-type-check"
                               head)))))
