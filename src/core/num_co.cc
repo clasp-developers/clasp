@@ -202,7 +202,7 @@ void clasp_truncate(Real_sp dividend, Real_sp divisor,
         remainder = clasp_make_fixnum(0);
       } else {
         quotient = clasp_make_fixnum(0);
-        remainder = divisor;
+        remainder = dividend;
       }
       break;
     }
