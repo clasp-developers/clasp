@@ -2224,7 +2224,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
     }
   } else {
     core::TheNextBignum_sp bignum_value = gc::As<core::TheNextBignum_sp>(value);
-    mp_size_t len = bignum_value->length();
+    mp_size_t len = std::abs(bignum_value->length());
     const mp_limb_t* limbs = bignum_value->limbs();
     ASSERT(len > 0);
     uint64_t words[len];
