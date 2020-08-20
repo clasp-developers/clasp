@@ -491,20 +491,26 @@ CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp
 }
 
 CL_DEFUN TheNextBignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
-  mp_limb_t llimb;
+  mp_size_t result_size = 2;
+  mp_limb_t limbs[2];
   mp_size_t llen;
   if (left < 0) {
-    llen = -1; llimb = -left;
+    llen = -1; limbs[0] = -left;
   } else {
-    llen = 1; llimb = left;
+    llen = 1; limbs[0] = left;
   }
-  mp_size_t result_size = 2;
-  mp_limb_t result_limbs[2];
-  mp_limb_t msl = mpn_mul_1(result_limbs, &llimb, llen, std::abs(right));
-  if (msl == 0) --result_size;
+  // Reusing the storage here is ok, according to docs,
+  // provided that result_limbs <= input_limbs (as here).
+  mp_limb_t msl = mpn_mul_1(limbs, limbs, 1, std::abs(right));
+  if (msl == 0) --result_size; else limbs[1] = msl;
+  // We unconditionally return a bignum because this is only called
+  // from contagen_mul in the case that multiplication is known to
+  // overflow.
+  // TODO: Because of that, msl might always be nonzero? Double check,
+  // we could save a branch.
   return TheNextBignum_O::create_from_limbs(((llen < 0) ^ (right < 0))
                                             ? -result_size : result_size,
-                                            0, false, result_size, result_limbs);
+                                            0, false, result_size, limbs);
 }
 
 CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
