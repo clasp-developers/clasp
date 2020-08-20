@@ -1786,7 +1786,7 @@ float Ratio_O::as_float_() const {
 }
 
 // translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
-static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *exponent) {
+static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp den, int digits, gc::Fixnum *exponent) {
   /* We have to cook our own routine because GMP does not round. The
    * recipe is simple: we multiply the numerator by a large enough
    * number so that the integer length of the division by the
@@ -1797,7 +1797,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
   bool negative = false;
   if (num->minusp_()) {
     negative = true;
-    num = gc::As<Bignum_sp>(num->negate_());
+    num = gc::As_unsafe<Integer_sp>(num->negate_());
   }
   gc::Fixnum num_digits = clasp_integer_length(num);
   gc::Fixnum den_digits = clasp_integer_length(den);
@@ -1806,7 +1806,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
    * truncated to an integer has a length of digits+1 or digits+2. If
    * scale is negative, we simply shift out unnecessary digits of num,
    * which don't affect the quotient. */
-  num = gc::As<Bignum_sp>(clasp_ash(num, scale));
+  num = clasp_ash(num, scale);
   Integer_sp quotient = clasp_integer_divide(num, den);
   if (clasp_integer_length(quotient) > digits+1) {
     /* quotient is too large, shift out an unnecessary digit */
@@ -1815,7 +1815,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
   }
   /* round quotient */
   if (clasp_oddp(quotient)) {
-    quotient = gc::As<Integer_sp>(clasp_one_plus(quotient));
+    quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(quotient));
   }
   /* shift out the remaining unnecessary digit of quotient */
   quotient = clasp_ash(quotient, -1);
@@ -1828,20 +1828,19 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
 }
 
 double Ratio_O::as_double_() const {
-  if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
-    gc::Fixnum exponent;
-    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &exponent);
-    double output;
-    if (mantissa.fixnump())
-      output = gc::As<Fixnum_sp>(mantissa).unsafe_fixnum();
-    else
-      output = mantissa->as_double_();
-    return ldexp(output, exponent);
-  }
-  else {
+  if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
     double d = clasp_to_double(this->_numerator);
     d /= clasp_to_double(this->_denominator);
     return d;
+  } else {
+    gc::Fixnum exponent;
+    Integer_sp mantissa = mantissa_and_exponent_from_ratio(this->_numerator,this->_denominator, DBL_MANT_DIG, &exponent);
+    double output;
+    if (mantissa.fixnump())
+      output = mantissa.unsafe_fixnum();
+    else
+      output = mantissa->as_double_();
+    return ldexp(output, exponent);
   }
 }
 
