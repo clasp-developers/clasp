@@ -186,51 +186,46 @@ CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nth");
 CL_DEFUN T_sp cl__nth(Integer_sp idx, List_sp arg) {
-    // should really get an Integer_sp idx as relatively best fit ansi: (n - a non-negative integer)
-    // don't know how the (integer 0 *) can be done in c++ types
-    // should error on negative number
-    // should return nil on positive bignums
-    LIKELY_if (arg.consp()) {
-      if (idx.fixnump()) {
-	gc::Fixnum n = idx.unsafe_fixnum();
-	if (n < 0) 
-	  TYPE_ERROR(idx, cl::_sym_UnsignedByte);
-        else return arg.unsafe_cons()->onth(n);
-      }
-      else if (core__bignump(idx)) {
-	if (clasp_plusp (idx))
-	  return _Nil<T_O>();
-	else TYPE_ERROR(idx, cl::_sym_UnsignedByte);
-      }
-    } else if (arg.nilp()) {
-      return arg;
+  // should error on negative number
+  // should return nil on positive bignums
+  LIKELY_if (arg.consp()) {
+    if (idx.fixnump()) {
+      gc::Fixnum n = idx.unsafe_fixnum();
+      if (n < 0) 
+        TYPE_ERROR(idx, cl::_sym_UnsignedByte);
+      else return arg.unsafe_cons()->onth(n);
+    } else { // index is a bignum, i.e. out of range
+      if (clasp_plusp (idx))
+        return _Nil<T_O>();
+      else TYPE_ERROR(idx, cl::_sym_UnsignedByte);
     }
-    TYPE_ERROR(arg, cl::_sym_list);
-  };
+  } else if (arg.nilp()) {
+    return arg;
+  }
+  TYPE_ERROR(arg, cl::_sym_list);
+};
 
 CL_LAMBDA(idx arg);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS nthcdr");
 CL_DEFUN T_sp cl__nthcdr(Integer_sp idx, List_sp arg) {
-    LIKELY_if (arg.consp()) {
-      if (idx.fixnump()) {
-	gc::Fixnum n = idx.unsafe_fixnum();
-	if (n < 0) 
-	  TYPE_ERROR(idx, cl::_sym_UnsignedByte);
-	else return arg.unsafe_cons()->onthcdr(n);
-      }
-      else if (core__bignump(idx)) {
-	if (clasp_plusp (idx))
-	  return _Nil<T_O>();
-	else 
-	  TYPE_ERROR(idx, cl::_sym_UnsignedByte);
-      }
-      else TYPE_ERROR(idx, cl::_sym_UnsignedByte);
-    } else if (arg.nilp()) {
-        return arg;
-      }
-    TYPE_ERROR(arg, cl::_sym_list);
-  };
+  LIKELY_if (arg.consp()) {
+    if (idx.fixnump()) {
+      gc::Fixnum n = idx.unsafe_fixnum();
+      if (n < 0) 
+        TYPE_ERROR(idx, cl::_sym_UnsignedByte);
+      else return arg.unsafe_cons()->onthcdr(n);
+    } else { // bignum, out of range
+      if (clasp_plusp (idx))
+        return _Nil<T_O>();
+      else 
+        TYPE_ERROR(idx, cl::_sym_UnsignedByte);
+    }
+  } else if (arg.nilp()) {
+    return arg;
+  }
+  TYPE_ERROR(arg, cl::_sym_list);
+}
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -274,54 +269,48 @@ CL_DEFUN List_sp cl__butlast(List_sp ll, Integer_sp in) {
 		}
 		return head;
 	  }
-   } 
-   // if it is a positive bignum, return nil
-   if (core__bignump(in)) {
+   } else { // must be a bignum
      if (clasp_plusp (in))
       return _Nil<T_O>();
      else 
        TYPE_ERROR(in, cl::_sym_UnsignedByte);
-  }
-  TYPE_ERROR(in, cl::_sym_UnsignedByte);
+   }
 }
 
 CL_LAMBDA(list &optional (n 1));
 CL_DECLARE();
 CL_DOCSTRING("nbutlast");
 CL_DEFUN List_sp cl__nbutlast(List_sp l, Integer_sp in) {
-  if (l.nilp())
-  return l;
+  if (l.nilp()) return l;
   if (in.fixnump()) {
     gc::Fixnum n = in.unsafe_fixnum();
-	  if (n < 0) {
-		TYPE_ERROR(in, cl::_sym_UnsignedByte);
-	  }
-	  // n is postive fixnum
-	  T_sp r;
-	  if (clasp_unlikely(!cl__listp(l)))
-		ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
-	  for (n++, r = l; n && (r).consp(); n--, r = oCdr(r))
-		;
-	  if (n == 0) {
-		Cons_sp tail = gc::As<Cons_sp>(l);
-		while ((r).consp()) {
-		  tail = gc::As<Cons_sp>(oCdr(tail));
-		  r = oCdr(r);
-		}
-		tail->rplacd(_Nil<T_O>());
-		return l;
-	  }
-	  return _Nil<T_O>();
-  }
-  // if it is a positive bignum, return nil
-  if (core__bignump(in)) {
-     if (clasp_plusp (in)) 
-       return _Nil<T_O>();
-      else 
+    if (n < 0) {
+      TYPE_ERROR(in, cl::_sym_UnsignedByte);
+    }
+    // n is postive fixnum
+    T_sp r;
+    if (clasp_unlikely(!cl__listp(l)))
+      ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_nbutlast, l, cl::_sym_list);
+    for (n++, r = l; n && (r).consp(); n--, r = oCdr(r))
+      ;
+    if (n == 0) {
+      Cons_sp tail = gc::As<Cons_sp>(l);
+      while ((r).consp()) {
+        tail = gc::As<Cons_sp>(oCdr(tail));
+        r = oCdr(r);
+      }
+      tail->rplacd(_Nil<T_O>());
+      return l;
+    }
+    return _Nil<T_O>();
+  } else {
+    // if it is a positive bignum, return nil
+    if (clasp_plusp (in)) 
+      return _Nil<T_O>();
+    else 
     // negative bignum 
       TYPE_ERROR(in, cl::_sym_UnsignedByte);
   }
-  TYPE_ERROR(in, cl::_sym_UnsignedByte);
 }
 
 CL_LAMBDA(&rest objects);
@@ -369,17 +358,12 @@ CL_DEFUN T_sp cl__last(List_sp list, Integer_sp in) {
      if (Cons_sp clist =  gc::As<Cons_sp>(list))
        return clist->last(n);
      TYPE_ERROR(list, cl::_sym_list);
-  }
-  else {
-  if (core__bignump(in)) {
+  } else { // must be a bignum
     if (clasp_plusp (in))
       return list;
     else
       TYPE_ERROR(in, cl::_sym_UnsignedByte);     
-    }
   }
-  // Should have been either be a Fixnum or a bignum, but to be sure
-  TYPE_ERROR(in, cl::_sym_UnsignedByte);
 };
 
 /* Adapted from ECL list.d nconc function */
