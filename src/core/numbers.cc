@@ -220,7 +220,7 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
 
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
 CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) {
-  return Integer_O::create(fa + fb);
+  return Integer_O::create(static_cast<gc::Fixnum>(fa + fb));
 }
 
 CL_NAME("TWO-ARG-+-FIXNUM-BIGNUM");
