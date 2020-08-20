@@ -368,18 +368,10 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
 CL_NAME("TWO-ARG--");
 CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-      Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-      Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-      Fixnum fc = fa - fb;
-      if (fc >= gc::most_negative_fixnum && fc <= gc::most_positive_fixnum) {
-        return make_fixnum(fc);
-      }
-    // Overflow case
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = za - zb;
-      return Integer_O::create(zc);
+  case_Fixnum_v_Fixnum: {
+      Fixnum fa = na.unsafe_fixnum();
+      Fixnum fb = nb.unsafe_fixnum();
+      return Integer_O::create(static_cast<gc::Fixnum>(fa - fb));
     }
   case_Fixnum_v_Bignum : {
       mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
@@ -422,7 +414,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_NextBignum:
     return core__next_fsub(na.unsafe_fixnum(),
-                           gc::As_unsafe<TheNextBignum_sp>(na));
+                           gc::As_unsafe<TheNextBignum_sp>(nb));
   case_NextBignum_v_Fixnum:
     return core__next_fadd(gc::As_unsafe<TheNextBignum_sp>(na),
                            -(nb.unsafe_fixnum()));
