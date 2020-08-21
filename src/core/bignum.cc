@@ -924,15 +924,12 @@ double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
   // Otherwise, we just use the most significant two limbs.
   // Assuming the float format has at most 128 bits of significand,
   // the lower limbs ought to be irrelevant.
-  // (In fact one 64-bit number would probably be enough,
-  //  but it's possible the high bits of this number are all zero.)
+  // (In fact one 64-bit number would probably be enough, but
+  //  it's possible the high bits of this number are almost all zero.)
   double ultimate = static_cast<double>(limbs[size-1]);
   double penultimate = static_cast<double>(limbs[size-2]);
-  // Compiler is smart enough to make exp2(constant) constant, hopefully.
-  // In C++17 we could use a hexadecimal float literal
-  // without any loss of precision.
-  double soon = penultimate + ultimate * std::exp2(64);
-  return soon * std::exp2(64*(size-2)) * ((len < 0) ? -1e0 : 1e0);
+  double soon = penultimate + std::ldexp(ultimate, 64);
+  return std::ldexp(((len < 0) ? -soon : soon), 64*(size-2));
 }
 
 float TheNextBignum_O::as_float_() const {
