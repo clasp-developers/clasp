@@ -1828,7 +1828,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
 }
 
 double Ratio_O::as_double_() const {
-  if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
+  if ((this->_numerator).fixnump() || (this->_denominator).fixnump()) {
     double d = clasp_to_double(this->_numerator);
     d /= clasp_to_double(this->_denominator);
     return d;
