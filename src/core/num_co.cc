@@ -485,7 +485,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   clasp_truncate(x, y, v0, v1);
   if (!(clasp_zerop(v1))
       && (clasp_minusp(y)) ? clasp_plusp(x) : clasp_minusp(x))
-    return Values(clasp_one_minus(v0), clasp_minus(v1, y));
+    return Values(clasp_one_minus(v0), clasp_plus(v1, y));
   else return Values(v0, v1);
 }
 
@@ -551,7 +551,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   clasp_truncate(x, y, v0, v1);
   if (!(clasp_zerop(v1))
       && (clasp_minusp(y) ? clasp_minusp(x) : clasp_plusp(x)))
-    return Values(clasp_one_minus(v0), clasp_plus(v1, y));
+    return Values(clasp_one_plus(v0), clasp_minus(v1, y));
   else return Values(v0, v1);
 }
 
