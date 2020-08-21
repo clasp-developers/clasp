@@ -456,7 +456,8 @@ CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
     for (size_t i = 0; i < result_size; ++i) result_limbs[i] = limbs[nlimbs+i];
     // input bignum is normalized, so high limb is not zero
   } else {
-    mpn_rshift(result_limbs, &(limbs[nlimbs]), size, nbits); // ignore outshifted bits
+    // we don't need outshifted bits, so we ignore mpn_rshift's return value
+    mpn_rshift(result_limbs, &(limbs[nlimbs]), result_size, nbits);
     if (result_limbs[result_size-1] == 0) --result_size;
   }
   return bignum_result((len < 0) ? -result_size : result_size, result_limbs);
