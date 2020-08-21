@@ -437,7 +437,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
       Number_sp n1 = contagen_mul(ra->numerator(), rb->denominator());
       Number_sp n2 = contagen_mul(ra->denominator(), rb->numerator());
-      Number_sp n = contagen_add(n1, n2);
+      Number_sp n = contagen_sub(n1, n2);
       Number_sp d = contagen_mul(ra->denominator(), rb->denominator());
       return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
                                 gc::As_unsafe<Integer_sp>(d));
@@ -1795,9 +1795,9 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
    * appropriate exponent.
    */
   bool negative = false;
-  if (num->minusp_()) {
+  if (clasp_minusp(num)) {
     negative = true;
-    num = gc::As_unsafe<Integer_sp>(num->negate_());
+    num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
   gc::Fixnum num_digits = clasp_integer_length(num);
   gc::Fixnum den_digits = clasp_integer_length(den);
@@ -1828,7 +1828,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp de
 }
 
 double Ratio_O::as_double_() const {
-  if ((this->_numerator).fixnump() || (this->_denominator).fixnump()) {
+  if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
     double d = clasp_to_double(this->_numerator);
     d /= clasp_to_double(this->_denominator);
     return d;
