@@ -449,6 +449,10 @@ CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
   const mp_limb_t* limbs = num->limbs();
   unsigned int nlimbs = shift / mp_bits_per_limb;
   unsigned int nbits = shift % mp_bits_per_limb;
+  if (nlimbs >= size) { // Shifting the entire bignum away
+    if (len < 0) return clasp_make_fixnum(-1);
+    else return clasp_make_fixnum(0);
+  }
   size_t result_size = size - nlimbs;
   mp_limb_t result_limbs[result_size];
   if (nbits == 0) {
