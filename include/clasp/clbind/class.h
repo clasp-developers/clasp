@@ -384,7 +384,7 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
   enum { value = sizeof...(ARGS) };
 };
 
-template <class Class, class MethodPointerType, class Policies>
+template <class Class, typename MethodPointerType, class Policies>
 struct memfun_registration : registration {
   memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies)
     : m_name(name), methodPtr(f), policies(policies) {
@@ -398,7 +398,7 @@ struct memfun_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
     core::FunctionDescription* fdesc = core::makeFunctionDescription(sym);
-    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(fdesc,methodPtr));
+    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<IndirectVariadicMethoid<Policies,Class,MethodPointerType>>::allocate(this->policies,fdesc,methodPtr));
     lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
                                     m_arguments, m_declares, m_docstring,
                                     true,

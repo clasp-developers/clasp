@@ -87,10 +87,46 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
-// What was...
-// #include <clbind_functoids.h>
-// now becomes...
-#include <clasp/clbind/clbind_functoids.h>
+};
+
+#include <clasp/clbind/clbind_tuple.h>
+
+
+namespace clbind {
+
+template <typename Pols , typename RT  ,typename...ARGS>
+class VariadicFunctor<  RT  (*)(ARGS...), Pols> : public core::BuiltinClosure_O {
+public:
+  typedef VariadicFunctor <  RT  (*)(ARGS...), Pols> MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  typedef RT(*FuncType)(ARGS...);
+  FuncType fptr;
+public:
+  virtual const char* describe() const { return "VariadicFunctor"; };
+  enum { NumParams = sizeof...(ARGS)};
+  VariadicFunctor(core::FunctionDescription* fdesc, FuncType ptr) : core::BuiltinClosure_O(entry_point,fdesc), fptr(ptr) {};
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    INITIALIZE_VA_LIST();
+    INVOCATION_HISTORY_FRAME();
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
+                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    core::MultipleValues& returnValues = core::lisp_multipleValues();
+    arg_tuple<Pols,ARGS...> all_args(frame->data());
+    return apply_and_return<RT,Pols,FuncType,arg_tuple<Pols,ARGS...>>::go(returnValues,closure->fptr,all_args);
+  }
+};
+};
+
+namespace clbind {
+//#include <clasp/clbind/clbind_functoids.h>
 };
 
 template <typename FunctionPtrType, typename Policies>

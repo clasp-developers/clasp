@@ -142,6 +142,7 @@ void scope_::register_() const {
   LOG_SCOPE(("%s:%d  register_ scope -> %p\n", __FILE__, __LINE__, this ));
   for (detail::registration *r = m_chain; r != 0; r = r->m_next) {
     LOG_SCOPE(("%s:%d register_ r-> %p  %s/%s\n", __FILE__, __LINE__, r, r->kind().c_str(), r->name().c_str()));
+//    printf("%s:%d register_ r-> %p  %s/%s\n", __FILE__, __LINE__, r, r->kind().c_str(), r->name().c_str());
     r->register_();
   }
 }

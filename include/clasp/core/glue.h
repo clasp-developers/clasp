@@ -97,24 +97,6 @@ struct from_object {
 #endif
 };
 
-#if 0
-    template <>
-    struct	from_object<bool*,std::false_type>
-    {
-	typedef	bool*	DeclareType;
-        bool            _val;
-	DeclareType     _v;
-        from_object(T_P o) : _val(false), _v(&_val) {};
-    };
-    template <>
-    struct	from_object<string&,std::false_type>
-    {
-	typedef	string		DeclareType;
-	DeclareType _v;
-        from_object(T_P o) : _v("") {};
-    };
-
-#endif
 
 struct dont_adopt_pointer {};
 struct adopt_pointer {};

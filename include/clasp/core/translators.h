@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-// PATTERN FOR FROM_OBJECT TRANSLATORS:
+// PATTERN FOR from_object TRANSLATORS:
 //
 // Fixnum not_fixnum_error(core::T_sp o) {
 //     TYPE_ERROR(o,cl::_sym_fixnum);
@@ -270,6 +270,16 @@ template <>
 
   template <>
     struct from_object< bool *, std::false_type >
+  {
+    typedef bool *DeclareType;
+
+    DeclareType _v;
+    bool _val;
+  from_object( T_P o ) : _val( false ), _v( &_val ){};
+  };
+
+  template <>
+    struct from_object< bool *&, std::false_type >
   {
     typedef bool *DeclareType;
 

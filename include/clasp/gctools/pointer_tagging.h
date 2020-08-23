@@ -281,7 +281,8 @@ ABI's  */
 
   template <class T>
     inline bool tagged_nilp(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_nil);
+    bool res = (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_nil);
+    return res;
   }
   template <class T>
     inline bool tagged_unboundp(T ptr) {

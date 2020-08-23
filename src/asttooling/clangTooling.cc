@@ -82,6 +82,12 @@ THE SOFTWARE.
 namespace translate {
 
 template <>
+struct from_object<int&,std::false_type> {
+  int _v;
+  from_object(core::T_sp o) : _v(0) {};
+};
+
+template <>
 struct from_object<clang::tooling::CommandLineArguments> {
   typedef clang::tooling::CommandLineArguments DeclareType;
   DeclareType _v;
@@ -678,6 +684,18 @@ size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
 //  printf("Returning size=%" PRu "\n", size);
   return size;
 }
+
+
+int call4(int x, int y, int z, int& w) {
+  printf("%s:%d call4 args: %d, %d, %d\n", __FILE__, __LINE__, x, y, z );
+  w = 2*(x+y+z);
+  printf("%s:%d after call call4 args: %d, %d, %d, %d\n", __FILE__, __LINE__, x, y, z, w );
+  return x+y+z;
+}
+
+
+
+
 };
 
 SYMBOL_EXPORT_SC_(KeywordPkg,windows);
@@ -724,6 +742,7 @@ void initialize_clangTooling() {
     // AST-TOOLING, pkg must be in its own scope
     package_ pkg(AstToolingPkg, {}, {});
     scope_& m = pkg.scope();
+    m.def("call4",&call4,pureOutValue<3>());
     class_<clang::tooling::CompilationDatabase>(m,"CompilationDatabase")
         .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
         .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
@@ -743,16 +762,16 @@ void initialize_clangTooling() {
         .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout);
   
     class_<clang::SourceManager> cl_af(m,"SourceManager");
-    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
-        .def("getFilename", &clang::SourceManager::getFilename)
-        .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
-        .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
-        .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, pureOutValue<2>())
-        .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
-        .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, pureOutValue<2>())
-        .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
-        .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
-        .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>());
+    cl_af.def("getFilename", &clang::SourceManager::getFilename)
+      .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
+      .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
+      .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, pureOutValue<2>())
+      .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
+      .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, pureOutValue<2>())
+      .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
+      .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
+      .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>())
+      .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)      ;
     m.def("getFieldOffset",&getFieldOffset);
     m.def("getRecordSize",&getRecordSize);
     class_<clang::SourceLocation> cl_ag(m,"SourceLocation");

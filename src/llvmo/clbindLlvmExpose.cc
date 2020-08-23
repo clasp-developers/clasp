@@ -51,7 +51,7 @@ void initialize_clbind_llvm_expose() {
   clbind::package_ pkg("LLVM");
   clbind::scope_& m = pkg.scope();
   class_<llvm::APInt>(m,"APInt")
-        .def("toString", (std::string (llvm::APInt::*)(unsigned Radix, bool Signed) const) & llvm::APInt::toString),
-    class_<llvm::APSInt, llvm::APInt>(m,"APSInt");
+    .def("toString", (std::string (llvm::APInt::*)(unsigned Radix, bool Signed) const) & llvm::APInt::toString);
+  class_<llvm::APSInt, llvm::APInt>(m,"APSInt");
 }
 }

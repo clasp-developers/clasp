@@ -1753,6 +1753,10 @@ CL_DEFUN void core__uninstall_sigchld() {
   signal(SIGCHLD, SIG_DFL);
 }
 
+CL_DEFUN void core__call4(int x, int y, int z, int w) {
+  printf("%s:%d call4 args: %d, %d, %d, %d\n", __FILE__, __LINE__, x, y, z, w );
+}
+
 /* Match the offset in the alist to the expected offset
 */
 void expect_offset(T_sp key, T_sp alist, size_t expected) {

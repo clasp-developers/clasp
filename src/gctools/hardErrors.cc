@@ -6,12 +6,12 @@
   abort();
 }
 
-[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno ) throw(HardError) {
+[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno ) noexcept(false) {
   printf("%s:%d:%s %s %s %lu\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno);
   abort();
 }
 
-[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const std::string& msg ) throw(HardError) {
+[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const std::string& msg ) noexcept(false) {
   printf("%s:%d:%s %s %s %zu %s\n", __FILE__, __LINE__, __FUNCTION__, funcname, filename, lineno, msg.c_str());
   abort();
 }

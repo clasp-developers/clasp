@@ -129,6 +129,16 @@ struct is_outValue {
 };
 
 template <typename Policies, int N>
+struct is_pureOutValue {
+  typedef typename Contains_<Policies, pureOutValue<N>>::type type;
+};
+
+template <typename Policies, int N>
+struct not_pureOutValue {
+  typedef typename std::negation<typename Contains_<Policies, pureOutValue<N>>::type>::type type;
+};
+
+template <typename Policies, int N>
 struct AdoptPointer {
   typedef typename boost::mpl::if_<typename Contains_<Policies, adopt<N>>::type, translate::adopt_pointer, translate::dont_adopt_pointer>::type type;
 };

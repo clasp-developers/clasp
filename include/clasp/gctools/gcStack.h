@@ -52,6 +52,7 @@ struct Frame {
   static inline size_t FrameBytes_(size_t elements) {
     return FrameElements_(elements) * sizeof(ElementType);
   }
+  ElementType* data() {return (ElementType*)reg_save_area_ptr();}
   void* reg_save_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_register_save_area[0])); };
   void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
   Frame(core::T_O* closure, size_t numArguments) {

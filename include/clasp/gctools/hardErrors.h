@@ -54,8 +54,8 @@ class HardError {
 [[noreturn]] void throw_hard_error_failed_assertion(const char* assertion);
 [[noreturn]] void throw_hard_error_cast_failed(const char* type, const char* from);
 [[noreturn]] void throw_hard_error_cannot_cast_tagged_pointer(const char* name, size_t kind);
-[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno) throw(HardError);
-[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const string& msg) throw(HardError);
+[[noreturn]] void throw_hard_error_implement_me(const char* funcname, const char* filename, size_t lineno) noexcept(false);
+[[noreturn]] void throw_hard_error_implement_me_message(const char* funcname, const char* filename, size_t lineno, const string& msg) noexcept(false);
 [[noreturn]] void throw_hard_error_subclass_must_implement(const std::string& className, const std::string& method);
 
 #define HARD_IMPLEMENT_ME() throw_hard_error_implement_me(__FUNCTION__, __FILE__, __LINE__);
@@ -70,7 +70,7 @@ class HardError {
     dbg_hook(str.c_str());                                   \
     ::core::errorFormatted(str);                                     \
   }
-#define HARD_UNREACHABLE() throw_hard_error("Unreachable");
+#define HARD_UNREACHABLE() {printf("%s:%d HARD_UNREACHABLE\n", __FILE__, __LINE__); throw_hard_error("Unreachable");}
 #define HARD_SUBCLASS_MUST_IMPLEMENT() throw_hard_error("Subclass must implement");
 #ifdef DEBUG_ASSERT
 #define GCTOOLS_ASSERT(x)                                       \
