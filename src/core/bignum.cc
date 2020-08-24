@@ -542,6 +542,8 @@ CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
   mp_size_t divisor_length = divisor->length();
   mp_size_t dividend_size = std::abs(dividend_length);
   mp_size_t divisor_size = std::abs(divisor_length);
+  if (divisor_size > dividend_size)
+    return Values(clasp_make_fixnum(0), dividend);
   const mp_limb_t *dividend_limbs = dividend->limbs();
   const mp_limb_t *divisor_limbs = divisor->limbs();
   mp_size_t quotient_size = dividend_size - divisor_size + 1;
