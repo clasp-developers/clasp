@@ -449,22 +449,39 @@ CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
   const mp_limb_t* limbs = num->limbs();
   unsigned int nlimbs = shift / mp_bits_per_limb;
   unsigned int nbits = shift % mp_bits_per_limb;
-  if (nlimbs >= size) { // Shifting the entire bignum away
-    if (len < 0) return clasp_make_fixnum(-1);
-    else return clasp_make_fixnum(0);
-  }
-  size_t result_size = size - nlimbs;
-  mp_limb_t result_limbs[result_size];
-  if (nbits == 0) {
-    // FIXME: memcpy? std::copy?
-    for (size_t i = 0; i < result_size; ++i) result_limbs[i] = limbs[nlimbs+i];
-    // input bignum is normalized, so high limb is not zero
+  if (len < 0) {
+    // -(-x >> a) = -(~(x-1) >> a) = ~(~(x-1) >> a) + 1 = ((x-1) >> a) + 1 i think.
+    if (nlimbs >= size) return clasp_make_fixnum(-1);
+    mp_size_t result_size = size - nlimbs;
+    mp_limb_t result_limbs[result_size];
+    mp_limb_t copy[size];
+    mpn_sub_1(copy, limbs, size, 1);
+    if (nbits == 0) {
+      // FIXME: memcpy? std::copy?
+      for (size_t i = 0; i < result_size; ++i) result_limbs[i] = copy[nlimbs+i];
+      mpn_add_1(result_limbs, result_limbs, result_size, 1);
+    } else {
+      mpn_rshift(result_limbs, &(copy[nlimbs]), result_size, nbits);
+      // Since we just shifted, I think there will be no carry.
+      mpn_add_1(result_limbs, result_limbs, result_size, 1);
+      if (result_limbs[result_size-1] == 0) --result_size;
+    }
+    return bignum_result(-result_size, result_limbs);
   } else {
-    // we don't need outshifted bits, so we ignore mpn_rshift's return value
-    mpn_rshift(result_limbs, &(limbs[nlimbs]), result_size, nbits);
-    if (result_limbs[result_size-1] == 0) --result_size;
+    if (nlimbs >= size) return clasp_make_fixnum(0);
+    size_t result_size = size - nlimbs;
+    mp_limb_t result_limbs[result_size];
+    if (nbits == 0) {
+      // FIXME: memcpy? std::copy?
+      for (size_t i = 0; i < result_size; ++i) result_limbs[i] = limbs[nlimbs+i];
+      // input bignum is normalized, so high limb is not zero
+    } else {
+      // we don't need outshifted bits, so we ignore mpn_rshift's return value
+      mpn_rshift(result_limbs, &(limbs[nlimbs]), result_size, nbits);
+      if (result_limbs[result_size-1] == 0) --result_size;
+    }
+    return bignum_result(result_size, result_limbs);
   }
-  return bignum_result((len < 0) ? -result_size : result_size, result_limbs);
 }
 
 Integer_sp TheNextBignum_O::shift_(Fixnum shift) const {
