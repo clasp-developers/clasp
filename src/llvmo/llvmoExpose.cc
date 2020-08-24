@@ -51,9 +51,17 @@ namespace orc {
 Error enableObjCRegistration(const char *PathToLibObjC);
 }
 };
+#ifdef NDEBUG
+#undef NDEBUG
 #define private public
 #include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
 #undef private
+#define NDEBUG
+#else
+#define private public
+#include <llvm/ExecutionEngine/Orc/ExecutionUtils.h>
+#undef private
+#endif
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/BitcodeWriter.h>
@@ -750,8 +758,8 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_UnknownVendor);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_Apple);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_PC);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_SCEI);
-SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_BGP);
-SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_BGQ);
+//SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_BGP);
+//SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_BGQ);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_Freescale);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_IBM);
 SYMBOL_EXPORT_SC_(LlvmoPkg, VendorType_ImaginationTechnologies);
@@ -765,8 +773,8 @@ CL_VALUE_ENUM(_sym_VendorType_UnknownVendor, llvm::Triple::UnknownVendor);
 CL_VALUE_ENUM(_sym_VendorType_Apple, llvm::Triple::Apple);
 CL_VALUE_ENUM(_sym_VendorType_PC, llvm::Triple::PC);
 CL_VALUE_ENUM(_sym_VendorType_SCEI, llvm::Triple::SCEI);
-CL_VALUE_ENUM(_sym_VendorType_BGP, llvm::Triple::BGP);
-CL_VALUE_ENUM(_sym_VendorType_BGQ, llvm::Triple::BGQ);
+//CL_VALUE_ENUM(_sym_VendorType_BGP, llvm::Triple::BGP);
+//CL_VALUE_ENUM(_sym_VendorType_BGQ, llvm::Triple::BGQ);
 CL_VALUE_ENUM(_sym_VendorType_Freescale, llvm::Triple::Freescale);
 CL_VALUE_ENUM(_sym_VendorType_IBM, llvm::Triple::IBM);
 CL_VALUE_ENUM(_sym_VendorType_ImaginationTechnologies, llvm::Triple::ImaginationTechnologies);
@@ -792,7 +800,7 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Haiku);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Minix);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_RTEMS);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_NaCl);
-SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CNK);
+//SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CNK);
 //  SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_Bitrig);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_AIX);
 SYMBOL_EXPORT_SC_(LlvmoPkg, OSType_CUDA);
@@ -817,7 +825,7 @@ CL_VALUE_ENUM(_sym_OSType_Haiku, llvm::Triple::Haiku);
 CL_VALUE_ENUM(_sym_OSType_Minix, llvm::Triple::Minix);
 CL_VALUE_ENUM(_sym_OSType_RTEMS, llvm::Triple::RTEMS);
 CL_VALUE_ENUM(_sym_OSType_NaCl, llvm::Triple::NaCl);
-CL_VALUE_ENUM(_sym_OSType_CNK, llvm::Triple::CNK);
+//CL_VALUE_ENUM(_sym_OSType_CNK, llvm::Triple::CNK);
 //  CL_VALUE_ENUM(_sym_OSType_Bitrig, llvm::Triple::Bitrig);
 CL_VALUE_ENUM(_sym_OSType_AIX, llvm::Triple::AIX);
 CL_VALUE_ENUM(_sym_OSType_CUDA, llvm::Triple::CUDA);
@@ -2018,11 +2026,11 @@ CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type*
 /*! I can't seem to get from_object working for MaybeAlign type */
 CL_DEFMETHOD void AllocaInst_O::setAlignment(core::T_sp align) {
   if (align.nilp()) {
-    llvm::MaybeAlign a;
+    llvm::Align a;
     this->wrappedPtr()->setAlignment(a);
     return;
   } else if (align.fixnump()) {
-    llvm::MaybeAlign a(align.unsafe_fixnum());
+    llvm::Align a(align.unsafe_fixnum());
     this->wrappedPtr()->setAlignment(a);
     return;
   }
@@ -2062,11 +2070,11 @@ CL_EXTERN_DEFMETHOD(StoreInst_O, &StoreInst_O::ExternalType::setAtomic);
 /*! I can't seem to get from_object working for MaybeAlign type */
 CL_DEFMETHOD void StoreInst_O::setAlignment(core::T_sp align) {
   if (align.nilp()) {
-    llvm::MaybeAlign a;
+    llvm::Align a;
     this->wrappedPtr()->setAlignment(a);
     return;
   } else if (align.fixnump()) {
-    llvm::MaybeAlign a(align.unsafe_fixnum());
+    llvm::Align a(align.unsafe_fixnum());
     this->wrappedPtr()->setAlignment(a);
     return;
   }
@@ -2078,11 +2086,11 @@ CL_EXTERN_DEFMETHOD(LoadInst_O, &LoadInst_O::ExternalType::setAtomic);
 /*! I can't seem to get from_object working for MaybeAlign type */
 CL_DEFMETHOD void LoadInst_O::setAlignment(core::T_sp align) {
   if (align.nilp()) {
-    llvm::MaybeAlign a;
+    llvm::Align a;
     this->wrappedPtr()->setAlignment(a);
     return;
   } else if (align.fixnump()) {
-    llvm::MaybeAlign a(align.unsafe_fixnum());
+    llvm::Align a(align.unsafe_fixnum());
     this->wrappedPtr()->setAlignment(a);
     return;
   }
@@ -3987,7 +3995,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
       auto &symbol_name = *expected_symbol_name;
       uint64_t size = p.second;
       std::string name(symbol_name.data());
-      uint64_t address = symbol.getValue();
+      uint64_t address = *symbol.getValue();
       Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
       if (expected_section_iterator) {
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
