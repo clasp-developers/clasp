@@ -760,10 +760,11 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
 
       // Pick off the specialest case
       if (fgcd == 1) {
-        Integer_sp num;
-        if (divlen < 0) num = gc::As_unsafe<Integer_sp>(this->negate_());
-        else num = this->asSmartPtr();
-        return Ratio_O::create(num, divisor);
+        if (divlen < 0)
+          return Ratio_O::create(gc::As_unsafe<Integer_sp>(this->negate_()),
+                                 gc::As_unsafe<Integer_sp>(divisor->negate_()));
+        else
+          return Ratio_O::create(this->asSmartPtr(), bdivisor);
       }
 
       // Nope, have to do some divisions.
