@@ -881,21 +881,22 @@ CL_DEFUN bool cl__logbitp(Integer_sp index, Integer_sp i) {
       mp_size_t size = std::abs(len);
       const mp_limb_t* limbs = bi->limbs();
       mp_size_t limb_index = n / mp_bits_per_limb;
-      const mp_limb_t* limbptr = &(limbs[limb_index]);
-      mp_limb_t limb = *limbptr;
-      if (limb_index > size) // index out of range
-        return (len < 0);
-      else if (len < 0) {
-        limb = -limb; // two's complement
-        while (limbptr != limbs) {
-          limbptr--;
-          if (*limbptr != 0) {
-            limb--; // one's complement instead
-            break;
+      if (limb_index < size) {
+        const mp_limb_t* limbptr = &(limbs[limb_index]);
+        mp_limb_t limb = *limbptr;
+        if (len < 0) {
+          limb = -limb; // two's complement
+          while (limbptr != limbs) {
+            limbptr--;
+            if (*limbptr != 0) {
+              limb--; // one's complement instead
+              break;
+            }
           }
         }
-      }
-      return ((limb >> (n % mp_bits_per_limb)) & 1);
+        return ((limb >> (n % mp_bits_per_limb)) & 1);
+      } else // limb_index >= size: index out of range
+        return (len < 0);
     }
   } else {
     // Index is a bignum.
