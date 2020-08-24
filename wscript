@@ -979,12 +979,14 @@ def configure(cfg):
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', "-L/usr/local/lib");
         cfg.env.append_value('INCLUDES', "/usr/local/include" )
-    cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
-    cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store='FFI')
+    if (cfg.env['DEST_OS'] == LINUX_OS ):
+        cfg.env.append_value('LINKFLAGS',"--unwindlib=libgcc")
+    cfg.check_cxx(lib='gmpxx gmp'.split(), cxxflags='-Wall', uselib_store='GMP')
+    cfg.check_cxx(lib='ffi', cxxflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+        cfg.check_cxx(stlib='gc', cxxflags='-Wall', uselib_store='BOEHM')
     except ConfigurationError:
-        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+        cfg.check_cxx(lib='gc', cxxflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):
@@ -1130,12 +1132,15 @@ def configure(cfg):
             linker_in_use = "gold"
             log.info("Using the gold linker")
         if (True):
+            # libc++ is not 100% complete on GNU/Linux, and there's no real advantage to using it when
+            # libstdc++ is more complete. Also, if you want to link to any other libraries written
+            # in C++ they will almost certainly have been built with libstdc++ so you'll need to link with that too to use them.
             cfg.env.append_value('CXXFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
             cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
             cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         else:
-            cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++','-lc++', '-lc++abi'])
             cfg.env.append_value('CXXFLAGS', ['-stdlib=libc++'])
+            cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++','-lc++', '-lc++abi'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
     if (cfg.env['DEST_OS'] == FREEBSD_OS ):
         #--lto-O0 is not effective for avoiding linker hangs
