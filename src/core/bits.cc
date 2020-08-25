@@ -135,7 +135,7 @@ mp_size_t next_addneg(mp_limb_t* result,
   // and zero & anything = 0.
   mp_limb_t temp[size2];
   mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
-  return -next_andc2_aux(result, t1, size1, temp, size2);
+  return next_andc2_aux(result, t1, size1, temp, size2);
 }
 
 mp_size_t next_and(mp_limb_t* result,
@@ -256,7 +256,7 @@ mp_size_t next_xor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       mp_limb_t temp1[size1];
       mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
       mp_limb_t temp2[size2];
-      mpn_sub_1(temp2, s2, size2, (mp_limb_t)2);
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
       return next_xor_aux(result, temp1, size1, temp2, size2);
     } else if (len2 > 0) return next_xorneg(result, s2, len2, s1, -len1);
     else { // len2 = 0 (and len1 is negative & nonzero)
@@ -301,7 +301,7 @@ mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       mp_limb_t temp2[size2];
       mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
       mp_size_t result_size = next_and_aux(result, temp1, size1, temp2, size2);
-      return next_addone_aux(result, result, result_size);
+      return -next_addone_aux(result, result, result_size);
     } else { // len2 = 0, len1 negative
       mpn_copyi(result, s1, -len1);
       return len1;
@@ -435,7 +435,7 @@ mp_size_t next_orc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       mp_limb_t temp1[size1];
       mpn_sub_1(temp1, s1, size1, (mp_limb_t)1);
       mp_limb_t temp2[size2];
-      mpn_sub_1(temp2, s2, size2, (mp_limb_t)2);
+      mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
       mp_size_t result_size = next_andc2_aux(result, temp1, size1, temp2, size2);
       return -next_addone_aux(result, result, result_size);
     } else return next_set_aux(result); // x|~0 = ~0
