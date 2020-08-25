@@ -327,11 +327,11 @@ mp_size_t next_com(mp_limb_t* result, const mp_limb_t* s, mp_size_t size) {
 
 mp_size_t next_norneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
                        const mp_limb_t* t2, mp_size_t size2) {
-  // -~(x | -y) = -~(x | ~(y-1)) = ~~(x | ~(y-1)) + 1 = (x | ~(y-1)) + 1
+  // ~(-1|0) = 0 so the result is positive
+  // ~(x | -y) = ~(x | ~(y-1)) = (~x & (y-1))
   mp_limb_t temp[size2];
   mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
-  mp_size_t result_size = next_andc2_aux(result, t1, size1, temp, size2);
-  return -next_addone_aux(result, result, result_size);
+  return next_andc2_aux(result, temp, size2, t1, size1);
 }
 
 mp_size_t next_nor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
