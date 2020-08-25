@@ -446,7 +446,7 @@ mp_size_t next_c1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
 
 mp_size_t next_orc1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
                     const mp_limb_t* s2, mp_size_t len2) {
-  return next_orc1(result, s2, len2, s1, len1);
+  return next_orc2(result, s2, len2, s1, len1);
 }
 
 mp_size_t next_nandneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
@@ -658,11 +658,11 @@ Integer_sp next_operation_rest(boole_ops op, List_sp integers) {
   }
 }
 
-Integer_sp next_boole_mixed(next_bit_operator op,
-                            Bignum_sp big, Fixnum small) {
+Integer_sp next_boole_mixed1(next_bit_operator op,
+                             Bignum_sp big, Fixnum small) {
   // FIXME: to As_unsafe once old bignums are gone
   mp_size_t len = big->length();
-  mp_limb_t result[len + 1];
+  mp_limb_t result[std::abs(len) + 1];
   mp_limb_t flimb;
   mp_size_t rlen;
   if (small < 0) {
@@ -678,22 +678,42 @@ Integer_sp next_boole_mixed(next_bit_operator op,
   return bignum_result(rlen, result);
 }
 
+Integer_sp next_boole_mixed2(next_bit_operator op,
+                             Fixnum small, Bignum_sp big) {
+  // Ditto FIXME
+  mp_size_t len = big->length();
+  mp_limb_t result[std::abs(len) + 1];
+  mp_limb_t flimb;
+  mp_size_t rlen;
+  if (small < 0) {
+    flimb = -small;
+    rlen = op(result, &flimb, -1, big->limbs(), len);
+  } else if (small > 0) {
+    flimb = small;
+    rlen = op(result, &flimb, 1, big->limbs(), len);
+  } else {
+    flimb = 0;
+    rlen = op(result, &flimb, 0, big->limbs(), len);
+  }
+  return bignum_result(rlen, result);
+}
+
 Integer_sp clasp_boole(Fixnum op, Integer_sp i1, Integer_sp i2) {
   if (i1.fixnump()) {
     if (i2.fixnump()) {
       bit_operator bop = fixnum_operations[op];
       return clasp_make_fixnum(bop(i1.unsafe_fixnum(), i2.unsafe_fixnum()));
     } else {
-      return next_boole_mixed(next_operations[op],
-                              // FIXME: to As_unsafe once old bignums gone
-                              gc::As<Bignum_sp>(i2),
-                              i1.unsafe_fixnum());
+      return next_boole_mixed2(next_operations[op],
+                               // FIXME: to As_unsafe once old bignums gone
+                               i1.unsafe_fixnum(),
+                               gc::As<Bignum_sp>(i2));
     }
   } else {
     if (i2.fixnump()) {
-      return next_boole_mixed(next_operations[op],
-                              gc::As<Bignum_sp>(i1),
-                              i2.unsafe_fixnum());
+      return next_boole_mixed1(next_operations[op],
+                               gc::As<Bignum_sp>(i1),
+                               i2.unsafe_fixnum());
     } else {
       Bignum_sp left = gc::As<Bignum_sp>(i1);
       Bignum_sp right = gc::As<Bignum_sp>(i2);
