@@ -38,174 +38,11 @@ THE SOFTWARE.
 
 namespace core {
 
-CL_PKG_NAME(CorePkg,make-bignum);
-CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
-  GC_ALLOCATE(Bignum_O, bn);
-  bn->_value = value_in_string;
-  return ((bn));
-};
-
-void Bignum_O::sxhash_(HashGenerator &hg) const {
-  hg.addValue(this->_value);
+CL_DEFUN Bignum_sp core__next_from_fixnum(Fixnum fix) {
+  return Bignum_O::create(fix);
 }
 
-float Bignum_O::as_float_() const {
-  return static_cast<float_t>( (this->_value.get_d()) );
-}
-
-double Bignum_O::as_double_() const {
-  return static_cast<double>( (this->_value.get_d()) );
-}
-
-LongFloat Bignum_O::as_long_float_() const {
-  return static_cast<LongFloat>( (this->_value.get_d()) );
-}
-
-// --- END OF TRANSLATION METHODS ---
-
-gc::Fixnum Bignum_O::bit_length_() const {
-  Bignum x = this->_value;
-  if (this->minusp_()) {
-    // issue #536
-    // from ECL: logxor(2,x,ecl_make_fixnum(-1)); before calling mpz_sizeinbase on x
-    mpz_class temp;
-    mpz_xor(temp.get_mpz_t(),clasp_to_mpz(clasp_make_fixnum(2)).get_mpz_t(), x.get_mpz_t());
-    mpz_class temp1;
-    mpz_xor(temp1.get_mpz_t(), temp.get_mpz_t(), clasp_to_mpz(clasp_make_fixnum(-1)).get_mpz_t());
-    return mpz_sizeinbase(temp1.get_mpz_t(), 2);
-  } else {
-    return mpz_sizeinbase(x.get_mpz_t(), 2);
-  }
-}
-
-gc::Fixnum Bignum_O::popcount() const {
-  Bignum x = this->_value;
-  if (this->minusp_()) {
-    // mpz_popcount is defined to return useless results on negative numbers,
-    // so use (logcount x) = (logcount (lognot x))
-    mpz_class temp;
-    mpz_com(temp.get_mpz_t(), x.get_mpz_t());
-    return mpz_popcount(temp.get_mpz_t());
-  } else
-    return mpz_popcount(x.get_mpz_t());
-}
-
-Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
-  return Rational_O::create(this->mpz(), clasp_to_mpz(divisor));
-}
-
-/*! Return the value shifted by BITS bits.
-      If BITS < 0 shift right, if BITS >0 shift left. */
-Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
-  if (bits == 0)
-    return this->asSmartPtr();
-  Bignum res;
-  if (bits < 0) {
-    mpz_div_2exp(res.get_mpz_t(), this->_value.get_mpz_t(), -bits);
-  } else {
-    mpz_mul_2exp(res.get_mpz_t(), this->_value.get_mpz_t(), bits);
-  }
-  return Integer_O::create(res);
-}
-
-string Bignum_O::__repr__() const {
-  stringstream ss;
-  ss << this->_value;
-  return ((ss.str()));
-}
-
-Number_sp Bignum_O::signum_() const {
-  if (this->zerop_())
-    return immediate_fixnum<Number_O>(0);
-  else if (this->plusp_())
-    return immediate_fixnum<Number_O>(1);
-  else
-    return immediate_fixnum<Number_O>(-1);
-}
-
-Number_sp Bignum_O::abs_() const {
-  GC_ALLOCATE(Bignum_O, cp);
-  cp->_value = this->_value * ::sgn(this->_value);
-  return ((cp));
-}
-
-bool Bignum_O::eql_(T_sp o) const {
-  if (o.fixnump()) {
-    return (this->_value == clasp_to_mpz(gc::As<Fixnum_sp>(o)));
-  } else if (Integer_sp oi = o.asOrNull<Integer_O>()) {
-    return (this->_value == clasp_to_mpz(oi));
-  }
-  return false;
-}
-
-Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
-  Bignum mpzq, mpzr;
-  mpz_cdiv_qr(mpzq.get_mpz_t(),
-              mpzr.get_mpz_t(),
-              a->mpz().get_mpz_t(),
-              b->mpz().get_mpz_t());
-  return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
-}
-
-Integer_mv big_truncate(Bignum_sp a, Bignum_sp b) {
-  Bignum mpzq, mpzr;
-  mpz_tdiv_qr(mpzq.get_mpz_t(),
-              mpzr.get_mpz_t(),
-              a->mpz().get_mpz_t(),
-              b->mpz().get_mpz_t());
-  return Values(Integer_O::create(mpzq), Integer_O::create(mpzr));
-}
-
-Integer_mv big_floor(Bignum_sp a, Bignum_sp b) {
-  Bignum_sp q = my_thread->bigRegister0();
-  Bignum_sp r = my_thread->bigRegister1();
-  mpz_fdiv_qr(q->mpz_ref().get_mpz_t(), r->mpz_ref().get_mpz_t(),
-              a->mpz().get_mpz_t(), b->mpz().get_mpz_t());
-  return Values(Integer_O::create(q->mpz()), Integer_O::create(r->mpz()));
-}
-
-Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y) {
-  Bignum zz;
-  mpz_gcd(zz.get_mpz_t(), x->mpz().get_mpz_t(), y->mpz().get_mpz_t());
-  return Integer_O::create(zz);
-}
-
-Integer_sp bignum_divide(const Bignum &a, const Bignum &b) {
-  size_t size_a = CLASP_BIGNUM_ABS_SIZE(a.get_mpz_t());
-  size_t size_b = CLASP_BIGNUM_ABS_SIZE(b.get_mpz_t());
-  Fixnum size_z = size_a - size_b + 1;
-  if (size_z <= 0)
-    size_z = 1;
-  Bignum z;
-  mpz_tdiv_q(z.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t());
-  return Integer_O::create(z);
-}
-
-Integer_sp _clasp_big_divided_by_big(const Bignum_sp a, const Bignum_sp b) {
-  return bignum_divide(a->mpz_ref(), b->mpz_ref());
-}
-
-Integer_sp _clasp_big_divided_by_fix(const Bignum_sp x, const Fixnum y) {
-  Bignum by(GMP_LONG(y));
-  return bignum_divide(x->mpz_ref(), by);
-}
-
-Integer_sp _clasp_fix_divided_by_big(const Fixnum x, const Bignum_sp y) {
-  Bignum bx(GMP_LONG(x));
-  return bignum_divide(bx, y->mpz_ref());
-}
-
-void clasp_big_register_free(Bignum_sp b) {
-  // ECL just returns but we
-  // could clear out the bignum register if it's too big
-  return;
-}
-
-CL_DEFUN TheNextBignum_sp core__next_from_fixnum(Fixnum fix) {
-  return TheNextBignum_O::create(fix);
-}
-
-TheNextBignum_sp TheNextBignum_O::create(const mpz_class& c) {
+Bignum_sp Bignum_O::create(const mpz_class& c) {
   const mp_size_t limbsize = sizeof(mp_limb_t);
   const size_t nails = GMP_NAIL_BITS;
   // copied from gmp docs
@@ -219,7 +56,7 @@ TheNextBignum_sp TheNextBignum_O::create(const mpz_class& c) {
   return create_from_limbs(len, 0, false, count, dest);
 }
 
-void TheNextBignum_O::sxhash_(HashGenerator &hg) const {
+void Bignum_O::sxhash_(HashGenerator &hg) const {
   mp_size_t len = this->length();
   if (!(hg.addValue(len))) return;
   mp_size_t size = std::abs(len);
@@ -241,11 +78,11 @@ Integer_sp bignum_result(mp_size_t len, const mp_limb_t* limbs) {
         return clasp_make_fixnum(-(limbs[0]));
       else break;
   }
-  return TheNextBignum_O::create_from_limbs(len, 0, false,
+  return Bignum_O::create_from_limbs(len, 0, false,
                                             std::abs(len), limbs);
 }
 
-mpz_class TheNextBignum_O::mpz() const {
+mpz_class Bignum_O::mpz() const {
   mp_size_t len = this->length();
   mpz_class m;
   mpz_import(m.get_mpz_t(), std::abs(len), -1, sizeof(mp_limb_t), 0, GMP_NAIL_BITS,
@@ -257,7 +94,7 @@ mpz_class TheNextBignum_O::mpz() const {
   } else return m;
 }
 
-string TheNextBignum_O::__repr__() const {
+string Bignum_O::__repr__() const {
   stringstream ss;
   mp_size_t len = this->length();
   mp_size_t size = std::abs(len);
@@ -274,7 +111,7 @@ string TheNextBignum_O::__repr__() const {
 }
 
 
-TheNextBignum_sp TheNextBignum_O::make(const string& str) {
+Bignum_sp Bignum_O::make(const string& str) {
   const char *cstr = str.c_str();
   size_t strsize = str.size();
   bool negative = false;
@@ -291,45 +128,45 @@ TheNextBignum_sp TheNextBignum_O::make(const string& str) {
   mp_size_t nlimbs = std::ceil(strsize*convert) + 2;
   mp_limb_t limbs[nlimbs];
   nlimbs = mpn_set_str(limbs, s, strsize, 10);
-  return TheNextBignum_O::create_from_limbs(negative ? -nlimbs : nlimbs, 0, false,
+  return Bignum_O::create_from_limbs(negative ? -nlimbs : nlimbs, 0, false,
                                             nlimbs, limbs);
 }
 
-CL_DEFUN TheNextBignum_sp core__next_from_string(const string& str) {
-  return TheNextBignum_O::make(str);
+CL_DEFUN Bignum_sp core__next_from_string(const string& str) {
+  return Bignum_O::make(str);
 }
 
-Number_sp TheNextBignum_O::signum_() const {
+Number_sp Bignum_O::signum_() const {
   // There are no zero bignums, so this is easy.
   if (this->length() < 0)
     return clasp_make_fixnum(-1);
   else return clasp_make_fixnum(1);
 }
 
-Number_sp TheNextBignum_O::abs_() const {
+Number_sp Bignum_O::abs_() const {
   // NOTE: We assume that abs of a bignum is never a fixnum.
   // This will be true for two's complement systems.
   mp_size_t length = this->length();
   if (length < 0) // negative
-    return TheNextBignum_O::create_from_limbs(-length, 0, false,
+    return Bignum_O::create_from_limbs(-length, 0, false,
                                               -length, this->limbs());
   else return this->asSmartPtr();
 }
 
-Number_sp TheNextBignum_O::negate_() const {
+Number_sp Bignum_O::negate_() const {
   mp_size_t len = this->length();
   const mp_limb_t* limbs = this->limbs();
   // This can be a fixnum, if we are -most_negative_fixnum.
   if ((len == 1) && (limbs[0] == -gc::most_negative_fixnum))
     return clasp_make_fixnum(gc::most_negative_fixnum);
   else
-    return TheNextBignum_O::create_from_limbs(-len, 0, false,
+    return Bignum_O::create_from_limbs(-len, 0, false,
                                               std::abs(len), limbs);
 }
 
-bool TheNextBignum_O::eql_(T_sp obj) const {
-  if (gc::IsA<TheNextBignum_sp>(obj)) {
-    TheNextBignum_sp other = gc::As_unsafe<TheNextBignum_sp>(obj);
+bool Bignum_O::eql_(T_sp obj) const {
+  if (gc::IsA<Bignum_sp>(obj)) {
+    Bignum_sp other = gc::As_unsafe<Bignum_sp>(obj);
     mp_size_t len = this->length();
     if (len != other->length()) return false;
     // Maybe faster than a word-by-word comparison?
@@ -340,7 +177,7 @@ bool TheNextBignum_O::eql_(T_sp obj) const {
   else return false;
 }
 
-gc::Fixnum TheNextBignum_O::popcount() const {
+gc::Fixnum Bignum_O::popcount() const {
   mp_size_t length = this->length();
   const mp_limb_t* limbs = this->limbs();
   if (length > 0)
@@ -360,7 +197,7 @@ gc::Fixnum TheNextBignum_O::popcount() const {
   }
 }
 
-gc::Fixnum TheNextBignum_O::bit_length_() const {
+gc::Fixnum Bignum_O::bit_length_() const {
   mp_size_t length = this->length();
   const mp_limb_t* limbs = this->limbs();
   if (length > 0)
@@ -379,7 +216,7 @@ gc::Fixnum TheNextBignum_O::bit_length_() const {
   }
 }
 
-CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
+CL_DEFUN string core__next_primitive_string(Bignum_sp num) {
   stringstream ss;
   mp_size_t len = num->length();
   const mp_limb_t *limbs = num->limbs();
@@ -389,7 +226,7 @@ CL_DEFUN string core__next_primitive_string(TheNextBignum_sp num) {
   return ss.str();
 }
 
-CL_DEFUN Integer_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
+CL_DEFUN Integer_sp core__next_fmul(Bignum_sp left, Fixnum right) {
   if (right == 0) return clasp_make_fixnum(0);
   mp_size_t llen = left->length();
   mp_size_t size = std::abs(llen);
@@ -415,7 +252,7 @@ CL_DEFUN Integer_sp core__next_fmul(TheNextBignum_sp left, Fixnum right) {
   return bignum_result(result_len, result_limbs);
 }
 
-CL_DEFUN TheNextBignum_sp core__next_lshift(TheNextBignum_sp num, Fixnum shift) {
+CL_DEFUN Bignum_sp core__next_lshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
   size_t size = std::abs(len);
@@ -437,12 +274,12 @@ CL_DEFUN TheNextBignum_sp core__next_lshift(TheNextBignum_sp num, Fixnum shift) 
   else result_limbs[result_size-1] = carry;
   for (size_t i = 0; i < nlimbs; ++i) result_limbs[i] = 0;
   // Since we start with a bignum, and we're making it bigger, we have a bignum.
-  return TheNextBignum_O::create_from_limbs((len < 0) ?
+  return Bignum_O::create_from_limbs((len < 0) ?
                                             -result_size : result_size, 0, false,
                                             result_size, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
+CL_DEFUN Integer_sp core__next_rshift(Bignum_sp num, Fixnum shift) {
   ASSERT(shift >= 0);
   mp_size_t len = num->length();
   size_t size = std::abs(len);
@@ -484,14 +321,14 @@ CL_DEFUN Integer_sp core__next_rshift(TheNextBignum_sp num, Fixnum shift) {
   }
 }
 
-Integer_sp TheNextBignum_O::shift_(Fixnum shift) const {
-  TheNextBignum_sp sthis = this->asSmartPtr();
+Integer_sp Bignum_O::shift_(Fixnum shift) const {
+  Bignum_sp sthis = this->asSmartPtr();
   if (shift > 0) return core__next_lshift(sthis, shift);
   else if (shift < 0) return core__next_rshift(sthis, -shift);
   else return sthis;
 }
 
-CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp right) {
+CL_DEFUN Bignum_sp core__next_mul(Bignum_sp left, Bignum_sp right) {
   // NOTE: The mpz_ functions detect when left = right (analogously) and use
   // mpn_sqr instead. I don't _think_ this is required, given they're untouched anyway.
   mp_size_t llen = left->length(), rlen = right->length();
@@ -506,13 +343,13 @@ CL_DEFUN TheNextBignum_sp core__next_mul(TheNextBignum_sp left, TheNextBignum_sp
   else msl = mpn_mul(result_limbs, llimbs, lsize, rlimbs, rsize);
   if (msl == 0) --result_size;
   // Should always be a bignum.
-  return TheNextBignum_O::create_from_limbs(((llen < 0) ^ (rlen < 0))
+  return Bignum_O::create_from_limbs(((llen < 0) ^ (rlen < 0))
                                             ? -result_size : result_size,
                                             0, false,
                                             result_size, result_limbs);
 }
 
-CL_DEFUN TheNextBignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
+CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
   mp_size_t result_size = 2;
   mp_limb_t limbs[2];
   mp_size_t llen;
@@ -530,13 +367,13 @@ CL_DEFUN TheNextBignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
   // overflow.
   // TODO: Because of that, msl might always be nonzero? Double check,
   // we could save a branch.
-  return TheNextBignum_O::create_from_limbs(((llen < 0) ^ (right < 0))
+  return Bignum_O::create_from_limbs(((llen < 0) ^ (right < 0))
                                             ? -result_size : result_size,
                                             0, false, result_size, limbs);
 }
 
-CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
-                                  TheNextBignum_sp divisor) {
+CL_DEFUN T_mv core__next_truncate(Bignum_sp dividend,
+                                  Bignum_sp divisor) {
   ASSERT(dividend != divisor); // "No overlap is permitted between arguments"
   mp_size_t dividend_length = dividend->length();
   mp_size_t divisor_length = divisor->length();
@@ -570,7 +407,7 @@ CL_DEFUN T_mv core__next_truncate(TheNextBignum_sp dividend,
 
 // Truncating a fixnum by a bignum will always get you zero
 // so there's no function for that.
-CL_DEFUN T_mv core__next_ftruncate(TheNextBignum_sp dividend,
+CL_DEFUN T_mv core__next_ftruncate(Bignum_sp dividend,
                                    Fixnum divisor) {
   if (divisor == 0)
     ERROR_DIVISION_BY_ZERO(dividend, clasp_make_fixnum(divisor));
@@ -592,7 +429,7 @@ CL_DEFUN T_mv core__next_ftruncate(TheNextBignum_sp dividend,
                 bignum_result((len < 0) ? -1 : 1, &remainder));
 }
 
-Integer_sp fix_divided_by_next(Fixnum dividend, TheNextBignum_sp divisor) {
+Integer_sp fix_divided_by_next(Fixnum dividend, Bignum_sp divisor) {
   // Assuming two's complement representation, the magnitude of a fixnum
   // is always less than that of a bignum, except for one case:
   // when the fixnum is most-negative-fixnum and the bignum is
@@ -702,12 +539,12 @@ Integer_sp next_gcd(const mp_limb_t* llimbs, mp_size_t lsize,
   return bignum_result(result_size, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_gcd(TheNextBignum_sp left, TheNextBignum_sp right) {
+CL_DEFUN Integer_sp core__next_gcd(Bignum_sp left, Bignum_sp right) {
   return next_gcd(left->limbs(), std::abs(left->length()),
                   right->limbs(), std::abs(right->length()));
 }
 
-CL_DEFUN Integer_sp core__next_fgcd(TheNextBignum_sp big, Fixnum small) {
+CL_DEFUN Integer_sp core__next_fgcd(Bignum_sp big, Fixnum small) {
   if (small == 0) return big;
   // Don't think mpn_gcd_1 understands negatives.
   if (small < 0) small = -small;
@@ -715,7 +552,7 @@ CL_DEFUN Integer_sp core__next_fgcd(TheNextBignum_sp big, Fixnum small) {
                                      small));
 }
 
-Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
+Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
   // FIXME?: Some of the bignum_results in here might always
   // end up with bignums and so could be direct create calls instead.
   mp_size_t len = this->length();
@@ -744,7 +581,7 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
   } else {
     // divisor is a bignum.
     // TODO: Switch to As_unsafe once old bignums are gone.
-    TheNextBignum_sp bdivisor = gc::As<TheNextBignum_sp>(divisor);
+    Bignum_sp bdivisor = gc::As<Bignum_sp>(divisor);
     mp_size_t divlen = bdivisor->length();
     mp_size_t divsize = std::abs(divlen);
     const mp_limb_t* divlimbs = bdivisor->limbs();
@@ -797,7 +634,7 @@ Rational_sp TheNextBignum_O::ratdivide(Integer_sp divisor) const {
       // mpn_divexact function, but this latter isn't documented.
       // Might be worth looking into - apparently the exact division
       // algorithm is a few times faster than the usual one.
-      TheNextBignum_sp bgcd = gc::As_unsafe<TheNextBignum_sp>(gcd);
+      Bignum_sp bgcd = gc::As_unsafe<Bignum_sp>(gcd);
       mp_size_t gcd_size = bgcd->length(); // necessarily positive
       const mp_limb_t* gcd_limbs = bgcd->limbs();
       
@@ -878,14 +715,14 @@ Integer_sp next_add(const mp_limb_t *llimbs, mp_size_t llen,
   return bignum_result(result_len, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_add(TheNextBignum_sp left,
-                                   TheNextBignum_sp right) {
+CL_DEFUN Integer_sp core__next_add(Bignum_sp left,
+                                   Bignum_sp right) {
   return next_add(left->limbs(), left->length(),
                   right->limbs(), right->length());
 }
 
-CL_DEFUN Integer_sp core__next_sub(TheNextBignum_sp left,
-                                   TheNextBignum_sp right) {
+CL_DEFUN Integer_sp core__next_sub(Bignum_sp left,
+                                   Bignum_sp right) {
   return next_add(left->limbs(), left->length(),
                   right->limbs(), -(right->length()));
 }
@@ -917,21 +754,21 @@ Integer_sp next_fadd(const mp_limb_t* limbs, mp_size_t len,
   return bignum_result(result_len, result_limbs);
 }
 
-CL_DEFUN Integer_sp core__next_fadd(TheNextBignum_sp left, Fixnum right) {
+CL_DEFUN Integer_sp core__next_fadd(Bignum_sp left, Fixnum right) {
   return next_fadd(left->limbs(), left->length(), right);
 }
 
 // bignum - fixnum is trivially bignum +-fixnum, but fixnum - bignum
 // is very slightly trickier
-CL_DEFUN Integer_sp core__next_fsub(Fixnum left, TheNextBignum_sp right) {
+CL_DEFUN Integer_sp core__next_fsub(Fixnum left, Bignum_sp right) {
   return next_fadd(right->limbs(), -(right->length()), left);
 }
 
-Number_sp TheNextBignum_O::oneMinus_() const {
+Number_sp Bignum_O::oneMinus_() const {
   return next_fadd(this->limbs(), this->length(), -1);
 }
 
-Number_sp TheNextBignum_O::onePlus_() const {
+Number_sp Bignum_O::onePlus_() const {
   return next_fadd(this->limbs(), this->length(), 1);
 }
 
@@ -957,20 +794,20 @@ double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
   return std::ldexp(((len < 0) ? -soon : soon), 64*(size-2));
 }
 
-float TheNextBignum_O::as_float_() const {
+float Bignum_O::as_float_() const {
   return static_cast<float>(next_to_double(this->length(), this->limbs()));
 }
 
-double TheNextBignum_O::as_double_() const {
+double Bignum_O::as_double_() const {
   return next_to_double(this->length(), this->limbs());
 }
 
-LongFloat TheNextBignum_O::as_long_float_() const {
+LongFloat Bignum_O::as_long_float_() const {
   return static_cast<LongFloat>(next_to_double(this->length(), this->limbs()));
 }
 
-CL_DEFUN int core__next_compare(TheNextBignum_sp left,
-                                TheNextBignum_sp right) {
+CL_DEFUN int core__next_compare(Bignum_sp left,
+                                Bignum_sp right) {
   mp_size_t llen = left->length(), rlen = right->length();
   const mp_limb_t *llimbs = left->limbs(), *rlimbs = right->limbs();
 

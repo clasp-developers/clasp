@@ -63,25 +63,11 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
         // Note that / truncates towards zero as of C++11, as we want.
         return clasp_make_fixnum(x.unsafe_fixnum() / fy);
     }
-  case_Fixnum_v_Bignum :
-    return _clasp_fix_divided_by_big(x.unsafe_fixnum(),
-                                     gc::As_unsafe<Bignum_sp>(y));
-  case_Bignum_v_Fixnum : {
-      Fixnum fy = y.unsafe_fixnum();
-      if (fy == 0)
-        ERROR_DIVISION_BY_ZERO(x, y);
-      else
-        return _clasp_big_divided_by_fix(gc::As_unsafe<Bignum_sp>(x),
-                                         y.unsafe_fixnum());
-    }
-  case_Bignum_v_Bignum :
-    return _clasp_big_divided_by_big(gc::As_unsafe<Bignum_sp>(x),
-                                     gc::As_unsafe<Bignum_sp>(y));
   case_Fixnum_v_NextBignum :
     return fix_divided_by_next(x.unsafe_fixnum(),
-                               gc::As_unsafe<TheNextBignum_sp>(x));
+                               gc::As_unsafe<Bignum_sp>(x));
   case_NextBignum_v_Fixnum : {
-      T_mv trunc = core__next_ftruncate(gc::As_unsafe<TheNextBignum_sp>(x),
+      T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x),
                                         y.unsafe_fixnum());
       T_sp quotient = trunc;
       return gc::As_unsafe<Integer_sp>(trunc);
@@ -91,8 +77,8 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
       // but we could call a version of truncate that doesn't cons up the
       // actual bignum for the remainder, hypothetically.
       // Would save some heap allocation.
-      T_mv trunc = core__next_truncate(gc::As_unsafe<TheNextBignum_sp>(x),
-                                       gc::As_unsafe<TheNextBignum_sp>(y));
+      T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x),
+                                       gc::As_unsafe<Bignum_sp>(y));
       T_sp quotient = trunc;
       return gc::As_unsafe<Integer_sp>(trunc);
     }
@@ -136,27 +122,17 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   case_Fixnum_v_Fixnum :
     return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
   case_Fixnum_v_NextBignum :
-    return core__next_fgcd(gc::As_unsafe<TheNextBignum_sp>(y),
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y),
                            x.unsafe_fixnum());
   case_NextBignum_v_Fixnum :
-    return core__next_fgcd(gc::As_unsafe<TheNextBignum_sp>(x),
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x),
                            y.unsafe_fixnum());
   case_NextBignum_v_NextBignum :
-    return core__next_gcd(gc::As_unsafe<TheNextBignum_sp>(x),
-                          gc::As_unsafe<TheNextBignum_sp>(y));
-  case_Fixnum_v_Bignum : {
-      x = Bignum_O::create(x.unsafe_fixnum());
-      break;
-    }
-  case_Bignum_v_Fixnum : {
-      y = Bignum_O::create(y.unsafe_fixnum());
-      break;
-    }
-    default: break;
+    return core__next_gcd(gc::As_unsafe<Bignum_sp>(x),
+                          gc::As_unsafe<Bignum_sp>(y));
+    default: UNREACHABLE();
   };
   MATH_DISPATCH_END();
-  return _clasp_big_gcd(gc::As_unsafe<Bignum_sp>(x),
-                        gc::As_unsafe<Bignum_sp>(y));
 }
 
 CL_LAMBDA(&rest args);

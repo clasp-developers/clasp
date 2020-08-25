@@ -73,18 +73,6 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     } else TYPE_ERROR_cl_random(olimit);
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
-    if (clasp_plusp (gbn)) {
-      boost::uniform_int<bmp::mpz_int> gen(0, bmp::mpz_int(gbn->mpz_ref().get_mpz_t()));
-      auto rnd = gen(random_state->_Producer);
-      bmp::mpz_int v = rnd;
-      mpz_t z;
-      mpz_init(z);
-      mpz_set(z,v.backend().data());
-      return Integer_O::create(mpz_class(z));
-    }
-    else TYPE_ERROR_cl_random(olimit);
-  } else if (gc::IsA<TheNextBignum_sp>(olimit)) {
-    TheNextBignum_sp gbn = gc::As_unsafe<TheNextBignum_sp>(olimit);
     mp_size_t len = gbn->length();
     const mp_limb_t* limbs = gbn->limbs();
     if (len < 1) TYPE_ERROR_cl_random(olimit); // positive only

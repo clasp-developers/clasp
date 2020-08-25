@@ -51,39 +51,7 @@ namespace core {
 
 CL_LAMBDA(buffer x base);
 CL_DECLARE();
-CL_DOCSTRING("bignumToString");
-CL_DEFUN StrNs_sp core__bignum_to_string(StrNs_sp buffer, const Bignum &bn, Fixnum_sp base) {
-  if (unbox_fixnum(base) < 2 || unbox_fixnum(base) > 36) {
-    QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
-  }
-  int ibase = unbox_fixnum(base);
-  size_t str_size = mpz_sizeinbase(bn.get_mpz_t(), ibase);
-  if (bn < 0) str_size++;
-  if (Str8Ns_sp buffer8 = buffer.asOrNull<Str8Ns_O>() ) {
-    buffer8->ensureSpaceAfterFillPointer(clasp_make_character('\0'),str_size + 2);
-    char *bufferStart = (char*)&(*buffer8)[buffer8->fillPointer()];
-    mpz_get_str(bufferStart, -unbox_fixnum(base), bn.get_mpz_t());
-    if (bufferStart[str_size - 1] == '\0') {
-      buffer8->fillPointerSet(buffer8->fillPointer()+str_size-1);
-    } else {
-      buffer8->fillPointerSet(buffer8->fillPointer()+str_size);
-    }
-  } else if (StrWNs_sp bufferw = buffer.asOrNull<StrWNs_O>()) {
-    bufferw->ensureSpaceAfterFillPointer(clasp_make_character(' '),str_size+1);
-    char cpbuffer[str_size+1]; // use a stack allocated array for this
-    mpz_get_str(cpbuffer, -unbox_fixnum(base), bn.get_mpz_t());
-    for ( size_t idx(0);idx<str_size; ++idx) {
-      bufferw->vectorPushExtend(cpbuffer[idx]);
-    }
-  } else {
-    SIMPLE_ERROR(BF("The buffer for the bignum must be a string with a fill-pointer"));
-  }
-  return buffer;
-}
-
-CL_LAMBDA(buffer x base);
-CL_DECLARE();
-CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, TheNextBignum_sp bn,
+CL_DEFUN StrNs_sp core__next_to_string(StrNs_sp buffer, Bignum_sp bn,
                                        Fixnum_sp base) {
   const char* num_to_text = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int ibase = unbox_fixnum(base);
@@ -183,14 +151,12 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
       StringPushStringCharStar(buffer,txt);
       break;
     default:
-        Bignum bn(GMP_LONG(fn));
-      core__bignum_to_string(buffer, bn, base);
-      break;
+        Bignum_sp bn = core__next_from_fixnum(fn);
+        core__next_to_string(buffer, bn, base);
+        break;
     }
     return buffer;
   } else if (Bignum_sp bi = integer.asOrNull<Bignum_O>()) {
-    core__bignum_to_string(buffer, bi->mpz_ref(), base);
-  } else if (TheNextBignum_sp bi = integer.asOrNull<TheNextBignum_O>()) {
     core__next_to_string(buffer, bi, base);
   } else {
     QERROR_WRONG_TYPE_NTH_ARG(2, base, cl::_sym_integer);

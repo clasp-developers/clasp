@@ -333,10 +333,6 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
   (let ((bn-str (prin1-to-base-string bignum)))
-    (add-creator "ltvc_make_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
-
-(defun ltv/next-bignum (bignum index read-only-p &key (toplevelp t))
-  (let ((bn-str (prin1-to-base-string bignum)))
     (add-creator "ltvc_make_next_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
@@ -451,7 +447,6 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
     ((hash-table-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-hash-table-coalesce literal-machine)) #'ltv/hash-table))
     ((bignump object) (values (literal-machine-bignum-coalesce literal-machine) #'ltv/bignum))
-    ((core:next-bignum-p object) (values (literal-machine-bignum-coalesce literal-machine) #'ltv/next-bignum))
     ((pathnamep object) (values (literal-machine-pathname-coalesce literal-machine) #'ltv/pathname))
     ((packagep object) (values (literal-machine-package-coalesce literal-machine) #'ltv/package))
     ((complexp object) (values (literal-machine-complex-coalesce literal-machine) #'ltv/complex))

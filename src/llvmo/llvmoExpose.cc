@@ -2208,22 +2208,9 @@ CL_DEFUN APInt_sp APInt_O::makeAPIntWidth(core::Integer_sp value, uint width, bo
     }
     apint = llvm::APInt(width, fixnum_value, sign);
     numbits = gc::fixnum_bits;
-  } else if (gc::IsA<core::Bignum_sp>(value)) {
-    // It's a bignum so lets convert the bignum to a string and put it into an APInt
-    char *asString = NULL;
-    core::Bignum_sp bignum_value = gc::As_unsafe<core::Bignum_sp>(value);
-    mpz_class &mpz_val = bignum_value->mpz_ref();
-    int mpz_size_in_bits = mpz_sizeinbase(mpz_val.get_mpz_t(), 2);
-    asString = ::mpz_get_str(NULL, 10, mpz_val.get_mpz_t());
-    apint = llvm::APInt(width, llvm::StringRef(asString, strlen(asString)), 10);
-    free(asString);
-    numbits = mpz_size_in_bits;
-    if (numbits > width) {
-      string numstr = asString;
-      SIMPLE_ERROR(BF("You tried to create an unsigned I%d with a value[%s] that requires %d bits to represent") % width % numstr % mpz_size_in_bits);
-    }
-  } else {
-    core::TheNextBignum_sp bignum_value = gc::As<core::TheNextBignum_sp>(value);
+  } else { // bignum
+    // TODO: use As_unsafe
+    core::Bignum_sp bignum_value = gc::As<core::Bignum_sp>(value);
     mp_size_t len = bignum_value->length();
     mp_size_t size = std::abs(len);
     const mp_limb_t* limbs = bignum_value->limbs();

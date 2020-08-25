@@ -64,10 +64,6 @@ CL_DEFUN bool core__base_char_p(T_sp arg) {
 
 CL_DEFUN bool core__bignump(T_sp obj) {
   return gc::IsA<Bignum_sp>(obj);
-};
-
-CL_DEFUN bool core__next_bignum_p(T_sp obj) {
-  return gc::IsA<TheNextBignum_sp>(obj);
 }
 
 // XXX: this should be adjusted whenever unicode is implemented
