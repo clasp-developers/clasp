@@ -709,14 +709,14 @@ size_t processMpsMessages(size_t& finalizations) {
           for ( auto cur : finalizers ) {
             core::T_sp finalizer = oCar(cur);
             core::eval::funcall(finalizer,obj);
-            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
+//            printf("%s:%d Ran finalizer callback.\n", __FILE__, __LINE__ );
           }
           ht->remhash(obj);
           invoked_finalizer = true;
         }
         if (!invoked_finalizer && obj.generalp()) obj_finalize(ref_o);
       } else {
-        printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
+//        printf("%s:%d Got finalization message for %p reconstituted tagged ptr = %p stamp->%u  - it's a dead_object so I'm ignoring it - maybe get rid of this message\n", __FILE__, __LINE__, (void*)ref_o, (void*)obj.tagged_(), gctools::header_pointer(ref_o)->stamp_());
       }
         
     } else {
@@ -981,8 +981,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 // ----------------------------------------------------------------------
   // Pool for CONS objects
 
+  ASSERT(CONS_HEADER_SIZE==0); // CONS cells have no header currently
   mps_fmt_t cons_fmt;
   MPS_ARGS_BEGIN(args) {
+//    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(ConsHeader_s));
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, cons_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, cons_skip);
@@ -1068,6 +1070,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // Create the AWL pool for weak hash tables here
   MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);

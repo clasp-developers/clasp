@@ -14,10 +14,7 @@
 (load-if-compiled-correctly "sys:regression-tests;stamps.lisp")
 (load-if-compiled-correctly "sys:regression-tests;array0.lisp")
 (load-if-compiled-correctly "sys:regression-tests;tests01.lisp")
-#-use-mps
 (load-if-compiled-correctly "sys:regression-tests;finalizers.lisp")
-#+use-mps
-(progn (princ "Skipping finalizer tests on MPS - fix!") (terpri))
 (load-if-compiled-correctly "sys:regression-tests;strings01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;cons01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;sequences01.lisp")

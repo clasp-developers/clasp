@@ -69,7 +69,7 @@ safe_buffer_pointer(core::T_sp x, uint size) {
   if (core::Str8Ns_sp str = x.asOrNull<core::Str8Ns_O>()) {
     ok = (size <= str->arrayTotalSize());
     address = (void*)&(*str)[0]; // str->addressOfBuffer();
-      } else if (core::SimpleBaseString_sp strb = x.asOrNull<core::SimpleBaseString_O>()) {
+  } else if (core::SimpleBaseString_sp strb = x.asOrNull<core::SimpleBaseString_O>()) {
     ok = (size <= strb->arrayTotalSize());
     address = (void*)&(*strb)[0]; // str->addressOfBuffer();
   } else if (core::ComplexVector_T_sp vec = x.asOrNull<core::ComplexVector_T_O>()) {
@@ -77,7 +77,11 @@ safe_buffer_pointer(core::T_sp x, uint size) {
     size = (size + divisor - 1) / divisor;
     ok = (size <= vec->arrayTotalSize());
     address = &(*vec)[0];
-  } else {
+  } else if (core::SimpleVector_byte8_t_sp svb8 = x.asOrNull<core::SimpleVector_byte8_t_O>()) {
+    ok = (size <= svb8->arrayTotalSize());
+    address = svb8->rowMajorAddressOfElement_(0);
+  }
+  else {
     SIMPLE_ERROR(BF("Add support for buffer %s") % _rep_(x));
   }
   if (!ok) {
@@ -242,20 +246,33 @@ CL_LAMBDA(fd buffer length oob peek waitall);
 CL_DECLARE();
 CL_DOCSTRING("ll_socketReceive");
 CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
-                         core::T_sp buffer,  // #1
-                         int length,   // #2
-                         bool oob,     // #3
-                         bool peek,    // #4
-                         bool waitall) // #5
+                         core::T_sp buffer,                          // #1
+                         int length,                                 // #2
+                         bool oob,                                   // #3
+                         bool peek,                                  // #4
+                         bool waitall)                               // #5
 {
   int flags = (oob ? MSG_OOB : 0) |
               (peek ? MSG_PEEK : 0) |
               (waitall ? MSG_WAITALL : 0);
   cl_index len;
+  struct sockaddr_in name;
+  socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
   clasp_disable_interrupts();
-  len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, NULL, NULL);
+  len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, (struct sockaddr *)&name, &addr_len);
   clasp_enable_interrupts();
-  return Values(core::make_fixnum(len),core::make_fixnum(errno));
+  unlikely_if (len == -1)
+    return Values(core::make_fixnum(-1),core::make_fixnum(errno));
+  else {
+    uint32_t ip = ntohl(name.sin_addr.s_addr);
+    uint16_t port = ntohs(name.sin_port);
+    core::Vector_sp vector = gc::As<core::Vector_sp>(core::eval::funcall(cl::_sym_makeArray, core::make_fixnum(4)));
+    vector->rowMajorAset(0,core::make_fixnum(ip >> 24));
+    vector->rowMajorAset(1,core::make_fixnum((ip >> 16) & 0xFF));
+    vector->rowMajorAset(2,core::make_fixnum((ip >> 8) & 0xFF));
+    vector->rowMajorAset(3,core::make_fixnum(ip & 0xFF));
+    return Values(core::make_fixnum(len), core::make_fixnum(errno), vector, core::make_fixnum(port));
+  }
 }
 
 CL_LAMBDA(name);

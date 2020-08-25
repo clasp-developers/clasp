@@ -102,11 +102,13 @@
         `(let ((,%value ,value)
                ,@init)
            (do-in-list (,%elt ,%sublist ,list)
-             (when ,%elt
-               (let ((,%car (car (the cons ,%elt))))
-                 (when ,(funcall test-function %value
-                                 (funcall key-function %car))
-                   (return ,%elt))))))))))
+             (if (consp ,%elt)
+                 (let ((,%car (car (the cons ,%elt))))
+                   (when ,(funcall test-function %value
+                                   (funcall key-function %car))
+                     (return ,%elt)))
+                 (when ,%elt
+                   (error 'type-error :datum ,%elt :expected-type 'list)))))))))
 
 (define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-assoc env (rest whole))

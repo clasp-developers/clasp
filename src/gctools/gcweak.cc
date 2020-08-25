@@ -963,7 +963,7 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
   return MPS_RES_OK;
 }
 
-mps_addr_t weak_obj_skip(mps_addr_t base) {
+mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
   GCWEAK_LOG(BF("weak_obj_skip base=%p") % ((void *)base));
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
   switch (weakObj->kind()) {
@@ -1013,6 +1013,20 @@ mps_addr_t weak_obj_skip(mps_addr_t base) {
   GCWEAK_LOG(BF("weak_obj_skip returning base=%p") % ((void *)base));
   return base;
 };
+
+
+mps_addr_t weak_obj_skip(mps_addr_t client) {
+  return weak_obj_skip_debug(client,false);
+}
+
+__attribute__((noinline))  mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t client,
+                                                                     size_t allocate_size,
+                                                                     size_t skip_size) {
+  int64_t delta = (int64_t)allocate_size - (int64_t)skip_size;
+  printf("%s:%d weak_obj_skip_debug_wrong_size bad size calc allocate_size -> %lu  obj_skip -> %lu delta -> %lld\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
+         __FILE__, __LINE__, allocate_size, skip_size, delta );
+  return weak_obj_skip_debug(client,true);
+}
 
 void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(old);

@@ -83,6 +83,7 @@ extern size_t _global_stack_max_size;
 #define FWD_MTAG            0b10
 #define STAMP_SHIFT  2
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<STAMP_SHIFT)|STAMP_MTAG)
+#define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>STAMP_SHIFT)
 // ADJUST_STAMP values are left unshifted
 #define ADJUST_STAMP(unshifted_stamp) (unshifted_stamp) // (unshifted_stamp<<STAMP_PARTIAL_SHIFT_REST_FIXNUM)|STAMP_MTAG)
 // ISA_ADJUST_STAMP must be shifted so that they match header values when they are read
@@ -860,6 +861,7 @@ extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 #define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate(__VA_ARGS__)
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
+#define GC_NON_RECURSIVE_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points

@@ -85,6 +85,10 @@ int main(int argc, const char* argv[])
     perror("server_portfile is too long");
   }
   FILE* fin = fopen(server_portfile,"r");
+  if (!fin) {
+    printf("%s:%d Could not open file: %s\n", __FILE__, __LINE__, server_portfile);
+    exit(1);
+  }
   char portnum[16];
   fread(portnum,15,1,fin);
   fclose(fin);

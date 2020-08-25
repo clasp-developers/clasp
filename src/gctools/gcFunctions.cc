@@ -599,12 +599,111 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   return pattern;
 };
 
+};
+
+#ifdef USE_MPS
+struct MemoryMeasure {
+  size_t _Count;
+  size_t _Size;
+  MemoryMeasure() : _Count(0), _Size(0) {};
+};
+
+struct MemoryCopy {
+  uintptr_t _address;
+  MemoryCopy(uintptr_t start) : _address(start) {};
+};
+
+extern "C" {
+
+void amc_apply_measure(mps_addr_t client, void *p, size_t s) {
+  MemoryMeasure* count = (MemoryMeasure*)p;
+  count->_Count++;
+  mps_addr_t next = obj_skip(client);
+  count->_Size += ((size_t)next-(size_t)client);
+}
+
+void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
+  MemoryCopy* cpy = (MemoryCopy*)p;
+  mps_addr_t next = obj_skip(client);
+  size_t size = ((size_t)next-(size_t)client);
+  void* header = reinterpret_cast<void*>(gctools::ClientPtrToBasePtr(client));
+  memcpy((void*)cpy->_address,(void*)header,size);
+  cpy->_address += size;
+};
+
+};
+#endif // USE_MPS
+
+
+extern "C" {
+
+#ifdef USE_MPS
+#define SCAN_STRUCT_T int
+#define ADDR_T mps_addr_t
+#define OBJECT_SCAN fixup_objects
+#define SCAN_BEGIN(xxx)
+#define SCAN_END(xxx)
+#define POINTER_FIX(field)
+#define GC_OBJECT_SCAN
+__attribute__((optnone))
+#include "obj_scan.cc"
+#undef GC_OBJ_SCAN
+#undef OBJ_SCAN
+#undef SCAN_STRUCT_T
+#endif // USE_MPS
+};
+
+namespace gctools {
+
+#ifdef USE_MPS
+void walk_memory(mps_pool_t pool, mps_amc_apply_stepper_t stepper, void* pdata, size_t psize) {
+  mps_arena_park(global_arena);
+  mps_amc_apply(pool, stepper, pdata, psize);
+  mps_arena_release(global_arena);
+}
+
+CL_DEFUN core::T_mv gctools__measure_memory() {
+  MemoryMeasure count;
+  walk_memory(global_amc_pool, amc_apply_measure,(void*)&count,sizeof(count));
+  walk_memory(global_amcz_pool, amc_apply_measure,(void*)&count,sizeof(count));
+  return Values(core::make_fixnum(count._Count),core::make_fixnum(count._Size));
+}
+
+CL_DEFUN void gctools__copy_memory() {
+  MemoryMeasure amc_measure;
+  {
+    walk_memory(global_amc_pool,amc_apply_measure,(void*)&amc_measure,sizeof(amc_measure));
+    uintptr_t amc_buffer = (uintptr_t)malloc(amc_measure._Size+100000);
+    MemoryCopy cpy(amc_buffer);
+    walk_memory(global_amc_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    uintptr_t start = amc_buffer+sizeof(gctools::Header_s);
+    uintptr_t stop = cpy._address+sizeof(gctools::Header_s);
+    printf("%s:%d  fixup_objects from %p to %p\n", __FILE__, __LINE__, (void*)start, (void*)stop);
+    // AMC pool needs fixup
+    fixup_objects(0,(void*)start,(void*)stop);
+    free((void*)amc_buffer);
+  }
+  // AMCZ pool doesn't need to be fixedup
+  MemoryMeasure amcz_measure;
+  {
+    walk_memory(global_amcz_pool,amc_apply_measure,(void*)&amcz_measure,sizeof(amcz_measure));
+    uintptr_t amcz_buffer = (uintptr_t)malloc(amcz_measure._Size+100000);
+    MemoryCopy cpy(amcz_buffer);
+    walk_memory(global_amcz_pool,amc_apply_copy,(void*)&cpy,sizeof(cpy));
+    free((void*)amcz_buffer);
+  }
+  printf("%s:%d Copied and fixed up %lu bytes from AMC and copied %lu bytes from AMCZ\n",
+         __FILE__, __LINE__, amc_measure._Size, amcz_measure._Size );
+}
+#endif // USE_MPS
+
 CL_LAMBDA(&optional x);
 CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
 #ifdef USE_MPS
+  mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
   size_t arena_committed = mps_arena_committed(global_arena);
   size_t arena_reserved = mps_arena_reserved(global_arena);
@@ -614,6 +713,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   }
   mps_amc_apply(global_amc_pool, amc_apply_stepper, &reachables, 0);
   mps_amc_apply(global_amcz_pool, amc_apply_stepper, &reachables, 0);
+  mps_arena_release(global_arena);
   OutputStream << "-------------------- Reachable Kinds -------------------\n";
   dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   OutputStream << std::setw(12) << numCollections << " collections\n";
@@ -769,7 +869,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
-//  printf("%s:%d      Adding finalizer to list new length --> %d   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
+//  printf("%s:%d      Adding finalizer to list new length --> %lu   list head %p\n", __FILE__, __LINE__, core::cl__length(finalizers), (void*)finalizers.tagged_());
   ht->hash_table_setf_gethash(object,finalizers);
     // Register the finalizer with the GC
 #ifdef USE_BOEHM

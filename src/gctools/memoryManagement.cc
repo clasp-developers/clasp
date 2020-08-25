@@ -141,15 +141,17 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Sy
 GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
 
 namespace gctools {
-void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread)
+void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value)
 {
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   int x = thread->_RecursiveAllocationCounter+1;
   thread->_RecursiveAllocationCounter = x;
   if (x!=1) {
-    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n", __FILE__, __LINE__ );
+    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n     The outer header_value is %lu and the inner one is %lu\n", __FILE__, __LINE__, thread->_RecursiveAllocationHeaderValue, header_value);
+    dbg_safe_backtrace();
     abort();
   }
+  thread->_RecursiveAllocationHeaderValue = header_value;
 #endif
 }
 void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread)

@@ -24,6 +24,9 @@ def generalp(tptr):
 def untag_general(tptr):
     return tptr-1
 
+def fixnump(tptr):
+    return (tptr&0x3==0)
+
 def consp(tptr):
     return (tptr&0xf==3)
 

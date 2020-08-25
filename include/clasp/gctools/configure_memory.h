@@ -48,6 +48,7 @@
 
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
+#define CONS_HEADER_SIZE    0   // CONS has no header
 #define FIXNUM_MASK         0x03
 #define FIXNUM0_TAG         0x00
 #define GENERAL_TAG         0x01

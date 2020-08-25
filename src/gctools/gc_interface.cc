@@ -613,6 +613,18 @@ inline mps_addr_t general_object_pointer_walk(mps_addr_t client)
 }
 
 extern "C" {
+#define SCAN_STRUCT_T mps_ss_t
+#define ADDR_T mps_addr_t
+#define SCAN_BEGIN(xxx) MPS_SCAN_BEGIN(xxx)
+#define SCAN_END(xxx) MPS_SCAN_END(xxx)
+#define OBJECT_SCAN obj_scan
+#define GC_OBJECT_SCAN
+#include "obj_scan.cc"
+#undef GC_OBJ_SCAN
+#undef OBJ_SCAN
+#undef SCAN_STRUCT_T
+
+#if 0
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   LOG(BF("obj_scan START client=%p limit=%p\n") % (void*)client % (void*)limit );
   mps_addr_t oldClient;
@@ -723,6 +735,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   LOG(BF("obj_scan ENDING client=%p\n") % (void*)client );
   return MPS_RES_OK;
 }
+#endif
 };
 #endif // ifdef USE_MPS
 
