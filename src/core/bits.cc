@@ -928,9 +928,9 @@ CL_DEFUN Integer_sp cl__lognot(Integer_sp a) {
     mp_size_t len = big->length();
     mp_size_t size = std::abs(len);
     const mp_limb_t* limbs = big->limbs();
-    mp_limb_t rlimbs[size];
-    next_com(rlimbs, limbs, len);
-    return bignum_result(len, rlimbs);
+    mp_limb_t rlimbs[size + 1];
+    mp_size_t result_len = next_com(rlimbs, limbs, len);
+    return bignum_result(result_len, rlimbs);
   }
 };
 
