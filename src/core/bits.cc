@@ -156,7 +156,7 @@ mp_size_t next_and(mp_limb_t* result,
       mp_limb_t temp2[size2];
       mpn_sub_1(temp2, s2, size2, (mp_limb_t)1);
 
-      mp_size_t result_size = next_ior_aux(result, s1, size1, s2, size2);
+      mp_size_t result_size = next_ior_aux(result, temp1, size1, temp2, size2);
       return -next_addone_aux(result, result, result_size);
     } else return 0; // s2 = 0
   } else return 0; // s1 = 0
