@@ -29,6 +29,11 @@ namespace core {
 
 // Add 1 to in and stuff it in result. Return normalized size of result.
 mp_size_t next_addone_aux(mp_limb_t* result, const mp_limb_t* in, mp_size_t size) {
+  if (size == 0) {
+    // zero size argument to mpn_add_1 is invalid, so we special case
+    result[0] = (mp_limb_t)1;
+    return 1;
+  }
   mp_limb_t carry = mpn_add_1(result, in, size, (mp_limb_t)1);
   if (carry != 0) {
     result[size] = carry;
@@ -41,6 +46,7 @@ mp_size_t next_addone_aux(mp_limb_t* result, const mp_limb_t* in, mp_size_t size
 mp_size_t next_and_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1,
                        const mp_limb_t* s2, mp_size_t size2) {
   mp_size_t result_size = std::min(size1, size2);
+  if (result_size == 0) return 0;
   mpn_and_n(result, s1, s2, result_size);
   BIGNUM_NORMALIZE(result_size, result);
   return result_size;
@@ -50,13 +56,13 @@ mp_size_t next_and_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1,
 mp_size_t next_ior_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1,
                        const mp_limb_t* s2, mp_size_t size2) {
   if (size1 < size2) {
-    mpn_ior_n(result, s1, s2, size1);
+    if (size1 != 0) mpn_ior_n(result, s1, s2, size1);
     // FIXME memcpy sth
     for (size_t i = size1; i < size2; ++i)
       result[i] = s2[i];
     return size2;
   } else {
-    mpn_ior_n(result, s1, s2, size2);
+    if (size2 != 0) mpn_ior_n(result, s1, s2, size2);
     // FIXME memcpy sth
     for (size_t i = size2; i < size1; ++i)
       result[i] = s1[i];
@@ -69,13 +75,13 @@ mp_size_t next_xor_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1,
                        const mp_limb_t* s2, mp_size_t size2) {
   // x^0 = x so we have to copy over the high limbs.
   if (size1 < size2) {
-    mpn_xor_n(result, s1, s2, size1); // FIXME memcpy sth
-    for (mp_size_t i = size1; i < size2; ++i)
+    if (size1 != 0) mpn_xor_n(result, s1, s2, size1);
+    for (mp_size_t i = size1; i < size2; ++i) // FIXME memcpy sth
       result[i] = s2[i];
     BIGNUM_NORMALIZE(size2, result);
     return size2;
   } else {
-    mpn_xor_n(result, s1, s2, size2);
+    if (size2 != 0) mpn_xor_n(result, s1, s2, size2);
     for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy sth
       result[i] = s1[i];
     BIGNUM_NORMALIZE(size1, result);
@@ -88,12 +94,12 @@ mp_size_t next_andc2_aux(mp_limb_t* result, const mp_limb_t* s1, mp_size_t size1
                          const mp_limb_t* s2, mp_size_t size2) {
   if (size1 < size2) {
     // For the high limbs s1 is zero, so high limbs of s2 are discarded.
-    mpn_andn_n(result, s1, s2, size1);
+    if (size1 != 0) mpn_andn_n(result, s1, s2, size1);
     BIGNUM_NORMALIZE(size1, result);
     return size1;
   } else {
     // For the high limbs s1 is something and ~s2 = -1, so copy s1 in
-    mpn_andn_n(result, s1, s2, size2);
+    if (size2 != 0) mpn_andn_n(result, s1, s2, size2);
     for (mp_size_t i = size2; i < size1; ++i) // FIXME memcpy
       result[i] = s1[i];
     BIGNUM_NORMALIZE(size1, result);
@@ -184,7 +190,7 @@ mp_size_t next_andc2(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       mp_limb_t temp[size1];
       mpn_sub_1(temp, s1, size1, (mp_limb_t)1);
       mp_size_t result_size = next_ior_aux(result, temp, size1, s2, len2);
-      return next_addone_aux(result, result, result_size);
+      return -next_addone_aux(result, result, result_size);
     } else if (len2 < 0) {
       // Positive
       // -x & ~(-y) = ~(x-1) & ~(~(y-1)) = ~(x-1) & (y-1)
@@ -206,8 +212,7 @@ mp_size_t next_1(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
                  const mp_limb_t* s2, mp_size_t len2) {
   // mpn gives us the ability to copy increasingly or decreasingly,
   // but I don't think it matters which we do here.
-  if (len1 != 0)
-    mpn_copyi(result, s1, std::abs(len1));
+  if (len1 != 0) mpn_copyi(result, s1, std::abs(len1));
   return len1;
 }
 
@@ -259,8 +264,7 @@ mp_size_t next_xor(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       return len1;
     }
   } else { // len1 = 0
-    if (len2 != 0)
-      mpn_copyi(result, s2, std::abs(len2));
+    if (len2 != 0) mpn_copyi(result, s2, std::abs(len2));
     return len2;
   }
 }
@@ -273,7 +277,7 @@ mp_size_t next_iorneg(mp_limb_t* result, const mp_limb_t* t1, mp_size_t size1,
   mp_limb_t temp[size2];
   mpn_sub_1(temp, t2, size2, (mp_limb_t)1);
   mp_size_t result_size = next_andc2_aux(result, temp, size2, t1, size1);
-  return next_addone_aux(result, result, result_size);
+  return -next_addone_aux(result, result, result_size);
 }
 
 mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
@@ -303,8 +307,7 @@ mp_size_t next_ior(mp_limb_t* result, const mp_limb_t* s1, mp_size_t len1,
       return len1;
     }
   } else { // len1 = 0
-    if (len2 != 0)
-      mpn_copyi(result, s2, std::abs(len2));
+    if (len2 != 0) mpn_copyi(result, s2, std::abs(len2));
     return len2;
   }
 }
