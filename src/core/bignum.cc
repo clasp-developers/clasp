@@ -780,8 +780,10 @@ double next_to_double(mp_size_t len, const mp_limb_t* limbs) {
 
   // There are no length zero bignums.
   // If the bignum is only one long, we just convert directly.
-  if (size == 1)
+  if (len == 1)
     return static_cast<double>(limbs[0]);
+  else if (len == -1)
+    return -static_cast<double>(limbs[0]);
 
   // Otherwise, we just use the most significant two limbs.
   // Assuming the float format has at most 128 bits of significand,
