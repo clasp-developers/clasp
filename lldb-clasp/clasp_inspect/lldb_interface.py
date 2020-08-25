@@ -1,7 +1,8 @@
 import lldb
 from clasp_inspect.interface import Interface
 from clasp_inspect.object_layout import *
- 
+from clasp_inspect.translate import *
+
 global_lldb_interface = None
 
 
@@ -10,22 +11,27 @@ class LldbInterface(Interface):
         global global_Structs
         self._debugger = debugger
         self._process = debugger.GetSelectedTarget().GetProcess()
-        self.print("In clasp_inspect for lldb_interface")
+        self.print_("In clasp_inspect for lldb_interface")
         filename = "/tmp/clasp-layout.py"
         with open(filename, "rb") as source_file:
             code = compile(source_file.read(), filename, "exec")
         exec(code)
+        self._verbose = False
         SetupGlobals(self)
        
     def print_(self,msg):
         print(msg)
+
+    def dbg_print(self,msg):
+        if (self._verbose):
+            print("%s" % msg)
+
 
     def read_memory(self,address,len):
         err = lldb.SBError()
         tptr = self._process.ReadUnsignedFromMemory(address,len,err)
         return tptr
     
-
 
 def inspect(debugger,command,result,internal_dict):
     global global_lldb_interface
@@ -49,8 +55,9 @@ def inspect(debugger,command,result,internal_dict):
         # theObject.GetValue() returns a string - why? dunno
         if (verbose): debugger.print_("theObject.GetValue() = %s" % theObject.GetValue())
         tptr = int(theObject.GetValue(),16)
-    print_tagged_ptr(global_lldb_interface,verbose,tptr,toplevel=True)
-
+    obj = translate_tagged_ptr(global_lldb_interface,tptr)
+    print( "%s" % obj.__repr__())
+    return obj
 
 def do_lldb_init_module(debugger,internal_dict,prefix):
     global global_lldb_interface
