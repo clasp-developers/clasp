@@ -752,7 +752,11 @@ CL_LAMBDA(op arg1 arg2);
 CL_DECLARE();
 CL_DOCSTRING("boole");
 CL_DEFUN T_sp cl__boole(Fixnum op, Integer_sp arg1, Integer_sp arg2) {
-  // TODO: Test for out of range op
+  if ((op < 0) || (op >= boolOpsMax))
+    TYPE_ERROR(clasp_make_fixnum(op),
+               Cons_O::createList(cl::_sym_Integer_O,
+                                  clasp_make_fixnum(0),
+                                  clasp_make_fixnum(boolOpsMax-1)));
   return clasp_boole(op, arg1, arg2);
 };
 
