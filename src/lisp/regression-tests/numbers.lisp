@@ -502,9 +502,9 @@
 (test logandc1.4.simple
       (let ((x 33300140732146818380750772381422989832214186835186851059977249))
         (and (eql x (logandc1 0 x))
-                    (eql 0 (logandc1 x x))
-                    (eql x (logandc1 (lognot x) x))
-                    (eql (lognot x) (logandc1 x (lognot x))))))
+             (eql 0 (logandc1 x x))
+             (eql x (logandc1 (lognot x) x))
+             (eql (lognot x) (logandc1 x (lognot x))))))
 
 (test logandc2.1 (= 0 (logandc2 0 0)))
 (test logandc2.2 (= -1 (logandc2 -1 0)))
