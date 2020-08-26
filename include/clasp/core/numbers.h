@@ -204,7 +204,7 @@ namespace core {
     virtual Number_sp log1p_() const;
 
     virtual Number_sp sqrt_() const { SUBIMP(); };
-    virtual Number_sp rational_() const = 0;
+    virtual Rational_sp rational_() const = 0;
     /*! Add one to the number */
     virtual Number_sp onePlus_() const { SUBIMP(); };
     /*! Subtrace one from the number */
@@ -474,7 +474,7 @@ namespace core {
       return v;
     };
   public:
-    static Number_sp rational(double val);
+    static Rational_sp rational(double val);
   public:
     NumberType number_type_() const override { return number_DoubleFloat; };
     void sxhash_(HashGenerator &hg) const override;
@@ -521,7 +521,7 @@ namespace core {
     virtual Number_sp sinh_() const override;
     virtual Number_sp cosh_() const override;
     virtual Number_sp tanh_() const override;
-    virtual Number_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
+    virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
     DoubleFloat_O() : _Value(0.0) {};
     virtual ~DoubleFloat_O() {};
   };
@@ -584,7 +584,7 @@ namespace core {
     Number_sp signum_() const override;
     Number_sp abs_() const override;
     bool isnan_() const;
-    Number_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
+    Rational_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
   public:
     //	virtual	bool	eqn(T_sp obj) const;
     virtual bool eql_(T_sp obj) const override;
@@ -659,7 +659,7 @@ namespace core {
     Number_sp abs_() const override;
     Number_sp sqrt_() const override;
     Number_sp reciprocal_() const override;
-    Number_sp rational_() const final { return this->asSmartPtr(); };
+    Rational_sp rational_() const final { return this->asSmartPtr(); };
     bool isnan_() const;
 
   public:

@@ -118,7 +118,7 @@ public: // Functions here
   Number_sp log1_() const override;
   Number_sp sqrt_() const override;
   Number_sp reciprocal_() const override;
-  Number_sp rational_() const final { return this->asSmartPtr(); };
+  Rational_sp rational_() const final { return this->asSmartPtr(); };
   virtual float as_float_() const override;
   virtual double as_double_() const override;
   virtual LongFloat as_long_float_() const override;
