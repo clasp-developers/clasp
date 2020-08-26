@@ -222,6 +222,13 @@ namespace gctools {
 };
 
 
+namespace core {
+  class ThreadLocalState;
+  size_t lisp_random();
+};
+
+/*! Declare this in the top namespace */
+extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 
 
 
@@ -504,15 +511,15 @@ namespace gctools {
 #if !defined(DEBUG_GUARD)
     
   Header_s(const StampWtagMtag& k) :
-      _stamp_wtag_mtag(k),
-      _header_badge(0xDeadDeadBeefBeef)
+    _stamp_wtag_mtag(k),
+      _header_badge(core::lisp_random())
     {}
 #endif
 #if defined(DEBUG_GUARD)
     inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
   Header_s(const StampWtagMtag& k,size_t tstart, size_t tsize, size_t total_size) 
     : _stamp_wtag_mtag(k),
-      _header_badge(0xDeadDeadBeefBeef),
+      _header_badge(core::lisp_random()),
       _tail_start(tstart),
       _tail_size(tsize),
       _guard(0xFEEAFEEBDEADBEEF),
@@ -722,7 +729,7 @@ namespace gctools {
 #else
 #define EXHAUSTIVE_VALIDATE(ptr)
 #endif
-  
+
   inline const void *ClientPtrToBasePtr(const void *mostDerived) {
     const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
     return ptr;
@@ -845,12 +852,6 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 };
 
 
-namespace core {
-  class ThreadLocalState;
-};
-
-/*! Declare this in the top namespace */
-extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 
 
 #include <clasp/gctools/gcStack.h>

@@ -394,7 +394,7 @@ bool General_O::equalp(T_sp obj) const {
 bool HashGenerator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
   if (this->isFull()) return false;
-  this->_Parts[this->_NextAddressIndex] = (uintptr_t)part->_badge;
+  this->_Parts[this->_NextAddressIndex] = lisp_general_badge(part);
   this->_NextAddressIndex--;
   return true;
 }
@@ -416,7 +416,7 @@ void Hash1Generator::hashObject(T_sp obj) {
   // Add an address - this may need to work with location dependency
 bool Hash1Generator::addGeneralAddress(General_sp part) {
   ASSERT(part.generalp());
-  this->_Part = (uintptr_t)part->_badge;
+  this->_Part = lisp_general_badge(part);
   this->_PartIsPointer = true;
 #ifdef DEBUG_HASH_GENERATOR
   if (this->_debug) {
