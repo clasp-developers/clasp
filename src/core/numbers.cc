@@ -2705,14 +2705,13 @@ Rational_sp DoubleFloat_O::rational(double d) {
   Integer_sp x = _clasp_double_to_integer(ldexp(d,DBL_MANT_DIG));
 #if 0 //(FLT_RADIX == 2) // runtime is sane (or at least IEEE 754)
   if (e > 0)
-    return clasp_shift(x, clasp_make_fixnum(e));
-  else if (e < 0) {
+    return clasp_shift(x, e);
+  else if (e < 0)
     // Efficiency note: This could be done faster by exploiting the fact
     // that the denominator is a power of two. Rather than take the full
     // gcd, you can just shift out any shared less significant zero bits.
-    return Rational_O::create(x, clasp_shift(clasp_make_fixnum(1),
-                                             clasp_make_fixnum(-e)));
-  } else return x;
+    return Rational_O::create(x, clasp_shift(clasp_make_fixnum(1), -e));
+  else return x;
 #else
   Number_sp radixexp = clasp_expt(clasp_make_fixnum(FLT_RADIX),
                                   clasp_make_fixnum(e));
