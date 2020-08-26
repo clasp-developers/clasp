@@ -63,16 +63,16 @@ Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
         // Note that / truncates towards zero as of C++11, as we want.
         return clasp_make_fixnum(x.unsafe_fixnum() / fy);
     }
-  case_Fixnum_v_NextBignum :
+  case_Fixnum_v_Bignum :
     return fix_divided_by_next(x.unsafe_fixnum(),
                                gc::As_unsafe<Bignum_sp>(x));
-  case_NextBignum_v_Fixnum : {
+  case_Bignum_v_Fixnum : {
       T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x),
                                         y.unsafe_fixnum());
       T_sp quotient = trunc;
       return gc::As_unsafe<Integer_sp>(trunc);
     }
-  case_NextBignum_v_NextBignum : {
+  case_Bignum_v_Bignum : {
       // FIXME: MPN doesn't export a quotient-only division that I can see,
       // but we could call a version of truncate that doesn't cons up the
       // actual bignum for the remainder, hypothetically.
@@ -121,13 +121,13 @@ Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
   MATH_DISPATCH_BEGIN(x, y) {
   case_Fixnum_v_Fixnum :
     return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-  case_Fixnum_v_NextBignum :
+  case_Fixnum_v_Bignum :
     return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y),
                            x.unsafe_fixnum());
-  case_NextBignum_v_Fixnum :
+  case_Bignum_v_Fixnum :
     return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x),
                            y.unsafe_fixnum());
-  case_NextBignum_v_NextBignum :
+  case_Bignum_v_Bignum :
     return core__next_gcd(gc::As_unsafe<Bignum_sp>(x),
                           gc::As_unsafe<Bignum_sp>(y));
     default: UNREACHABLE();
