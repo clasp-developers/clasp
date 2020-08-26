@@ -77,17 +77,16 @@ struct CLBIND_API scope_ {
 
 /*! Declare a package - provide the package name (which will be lispified) and a list
       of nicknames and a list of usePackageNames */
-class CLBIND_API package_ {
+class CLBIND_API package_ : public scope_ {
  public:
  package_(string const &name, std::list<std::string> nicknames = {}, std::list<string> usePackageNames = {});
  ~package_();
- scope_& scope() { return this->_Scope; }
+ scope_& scope() { return *this; }
  private:
  string m_name;
  list<std::string> m_nicknames;
  list<std::string> m_usePackageNames;
  core::DynamicScopeManager* _PackageDynamicVariable;
- scope_ _Scope;
 };
 
 inline package_ package(string const &name, std::list<std::string> nicknames = {}, std::list<std::string> usePackageNames = {}) {
