@@ -1766,7 +1766,11 @@ Number_sp Ratio_O::sqrt_() const {
 }
 
 Number_sp Ratio_O::reciprocal_() const {
-  return Ratio_O::create(this->_denominator, this->_numerator);
+  // FIXME: Since the ratio is in lowest terms we could be more
+  // direct and save some time.
+  // That is: If the numerator is 1, return the denominator.
+  // Otherwise return this ratio, but skip all the gcd calculations etc.
+  return Rational_O::create(this->_denominator, this->_numerator);
 }
 
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
