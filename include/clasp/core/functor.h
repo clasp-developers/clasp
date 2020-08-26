@@ -307,11 +307,11 @@ namespace core {
     }
     bool openP();
     inline T_sp &operator[](size_t idx) {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
+      BOUNDS_ASSERT(idx<this->_Slots.length());
       return this->_Slots[idx];
     };
     inline const T_sp &operator[](size_t idx) const {
-      BOUNDS_ASSERT(idx<this->_Slots._Length);
+      BOUNDS_ASSERT(idx<this->_Slots.length());
       return this->_Slots[idx];
     };
     T_sp code() const;

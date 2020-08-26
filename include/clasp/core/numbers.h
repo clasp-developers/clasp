@@ -85,13 +85,14 @@ namespace core
 
   typedef enum { number_Fixnum = 0,
 		 number_Bignum = 1,
+                 number_NextBignum = 8, // temp
 		 number_Ratio = 2,
 		 number_ShortFloat = 3,
 		 number_SingleFloat = 4,
 		 number_DoubleFloat = 5,
 		 number_LongFloat = 6,
 		 number_Complex = 7,
-		 number_NUM = 8 } NumberType;
+		 number_NUM = 9 } NumberType;
 
   // TYPE TEMPLATES
 
@@ -198,7 +199,9 @@ namespace core {
     };
     virtual bool equal(T_sp obj) const override;
 
+    // log(x) (i.e. natural log)
     virtual Number_sp log1_() const { SUBIMP(); };
+    // log(x+1)
     virtual Number_sp log1p_() const;
 
     virtual Number_sp sqrt_() const { SUBIMP(); };
@@ -219,7 +222,6 @@ namespace core {
     virtual bool operator>(T_sp obj) const;
     virtual bool operator>=(T_sp obj) const;
 */
-    virtual gc::Fixnum as_int_() const { SUBIMP(); }
     virtual uint as_uint_() const { SUBIMP(); }
     virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
     virtual float as_float_() const { SUBIMP(); };
@@ -265,7 +267,6 @@ namespace core {
     static Rational_sp create(Integer_sp num, Integer_sp denom);
 
   public:
-    virtual gc::Fixnum as_int_() const override { SUBIMP(); };
     virtual Number_sp log1_() const override;
     virtual Number_sp log1p_() const override;
     //	virtual Number_sp sqrt_() const;
@@ -291,16 +292,12 @@ namespace core {
     static T_sp makeIntegerType(gc::Fixnum low, gc::Fixnum high);
     static Integer_sp create(const mpz_class &v);
     static Integer_sp create(gctools::Fixnum v);
-    static Integer_sp create(const string &v) {
-      return Integer_O::create(v.c_str());
+    static Integer_sp create(const string &v, int base = 0) {
+      return create(v.c_str(), base);
     };
-    static Integer_sp create(const char *v) {
-      if (v[0] == '+') {
-	// Skip leading +
-	mpz_class zv(&v[1]);
-	return create(zv);
-      }
-      mpz_class zv(v);
+    static Integer_sp create(const char *v, int base = 0) {
+      if (v[0] == '+') v = &v[1]; // skip leading +
+      mpz_class zv(v, base);
       return create(zv);
     };
 
@@ -329,7 +326,9 @@ namespace core {
     // static Integer_sp create( int v );
     // static Integer_sp create( unsigned int v );
     //
-    // static Integer_sp create( long v );
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
+    static Integer_sp create( long v ) { return Integer_O::create((Fixnum)v); }
+#endif
     // static Integer_sp create( unsigned long v );
     //
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
@@ -344,48 +343,20 @@ namespace core {
 
   public:
 
+    virtual mpz_class mpz() const {SUBIMP();};
     virtual bool evenp_() const { SUBIMP(); };
     virtual bool oddp_() const { SUBIMP(); };
 
     virtual gc::Fixnum bit_length_() const { SUBIMP(); };
     virtual gc::Fixnum popcount() const { SUBIMP(); };
 
+    // Divide this integer by another,
+    // returning an exact, reduced rational.
+    virtual Rational_sp ratdivide(Integer_sp) const { SUBIMP(); };
+
     /*! Return the value shifted by BITS bits.
       If BITS < 0 shift right, if BITS >0 shift left. */
     virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
-
-    virtual short as_short() const { SUBIMP(); };
-    virtual unsigned short as_ushort() const { SUBIMP(); };
-
-    virtual int as_int() const { return this->as_int_(); };
-    virtual unsigned int as_uint() const { SUBIMP(); };
-
-    virtual long as_long() const { SUBIMP(); };
-    virtual unsigned long as_ulong() const { SUBIMP(); };
-
-    virtual long long as_longlong() const { SUBIMP(); };
-    virtual unsigned long long as_ulonglong() const { SUBIMP(); };
-
-    virtual int8_t as_int8_t() const { SUBIMP(); };
-    virtual uint8_t as_uint8_t() const { SUBIMP(); };
-
-    virtual int16_t as_int16_t() const { SUBIMP(); };
-    virtual uint16_t as_uint16_t() const { SUBIMP(); };
-
-    virtual int32_t as_int32_t() const { SUBIMP(); };
-    virtual uint32_t as_uint32_t() const { SUBIMP(); };
-
-    virtual int64_t as_int64_t() const { SUBIMP(); };
-    virtual uint64_t as_uint64_t() const { SUBIMP(); };
-
-    virtual int64_t as_int64_() const { SUBIMP(); };
-    virtual uint64_t as_uint64_() const { SUBIMP(); };
-
-    virtual uintptr_t as_uintptr_t() const { SUBIMP(); };
-    virtual size_t as_size_t() const { SUBIMP(); };
-    virtual ssize_t as_ssize_t() const { SUBIMP(); };
-
-    virtual ptrdiff_t as_ptrdiff_t() const { SUBIMP(); };
 
     virtual void __write__(T_sp strm) const override;
     Integer_O(){};
@@ -449,8 +420,6 @@ namespace core {
     bool isinf_() const override { return std::isinf(this->_Value); };
 
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& strVal );
     //	virtual	bool	eqn(T_sp obj) const;
     virtual bool eql_(T_sp obj) const override;
     virtual Number_sp reciprocal_() const override;
@@ -520,8 +489,6 @@ namespace core {
     bool isinf_() const override { return std::isinf(this->_Value); };
 
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& strVal );
     virtual bool eql_(T_sp obj) const override;
 
     // math routines shared by all numbers
@@ -620,8 +587,6 @@ namespace core {
     bool isnan_() const;
     Number_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
   public:
-    //	virtual	string	valueAsString_() const;
-    //	virtual	void	setFromString( const string& str);
     //	virtual	bool	eqn(T_sp obj) const;
     virtual bool eql_(T_sp obj) const override;
 
@@ -678,11 +643,6 @@ namespace core {
     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
       return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
     }
-    static Ratio_sp create(const char *str) {
-      GC_ALLOCATE(Ratio_O, r);
-      r->setFromString(str);
-      return r;
-    }
   public:
     // Only useful for creating Ratio in fasl files.
     void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
@@ -692,10 +652,6 @@ namespace core {
     virtual Number_sp negate_() const override { return Ratio_O::create(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
     Integer_sp denominator() const { return this->_denominator; };
-    Integer_sp num() const { return this->_numerator; };
-    Integer_sp den() const { return this->_denominator; };
-    mpz_class numerator_as_mpz() const;
-    mpz_class denominator_as_mpz() const;
 
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
@@ -708,8 +664,6 @@ namespace core {
     bool isnan_() const;
 
   public:
-    //	virtual	string	valueAsString_() const;
-    void setFromString(const string &str);
     virtual bool eql_(T_sp obj) const override;
 
     Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagen_add(this->_numerator, this->_denominator)), this->_denominator); };
@@ -789,6 +743,7 @@ namespace core {
   };
 
   Number_sp cl__expt(Number_sp x, Number_sp y);
+  Real_sp cl__mod(Real_sp, Real_sp);
 
   Integer_sp clasp_ash(Integer_sp x, int bits);
 
@@ -888,8 +843,6 @@ namespace core {
 #define clasp_lower(x, y) (clasp_number_compare((x), (y)) < 0)
 #define clasp_greater(x, y) (clasp_number_compare((x), (y)) > 0)
 
-  unsigned char clasp_toUint8(T_sp n);
-  signed char clasp_toSignedInt8(T_sp n);
   cl_index clasp_toSize(T_sp f);
 
   gctools::Fixnum fixint(T_sp x);
@@ -1117,14 +1070,11 @@ namespace core {
   uint32_t            clasp_to_uint32_t( core::T_sp );
   int64_t             clasp_to_int64_t( core::T_sp );
   uint64_t            clasp_to_uint64_t( core::T_sp );
-
-  // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
-  // frgo, 2017-01-21
-
-
-  uintptr_t         clasp_to_uintptr_t( core::T_sp );
+  uintptr_t           clasp_to_uintptr_t( core::T_sp );
+  intptr_t            clasp_to_intptr_t( core::T_sp );
+  size_t              clasp_to_size_t( core::T_sp );
+  ssize_t             clasp_to_ssize_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
-  cl_index            clasp_to_size( core::T_sp );
 
   float               clasp_to_float( core::Number_sp );
   double              clasp_to_double( core::Number_sp );
@@ -1244,27 +1194,6 @@ namespace core {
     // test for isinf not for isnan, good old friend copy paste
     return num->isinf_();
   }
-
-#if 0
-  CL_LISPIFY_NAME(general-two-arg-_PLUS_);
-  CL_ EXTERN_ DEFUN(&core::contagen_add);
-  CL_LISPIFY_NAME(general-two-arg-_MINUS_);
-  CL_ EXTERN_ DEFUN(&core::contagen_sub);
-  CL_LISPIFY_NAME(general-two-arg-_TIMES_);
-  CL_ EXTERN_ DEFUN(&core::contagen_mul);
-  CL_LISPIFY_NAME(general-two-arg-_DIVIDE_);
-  CL_ EXTERN_ DEFUN(&core::contagen_div);
-  CL_LISPIFY_NAME(general-two-arg-_LT_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__LT_);
-  CL_LISPIFY_NAME(general-two-arg-_LE_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__LE_);
-  CL_LISPIFY_NAME(general-two-arg-_GT_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__GT_);
-  CL_LISPIFY_NAME(general-two-arg-_GE_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__GE_);
-  CL_LISPIFY_NAME(general-two-arg-_EQ_);
-  CL_ EXTERN_ DEFUN(&core::two_arg__EQ_);
-#endif
 
 };
 

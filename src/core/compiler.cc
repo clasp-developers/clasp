@@ -1429,15 +1429,8 @@ size_t compact_read_size_t(T_sp stream, size_t& index) {
 CL_DEFUN size_t core__ltvc_write_size_t(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(size_t,stream,index);
-  if (object.fixnump()) {
-    size_t data = object.unsafe_fixnum();
-    compact_write_size_t(data,stream,index);
-  } else if (gc::IsA<Bignum_sp>(object)) {
-    size_t data = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
-    compact_write_size_t(data,stream,index);
-  } else {
-    SIMPLE_ERROR(BF("Expected integer got %s") % _rep_(object));
-  }
+  size_t data = clasp_to_size_t(object);
+  compact_write_size_t(data, stream, index);
   return index;
 }
 
@@ -1526,15 +1519,14 @@ CL_DEFUN size_t core__ltvc_write_object(T_sp ttag, T_sp index_or_immediate, T_sp
     char tag = ttag.unsafe_character();
     clasp_write_char(tag,stream);
     index += 1;
-    uintptr_t data;
+    size_t data;
     if (ttag.unsafe_character()=='l'||ttag.unsafe_character()=='t') {
       data = index_or_immediate.unsafe_fixnum();
     } else {
-      if (index_or_immediate.fixnump()) {
-        data = index_or_immediate.unsafe_fixnum();
-      } else {
-        data = gc::As<Bignum_sp>(index_or_immediate)->as_size_t();
-      }
+      // Immediate data.
+      // Note that the immediate may be signed, so we have to convert
+      // it to an unsigned like this.
+      data = clasp_to_ssize_t(index_or_immediate);
     }
     compact_write_size_t(data,stream,index);
     return index;

@@ -157,8 +157,8 @@ Path_mv af_makePath(List_sp args) {
 void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
   string ts = this->_Path.string();
-  Bignum bn = CStrToBignum(ts.c_str());
-  hg.addValue(bn);
+  for (char const &c: ts)
+    if (!(hg.addValue(c))) return;
 }
 
 CL_LISPIFY_NAME("last_write_time");

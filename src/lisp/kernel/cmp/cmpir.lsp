@@ -480,7 +480,7 @@ representing a tagged fixnum."
 
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
-  (if (typep val '(integer #.(- (expt 2 63)) #.(- (expt 2 63) 1)))
+  (if (typep val '(integer #.(- (expt 2 63)) #.(1- (expt 2 63))))
       (llvm-sys:create-int-to-ptr *irbuilder* (jit-constant-i64 val) %t*% label)
       (if (llvm-sys:type-equal (llvm-sys:get-type val) %t*%)
           val

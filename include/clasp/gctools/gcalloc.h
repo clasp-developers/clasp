@@ -788,8 +788,8 @@ namespace gctools {
     // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
     // ends up passing the ... to the SimpleVector_O constructor.
     template <typename... ARGS>
-    static smart_pointer_type allocate_container( bool static_container_p, size_t length, ARGS &&... args) {
-      size_t capacity = length;
+    static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
+      size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
       return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);

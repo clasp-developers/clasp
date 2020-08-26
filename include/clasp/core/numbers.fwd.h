@@ -59,7 +59,7 @@ FORWARD(Bool);
    SingleFloat_sp clasp_make_single_float(float d);
    DoubleFloat_sp clasp_make_double_float(double d);
 
-   cl_index            clasp_to_size( core::T_sp );
+   size_t            clasp_to_size( core::T_sp );
    Integer_sp clasp_make_integer(size_t i);
 
 
@@ -81,21 +81,9 @@ FORWARD(Bool);
   int64_t             clasp_to_int64_t( core::T_sp );
   uint64_t            clasp_to_uint64_t( core::T_sp );
 
-  // THE NEXT TWO FUNCTIONS ARE HERE FOR BACKWARDS COMPATIBILITY
-  // frgo, 2017-01-21
-
-  inline int64_t clasp_to_int64(Integer_sp x)
-  {
-    return clasp_to_int64_t( x );
-  }
-  inline uint64_t clasp_to_uint64(Integer_sp x)
-  {
-    return clasp_to_uint64_t( x );
-  }
-
   uintptr_t           clasp_to_uintptr_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
-  cl_index            clasp_to_size( core::T_sp );
+  size_t            clasp_to_size( core::T_sp );
 
   LongFloat           clasp_to_long_float( core::Number_sp );
   LongFloat           clasp_to_long_double( core::Number_sp );

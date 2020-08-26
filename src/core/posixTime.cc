@@ -159,20 +159,6 @@ CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp tt) {
   return result;
 }
 
-#if 0
-    PosixTimeDuration_sp PosixTimeDuration_O::make(uint hours, uint minutes, uint seconds, uint milliseconds )
-    {
-	LongLongInt hours = env->lookup(CorePkg,"hours")->object().as<Rational_O>()->as_int();
-    LongLongInt minutes = env->lookup(CorePkg,"minutes")->object().as<Rational_O>()->as_int();
-    LongLongInt seconds = env->lookup(CorePkg,"seconds")->object().as<Rational_O>()->as_int();
-    LongLongInt milliseconds = env->lookup(CorePkg,"milliseconds")->object().as<Rational_O>()->as_int();
-    this->_Duration = boost::posix_time::hours(hours)
-			+ boost::posix_time::minutes(minutes)
-			+ boost::posix_time::seconds(seconds)
-			+ boost::posix_time::milliseconds(milliseconds);
-    return _Nil<T_O>();
-}
-#endif
 PosixTimeDuration_sp PosixTimeDuration_O::createDurationSince(PosixTime_sp past) {
   PosixTime_sp now = PosixTime_O::createNow();
   PosixTimeDuration_sp delta = now->sub(past);

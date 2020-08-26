@@ -1771,7 +1771,7 @@ CL_LAMBDA(unix-time);
 CL_DECLARE();
 CL_DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
 CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
-  time_t when = clasp_to_uint64(unix_time);
+  time_t when = clasp_to_uint64_t(unix_time);
   struct tm *ltm = localtime(&when);
   return ltm->tm_isdst;
 }
