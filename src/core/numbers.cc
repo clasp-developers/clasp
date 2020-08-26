@@ -570,13 +570,28 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
 // Forward declaration for contagen_div
 Number_sp contagen_div(Number_sp na, Number_sp nb);
 
-Complex_sp complex_divide(double ar, double ai,
-                          double br, double bi) {
-  /* #C(z1 z2) = #C(xr xi) * #C(yr -yi) */
-  double z1 = (ar * br) + (ai * bi);
-  double z2 = (ai * br) - (ar * bi);
-  double absB = (br * br) + (bi * bi);
-  return gc::As_unsafe<Complex_sp>(clasp_make_complex(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB)));
+Number_sp complex_divide(Real_sp ar, Real_sp ai,
+                         Real_sp br, Real_sp bi) {
+  // Compute (ar+ai*i)/(br+bi*i).
+  // Just multiply the numerator and denominator by (br - bi*i)
+  // to end up with ar*br+ai*bi/z real and ai*br-ar*bi imaginary,
+  // where z is br^2+bi*2.
+#define realmul(A,B) gc::As_unsafe<Real_sp>(contagen_mul((A),(B)))
+#define realadd(A,B) gc::As_unsafe<Real_sp>(contagen_add((A),(B)))
+#define realsub(A,B) gc::As_unsafe<Real_sp>(contagen_sub((A),(B)))
+#define realdiv(A,B) gc::As_unsafe<Real_sp>(contagen_div((A),(B)))
+  Real_sp absB2 = realadd(realmul(br, br), realmul(bi, bi));
+  Real_sp rnum = realadd(realmul(ar, br), realmul(ai, bi));
+  Real_sp inum = realsub(realmul(ai, br), realmul(ar, bi));
+  Real_sp realpart = realdiv(rnum, absB2);
+  // note: could save a bit of time by checking if inum is zero,
+  // and if so not bothering to compute imagpart
+  Real_sp imagpart = realdiv(inum, absB2);
+  return clasp_make_complex(realpart, imagpart);
+#undef realmul
+#undef realadd
+#undef realsub
+#undef realdiv
 }
 
 CL_NAME("TWO-ARG-/");
@@ -636,34 +651,30 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
     return LongFloat_O::create(na->as_long_float() / nb->as_long_float());
 #endif
   case_Complex_v_Fixnum:
-  case_Complex_V_NextBignum:
+  case_Complex_v_Bignum:
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat:
-  case_Complex_v_LongFloat : {
+  case_Complex_v_LongFloat: {
       Complex_sp ca = gc::As<Complex_sp>(na);
       return clasp_make_complex(gc::As<Real_sp>(contagen_div(ca->real(), nb)),
-                               gc::As<Real_sp>(contagen_div(ca->imaginary(), nb)));
+                                gc::As<Real_sp>(contagen_div(ca->imaginary(), nb)));
     }
   case_Fixnum_v_Complex:
-  case_Bignum_v_Complex : {
-      Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+  case_Bignum_v_Complex:
+  case_Ratio_v_Complex:
+  case_SingleFloat_v_Complex:
+  case_DoubleFloat_v_Complex:
+  case_LongFloat_v_Complex: {
+      Complex_sp cb = gc::As_unsafe<Complex_sp>(nb);
+      return complex_divide(gc::As_unsafe<Real_sp>(na), clasp_make_fixnum(0),
+                            cb->real(), cb->imaginary());
     }
   case_Complex_v_Complex : {
       Complex_sp ca = gc::As<Complex_sp>(na);
       Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(ca->real()), clasp_to_double(ca->imaginary()),
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
-    }
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex : {
-      Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+      return complex_divide(ca->real(), ca->imaginary(),
+                            cb->real(), cb->imaginary());
     }
   }
   MATH_DISPATCH_END();
@@ -2441,15 +2452,15 @@ clasp_expt(Number_sp x, Number_sp y) {
   } else if (clasp_minusp(gc::As<Real_sp>(y))) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
-    z = clasp_divide(clasp_make_fixnum(1), z);
+    z = clasp_reciprocal(z);
   } else {
     z = clasp_make_fixnum(1);
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
-      /* INV: clasp_integer_divide outputs an integer */
+      // Exponentiation by squaring.
       if (!clasp_evenp(iy))
         z = clasp_times(z, x);
-      iy = clasp_integer_divide(iy, clasp_make_fixnum(2));
+      iy = clasp_shift(iy, -1); // divide by two
       if (clasp_zerop(iy))
         break;
       x = clasp_times(x, x);
