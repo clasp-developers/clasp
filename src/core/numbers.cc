@@ -1049,12 +1049,18 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     return false;
   case_Fixnum_v_SingleFloat:
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat:
-    return basic_equalp(na, DoubleFloat_O::rational(nb.unsafe_single_float()));
+  case_Ratio_v_SingleFloat: {
+      float s = nb.unsafe_single_float();
+      if (isinf(s)) return false;
+      else return basic_equalp(na, DoubleFloat_O::rational(s));
+    }
   case_Fixnum_v_DoubleFloat:
   case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-    return basic_equalp(na, gc::As_unsafe<DoubleFloat_sp>(nb)->rational_());
+  case_Ratio_v_DoubleFloat: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
+      if (d->isinf_()) return false;
+      else return basic_equalp(na, d->rational_());
+    }
   case_Bignum_v_Bignum : {
       return (core__next_compare(gc::As_unsafe<Bignum_sp>(na),
                                  gc::As_unsafe<Bignum_sp>(nb)) == 0);
@@ -1068,8 +1074,11 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-    return basic_equalp(DoubleFloat_O::rational(na.unsafe_single_float()), nb);
+  case_SingleFloat_v_Ratio: {
+      float s = na.unsafe_single_float();
+      if (isinf(s)) return false;
+      else return basic_equalp(DoubleFloat_O::rational(s), nb);
+    }
   case_SingleFloat_v_SingleFloat : {
       float a = clasp_to_float(na);
       float b = clasp_to_float(nb);
@@ -1077,8 +1086,11 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
     }
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-    return basic_equalp(gc::As_unsafe<DoubleFloat_sp>(na)->rational_(), nb);
+  case_DoubleFloat_v_Ratio: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
+      if (d->isinf_()) return false;
+      else return basic_equalp(d->rational_(), nb);
+    }
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat : {
