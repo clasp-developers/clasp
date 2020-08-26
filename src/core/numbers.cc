@@ -848,12 +848,20 @@ int basic_compare(Number_sp na, Number_sp nb) {
   // FIXME: Can do this more efficiently for integers
   case_Fixnum_v_SingleFloat:
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat:
-    return basic_compare(na, DoubleFloat_O::rational(nb.unsafe_single_float()));
+  case_Ratio_v_SingleFloat: {
+      float s = nb.unsafe_single_float();
+      if (std::isinf(s)) {
+        if (s > 0.0f) return -1; else return 1;
+      } else return basic_compare(na, DoubleFloat_O::rational(s));
+    }
   case_Fixnum_v_DoubleFloat:
   case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat:
-      return basic_compare(na, gc::As_unsafe<DoubleFloat_sp>(nb)->rational_());
+  case_Ratio_v_DoubleFloat: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
+      if (d->isinf_()) {
+        if (d->plusp_()) return -1; else return 1;
+      } else return basic_compare(na, d->rational_());
+    }
   case_Bignum_v_Fixnum : {
       Bignum_sp ba = gc::As_unsafe<Bignum_sp>(na);
       if (ba->plusp_()) return 1; else return -1;
@@ -879,8 +887,12 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
-    return basic_compare(DoubleFloat_O::rational(na.unsafe_single_float()), nb);
+  case_SingleFloat_v_Ratio: {
+      float s = na.unsafe_single_float();
+      if (std::isinf(s)) {
+        if (s > 0.0f) return 1; else return -1;
+      } else return basic_compare(DoubleFloat_O::rational(s), nb);
+    }
   case_SingleFloat_v_SingleFloat : {
       float a = na.unsafe_single_float();
       float b = nb.unsafe_single_float();
@@ -890,8 +902,12 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
-    return basic_compare(gc::As_unsafe<DoubleFloat_sp>(na)->rational_(), nb);
+  case_DoubleFloat_v_Ratio: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
+      if (d->isinf_()) {
+        if (d->plusp_()) return 1; else return -1;
+      } else return basic_compare(d->rational_(), nb);
+    }
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat: {
