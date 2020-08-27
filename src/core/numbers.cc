@@ -1714,7 +1714,7 @@ string Ratio_O::__repr__() const {
 }
 
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
+  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -1898,7 +1898,10 @@ Number_sp Bignum_O::sqrt_() const {
 }
 
 Number_sp Bignum_O::reciprocal_() const {
-  return Ratio_O::create(clasp_make_fixnum(1), this->asSmartPtr());
+  if (this->minusp_())
+    return Ratio_O::create_primitive(clasp_make_fixnum(-1),
+                                     gc::As_unsafe<Integer_sp>(this->negate_()));
+  else return Ratio_O::create_primitive(clasp_make_fixnum(1), this->asSmartPtr());
 }
 
 CL_LAMBDA(arg);

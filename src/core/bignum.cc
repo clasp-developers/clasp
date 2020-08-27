@@ -571,12 +571,12 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
     mp_limb_t num_length;
     if (num[size-1] == 0) num_length = result_sign * (size - 1);
     else num_length = result_sign * size;
+    Integer_sp bnum = bignum_result(num_length, num);
     if (gcd == adivisor) // exact division
-      return bignum_result(num_length, num);
+      return bnum;
     else { // need a ratio
       Fixnum adenom = adivisor/gcd;
-      return Ratio_O::create(bignum_result(num_length, num),
-                             clasp_make_fixnum(adenom));
+      return Ratio_O::create_primitive(bnum, clasp_make_fixnum(adenom));
     }
   } else {
     // divisor is a bignum.
@@ -598,10 +598,10 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
       // Pick off the specialest case
       if (fgcd == 1) {
         if (divlen < 0)
-          return Ratio_O::create(gc::As_unsafe<Integer_sp>(this->negate_()),
-                                 gc::As_unsafe<Integer_sp>(divisor->negate_()));
+          return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(this->negate_()),
+                                           gc::As_unsafe<Integer_sp>(divisor->negate_()));
         else
-          return Ratio_O::create(this->asSmartPtr(), bdivisor);
+          return Ratio_O::create_primitive(this->asSmartPtr(), bdivisor);
       }
 
       // Nope, have to do some divisions.
@@ -624,7 +624,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
       // Denominator is always positive.
       Integer_sp denominator = bignum_result(densize, denlimbs);
 
-      return Ratio_O::create(numerator, denominator);
+      return Ratio_O::create_primitive(numerator, denominator);
     } else {
       // GCD is a bignum.
       // NOTE: If MPN had a divexact we could use it,
@@ -664,7 +664,7 @@ Rational_sp Bignum_O::ratdivide(Integer_sp divisor) const {
       // Nope, make a fraction
       // Denominator still always positive
       Integer_sp denominator = bignum_result(densize, denlimbs);
-      return Ratio_O::create(numerator, denominator);
+      return Ratio_O::create_primitive(numerator, denominator);
     }
   }
 }

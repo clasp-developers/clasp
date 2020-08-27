@@ -642,13 +642,19 @@ namespace core {
     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
       return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
     }
+    // For when it is known that the ratio is reduced already.
+    static Ratio_sp create_primitive(Integer_sp num, Integer_sp denom) {
+      GC_ALLOCATE(Ratio_O, v);
+      v->_numerator = num; v->_denominator = denom;
+      return v;
+    }
   public:
     // Only useful for creating Ratio in fasl files.
     void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
   public:
     NumberType number_type_() const override { return number_Ratio; };
     virtual bool zerop_() const override { return clasp_zerop(this->_numerator); };
-    virtual Number_sp negate_() const override { return Ratio_O::create(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
+    virtual Number_sp negate_() const override { return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
     Integer_sp denominator() const { return this->_denominator; };
 
