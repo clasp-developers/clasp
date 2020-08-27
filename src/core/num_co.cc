@@ -137,7 +137,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("numerator");
-CL_DEFUN Number_sp cl__numerator(Number_sp x) {
+CL_DEFUN Number_sp cl__numerator(Rational_sp x) {
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->numerator();
@@ -154,7 +154,7 @@ CL_DEFUN Number_sp cl__numerator(Number_sp x) {
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("denominator");
-CL_DEFUN Number_sp cl__denominator(Number_sp x) {
+CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->denominator();
