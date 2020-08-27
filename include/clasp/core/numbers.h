@@ -778,15 +778,6 @@ namespace core {
   }
 #endif
 
-  inline Ratio_sp clasp_make_ratio(Integer_sp num, Integer_sp denom) {
-    return Ratio_O::create(num, denom);
-  }
-
-  inline Rational_sp clasp_make_rational(Integer_sp num, Integer_sp denom) {
-    // will check whether denom = 1
-    return Rational_O::create(num, denom);
-  }
-
   Number_sp clasp_make_complex (Real_sp r, Real_sp i);
 
   inline Fixnum_sp clasp_make_fixnum(gc::Fixnum i) {
@@ -1103,10 +1094,17 @@ namespace core {
 
   inline Number_sp clasp_reciprocal(Number_sp x) {
     if (x.fixnump() ) {
-      if (x.unsafe_fixnum() == 1) return x;
-      if (x.unsafe_fixnum() == 0) clasp_report_divide_by_zero(x);
-      return Rational_O::create(gc::As_unsafe<Integer_sp>(clasp_make_fixnum((Fixnum)1)),
-                                gc::As_unsafe<Integer_sp>(x));
+      Integer_sp ix = gc::As_unsafe<Integer_sp>(x);
+      Fixnum fx = x.unsafe_fixnum();
+      switch (fx) {
+      case 1: return x;
+      case -1: return x;
+      case 0: clasp_report_divide_by_zero(x);
+      default:
+          if (fx > 0) return Ratio_O::create_primitive(clasp_make_fixnum(1), ix);
+          else return Ratio_O::create_primitive(clasp_make_fixnum(-1),
+                                                clasp_make_fixnum(-fx));
+      }
     } else if (x.single_floatp()) {
       float f = x.unsafe_single_float();
       return clasp_make_single_float(1.0 / f);

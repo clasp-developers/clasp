@@ -375,7 +375,7 @@ Real_mv clasp_floor1(Real_sp x) {
     Real_mv mv_v0 = clasp_floor2(rx->numerator(), rx->denominator());
     v0 = mv_v0;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->denominator());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -455,7 +455,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
     Real_mv mv_v = clasp_ceiling2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->denominator());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -519,7 +519,7 @@ Real_mv clasp_truncate1(Real_sp x) {
     Real_mv mv_v = clasp_truncate2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->denominator());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -612,7 +612,7 @@ Real_mv clasp_round1(Real_sp x) {
     Real_mv mv_v = clasp_round2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->denominator());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {

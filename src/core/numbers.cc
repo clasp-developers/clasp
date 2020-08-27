@@ -240,7 +240,8 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       Integer_sp new_num
         = gc::As_unsafe<Integer_sp>(contagen_add(rat->numerator(),
                                                  contagen_mul(na, den)));
-      return Rational_O::create(new_num, den);
+      // result is a ratio, not an integer.
+      return Ratio_O::create(new_num, den);
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
@@ -267,7 +268,8 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
       Integer_sp new_num
         = gc::As_unsafe<Integer_sp>(contagen_add(rat->numerator(),
                                                  contagen_mul(nb, den)));
-      return Rational_O::create(new_num, den);
+      // result is a ratio, not an integer.
+      return Ratio_O::create(new_num, den);
     }
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
@@ -349,8 +351,8 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
       Number_sp n1 = contagen_mul(na, rb->denominator());
       Number_sp n = contagen_sub(n1, rb->numerator());
-      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
-                                rb->denominator());
+      return Ratio_O::create(gc::As_unsafe<Integer_sp>(n),
+                             rb->denominator());
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
@@ -381,8 +383,8 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Number_sp n2 = contagen_mul(nb, ra->denominator());
       Number_sp n = contagen_sub(ra->numerator(), n2);
-      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
-                                ra->denominator());
+      return Ratio_O::create(gc::As_unsafe<Integer_sp>(n),
+                             ra->denominator());
     }
   case_Ratio_v_Ratio : {
       // a/b - c/d = (ad-bc)/bd
@@ -1745,11 +1747,19 @@ Number_sp Ratio_O::sqrt_() const {
 }
 
 Number_sp Ratio_O::reciprocal_() const {
-  // FIXME: Since the ratio is in lowest terms we could be more
-  // direct and save some time.
-  // That is: If the numerator is 1, return the denominator.
-  // Otherwise return this ratio, but skip all the gcd calculations etc.
-  return Rational_O::create(this->_denominator, this->_numerator);
+  Integer_sp num = this->_numerator, denom = this->_denominator;
+  if (num.fixnump()) {
+    switch (num.unsafe_fixnum()) {
+    case 1: return denom;
+    case -1: return clasp_negate(denom);
+    }
+  }
+  if (clasp_minusp(num)) {
+    Integer_sp indenom = gc::As_unsafe<Integer_sp>(clasp_negate(denom));
+    Integer_sp innum = gc::As_unsafe<Integer_sp>(clasp_negate(num));
+    return Ratio_O::create_primitive(indenom, innum);
+  }
+  else return Ratio_O::create_primitive(denom, num);
 }
 
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
@@ -2674,7 +2684,7 @@ Number_sp Bignum_O::log1_() const {
     // shift the result.
     Fixnum length = clasp_integer_length(bignum) - 1;
     Integer_sp ash = clasp_ash(make_fixnum(1), length);
-    Rational_sp rational = clasp_make_rational(bignum, ash);
+    Rational_sp rational = Rational_O::create(bignum, ash);
     float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
