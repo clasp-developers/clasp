@@ -102,6 +102,20 @@
 ;;;
 ;;; Dealing with type checks.
 
+;;; Convert a type spec to something acceptable to typep.
+;;; Which just means reducing (function ...) to function.
+;;; TODO: Move to cleavir?
+(defun discrimination-type (ctype)
+  (etypecase ctype
+    ((or symbol class) ctype)
+    (cons
+     (case (first ctype)
+       ((function) 'function)
+       ((and complex cons not or)
+        `(,(first ctype)
+          ,@(mapcar #'discrimination-type (rest ctype))))
+       (t ctype)))))
+
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
@@ -131,7 +145,7 @@
                            collect (if insert-type-checks
                                        `(if (cleavir-primop:typew
                                              ,var ,ty
-                                             (typep ,var ',ty))
+                                             (typep ,var ',(discrimination-type ty)))
                                             nil
                                             (error 'type-error
                                                    :datum ,var
