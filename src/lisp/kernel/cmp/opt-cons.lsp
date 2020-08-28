@@ -39,7 +39,7 @@
 (defmacro do-in-list ((%elt %sublist list &rest output) &body body)
   `(do* ((,%sublist ,list (cdr ,%sublist)))
         ((null ,%sublist) ,@output)
-     (let ((,%elt (car (the cons ,%sublist))))
+     (let ((,%elt (car ,%sublist)))
        ,@body)))
 
 ;;; TODO: Avoid iteration for constant list (but watch out for growth)
@@ -72,10 +72,12 @@
     ;; If the list is constant and short, use the special expansion.
     (when (constantp list env)
       (let ((list (ext:constant-form-value list env)))
-        (when (and (core:proper-list-p list)
-                   (< (length list) 10)) ; completely arbitrary
-          (return-from expand-member
-            (expand-constant-member value list key-function test-function init)))))
+        (if (core:proper-list-p list)
+            (when (< (length list) 10) ; completely arbitrary
+              (return-from expand-member
+                (expand-constant-member value list key-function test-function init)))
+            ;; improper constant list
+            (return-from expand-member nil))))
     (si::with-unique-names (%value %sublist %elt)
       `(let ((,%value ,value)
              ,@init)
