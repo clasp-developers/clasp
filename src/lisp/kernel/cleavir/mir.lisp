@@ -92,7 +92,7 @@
 ;;; Instruction CLASP-SAVE-VALUES-INSTRUCTION
 ;;;
 ;;; Allocate storage for the current return values and put em in.
-;;; The values can be restored by a local unwind.
+;;; The values can be restored by a CLASP-LOAD-VALUES-INSTRUCTION.
 ;;; Has four outputs: The dynamic environment (a nothingburger),
 ;;;  the stack pointer (from llvm.stacksave),
 ;;;  the number of values, and a variable array for storing those values.
@@ -100,6 +100,16 @@
 ;;; Lowered from CLEAVIR-IR:SAVE-VALUES-INSTRUCTION.
 
 (defclass clasp-save-values-instruction (cleavir-ir:save-values-instruction)
+  ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction CLASP-LOAD-VALUES-INSTRUCTION
+;;;
+;;; Restore values based on the inputs, which are the final
+;;; two outputs of a CLASP-SAVE-VALUES-INSTRUCTION.
+
+(defclass clasp-load-values-instruction (cleavir-ir:load-values-instruction)
   ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

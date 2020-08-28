@@ -171,6 +171,16 @@
       (out mv-temp vals-loc))))
 
 (defmethod translate-simple-instruction
+    ((instruction cleavir-ir:load-values-instruction) return-value abi function-info)
+  (declare (ignore abi function-info))
+  (let* ((inputs (cleavir-ir:inputs instruction))
+         (nvals-loc (first inputs))
+         (vals-loc (second inputs))
+         (loaded (%intrinsic-call "cc_load_values"
+                                  (list (in nvals-loc) (in vals-loc)))))
+    (store-tmv loaded return-value)))
+
+(defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value (abi abi-x86-64) function-info)
   (check-type (clasp-cleavir-hir:function-name instruction) string)
   (clasp-cleavir:unsafe-multiple-value-foreign-call
@@ -275,16 +285,10 @@
                   (gen-protect thunk protection-dynenv return-value function-info)))
                (cc-mir:clasp-save-values-instruction
                 (let* ((outs (cleavir-ir:outputs definer))
-                       (sp-loc (second outs))
-                       (nvals-loc (third outs))
-                       (vals-loc (fourth outs))
-                       (loaded
-                         (%intrinsic-call "cc_load_values"
-                                          (list (in nvals-loc) (in vals-loc)))))
-                  ;; Unwind stack storage. Note that this must be done AFTER load values.
-                  (%intrinsic-call "llvm.stackrestore" (list (in sp-loc)))
-                  ;; Save return value.
-                  (store-tmv loaded return-value)))
+                       (sp-loc (second outs)))
+                  ;; Unwind stack storage.
+                  (%intrinsic-call "llvm.stackrestore"
+                                   (list (in sp-loc)))))
                (cleavir-ir:enter-instruction
                 (unless (eq dynenv outer-dynenv)
                   (error "BUG: Fucked up the dynenvs yet again. succ = ~a" succ)))))))
