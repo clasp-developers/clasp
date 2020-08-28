@@ -1029,6 +1029,11 @@ and initialize it with an array consisting of one function pointer."
     (typeid-core-unwind      "_ZTIN4core6UnwindE")
     ))
 
+(define-symbol-macro %jmp-buf-tag%
+    (llvm-sys:array-type-get %i8% +jmp-buf-size+))
+(define-symbol-macro %jmp-buf-tag*%
+    (llvm-sys:type-get-pointer-to %jmp-buf-tag%))
+
 (defvar *exception-types-hash-table* (make-hash-table :test #'eq)
   "Map exception names to exception class extern 'C' names")
 
