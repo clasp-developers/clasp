@@ -905,6 +905,23 @@
                                        (%size_t static-index))))
   (cmp:irc-unreachable))
 
+(defmethod translate-branch-instruction
+    ((instruction clasp-cleavir-hir::unwind-sjlj-instruction)
+     return-value successors abi function-info)
+  (save-multiple-value-0 return-value)
+  (let ((bufp
+          (cmp:irc-bit-cast
+           (in (first (cleavir-ir:inputs instruction)))
+           cmp::%jmp-buf-tag*%))
+        (static-index
+          (1+ ; can't pass 0 to longjmp
+           (instruction-go-index
+            (nth (cleavir-ir:unwind-index instruction)
+                 (cleavir-ir:successors (cleavir-ir:destination instruction)))))))
+    (%intrinsic-invoke-if-landing-pad-or-call
+     "longjmp" (list bufp (%i32 static-index))))
+  (cmp:irc-unreachable))
+
 ;;; This is not a real branch: The real successors are only for convenience elsewhere.
 ;;; (HIR analysis, basically.)
 ;;; Also, the frame marker is unique to the frame, not to the catch, so we get it from
@@ -923,6 +940,28 @@
        "sham-dynamic-environment")
   ;; unconditionally go to first successor
   (cmp:irc-br (first successors)))
+
+(defmethod translate-branch-instruction
+    ((instruction clasp-cleavir-hir::catch-sjlj-instruction)
+     return-value successors abi function-info)
+  (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
+    (out (cmp:irc-bit-cast bufp cmp:%t*%)
+         (first (cleavir-ir:outputs instruction)))
+    (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
+           (blocks (loop repeat (length (rest successors))
+                         collect (cmp:irc-basic-block-create
+                                  "catch-restore")))
+           (default (cmp:irc-basic-block-create "catch-default"))
+           (sw (cmp:irc-switch sj default (length successors))))
+      (cmp:irc-begin-block default)
+      (cmp:irc-unreachable)
+      (cmp:irc-add-case sw (%i32 0) (first successors))
+      (loop for succ in (rest successors) for block in blocks
+            for i from 1
+            do (cmp:irc-add-case sw (%i32 i) block)
+               (cmp:irc-begin-block block)
+               (restore-multiple-value-0 return-value)
+               (cmp:irc-br succ)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value successors abi function-info)

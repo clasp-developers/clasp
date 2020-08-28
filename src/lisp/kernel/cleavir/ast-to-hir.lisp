@@ -292,6 +292,92 @@
      :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999910)
      )))
 
+;;;
+
+(in-package #:cleavir-ast-to-hir)
+
+(defmethod compile-ast ((ast cc-ast::block-sjlj-ast) context)
+  (with-accessors ((results results)
+                   (successors successors)
+                   (invocation invocation))
+      context
+    (let* (;; We force the block context to use a values location.
+           ;; This is because the result of the context is
+           ;; necessarily shared by any compiled RETURN-FROMs for
+           ;; it, and these may be in other functions. If the
+           ;; results were lexical locations, these would be
+           ;; shared between functions, and therefore would be
+           ;; closed over. But it's more efficient to use the
+           ;; values mechanism that's used for normal returns.
+           (new-results
+             (typecase results
+               (cleavir-ir:values-location results)
+               (t (cleavir-ir:make-values-location))))
+           (after (first successors))
+           (new-after
+             (typecase results
+               (cleavir-ir:values-location after)
+               (t (cleavir-ir:make-multiple-to-fixed-instruction
+                   new-results results after))))
+           ;; The name is gone by now, so unlike TAGBODY
+           ;; we can't name the catch output.
+           (continuation (cleavir-ir:make-lexical-location
+                          '#:block-continuation))
+           (dynenv-out (cleavir-ir:make-lexical-location
+                        '#:block-dynenv))
+           (local-unwind
+             (let ((cleavir-ir:*dynamic-environment* dynenv-out))
+               (cleavir-ir:make-local-unwind-instruction after)))
+           (new-context
+             (clone-context context
+                            :successors (list local-unwind)
+                            :dynamic-environment dynenv-out))
+           (catch (clasp-cleavir-hir::make-catch-sjlj-instruction
+                   continuation
+                   dynenv-out
+                   (list new-after))))
+      (setf (block-info ast)
+            (list (clone-context context
+                                 :results new-results
+                                 :successors (list new-after))
+                  continuation
+                  catch))
+      ;; Now just hook up the catch to go to the body normally.
+      (push (compile-ast (cleavir-ast:body-ast ast) new-context)
+            (cleavir-ir:successors catch))
+      catch)))
+
+(defmethod compile-ast ((ast cc-ast::return-from-sjlj-ast) context)
+  (let* ((block-ast (cleavir-ast:block-ast ast))
+         (block-info (block-info block-ast))
+         (block-context (first block-info))
+         (continuation (second block-info))
+         (destination (third block-info)))
+    (with-accessors ((results results)
+                     (successors successors)
+                     (invocation invocation))
+        block-context
+      (if (eq (invocation context) invocation)
+          ;; simple case: we are returning locally.
+          (compile-ast
+           (cleavir-ast:form-ast ast)
+           (clone-context
+            context
+            :results results
+            :successors (list
+                         (cleavir-ir:make-local-unwind-instruction
+                          (first successors)))))
+          ;; harder case: unwind.
+	  (let* ((new-successor (clasp-cleavir-hir::make-unwind-sjlj-instruction
+                                 continuation destination 1)))
+            (compile-ast (cleavir-ast:form-ast ast)
+                         (clone-context
+                          context
+                          :successors (list new-successor)
+                          :results results)))))))
+
+(in-package :clasp-cleavir-ast-to-hir)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Compile a SETF-FDEFINITION-AST.
