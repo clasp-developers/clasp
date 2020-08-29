@@ -450,4 +450,8 @@ BBBBCCCCDDDD"))
        "AA  
 BBBBCCCC**DDDD"))
 
-
+(test print-0-strange-radix
+      (string= "0"
+               (LET ((*PRINT-READABLY* NIL))
+                 (WITH-OUTPUT-TO-STRING (*STANDARD-OUTPUT*)
+                   (PRIN1 0)))))
