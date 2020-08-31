@@ -62,9 +62,10 @@
 	((eq (car list) key) (cadr list))
 	(t (search-keyword (cddr list) key))))
 
-(defun check-keywords (tail keywords &optional (allow-other-keys nil aok-flag))
-  (do (head
-       arg
+(defun check-keywords (tail keywords &optional allow-other-keys)
+  (do (head arg
+            ;; has :allow-other-keys been found? only the first counts
+            aok-flag
        (err nil))
       ((null tail)
        (when (and err (not allow-other-keys))
@@ -76,15 +77,18 @@
       (error "keyword list is not a proper list")
       (setq arg (car tail) tail (cdr tail)))
     (cond ((eq head :allow-other-keys)
-           (when (not aok-flag)
-             (setq allow-other-keys arg aok-flag t)))
+           ;; :allow-other-keys nil doesn't override &allow-other-keys.
+           (unless (or allow-other-keys aok-flag)
+             (setq allow-other-keys arg))
+           (setq aok-flag t))
           ((not (member head keywords))
            (push head err)))))
 
 (defun check-compiler-macro-keywords
-    (tail keywords &optional (allow-other-keys nil aok-flag))
+    (tail keywords &optional allow-other-keys)
   (do (head
        arg
+       aok-flag
        ;; List of keywords not allowed by the lambda list.
        (err nil)
        ;; List of keywords that are variable forms, like in
@@ -101,8 +105,9 @@
       (error "keyword list is not a proper list")
       (setq arg (car tail) tail (cdr tail)))
     (cond ((eq head :allow-other-keys)
-           (when (not aok-flag)
-             (setq allow-other-keys arg aok-flag t)))
+           (unless (or allow-other-keys aok-flag)
+             (setq allow-other-keys arg))
+           (setq aok-flag t))
           ;; FIXME: Constants should also be okay, but we don't have
           ;; ext:constant-form-value yet.
           ((not (keywordp head))
