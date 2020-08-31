@@ -893,7 +893,7 @@
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:unwind-instruction) return-value successors abi function-info)
-  (declare (ignore successors function-info))
+  (declare (ignore successors))
   ;; we don't use the second input to the unwind - the dynenv - at the moment.
   ;; Save whatever is in return-vals in the multiple-value array
   (save-multiple-value-0 return-value)
@@ -901,8 +901,14 @@
           (instruction-go-index
            (nth (cleavir-ir:unwind-index instruction)
                 (cleavir-ir:successors (cleavir-ir:destination instruction))))))
-    (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
-                                       (%size_t static-index))))
+    ;; We never unwind into the function doing the unwinding,
+    ;; so we only need the never-entry pad, not the maybe-entry.
+    (cmp:with-landing-pad (never-entry-landing-pad
+                           (cleavir-ir:dynamic-environment instruction)
+                           return-value function-info)
+      (%intrinsic-invoke-if-landing-pad-or-call
+       "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
+                         (%size_t static-index)))))
   (cmp:irc-unreachable))
 
 ;;; This is not a real branch: The real successors are only for convenience elsewhere.
@@ -946,7 +952,12 @@
     ((instruction clasp-cleavir-hir:throw-instruction) return-value successors abi function-info)
   (declare (ignore successors))
   (let ((inputs (cleavir-ir:inputs instruction)))
-    (%intrinsic-call "cc_throw" (list (in (first inputs)) (in (second inputs)))))
+    ;; see note in unwind-instruction
+    (cmp:with-landing-pad (never-entry-landing-pad
+                           (cleavir-ir:dynamic-environment instruction)
+                           return-value function-info)
+    (%intrinsic-invoke-if-landing-pad-or-call
+     "cc_throw" (list (in (first inputs)) (in (second inputs))))))
   (cmp:irc-unreachable))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
