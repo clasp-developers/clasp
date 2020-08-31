@@ -280,7 +280,9 @@
        (location-may-enter-p (first (cleavir-ir:inputs definer))))
       ((or clasp-cleavir-hir:bind-instruction
            clasp-cleavir-hir:unwind-protect-instruction
-           cc-mir:clasp-save-values-instruction)
+           cc-mir:clasp-save-values-instruction
+           ;; SJLJ ignores landing pads
+           clasp-cleavir-hir::catch-sjlj-instruction)
        (location-may-enter-p (cleavir-ir:dynamic-environment definer)))
       (cleavir-ir:catch-instruction t))))
 
@@ -296,6 +298,10 @@
           (cleavir-ir:assignment-instruction
            ;; Proxy: Just check higher
            (maybe-entry-landing-pad (first (cleavir-ir:inputs definer))
+                                    return-value tags function-info))
+          ;; sjlj ignores landing pads
+          (clasp-cleavir-hir::catch-sjlj-instruction
+           (maybe-entry-landing-pad (cleavir-ir:dynamic-environment definer)
                                     return-value tags function-info))
           ((or cleavir-ir:catch-instruction
                clasp-cleavir-hir:bind-instruction
