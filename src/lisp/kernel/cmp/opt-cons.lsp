@@ -78,11 +78,12 @@
                 (expand-constant-member value list key-function test-function init)))
             ;; improper constant list
             (return-from expand-member nil))))
-    (si::with-unique-names (%value %sublist %elt)
+    (si::with-unique-names (%value %list %sublist %elt)
       `(let ((,%value ,value)
+             (,%list ,list)
              ,@init)
          (declare (ignore ,@ignores))
-         (do-in-list (,%elt ,%sublist ,list)
+         (do-in-list (,%elt ,%sublist ,%list)
            (when ,(funcall test-function %value
                            (funcall key-function %elt))
              (return ,%sublist)))))))
@@ -101,11 +102,12 @@
                         key-flag test-flag)
       (two-arg-test-parse-args 'assoc sequence-args :start-end nil :environment env)
     (when test-function
-      (si::with-unique-names (%value %sublist %elt %car)
+      (si::with-unique-names (%value %list %sublist %elt %car)
         `(let ((,%value ,value)
+               (,%list ,list)
                ,@init)
            (declare (ignore ,@ignores))
-           (do-in-list (,%elt ,%sublist ,list)
+           (do-in-list (,%elt ,%sublist ,%list)
              (if (consp ,%elt)
                  (let ((,%car (car (the cons ,%elt))))
                    (when ,(funcall test-function %value
