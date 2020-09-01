@@ -1245,6 +1245,11 @@ bool Number_O::equal(T_sp obj) const {
   return cl__eql(this->asSmartPtr(), obj);
 }
 
+bool Number_O::equalp(T_sp obj) const {
+  if (gc::IsA<Number_sp>(obj))
+    return basic_equalp(this->asSmartPtr(), gc::As_unsafe<Number_sp>(obj));
+  else return false;
+}
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
   mpz_class q, r;
