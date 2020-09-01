@@ -520,6 +520,64 @@ when this is t a lot of graphs will be generated.")
     ;; now delete assignments with unused outputs
     (mapc #'cleavir-ir:delete-instruction *assignments-to-delete*)))
 
+(defun sjljifiable-p (catch unwind dag)
+  (let ((definer (dynenv-definer (cleavir-ir:dynamic-environment unwind))))
+    (loop while (typep definer 'cleavir-ir:assignment-instruction)
+          do (setf definer (first (cleavir-ir:defining-instructions
+                                      (first (cleavir-ir:inputs definer))))))
+    (unless (typep definer 'cleavir-ir:enter-instruction)
+      (return-from sjljifiable-p nil))
+    (loop for node
+            in (gethash definer (cleavir-hir-transformations:dag-nodes dag))
+          for enclose = (cleavir-hir-transformations:enclose-instruction node)
+          do (loop with fn = (first (cleavir-ir:outputs enclose))
+                   for user in (cleavir-ir:using-instructions fn)
+                   for 
+                   pre-ddefiner
+                     = (dynenv-definer (cleavir-ir:dynamic-environment user))
+                   for ddefiner
+                     = (loop while (typep pre-ddefiner
+                                          'cleavir-ir:assignment-instruction)
+                             do (setf pre-ddefiner
+                                      (first
+                                       (cleavir-ir:defining-instructions
+                                           (first
+                                            (cleavir-ir:inputs pre-ddefiner)))))
+                             finally (return pre-ddefiner))
+                   unless (and 
+                           (eq ddefiner catch)
+                           (typep user '(or cleavir-ir:funcall-instruction
+                                         cleavir-ir:initialize-closure-instruction))
+                           (eq (first (cleavir-ir:inputs user)) fn)
+                           (not (member fn (rest (cleavir-ir:inputs user)))))
+                     do (return-from sjljifiable-p nil))))
+  t)
+
+(defun sjlj-conversion (init-instr)
+  (let* ((dag (cleavir-hir-transformations:build-function-dag init-instr))
+         (unwinds
+           (cleavir-ir:instructions-of-type init-instr
+                                            'cleavir-ir:unwind-instruction))
+         (map
+           (loop with map = nil
+                 for unwind in unwinds
+                 for catch = (cleavir-ir:destination unwind)
+                 do (let ((p (assoc catch map :test #'eq)))
+                      (if p
+                          (push unwind (cdr p))
+                          (push (list catch unwind) map)))
+                 finally (return map))))
+    (loop with any = nil
+          for (catch . unwinds) in map
+          when (every (lambda (u) (sjljifiable-p catch u dag))
+                      unwinds)
+            do (change-class catch 'clasp-cleavir-hir::catch-sjlj-instruction)
+               (loop for u in unwinds
+                     do (change-class
+                         u 'clasp-cleavir-hir::unwind-sjlj-instruction))
+               (setf any t)
+          finally (when any (format t "~&Applied SJLJ~%")))))
+
 (defun my-hir-transformations (init-instr system env)
   ;; FIXME: Per Cleavir rules, we shouldn't need the environment at this point.
   ;; We do anyway because of the possibility that a load-time-value input is introduced
@@ -557,6 +615,7 @@ when this is t a lot of graphs will be generated.")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   (cleavir-hir-transformations:eliminate-catches init-instr)
+  (sjlj-conversion init-instr)
   (when *eliminate-typeq*
     (cleavir-hir-transformations:eliminate-redundant-typeqs init-instr clasp-cleavir:*clasp-system*))
   ;; Disabled at the moment because deleting these instructions does
