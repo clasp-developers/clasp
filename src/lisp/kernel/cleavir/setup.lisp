@@ -139,8 +139,6 @@ when this is t a lot of graphs will be generated.")
     ((eq name 'core::%array-dimension) t)
     ((eq name 'core::acas) t)
     ((eq name 'core::bind-va-list) t)
-    ((eq name 'clasp-cleavir::block-sjlj) t)
-    ((eq name 'clasp-cleavir::return-from-sjlj) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 

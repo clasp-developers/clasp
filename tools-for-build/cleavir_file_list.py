@@ -254,6 +254,7 @@ cleavir_file_list = [
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/eliminate-typeq",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/simplify-box-unbox",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/function-dag",
+    "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/simple-unwind",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/segregate-lexicals",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/escape",
     "src/lisp/kernel/contrib/sicl/Code/Cleavir/HIR-transformations/copy-propagate",

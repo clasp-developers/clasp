@@ -280,11 +280,13 @@
        (location-may-enter-p (first (cleavir-ir:inputs definer))))
       ((or clasp-cleavir-hir:bind-instruction
            clasp-cleavir-hir:unwind-protect-instruction
-           cc-mir:clasp-save-values-instruction
-           ;; SJLJ ignores landing pads
-           clasp-cleavir-hir::catch-sjlj-instruction)
+           cc-mir:clasp-save-values-instruction)
        (location-may-enter-p (cleavir-ir:dynamic-environment definer)))
-      (cleavir-ir:catch-instruction t))))
+      (cleavir-ir:catch-instruction
+       (if (cleavir-ir:simple-p definer)
+           ;; SJLJ is orthogonal to landing pads
+           (location-may-enter-p (cleavir-ir:dynamic-environment definer))
+           t)))))
 
 (defun compute-maybe-entry-landing-pad (location return-value tags function-info)
   ;; KLUDGE: If there are no catches we just use the never-entry pad.
@@ -299,10 +301,16 @@
            ;; Proxy: Just check higher
            (maybe-entry-landing-pad (first (cleavir-ir:inputs definer))
                                     return-value tags function-info))
-          ;; sjlj ignores landing pads
-          (clasp-cleavir-hir::catch-sjlj-instruction
-           (maybe-entry-landing-pad (cleavir-ir:dynamic-environment definer)
-                                    return-value tags function-info))
+          (cleavir-ir:catch-instruction
+           (if (cleavir-ir:simple-p definer)
+               ;; SJLJ is orthogonal to landing pads
+               (maybe-entry-landing-pad (cleavir-ir:dynamic-environment definer)
+                                        return-value tags function-info)
+               (generate-maybe-entry-landing-pad
+                (maybe-entry-processor definer return-value tags function-info)
+                (never-entry-processor definer return-value function-info)
+                (definer-needs-cleanup-p definer)
+                return-value (frame-value function-info))))
           ((or cleavir-ir:catch-instruction
                clasp-cleavir-hir:bind-instruction
                clasp-cleavir-hir:unwind-protect-instruction

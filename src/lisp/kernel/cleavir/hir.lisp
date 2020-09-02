@@ -429,20 +429,6 @@
 
 (defmethod cleavir-ir-graphviz:label ((instr acas-instruction)) "acas")
 
-;;;
-
-(defclass catch-sjlj-instruction (cleavir-ir:catch-instruction) ())
-(defun make-catch-sjlj-instruction (continuation dynenv-out successors)
-  (change-class (cleavir-ir:make-catch-instruction
-                 continuation dynenv-out successors)
-                'catch-sjlj-instruction))
-
-(defclass unwind-sjlj-instruction (cleavir-ir:unwind-instruction) ())
-(defun make-unwind-sjlj-instruction (continuation destination index)
-  (change-class (cleavir-ir:make-unwind-instruction
-                 continuation destination index)
-                'unwind-sjlj-instruction))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Compute &rest argument allocation based on declarations.

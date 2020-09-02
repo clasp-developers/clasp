@@ -897,53 +897,26 @@
   ;; we don't use the second input to the unwind - the dynenv - at the moment.
   ;; Save whatever is in return-vals in the multiple-value array
   (save-multiple-value-0 return-value)
-  (let ((static-index
+  (let* ((dest (cleavir-ir:destination instruction))
+         (static-index
           (instruction-go-index
            (nth (cleavir-ir:unwind-index instruction)
-                (cleavir-ir:successors (cleavir-ir:destination instruction))))))
-    (%intrinsic-call "cc_unwind" (list (in (first (cleavir-ir:inputs instruction)))
-                                       (%size_t static-index))))
+                (cleavir-ir:successors dest)))))
+    (if (and (cleavir-ir:simple-p instruction) (cleavir-ir:simple-p dest))
+        (let ((bufp
+                (cmp:irc-bit-cast
+                 (in (first (cleavir-ir:inputs instruction)))
+                 cmp::%jmp-buf-tag*%)))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           ;; 1+ because we can't pass 0 to longjmp.
+           "longjmp" (list bufp (%i32 (1+ static-index)))))
+        (%intrinsic-call "cc_unwind"
+                         (list (in (first (cleavir-ir:inputs instruction)))
+                               (%size_t static-index)))))
   (cmp:irc-unreachable))
 
-(defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir::unwind-sjlj-instruction)
-     return-value successors abi function-info)
-  (save-multiple-value-0 return-value)
-  (let ((bufp
-          (cmp:irc-bit-cast
-           (in (first (cleavir-ir:inputs instruction)))
-           cmp::%jmp-buf-tag*%))
-        (static-index
-          (1+ ; can't pass 0 to longjmp
-           (instruction-go-index
-            (nth (cleavir-ir:unwind-index instruction)
-                 (cleavir-ir:successors (cleavir-ir:destination instruction)))))))
-    (%intrinsic-invoke-if-landing-pad-or-call
-     "longjmp" (list bufp (%i32 static-index))))
-  (cmp:irc-unreachable))
-
-;;; This is not a real branch: The real successors are only for convenience elsewhere.
-;;; (HIR analysis, basically.)
-;;; Also, the frame marker is unique to the frame, not to the catch, so we get it from
-;;; the function-info.
-(defmethod translate-branch-instruction
-    ((instruction cleavir-ir:catch-instruction) return-value successors abi function-info)
-  (out (frame-value function-info)
-       (first (cleavir-ir:outputs instruction)) "frame-marker")
-  ;; So, Cleavir treats the dynamic-environment as an actual runtime thing, as it would be
-  ;; in some implementations. Not in Clasp- we just use the location to find the chain of
-  ;; catch-instructions. But the location still exists.
-  ;; So we fill it with an undef in enter, and then pass it along here. LLVM will remove it,
-  ;; since nothing actually uses it.
-  (out (cleavir-ir:dynamic-environment instruction)
-       (second (cleavir-ir:outputs instruction))
-       "sham-dynamic-environment")
-  ;; unconditionally go to first successor
-  (cmp:irc-br (first successors)))
-
-(defmethod translate-branch-instruction
-    ((instruction clasp-cleavir-hir::catch-sjlj-instruction)
-     return-value successors abi function-info)
+(defun translate-sjlj-catch (instruction return-value successors)
+  ;; Call setjmp, switch on the result.
   (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
     (out (cmp:irc-bit-cast bufp cmp:%t*%)
          (first (cleavir-ir:outputs instruction)))
@@ -962,6 +935,31 @@
                (cmp:irc-begin-block block)
                (restore-multiple-value-0 return-value)
                (cmp:irc-br succ)))))
+
+;;; If not an sjlj catch, this is not a real branch:
+;;; The real successors are only for convenience elsewhere.
+;;; (HIR analysis, basically.)
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:catch-instruction)
+     return-value successors abi function-info)
+  (declare (ignore abi))
+  ;; So, Cleavir treats the dynamic-environment as an actual runtime thing, as it would be
+  ;; in some implementations. Not in Clasp- we just use the location to find the chain of
+  ;; catch-instructions. But the location still exists.
+  ;; So we fill it with an undef in enter, and then pass it along here. LLVM will remove it,
+  ;; since nothing actually uses it.
+  (out (cleavir-ir:dynamic-environment instruction)
+       (second (cleavir-ir:outputs instruction))
+       "sham-dynamic-environment")
+  (cond ((cleavir-ir:simple-p instruction)
+         (translate-sjlj-catch instruction return-value successors))
+        (t
+         ;; The frame marker is unique to the frame, not to the catch,
+         ;; so we get it from the function-info.
+         (out (frame-value function-info)
+              (first (cleavir-ir:outputs instruction)) "frame-marker")
+         ;; unconditionally go to first successor
+         (cmp:irc-br (first successors)))))
 
 (defmethod translate-branch-instruction
     ((instruction cleavir-ir:return-instruction) return-value successors abi function-info)

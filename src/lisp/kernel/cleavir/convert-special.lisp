@@ -481,24 +481,6 @@
     ((symbol (eql 'core::local-block)) cst environment (system clasp-cleavir:clasp))
   (cleavir-cst-to-ast:convert-special 'block cst environment system))
 
-#+cst
-(defmethod cleavir-cst-to-ast:convert-special
-  ((symbol (eql 'clasp-cleavir::block-sjlj))
-   cst environment (system clasp-cleavir:clasp))
-  (let ((r (cleavir-cst-to-ast:convert-special
-            'block cst environment system)))
-    (check-type r cleavir-ast:block-ast)
-    (change-class r 'clasp-cleavir-ast::block-sjlj-ast)))
-
-#+cst
-(defmethod cleavir-cst-to-ast:convert-special
-  ((symbol (eql 'clasp-cleavir::return-from-sjlj))
-   cst environment (system clasp-cleavir:clasp))
-  (let ((r (cleavir-cst-to-ast:convert-special
-            'return-from cst environment system)))
-    (check-type r cleavir-ast:return-from-ast)
-    (change-class r 'clasp-cleavir-ast::return-from-sjlj-ast)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting THROW

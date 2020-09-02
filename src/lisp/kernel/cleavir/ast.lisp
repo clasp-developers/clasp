@@ -39,11 +39,6 @@
 (defmethod cleavir-ast:children ((ast throw-ast))
   (list (tag-ast ast) (result-ast ast)))
 
-;;;
-
-(defclass block-sjlj-ast (cleavir-ast:block-ast) ())
-(defclass return-from-sjlj-ast (cleavir-ast:return-from-ast) ())
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class DEBUG-MESSAGE-AST
