@@ -967,13 +967,6 @@
   (cmp:irc-ret (load-return-value return-value)))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:funcall-no-return-instruction)
-     return-value successors (abi abi-x86-64) function-info)
-  (declare (ignore successors))
-  (translate-funcall instruction return-value abi function-info)
-  (cmp:irc-unreachable))
-
-(defmethod translate-branch-instruction
     ((instruction cleavir-ir:unreachable-instruction) return-value successors abi function-info)
   (declare (ignore return-value successors abi function-info))
   (cmp:irc-unreachable))
