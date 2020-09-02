@@ -898,9 +898,11 @@
   ;; we don't use the second input to the unwind - the dynenv - at the moment.
   ;; Save whatever is in return-vals in the multiple-value array
   (save-multiple-value-0 return-value)
-  (cmp:with-landing-pad (never-entry-landing-pad
-                         (cleavir-ir:dynamic-environment instruction)
-                         return-value function-info)
+  (let* ((dest (cleavir-ir:destination instruction))
+         (static-index
+           (instruction-go-index
+            (nth (cleavir-ir:unwind-index instruction)
+                 (cleavir-ir:successors dest)))))
     (if (and (cleavir-ir:simple-p instruction) (cleavir-ir:simple-p dest))
         (let ((bufp
                 (cmp:irc-bit-cast
@@ -909,10 +911,13 @@
           (%intrinsic-invoke-if-landing-pad-or-call
            ;; 1+ because we can't pass 0 to longjmp.
            "longjmp" (list bufp (%i32 (1+ static-index)))))
-        (%intrinsic-invoke-if-landing-pad-or-call
-         "cc_unwind"
-         (list (in (first (cleavir-ir:inputs instruction)))
-               (%size_t static-index)))))
+        (cmp:with-landing-pad (never-entry-landing-pad
+                               (cleavir-ir:dynamic-environment instruction)
+                               return-value function-info)
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_unwind"
+           (list (in (first (cleavir-ir:inputs instruction)))
+                 (%size_t static-index))))))
   (cmp:irc-unreachable))
 
 (defun translate-sjlj-catch (instruction return-value successors)
