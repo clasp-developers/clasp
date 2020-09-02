@@ -96,6 +96,36 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-env:variable-info ((environment null) symbol)
   (cleavir-env:variable-info *clasp-env* symbol))
 
+(defvar *fn-attributes* (make-hash-table :test #'equal))
+
+(macrolet ((set-dyn-calls (&rest names)
+             `(progn ,@(loop for name in names
+                             collect `(set-dyn-call ,name))))
+           (set-dyn-call (name)
+             `(setf (gethash ',name *fn-attributes*)
+                    (cleavir-attributes:make-attributes :dyn-call))))
+  (set-dyn-calls
+   apply funcall
+   every some notevery notany
+   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
+   member member-if member-if-not
+   mapc mapcar mapcan mapl maplist mapcon
+   assoc assoc-if assoc-if-not
+   rassoc rassoc-if rassoc-if-not
+   intersection nintersection adjoin
+   set-difference nset-difference
+   set-exclusive-or nset-exclusive-or subsetp union nunion
+   ;; Can't do most sequence functions, as ext sequence
+   ;; functions can do arbitrary things.
+   map map-into merge
+   cleavir-ast:map-ast-depth-first-preorder
+   cleavir-ir:map-instructions
+   cleavir-ir:map-instructions-with-owner
+   cleavir-ir:map-instructions-arbitrary-order
+   cleavir-ir:filter-instructions
+   cleavir-ir:map-local-instructions
+   cleavir-ir:filter-local-instructions))
+
 (defun treat-as-special-operator-p (name)
   (cond
     ((cmp:treat-as-special-operator-p name) t)
@@ -146,13 +176,16 @@ when this is t a lot of graphs will be generated.")
 		    :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
      (let* ((cleavir-ast (inline-ast function-name))
-            (inline-status (core:global-inline-status function-name)))
+            (inline-status (core:global-inline-status function-name))
+            (attr (or (gethash function-name *fn-attributes*)
+                      (cleavir-attributes:default-attributes))))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :type (global-ftype function-name)
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
-                      :ast cleavir-ast)))
+                      :ast cleavir-ast
+                      :attributes attr)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
     ;; which is hooked up so that among other things this works.

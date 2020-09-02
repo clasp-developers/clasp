@@ -546,10 +546,16 @@ when this is t a lot of graphs will be generated.")
                              finally (return pre-ddefiner))
                    unless (and 
                            (eq ddefiner catch)
-                           (typep user '(or cleavir-ir:funcall-instruction
-                                         cleavir-ir:initialize-closure-instruction))
-                           (eq (first (cleavir-ir:inputs user)) fn)
-                           (not (member fn (rest (cleavir-ir:inputs user)))))
+                           (typecase user
+                             (cleavir-ir:initialize-closure-instruction
+                              ;; Implies that it's the first input.
+                              (not (member fn (rest (cleavir-ir:inputs user)))))
+                             (cleavir-ir:funcall-instruction
+                              (or (cleavir-attributes:has-boolean-attribute-p
+                                   (cleavir-ir:attributes user)
+                                   :dyn-call)
+                                  (not (member fn (rest (cleavir-ir:inputs user))))))
+                             (t nil)))
                      do (return-from sjljifiable-p nil))))
   t)
 
