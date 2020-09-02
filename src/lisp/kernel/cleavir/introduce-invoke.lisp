@@ -3,6 +3,7 @@
 (defclass function-info ()
   ((%enter-instruction :initarg :enter-instruction :accessor enter-instruction)
    ;; a list of CATCH-INSTRUCTIONs, i.e. nonlocal entrances, in the function.
+   ;; This slot is only used below in lower-enter-catches.
    (%catches :initform nil :accessor catches)
    ;; The LLVM Value for the frame marker.
    (%frame-value :accessor frame-value)
@@ -69,13 +70,16 @@
     ;; If there are no catches, we don't need a save-frame or the rest.
     (unless (null catches)
       ;; Insert the same-frame.
-      (cleavir-ir:insert-instruction-after
-       (let ((cleavir-ir:*origin* (cleavir-ir:origin enter))
-             (cleavir-ir:*policy* (cleavir-ir:policy enter))
-             (cleavir-ir:*dynamic-environment*
-               (cleavir-ir:dynamic-environment enter)))
-         (cc-mir:make-save-frame-instruction))
-       enter)
+      ;; We don't need this if t here are only simple catches, which
+      ;; use a distinct setjmp/longjmp based mechanism.
+      (unless (every #'cleavir-ir:simple-p catches)
+        (cleavir-ir:insert-instruction-after
+         (let ((cleavir-ir:*origin* (cleavir-ir:origin enter))
+               (cleavir-ir:*policy* (cleavir-ir:policy enter))
+               (cleavir-ir:*dynamic-environment*
+                 (cleavir-ir:dynamic-environment enter)))
+           (cc-mir:make-save-frame-instruction))
+         enter))
       ;; Assign a go-index to every instruction that's an abnormal successor to a catch.
       ;; FIXME: maybe check for pathological case of overflowing i?
       (loop with i = 0

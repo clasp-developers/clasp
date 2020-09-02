@@ -223,8 +223,6 @@
 
 (defmethod label ((instruction funcall-instruction)) "funcall")
 
-(defmethod label ((instruction tailcall-instruction)) "tailcall")
-
 (defmethod label ((instruction return-instruction)) "ret")
 
 (defmethod label ((instruction fdefinition-instruction)) "fdefinition")

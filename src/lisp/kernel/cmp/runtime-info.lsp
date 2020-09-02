@@ -73,6 +73,7 @@
 (defvar +vaslist-valist-offset+ (get-cxx-data-structure-info :vaslist-valist-offset))
 (defvar +vaslist-remaining-nargs-offset+ (get-cxx-data-structure-info :vaslist-remaining-nargs-offset))
 (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
+(defvar +jmp-buf-size+ (get-cxx-data-structure-info :jmp-buf-size))
 (defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (defvar +args-in-registers+ (get-cxx-data-structure-info :lcc-args-in-registers))
 (export '(+fixnum-mask+ +ptag-mask+ +immediate-mask+
