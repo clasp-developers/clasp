@@ -482,13 +482,20 @@ CL_DECLARE();
 CL_DOCSTRING("Change the posix current working directory to pathname.  If change-default-pathname-defaults is T then also change *default-pathname-defaults*.");
 CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   if (dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
+  printf("%s:%d ext__chdir dir -> %s\n", __FILE__, __LINE__, _rep_(dir).c_str());
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if (cl__stringp(tdir)) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
+    if (sdir->get_std_string().substr(0,strlen("/Users/meister/Development/cando-demos")) == "/Users/meister/Development/cando-demos") {
+      printf("%s:%d:%s set break-point here\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
+    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
     if (change_default_pathname_defaults.notnilp()) {
       write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
+      printf("%s:%d:%s  Before getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
+      printf("%s:%d:%s  After getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
     }
     return result;
   }
@@ -542,13 +549,15 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
   if (!ok) {
     SIMPLE_ERROR(BF("There was an error in ext__getcwd - error: %s") % strerror(errno));
   }
-    
+#if 0
+  printf("%s:%d:%s entered ok -> %s\n", __FILE__, __LINE__, __FUNCTION__, ok );
   // Take into account what the shell, if any, might think about
   // the current working directory.  This is important in symlinked
   // trees.  However, we need to make sure that the information is
   // not outdated.
   const char *spwd = getenv("PWD");
   if (spwd) {
+    printf("%s:%d:%s entered spwd -> %s\n", __FILE__, __LINE__, __FUNCTION__, spwd );
     if (::chdir(spwd) != -1) {
       // We make sure $PWD is not outdated by chdir'ing into it,
       // which resolves all symlinks, and make sure that the
@@ -559,6 +568,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
       // However, I don't want to make it a non-const function
       // at this time.
       const char *nowpwd = ::getcwd(NULL,0);
+      printf("%s:%d:%s  nowpwd -> %s\n", __FILE__, __LINE__, __FUNCTION__, nowpwd );
       if (nowpwd) {
         if (strcmp(ok, nowpwd) == 0) {
         // OK, we should use the shell's/user's idea of "cd"
@@ -572,6 +582,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
     // was found to be invalid, save us re-testing on next call
     unsetenv("PWD");
   }
+#endif
   size_t cwdsize = strlen(ok);
   // Pad with 4 characters for / and terminator \0
   core::Str8Ns_sp output = core::Str8Ns_O::make(cwdsize+2,'\0',true,core::clasp_make_fixnum(0));
@@ -588,6 +599,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
     if (*c == '\\')
       *c = '/';
 #endif
+  printf("%s:%d:%s %d  output-> %s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), _rep_(output).c_str());
   return output;
 }
 }; // namespace ext
