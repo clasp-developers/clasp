@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 
-#include <boost/format.hpp>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
@@ -68,7 +67,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   if (olimit.fixnump()) {
     gc::Fixnum n = olimit.unsafe_fixnum();
     if (n > 0) {
-      boost::random::uniform_int_distribution<uint64_t> range(0, n - 1);
+      std::uniform_int_distribution<uint64_t> range(0, n - 1);
       return make_fixnum(range(random_state->_Producer));
     } else TYPE_ERROR_cl_random(olimit);
   } else if (gc::IsA<Bignum_sp>(olimit)) {
@@ -79,7 +78,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     mp_limb_t res[len];
     const mp_limb_t minlimb = std::numeric_limits<mp_limb_t>::min();
     const mp_limb_t maxlimb = std::numeric_limits<mp_limb_t>::max();
-    boost::random::uniform_int_distribution<mp_limb_t> range(minlimb, maxlimb);
+    std::uniform_int_distribution<mp_limb_t> range(minlimb, maxlimb);
     for (mp_size_t i = 0; i < len; ++i)
       res[i] = range(random_state->_Producer);
     // FIXME: We KLUDGE the range by doing mod (basically).
@@ -93,13 +92,13 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     return cl__mod(bignum_result(len, res), gbn);
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
     if (df->get() > 0.0) {
-      boost::random::uniform_real_distribution<> range(0.0, df->get());
+      std::uniform_real_distribution<> range(0.0, df->get());
       return DoubleFloat_O::create(range(random_state->_Producer));
     } else TYPE_ERROR_cl_random(olimit);
   } else if (olimit.single_floatp()) {
     float flimit = olimit.unsafe_single_float();
     if (flimit >  0.0f) {
-      boost::random::uniform_real_distribution<> range(0.0, flimit);
+      std::uniform_real_distribution<> range(0.0, flimit);
       return clasp_make_single_float(range(random_state->_Producer));
     } else TYPE_ERROR_cl_random(olimit);
   }
