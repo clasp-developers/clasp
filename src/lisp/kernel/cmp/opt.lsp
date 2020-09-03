@@ -71,23 +71,25 @@
                       `((,key-function (or ,key #'identity)))))))))
 
 ;;; Use the above to do an entire two-arg test, and allow for START and END as well.
-;;; Returns (VALUES KEYF TESTF INITS KEYK TESTK TEST START END)
-;;; KEYF and TESTF are the functions returned by OPT-x-FUNCTION above. INITS are from them as well.
+;;; Returns (VALUES KEYF TESTF INITS IGNORES KEYK TESTK START END)
+;;; INITS are a list of variables to bind. IGNORES are symbols to ignore.
+;;; KEYF and TESTF are the functions returned by OPT-x-FUNCTION above.
 ;;; KEYK and TESTK are the keywords for them, i.e. KEYK is :key if :key was specified or else NIL,
 ;;;  and TESTK is :test or :test-not or nil.
-;;; TEST is the form passed as a :test or :test-not, or #'eql if none was passed.
-;;; TEST is used for dropping to MEMQ and friends even if a full inline isn't done. (FIXME: will be used for.)
 ;;; START and END are the same parameters. the START-END argument controls whether they're valid.
 ;;; If the call is invalid - e.g. has both :test and :test-not - all values will be nil, including the
 ;;;  primary value KEYF, which is otherwise a function.
 (defun two-arg-test-parse-args (function args &key (start-end t) environment)
   (loop with key-flag = nil
-        with key = nil
+        with key = #'identity
         with init = nil
-        with test = '#'eql
+        with ignores = nil
+        with test = (lambda (x y) `(eql ,x ,y))
         with test-flag = nil
         with start = 0
+        with start-flag
         with end = nil
+        with end-flag
         with keyword
         while args
         do (cond ((or (atom args)
@@ -96,44 +98,69 @@
                       (not (keywordp (setf keyword (pop args)))))
                   (return nil))
                  ((eq keyword :key)
-                  (unless key-flag
-                    (setf key (pop args)
-                          key-flag keyword)))
+                  (if key-flag
+                      (let ((s (gensym "IGNORE-KEY")))
+                        (push `(,s ,(pop args)) init)
+                        (push s ignores))
+                      (multiple-value-bind (key-function key-init)
+                          (opt-key-function keyword (pop args) environment)
+                        (setf key key-function
+                              init (append key-init init)
+                              key-flag keyword))))
                  ((or (eq keyword :test)
                       (eq keyword :test-not))
                   (cond ((null test-flag)
-                         (setf test (pop args)
-                               test-flag keyword))
+                         (multiple-value-bind (test-function test-init)
+                             (opt-test-function keyword (pop args) environment)
+                           (setf test test-function
+                                 init (append test-init init)
+                                 test-flag keyword)))
                         ((not (eq test-flag keyword))
                          (warn "Cannot specify :TEST and :TEST-NOT arguments to ~A"
                                function)
-                         (return nil))))
+                         (return nil))
+                        (t
+                         (let ((s (gensym "IGNORE-TEST")))
+                           (push `(,s ,(pop args)) init)
+                           (push s ignores)))))
                  ((eq keyword :start)
-                  (unless start-end
-                    (warn "Unexpected keyword argument ~A in a call to function ~A"
-                          keyword function)
-                    (return nil))
-                  (setf start (pop args)))
+                  (cond
+                    ((not start-end)
+                     (warn "Unexpected keyword argument ~A in a call to function ~A"
+                           keyword function)
+                     (return nil))
+                    (start-flag
+                     (let ((s (gensym "IGNORE-START")))
+                       (push `(,s ,(pop args)) init)
+                       (push s ignores)))
+                    (t
+                     (let ((s (gensym "START")))
+                       (push `(,s ,(pop args)) init)
+                       (setf start-flag t)))))
                  ((eq keyword :end)
-                  (unless start-end
-                    (warn "Unexpected keyword argument ~A in a call to function ~A"
-                          keyword function)
-                    (return nil))
-                  (setf end (pop args)))
+                  (cond
+                    ((not start-end)
+                     (warn "Unexpected keyword argument ~A in a call to function ~A"
+                           keyword function)
+                     (return nil))
+                    (end-flag
+                     (let ((s (gensym "IGNORE-END")))
+                       (push `(,s ,(pop args)) init)
+                       (push s ignores)))
+                    (t
+                     (let ((s (gensym "END")))
+                       (push `(,s ,(pop args)) init)
+                       (setf end-flag t)))))
                  ((eq keyword :from-end)
                   (unless (null (pop args))
                     (return nil)))
                  (t (return nil)))
         finally
-           (multiple-value-bind (key-function key-init)
-               (opt-key-function key-flag key environment)
-             (multiple-value-bind (test-function test-init)
-                 (opt-test-function test-flag test environment)
-               (return (values key-function
-                               test-function
-                               (nconc key-init test-init)
-                               key-flag
-                               test-flag
-                               test
-                               start
-                               end))))))
+           (return (values key
+                           test
+                           (nreverse init)
+                           ignores
+                           key-flag
+                           test-flag
+                           start
+                           end))))

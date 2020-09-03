@@ -151,6 +151,14 @@ CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
       StringPushStringCharStar(buffer,txt);
       break;
     default:
+        if (fn == 0) {
+          // Zero needs to be special cased, because
+          // zero bignums would need special casing.
+          // Specifically, mpn functions have undefined
+          // behavior when passed them.
+          StringPushStringCharStar(buffer,"0");
+          return buffer;
+        };
         Bignum_sp bn = core__next_from_fixnum(fn);
         core__next_to_string(buffer, bn, base);
         break;

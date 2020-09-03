@@ -115,12 +115,6 @@ namespace core {
     List_sp _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;
     StringOutputStream_sp _WriteToStringOutputStream;
-    Bignum_sp _BignumRegister0;
-    Bignum_sp _BignumRegister1;
-    Bignum_sp _BignumRegister2;
-    Bignum_sp bigRegister0() { return this->_BignumRegister0; };
-    Bignum_sp bigRegister1() { return this->_BignumRegister1; };
-    Bignum_sp bigRegister2() { return this->_BignumRegister2; };
     size_t random();
     ~ThreadLocalState();
   };

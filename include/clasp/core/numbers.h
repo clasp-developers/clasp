@@ -197,6 +197,7 @@ namespace core {
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual bool equal(T_sp obj) const override;
+    virtual bool equalp(T_sp obj) const override;
 
     // log(x) (i.e. natural log)
     virtual Number_sp log1_() const { SUBIMP(); };

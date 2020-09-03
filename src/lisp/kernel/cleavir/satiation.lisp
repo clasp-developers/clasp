@@ -519,7 +519,6 @@
      (cleavir-ir:unwind-instruction null)
      (cleavir-ir:catch-instruction cons)
      (cleavir-ir:return-instruction null)
-     (cleavir-ir:funcall-no-return-instruction null)
      (cleavir-ir:unreachable-instruction null)
      (clasp-cleavir-hir:throw-instruction null)
      (cleavir-ir:fixnum-add-instruction cons)

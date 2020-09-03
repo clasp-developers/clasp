@@ -173,7 +173,8 @@
       (when (core:global-inline-status inlinee-name)
         (setf (gethash :inline inlinee-ht) t)))))
 
-(defmethod cleavir-cst-to-ast:convert-called-function-reference (cst info env (system clasp-64bit))
+(defmethod cleavir-cst-to-ast:convert-called-function-reference
+    (cst info env (system clasp-64bit))
   (declare (ignore env))
   ;; FIXME: Duplicates cleavir.
   (when (not (eq (cleavir-env:inline info) 'cl:notinline))

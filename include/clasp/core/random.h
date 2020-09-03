@@ -27,18 +27,13 @@ THE SOFTWARE.
 #ifndef _core_random_H_
 #define _core_random_H_
 
-#include <boost/multiprecision/gmp.hpp>
-// bug from lack of sync sync between GMP and boost versions
-#define _mp_size mp11::mp_size
-#include <boost/multiprecision/random.hpp>
-#include <boost/random.hpp>
+#include <random>
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 
 namespace core {
-  namespace bmp = boost::multiprecision;
   
 SMART(RandomState);
 
@@ -46,9 +41,8 @@ class RandomState_O : public General_O {
   LISP_CLASS(core, ClPkg, RandomState_O, "random-state",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  typedef boost::mt19937 Generator;
+  typedef std::mt19937 Generator;
   Generator _Producer;
-//  boost::mt11213b _Producer;
 
 public: // ctor/dtor for classes with shared virtual base
   explicit RandomState_O(bool random = false) {
