@@ -557,7 +557,7 @@ when this is t a lot of graphs will be generated.")
           (setf *ct-infer-types* (compiler-timer-elapsed))))))
 
   (cleavir-hir-transformations:eliminate-catches init-instr)
-  (cleavir-hir-transformations:mark-simple-unwinds init-instr)
+  ;;(cleavir-hir-transformations:mark-simple-unwinds init-instr)
   (when *eliminate-typeq*
     (cleavir-hir-transformations:eliminate-redundant-typeqs init-instr clasp-cleavir:*clasp-system*))
   ;; Disabled at the moment because deleting these instructions does
