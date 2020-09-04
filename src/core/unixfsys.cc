@@ -482,20 +482,22 @@ CL_DECLARE();
 CL_DOCSTRING("Change the posix current working directory to pathname.  If change-default-pathname-defaults is T then also change *default-pathname-defaults*.");
 CL_DEFUN T_sp ext__chdir(T_sp dir, T_sp change_default_pathname_defaults) {
   if (dir.nilp()) SIMPLE_ERROR(BF("%s is about to pass NIL to clasp_namestring") % __FUNCTION__);
-  printf("%s:%d ext__chdir dir -> %s\n", __FILE__, __LINE__, _rep_(dir).c_str());
+//  printf("%s:%d ext__chdir dir -> %s\n", __FILE__, __LINE__, _rep_(dir).c_str());
   T_sp tdir = clasp_namestring(dir, true);
   LIKELY_if (cl__stringp(tdir)) {
     String_sp sdir = gc::As_unsafe<String_sp>(tdir);
+#if 0
     if (sdir->get_std_string().substr(0,strlen("/Users/meister/Development/cando-demos")) == "/Users/meister/Development/cando-demos") {
       printf("%s:%d:%s set break-point here\n", __FILE__, __LINE__, __FUNCTION__ );
     }
+#endif
     Integer_sp result = Integer_O::create((gc::Fixnum)safe_chdir(sdir->get_std_string().c_str(), _Nil<T_O>()));
-    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
+//    printf("%s:%d:%s  After safe_chdir\n", __FILE__, __LINE__, __FUNCTION__ );
     if (change_default_pathname_defaults.notnilp()) {
       write_bf_stream(BF("Changing *default-pathname-defaults* because change-default-pathname-defaults -> %s\n") % _rep_(change_default_pathname_defaults));
-      printf("%s:%d:%s  Before getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s  Before getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
       core::getcwd(true); // get the current working directory and change *default-pathname-defaults* to it
-      printf("%s:%d:%s  After getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s  After getcwd\n", __FILE__, __LINE__, __FUNCTION__ );
     }
     return result;
   }
@@ -599,7 +601,7 @@ CL_DEFUN core::Str8Ns_sp ext__getcwd() {
     if (*c == '\\')
       *c = '/';
 #endif
-  printf("%s:%d:%s %d  output-> %s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), _rep_(output).c_str());
+//  printf("%s:%d:%s %d  output-> %s\n", __FILE__, __LINE__, __FUNCTION__, getpid(), _rep_(output).c_str());
   return output;
 }
 }; // namespace ext
