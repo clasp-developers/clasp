@@ -745,6 +745,7 @@ size_t calculateArrayTotalSizeAndValidateDimensions(List_sp dim_desig, size_t& r
    // we are in an allocator here
   for ( auto cur : dim_desig ) {
     T_sp tdim = oCar(cur);
+    if (!tdim.fixnump()) SIMPLE_ERROR(BF("Array dimension %s must be an integer") % _rep_(tdim));
     Fixnum fdim = tdim.unsafe_fixnum();
     if (fdim<0) SIMPLE_ERROR(BF("Array dimensions %d must be positive") % fdim);
     size_t dim = fdim;
