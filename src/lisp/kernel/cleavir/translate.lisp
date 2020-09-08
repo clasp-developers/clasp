@@ -359,7 +359,7 @@ when this is t a lot of graphs will be generated.")
           (cc-dbg-when *debug-log* (log-layout-procedure the-function basic-blocks))
           (let ((args (llvm-sys:get-argument-list the-function)))
             (mapc #'(lambda (arg argname) (llvm-sys:set-name arg argname))
-                  (llvm-sys:get-argument-list the-function) cmp:+fn-prototype-argument-names+))
+                  args cmp:+fn-prototype-argument-names+))
           ;; create a basic-block for every remaining tag
           (loop for block in rest-basic-blocks
                 for instruction = (cleavir-basic-blocks:first-instruction block)

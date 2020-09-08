@@ -8,6 +8,9 @@
   :depends-on (:concrete-syntax-tree
                :eclector-concrete-syntax-tree
                :eclector
+               :cleavir-bir
+               :cleavir-ast-to-bir
+               :cleavir-bir-transformations
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
