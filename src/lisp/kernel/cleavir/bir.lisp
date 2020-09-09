@@ -14,5 +14,4 @@
          (inst (make-instance 'precalc-value
                               :index (cc-ast:precalc-value-reference-ast-index ast)
                               :value (cc-ast:precalc-value-reference-ast-original-object ast))))
-    (prog1 (cleavir-ast-to-bir::figure-1-value inserter inst rtype)
-      (cleavir-ast-to-bir::before inserter inst))))
+    (cleavir-ast-to-bir:return-1 inserter inst rtype)))
