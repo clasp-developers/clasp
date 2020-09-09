@@ -4,9 +4,10 @@
 (in-package #:clasp-cleavir-translate-bir)
 
 (defvar *tags*)
-(defvar *datum-variables*)
-(defvar *datum-allocas*)
+(defvar *datum-values*)
+(defvar *variable-allocas*)
 (defvar *compiled-enters*)
+(defvar *function-enclose-lists*)
 
 (defun iblock-tag (iblock)
   (or (gethash iblock *tags*)
@@ -14,18 +15,53 @@
 
 (defun in (datum)
   (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
-  (or (gethash datum *datum-variables*)
+  (or (gethash datum *datum-values*)
       (error "BUG: No variable for datum: ~a" datum)))
+
+(defun variable-in (variable)
+  (check-type variable cleavir-bir:variable)
+  (ecase (cleavir-bir:extent variable)
+    (:local (let ((alloca (or (gethash variable *variable-allocas*)
+                              (error "BUG: Variable missing: ~a" variable))))
+              (cmp:irc-load alloca)))
+    (:indefinite (let ((cell (or (gethash variable *datum-values*)
+                                 (error "BUG: Cell missing: ~a" variable)))
+                       (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+                   (cmp:irc-load-atomic (cmp::gen-memref-address cell offset))))))
 
 (defun out (value datum)
   (check-type datum cleavir-bir:transfer)
-  (assert (not (gethash datum *datum-variables*)))
-  (setf (gethash datum *datum-variables*) value))
+  (assert (not (gethash datum *datum-values*)))
+  (setf (gethash datum *datum-values*) value))
 
 (defun phi-out (value datum iblock)
   (check-type datum cleavir-bir:phi)
   (unless (eq (cleavir-bir:rtype datum) :multiple-values)
     (llvm-sys:add-incoming (in datum) value (iblock-tag iblock))))
+
+(defun variable-out (value variable)
+  (check-type variable cleavir-bir:variable)
+  (ecase (cleavir-bir:extent variable)
+    (:local
+     (let ((alloca (or (gethash variable *variable-allocas*)
+                       (error "BUG: Variable missing: ~a" variable))))
+       (cmp:irc-store value alloca)))
+    (:indefinite
+     (let ((cell (or (gethash variable *datum-values*)
+                     (error "BUG: Cell missing: ~a" variable)))
+           (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+       (cmp:irc-store-atomic
+        value
+        (cmp::gen-memref-address cell offset))))))
+
+(defun function-enclose-list (code)
+  (or (gethash code *function-enclose-lists*)
+      (setf (gethash code *function-enclose-lists*)
+            (cleavir-set:filter 'list
+                                (lambda (variable)
+                                  (and (not (eq (cleavir-bir:owner variable) code))
+                                       (not (eq (cleavir-bir:extent variable) :local))))
+                                (cleavir-bir:variables code)))))
 
 ;;; For a computation, return its llvm value (for the :around method).
 ;;; For other instructions, return value is unspecified/irrelevant.
@@ -67,6 +103,45 @@
     (cmp:irc-cond-br
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
      (first next) (second next))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
+                                         return-value abi)
+  (declare (ignore return-value))
+  (let* ((code (cleavir-bir:code instruction))
+         (enclose-list (function-enclose-list code))
+         (lambda-name (get-or-create-lambda-name code))
+         (enclosed-function (memoized-layout-procedure code lambda-name abi))
+         (function-description
+           (llvm-sys:get-named-global
+            cmp:*the-module* (cmp::function-description-name enclosed-function)))
+         (ninputs (length enclose-list))
+         (sninputs (clasp-cleavir::%size_t ninputs))
+         (enclose-args
+           (list enclosed-function
+                 (cmp:irc-bit-cast function-description cmp:%i8*%)
+                 sninputs))
+         (enclose
+           (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+            "cc_enclose" enclose-args)))
+    (prog1 enclose
+      (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+       "cc_initialize_closure"
+       (list* enclose sninputs
+              (mapcar (lambda (var)
+                        (or (gethash var *datum-values*)
+                            (error "BUG: Cell missing: ~a" var)))
+                      enclose-list))))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:writevar)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (variable-out (in (first (cleavir-bir:inputs instruction)))
+                (first (cleavir-bir:outputs instruction))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:readvar)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (variable-in (first (cleavir-bir:inputs instruction))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
@@ -118,7 +193,7 @@
       (loop for phi in phis
             for ndefinitions = (cleavir-set:size (cleavir-bir:definitions phi))
             unless (eq (cleavir-bir:rtype phi) :multiple-values)
-              do (setf (gethash phi *datum-variables*)
+              do (setf (gethash phi *datum-values*)
                        (cmp:irc-phi cmp:%t*% ndefinitions))))))
 
 (defun layout-iblock (iblock return-value abi)
@@ -142,6 +217,25 @@
         (cmp:irc-store (clasp-cleavir::%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
         (cmp:irc-begin-block body-block)
+        ;; Allocate any new cells, and allocas for local variables.
+        (cleavir-set:doset (var (cleavir-bir:variables ir))
+          (when (eq (cleavir-bir:owner var) ir)
+            (ecase (cleavir-bir:extent var)
+              (:local ; just an alloca
+               (setf (gethash var *variable-allocas*)
+                     (cmp:alloca-t*)))
+              (:indefinite ; make a cell
+               (setf (gethash var *datum-values*)
+                     (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                      "cc_makeCell" nil ""))))))
+        ;; Import cells.
+        (let ((imports (gethash ir *function-enclose-lists*))
+              (closure-vec (first (llvm-sys:get-argument-list the-function))))
+          (loop for import in imports for i from 0
+                for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
+                do (setf (gethash import *datum-values*)
+                         (cmp:irc-load-atomic
+                          (cmp::gen-memref-address closure-vec offset)))))
         ;; Parse lambda list.
         (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
                                       calling-convention
@@ -173,7 +267,11 @@
 
 (defun layout-procedure (ir lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
-  (let* ((llvm-function-name (cmp:jit-function-name lambda-name))
+  ;;(print (cleavir-bir:disassemble ir))
+  (let* ((*tags* (make-hash-table :test #'eq))
+         (*datum-values* (make-hash-table :test #'eq))
+         (*variable-allocas* (make-hash-table :test #'eq))
+         (llvm-function-name (cmp:jit-function-name lambda-name))
          (cmp:*current-function-name* llvm-function-name)
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string llvm-function-name "fn-name"))
@@ -227,7 +325,6 @@
 
 (defun memoized-layout-procedure (bir lambda-name abi
                                   &key (linkage 'llvm-sys:internal-linkage))
-  (print (cleavir-bir:disassemble bir))
   (or (gethash bir *compiled-enters*)
       (setf (gethash bir *compiled-enters*)
             (layout-procedure bir lambda-name abi :linkage linkage))))
@@ -237,9 +334,7 @@
   'top-level)
 
 (defun translate (bir &key abi linkage)
-  (let ((*tags* (make-hash-table :test #'eq))
-        (*datum-variables* (make-hash-table :test #'eq))
-        (*datum-allocas* (make-hash-table :test #'eq))
+  (let ((*function-enclose-lists* (make-hash-table :test #'eq))
         (*compiled-enters* (make-hash-table :test #'eq))
         (lambda-name (get-or-create-lambda-name bir)))
     (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
@@ -271,6 +366,7 @@
                                   :linkage linkage))))))
     (unless function
       (error "There was no function returned by translate-ast"))
+    (llvm-sys:dump-module cmp:*the-module* *standard-output*)
     (cmp:jit-add-module-return-function
      cmp:*the-module*
      function startup-fn shutdown-fn ordered-raw-constants-list)))
