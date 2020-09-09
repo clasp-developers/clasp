@@ -13,7 +13,7 @@
       (error "BUG: No tag for iblock: ~a" iblock)))
 
 (defun in (datum)
-  (check-type datum cleavir-bir:ssa)
+  (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
   (or (gethash datum *datum-variables*)
       (error "BUG: No variable for datum: ~a" datum)))
 
@@ -24,7 +24,8 @@
 
 (defun phi-out (value datum iblock)
   (check-type datum cleavir-bir:phi)
-  (llvm-sys:add-incoming (in datum) value (iblock-tag iblock)))
+  (unless (eq (cleavir-bir:rtype datum) :multiple-values)
+    (llvm-sys:add-incoming (in datum) value (iblock-tag iblock))))
 
 ;;; For a computation, return its llvm value (for the :around method).
 ;;; For other instructions, return value is unspecified/irrelevant.
@@ -55,7 +56,8 @@
   (loop with ib = (cleavir-bir:iblock instruction)
         for in in (cleavir-bir:inputs instruction)
         for out in (cleavir-bir:outputs instruction)
-        do (phi-out (in in) out ib))
+        unless (eq (cleavir-bir:rtype out) :multiple-values)
+          do (phi-out (in in) out ib))
   (cmp:irc-br (first next)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
@@ -87,6 +89,16 @@
             do (cmp:irc-store (clasp-cleavir::%nil)
                               (clasp-cleavir::return-value-elt ret-regs i))))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:vprimop)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((info (cleavir-bir::info inst))
+         (name (cleavir-bir::name info)))
+    (ecase name
+      (fdefinition
+       (let ((symbol (in (first (cleavir-bir:inputs inst)))))
+         (cmp:irc-fdefinition symbol))))))
+
 (defmethod translate-simple-instruction ((inst cc-bir::precalc-value)
                                          return-value abi)
   (declare (ignore return-value abi))
@@ -104,9 +116,10 @@
     (unless (null phis)
       (cmp:irc-begin-block (iblock-tag iblock))
       (loop for phi in phis
-            for ndefinitions = (length (cleavir-bir:definitions phi))
-            for llvm-phi = (cmp:irc-phi cmp:%t*% ndefinitions)
-            do (setf (gethash phi *datum-variables*) llvm-phi)))))
+            for ndefinitions = (cleavir-set:size (cleavir-bir:definitions phi))
+            unless (eq (cleavir-bir:rtype phi) :multiple-values)
+              do (setf (gethash phi *datum-variables*)
+                       (cmp:irc-phi cmp:%t*% ndefinitions))))))
 
 (defun layout-iblock (iblock return-value abi)
   (cmp:irc-begin-block (iblock-tag iblock))
@@ -214,6 +227,7 @@
 
 (defun memoized-layout-procedure (bir lambda-name abi
                                   &key (linkage 'llvm-sys:internal-linkage))
+  (print (cleavir-bir:disassemble bir))
   (or (gethash bir *compiled-enters*)
       (setf (gethash bir *compiled-enters*)
             (layout-procedure bir lambda-name abi :linkage linkage))))
