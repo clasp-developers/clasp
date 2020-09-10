@@ -6,6 +6,7 @@
 (defvar *tags*)
 (defvar *datum-values*)
 (defvar *variable-allocas*)
+(defvar *unwind-ids*)
 (defvar *compiled-enters*)
 (defvar *function-enclose-lists*)
 
@@ -53,6 +54,10 @@
        (cmp:irc-store-atomic
         value
         (cmp::gen-memref-address cell offset))))))
+
+(defun get-destination-id (iblock)
+  (or (gethash iblock *unwind-ids*)
+      (error "Missing unwind ID for ~a" iblock)))
 
 (defun function-enclose-list (code)
   (or (gethash code *function-enclose-lists*)
@@ -198,14 +203,17 @@
 
 (defun layout-iblock (iblock return-value abi)
   (cmp:irc-begin-block (iblock-tag iblock))
-  (loop with end = (cleavir-bir:end iblock)
-        for instruction = (cleavir-bir:start iblock)
-          then (cleavir-bir:successor instruction)
-        until (eq instruction end)
-        do (translate-simple-instruction instruction return-value abi)
-        finally (translate-terminator
-                 instruction return-value abi
-                 (mapcar #'iblock-tag (cleavir-bir:next end)))))
+  (cmp:with-landing-pad (maybe-entry-landing-pad
+                         (cleavir-bir:dynamic-environment iblock)
+                         return-value *tags*)
+    (loop with end = (cleavir-bir:end iblock)
+          for instruction = (cleavir-bir:start iblock)
+            then (cleavir-bir:successor instruction)
+          until (eq instruction end)
+          do (translate-simple-instruction instruction return-value abi)
+          finally (translate-terminator
+                   instruction return-value abi
+                   (mapcar #'iblock-tag (cleavir-bir:next end))))))
 
 (defun layout-procedure* (the-function ir calling-convention
                           body-irbuilder body-block
@@ -216,36 +224,42 @@
         (declare (ignore ret-regs))
         (cmp:irc-store (clasp-cleavir::%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
-        (cmp:irc-begin-block body-block)
-        ;; Allocate any new cells, and allocas for local variables.
-        (cleavir-set:doset (var (cleavir-bir:variables ir))
-          (when (eq (cleavir-bir:owner var) ir)
-            (ecase (cleavir-bir:extent var)
-              (:local ; just an alloca
-               (setf (gethash var *variable-allocas*)
-                     (cmp:alloca-t*)))
-              (:indefinite ; make a cell
-               (setf (gethash var *datum-values*)
-                     (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                      "cc_makeCell" nil ""))))))
-        ;; Import cells.
-        (let ((imports (gethash ir *function-enclose-lists*))
-              (closure-vec (first (llvm-sys:get-argument-list the-function))))
-          (loop for import in imports for i from 0
-                for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
-                do (setf (gethash import *datum-values*)
-                         (cmp:irc-load-atomic
-                          (cmp::gen-memref-address closure-vec offset)))))
-        ;; Parse lambda list.
-        (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
-                                      calling-convention
-                                      :argument-out #'out)
-        ;; Branch to the start block.
-        (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
-        ;; Lay out blocks.
-        (cleavir-bir:map-iblocks
-         (lambda (ib) (layout-iblock ib return-value abi))
-         ir))))
+        (with-catch-pad-prep
+            (cmp:irc-begin-block body-block)
+          ;; Assign IDs to unwind destinations.
+          (let ((i 0))
+            (cleavir-set:doset (entrance (cleavir-bir:entrances ir))
+                               (setf (gethash entrance *unwind-ids*) i)
+                               (incf i)))
+          ;; Allocate any new cells, and allocas for local variables.
+          (cleavir-set:doset (var (cleavir-bir:variables ir))
+                             (when (eq (cleavir-bir:owner var) ir)
+                               (ecase (cleavir-bir:extent var)
+                                 (:local ; just an alloca
+                                  (setf (gethash var *variable-allocas*)
+                                        (cmp:alloca-t*)))
+                                 (:indefinite ; make a cell
+                                  (setf (gethash var *datum-values*)
+                                        (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                                         "cc_makeCell" nil ""))))))
+          ;; Import cells.
+          (let ((imports (gethash ir *function-enclose-lists*))
+                (closure-vec (first (llvm-sys:get-argument-list the-function))))
+            (loop for import in imports for i from 0
+                  for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
+                  do (setf (gethash import *datum-values*)
+                           (cmp:irc-load-atomic
+                            (cmp::gen-memref-address closure-vec offset)))))
+          ;; Parse lambda list.
+          (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
+                                        calling-convention
+                                        :argument-out #'out)
+          ;; Branch to the start block.
+          (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
+          ;; Lay out blocks.
+          (cleavir-bir:map-iblocks
+           (lambda (ib) (layout-iblock ib return-value abi))
+           ir)))))
   ;; Finish up by jumping from the entry block to the body block
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:irc-br body-block))
@@ -335,6 +349,7 @@
 
 (defun translate (bir &key abi linkage)
   (let ((*function-enclose-lists* (make-hash-table :test #'eq))
+        (*unwind-ids* (make-hash-table :test #'eq))
         (*compiled-enters* (make-hash-table :test #'eq))
         (lambda-name (get-or-create-lambda-name bir)))
     (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
