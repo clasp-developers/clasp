@@ -914,8 +914,7 @@ std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode)
 
   if ( ! p_handle ) {
     str_error = dlerror();
-    fprintf( stderr, "%s:%d Could not open %s - error: %s\n",
-             __FILE__, __LINE__, str_path.c_str(), str_error.c_str());
+    //fprintf( stderr, "%s:%d Could not open %s - error: %s\n", __FILE__, __LINE__, str_path.c_str(), str_error.c_str());
   }
 
   return std::make_tuple( p_handle, str_error );
