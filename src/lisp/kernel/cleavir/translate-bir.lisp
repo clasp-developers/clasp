@@ -169,6 +169,73 @@
             do (cmp:irc-store (clasp-cleavir::%nil)
                               (clasp-cleavir::return-value-elt ret-regs i))))))
 
+(defmethod translate-simple-instruction
+    ((instr cleavir-bir:multiple-to-fixed) return-value (abi clasp-cleavir::abi-x86-64))
+  ;; Outputs that are returned in registers (see +pointers-returned-in-registers+) can be
+  ;; unconditionally assigned, as things that return values ensure that those return registers
+  ;; are always valid - e.g., (values) explicitly sets them to NIL.
+  ;; Beyond that, we have to branch on nret.
+  (clasp-cleavir::with-return-values (return-value abi nret return-regs)
+    (let* ((outputs (cleavir-bir:outputs instr))
+           (nouts (length outputs)))
+      ;; The easy ones.
+      (loop for out in outputs
+            for i below clasp-cleavir::+pointers-returned-in-registers+
+            do (out (cmp:irc-load (clasp-cleavir::return-value-elt return-regs i)) out))
+      ;; Now do the branch stuff (if there are enough outputs to require it)
+      ;; We end up with a switch on nret. Say we have three outputs and +p-r-i-r+ is 1;
+      ;; then we want
+      ;; out[0] = values0; // values0 is a register
+      ;; switch (nret) {
+      ;; case 0: // don't need to bother with out[0] any more, so fallthrough
+      ;; case 1: out[1] = nil; out[2] = nil; break;
+      ;; case 2: out[1] = values[1]; out[2] = nil; break;
+      ;; default: out[1] = values[1]; out[2] = values[1]; break; // any extra values ignored
+      ;; }
+      ;; We generate SSA directly, so the assignments are just phis.
+      (when (> nouts clasp-cleavir::+pointers-returned-in-registers+)
+        (let* ((rets (loop for i from clasp-cleavir::+pointers-returned-in-registers+ below nouts
+                           collect (clasp-cleavir::return-value-elt return-regs i)))
+               (default (cmp:irc-basic-block-create "mtf-enough"))
+               (switch (cmp:irc-switch (cmp:irc-load nret) default nouts))
+               (final (cmp:irc-basic-block-create "mtf-final"))
+               ;; Generate the default block, while keeping values for the phis.
+               (default-vars (prog2 (cmp:irc-begin-block default)
+                                 (mapcar #'cmp:irc-load rets)
+                               (cmp:irc-br final)))
+               ;; Generate the switch blocks. Put them in the switch while we're at it.
+               ;; The binding here is to a list of (block . vars) so we can phi it.
+               (blocks-and-vars
+                 (loop for retn from clasp-cleavir::+pointers-returned-in-registers+ below nouts
+                       for block = (cmp:irc-basic-block-create (format nil "mtf-~d" retn))
+                       do (cmp:irc-add-case switch (clasp-cleavir::%size_t retn) block)
+                          (cmp:irc-begin-block block)
+                       collect (cons block
+                                     (loop for ret in rets
+                                           for i from clasp-cleavir::+pointers-returned-in-registers+ below nouts
+                                           collect (if (< i retn) (cmp:irc-load ret) (clasp-cleavir::%nil))))
+                       do (cmp:irc-br final))))
+          ;; Set up all the register-only cases to use the first block.
+          ;; (which sets all the outputs to NIL)
+          (loop with low = (caar blocks-and-vars)
+                for retn from 0 below clasp-cleavir::+pointers-returned-in-registers+
+                do (cmp:irc-add-case switch (clasp-cleavir::%size_t retn) low))
+          ;; Final generation: generate the phis and then output them.
+          ;; NOTE: We can't output as we generate because (out ...) may generate a store,
+          ;; and phis must not have any stores (or anything but a phi) preceding them.
+          (cmp:irc-begin-block final)
+          (let* ((vector-outs (nthcdr clasp-cleavir::+pointers-returned-in-registers+ outputs))
+                 (phis (loop for out in vector-outs
+                            for i from 0
+                            for phi = (cmp:irc-phi cmp:%t*% (1+ nouts))
+                            do (loop for (block . vars) in blocks-and-vars
+                                     do (cmp:irc-phi-add-incoming phi (elt vars i) block))
+                               (cmp:irc-phi-add-incoming phi (elt default-vars i) default)
+                            collect phi)))
+            (loop for phi in phis
+                  for out in vector-outs
+                  do (out phi out))))))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
