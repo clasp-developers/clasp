@@ -26,7 +26,8 @@ struct gctools::GCInfo<core::Record_O> {
 };
 
 namespace core {
-SMART(Record);
+FORWARD(Record);
+FORWARD(SharpEqualWrapper);
 class Record_O : public General_O {
   LISP_CLASS(core, CorePkg, Record_O, "Record",General_O);
 public:
@@ -119,6 +120,12 @@ public:
       RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
       // Set the value and ignore its type!!!!!! This is to allow placeholders
       T_sp v = CONS_CDR(apair);
+      if (!gc::IsA<gc::smart_ptr<OT>>(v)) {
+        if (!gc::IsA<SharpEqualWrapper_sp>(v)) {
+          class_id expected_typ = reg::registered_class<OT>::id;
+          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
+        }
+      }
       RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
       value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
       if (this->stage() == initializing)
@@ -547,6 +554,12 @@ public:
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
+          if (!gc::IsA<SharpEqualWrapper_sp>(value)) {
+            class_id expected_typ = reg::registered_class<OT>::id;
+            lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+          }
+        }
         this->flagSeen(apair);
       }
     } break;
@@ -562,6 +575,12 @@ public:
         // same type as value - it may be a symbol - used for patching
         // use As_unsafe for this.
         value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
+          if (!gc::IsA<SharpEqualWrapper_sp>(value)) {
+            class_id expected_typ = reg::registered_class<OT>::id;
+            lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+          }
+        }
       }
     } break;
     case patching: {
