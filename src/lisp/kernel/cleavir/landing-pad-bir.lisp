@@ -326,15 +326,12 @@
         (cmp:irc-br next))
       lp-block)))
 
-(defun never-entry-processor (instruction return-value function-info)
+(defun never-entry-processor (instruction return-value)
   (or (gethash instruction *never-entry-processors*)
       (setf (gethash instruction *never-entry-processors*)
             (compute-never-entry-processor instruction return-value))))
 
 (defgeneric compute-never-entry-processor (dynenv return-value))
-
-(defun c-n-e-p-next (next-dynenv return-value)
-  (never-entry-processor (cleavir-bir:parent next-dynenv) return-value))
 
 (defmethod compute-never-entry-processor
     ((dynenv cleavir-bir:function) return-value)
@@ -350,7 +347,7 @@
 
 (defmethod compute-never-entry-processor
     ((dynenv cleavir-bir:catch) return-value)
-  (c-n-e-p-next (cleavir-bir:parent dynenv) return-value))
+  (compute-never-entry-processor (cleavir-bir:parent dynenv) return-value))
 
 #+(or)
 (defmethod compute-never-entry-processor
