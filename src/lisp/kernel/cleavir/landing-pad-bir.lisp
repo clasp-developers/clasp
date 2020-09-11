@@ -174,12 +174,17 @@
 
 (defgeneric compute-maybe-entry-processor (dynenv return-value tags))
 
+;; Does this iblock have nonlocal entrances?
+(defun has-entrances-p (iblock)
+  (not (cleavir-set:empty-set-p (cleavir-bir:entrances iblock))))
+
 (defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch)
                                           return-value tags)
   ;; Jump into this function based on the go index.
   ;; If the index doesn't match anything in this catch, go onto the next block.
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let* ((destinations (rest (cleavir-bir:next dynenv)))
+           (ndestinations (count-if #'has-entrances-p destinations))
            (next (maybe-entry-processor
                   (cleavir-bir:parent dynenv)
                   return-value tags))
@@ -190,25 +195,30 @@
            ;; so that we get the correct values.
            (_ (clasp-cleavir::restore-multiple-value-0 return-value))
            (go-index (cmp:irc-load *go-index.slot*))
-           (sw (cmp:irc-switch go-index next (length destinations))))
+           (sw (cmp:irc-switch go-index next ndestinations)))
       (declare (ignore _))
       (loop for dest in destinations
-            for jump-id = (get-destination-id dest)
-            for tag-block = (gethash dest tags)
-            do (assert (not (null tag-block)))
-               ;; KLUDGE time. See bug #990.
-               ;; Basically, we sometimes have multiple tags ending up at
-               ;; the same basic-block, e.g. in (tagbody a b ...)
-               ;; In this case we get duplicate pairs and we need to avoid
-               ;; that.
-               ;; It might be better to avoid this at a higher level but
-               ;; i'm not completely sure.
-               (let ((existing (assoc jump-id used-ids)))
-                 (if (null existing)
-                     (llvm-sys:add-case sw (clasp-cleavir::%size_t jump-id) tag-block)
-                     (unless (eq tag-block (cdr existing))
-                       (error "BUG: Duplicated ID in landing-pad.lisp"))))
-            collect (cons jump-id tag-block) into used-ids)
+            for has-entrances-p = (has-entrances-p dest)
+            for jump-id = (when has-entrances-p (get-destination-id dest))
+            for tag-block = (when has-entrances-p (gethash dest tags))
+            when has-entrances-p
+              do (assert (not (null tag-block)))
+                 ;; KLUDGE time. See bug #990.
+                 ;; Basically, we sometimes have multiple tags ending up at
+                 ;; the same basic-block, e.g. in (tagbody a b ...)
+                 ;; In this case we get duplicate pairs and we need to avoid
+                 ;; that.
+                 ;; It might be better to avoid this at a higher level but
+                 ;; i'm not completely sure.
+                 (let* ((jump-id (get-destination-id dest))
+                        (tag-block (gethash dest tags))
+                        (existing (assoc jump-id used-ids)))
+                   (if (null existing)
+                       (llvm-sys:add-case sw (clasp-cleavir::%size_t jump-id)
+                                          tag-block)
+                       (unless (eq tag-block (cdr existing))
+                         (error "BUG: Duplicated ID in landing-pad.lisp"))))
+              and collect (cons jump-id tag-block) into used-ids)
       bb)))
 
 #+(or)
