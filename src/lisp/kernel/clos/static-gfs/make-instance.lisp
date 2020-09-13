@@ -17,7 +17,7 @@
   ;; but it's rare to define methods on make-instance.
   `(locally
        (declare (notinline make-instance))
-     (make-instance class-form
+     (make-instance ,class-form
                     ,@(loop for key in keys for param in params
                             collect `',key collect param))))
 
