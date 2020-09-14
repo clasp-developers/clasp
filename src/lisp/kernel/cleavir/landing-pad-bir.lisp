@@ -277,6 +277,8 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
+    (cleavir-bir:leti
+     (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     #+(or)
     ((or clasp-cleavir-hir:bind-instruction
          clasp-cleavir-hir:unwind-protect-instruction
@@ -311,6 +313,7 @@
         ((or #+(or)clasp-cleavir-hir:bind-instruction
              #+(or)clasp-cleavir-hir:unwind-protect-instruction
              #+(or)cc-mir:clasp-save-values-instruction
+             cleavir-bir:leti
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
           (maybe-entry-processor dynenv return-value tags)
@@ -380,6 +383,7 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
+         cleavir-bir:leti
          #+(or)
          cc-mir:clasp-save-values-instruction)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
@@ -392,7 +396,7 @@
 
 (defun compute-never-entry-landing-pad (dynenv return-value)
   (etypecase dynenv
-    (cleavir-bir:catch
+    ((or cleavir-bir:catch cleavir-bir:leti)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv) return-value))
     #+(or)

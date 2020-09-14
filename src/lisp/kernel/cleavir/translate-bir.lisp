@@ -106,14 +106,6 @@
           do (phi-out (in in) out ib))
   (cmp:irc-br (first next)))
 
-(defmethod translate-terminator ((instruction cleavir-bir:eqi)
-                                 return-value abi next)
-  (declare (ignore return-value abi))
-  (let ((inputs (cleavir-bir:inputs instruction)))
-    (cmp:irc-cond-br
-     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
-     (first next) (second next))))
-
 (defun bind-if-necessary (var binder)
   (when (eq (cleavir-bir:binder var) binder)
     (ecase (cleavir-bir:extent var)
@@ -124,6 +116,21 @@
        (setf (gethash var *datum-values*)
              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
               "cc_makeCell" nil ""))))))
+
+(defmethod translate-terminator ((instruction cleavir-bir:leti)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v instruction))
+                      (cleavir-bir:bindings instruction))
+  (cmp:irc-br (first next)))
+
+(defmethod translate-terminator ((instruction cleavir-bir:eqi)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (let ((inputs (cleavir-bir:inputs instruction)))
+    (cmp:irc-cond-br
+     (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
+     (first next) (second next))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
                                  return-value abi next)
@@ -473,8 +480,12 @@
 
 (defun bir->bmir (ir env)
   (declare (ignore env))
+  (cleavir-bir:refresh-iblocks ir)
   (cleavir-bir-transformations:process-captured-variables ir)
+  (cleavir-bir-transformations::inline-functions ir)
+  (print (cleavir-bir:disassemble ir))
   (cleavir-bir-transformations:delete-temporary-variables ir)
+  (cleavir-bir:verify ir)
   ir)
 
 (defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))
