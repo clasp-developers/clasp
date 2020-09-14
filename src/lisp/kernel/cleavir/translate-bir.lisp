@@ -402,7 +402,6 @@
 
 (defun layout-procedure (ir lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
-  ;;(print (cleavir-bir:disassemble ir))
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*variable-allocas* (make-hash-table :test #'eq))
@@ -483,7 +482,6 @@
   (cleavir-bir:refresh-iblocks ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   (cleavir-bir-transformations::inline-functions ir)
-  (print (cleavir-bir:disassemble ir))
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cleavir-bir:verify ir)
   ir)
