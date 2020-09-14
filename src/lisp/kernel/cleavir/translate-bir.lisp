@@ -114,9 +114,25 @@
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
      (first next) (second next))))
 
+(defun bind-if-necessary (var binder)
+  (when (eq (cleavir-bir:binder var) binder)
+    (ecase (cleavir-bir:extent var)
+      (:local ; just an alloca
+       (setf (gethash var *variable-allocas*)
+             (cmp:alloca-t*)))
+      (:indefinite ; make a cell
+       (setf (gethash var *datum-values*)
+             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+              "cc_makeCell" nil ""))))))
+
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
                                  return-value abi next)
   (declare (ignore return-value abi))
+  ;; Bind the variable if needed.
+  (let ((u (cleavir-bir:use instruction))) ; avoid stupid check-type warning
+    (check-type u cleavir-bir:writevar))
+  (bind-if-necessary (first (cleavir-bir:outputs (cleavir-bir:use instruction)))
+                     instruction)
   ;; Return the frame pointer for use in unwinds.
   (prog1 (clasp-cleavir::%intrinsic-call
           "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
@@ -338,16 +354,8 @@
                                  (setf (gethash entrance *unwind-ids*) i)
                                  (incf i)))
             ;; Allocate any new cells, and allocas for local variables.
-            (cleavir-set:doset (var (cleavir-bir:variables ir))
-                               (when (eq (cleavir-bir:owner var) ir)
-                                 (ecase (cleavir-bir:extent var)
-                                   (:local ; just an alloca
-                                    (setf (gethash var *variable-allocas*)
-                                          (cmp:alloca-t*)))
-                                   (:indefinite ; make a cell
-                                    (setf (gethash var *datum-values*)
-                                          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                                           "cc_makeCell" nil ""))))))
+            (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v ir))
+                                (cleavir-bir:variables ir))
             ;; Import cells.
             (let ((imports (gethash ir *function-enclose-lists*))
                   (closure-vec (first (llvm-sys:get-argument-list the-function))))
