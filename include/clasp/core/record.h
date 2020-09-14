@@ -122,8 +122,10 @@ public:
       T_sp v = CONS_CDR(apair);
       if (!gc::IsA<gc::smart_ptr<OT>>(v)) {
         if (!gc::IsA<SharpEqualWrapper_sp>(v)) {
-          class_id expected_typ = reg::registered_class<OT>::id;
-          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
+          if (v.notnilp()) {
+            class_id expected_typ = reg::registered_class<OT>::id;
+            lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
+          }
         }
       }
       RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
@@ -556,8 +558,10 @@ public:
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
         if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
           if (!gc::IsA<SharpEqualWrapper_sp>(value)) {
-            class_id expected_typ = reg::registered_class<OT>::id;
-            lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+            if (value.notnilp()) {
+              class_id expected_typ = reg::registered_class<OT>::id;
+              lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+            }
           }
         }
         this->flagSeen(apair);
@@ -577,8 +581,10 @@ public:
         value = gc::As_unsafe<gc::smart_ptr<OT>>(CONS_CDR(apair));
         if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
           if (!gc::IsA<SharpEqualWrapper_sp>(value)) {
-            class_id expected_typ = reg::registered_class<OT>::id;
-            lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+            if (value.notnilp()) {
+              class_id expected_typ = reg::registered_class<OT>::id;
+              lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+            }
           }
         }
       }
