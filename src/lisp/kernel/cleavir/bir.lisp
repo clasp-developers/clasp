@@ -1,6 +1,7 @@
 (defpackage #:clasp-cleavir-bir
   (:use #:cl)
-  (:nicknames #:cc-bir))
+  (:nicknames #:cc-bir)
+  (:export #:mv-foreign-call #:function-name))
 
 (in-package #:cc-bir)
 
@@ -27,3 +28,18 @@
          (setf (cleavir-bir:inputs inst)
                (call-next-method ast inserter :multiple-values))
          outs))))
+
+(defclass mv-foreign-call (cleavir-bir:computation)
+  ((%function-name :initarg :function-name :reader function-name)))
+
+(defmethod cleavir-ast-to-bir:compile-ast
+    ((ast cc-ast:multiple-value-foreign-call-ast) inserter context)
+  (let* ((mvcall (make-instance 'mv-foreign-call
+                   :function-name (cc-ast:function-name ast)))
+         (result (cleavir-ast-to-bir::figure-mvalues inserter mvcall context))
+         (_ (cleavir-ast-to-bir::before inserter mvcall))
+         (args (cc-ast:argument-asts ast))
+         (argsvs (cleavir-ast-to-bir::compile-arguments args inserter)))
+    (declare (ignore _))
+    (setf (cleavir-bir:inputs mvcall) argsvs)
+    result))

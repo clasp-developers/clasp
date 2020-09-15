@@ -216,6 +216,12 @@
     (clasp-cleavir::closure-call-or-invoke
      (in (first inputs)) return-value (mapcar #'in (rest inputs)))))
 
+(defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
+                                         return-value abi)
+  (clasp-cleavir:unsafe-multiple-value-foreign-call
+   (cc-bir:function-name instruction)
+   return-value (mapcar #'in (cleavir-bir:inputs instruction)) abi))
+
 (defmethod translate-simple-instruction
     ((instruction cleavir-bir:fixed-to-multiple)
      return-value (abi clasp-cleavir::abi-x86-64))
@@ -479,11 +485,10 @@
 
 (defun bir->bmir (ir env)
   (declare (ignore env))
-  (cleavir-bir:refresh-iblocks ir)
+  (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   (cleavir-bir-transformations::inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
-  (cleavir-bir:verify ir)
   ir)
 
 (defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))
