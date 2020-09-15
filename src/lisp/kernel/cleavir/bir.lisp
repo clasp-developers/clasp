@@ -1,8 +1,3 @@
-(defpackage #:clasp-cleavir-bir
-  (:use #:cl)
-  (:nicknames #:cc-bir)
-  (:export #:mv-foreign-call #:function-name))
-
 (in-package #:cc-bir)
 
 (defclass precalc-value (cleavir-bir:constant cleavir-bir:computation)

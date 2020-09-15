@@ -43,10 +43,12 @@
    #:*code-walker*
    #:alloca-i8
    #:inline-ast
-))
+   ))
+
+(defpackage #:clasp-cleavir-translate-bir
+  (:use #:cl))
 
 (defpackage #:cc-generate-ast)
-
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
@@ -149,6 +151,11 @@
    #:acas-instruction
    #:bind-instruction #:unwind-protect-instruction
    ))
+
+(defpackage #:clasp-cleavir-bir
+  (:use #:cl)
+  (:nicknames #:cc-bir)
+  (:export #:mv-foreign-call #:function-name))
 
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)
