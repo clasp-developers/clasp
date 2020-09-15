@@ -6,6 +6,7 @@
 (defvar *tags*)
 (defvar *datum-values*)
 (defvar *variable-allocas*)
+(defvar *dynenv-storage*)
 (defvar *unwind-ids*)
 (defvar *compiled-enters*)
 (defvar *function-enclose-lists*)
@@ -55,6 +56,14 @@
         value
         (cmp::gen-memref-address cell offset))))))
 
+(defun dynenv-storage (dynenv)
+  (check-type dynenv cleavir-bir:dynamic-environment)
+  (or (gethash dynenv *dynenv-storage*)
+      (error "BUG: Missing dynenv storage for ~a" dynenv)))
+
+(defun (setf dynenv-storage) (new dynenv)
+  (setf (gethash dynenv *dynenv-storage*) new))
+
 (defun get-destination-id (iblock)
   (or (gethash iblock *unwind-ids*)
       (error "Missing unwind ID for ~a" iblock)))
@@ -95,10 +104,50 @@
   (declare (ignore abi next))
   (cmp:irc-ret (clasp-cleavir::load-return-value return-value)))
 
+(defmethod translate-terminator ((instruction cleavir-bir:alloca)
+                                 return-value abi next)
+  ;; For now, we only handle m-v-prog1.
+  (assert (eq (cleavir-bir:rtype instruction) :multiple-values))
+  (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
+    (let* ((nvals (cmp:irc-load nvalsl))
+           ;; NOTE: Must be done BEFORE the alloca.
+           (save (clasp-cleavir::%intrinsic-call "llvm.stacksave" nil))
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      (setf (dynenv-storage instruction) (list save nvals mv-temp))))
+  ;; Continue
+  (cmp:irc-br (first next)))
+
+(defgeneric undo-dynenv (dynamic-environment))
+
+(defmethod undo-dynenv ((dynamic-environment cleavir-bir:leti))
+  ;; Could undo stack allocated cells here
+  nil)
+(defmethod undo-dynenv ((dynenv cleavir-bir:catch))
+  ;; ditto, and mark the continuation out of extent
+  nil)
+(defmethod undo-dynenv ((dynenv cleavir-bir:alloca))
+  (destructuring-bind (stackpos storage1 storage2)
+      (dynenv-storage dynenv)
+    (declare (ignore storage1 storage2))
+    (clasp-cleavir::%intrinsic-call "llvm.stackrestore" (list stackpos))))
+
+(defun translate-local-unwind (jump)
+  (loop with target = (cleavir-bir:dynamic-environment
+                       (first (cleavir-bir:next jump)))
+        for de = (cleavir-bir:dynamic-environment jump)
+          then (cleavir-bir:parent de)
+        when (eq target de)
+          do (loop-finish)
+        when (typep de 'cleavir-bir:function)
+          do (error "BUG: Dynamic environment chain screwed up somehow")
+        do (undo-dynenv de)))
+
 (defmethod translate-terminator ((instruction cleavir-bir:jump)
                                  return-value abi next)
   (declare (ignore return-value abi))
   (assert (= (length next) 1))
+  (when (cleavir-bir:unwindp instruction)
+    (translate-local-unwind instruction))
   (loop with ib = (cleavir-bir:iblock instruction)
         for in in (cleavir-bir:inputs instruction)
         for out in (cleavir-bir:outputs instruction)
@@ -313,6 +362,36 @@
        (let ((symbol (in (first (cleavir-bir:inputs inst)))))
          (cmp:irc-fdefinition symbol))))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
+                                         return-value abi)
+  (let ((alloca (cleavir-bir:dynamic-environment inst)))
+    (check-type alloca cleavir-bir:alloca)
+    ;; only handling m-v-prog1 for the moment
+    (assert (eq (cleavir-bir:rtype alloca) :multiple-values))
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage alloca)
+      (declare (ignore stackpos storage1))
+      (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
+        (clasp-cleavir::%intrinsic-call
+         "cc_save_values"
+         (list (cmp:irc-load nvalsl)
+               (cmp:irc-load (clasp-cleavir::return-value-elt return-regs 0))
+               storage2))))))
+
+(defmethod translate-simple-instruction ((inst cleavir-bir:readtemp)
+                                         return-value abi)
+  (declare (ignore abi))
+  (let ((alloca (cleavir-bir:dynamic-environment inst)))
+    (check-type alloca cleavir-bir:alloca)
+    (assert (eq (cleavir-bir:rtype alloca) :multiple-values))
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage alloca)
+      (declare (ignore stackpos))
+      (clasp-cleavir::store-tmv
+       (clasp-cleavir::%intrinsic-call "cc_load_values"
+                                       (list storage1 storage2))
+       return-value))))
+
 (defmethod translate-simple-instruction ((inst cc-bir::precalc-value)
                                          return-value abi)
   (declare (ignore return-value abi))
@@ -411,6 +490,7 @@
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*variable-allocas* (make-hash-table :test #'eq))
+         (*dynenv-storage* (make-hash-table :test #'eq))
          (llvm-function-name (cmp:jit-function-name lambda-name))
          (cmp:*current-function-name* llvm-function-name)
          (cmp:*gv-current-function-name*

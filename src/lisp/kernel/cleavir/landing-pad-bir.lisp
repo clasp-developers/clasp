@@ -240,22 +240,20 @@
                         return-value tags function-info)
                        return-value function-info))
 
-#+(or)
 (defmethod compute-maybe-entry-processor
-    ((instruction cc-mir:clasp-save-values-instruction)
-     return-value tags function-info)
+    ((instruction cleavir-bir:alloca) return-value tags)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-    (let ((sp-loc (second (cleavir-ir:outputs instruction)))
-          (bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
-      (cmp:irc-begin-block bb)
-      ;; Lose the saved values alloca.
-      (%intrinsic-call "llvm.stackrestore" (list (in sp-loc)))
-      ;; Continue
-      (cmp:irc-br
-       (maybe-entry-processor
-        (dynenv-definer (cleavir-ir:dynamic-environment instruction))
-        return-value tags function-info))
-      bb)))
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage instruction)
+      (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+        (cmp:irc-begin-block bb)
+        ;; Lose the saved values alloca.
+        (clasp-cleavir::%intrinsic-call "llvm.stackrestore" (list stackpos))
+        ;; Continue
+        (cmp:irc-br
+         (maybe-entry-processor (cleavir-bir:parent instruction)
+                                return-value tags))
+        bb))))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           return-value tags)
@@ -277,12 +275,8 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    (cleavir-bir:leti
-     (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
-    #+(or)
-    ((or clasp-cleavir-hir:bind-instruction
-         clasp-cleavir-hir:unwind-protect-instruction
-         cc-mir:clasp-save-values-instruction)
+    ((or cleavir-bir:leti
+         cleavir-bir:alloca)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
      (if (progn #+(or) (cleavir-ir:simple-p definer) nil)
@@ -312,7 +306,7 @@
                "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame"))))
         ((or #+(or)clasp-cleavir-hir:bind-instruction
              #+(or)clasp-cleavir-hir:unwind-protect-instruction
-             #+(or)cc-mir:clasp-save-values-instruction
+             cleavir-bir:alloca
              cleavir-bir:leti
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
@@ -351,12 +345,10 @@
   (declare (ignore return-value))
   (generate-resume-block *exn.slot* *ehselector.slot*))
 
-#+(or)
 (defmethod compute-never-entry-processor
-    ((instruction cc-mir:clasp-save-values-instruction) return-value function-info)
+    ((dynenv cleavir-bir:alloca) return-value)
   ;; This whole frame is being discarded, so no smaller stack unwinding is necessary.
-  (c-n-e-p-next (cleavir-ir:dynamic-environment instruction) return-value function-info))
-
+  (compute-never-entry-processor (cleavir-bir:parent dynenv) return-value))
 
 (defmethod compute-never-entry-processor
     ((dynenv cleavir-bir:catch) return-value)
@@ -384,8 +376,7 @@
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
          cleavir-bir:leti
-         #+(or)
-         cc-mir:clasp-save-values-instruction)
+         cleavir-bir:alloca)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
@@ -396,14 +387,9 @@
 
 (defun compute-never-entry-landing-pad (dynenv return-value)
   (etypecase dynenv
-    ((or cleavir-bir:catch cleavir-bir:leti)
+    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:alloca)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv) return-value))
-    #+(or)
-    ((or clasp-cleavir-hir:bind-instruction clasp-cleavir-hir:unwind-protect-instruction
-         cc-mir:clasp-save-values-instruction)
-     (generate-never-entry-landing-pad
-      (never-entry-processor definer return-value function-info)))
     (cleavir-bir:function
      ;; Nothing to do
      nil)))
