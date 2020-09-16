@@ -156,7 +156,7 @@
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:shadow #:unwind-protect)
-  (:export #:unwind-protect #:mv-foreign-call #:function-name))
+  (:export #:unwind-protect #:mv-foreign-call #:function-name #:bind))
 
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)

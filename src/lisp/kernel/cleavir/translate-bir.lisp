@@ -167,6 +167,21 @@
        (clasp-cleavir::%intrinsic-call "cc_load_values" (list nvals mv-temp))
        return-value))))
 
+(defmethod translate-terminator ((instruction cc-bir:bind) return-value abi next)
+  (declare (ignore return-value abi))
+  (let* ((inputs (cleavir-bir:inputs instruction))
+         (sym (in (first inputs)))
+         (val (in (second inputs))))
+    (setf (dynenv-storage instruction)
+          (list sym (clasp-cleavir::%intrinsic-call "cc_TLSymbolValue" (list sym))))
+    (clasp-cleavir::%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
+  (cmp:irc-br (first next)))
+
+(defmethod undo-dynenv ((dynenv cc-bir:bind) return-value)
+  (declare (ignore return-value))
+  (clasp-cleavir::%intrinsic-call "cc_resetTLSymbolValue"
+                                  (dynenv-storage dynenv)))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
   (declare (ignore return-value))
@@ -306,6 +321,9 @@
   (let* ((info (cleavir-bir::info inst))
          (name (cleavir-bir::name info)))
     (ecase name
+      (symbol-value
+       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+        "cc_safe_symbol_value" (list (in (first (cleavir-bir:inputs inst))))))
       (fdefinition
        (let ((symbol (in (first (cleavir-bir:inputs inst)))))
          (cmp:irc-fdefinition symbol))))))
@@ -515,7 +533,7 @@
   (declare (ignore env))
   (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
-  (cleavir-bir-transformations::inline-functions ir)
+  ;;(cleavir-bir-transformations::inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   ir)
 

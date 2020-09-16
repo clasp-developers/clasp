@@ -53,6 +53,40 @@
               (cleavir-ast-to-bir:compile-ast
                (cc-ast:cleanup-ast ast) inserter '(:object)))))))
 
+(defclass bind (cleavir-bir:dynamic-environment cleavir-bir:terminator1
+                cleavir-bir::no-output cleavir-bir:operation)
+  ())
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter context)
+  (let* ((bind (make-instance 'bind))
+         (lu (make-instance 'cleavir-bir:jump
+                            :inputs () :outputs () :unwindp t
+                            :next (list (cleavir-ast-to-bir::iblock inserter))))
+         (during (cleavir-ast-to-bir::make-iblock inserter
+                                                  :dynamic-environment bind))
+         (pre (cleavir-ast-to-bir::make-iblock inserter)))
+    (cleavir-ast-to-bir::finalize inserter)
+    (cleavir-ast-to-bir::reset inserter during)
+    (cleavir-ast-to-bir::terminate inserter lu)
+    (prog1 (cleavir-ast-to-bir:compile-ast
+            (cleavir-ast:body-ast ast)
+            inserter context)
+      (cleavir-ast-to-bir::finalize inserter)
+      (let ((bind-start (cleavir-ast-to-bir::iblock inserter)))
+        (setf (cleavir-bir:next bind) (list bind-start))
+        (cleavir-ast-to-bir::reset inserter pre)
+        (cleavir-ast-to-bir::terminate inserter bind)
+        (setf (cleavir-bir:inputs bind)
+              (cleavir-ast-to-bir::compile-arguments
+               (list (cleavir-ast:name-ast ast)
+                     (cleavir-ast:value-ast ast))
+               inserter))))))
+
+(defmethod cleavir-bir::disassemble-instruction ((inst bind))
+  `(,(cleavir-bir::dis-label inst) ,@(mapcar #'cleavir-bir::disassemble-datum
+                                             (cleavir-bir:inputs inst))
+    ,(cleavir-bir::dis-iblock (first (cleavir-bir:next inst)))))
+
 (defclass mv-foreign-call (cleavir-bir:computation)
   ((%function-name :initarg :function-name :reader function-name)))
 
