@@ -343,6 +343,10 @@
     ((dynenv cleavir-bir:catch) return-value)
   (never-entry-processor (cleavir-bir:parent dynenv) return-value))
 
+(defmethod compute-never-entry-processor
+    ((dynenv cleavir-bir:leti) return-value)
+  (never-entry-processor (cleavir-bir:parent dynenv) return-value))
+
 (defmethod compute-never-entry-processor ((instruction cc-bir:bind) return-value)
   (destructuring-bind (symbol old-value) (dynenv-storage instruction)
     (generate-unbind symbol old-value
