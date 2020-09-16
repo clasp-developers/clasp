@@ -531,10 +531,8 @@
 
 (defun bir->bmir (ir env)
   (declare (ignore env))
-  (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   (cleavir-bir-transformations::inline-functions ir)
-  (cleavir-bir:verify ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   ir)
 
