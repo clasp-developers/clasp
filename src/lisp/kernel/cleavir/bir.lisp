@@ -24,6 +24,35 @@
                (call-next-method ast inserter :multiple-values))
          outs))))
 
+(defclass unwind-protect (cleavir-bir:dynamic-environment
+                          cleavir-bir::one-input cleavir-bir::no-output
+                          cleavir-bir:terminator1 cleavir-bir:operation)
+  ())
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
+                                           inserter context)
+  (let* ((uw (make-instance 'unwind-protect))
+         (lu (make-instance 'cleavir-bir:jump
+                            :inputs () :outputs () :unwindp t
+                            :next (list (cleavir-ast-to-bir::iblock inserter))))
+         (during (cleavir-ast-to-bir::make-iblock inserter
+                                                  :dynamic-environment uw))
+        (pre (cleavir-ast-to-bir::make-iblock inserter)))
+    (cleavir-ast-to-bir::finalize inserter)
+    (cleavir-ast-to-bir::reset inserter during)
+    (cleavir-ast-to-bir::terminate inserter lu)
+    (prog1 (cleavir-ast-to-bir:compile-ast
+            (cleavir-ast:body-ast ast)
+            inserter context)
+      (cleavir-ast-to-bir::finalize inserter)
+      (let ((uw-start (cleavir-ast-to-bir::iblock inserter)))
+        (setf (cleavir-bir:next uw) (list uw-start))
+        (cleavir-ast-to-bir::reset inserter pre)
+        (cleavir-ast-to-bir::terminate inserter uw)
+        (setf (cleavir-bir:inputs uw)
+              (cleavir-ast-to-bir:compile-ast
+               (cc-ast:cleanup-ast ast) inserter '(:object)))))))
+
 (defclass mv-foreign-call (cleavir-bir:computation)
   ((%function-name :initarg :function-name :reader function-name)))
 

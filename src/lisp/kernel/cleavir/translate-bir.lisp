@@ -40,21 +40,22 @@
   ;; Continue
   (cmp:irc-br (first next)))
 
-(defgeneric undo-dynenv (dynamic-environment))
+(defgeneric undo-dynenv (dynamic-environment return-value))
 
-(defmethod undo-dynenv ((dynamic-environment cleavir-bir:leti))
+(defmethod undo-dynenv ((dynamic-environment cleavir-bir:leti) return-value)
   ;; Could undo stack allocated cells here
-  nil)
-(defmethod undo-dynenv ((dynenv cleavir-bir:catch))
+  (declare (ignore return-value)))
+(defmethod undo-dynenv ((dynenv cleavir-bir:catch) return-value)
   ;; ditto, and mark the continuation out of extent
-  nil)
-(defmethod undo-dynenv ((dynenv cleavir-bir:alloca))
+  (declare (ignore return-value)))
+(defmethod undo-dynenv ((dynenv cleavir-bir:alloca) return-value)
+  (declare (ignore return-value))
   (destructuring-bind (stackpos storage1 storage2)
       (dynenv-storage dynenv)
     (declare (ignore storage1 storage2))
     (clasp-cleavir::%intrinsic-call "llvm.stackrestore" (list stackpos))))
 
-(defun translate-local-unwind (jump)
+(defun translate-local-unwind (jump return-value)
   (loop with target = (cleavir-bir:dynamic-environment
                        (first (cleavir-bir:next jump)))
         for de = (cleavir-bir:dynamic-environment jump)
@@ -63,14 +64,14 @@
           do (loop-finish)
         when (typep de 'cleavir-bir:function)
           do (error "BUG: Dynamic environment chain screwed up somehow")
-        do (undo-dynenv de)))
+        do (undo-dynenv de return-value)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:jump)
                                  return-value abi next)
-  (declare (ignore return-value abi))
+  (declare (ignore abi))
   (assert (= (length next) 1))
   (when (cleavir-bir:unwindp instruction)
-    (translate-local-unwind instruction))
+    (translate-local-unwind instruction return-value))
   (loop with ib = (cleavir-bir:iblock instruction)
         for in in (cleavir-bir:inputs instruction)
         for out in (cleavir-bir:outputs instruction)
@@ -141,6 +142,30 @@
              (clasp-cleavir::%size_t
               (get-destination-id (cleavir-bir:destination instruction)))))))
   (cmp:irc-unreachable))
+
+(defmethod translate-terminator ((instruction cc-bir:unwind-protect)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (setf (dynenv-storage instruction) (in (first (cleavir-bir:inputs instruction))))
+  (cmp:irc-br (first next)))
+
+(defmethod undo-dynenv ((dynenv cc-bir:unwind-protect) return-value)
+  ;; Call the thunk.
+  ;; We have to save values around it in case we're in the middle of returning values.
+  ;; NOTE: ABI is ignored. literally irrelevant to the macro. FIXME
+  (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
+    (let* ((nvals (cmp:irc-load nvalsl))
+           (primary (cmp:irc-load (clasp-cleavir::return-value-elt return-regs 0)))
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      (clasp-cleavir::%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+      ;; FIXME: Should this be never-entry?
+      (cmp:with-landing-pad (maybe-entry-landing-pad
+                             (cleavir-bir:parent dynenv) return-value *tags*)
+        (clasp-cleavir::closure-call-or-invoke
+         (dynenv-storage dynenv) return-value nil))
+      (clasp-cleavir::store-tmv
+       (clasp-cleavir::%intrinsic-call "cc_load_values" (list nvals mv-temp))
+       return-value))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)

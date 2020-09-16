@@ -88,13 +88,12 @@
         (cmp:irc-br next))
       bb)))
 
-#+(or)
-(defun lp-generate-protect (u-p-instruction next return-value function-info)
+(defun lp-generate-protect (u-p-instruction next return-value)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
-      (let ((thunk (in (first (cleavir-ir:inputs u-p-instruction))))
-            (protection-dynenv (cleavir-ir:dynamic-environment u-p-instruction)))
+      (let ((thunk (in (first (cleavir-bir:inputs u-p-instruction))))
+            (protection-dynenv (cleavir-bir:parent u-p-instruction)))
         ;; There is a subtle point here with regard to unwinding out of a cleanup
         ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
         ;; the unwind point and the destination are "abandoned" and can no longer be
@@ -107,7 +106,7 @@
         ;; intervening exit points. And we indicate that by using for the call
         ;; to the protected thunk the same dynamic-environment that was in place
         ;; upon entry to the unwind-protect.
-        (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+        (let* ((nvals (clasp-cleavir::%intrinsic-call "cc_nvalues" nil "nvals"))
                ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
                ;; a VLA, for every unwind protect executed. We could at least merge unwind
                ;; protects in the same frame - but what would be really smart would be
@@ -115,9 +114,12 @@
                ;; global (thread-local) values with impunity while unwinding.
                ;; Probably challenging to arrange in C++, though.
                (mv-temp (cmp:alloca-temp-values nvals)))
-          (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
-          (gen-call thunk nil protection-dynenv return-value function-info)
-          (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
+          (clasp-cleavir::%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+          ;; FIXME: Should this be never-entry?
+          (cmp:with-landing-pad (maybe-entry-landing-pad
+                                 protection-dynenv return-value *tags*)
+            (clasp-cleavir::closure-call-or-invoke thunk return-value nil))
+          (clasp-cleavir::%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
 
@@ -230,15 +232,12 @@
                     (dynenv-definer (cleavir-ir:dynamic-environment instruction))
                     return-value tags function-info)))
 
-#+(or)
-(defmethod compute-maybe-entry-processor
-    ((instruction clasp-cleavir-hir:unwind-protect-instruction)
-     return-value tags function-info)
-  (lp-generate-protect instruction
-                       (maybe-entry-processor
-                        (dynenv-definer (cleavir-ir:dynamic-environment instruction))
-                        return-value tags function-info)
-                       return-value function-info))
+(defmethod compute-maybe-entry-processor ((instruction cc-bir:unwind-protect)
+                                          return-value tags)
+  (lp-generate-protect instruction (maybe-entry-processor
+                                    (cleavir-bir:parent instruction)
+                                    return-value tags)
+                       return-value))
 
 (defmethod compute-maybe-entry-processor
     ((instruction cleavir-bir:alloca) return-value tags)
@@ -275,8 +274,7 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    ((or cleavir-bir:leti
-         cleavir-bir:alloca)
+    ((or cleavir-bir:leti cleavir-bir:alloca cc-bir:unwind-protect)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
      (if (progn #+(or) (cleavir-ir:simple-p definer) nil)
@@ -305,9 +303,9 @@
               (clasp-cleavir::%intrinsic-call
                "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame"))))
         ((or #+(or)clasp-cleavir-hir:bind-instruction
-             #+(or)clasp-cleavir-hir:unwind-protect-instruction
              cleavir-bir:alloca
              cleavir-bir:leti
+             cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
           (maybe-entry-processor dynenv return-value tags)
@@ -361,13 +359,11 @@
                    (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)
                                  return-value function-info)))
 
-#+(or)
-(defmethod compute-never-entry-processor
-    ((instruction clasp-cleavir-hir:unwind-protect-instruction) return-value function-info)
+(defmethod compute-never-entry-processor ((instruction cc-bir:unwind-protect) return-value)
   (lp-generate-protect instruction
-                       (c-n-e-p-next (cleavir-ir:dynamic-environment instruction)
-                                     return-value function-info)
-                       return-value function-info))
+                       (compute-never-entry-processor (cleavir-bir:parent instruction)
+                                                      return-value)
+                       return-value))
 
 ;;; Used above. Should match compute-never-entry-landing-pad
 (defun dynenv-needs-cleanup-p (dynenv)
@@ -375,14 +371,12 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
-         cleavir-bir:leti
-         cleavir-bir:alloca)
+         cleavir-bir:leti cleavir-bir:alloca)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
-    #+(or)
-    ((or clasp-cleavir-hir:bind-instruction
-         clasp-cleavir-hir:unwind-protect-instruction)
+    ((or #+(or)clasp-cleavir-hir:bind-instruction
+         cc-bir:unwind-protect)
      t)))
 
 (defun compute-never-entry-landing-pad (dynenv return-value)
@@ -390,6 +384,9 @@
     ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:alloca)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv) return-value))
+    ((or cc-bir:unwind-protect)
+     (generate-never-entry-landing-pad
+      (never-entry-processor dynenv return-value)))
     (cleavir-bir:function
      ;; Nothing to do
      nil)))
