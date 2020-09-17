@@ -182,6 +182,11 @@
   (clasp-cleavir::%intrinsic-call "cc_resetTLSymbolValue"
                                   (dynenv-storage dynenv)))
 
+(defmethod translate-terminator ((instruction cleavir-bir:typew)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (cmp:irc-br (third next)))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
   (declare (ignore return-value))
