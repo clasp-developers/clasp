@@ -88,7 +88,8 @@
     ,(cleavir-bir::dis-iblock (first (cleavir-bir:next inst)))))
 
 (defclass mv-foreign-call (cleavir-bir:computation)
-  ((%function-name :initarg :function-name :reader function-name)))
+  ((%function-name :initarg :function-name :reader function-name))
+  (:default-initargs :rtype :multiple-values))
 
 (defmethod cleavir-ast-to-bir:compile-ast
     ((ast cc-ast:multiple-value-foreign-call-ast) inserter context)
