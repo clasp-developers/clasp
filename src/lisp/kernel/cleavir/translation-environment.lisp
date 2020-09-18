@@ -19,6 +19,10 @@
 (defun in (datum)
   (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
   (or (gethash datum *datum-values*)
+      (and (typep datum 'cleavir-bir:immediate)
+           (cmp:irc-int-to-ptr
+            (clasp-cleavir::%i64 (cleavir-bir:immediate-value datum))
+            cmp:%t*%))
       (error "BUG: No variable for datum: ~a" datum)))
 
 (defun variable-in (variable)

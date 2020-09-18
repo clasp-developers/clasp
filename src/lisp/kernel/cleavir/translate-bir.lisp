@@ -363,12 +363,11 @@
                                        (list storage1 storage2))
        return-value))))
 
-(defmethod translate-simple-instruction ((inst cc-bir::precalc-value)
+(defmethod translate-simple-instruction ((inst cc-bir:precalc-value)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (let* ((index (cc-bir::precalc-value-index inst))
-         (label (clasp-cleavir::safe-llvm-name
-                 (cleavir-bir:constant-value inst))))
+  (let* ((index (cc-bir:precalc-value-index inst))
+         (label ""))
     (cmp:irc-load
      (cmp:irc-gep-variable (literal:ltv-global)
                            (list (clasp-cleavir::%size_t 0)
@@ -435,7 +434,8 @@
             (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
             ;; Lay out blocks.
             (cleavir-bir::map-reachable-iblocks
-             (lambda (ib) (layout-iblock ib return-value abi))
+             (lambda (ib)
+               (layout-iblock ib return-value abi))
              (cleavir-bir:start ir)))))))
   ;; Finish up by jumping from the entry block to the body block
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -494,12 +494,13 @@
           (llvm-sys:set-personality-fn the-function
                                        (cmp:irc-personality-function))
           (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
-          (cleavir-bir:map-iblocks
-           (lambda (ib)
-             (setf (gethash ib *tags*)
-                   (cmp:irc-basic-block-create "iblock"))
-             (initialize-iblock-translation ib))
-           ir)
+          (cmp:with-irbuilder (body-irbuilder)
+            (cleavir-bir:map-iblocks
+             (lambda (ib)
+               (setf (gethash ib *tags*)
+                     (cmp:irc-basic-block-create "iblock"))
+               (initialize-iblock-translation ib))
+             ir))
           (cmp:irc-set-insert-point-basic-block entry-block
                                                 cmp:*irbuilder-function-alloca*)
           (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
@@ -532,13 +533,18 @@
     (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
 
 (defun ast->bir (ast)
-  (cleavir-ast-to-bir:compile-toplevel ast))
+  (cleavir-ast-to-bir2:compile-toplevel ast))
 
 (defun bir->bmir (ir env)
   (declare (ignore env))
+  (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
-  (cleavir-bir-transformations::inline-functions ir)
+  ;;(cleavir-bir-transformations:eliminate-catches ir)
+  ;;(cleavir-bir-transformations:inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
+  (progn
+    (print (cleavir-bir:disassemble ir))
+    (fresh-line))
   ir)
 
 (defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))
