@@ -46,6 +46,7 @@ FORWARD(Bool);
 
    typedef double LongFloat;
 
+   Fixnum clasp_to_fixnum( core::T_sp );
    Fixnum clasp_to_fixnum( core::Integer_sp );
    double clasp_to_double( core::Number_sp );
    double clasp_to_double( core::T_sp );
