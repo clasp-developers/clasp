@@ -248,6 +248,11 @@
                                 return-value tags))
         bb))))
 
+(defmethod compute-maybe-entry-processor
+    ((instruction cleavir-bir:leti) return-value tags)
+  ;; In the future we might want to unwind cell bindings here or something.
+  (maybe-entry-processor (cleavir-bir:parent instruction) return-value tags))
+
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           return-value tags)
   (declare (ignore return-value))

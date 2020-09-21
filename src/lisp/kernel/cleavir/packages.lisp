@@ -173,7 +173,11 @@
   (:use #:common-lisp)
   (:export
    #:reduce-typeqs)
-)
+  )
+
+(defpackage #:cc-bir-to-bmir
+  (:use #:cl)
+  (:export #:reduce-typeqs))
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
@@ -198,6 +202,12 @@
    #:describe-mir
    #+stealth-gids #:assign-mir-instruction-datum-ids
    ))
+
+(defpackage #:clasp-cleavir-bmir
+  (:nicknames #:cc-bmir)
+  (:shadow #:characterp #:consp)
+  (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
+           #:headerq #:info))
 
 (defpackage #:cleavir-ir-gml
   (:use #:common-lisp #:cleavir-ir)

@@ -187,6 +187,27 @@
   (declare (ignore return-value abi))
   (cmp:irc-br (third next)))
 
+(defmacro define-tag-test (inst mask tag)
+  `(defmethod translate-terminator ((instruction ,inst) return-value abi next)
+     (declare (ignore return-value abi))
+     (cmp:compile-tag-check (in (first (cleavir-bir:inputs instruction)))
+                            ,mask ,tag
+                            (first next) (second next))))
+(define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
+(define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
+(define-tag-test cc-bmir:characterp cmp:+immediate-mask+ cmp:+character-tag+)
+(define-tag-test cc-bmir:single-float-p
+  cmp:+immediate-mask+ cmp:+single-float-tag+)
+(define-tag-test cc-bmir:generalp cmp:+immediate-mask+ cmp:+general-tag+)
+
+(defmethod translate-terminator ((instruction cc-bmir:headerq)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (cmp:compile-header-check
+   (cc-bmir:info instruction)
+   (in (first (cleavir-bir:inputs instruction)))
+   (first next) (second next)))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
   (declare (ignore return-value))
@@ -540,11 +561,11 @@
   (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   ;;(cleavir-bir-transformations:eliminate-catches ir)
-  ;;(cleavir-bir-transformations:inline-functions ir)
+  (print (cleavir-bir:disassemble ir))
+  (cleavir-bir-transformations:inline-functions ir)
+  (print (cleavir-bir:disassemble ir))
   (cleavir-bir-transformations:delete-temporary-variables ir)
-  (progn
-    (print (cleavir-bir:disassemble ir))
-    (fresh-line))
+  (cc-bir-to-bmir:reduce-typeqs ir)
   ir)
 
 (defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))

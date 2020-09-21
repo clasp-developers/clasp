@@ -863,7 +863,7 @@
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:headerq-instruction) return-value successors abi function-info)
-  (declare (ignore return-value outputs abi function-info))
+  (declare (ignore return-value abi function-info))
   (cmp:compile-header-check
    (cc-mir:header-value-min-max instruction)
    (in (first (cleavir-ir:inputs instruction))) (first successors) (second successors)))
