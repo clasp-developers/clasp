@@ -341,6 +341,20 @@
                   for out in vector-outs
                   do (out phi out))))))))
 
+(defmethod translate-simple-instruction ((inst cc-bmir:memref2) return-value abi)
+  (declare (ignore return-value abi))
+  (cmp::gen-memref-address (in (first (cleavir-bir:inputs inst)))
+                           (cc-bmir:offset inst)))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:load) return-value abi)
+  (declare (ignore return-value abi))
+  (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:store) return-value abi)
+  (declare (ignore return-value abi))
+  (cmp:irc-store-atomic (in (first (cleavir-bir:inputs inst)))
+                        (in (second (cleavir-bir:inputs inst)))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
@@ -561,11 +575,10 @@
   (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   ;;(cleavir-bir-transformations:eliminate-catches ir)
-  (print (cleavir-bir:disassemble ir))
   (cleavir-bir-transformations:inline-functions ir)
-  (print (cleavir-bir:disassemble ir))
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
+  (cc-bir-to-bmir:reduce-primops ir)
   ir)
 
 (defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))

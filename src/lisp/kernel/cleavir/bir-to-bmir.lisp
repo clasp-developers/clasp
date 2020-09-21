@@ -20,3 +20,45 @@
      (when (typep i 'cleavir-bir:typeq)
        (replace-typeq i)))
    ir))
+
+(defun maybe-replace-primop (primop)
+  (case (cleavir-bir:name (cleavir-bir::info primop))
+    ((cleavir-primop:car)
+     (let ((in (cleavir-bir:inputs primop)))
+       (change-class primop 'cc-bmir:load :inputs ())
+       (let ((mr (make-instance 'cc-bmir:memref2
+                   :inputs in
+                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
+         (cleavir-bir:insert-instruction-before mr primop)
+         (setf (cleavir-bir:inputs primop) (list mr)))))
+    ((cleavir-primop:cdr)
+     (let ((in (cleavir-bir:inputs primop)))
+       (change-class primop 'cc-bmir:load :inputs ())
+       (let ((mr (make-instance 'cc-bmir:memref2
+                   :inputs in
+                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
+         (cleavir-bir:insert-instruction-before mr primop)
+         (setf (cleavir-bir:inputs primop) (list mr)))))
+    ((cleavir-primop:rplaca)
+     (let ((in (cleavir-bir:inputs primop)))
+       (change-class primop 'cc-bmir:store :inputs ())
+       (let ((mr (make-instance 'cc-bmir:memref2
+                   :inputs (list (first in))
+                   :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
+         (cleavir-bir:insert-instruction-before mr primop)
+         (setf (cleavir-bir:inputs primop) (list (second in) mr)))))
+    ((cleavir-primop:rplacd)
+     (let ((in (cleavir-bir:inputs primop)))
+       (change-class primop 'cc-bmir:store :inputs ())
+       (let ((mr (make-instance 'cc-bmir:memref2
+                   :inputs (list (first in))
+                   :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
+         (cleavir-bir:insert-instruction-before mr primop)
+         (setf (cleavir-bir:inputs primop) (list (second in) mr)))))))
+
+(defun reduce-primops (ir)
+  (cleavir-bir:map-instructions
+   (lambda (i)
+     (when (typep i 'cleavir-bir:primop)
+       (maybe-replace-primop i)))
+   ir))

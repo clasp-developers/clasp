@@ -177,7 +177,8 @@
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
-  (:export #:reduce-typeqs))
+  (:export #:reduce-typeqs)
+  (:export #:reduce-primops))
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
@@ -207,7 +208,8 @@
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp)
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
-           #:headerq #:info))
+           #:headerq #:info)
+  (:export #:memref2 #:offset #:load #:store))
 
 (defpackage #:cleavir-ir-gml
   (:use #:common-lisp #:cleavir-ir)
