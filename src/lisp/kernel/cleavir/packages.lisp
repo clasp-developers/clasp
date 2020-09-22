@@ -157,7 +157,8 @@
   (:nicknames #:cc-bir)
   (:shadow #:unwind-protect)
   (:export #:precalc-value #:precalc-value-index
-           #:unwind-protect #:mv-foreign-call #:function-name #:bind))
+           #:unwind-protect #:mv-foreign-call #:function-name #:bind
+           #:header-stamp-case))
 
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)

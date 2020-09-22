@@ -178,3 +178,15 @@
          (make-instance 'mv-foreign-call
            :function-name (cc-ast:function-name ast)
            :inputs args)))))
+
+(defclass header-stamp-case (cleavir-bir::no-input cleavir-bir::no-output
+                             cleavir-bir:terminator cleavir-bir:operation)
+  ())
+
+(defmethod cleavir-ast-to-bir2:compile-test-ast
+    ((ast cc-ast:header-stamp-case-ast) inserter)
+  (let ((rv (cleavir-ast-to-bir2:compile-ast (cc-ast:stamp-ast ast) inserter)))
+    (when (eq rv :no-return) (return-from cleavir-ast-to-bir2:compile-test-ast rv))
+    (let ((hsc (make-instance 'header-stamp-case
+                 :inputs (cleavir-ast-to-bir2:adapt rv '(:object)))))
+      (cleavir-ast-to-bir2:terminate inserter hsc))))

@@ -105,6 +105,43 @@
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
      (first next) (second next))))
 
+(defmethod translate-terminator ((instruction cleavir-bir:case)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (assert (= (length next) (length (cleavir-bir:next instruction))
+             (1+ (length (cleavir-bir:comparees instruction)))))
+  (let* ((input (in (first (cleavir-bir:inputs instruction))))
+         (default (first (last next)))
+         (dests (butlast next))
+         (comparees (cleavir-bir:comparees instruction))
+         (ncases (loop for list in comparees summing (length list)))
+         (only-fixnums-p (loop for list in comparees
+                               always (every #'core:fixnump list)))
+         ;; LLVM does better with contiguous ranges. It's not smart enough to
+         ;; recognize that it could get a contiguous range by shifting.
+         ;; (Or maybe it doesn't care. How often does that happen?)
+         (rinput (if only-fixnums-p
+                     (let ((fixnum-block (cmp:irc-basic-block-create "is-fixnum")))
+                       ;; same as fixnump instruction
+                       (cmp:compile-tag-check input
+                                              cmp:+fixnum-mask+
+                                              cmp:+fixnum00-tag+
+                                              fixnum-block default)
+                       (cmp:irc-begin-block fixnum-block)
+                       (cmp:irc-untag-fixnum input cmp:%i64% "switch-input"))
+                     (cmp:irc-ptr-to-int input cmp:%i64%)))
+         (switch (cmp:irc-switch rinput default ncases)))
+    (loop for list in comparees
+          for dest in dests
+          do (loop for object in list
+                   for immediate = (core:create-tagged-immediate-value-or-nil object)
+                   do (assert (not (null immediate)))
+                      (cmp:irc-add-case switch
+                                        (clasp-cleavir::%i64 (if only-fixnums-p
+                                                                 (ash immediate -2)
+                                                                 immediate))
+                                        dest)))))
+
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
                                  return-value abi next)
   (declare (ignore return-value abi))
@@ -207,6 +244,21 @@
    (cc-bmir:info instruction)
    (in (first (cleavir-bir:inputs instruction)))
    (first next) (second next)))
+
+(defmethod translate-terminator
+    ((instruction cc-bir:header-stamp-case) return-value abi next)
+  (declare (ignore abi))
+  (let* ((stamp (in (first (cleavir-bir:inputs instruction))))
+         (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
+         (where (cmp:irc-and stamp-i64 (clasp-cleavir::%i64 cmp:+where-tag-mask+)))
+         (defaultb (cmp:irc-basic-block-create "impossible-default"))
+         (sw (cmp:irc-switch where defaultb 4)))
+    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+derivable-where-tag+) (first next))
+    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+rack-where-tag+) (second next))
+    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+wrapped-where-tag+) (third next))
+    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+header-where-tag+) (fourth next))
+    (cmp:irc-begin-block defaultb)
+    (cmp:irc-unreachable)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
