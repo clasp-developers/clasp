@@ -49,6 +49,15 @@
                (:file "closure-optimize")
                (:file "translate")
                (:file "translate-instruction")
+               ;; BIR
+               (:file "translation-environment")
+               (:file "bir")
+               (:file "bmir")
+               (:file "bir-to-bmir")
+               (:file "landing-pad-bir")
+               (:file "eliminate-ltvs-bir")
+               (:file "translate-bir")
+               ;; end BIR
                ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")

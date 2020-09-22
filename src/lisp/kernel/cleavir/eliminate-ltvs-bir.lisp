@@ -5,7 +5,7 @@
          (cleavir-bir:*policy* (cleavir-bir:policy use))
          (cleavir-bir:*origin* (cleavir-bir:origin use)))
     (change-class input 'cc-bir:precalc-value
-                  :form ',value :index index)
+                  :form `',value :index index)
     (cleavir-bir:insert-instruction-before input use)))
 
 (defun replace-constant-with-immediate (value input)
