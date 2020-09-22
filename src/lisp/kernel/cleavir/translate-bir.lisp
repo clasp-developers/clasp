@@ -581,7 +581,21 @@
   (cc-bir-to-bmir:reduce-primops ir)
   ir)
 
-(defun bir-compile (form env pathname &key (linkage 'llvm-sys:internal-linkage))
+(defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
+                                  (linkage 'llvm-sys:internal-linkage)
+                                    (env clasp-cleavir::*clasp-env*))
+  (let* ((bir (ast->bir ast))
+         (bmir (bir->bmir bir env)))
+    (translate bmir :abi abi :linkage linkage)))
+
+(defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
+                          (linkage 'llvm-sys:internal-linkage)
+                            (env clasp-cleavir::*clasp-env*))
+  (let ((hoisted-ast (clasp-cleavir::hoist-ast ast env)))
+    (translate-hoisted-ast hoisted-ast :abi abi :linkage linkage :env env)))
+
+(defun bir-compile (form env pathname
+                    &key (linkage 'llvm-sys:internal-linkage))
   (let* (function
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-cst-to-ast:*compiler* 'cl:compile)
@@ -590,16 +604,47 @@
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-          (let* ((ast (clasp-cleavir::hoist-ast ast env))
-                 (bir (ast->bir ast))
-                 (bmir (bir->bmir bir env)))
-            (cleavir-bir:verify bmir)
-            (setq function
-                  (translate bmir :abi clasp-cleavir::*abi-x86-64*
-                                  :linkage linkage))))))
+            (setq function (translate-ast ast :env env)))))
     (unless function
       (error "There was no function returned by translate-ast"))
     (llvm-sys:dump-module cmp:*the-module* *standard-output*)
     (cmp:jit-add-module-return-function
      cmp:*the-module*
      function startup-fn shutdown-fn ordered-raw-constants-list)))
+
+(defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
+  (literal:with-top-level-form
+    (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
+           (ast (clasp-cleavir::wrap-ast pre-ast)))
+      (translate-ast ast :env env :linkage cmp:*default-linkage*))))
+
+(defun bir-loop-read-and-compile-file-forms (source-sin environment)
+  (let ((eof-value (gensym))
+        (eclector.reader:*client* clasp-cleavir::*cst-client*)
+        (eclector.readtable:*readtable* cl:*readtable*)
+        (cleavir-cst-to-ast:*compiler* 'cl:compile-file)
+        (core:*use-cleavir-compiler* t))
+    (loop
+      ;; Required to update the source pos info. FIXME!?
+      (peek-char t source-sin nil)
+      ;; FIXME: if :environment is provided we should probably use a different read somehow
+      (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
+             #+cst
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
+             #-cst
+             (form (read source-sin nil eof-value)))
+        #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
+        #+cst
+        (if (eq cst eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form (cst:raw cst)))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (compile-file-cst cst environment))))
+        #-cst
+        (if (eq form eof-value)
+            (return nil)
+            (progn
+              (when *compile-print* (cmp::describe-form form))
+              (core:with-memory-ramp (:pattern 'gctools:ramp)
+                (cleavir-compile-file-form form))))))))
