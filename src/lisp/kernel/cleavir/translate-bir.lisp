@@ -254,6 +254,16 @@
     (clasp-cleavir::closure-call-or-invoke
      (in (first inputs)) return-value (mapcar #'in (rest inputs)))))
 
+(defmethod translate-simple-instruction ((instruction cleavir-bir:mv-call)
+                                         return-value abi)
+  (let ((call-result (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                      "cc_call_multipleValueOneFormCallWithRet0"
+                      (list (in (first (cleavir-bir:inputs instruction)))
+                            (clasp-cleavir::load-return-value return-value)))))
+    ;; call-result is a T_mv, and return-value a T_mv*
+    (clasp-cleavir::store-tmv call-result return-value)
+    call-result))
+
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
                                          return-value abi)
   (clasp-cleavir:unsafe-multiple-value-foreign-call
@@ -607,7 +617,7 @@
             (setq function (translate-ast ast :env env)))))
     (unless function
       (error "There was no function returned by translate-ast"))
-    (llvm-sys:dump-module cmp:*the-module* *standard-output*)
+    ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
     (cmp:jit-add-module-return-function
      cmp:*the-module*
      function startup-fn shutdown-fn ordered-raw-constants-list)))
