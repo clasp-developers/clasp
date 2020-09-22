@@ -129,7 +129,7 @@
 (defclass header-stamp-case-instruction (cleavir-ir:multiple-successors-mixin
                                          cleavir-ir:instruction)
   ())
-(defun make-header-stamp-case-instruction (stamp &rest successors)
+(defun make-header-stamp-case-instruction (stamp successors)
   (make-instance 'header-stamp-case-instruction
                  :inputs (list stamp)
                  :outputs nil

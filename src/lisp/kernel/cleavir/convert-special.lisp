@@ -440,13 +440,15 @@
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::header-stamp-case)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (stamp derivable rack wrapped header) (cst:rest cst)
-    (clasp-cleavir-ast:make-header-stamp-case-ast
-     (cleavir-cst-to-ast:convert stamp env system)
-     (cleavir-cst-to-ast:convert derivable env system)
-     (cleavir-cst-to-ast:convert rack env system)
-     (cleavir-cst-to-ast:convert wrapped env system)
+    (cleavir-ast:make-branch-ast
+     (clasp-cleavir-ast:make-header-stamp-case-ast
+      (cleavir-cst-to-ast:convert stamp env system)
+      origin)
+     (list (cleavir-cst-to-ast:convert derivable env system)
+           (cleavir-cst-to-ast:convert rack env system)
+           (cleavir-cst-to-ast:convert wrapped env system))
      (cleavir-cst-to-ast:convert header env system)
-     origin)))
+     :origin origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
