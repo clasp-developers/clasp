@@ -116,6 +116,7 @@
           ,@(mapcar #'discrimination-type (rest ctype))))
        (t ctype)))))
 
+#+(or)
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
