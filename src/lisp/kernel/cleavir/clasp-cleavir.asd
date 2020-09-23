@@ -10,7 +10,6 @@
                :eclector
                :cleavir-bir
                :cleavir-ast-to-bir
-               :cleavir-ast-to-bir2
                :cleavir-bir-transformations
                :cleavir-cst-to-ast
                :cleavir-ir

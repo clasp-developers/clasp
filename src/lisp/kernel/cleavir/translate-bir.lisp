@@ -630,7 +630,7 @@
     (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
 
 (defun ast->bir (ast)
-  (cleavir-ast-to-bir2:compile-toplevel ast))
+  (cleavir-ast-to-bir:compile-toplevel ast))
 
 (defun bir->bmir (ir env)
   (declare (ignore env))
