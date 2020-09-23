@@ -7,6 +7,22 @@
 ;;; Ditto
 (defgeneric translate-terminator (instruction return-value abi next))
 
+;;; Put in source info.
+(defmethod translate-simple-instruction :around
+    ((instruction cleavir-bir:instruction) return-value abi)
+  (declare (ignore return-value abi))
+  (cmp:with-debug-info-source-position ((clasp-cleavir::ensure-origin
+                                         (cleavir-bir:origin instruction)
+                                         999902))
+    (call-next-method)))
+(defmethod translate-terminator :around
+    ((instruction cleavir-bir:instruction) return-value abi next)
+  (declare (ignore return-value abi next))
+  (cmp:with-debug-info-source-position ((clasp-cleavir::ensure-origin
+                                         (cleavir-bir:origin instruction)
+                                         999903))
+    (call-next-method)))
+
 ;;; Output the computation's value.
 (defmethod translate-simple-instruction :around
     ((instruction cleavir-bir:computation) return-value abi)
@@ -644,7 +660,6 @@
   (cleavir-ast-to-bir:compile-toplevel ast))
 
 (defun bir->bmir (ir env)
-  (declare (ignore env))
   (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
   ;;(cleavir-bir-transformations:eliminate-catches ir)
