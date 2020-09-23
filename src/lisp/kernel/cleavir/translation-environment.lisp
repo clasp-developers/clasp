@@ -78,6 +78,6 @@
       (setf (gethash code *function-enclose-lists*)
             (cleavir-set:filter 'list
                                 (lambda (variable)
-                                  (and (not (eq (cleavir-bir:owner variable) code))
+                                  (and (not (eq (cleavir-bir:function variable) code))
                                        (not (eq (cleavir-bir:extent variable) :local))))
                                 (cleavir-bir:variables code)))))
