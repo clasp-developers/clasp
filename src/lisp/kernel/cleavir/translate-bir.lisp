@@ -555,14 +555,15 @@
   (core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
 
 (defun calculate-function-info (irfunction lambda-name)
-  (cmp:make-function-info :function-name lambda-name
-                          :lambda-list nil
-                          :docstring nil
-                          :declares nil
-                          :form nil
-                          :spi (core:make-source-pos-info
-                                "no-source-info-available"
-                                999905 999905 999905)))
+  (let* ((origin (cleavir-bir:origin irfunction))
+         (spi (clasp-cleavir::origin-spi origin)))
+    (cmp:make-function-info
+     :function-name lambda-name
+     :lambda-list (cleavir-bir:original-lambda-list irfunction)
+     :docstring (cleavir-bir:docstring irfunction)
+     :declares nil
+     :form nil
+     :spi spi)))
 
 (defun layout-procedure (ir lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
@@ -630,8 +631,7 @@
             (layout-procedure bir lambda-name abi :linkage linkage))))
 
 (defun get-or-create-lambda-name (bir)
-  (declare (ignore bir))
-  'top-level)
+  (or (cleavir-bir:name bir) 'top-level))
 
 (defun translate (bir &key abi linkage)
   (let ((*function-enclose-lists* (make-hash-table :test #'eq))
