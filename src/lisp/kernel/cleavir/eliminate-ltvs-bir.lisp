@@ -32,6 +32,15 @@
   (check-type value integer)
   (change-class input 'cleavir-bir:immediate :value value))
 
+(defun eliminate-load-time-value-input (input env)
+  (multiple-value-bind (index-or-immediate immediatep)
+      (cc-ast::process-ltv env (cleavir-bir:form input)
+                           (cleavir-bir:read-only-p input))
+    (if immediatep
+        (replace-load-time-value-with-precalc index-or-immediate input)
+        (replace-load-time-value-with-precalc
+         (cleavir-bir:form input) index-or-immediate input))))
+
 (defun eliminate-load-time-value-inputs (ir system env)
   (cleavir-bir:map-instructions
    (lambda (instruction)
