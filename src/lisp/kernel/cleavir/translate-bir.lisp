@@ -430,6 +430,17 @@
        (let ((symbol (in (first (cleavir-bir:inputs inst)))))
          (cmp:irc-fdefinition symbol))))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((info (cleavir-bir::info inst))
+         (name (cleavir-bir::name info)))
+    (cond ((equal name '(setf symbol-value))
+           (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+            "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
+          (t
+           (error "BUG: Don't know how to translate nvprimop ~a" name)))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
   (let ((alloca (cleavir-bir:dynamic-environment inst)))
@@ -641,6 +652,7 @@
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
   (cc-bir-to-bmir:reduce-primops ir)
+  (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
