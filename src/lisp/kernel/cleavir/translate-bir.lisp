@@ -444,7 +444,24 @@
         "cc_safe_symbol_value" (list (in (first (cleavir-bir:inputs inst))))))
       (fdefinition
        (let ((symbol (in (first (cleavir-bir:inputs inst)))))
-         (cmp:irc-fdefinition symbol))))))
+         (cmp:irc-fdefinition symbol)))
+      (core::vector-length
+       (cmp::gen-vector-length (in (first (cleavir-bir:inputs inst)))))
+      (core::%displacement
+       (cmp:irc-real-array-displacement (in (first (cleavir-bir:inputs inst)))))
+      (core::%displaced-index-offset
+       (cmp:irc-tag-fixnum
+        (cmp:irc-real-array-index-offset
+         (in (first (cleavir-bir:inputs inst))))))
+      (core::%array-total-size
+       (cmp:irc-tag-fixnum
+        (cmp:irc-array-total-size (in (first (cleavir-bir:inputs inst))))))
+      (core::%array-rank
+       (cmp:irc-tag-fixnum
+        (cmp:irc-array-rank (in (first (cleavir-bir:inputs inst))))))
+      (core::%array-dimension
+       (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst))
+                                     (second (cleavir-bir:inputs inst))))))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop)
                                          return-value abi)

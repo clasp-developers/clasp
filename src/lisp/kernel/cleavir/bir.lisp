@@ -107,3 +107,24 @@
     (let ((hsc (make-instance 'header-stamp-case
                  :inputs (cleavir-ast-to-bir:adapt rv '(:object)))))
       (cleavir-ast-to-bir:terminate inserter hsc))))
+
+;;;
+
+(cleavir-bir:defprimop core::vector-length (:object) (:object))
+(cleavir-ast-to-bir:defprimop core::vector-length cc-ast:vector-length-ast
+  cleavir-ast:arg-ast)
+(cleavir-bir:defprimop core::%displacement (:object) (:object))
+(cleavir-ast-to-bir:defprimop core::%displacement
+    cc-ast:displacement-ast cleavir-ast:arg-ast)
+(cleavir-bir:defprimop core::%displaced-index-offset (:object) (:object))
+(cleavir-ast-to-bir:defprimop core::%displaced-index-offset
+    cc-ast:displaced-index-offset-ast cleavir-ast:arg-ast)
+(cleavir-bir:defprimop core::%array-total-size (:object) (:object))
+(cleavir-ast-to-bir:defprimop core::%array-total-size
+    cc-ast:array-total-size-ast cleavir-ast:arg-ast)
+(cleavir-bir:defprimop core::%array-rank (:object) (:object))
+(cleavir-ast-to-bir:defprimop core::%array-rank
+    cc-ast:array-rank-ast cleavir-ast:arg-ast)
+(cleavir-bir:defprimop core::%array-dimension (:object :object) (:object))
+(cleavir-ast-to-bir:defprimop core::%array-dimension
+  cc-ast:array-dimension-ast cleavir-ast:arg1-ast cleavir-ast:arg2-ast)
