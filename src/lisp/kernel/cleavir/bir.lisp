@@ -25,7 +25,8 @@
   (let ((fu (cleavir-ast-to-bir:compile-ast (cc-ast:cleanup-ast ast) inserter)))
     (if (eq fu :no-return)
         :no-return
-        (let* ((uw (make-instance 'unwind-protect))
+        (let* ((uw (make-instance 'unwind-protect
+                     :inputs (cleavir-ast-to-bir:adapt inserter fu '(:object))))
                (ode (cleavir-ast-to-bir:dynamic-environment inserter))
                (during (cleavir-ast-to-bir:make-iblock
                         inserter :dynamic-environment uw)))
@@ -49,8 +50,7 @@
                 cleavir-bir::no-output cleavir-bir:operation)
   ())
 
-(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
-                                            inserter)
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter)
   (let ((args (cleavir-ast-to-bir:compile-arguments
                (list (cleavir-ast:name-ast ast) (cleavir-ast:value-ast ast))
                inserter)))
