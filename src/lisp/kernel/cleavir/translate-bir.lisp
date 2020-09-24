@@ -650,11 +650,14 @@
   (or (cleavir-bir:name bir) 'top-level))
 
 (defun translate (bir &key abi linkage)
-  (let ((*function-enclose-lists* (make-hash-table :test #'eq))
-        (*unwind-ids* (make-hash-table :test #'eq))
-        (*compiled-enters* (make-hash-table :test #'eq))
-        (lambda-name (get-or-create-lambda-name bir)))
-    (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
+  (let* ((*function-enclose-lists* (make-hash-table :test #'eq))
+         (*unwind-ids* (make-hash-table :test #'eq))
+         (*compiled-enters* (make-hash-table :test #'eq))
+         (lambda-name (get-or-create-lambda-name bir))
+         (result
+           (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
+    (cmp::potentially-save-module)
+    result))
 
 (defun ast->bir (ast)
   (cleavir-ast-to-bir:compile-toplevel ast))
