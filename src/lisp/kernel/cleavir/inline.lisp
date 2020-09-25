@@ -595,6 +595,8 @@
 )
 
 ;;; Unsafe versions to use that don't check bounds (but still check type)
+#+(or)
+(progn
 (debug-inline "svref/no-bounds-check")
 (declaim (inline svref/no-bounds-check))
 (defun svref/no-bounds-check (vector index)
@@ -603,7 +605,10 @@
           (cleavir-primop:aref vector index t t t)
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
+)
 
+#+(or)
+(progn
 (declaim (inline (setf svref/no-bounds-check)))
 (defun (setf svref/no-bounds-check) (value vector index)
   (if (typep vector 'simple-vector)
@@ -612,7 +617,9 @@
                  value)
           (error 'type-error :datum index :expected-type 'fixnum))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
+)
 
+#+(or)
 (define-cleavir-compiler-macro svref (&whole whole vector index &environment env)
   (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
