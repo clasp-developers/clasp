@@ -470,6 +470,10 @@
 (defmethod translate-primop ((name (eql 'clos:standard-instance-access)) inst)
   (cmp::gen-instance-ref (in (first (cleavir-bir:inputs inst)))
                          (in (second (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'core:vaslist-pop)) inst)
+  (cmp:gen-vaslist-pop (in (first (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'core:vaslist-length)) inst)
+  (cmp:gen-vaslist-length (in (first (cleavir-bir:inputs inst)))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop)
                                          return-value abi)

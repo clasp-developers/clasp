@@ -141,4 +141,9 @@
   (defprimop (setf clos:funcallable-standard-instance-access)
       (:object :object :object) ()
     cleavir-ast:funcallable-slot-write-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast))
+    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
+
+  (defprimop core:vaslist-pop (:object) (:object)
+    cc-ast:vaslist-pop-ast cleavir-ast:arg-ast)
+  (defprimop core:vaslist-length (:object) (:object)
+    cc-ast:vaslist-length-ast cleavir-ast:arg-ast))
