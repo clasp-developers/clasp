@@ -184,10 +184,14 @@
          (rv (second inputs)))
     ;; We can only transmit multiple values, so make sure the adapter in
     ;; bir.lisp forced that properly
-    (assert (and (= (length inputs) 2)
-                 (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values)))
+    (ecase (length inputs)
+      ;; GO
+      (1)
+      ;; RETURN-FROM
+      (2 (assert (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values))))
     ;; Transmit those values
-    (clasp-cleavir::save-multiple-value-0 return-value)
+    (when rv
+      (clasp-cleavir::save-multiple-value-0 return-value))
     ;; unwind
     (cmp:with-landing-pad (never-entry-landing-pad
                            (cleavir-bir:dynamic-environment instruction)
