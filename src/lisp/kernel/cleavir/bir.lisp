@@ -110,21 +110,35 @@
 
 ;;;
 
-(cleavir-bir:defprimop core::vector-length (:object) (:object))
-(cleavir-ast-to-bir:defprimop core::vector-length cc-ast:vector-length-ast
-  cleavir-ast:arg-ast)
-(cleavir-bir:defprimop core::%displacement (:object) (:object))
-(cleavir-ast-to-bir:defprimop core::%displacement
+(macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
+             `(progn
+                (cleavir-bir:defprimop ,name (,@in) (,@out))
+                (cleavir-ast-to-bir:defprimop ,name ,ast ,@readers))))
+  (defprimop core::vector-length (:object) (:object)
+    cc-ast:vector-length-ast cleavir-ast:arg-ast)
+  (defprimop core::%displacement (:object) (:object)
     cc-ast:displacement-ast cleavir-ast:arg-ast)
-(cleavir-bir:defprimop core::%displaced-index-offset (:object) (:object))
-(cleavir-ast-to-bir:defprimop core::%displaced-index-offset
+  (defprimop core::%displaced-index-offset (:object) (:object)
     cc-ast:displaced-index-offset-ast cleavir-ast:arg-ast)
-(cleavir-bir:defprimop core::%array-total-size (:object) (:object))
-(cleavir-ast-to-bir:defprimop core::%array-total-size
+  (defprimop core::%array-total-size (:object) (:object)
     cc-ast:array-total-size-ast cleavir-ast:arg-ast)
-(cleavir-bir:defprimop core::%array-rank (:object) (:object))
-(cleavir-ast-to-bir:defprimop core::%array-rank
+  (defprimop core::%array-rank (:object) (:object)
     cc-ast:array-rank-ast cleavir-ast:arg-ast)
-(cleavir-bir:defprimop core::%array-dimension (:object :object) (:object))
-(cleavir-ast-to-bir:defprimop core::%array-dimension
-  cc-ast:array-dimension-ast cleavir-ast:arg1-ast cleavir-ast:arg2-ast)
+  (defprimop core::%array-dimension (:object :object) (:object)
+    cc-ast:array-dimension-ast cleavir-ast:arg1-ast cleavir-ast:arg2-ast)
+
+  (defprimop clos:standard-instance-access (:object :object) (:object)
+    cleavir-ast:slot-read-ast
+    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
+  (defprimop (setf clos:standard-instance-access) (:object :object :object) ()
+    cleavir-ast:slot-write-ast
+    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
+  
+  (defprimop clos:funcallable-standard-instance-access
+      (:object :object) (:object)
+    cleavir-ast:funcallable-slot-read-ast
+    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
+  (defprimop (setf clos:funcallable-standard-instance-access)
+      (:object :object :object) ()
+    cleavir-ast:funcallable-slot-write-ast
+    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast))

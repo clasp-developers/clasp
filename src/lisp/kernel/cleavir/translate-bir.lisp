@@ -7,6 +7,9 @@
 ;;; Ditto
 (defgeneric translate-terminator (instruction return-value abi next))
 
+;;; Ditto
+(defgeneric translate-primop (opname instruction))
+
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction cleavir-bir:instruction) return-value abi)
@@ -436,43 +439,49 @@
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (let* ((info (cleavir-bir::info inst))
-         (name (cleavir-bir::name info)))
-    (ecase name
-      (symbol-value
-       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-        "cc_safe_symbol_value" (list (in (first (cleavir-bir:inputs inst))))))
-      (fdefinition
-       (let ((symbol (in (first (cleavir-bir:inputs inst)))))
-         (cmp:irc-fdefinition symbol)))
-      (core::vector-length
-       (cmp::gen-vector-length (in (first (cleavir-bir:inputs inst)))))
-      (core::%displacement
-       (cmp:irc-real-array-displacement (in (first (cleavir-bir:inputs inst)))))
-      (core::%displaced-index-offset
-       (cmp:irc-tag-fixnum
-        (cmp:irc-real-array-index-offset
-         (in (first (cleavir-bir:inputs inst))))))
-      (core::%array-total-size
-       (cmp:irc-tag-fixnum
-        (cmp:irc-array-total-size (in (first (cleavir-bir:inputs inst))))))
-      (core::%array-rank
-       (cmp:irc-tag-fixnum
-        (cmp:irc-array-rank (in (first (cleavir-bir:inputs inst))))))
-      (core::%array-dimension
-       (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst))
-                                     (second (cleavir-bir:inputs inst))))))))
+  (translate-primop (cleavir-bir:name (cleavir-bir::info inst)) inst))
+
+(defmethod translate-primop ((name (eql 'symbol-value)) inst)
+  (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+   "cc_safe_symbol_value" (list (in (first (cleavir-bir:inputs inst))))))
+(defmethod translate-primop ((name (eql 'fdefinition)) inst)
+  (let ((symbol (in (first (cleavir-bir:inputs inst)))))
+    (cmp:irc-fdefinition symbol)))
+(defmethod translate-primop ((name (eql 'core::vector-length)) inst)
+  (cmp::gen-vector-length (in (first (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'core::%displacement)) inst)
+  (cmp:irc-real-array-displacement (in (first (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'core::%displaced-index-offset)) inst)
+  (cmp:irc-tag-fixnum
+   (cmp:irc-real-array-index-offset (in (first (cleavir-bir:inputs inst))))))
+(defmethod translate-primop ((name (eql 'core::%array-total-size)) inst)
+  (cmp:irc-tag-fixnum
+   (cmp:irc-array-total-size (in (first (cleavir-bir:inputs inst))))))
+(defmethod translate-primop ((name (eql 'core::%array-rank)) inst)
+  (cmp:irc-tag-fixnum
+   (cmp:irc-array-rank (in (first (cleavir-bir:inputs inst))))))
+(defmethod translate-primop ((name (eql 'core::%array-dimension)) inst)
+  (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst))
+                                (second (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'clos:standard-instance-access)) inst)
+  (cmp::gen-instance-ref (in (first (cleavir-bir:inputs inst)))
+                         (in (second (cleavir-bir:inputs inst)))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (let* ((info (cleavir-bir::info inst))
-         (name (cleavir-bir::name info)))
-    (cond ((equal name '(setf symbol-value))
-           (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-            "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
-          (t
-           (error "BUG: Don't know how to translate nvprimop ~a" name)))))
+  (translate-primop (cleavir-bir:name (cleavir-bir::info inst)) inst))
+
+(defmethod translate-primop ((name cons) inst) ; FIXME
+  (cond ((equal name '(setf symbol-value))
+         (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+          "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
+        ((equal name '(setf clos:standard-instance-access))
+         (let ((inputs (cleavir-bir:inputs inst)))
+           (cmp::gen-instance-set (in (first inputs)) (in (second inputs))
+                                  (in (third inputs)))))
+        (t
+         (error "BUG: Don't know how to translate primop ~a" name))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
