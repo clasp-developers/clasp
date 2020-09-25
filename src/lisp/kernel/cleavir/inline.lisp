@@ -124,6 +124,7 @@
 ;;; which is useful for bounds checks.
 ;;; The compiler can't optimize this condition very well as I write this.
 ;;; NOTE: Evaluates VAL more than once.
+#+(or)
 (defmacro if-in-bounds ((val low high) then else)
   `(core::local-block nil
      (if (cleavir-primop:typeq ,val fixnum)
@@ -251,19 +252,18 @@
     core:single-float-p single-float
 
     arrayp array
-    atom atom
     complexp complex
     core:double-float-p double-float
-    floatp float
+;;    floatp float
     functionp function
     hash-table-p core:hash-table-base
-    integerp integer
+;;    integerp integer
     listp list
     ;; null null ; defined with EQ below
-    numberp number
+;;    numberp number
     random-state-p random-state
-    rationalp rational
-    realp real
+;;    rationalp rational
+;;    realp real
     packagep package
     pathnamep pathname
     core:data-vector-p core:abstract-simple-vector
@@ -271,7 +271,7 @@
     simple-bit-vector-p simple-bit-vector
     simple-string-p simple-string
     simple-vector-p simple-vector
-    stringp string
+;;    stringp string
     symbolp symbol
     vectorp vector)
   ;; standard predicates we can't define like this
@@ -280,6 +280,12 @@
     ;; standard-char-p standard-char ; not actually a type pred - only accepts chars
       ;; streamp stream ; no good as it's an extensible class... FIXME do it anyway?
       compiled-function-p compiled-function))
+
+(progn
+  (debug-inline atom)
+  (declaim (inline atom))
+  (defun atom (o)
+     (if (cleavir-primop:typeq o cons) nil t)))
 
 (progn
   (debug-inline "null")
@@ -392,6 +398,7 @@
 
 (debug-inline "primop")
 
+#+(or)
 (progn
   (defmacro define-with-contagion (inlined-name comparison (x y) fixnum single-float double-float generic)
     (declare (ignore comparison)) ; this will be used to control fp behavior, see CLHS 12.1.4.1
@@ -469,6 +476,7 @@
   (defcomparison primop:inlined-two-arg->=
     cleavir-primop:fixnum-not-less    cleavir-primop:float-not-less    core:two-arg->=))
 
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (define-cleavir-compiler-macro + (&whole form &rest numbers)
     (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
@@ -533,6 +541,8 @@
     ((simple-array * (*)) 1)
     (array (core::%array-rank array))))
 
+#+(or)
+(progn
 (debug-inline "array-dimension")
 (declaim (inline array-dimension))
 (defun array-dimension (array axis-number)
@@ -546,6 +556,7 @@
                    (core::%array-dimension array axis-number)
                    (error "Invalid axis number ~d for array of rank ~d"
                           axis-number (core::%array-rank array))))))
+)
 
 ;; Unsafe version for array-row-major-index
 (debug-inline "%array-dimension")
@@ -556,6 +567,8 @@
      (core::vector-length array))
     (array (core::array-dimension array axis-number))))
 
+#+(or)
+(progn
 (debug-inline "svref")
 (declaim (inline svref))
 (defun svref (vector index)
@@ -565,7 +578,10 @@
                       (cleavir-primop:aref vector index t t t)
                       (error "Invalid index ~d for vector of length ~d" index ats)))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
+)
 
+#+(or)
+(progn
 (declaim (inline (setf svref)))
 (defun (setf svref) (value vector index)
   (if (typep vector 'simple-vector)
@@ -575,6 +591,7 @@
                              value)
                       (error "Invalid index ~d for vector of length ~d" index ats)))
       (error 'type-error :datum vector :expected-type 'simple-vector)))
+)
 
 ;;; Unsafe versions to use that don't check bounds (but still check type)
 (debug-inline "svref/no-bounds-check")
@@ -658,11 +675,13 @@
 ;;; Array indices are all fixnums. If we're sure sizes are valid, we don't want
 ;;; to use general arithmetic. We can just use this to do unsafe modular arithmetic.
 ;;; (Used in this file only)
+#+(or)
 (defmacro add-indices (a b)
   `(cleavir-primop:let-uninitialized (z)
      (if (cleavir-primop:fixnum-add ,a ,b z) z z)))
 
 ;; FIXME: Duplicate code from seqmacros.lsp.
+#+(or)
 (defmacro with-array-data ((arrayname offsetname array) &body body)
   `(multiple-value-bind (,arrayname ,offsetname)
        (let ((,arrayname ,array) (,offsetname 0))
@@ -677,6 +696,8 @@
               (type fixnum ,offsetname))
      ,@body))
 
+#+(or)
+(progn
 (declaim (inline vector-read))
 (defun vector-read (vector index)
   ;; first bounds check. Use the original arguments.
@@ -697,7 +718,10 @@
       ;; Okay, now array is a vector/simple, and index is valid.
       ;; This function takes care of element type discrimination.
       (vref underlying-array (add-indices index offset)))))
+)
 
+#+(or)
+(progn
 (declaim (inline vector-set))
 (defun vector-set (vector index value)
   ;; NOTE: This function is only used in CORE:SETF-ELT. We know already
@@ -712,7 +736,10 @@
       ;; Okay, now array is a vector/simple, and index is valid.
       ;; This function takes care of element type discrimination.
       (setf (vref underlying-array (add-indices index offset)) value))))
+)
 
+#+(or)
+(progn
 (declaim (inline row-major-aref/no-bounds-check))
 (defun row-major-aref/no-bounds-check (array index)
   ;; First, undisplace. This can be done independently
@@ -722,7 +749,10 @@
   (with-array-data (underlying-array offset array)
     ;; Array is a vector/simple, and we assume index is valid.
     (core:vref underlying-array (add-indices index offset))))
+)
 
+#+(or)
+(progn
 (declaim (inline cl:row-major-aref))
 (defun cl:row-major-aref (array index)
   (let ((max (etypecase array
@@ -738,12 +768,18 @@
   (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
       `(row-major-aref/no-bounds-check ,array ,index)))
+)
 
+#+(or)
+(progn
 (declaim (inline row-major-aset/no-bounds-check))
 (defun row-major-aset/no-bounds-check (array index value)
   (with-array-data (underlying-array offset array)
     (setf (core:vref underlying-array (add-indices index offset)) value)))
+)
 
+#+(or)
+(progn
 (declaim (inline core:row-major-aset))
 (defun core:row-major-aset (array index value)
   (let ((max (etypecase array
@@ -760,6 +796,7 @@
   (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
       `(row-major-aset/no-bounds-check ,array ,index ,value)))
+)
 
 (declaim (inline schar (setf schar) char (setf char)))
 (defun schar (string index)
@@ -840,6 +877,7 @@
              ;; Now we know we're good, do the actual computation
              ,(row-major-index-computer sarray dimsyms ssubscripts))))))
 
+#+(or)
 (define-cleavir-compiler-macro aref (&whole form array &rest subscripts
                                             &environment env)
   ;; FIXME: See tragic comment above in array-row-major-index.
@@ -865,6 +903,7 @@
            (with-array-data (data offset ,sarray)
              (core::MULTIPLE-VALUE-FOREIGN-CALL "cm_vref" data (add-indices offset ,index0)))))))
 
+#+(or)
 (define-cleavir-compiler-macro (setf aref) (&whole form new array &rest subscripts
                                                    &environment env)
   (if (or (> (length subscripts) 1) (null subscripts))
@@ -901,6 +940,7 @@
       (null 0)
       (t (sequence:length sequence)))))
 
+#+(or)
 (progn
   (debug-inline "elt")
   (declaim (inline elt))
