@@ -256,11 +256,11 @@
             (let* ((high-test
                      (if (eq fixnum-high '*)
                          't
-                         `(if (cleavir-primop:fixnum-not-greater object ,fixnum-high) t nil)))
+                         `(if (<= #+(or)cleavir-primop:fixnum-not-greater object ,fixnum-high) t nil)))
                    (low-test
                      (if (eq fixnum-low '*)
                          high-test
-                         `(if (cleavir-primop:fixnum-not-greater ,fixnum-low object)
+                         `(if (<= #+(or)cleavir-primop:fixnum-not-greater ,fixnum-low object)
                               ,high-test
                               nil))))
               `(if (cleavir-primop:typeq object fixnum) ,low-test ,bignum-test)))))))
