@@ -91,11 +91,10 @@
   (assert (= (length next) 1))
   (when (cleavir-bir:unwindp instruction)
     (translate-local-unwind instruction return-value))
-  (loop with ib = (cleavir-bir:iblock instruction)
-        for in in (cleavir-bir:inputs instruction)
+  (loop for in in (cleavir-bir:inputs instruction)
         for out in (cleavir-bir:outputs instruction)
         unless (eq (cleavir-bir:rtype out) :multiple-values)
-          do (phi-out (in in) out ib))
+          do (phi-out (in in) out (llvm-sys:get-insert-block cmp:*irbuilder*)))
   (cmp:irc-br (first next)))
 
 (defun bind-if-necessary (var binder)
