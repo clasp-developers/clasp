@@ -258,7 +258,7 @@
     functionp function
     hash-table-p core:hash-table-base
 ;;    integerp integer
-    listp list
+;;    listp list
     ;; null null ; defined with EQ below
 ;;    numberp number
     random-state-p random-state
@@ -267,13 +267,14 @@
     packagep package
     pathnamep pathname
     core:data-vector-p core:abstract-simple-vector
-    simple-array-p simple-array
+;;    simple-array-p simple-array
     simple-bit-vector-p simple-bit-vector
     simple-string-p simple-string
     simple-vector-p simple-vector
 ;;    stringp string
     symbolp symbol
-    vectorp vector)
+;;    vectorp vector)
+    )
   ;; standard predicates we can't define like this
   #+(or)
   (defpreds
