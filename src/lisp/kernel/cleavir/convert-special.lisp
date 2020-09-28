@@ -588,7 +588,22 @@
                 ast
                 rest-alloc))))))))
 
-#+cst
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::bind-va-list)) cst
+     environment (system clasp-cleavir:clasp))
+  ;; (bind-va-list lambda-list va . body)
+  ;; => `(apply (lambda ,lambda-list . ,body) ,va)
+  (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
+          (cleavir-cst-to-ast:convert
+           (cst:list (cst:cst-from-expression 'apply)
+                     (cst:cons (cst:cst-from-expression 'lambda)
+                               (cst:cons lambda-list-cst body-cst
+                                         :source origin)
+                               :source origin)
+                     va-list-cst)
+           environment system)))
+
+#+(or) ;;#+cst
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
