@@ -143,6 +143,17 @@
     cleavir-ast:funcallable-slot-write-ast
     cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
 
+  (defprimop core:instance-rack (:object) (:object)
+    cc-ast:instance-rack-ast cleavir-ast:object-ast)
+  (defprimop core:instance-rack-set (:object :object) ()
+    cc-ast:instance-rack-set-ast cleavir-ast:object-ast cleavir-ast:value-ast)
+
+  (defprimop core:rack-ref (:object :object) (:object)
+    cc-ast:rack-read-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast)
+  (defprimop core:rack-set (:object :object :object) ()
+    cc-ast:rack-write-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast
+    cleavir-ast:value-ast)
+
   (defprimop core:vaslist-pop (:object) (:object)
     cc-ast:vaslist-pop-ast cleavir-ast:arg-ast)
   (defprimop core:vaslist-length (:object) (:object)
