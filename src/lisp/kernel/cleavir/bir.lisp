@@ -114,6 +114,9 @@
              `(progn
                 (cleavir-bir:defprimop ,name (,@in) (,@out))
                 (cleavir-ast-to-bir:defprimop ,name ,ast ,@readers))))
+  (defprimop setf-fdefinition (:object) (:object)
+    cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
+  
   (defprimop core::vector-length (:object) (:object)
     cc-ast:vector-length-ast cleavir-ast:arg-ast)
   (defprimop core::%displacement (:object) (:object)
@@ -142,6 +145,10 @@
       (:object :object :object) ()
     cleavir-ast:funcallable-slot-write-ast
     cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
+  (defprimop core::instance-cas (:object :object :object :object) (:object)
+    cc-ast:slot-cas-ast
+    cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
+    cleavir-ast:slot-number-ast)
 
   (defprimop core:instance-rack (:object) (:object)
     cc-ast:instance-rack-ast cleavir-ast:object-ast)
