@@ -706,7 +706,6 @@
 (defun bir->bmir (ir env)
   (cleavir-bir:verify ir)
   (cleavir-bir-transformations:process-captured-variables ir)
-  ;;(cleavir-bir-transformations:eliminate-catches ir)
   (cleavir-bir-transformations:inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
