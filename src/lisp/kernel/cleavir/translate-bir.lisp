@@ -164,16 +164,14 @@
                                  return-value abi next)
   (declare (ignore return-value abi))
   ;; Bind the variable if needed.
-  (let ((u (cleavir-bir:use instruction))) ; avoid stupid check-type warning
-    (check-type u cleavir-bir:writevar))
-  (bind-if-necessary (first (cleavir-bir:outputs (cleavir-bir:use instruction)))
-                     instruction)
-  ;; Return the frame pointer for use in unwinds.
-  (prog1 (clasp-cleavir::%intrinsic-call
-          "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
-    ;; Unconditional branch to the normal successor; dynamic environment stuff
-    ;; is handled in layout-iblock.
-    (cmp:irc-br (first next))))
+  (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
+  ;; Fill the variable with the continuation.
+  (variable-out (clasp-cleavir::%intrinsic-call
+                 "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
+                (first (cleavir-bir:outputs instruction)))
+  ;; Unconditional branch to the normal successor; dynamic environment stuff
+  ;; is handled in layout-iblock.
+  (cmp:irc-br (first next)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:unwind)
                                  return-value abi next)
