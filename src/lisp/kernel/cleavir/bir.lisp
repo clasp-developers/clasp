@@ -96,7 +96,7 @@
            :function-name (cc-ast:function-name ast)
            :inputs args)))))
 
-(defclass header-stamp-case (cleavir-bir::no-input cleavir-bir::no-output
+(defclass header-stamp-case (cleavir-bir::one-input cleavir-bir::no-output
                              cleavir-bir:terminator cleavir-bir:operation)
   ())
 
@@ -104,9 +104,13 @@
     ((ast cc-ast:header-stamp-case-ast) inserter)
   (let ((rv (cleavir-ast-to-bir:compile-ast (cc-ast:stamp-ast ast) inserter)))
     (when (eq rv :no-return) (return-from cleavir-ast-to-bir:compile-test-ast rv))
-    (let ((hsc (make-instance 'header-stamp-case
-                 :inputs (cleavir-ast-to-bir:adapt rv '(:object)))))
-      (cleavir-ast-to-bir:terminate inserter hsc))))
+    (let* ((ibs
+             (loop repeat 4 collect (cleavir-ast-to-bir:make-iblock inserter)))
+           (hsc (make-instance 'header-stamp-case
+                  :next ibs
+                  :inputs (cleavir-ast-to-bir:adapt inserter rv '(:object)))))
+      (cleavir-ast-to-bir:terminate inserter hsc)
+      (copy-list ibs))))
 
 ;;;
 
