@@ -212,7 +212,7 @@
 
 (defmethod cclasp-eval-with-env (form env)
   (funcall
-   (cclasp-compile-in-env
+   (clasp-cleavir-translate-bir::bir-compile-in-env
     ;; PROGN is needed to avoid processing declarations
     `(lambda () (progn ,form)) env)))
 

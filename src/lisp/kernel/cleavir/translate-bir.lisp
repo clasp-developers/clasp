@@ -771,6 +771,12 @@
      cmp:*the-module*
      function startup-fn shutdown-fn ordered-raw-constants-list)))
 
+(defun bir-compile-in-env (form &optional env)
+  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
+        (core:*use-cleavir-compiler* t))
+    (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
+
 (defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
   (literal:with-top-level-form
     (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
