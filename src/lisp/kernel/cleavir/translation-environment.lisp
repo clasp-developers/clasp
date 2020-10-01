@@ -27,14 +27,14 @@
 
 (defun variable-in (variable)
   (check-type variable cleavir-bir:variable)
-  (ecase (cleavir-bir:extent variable)
-    (:local (let ((alloca (or (gethash variable *variable-allocas*)
-                              (error "BUG: Variable missing: ~a" variable))))
-              (cmp:irc-load alloca)))
-    (:indefinite (let ((cell (or (gethash variable *datum-values*)
-                                 (error "BUG: Cell missing: ~a" variable)))
-                       (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-                   (cmp:irc-load-atomic (cmp::gen-memref-address cell offset))))))
+  (if (cleavir-bir:closed-over-p variable)
+      (let ((cell (or (gethash variable *datum-values*)
+                      (error "BUG: Cell missing: ~a" variable)))
+            (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+        (cmp:irc-load-atomic (cmp::gen-memref-address cell offset)))
+      (let ((alloca (or (gethash variable *variable-allocas*)
+                        (error "BUG: Variable missing: ~a" variable))))
+        (cmp:irc-load alloca))))
 
 (defun out (value datum)
   (check-type datum cleavir-bir:transfer)
@@ -48,18 +48,16 @@
 
 (defun variable-out (value variable)
   (check-type variable cleavir-bir:variable)
-  (ecase (cleavir-bir:extent variable)
-    (:local
-     (let ((alloca (or (gethash variable *variable-allocas*)
-                       (error "BUG: Variable missing: ~a" variable))))
-       (cmp:irc-store value alloca)))
-    (:indefinite
-     (let ((cell (or (gethash variable *datum-values*)
-                     (error "BUG: Cell missing: ~a" variable)))
-           (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-       (cmp:irc-store-atomic
-        value
-        (cmp::gen-memref-address cell offset))))))
+  (if (cleavir-bir:closed-over-p variable)
+      (let ((cell (or (gethash variable *datum-values*)
+                      (error "BUG: Cell missing: ~a" variable)))
+            (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
+        (cmp:irc-store-atomic
+         value
+         (cmp::gen-memref-address cell offset)))
+      (let ((alloca (or (gethash variable *variable-allocas*)
+                        (error "BUG: Variable missing: ~a" variable))))
+        (cmp:irc-store value alloca))))
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv cleavir-bir:dynamic-environment)
@@ -79,5 +77,5 @@
             (cleavir-set:filter 'list
                                 (lambda (variable)
                                   (and (not (eq (cleavir-bir:function variable) code))
-                                       (not (eq (cleavir-bir:extent variable) :local))))
+                                       (cleavir-bir:closed-over-p variable)))
                                 (cleavir-bir:variables code)))))

@@ -99,14 +99,14 @@
 
 (defun bind-if-necessary (var binder)
   (when (eq (cleavir-bir:binder var) binder)
-    (ecase (cleavir-bir:extent var)
-      (:local ; just an alloca
-       (setf (gethash var *variable-allocas*)
-             (cmp:alloca-t*)))
-      (:indefinite ; make a cell
-       (setf (gethash var *datum-values*)
-             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-              "cc_makeCell" nil ""))))))
+    (if (cleavir-bir:closed-over-p var)
+        ;; make a cell
+        (setf (gethash var *datum-values*)
+              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+               "cc_makeCell" nil ""))
+        ;; just an alloca
+        (setf (gethash var *variable-allocas*)
+              (cmp:alloca-t*)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:leti)
                                  return-value abi next)
