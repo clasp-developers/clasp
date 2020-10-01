@@ -83,7 +83,7 @@
                 (literal:with-top-level-form
                     (let ((hoisted-ast (clasp-cleavir::hoist-ast
                                         (ast-job-ast job))))
-                      (clasp-cleavir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
+                      (clasp-cleavir-translate-bir::translate-hoisted-ast hoisted-ast :env (ast-job-environment job))))))
           (let ((startup-function (add-global-ctor-function module run-all-function
                                                             :position (ast-job-form-counter job))))
 ;;;                (add-llvm.used module startup-function)
