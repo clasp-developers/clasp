@@ -723,12 +723,12 @@
 
 (defun bir->bmir (ir env)
   (cleavir-bir:verify ir)
-  (cleavir-bir-transformations:process-captured-variables ir)
   (cleavir-bir-transformations:inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
   (cc-bir-to-bmir:reduce-primops ir)
   (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
+  (cleavir-bir-transformations:process-captured-variables ir)
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
