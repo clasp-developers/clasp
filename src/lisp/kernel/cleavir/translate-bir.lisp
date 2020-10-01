@@ -163,12 +163,13 @@
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
                                  return-value abi next)
   (declare (ignore return-value abi))
-  ;; Bind the variable if needed.
-  (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
-  ;; Fill the variable with the continuation.
-  (variable-out (clasp-cleavir::%intrinsic-call
-                 "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
-                (first (cleavir-bir:outputs instruction)))
+  (unless (cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
+    ;; Bind the variable if needed.
+    (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
+    ;; Fill the variable with the continuation.
+    (variable-out (clasp-cleavir::%intrinsic-call
+                   "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
+                  (first (cleavir-bir:outputs instruction))))
   ;; Unconditional branch to the normal successor; dynamic environment stuff
   ;; is handled in layout-iblock.
   (cmp:irc-br (first next)))
