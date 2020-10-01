@@ -10,18 +10,26 @@
 ;;; Ditto
 (defgeneric translate-primop (opname instruction))
 
+;;; In CSTs and stuff the origin is (spi . spi). Use the head.
+(defun origin-spi (origin)
+  (if (consp origin) (car origin) origin))
+
+(defun ensure-origin (origin &optional (num 999905))
+  (or origin
+      (core:make-source-pos-info "no-source-info-available" num num num)))
+
 ;;; Put in source info.
 (defmethod translate-simple-instruction :around
     ((instruction cleavir-bir:instruction) return-value abi)
   (declare (ignore return-value abi))
-  (cmp:with-debug-info-source-position ((clasp-cleavir::ensure-origin
+  (cmp:with-debug-info-source-position ((ensure-origin
                                          (cleavir-bir:origin instruction)
                                          999902))
     (call-next-method)))
 (defmethod translate-terminator :around
     ((instruction cleavir-bir:instruction) return-value abi next)
   (declare (ignore return-value abi next))
-  (cmp:with-debug-info-source-position ((clasp-cleavir::ensure-origin
+  (cmp:with-debug-info-source-position ((ensure-origin
                                          (cleavir-bir:origin instruction)
                                          999903))
     (call-next-method)))
@@ -603,7 +611,8 @@
                                 (cleavir-bir:variables ir))
             ;; Import cells.
             (let ((imports (gethash ir *function-enclose-lists*))
-                  (closure-vec (first (llvm-sys:get-argument-list the-function))))
+                  (closure-vec
+                    (first (llvm-sys:get-argument-list the-function))))
               (loop for import in imports for i from 0
                     for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
                     do (setf (gethash import *datum-values*)
@@ -631,7 +640,7 @@
 
 (defun calculate-function-info (irfunction lambda-name)
   (let* ((origin (cleavir-bir:origin irfunction))
-         (spi (clasp-cleavir::origin-spi origin)))
+         (spi (origin-spi origin)))
     (cmp:make-function-info
      :function-name lambda-name
      :lambda-list (cleavir-bir:original-lambda-list irfunction)
