@@ -99,14 +99,14 @@
 
 (defun bind-if-necessary (var binder)
   (when (eq (cleavir-bir:binder var) binder)
-    (ecase (cleavir-bir:extent var)
-      (:local ; just an alloca
-       (setf (gethash var *variable-allocas*)
-             (cmp:alloca-t*)))
-      (:indefinite ; make a cell
-       (setf (gethash var *datum-values*)
-             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-              "cc_makeCell" nil ""))))))
+    (if (cleavir-bir:closed-over-p var)
+        ;; make a cell
+        (setf (gethash var *datum-values*)
+              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+               "cc_makeCell" nil ""))
+        ;; just an alloca
+        (setf (gethash var *variable-allocas*)
+              (cmp:alloca-t*)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:leti)
                                  return-value abi next)
@@ -723,12 +723,12 @@
 
 (defun bir->bmir (ir env)
   (cleavir-bir:verify ir)
-  (cleavir-bir-transformations:process-captured-variables ir)
   (cleavir-bir-transformations:inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
   (cc-bir-to-bmir:reduce-primops ir)
   (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
+  (cleavir-bir-transformations:process-captured-variables ir)
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
