@@ -282,8 +282,8 @@
     ((or cleavir-bir:leti cleavir-bir:alloca cc-bir:unwind-protect cc-bir:bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
-     (if (or #+(or) (cleavir-ir:simple-p dynenv)
-             (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv)))
+     (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
+             (cleavir-bir-transformations:simple-unwinding-p dynenv))
          ;; SJLJ is orthogonal to landing pads
          (dynenv-may-enter-p (cleavir-bir:parent dynenv))
          t))))
@@ -297,8 +297,8 @@
   (if (dynenv-may-enter-p dynenv)
       (etypecase dynenv
         (cleavir-bir:catch
-         (if (or #+(or) (cleavir-ir:simple-p dynenv)
-                 (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv)))
+         (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
+                 (cleavir-bir-transformations:simple-unwinding-p dynenv))
              ;; SJLJ is orthogonal to landing pads
              (maybe-entry-landing-pad (cleavir-bir:parent dynenv)
                                       return-value tags)

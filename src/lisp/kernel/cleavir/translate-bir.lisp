@@ -168,26 +168,57 @@
                                                                  immediate))
                                         dest)))))
 
+(defun translate-sjlj-catch (variable return-value successors)
+  ;; Call setjmp, switch on the result.
+  (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
+    (variable-out (cmp:irc-bit-cast bufp cmp:%t*%) variable)
+    (let* ((sj (clasp-cleavir::%intrinsic-call "_setjmp" (list bufp)))
+           (blocks (loop repeat (length (rest successors))
+                         collect (cmp:irc-basic-block-create
+                                  "catch-restore")))
+           (default (cmp:irc-basic-block-create "catch-default"))
+           (sw (cmp:irc-switch sj default (length successors))))
+      (cmp:irc-begin-block default)
+      (cmp:irc-unreachable)
+      (cmp:irc-add-case sw (clasp-cleavir::%i32 0) (first successors))
+      (loop for succ in (rest successors) for block in blocks
+            for i from 1
+            do (cmp:irc-add-case sw (clasp-cleavir::%i32 i) block)
+               (cmp:irc-begin-block block)
+               (clasp-cleavir::restore-multiple-value-0 return-value)
+               (cmp:irc-br succ)))))
+
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
                                  return-value abi next)
-  (declare (ignore return-value abi))
-  (unless (cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
-    ;; Bind the variable if needed.
-    (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
-    ;; Fill the variable with the continuation.
-    (variable-out (clasp-cleavir::%intrinsic-call
-                   "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame")
-                  (first (cleavir-bir:outputs instruction))))
-  ;; Unconditional branch to the normal successor; dynamic environment stuff
-  ;; is handled in layout-iblock.
-  (cmp:irc-br (first next)))
+  (declare (ignore abi))
+  (cond
+    ((cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
+     (cmp:irc-br (first next)))
+    (t
+     ;; Bind the variable if needed.
+     (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
+     (cond
+       ((cleavir-bir-transformations:simple-unwinding-p instruction)
+        (translate-sjlj-catch 
+         (first (cleavir-bir:outputs instruction)) return-value next))
+       (t
+        ;; Fill the variable with the continuation.
+        (variable-out (clasp-cleavir::%intrinsic-call
+                       "llvm.frameaddress"
+                       (list (clasp-cleavir::%i32 0)) "frame")
+                      (first (cleavir-bir:outputs instruction)))
+        ;; Unconditional branch to the normal successor;
+        ;; dynamic environment stuff is handled in layout-iblock.
+        (cmp:irc-br (first next)))))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:unwind)
                                  return-value abi next)
   (declare (ignore abi next))
   (let* ((inputs (cleavir-bir:inputs instruction))
-         (cont (first inputs))
-         (rv (second inputs)))
+         (cont (in (first inputs)))
+         (rv (second inputs))
+         (destination (cleavir-bir:destination instruction))
+         (destination-id (get-destination-id destination)))
     ;; We can only transmit multiple values, so make sure the adapter in
     ;; bir.lisp forced that properly
     (ecase (length inputs)
@@ -199,14 +230,22 @@
     (when rv
       (clasp-cleavir::save-multiple-value-0 return-value))
     ;; unwind
-    (cmp:with-landing-pad (never-entry-landing-pad
-                           (cleavir-bir:dynamic-environment instruction)
-                           return-value)
-      (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-       "cc_unwind"
-       (list (in cont)
-             (clasp-cleavir::%size_t
-              (get-destination-id (cleavir-bir:destination instruction)))))))
+    (if (cleavir-bir-transformations:simple-unwinding-p
+         (cleavir-bir:catch instruction))
+        ;; SJLJ
+        ;; (Note: No landing pad because in order for SJLJ to occur,
+        ;;  the dynamic environment must just be the function.)
+        (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
+          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+           ;; `+ because we can't pass 0 to longjmp.
+           "longjmp" (list bufp (clasp-cleavir::%i32 (1+ destination-id)))))
+        ;; C++ exception
+        (cmp:with-landing-pad (never-entry-landing-pad
+                               (cleavir-bir:dynamic-environment instruction)
+                               return-value)
+          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+           "cc_unwind"
+           (list cont (clasp-cleavir::%size_t destination-id))))))
   (cmp:irc-unreachable))
 
 (defmethod translate-terminator ((instruction cc-bir:unwind-protect)
