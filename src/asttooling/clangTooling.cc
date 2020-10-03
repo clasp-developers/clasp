@@ -686,15 +686,6 @@ size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
 }
 
 
-int call4(int x, int y, int z, int& w) {
-  printf("%s:%d call4 args: %d, %d, %d\n", __FILE__, __LINE__, x, y, z );
-  w = 2*(x+y+z);
-  printf("%s:%d after call call4 args: %d, %d, %d, %d\n", __FILE__, __LINE__, x, y, z, w );
-  return x+y+z;
-}
-
-
-
 
 };
 
@@ -742,7 +733,6 @@ void initialize_clangTooling() {
     // AST-TOOLING, pkg must be in its own scope
     package_ pkg(AstToolingPkg, {}, {});
     scope_& m = pkg.scope();
-    m.def("call4",&call4,pureOutValue<3>());
     class_<clang::tooling::CompilationDatabase>(m,"CompilationDatabase")
         .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
         .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
