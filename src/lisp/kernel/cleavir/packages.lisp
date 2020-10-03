@@ -110,8 +110,6 @@
    #:rest-alloc
    #:debug-message-instruction
    #:debug-break-instruction
-   #:save-values-instruction #:make-save-values-instruction
-   #:load-values-instruction #:make-load-values-instruction
    #:multiple-value-foreign-call-instruction
    #:foreign-call-instruction
    #:foreign-call-pointer-instruction
@@ -183,6 +181,7 @@
    #:save-frame-instruction
    #:make-save-frame-instruction
    #:clasp-save-values-instruction
+   #:clasp-load-values-instruction
    #:memcas2-instruction
    #:enter-instruction
    #:typed-lexical-location #:lexical-location-type

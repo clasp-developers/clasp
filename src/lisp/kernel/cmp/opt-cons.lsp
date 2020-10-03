@@ -39,7 +39,7 @@
 (defmacro do-in-list ((%elt %sublist list &rest output) &body body)
   `(do* ((,%sublist ,list (cdr ,%sublist)))
         ((null ,%sublist) ,@output)
-     (let ((,%elt (car (the cons ,%sublist))))
+     (let ((,%elt (car ,%sublist)))
        ,@body)))
 
 ;;; TODO: Avoid iteration for constant list (but watch out for growth)
@@ -62,8 +62,8 @@
                                   ',lst))))))
 
 (defun expand-member (env value list &rest sequence-args)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test)
+  (multiple-value-bind (key-function test-function init ignores
+                        key-flag test-flag)
       (two-arg-test-parse-args 'member sequence-args :start-end nil :environment env)
     ;; When having complex arguments (:allow-other-keys, etc)
     ;; we just give up.
@@ -72,14 +72,18 @@
     ;; If the list is constant and short, use the special expansion.
     (when (constantp list env)
       (let ((list (ext:constant-form-value list env)))
-        (when (and (core:proper-list-p list)
-                   (< (length list) 10)) ; completely arbitrary
-          (return-from expand-member
-            (expand-constant-member value list key-function test-function init)))))
-    (si::with-unique-names (%value %sublist %elt)
+        (if (core:proper-list-p list)
+            (when (< (length list) 10) ; completely arbitrary
+              (return-from expand-member
+                (expand-constant-member value list key-function test-function init)))
+            ;; improper constant list
+            (return-from expand-member nil))))
+    (si::with-unique-names (%value %list %sublist %elt)
       `(let ((,%value ,value)
+             (,%list ,list)
              ,@init)
-         (do-in-list (,%elt ,%sublist ,list)
+         (declare (ignore ,@ignores))
+         (do-in-list (,%elt ,%sublist ,%list)
            (when ,(funcall test-function %value
                            (funcall key-function %elt))
              (return ,%sublist)))))))
@@ -94,19 +98,23 @@
 ;;;
 
 (defun expand-assoc (env value list &rest sequence-args)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test)
+  (multiple-value-bind (key-function test-function init ignores
+                        key-flag test-flag)
       (two-arg-test-parse-args 'assoc sequence-args :start-end nil :environment env)
     (when test-function
-      (si::with-unique-names (%value %sublist %elt %car)
+      (si::with-unique-names (%value %list %sublist %elt %car)
         `(let ((,%value ,value)
+               (,%list ,list)
                ,@init)
-           (do-in-list (,%elt ,%sublist ,list)
-             (when ,%elt
-               (let ((,%car (car (the cons ,%elt))))
-                 (when ,(funcall test-function %value
-                                 (funcall key-function %car))
-                   (return ,%elt))))))))))
+           (declare (ignore ,@ignores))
+           (do-in-list (,%elt ,%sublist ,%list)
+             (if (consp ,%elt)
+                 (let ((,%car (car (the cons ,%elt))))
+                   (when ,(funcall test-function %value
+                                   (funcall key-function %car))
+                     (return ,%elt)))
+                 (when ,%elt
+                   (error 'type-error :datum ,%elt :expected-type 'list)))))))))
 
 (define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
   (or (apply #'expand-assoc env (rest whole))
@@ -117,8 +125,8 @@
 ;;;
 
 (defun expand-adjoin (env value list &rest sequence-args)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test)
+  (multiple-value-bind (key-function test-function init ignores
+                        key-flag test-flag)
       (two-arg-test-parse-args 'adjoin sequence-args :start-end nil :environment env)
     (when test-function
       (si::with-unique-names
@@ -126,6 +134,7 @@
 	`(let ((,%value ,value)
 	       (,%list ,list)
 	       ,@init)
+           (declare (ignore ,@ignores))
 	   (let ((,%value-after-key-function- ,(funcall key-function %value)))
 	     (do-in-list (,%elt ,%sublist ,%list (cons ,%value ,%list))
 	       (when ,(funcall test-function %value-after-key-function- 

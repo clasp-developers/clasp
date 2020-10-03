@@ -1632,6 +1632,11 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
   }
 }
 
+size_t lisp_general_badge(General_sp object) {
+  const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
+  return header->_header_badge;
+}
+
 size_t lisp_badge(T_sp object) {
   if (object.consp()) {
 #ifdef USE_BOEHM
@@ -1645,7 +1650,13 @@ size_t lisp_badge(T_sp object) {
 # endif
 #endif    
   }
-  return object.unsafe_general()->_badge;
+  return lisp_general_badge(gc::As_unsafe<General_sp>(object));
+}
+
+
+size_t lisp_random()
+{
+  return my_thread->random();
 }
 
 };

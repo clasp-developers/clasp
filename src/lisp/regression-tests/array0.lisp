@@ -59,4 +59,55 @@
                  "nada")
              (error (e)
                (princ-to-string e))))))
+
+;;; Drmeister on #clasp
+;;; Bike: (make-array '(nil 5)) doesn't generate an error but it should
+
+(test-expect-error array-too-big
+                   (make-array (1+ array-total-size-limit))
+                   :type type-error)
+
+(test-expect-error array-too-big-list
+                   (make-array (list (1+ array-total-size-limit)))
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-a
+                   (make-array (list nil 13))
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-b
+                   (make-array (list #\a 13))
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-c
+                   (make-array (list -13))
+                   :type type-error)
+
+;;; and w/o compiler-macro
+(test-expect-error array-too-big-not-inline
+                   (locally (declare (notinline make-array))
+                     (make-array (1+ array-total-size-limit)))
+                   :type type-error)
+
+(test-expect-error array-too-big-list-not-inline
+                    (locally (declare (notinline make-array))
+                      (make-array (list (1+ array-total-size-limit))))
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-a-not-inline
+                   (locally (declare (notinline make-array))
+                     (make-array (list nil 13)))                 
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-b-not-inline
+                    (locally (declare (notinline make-array))
+                      (make-array (list #\a 13)))
+                   :type type-error)
+
+(test-expect-error array-wrong-dimension-list-c-not-inline
+                    (locally (declare (notinline make-array))
+                      (make-array (list -13)))
+                   :type type-error)
+
+
                    

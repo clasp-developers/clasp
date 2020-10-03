@@ -249,7 +249,7 @@ CL_DECLARE();
 CL_DOCSTRING("Convert an object, either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL");
 CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   if (object.fixnump() || object.characterp() || object.single_floatp()) {
-    return Integer_O::create((gc::Fixnum)object.raw_());
+    return Integer_O::create((Fixnum)object.raw_());
   }
   return _Nil<T_O>();
 };
@@ -262,7 +262,7 @@ CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
     T_sp value((gctools::Tagged)object.unsafe_fixnum());
     return value;
   } if (gc::IsA<Bignum_sp>(object)) {
-    size_t val = gc::As_unsafe<Bignum_sp>(object)->as_size_t();
+    size_t val = clasp_to_size_t(object);
     T_sp value((gctools::Tagged)val);
     return value;
   }
@@ -1064,6 +1064,22 @@ CL_DEFUN T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_
     return eval::funcall(_sym_STARread_hookSTAR->symbolValue(), sin ,eof_error_p, eof_value, recursive_p);
   else
     return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
+}
+
+
+CL_LAMBDA(&optional input-stream-designator (eof-error-p t) eof-value recursive-p);
+CL_DECLARE();
+CL_DOCSTRING("read an object from a stream - see CLHS");
+CL_DEFUN T_sp core__fast_read(T_sp input_stream_designator, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
+  bool preserve_whitespace = true;
+  if ( recursive_p.isTrue() ) {
+    preserve_whitespace = _sym_STARpreserve_whitespace_pSTAR->symbolValue().isTrue();
+  } else {
+    preserve_whitespace = false;
+  }
+  DynamicScopeManager scope(_sym_STARpreserve_whitespace_pSTAR, _lisp->_boolean(preserve_whitespace));
+  T_sp sin = coerce::inputStreamDesignator(input_stream_designator);
+  return read_lisp_object(sin, eof_error_p.isTrue(), eof_value, recursive_p.notnilp());
 }
 
 SYMBOL_EXPORT_SC_(CorePkg, STARread_preserving_whitespace_hookSTAR);

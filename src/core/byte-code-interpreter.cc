@@ -110,12 +110,12 @@ void parse_ltvc_make_package(gctools::GCRootsInModule* roots, T_sp fin, bool log
   T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
   ltvc_make_package( roots, tag, index, arg2);
 };
-void parse_ltvc_make_bignum(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_make_bignum\n", __FILE__, __LINE__, __FUNCTION__);
+void parse_ltvc_make_next_bignum(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
+  if (log) printf("%s:%d:%s parse_ltvc_make_next_bignum\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
   T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  ltvc_make_bignum( roots, tag, index, arg2);
+  ltvc_make_next_bignum( roots, tag, index, arg2);
 };
 void parse_ltvc_make_bitvector(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_bitvector\n", __FILE__, __LINE__, __FUNCTION__);
@@ -270,7 +270,7 @@ void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
            break;
   case 79: parse_ltvc_make_package(roots,fin,log,byte_index);
            break;
-  case 80: parse_ltvc_make_bignum(roots,fin,log,byte_index);
+  case 80: parse_ltvc_make_next_bignum(roots,fin,log,byte_index);
            break;
   case 81: parse_ltvc_make_bitvector(roots,fin,log,byte_index);
            break;

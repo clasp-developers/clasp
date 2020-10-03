@@ -333,7 +333,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
   (let ((bn-str (prin1-to-base-string bignum)))
-    (add-creator "ltvc_make_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
+    (add-creator "ltvc_make_next_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
   (let ((bv-str (prin1-to-base-string bitvector)))

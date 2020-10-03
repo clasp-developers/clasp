@@ -277,7 +277,7 @@ SB-SYS:MAKE-FD-STREAM."))
   (unless (or buffer length)
     (error "You have to supply either buffer or length!"))
   (unless length
-    (setq size (length buffer)))
+    (setq length (length buffer)))
   (let ((need-to-copy nil)
         (local-buffer nil))
     (cond ((null buffer)(setq local-buffer (sys:make-static-vector (upgraded-array-element-type '(unsigned-byte 8)) length)))

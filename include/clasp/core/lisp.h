@@ -543,12 +543,6 @@ protected:
   void setRestartHandlers(List_sp handlers);
 
 public:
-#if 0
-  //THREAD_CHANGE
-  Bignum_sp bigRegister0() { return this->_Roots._BignumRegister0; };
-  Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1; };
-  Bignum_sp bigRegister2() { return this->_Roots._BignumRegister2; };
-#endif
 Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
 
 public:

@@ -708,7 +708,7 @@ int64_t foreign_type_size( core::Symbol_sp atype )
     {
       if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) )
       {
-        result = clasp_to_int64( sp_fts->PERCENTsize() );
+        result = clasp_to_int64_t( sp_fts->PERCENTsize() );
         goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
       }
     }

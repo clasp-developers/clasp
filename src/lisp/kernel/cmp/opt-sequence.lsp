@@ -23,13 +23,14 @@
 
 #+(or)
 (define-compiler-macro find (&whole whole value sequence &rest sequence-args &environment env)
-  (multiple-value-bind (key-function test-function init
-                        key-flag test-flag test start end)
+  (multiple-value-bind (key-function test-function init ignores
+                        key-flag test-flag start end)
       (two-arg-test-parse-args 'find sequence-args :environment env)
     (if key-function
         (si::with-unique-names (%value %elt)
           `(let ((,%value ,value)
                  ,@init)
+             (declare (ignore ,@ignores))
              (core::do-subsequence (,%elt ,sequence ,start ,end)
                (when ,(funcall test-function %value
                                (funcall key-function %elt))

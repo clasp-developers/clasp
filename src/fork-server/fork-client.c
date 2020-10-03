@@ -84,6 +84,11 @@ int main(int argc, const char* argv[])
   if (strlen(server_portfile)>1024) {
     perror("server_portfile is too long");
   }
+  // Wait until the server_portfile is available...
+  while (access(server_portfile,F_OK)<0) {
+    printf("%s:%d fork-client waiting for fork-server to become available.\n", __FILE__, __LINE__ );
+    sleep(1);
+  }
   FILE* fin = fopen(server_portfile,"r");
   if (!fin) {
     printf("%s:%d Could not open file: %s\n", __FILE__, __LINE__, server_portfile);

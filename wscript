@@ -282,12 +282,9 @@ def update_dependencies(cfg):
     # Specifying only label = "some-tag" will check out that tag into a "detached head", but
     # specifying both label = "master" and revision = "some-tag" will stay on master and reset to that revision.
     log.pprint('BLUE', 'update_dependencies()')
-#    fetch_git_revision("src/lisp/kernel/contrib/sicl",
-#                       "https://github.com/robert-strandh/SICL.git",
-#                       "master")
-    fetch_git_revision("src/lisp/kernel/contrib/sicl",
-                       "https://github.com/Bike/SICL.git",
-                       "e37e6c465c4072a19cefc5271e02e73c848c2524")
+    fetch_git_revision("src/lisp/kernel/contrib/Cleavir",
+                       "https://github.com/s-expressionists/Cleavir",
+                       "c5abb4e9bf4f67edc8979b86256939319af4f913")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
                        "3524caff0894cb5bf6ea51abac53b520cc5580c3")

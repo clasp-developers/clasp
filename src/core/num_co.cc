@@ -59,6 +59,7 @@ THE SOFTWARE.
 #include <clasp/core/num_arith.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/mathDispatch.h>
 
 #ifndef HAVE_ISOC99
 #define floorf floor
@@ -136,7 +137,7 @@ CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("numerator");
-CL_DEFUN Number_sp cl__numerator(Number_sp x) {
+CL_DEFUN Number_sp cl__numerator(Rational_sp x) {
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->numerator();
@@ -153,7 +154,7 @@ CL_DEFUN Number_sp cl__numerator(Number_sp x) {
 CL_LAMBDA(x);
 CL_DECLARE();
 CL_DOCSTRING("denominator");
-CL_DEFUN Number_sp cl__denominator(Number_sp x) {
+CL_DEFUN Number_sp cl__denominator(Rational_sp x) {
   switch (clasp_t_of(x)) {
   case number_Ratio:
     x = gc::As<Ratio_sp>(x)->denominator();
@@ -166,6 +167,199 @@ CL_DEFUN Number_sp cl__denominator(Number_sp x) {
     QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Rational_O);
   }
   return x;
+}
+
+// Stores the result in quotient, remainder.
+void clasp_truncate(Real_sp dividend, Real_sp divisor,
+                    Real_sp& quotient, Real_sp& remainder) {
+  MATH_DISPATCH_BEGIN(dividend, divisor) {
+  case_Fixnum_v_Fixnum: {
+      Fixnum a = dividend.unsafe_fixnum();
+      Fixnum b = divisor.unsafe_fixnum();
+      quotient = clasp_make_fixnum(a / b);
+      remainder = clasp_make_fixnum(a % b);
+      break;
+    }
+  case_Fixnum_v_Bignum: {
+      // This is always a zero quotient, except when
+      // we have MOST_NEGATIVE_FIXNUM / - MOST_NEGATIVE_FIXNUM.
+      Fixnum a = dividend.unsafe_fixnum();
+      Bignum_sp b = gc::As_unsafe<Bignum_sp>(divisor);
+      if ((a == gc::most_negative_fixnum)
+          && (b->length() == 1)
+          && ((b->limbs())[0] == -gc::most_negative_fixnum)) {
+        quotient = clasp_make_fixnum(-1);
+        remainder = clasp_make_fixnum(0);
+      } else {
+        quotient = clasp_make_fixnum(0);
+        remainder = dividend;
+      }
+      break;
+    }
+  case_Fixnum_v_Ratio:
+  case_Bignum_v_Ratio: {
+      Ratio_sp ry = gc::As<Ratio_sp>(divisor);
+      Real_sp subr;
+      Number_sp product = clasp_times(dividend, ry->denominator());
+      clasp_truncate(gc::As_unsafe<Real_sp>(product), ry->numerator(),
+                     quotient, subr);
+      remainder = Rational_O::create(gc::As_unsafe<Integer_sp>(subr),
+                                     ry->denominator());
+      break;
+    }
+  case_Fixnum_v_SingleFloat: {
+      float n = divisor.unsafe_single_float();
+      float p = dividend.unsafe_fixnum() / n;
+      float q = std::trunc(p);
+      quotient = _clasp_float_to_integer(q);
+      remainder = clasp_make_single_float(p * n - q * n);
+      break;
+    }
+  case_Fixnum_v_DoubleFloat: {
+      double n = gc::As_unsafe<DoubleFloat_sp>(divisor)->get();
+      double p = dividend.unsafe_fixnum() / n;
+      double q = std::trunc(p);
+      quotient = _clasp_double_to_integer(q);
+      remainder = clasp_make_double_float(p * n - q * n);
+      break;
+    }
+#ifdef CLASP_LONG_FLOAT
+  case_Fixnum_v_LongFloat: {
+      LongFloat n = clasp_long_float(divisor);
+      LongFloat p = dividend.unsafe_fixnum() / n;
+      LongFloat q = std::trunc(p);
+      quotient = _clasp_long_double_to_integer(q);
+      remainder = clasp_make_long_float(p * n - q * n);
+      break;
+    }
+#endif
+  case_Bignum_v_Fixnum: {
+      Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
+      Fixnum fdivisor = divisor.unsafe_fixnum();
+      T_mv mv = core__next_ftruncate(bdividend, fdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(mv);
+      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      break;
+    }
+  case_Bignum_v_Bignum: {
+      Bignum_sp bdividend = gc::As_unsafe<Bignum_sp>(dividend);
+      Bignum_sp bdivisor = gc::As_unsafe<Bignum_sp>(divisor);
+      T_mv mv = core__next_truncate(bdividend, bdivisor);
+      quotient = gc::As_unsafe<Integer_sp>(mv);
+      remainder = gc::As_unsafe<Integer_sp>(mv.valueGet_(1));
+      break;
+    }
+  // case_Bignum_v_Ratio: above
+  case_Bignum_v_SingleFloat: {
+      float n = divisor.unsafe_single_float();
+      float p = gc::As_unsafe<Bignum_sp>(dividend)->as_float_() / n;
+      float q = std::trunc(p);
+      quotient = _clasp_float_to_integer(q);
+      remainder = clasp_make_single_float(p * n - q * n);
+    }
+  case_Bignum_v_DoubleFloat: {
+      double n = gc::As_unsafe<DoubleFloat_sp>(divisor)->get();
+      double p = gc::As_unsafe<Bignum_sp>(dividend)->as_double_() / n;
+      double q = std::trunc(p);
+      quotient = _clasp_double_to_integer(q);
+      remainder = clasp_make_double_float(p * n - q * n);
+      break;
+    }
+#ifdef CLASP_LONG_FLOAT
+  case_Bignum_v_LongFloat: {
+      LongFloat n = clasp_long_float(divisor);
+      LongFloat p = gc::As_unsafe<Bignum_sp>(dividend)->as_long_float_() / n;
+      LongFloat q = std::trunc(p);
+      quotient = _clasp_long_double_to_integer(q);
+      remainder = clasp_make_long_float(p * n - q * n);
+      break;
+    }
+#endif
+  case_Ratio_v_Ratio: {
+      Ratio_sp rx = gc::As_unsafe<Ratio_sp>(dividend);
+      Ratio_sp ry = gc::As_unsafe<Ratio_sp>(divisor);
+      Real_sp subr;
+      Real_sp c1 = gc::As_unsafe<Real_sp>(clasp_times(rx->numerator(),
+                                                      ry->denominator()));
+      Real_sp c2 = gc::As_unsafe<Real_sp>(clasp_times(ry->numerator(),
+                                                      rx->denominator()));
+      Real_sp nd = gc::As_unsafe<Real_sp>(clasp_times(rx->denominator(),
+                                                      ry->denominator()));
+      clasp_truncate(c1, c2, quotient, subr);
+      remainder = Rational_O::create(gc::As_unsafe<Integer_sp>(subr),
+                                     gc::As_unsafe<Integer_sp>(nd));
+      break;
+    }
+  case_Ratio_v_Fixnum:
+  case_Ratio_v_Bignum:
+#ifdef CLASP_LONG_FLOAT
+  case_Ratio_v_LongFloat:
+#endif
+  case_Ratio_v_SingleFloat:
+  case_Ratio_v_DoubleFloat: {
+      // Given (truncate x (* y z)) = q, r,
+      // (truncate x/y z) = q, r/y.
+      Ratio_sp rx = gc::As_unsafe<Ratio_sp>(dividend);
+      Integer_sp den = rx->denominator();
+      Real_sp ndiv = gc::As_unsafe<Real_sp>(clasp_times(den, divisor));
+      Real_sp subr;
+      clasp_truncate(rx->numerator(), ndiv, quotient, subr);
+      remainder = gc::As_unsafe<Real_sp>(clasp_divide(subr, den));
+      break;
+    }
+  case_SingleFloat_v_Fixnum:
+  case_SingleFloat_v_Bignum:
+  case_SingleFloat_v_SingleFloat:
+  case_SingleFloat_v_DoubleFloat:
+#ifdef CLASP_LONG_FLOAT
+  case_SingleFloat_v_LongFloat:
+#endif
+  case_SingleFloat_v_Ratio: {
+      float n = clasp_to_double(divisor);
+      float p = dividend.unsafe_single_float() / n;
+      float q = std::trunc(p);
+      quotient = _clasp_float_to_integer(q);
+      remainder = clasp_make_single_float(p * n - q * n);
+      break;
+    }
+  case_DoubleFloat_v_Fixnum:
+  case_DoubleFloat_v_Bignum:
+  case_DoubleFloat_v_SingleFloat:
+  case_DoubleFloat_v_DoubleFloat:
+#ifdef CLASP_LONG_FLOAT
+  case_DoubleFloat_v_LongFloat:
+#endif
+  case_DoubleFloat_v_Ratio: {
+      double n = clasp_to_double(divisor);
+      double p = gc::As_unsafe<DoubleFloat_sp>(dividend)->get() / n;
+      double q = std::trunc(p);
+      quotient = _clasp_double_to_integer(q);
+      remainder = clasp_make_double_float(p * n - q * n);
+      break;
+    }
+#ifdef CLASP_LONG_FLOAT
+  case_LongFloat_v_Fixnum:
+  case_LongFloat_v_Bignum:
+  case_LongFloat_v_SingleFloat:
+  case_LongFloat_v_DoubleFloat:
+  case_LongFloat_v_LongFloat: {
+      LongFloat n = clasp_to_long_double(divisor);
+      LongFloat p = clasp_long_float(dividend) / n;
+      LongFloat q = std::trunc(p);
+      quotient = _clasp_long_double_to_integer(q);
+      remainder = clasp_make_long_float(p * n - q * n);
+      break;
+    }
+#endif
+    default: UNREACHABLE();
+  };
+  MATH_DISPATCH_END();
+}
+
+CL_DEFUN Real_mv core__test_truncate(Real_sp dividend, Real_sp divisor) {
+  Real_sp quotient, remainder;
+  clasp_truncate(dividend, divisor, quotient, remainder);
+  return Values(quotient, remainder);
 }
 
 Real_mv clasp_floor1(Real_sp x) {
@@ -181,7 +375,7 @@ Real_mv clasp_floor1(Real_sp x) {
     Real_mv mv_v0 = clasp_floor2(rx->numerator(), rx->denominator());
     v0 = mv_v0;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->den());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -229,208 +423,12 @@ Real_mv clasp_floor1(Real_sp x) {
 }
 
 Real_mv clasp_floor2(Real_sp x, Real_sp y) {
-  //	const cl_env_ptr the_env = clasp_process_env();
-  Real_sp v0;
-  Number_sp v1;
-  NumberType ty;
-  ty = clasp_t_of(y);
-  if (UNLIKELY(!CLASP_REAL_TYPE_P(y))) {
-    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
-  }
-  switch (clasp_t_of(x)) {
-  case number_Fixnum:
-    switch (ty) {
-    case number_Fixnum: { /* FIX / FIX */
-      Fixnum a = x.unsafe_fixnum();
-      Fixnum b = y.unsafe_fixnum();
-      Fixnum q = a / b, r = a % b;
-      if ((r ^ b) < 0 && r) { /* opposite sign and some remainder*/
-        v0 = clasp_make_fixnum(q - 1);
-        v1 = clasp_make_fixnum(r + b);
-      } else {
-        v0 = clasp_make_fixnum(q);
-        v1 = clasp_make_fixnum(r);
-      }
-      break;
-    }
-    case number_Bignum: {
-      /* FIX / BIG */
-      /* We must perform the division because there is the
- * pathological case
- *	x = MOST_NEGATIVE_FIXNUM
- *    y = - MOST_NEGATIVE_FIXNUM
- */
-      Bignum_sp bx(Bignum_O::create(x.unsafe_fixnum()));
-      //		CLASP_WITH_TEMP_BIGNUM(bx,4);
-      //		_clasp_big_set_fixnum(bx, x.unsafe_fixnum());
-      Bignum_sp by = gc::As_unsafe<Bignum_sp>(y);
-      Real_sp rv1;
-      v0 = _clasp_big_floor(bx, by, &rv1);
-      v1 = rv1;
-      break;
-    }
-    case number_Ratio: /* FIX / RAT */
-    {
-      Ratio_sp ry = gc::As_unsafe<Ratio_sp>(y);
-      Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
-      v0 = mv_v0;
-      Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      //		v1 = clasp_make_ratio(clasp_nth_value(the_env, 1), y->den());
-      v1 = clasp_divide(t1, ry->den());
-      break;
-    }
-    case number_SingleFloat: /* FIX / SF */
-    {
-      float n = y.unsafe_single_float();
-      float p = x.unsafe_fixnum() / n;
-      float q = floorf(p);
-      v0 = _clasp_float_to_integer(q);
-      v1 = clasp_make_single_float((p - q) * n);
-      break;
-    }
-    case number_DoubleFloat: { /* FIX / DF */
-      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
-      double p = x.unsafe_fixnum() / n;
-      double q = floor(p);
-      v0 = _clasp_double_to_integer(q);
-      v1 = clasp_make_double_float((p - q) * n);
-      break;
-    }
-#ifdef CLASP_LONG_FLOAT
-    case number_LongFloat: { /* FIX / LF */
-      LongFloat n = clasp_long_float(y);
-      LongFloat p = x.unsafe_fixnum() / n;
-      LongFloat q = floorl(p);
-      v0 = _clasp_long_double_to_integer(q);
-      v1 = clasp_make_long_float((p - q) * n);
-      break;
-    }
-#endif
-    default:
-      (void)0; /* Never reached */
-    }
-    break;
-  case number_Bignum:
-    switch (ty) {
-    case number_Fixnum: { /* BIG / FIX */
-                          // INCOMPLETE(BF("Ensure that this produces the intended result"));
-      Bignum_sp bx(gc::As_unsafe<Bignum_sp>(x));
-      Bignum_sp by(Bignum_O::create(y.unsafe_fixnum()));
-      //printf("%s:%d x = %s\n", __FILE__, __LINE__, _rep_(x).c_str());
-      //printf("%s:%d by = %s\n", __FILE__, __LINE__, _rep_(by).c_str());
-      //		CLASP_WITH_TEMP_BIGNUM(by,4);
-      //		_clasp_big_set_fixnum(by, y.unsafe_fixnum());
-      Real_sp rv1;
-      v0 = _clasp_big_floor(bx, by, &rv1);
-      v1 = rv1;
-      break;
-    }
-    case number_Bignum: { /* BIG / BIG */
-      Real_sp rv1;
-      v0 = _clasp_big_floor(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &rv1);
-      v1 = rv1;
-      break;
-    }
-    case number_Ratio: /* BIG / RAT */
-    {
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
-      v0 = mv_v0;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
-      v1 = clasp_divide(tv1, ry->den());
-      break;
-    }
-    case number_SingleFloat: { /* BIG / SF */
-      float n = y.unsafe_single_float();
-      float p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
-      float q = floorf(p);
-      v0 = _clasp_float_to_integer(q);
-      v1 = clasp_make_single_float((p - q) * n);
-      break;
-    }
-    case number_DoubleFloat: { /* BIG / DF */
-      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
-      double p = _clasp_big_to_double(gc::As_unsafe<Bignum_sp>(x)) / n;
-      double q = floor(p);
-      v0 = _clasp_double_to_integer(q);
-      v1 = clasp_make_double_float((p - q) * n);
-      break;
-    }
-#ifdef CLASP_LONG_FLOAT
-    case number_LongFloat: { /* BIG / LF */
-      LongFloat n = clasp_long_float(y);
-      LongFloat p = _clasp_big_to_double(x.as<Bignum_O>()) / n;
-      LongFloat q = floorl(p);
-      v0 = _clasp_long_double_to_integer(q);
-      v1 = clasp_make_long_float((p - q) * n);
-      break;
-    }
-#endif
-    default:
-      (void)0; /* Never reached */
-    }
-    break;
-  case number_Ratio:
-    switch (ty) {
-    case number_Ratio: /* RAT / RAT */
-    {
-      Ratio_sp rx = gc::As<Ratio_sp>(x);
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
-      // rx-num/rx-den / ry-num/ry-den = rx-num* ry-den / rx-den*ry-num
-      Real_mv temp = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
-                                   gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
-      // do I need here to access the first value?
-      // where on earth is Real_mv defined
-      Integer_sp secondValue = gc::As<Integer_sp>(temp.valueGet_(1));
-      v0 = temp;
-      v1 = Rational_O::create(secondValue, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
-      break;
-    }
-    default: /* RAT / ANY */
-    {
-      Ratio_sp rx = gc::As<Ratio_sp>(x);
-      // rx-num/rx-den / y == (floor rx-num (* rx-den y)
-      Real_mv temp = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
-      Real_sp secondValue = gc::As<Real_sp>(temp.valueGet_(1));
-      v0 = temp;
-      v1 = clasp_divide(secondValue, rx->den());
-      break;
-    }
-    }
-    break;
-  case number_SingleFloat: { /* SF / ANY */
-    float n = clasp_to_double(y);
-    float p = x.unsafe_single_float() / n;
-    float q = floorf(p);
-    v0 = _clasp_float_to_integer(q);
-    /* We cannot factor these two multiplications because
-	     * if we have signed zeros (1 - 1) * (-1) = -0 while
-	     * 1*(-1) - 1*(-1) = +0 */
-    v1 = clasp_make_single_float(p * n - q * n);
-    break;
-  }
-  case number_DoubleFloat: { /* DF / ANY */
-    double n = clasp_to_double(y);
-    double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
-    double q = floor(p);
-    v0 = _clasp_double_to_integer(q);
-    v1 = clasp_make_double_float(p * n - q * n);
-    break;
-  }
-#ifdef CLASP_LONG_FLOAT
-  case number_LongFloat: { /* LF / ANY */
-    LongFloat n = clasp_to_long_double(y);
-    LongFloat p = clasp_long_float(x) / n;
-    LongFloat q = floorl(p);
-    v0 = _clasp_long_double_to_integer(q);
-    v1 = clasp_make_long_float(p * n - q * n);
-    break;
-  }
-#endif
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
-  }
-  return Values(v0, v1);
+  Real_sp v0, v1;
+  clasp_truncate(x, y, v0, v1);
+  if (!(clasp_zerop(v1))
+      && (clasp_minusp(y) ? clasp_plusp(x) : clasp_minusp(x)))
+    return Values(clasp_one_minus(v0), clasp_plus(v1, y));
+  else return Values(v0, v1);
 }
 
 CL_LAMBDA(x &optional y);
@@ -454,10 +452,10 @@ Real_mv clasp_ceiling1(Real_sp x) {
   case number_Ratio: {
     //	    const cl_env_ptr the_env = clasp_process_env();
     Ratio_sp rx = gc::As<Ratio_sp>(x);
-    Real_mv mv_v = clasp_ceiling2(rx->num(), rx->den());
+    Real_mv mv_v = clasp_ceiling2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->den());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -491,187 +489,11 @@ Real_mv clasp_ceiling1(Real_sp x) {
 
 Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   Real_sp v0, v1;
-  NumberType ty;
-  ty = clasp_t_of(y);
-  if (UNLIKELY(!CLASP_REAL_TYPE_P(y))) {
-    QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Real_O);
-  }
-  switch (clasp_t_of(x)) {
-  case number_Fixnum: {
-    switch (ty) {
-    case number_Fixnum: { /* FIX / FIX */
-      Fixnum a = x.unsafe_fixnum();
-      Fixnum b = y.unsafe_fixnum();
-      Fixnum q = a / b;
-      Fixnum r = a % b;
-      if ((r ^ b) > 0 && r) { /* same signs and some remainder */
-        v0 = clasp_make_fixnum(q + 1);
-        v1 = clasp_make_fixnum(r - b);
-      } else {
-        v0 = clasp_make_fixnum(q);
-        v1 = clasp_make_fixnum(r);
-      }
-      break;
-    }
-    case number_Bignum: { /* FIX / BIG */
-      /* We must perform the division because there is the
-		 * pathological case
-		 *	x = MOST_NEGATIVE_FIXNUM
-		 *    y = - MOST_NEGATIVE_FIXNUM
-		 */
-      //		CLASP_WITH_TEMP_BIGNUM(bx,4);
-      Bignum_sp bx(Bignum_O::create(x.unsafe_fixnum()));
-      //		_clasp_big_set_fixnum(bx, x.unsafe_fixnum());
-      v0 = _clasp_big_ceiling(bx, gc::As<Bignum_sp>(y), &v1);
-      break;
-    }
-    case number_Ratio: /* FIX / RAT */
-    {
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
-      v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = Rational_O::create(tv1, ry->den());
-      break;
-    }
-    case number_SingleFloat: { /* FIX / SF */
-      float n = y.unsafe_single_float();
-      float p = x.unsafe_fixnum() / n;
-      float q = ceilf(p);
-      v0 = _clasp_float_to_integer(q);
-      v1 = clasp_make_single_float(p * n - q * n);
-      break;
-    }
-    case number_DoubleFloat: { /* FIX / DF */
-      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
-      double p = x.unsafe_fixnum() / n;
-      double q = ceil(p);
-      v0 = _clasp_double_to_integer(q);
-      v1 = clasp_make_double_float(p * n - q * n);
-      break;
-    }
-#ifdef CLASP_LONG_FLOAT
-    case number_LongFloat: { /* FIX / LF */
-      LongFloat n = clasp_long_float(y);
-      LongFloat p = x.unsafe_fixnum() / n;
-      LongFloat q = ceill(p);
-      v0 = _clasp_long_double_to_integer(q);
-      v1 = clasp_make_long_float(p * n - q * n);
-      break;
-    }
-#endif
-    default:
-      (void)0; /*Never reached */
-    }
-    break;
-  }
-  case number_Bignum: {
-    switch (clasp_t_of(y)) {
-    case number_Fixnum: { /* BIG / FIX */
-                          //		CLASP_WITH_TEMP_BIGNUM(by,4);
-      Bignum_sp by(Bignum_O::create(y.unsafe_fixnum()));
-      //		_clasp_big_set_fixnum(by, y.unsafe_fixnum());
-      v0 = _clasp_big_ceiling(gc::As<Bignum_sp>(x), by, &v1);
-      break;
-    }
-    case number_Bignum: { /* BIG / BIG */
-      v0 = _clasp_big_ceiling(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y), &v1);
-      break;
-    }
-    case number_Ratio: /* BIG / RAT */
-    {
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
-      v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = Rational_O::create(tv1, ry->den());
-      break;
-    }
-    case number_SingleFloat: { /* BIG / SF */
-      float n = y.unsafe_single_float();
-      float p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
-      float q = ceilf(p);
-      v0 = _clasp_float_to_integer(q);
-      v1 = clasp_make_single_float(p * n - q * n);
-      break;
-    }
-    case number_DoubleFloat: { /* BIG / DF */
-      double n = gc::As_unsafe<DoubleFloat_sp>(y)->get();
-      double p = _clasp_big_to_double(gc::As<Bignum_sp>(x)) / n;
-      double q = ceil(p);
-      v0 = _clasp_double_to_integer(q);
-      v1 = clasp_make_double_float(p * n - q * n);
-      break;
-    }
-#ifdef CLASP_LONG_FLOAT
-    case number_LongFloat: { /* BIG / LF */
-      LongFloat n = clasp_long_float(y);
-      LongFloat p = _clasp_big_to_double(x.as<Bignum_O>()) / n;
-      LongFloat q = ceill(p);
-      v0 = _clasp_long_double_to_integer(q);
-      v1 = clasp_make_long_float(p * n - q * n);
-      break;
-    }
-#endif
-    default:
-      (void)0; /*Never reached */
-    }
-    break;
-  }
-  case number_Ratio: {
-    switch (clasp_t_of(y)) {
-    case number_Ratio: /* RAT / RAT */
-    {
-      Ratio_sp rx = gc::As<Ratio_sp>(x);
-      Ratio_sp ry = gc::As<Ratio_sp>(y);
-      Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
-                                    gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
-      v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-      v1 = Rational_O::create(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
-      break;
-    }
-    default: /* RAT / ANY */
-    {
-      Ratio_sp rx = gc::As<Ratio_sp>(x);
-      Real_mv mv_v = clasp_ceiling2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
-      v0 = mv_v;
-      Number_sp tv1 = gc::As<Number_sp>(mv_v.valueGet_(1));
-      v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
-    }
-    }
-    break;
-  }
-  case number_SingleFloat: { /* SF / ANY */
-    float n = clasp_to_double(y);
-    float p = x.unsafe_single_float() / n;
-    float q = ceilf(p);
-    v0 = _clasp_float_to_integer(q);
-    v1 = clasp_make_single_float(p * n - q * n);
-    break;
-  }
-  case number_DoubleFloat: { /* DF / ANY */
-    double n = clasp_to_double(y);
-    double p = gc::As_unsafe<DoubleFloat_sp>(x)->get() / n;
-    double q = ceil(p);
-    v0 = _clasp_double_to_integer(q);
-    v1 = clasp_make_double_float(p * n - q * n);
-    break;
-  }
-#ifdef CLASP_LONG_FLOAT
-  case number_LongFloat: { /* LF / ANY */
-    LongFloat n = clasp_to_long_double(y);
-    LongFloat p = clasp_long_float(x) / n;
-    LongFloat q = ceill(p);
-    v0 = _clasp_long_double_to_integer(q);
-    v1 = clasp_make_long_float(p * n - q * n);
-    break;
-  }
-#endif
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Real_O);
-  }
-  clasp_return2(the_env, v0, v1);
+  clasp_truncate(x, y, v0, v1);
+  if (!(clasp_zerop(v1))
+      && (clasp_minusp(y) ? clasp_minusp(x) : clasp_plusp(x)))
+    return Values(clasp_one_plus(v0), clasp_minus(v1, y));
+  else return Values(v0, v1);
 }
 
 CL_LAMBDA(x &optional y);
@@ -694,10 +516,10 @@ Real_mv clasp_truncate1(Real_sp x) {
     break;
   case number_Ratio: {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
-    Real_mv mv_v = clasp_truncate2(rx->num(), rx->den());
+    Real_mv mv_v = clasp_truncate2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->den());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -730,10 +552,9 @@ Real_mv clasp_truncate1(Real_sp x) {
 }
 
 Real_mv clasp_truncate2(Real_sp x, Real_sp y) {
-  if (clasp_plusp(x) != clasp_plusp(y))
-    return clasp_ceiling2(x, y);
-  else
-    return clasp_floor2(x, y);
+  Real_sp v0, v1;
+  clasp_truncate(x, y, v0, v1);
+  return Values(v0, v1);
 }
 
 CL_LAMBDA(x &optional y);
@@ -788,10 +609,10 @@ Real_mv clasp_round1(Real_sp x) {
     break;
   case number_Ratio: {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
-    Real_mv mv_v = clasp_round2(rx->num(), rx->den());
+    Real_mv mv_v = clasp_round2(rx->numerator(), rx->denominator());
     v0 = mv_v;
     Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
-    v1 = clasp_make_ratio(tv1, rx->den());
+    v1 = Ratio_O::create(tv1, rx->denominator());
     break;
   }
   case number_SingleFloat: {
@@ -836,7 +657,7 @@ Real_mv clasp_round2(Real_sp x, Real_sp y) {
     break;
   case number_Ratio: {
     Ratio_sp rq = gc::As<Ratio_sp>(q);
-    Integer_sp q1 = clasp_integer_divide(rq->num(), rq->den());
+    Integer_sp q1 = clasp_integer_divide(rq->numerator(), rq->denominator());
     Real_sp r = gc::As<Real_sp>(clasp_minus(q, q1));
     if (clasp_minusp(r)) {
       int c = clasp_number_compare(_lisp->minusHalf(), r);

@@ -80,3 +80,8 @@
 (test loop-stassats-ccl-1085
       (loop for x = #'(lambda ()) for y = 10 then 20 return y))
 
+;;; raised by beach in #clasp
+(test loop-issue-1044
+ (equalp
+  (loop with (a b) = '(1 nil) for (c d) = '(2 nil) do (return (list a b c d)))
+  '(1 nil 2 nil)))

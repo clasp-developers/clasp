@@ -88,6 +88,8 @@ contiguous block."
      (let ((dim (if (fixnump dimensions)
 		    dimensions
 		    (car dimensions))))
+       (unless (and (fixnump dim)(< -1 dim array-total-size-limit))
+         (error 'type-error :datum dim :expected-type 'ext:array-index))
        (let ((x (make-vector upgraded-element-type dim adjustable fill-pointer displaced-to displaced-index-offset
                              initial-element initial-element-supplied-p)))
          (when (and displaced-to initial-element-supplied-p)
@@ -105,7 +107,7 @@ contiguous block."
        (when (and displaced-to initial-element-supplied-p)
          (fill-array-with-elt x initial-element 0 nil))
        x))
-    (t (error "Illegal dimensions ~a for make-array" dimensions))))
+    (t (error 'type-error :datum dimensions :expected-type 'ext:array-index))))
 
 (defun array-in-bounds-p (array &rest indices)
   "Args: (array &rest indexes)

@@ -734,12 +734,45 @@ collected result will be returned as the value of the LOOP."
     ((atom tree) tree)
     (t (cons (subst-gensyms-for-nil (car tree))
 	     (subst-gensyms-for-nil (cdr tree))))))
- 
+
+;;; taken over from sbcls loop implementation
+(defun transform-destructuring (tree)
+  (let (ignores)
+    (labels ((transform (tree)
+               (do ((result (list '&optional))
+                    (cdr tree (cdr cdr)))
+                   (())
+                 (cond ((null cdr)
+                        (return (nreconc result
+                                         (car (push (gensym "LOOP-IGNORED-")
+                                                    ignores)))))
+                       ((atom cdr)
+                        (return (nreconc result cdr)))
+                       ((consp (car cdr))
+                        (push (list (transform (car cdr))) result))
+                       ((null (car cdr))
+                        (push (car (push (gensym "LOOP-IGNORED-")
+                                         ignores))
+                              result))
+                       (t
+                        (push (car cdr) result))))))
+      (values (transform tree) ignores))))
+
+;;; taken over from sbcls loop implementation
+(defmacro loop-destructuring-bind
+    (lambda-list args &rest body)
+  (multiple-value-bind (d-lambda-list ignores)
+      (transform-destructuring lambda-list)
+    `(destructuring-bind ,d-lambda-list ,args
+       (declare (ignore ,@ignores))
+       ,@body)))
+
+;;; taken over from sbcls loop implementation (usage of loop-destructuring-bind)
 (defun loop-build-destructuring-bindings (crocks forms)
   (if crocks
       (let ((*ignores* ()))
 	(declare (special *ignores*))
-	`((destructuring-bind ,(subst-gensyms-for-nil (car crocks))
+	`((loop-destructuring-bind ,(subst-gensyms-for-nil (car crocks))
 	      ,(cadr crocks)
 	    (declare (ignore ,@*ignores*))
 	    ,@(loop-build-destructuring-bindings (cddr crocks) forms))))

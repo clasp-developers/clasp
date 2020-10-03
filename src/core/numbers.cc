@@ -219,27 +219,8 @@ CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
 }
 
 CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
-inline CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb)
-{
-  Fixnum fc = fa + fb;
-  if (fc >= gc::most_negative_fixnum
-      && fc <= gc::most_positive_fixnum) {
-    return make_fixnum(fc);
-  }
-    // Overflow case
-  mpz_class za(static_cast<long>(fa));
-  mpz_class zb(static_cast<long>(fb));
-  mpz_class zc = za + zb;
-  return Integer_O::create(zc);
-}
-
-CL_NAME("TWO-ARG-+-FIXNUM-BIGNUM");
-inline
-CL_DEFUN Number_sp two_arg__PLUS_FB(Fixnum fx, Bignum_sp by)
-{
-  mpz_class zx(static_cast<long>(fx));
-  mpz_class zz = zx + by->mpz_ref();
-  return Integer_O::create(zz);
+CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb) {
+  return Integer_O::create(static_cast<gc::Fixnum>(fa + fb));
 }
 
 CL_NAME("TWO-ARG-+");
@@ -248,16 +229,19 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Fixnum :
     return two_arg__PLUS_FF(na.unsafe_fixnum(),nb.unsafe_fixnum());
   case_Fixnum_v_Bignum :
-    return two_arg__PLUS_FB(na.unsafe_fixnum(),
-                            gctools::reinterpret_cast_smart_ptr<Bignum_O>(nb));
+    return core__next_fadd(gc::As_unsafe<Bignum_sp>(nb),
+                           na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled + rb->numerator_as_mpz();
-      return Rational_O::create(zr, zb_den);
+      // NOTE: All of the numbers are either fixnums or bignums,
+      // so this could be more efficient maybe.
+      Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
+      Integer_sp den = rat->denominator();
+      Integer_sp new_num
+        = gc::As_unsafe<Integer_sp>(contagen_add(rat->numerator(),
+                                                 contagen_mul(na, den)));
+      // result is a ratio, not an integer.
+      return Ratio_O::create(new_num, den);
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
@@ -265,38 +249,40 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Fixnum_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
     }
-  case_Bignum_v_Fixnum : {
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() + zb;
-      return Integer_O::create(zc);
-    }
-  case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() + gc::As<Bignum_sp>(nb)->mpz_ref());
-    }
-  case_Bignum_v_SingleFloat:
+  case_Bignum_v_Fixnum :
+    return core__next_fadd(gc::As_unsafe<Bignum_sp>(na),
+                           nb.unsafe_fixnum());
+  case_Bignum_v_Bignum :
+    return core__next_add(gc::As_unsafe<Bignum_sp>(na),
+                          gc::As_unsafe<Bignum_sp>(nb));
+  case_Bignum_v_SingleFloat :
   case_Ratio_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
     }
-  case_Bignum_v_DoubleFloat:
+  case_Bignum_v_DoubleFloat :
   case_Ratio_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
     }
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class res = ra->numerator_as_mpz() + z;
-      return Rational_O::create(res, ra->denominator_as_mpz());
+  case_Ratio_v_Bignum: {
+      Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
+      Integer_sp den = rat->denominator();
+      Integer_sp new_num
+        = gc::As_unsafe<Integer_sp>(contagen_add(rat->numerator(),
+                                                 contagen_mul(nb, den)));
+      // result is a ratio, not an integer.
+      return Ratio_O::create(new_num, den);
     }
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
       // ra.num/ra.den + rb.num/rb.den = (ra.num*rb.den+rb.num*ra.den)/ra.den*rb.den
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
-      z = z1 + z;
-      z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
-      return Rational_O::create(z, z1);
+      Number_sp n1 = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp n2 = contagen_mul(ra->denominator(), rb->numerator());
+      Number_sp d = contagen_mul(ra->denominator(), rb->denominator());
+      Number_sp n = contagen_add(n1, n2);
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -313,12 +299,10 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
     return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -327,8 +311,8 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Complex_v_LongFloat:
 #endif // CLASP_LONG_FLOAT
   case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
   case_Complex_v_Ratio:
+  case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
       Number_sp aux = na;
@@ -361,32 +345,19 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
 CL_NAME("TWO-ARG--");
 CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-      Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-      Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-      Fixnum fc = fa - fb;
-      if (fc >= gc::most_negative_fixnum && fc <= gc::most_positive_fixnum) {
-        return make_fixnum(fc);
-      }
-    // Overflow case
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = za - zb;
-      return Integer_O::create(zc);
-    }
-  case_Fixnum_v_Bignum : {
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zc = za - gc::As<Bignum_sp>(nb)->mpz_ref();
-      return Integer_O::create(zc);
+  case_Fixnum_v_Fixnum: {
+      Fixnum fa = na.unsafe_fixnum();
+      Fixnum fb = nb.unsafe_fixnum();
+      return Integer_O::create(static_cast<gc::Fixnum>(fa - fb));
     }
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
+  case_Bignum_v_Ratio: {
+      // x - a/b = xb/b - a/b = (xb-a)/b
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * zb_den;
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
-      return Rational_O::create(zr, zb_den);
+      Number_sp n1 = contagen_mul(na, rb->denominator());
+      Number_sp n = contagen_sub(n1, rb->numerator());
+      return Ratio_O::create(gc::As_unsafe<Integer_sp>(n),
+                             rb->denominator());
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
@@ -394,37 +365,42 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_Fixnum_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
     }
-  case_Bignum_v_Fixnum : {
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() - zb;
-      return Integer_O::create(zc);
-    }
-  case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() - gc::As<Bignum_sp>(nb)->mpz_ref());
-    }
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
+  case_Ratio_v_SingleFloat:
+  case_Bignum_v_SingleFloat: {
       return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
     }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : {
+  case_Ratio_v_DoubleFloat:
+  case_Bignum_v_DoubleFloat: {
       return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
     }
+  case_Fixnum_v_Bignum:
+    return core__next_fsub(na.unsafe_fixnum(),
+                           gc::As_unsafe<Bignum_sp>(nb));
+  case_Bignum_v_Fixnum:
+    return core__next_fadd(gc::As_unsafe<Bignum_sp>(na),
+                           -(nb.unsafe_fixnum()));
+  case_Bignum_v_Bignum:
+    return core__next_sub(gc::As_unsafe<Bignum_sp>(na),
+                          gc::As_unsafe<Bignum_sp>(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
+  case_Ratio_v_Bignum: {
+      // a/b - x = a/b - xb/b = (a-xb)/b
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class res = ra->numerator_as_mpz() - z;
-      return Rational_O::create(res, ra->denominator_as_mpz());
+      Number_sp n2 = contagen_mul(nb, ra->denominator());
+      Number_sp n = contagen_sub(ra->numerator(), n2);
+      return Ratio_O::create(gc::As_unsafe<Integer_sp>(n),
+                             ra->denominator());
     }
   case_Ratio_v_Ratio : {
+      // a/b - c/d = (ad-bc)/bd
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
-      z = z1 - z;
-      z1 = ra->denominator_as_mpz() * rb->denominator_as_mpz();
-      return Rational_O::create(z, z1);
+      Number_sp n1 = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp n2 = contagen_mul(ra->denominator(), rb->numerator());
+      Number_sp n = contagen_sub(n1, n2);
+      Number_sp d = contagen_mul(ra->denominator(), rb->denominator());
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(n),
+                                gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -441,12 +417,10 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
     return DoubleFloat_O::create(clasp_to_double(na) - clasp_to_double(nb));
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -455,8 +429,8 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
 #endif
   case_Complex_v_LongFloat:
   case_Complex_v_Fixnum:
-  case_Complex_v_Bignum:
   case_Complex_v_Ratio:
+  case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
       return clasp_make_complex(gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->real(), nb)),
@@ -495,22 +469,17 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       Fixnum fr;
       bool overflow = __builtin_mul_overflow(fa,fb,&fr);
       if (!overflow) return Integer_O::create(fr);
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = za * zb;
-      return Integer_O::create(zc);
+      return core__mul_fixnums(fa, fb);
     }
-  case_Fixnum_v_Bignum : {
-      mpz_class za(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(na))));
-      mpz_class zc = za * gc::As<Bignum_sp>(nb)->mpz_ref();
-      return Integer_O::create(zc);
-    }
+  case_Fixnum_v_Bignum :
+    return core__next_fmul(gc::As_unsafe<Bignum_sp>(nb),
+                           na.unsafe_fixnum());
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zr = za * rb->numerator_as_mpz();
-      return Rational_O::create(zr, rb->denominator_as_mpz());
+      Ratio_sp rat = gc::As_unsafe<Ratio_sp>(nb);
+      Integer_sp new_num
+        = gc::As_unsafe<Integer_sp>(contagen_mul(na, rat->numerator()));
+      return Rational_O::create(new_num, rat->denominator());
     }
   case_Fixnum_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
@@ -518,16 +487,14 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_Fixnum_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) * clasp_to_double(nb));
     }
-  case_Bignum_v_Fixnum : {
-      mpz_class zb(GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb))));
-      mpz_class zc = gc::As<Bignum_sp>(na)->mpz_ref() * zb;
-      return Integer_O::create(zc);
-    }
-  case_Bignum_v_Bignum : {
-      return Integer_O::create(gc::As<Bignum_sp>(na)->mpz_ref() * gc::As<Bignum_sp>(nb)->mpz_ref());
-    }
+  case_Bignum_v_Fixnum :
+    return core__next_fmul(gc::As_unsafe<Bignum_sp>(na),
+                           nb.unsafe_fixnum());
+  case_Bignum_v_Bignum :
+    return core__next_mul(gc::As_unsafe<Bignum_sp>(na),
+                          gc::As_unsafe<Bignum_sp>(nb));
   case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
+  case_Ratio_v_SingleFloat: {
       return clasp_make_single_float(clasp_to_float(na) * clasp_to_float(nb));
     }
   case_Bignum_v_DoubleFloat:
@@ -536,14 +503,18 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
     }
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = clasp_to_mpz(nb);
-      return Rational_O::create(z * ra->numerator_as_mpz(), ra->denominator_as_mpz());
+      Ratio_sp rat = gc::As_unsafe<Ratio_sp>(na);
+      Integer_sp new_num
+        = gc::As_unsafe<Integer_sp>(contagen_mul(nb, rat->numerator()));
+      return Rational_O::create(new_num, rat->denominator());
     }
   case_Ratio_v_Ratio : {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      return Rational_O::create(ra->numerator_as_mpz() * rb->numerator_as_mpz(), ra->denominator_as_mpz() * rb->denominator_as_mpz());
+      Number_sp num = contagen_mul(ra->numerator(), rb->numerator());
+      Number_sp den = contagen_mul(ra->denominator(), rb->denominator());
+      return Rational_O::create(gc::As_unsafe<Integer_sp>(num),
+                                gc::As_unsafe<Integer_sp>(den));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
@@ -564,7 +535,6 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -611,13 +581,28 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
 // Forward declaration for contagen_div
 Number_sp contagen_div(Number_sp na, Number_sp nb);
 
-Complex_sp complex_divide(double ar, double ai,
-                          double br, double bi) {
-  /* #C(z1 z2) = #C(xr xi) * #C(yr -yi) */
-  double z1 = (ar * br) + (ai * bi);
-  double z2 = (ai * br) - (ar * bi);
-  double absB = (br * br) + (bi * bi);
-  return gc::As_unsafe<Complex_sp>(clasp_make_complex(DoubleFloat_O::create(z1 / absB), DoubleFloat_O::create(z2 / absB)));
+Number_sp complex_divide(Real_sp ar, Real_sp ai,
+                         Real_sp br, Real_sp bi) {
+  // Compute (ar+ai*i)/(br+bi*i).
+  // Just multiply the numerator and denominator by (br - bi*i)
+  // to end up with ar*br+ai*bi/z real and ai*br-ar*bi imaginary,
+  // where z is br^2+bi*2.
+#define realmul(A,B) gc::As_unsafe<Real_sp>(contagen_mul((A),(B)))
+#define realadd(A,B) gc::As_unsafe<Real_sp>(contagen_add((A),(B)))
+#define realsub(A,B) gc::As_unsafe<Real_sp>(contagen_sub((A),(B)))
+#define realdiv(A,B) gc::As_unsafe<Real_sp>(contagen_div((A),(B)))
+  Real_sp absB2 = realadd(realmul(br, br), realmul(bi, bi));
+  Real_sp rnum = realadd(realmul(ar, br), realmul(ai, bi));
+  Real_sp inum = realsub(realmul(ai, br), realmul(ar, bi));
+  Real_sp realpart = realdiv(rnum, absB2);
+  // note: could save a bit of time by checking if inum is zero,
+  // and if so not bothering to compute imagpart
+  Real_sp imagpart = realdiv(inum, absB2);
+  return clasp_make_complex(realpart, imagpart);
+#undef realmul
+#undef realadd
+#undef realsub
+#undef realdiv
 }
 
 CL_NAME("TWO-ARG-/");
@@ -627,7 +612,8 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_Bignum_v_Fixnum:
   case_Fixnum_v_Bignum:
   case_Bignum_v_Bignum:
-    return Rational_O::create(clasp_to_mpz(na), clasp_to_mpz(nb));
+    return Rational_O::create(gc::As_unsafe<Integer_sp>(na),
+                              gc::As_unsafe<Integer_sp>(nb));
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio:
     return Rational_O::create(gc::As<Integer_sp>(contagen_mul(na, gc::As<Ratio_sp>(nb)->denominator())),
@@ -643,7 +629,8 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_Ratio_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
+  case_Ratio_v_Bignum :
+    {
       Integer_sp z = gc::As<Integer_sp>(contagen_mul(gc::As<Ratio_sp>(na)->denominator(), nb));
       return Rational_O::create(gc::As<Ratio_sp>(na)->numerator(), z);
     }
@@ -655,25 +642,23 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
       return Rational_O::create(num, denom);
     }
   case_SingleFloat_v_Fixnum:
-  case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
+  case_SingleFloat_v_Bignum:
   case_SingleFloat_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
-  case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_Ratio:
+  case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
-  case_Bignum_v_LongFloat:
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -685,30 +670,26 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   case_Complex_v_Ratio:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat:
-  case_Complex_v_LongFloat : {
+  case_Complex_v_LongFloat: {
       Complex_sp ca = gc::As<Complex_sp>(na);
       return clasp_make_complex(gc::As<Real_sp>(contagen_div(ca->real(), nb)),
-                               gc::As<Real_sp>(contagen_div(ca->imaginary(), nb)));
+                                gc::As<Real_sp>(contagen_div(ca->imaginary(), nb)));
     }
   case_Fixnum_v_Complex:
-  case_Bignum_v_Complex : {
-      Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+  case_Bignum_v_Complex:
+  case_Ratio_v_Complex:
+  case_SingleFloat_v_Complex:
+  case_DoubleFloat_v_Complex:
+  case_LongFloat_v_Complex: {
+      Complex_sp cb = gc::As_unsafe<Complex_sp>(nb);
+      return complex_divide(gc::As_unsafe<Real_sp>(na), clasp_make_fixnum(0),
+                            cb->real(), cb->imaginary());
     }
   case_Complex_v_Complex : {
       Complex_sp ca = gc::As<Complex_sp>(na);
       Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(ca->real()), clasp_to_double(ca->imaginary()),
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
-    }
-  case_Ratio_v_Complex:
-  case_SingleFloat_v_Complex:
-  case_DoubleFloat_v_Complex:
-  case_LongFloat_v_Complex : {
-      Complex_sp cb = gc::As<Complex_sp>(nb);
-      return complex_divide(clasp_to_double(na), 0.0,
-                            clasp_to_double(cb->real()), clasp_to_double(cb->imaginary()));
+      return complex_divide(ca->real(), ca->imaginary(),
+                            cb->real(), cb->imaginary());
     }
   }
   MATH_DISPATCH_END();
@@ -858,142 +839,98 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Fixnum : {
       gctools::Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
       gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-      if (fa < fb)
-        return -1;
-      if (fa == fb)
-        return 0;
-      return 1;
+      if (fa < fb) return -1;
+      else if (fa > fb) return 1;
+      else return 0;
     }
   case_Fixnum_v_Bignum : {
-      mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
-      if (za < zb)
-        return -1;
-      if (za == zb)
-        return 0;
-      return 1;
+      // Bignums are outside the range of fixnums, so this is easy.
+      // That is, negative bignums are < all fixnums,
+      // and positive bignums are > all fixnums.
+      Bignum_sp bb = gc::As_unsafe<Bignum_sp>(nb);
+      if (bb->minusp_()) return 1; else return -1;
     }
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
+  case_Bignum_v_Ratio: {
+      // x <=> a/b is equivalent to xa <=> b
+      // FIXME: Rather than multiplying, and consing up a potentially
+      // huge bignum, we should just divide the ratio through.
+      // Look at how e.g. SBCL does it.
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * rb->denominator_as_mpz();
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
-      if (zr < 0)
-        return -1;
-      if (zr == 0)
-        return 0;
-      return 1;
+      Number_sp left = contagen_mul(na, rb->denominator());
+      return basic_compare(left, rb->numerator());
     }
-  case_Fixnum_v_SingleFloat : {
-      float a = clasp_to_float(na);
-      float b = clasp_to_float(nb);
-      if (a < b)
-        return -1;
-      if (a == b)
-        return 0;
-      return 1;
+  // FIXME: Can do this more efficiently for integers
+  case_Fixnum_v_SingleFloat:
+  case_Bignum_v_SingleFloat:
+  case_Ratio_v_SingleFloat: {
+      float s = nb.unsafe_single_float();
+      if (std::isinf(s)) {
+        if (s > 0.0f) return -1; else return 1;
+      } else return basic_compare(na, DoubleFloat_O::rational(s));
     }
-  case_Fixnum_v_DoubleFloat : {
-      return double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(na)), gc::As<DoubleFloat_sp>(nb)->get());
-      break;
-    /*
-		double a = clasp_to_double(na);
-		double b = clasp_to_double(nb);
-		if ( a < b ) return -1;
-		if ( a == b ) return 0;
-		return 1;
-*/
+  case_Fixnum_v_DoubleFloat:
+  case_Bignum_v_DoubleFloat:
+  case_Ratio_v_DoubleFloat: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
+      if (d->isinf_()) {
+        if (d->plusp_()) return -1; else return 1;
+      } else return basic_compare(na, d->rational_());
     }
   case_Bignum_v_Fixnum : {
-      mpz_class &za(gc::As<Bignum_sp>(na)->mpz_ref());
-      mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-      if (za < zb)
-        return -1;
-      if (za == zb)
-        return 0;
-      return 1;
+      Bignum_sp ba = gc::As_unsafe<Bignum_sp>(na);
+      if (ba->plusp_()) return 1; else return -1;
     }
-  case_Bignum_v_Bignum : {
-      mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
-      if (za < zb)
-        return -1;
-      if (za == zb)
-        return 0;
-      if (za > zb)
-        return 1;
-    }
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
-      float a = clasp_to_float(na);
-      float b = clasp_to_float(nb);
-      if (a < b)
-        return -1;
-      if (a == b)
-        return 0;
-      return 1;
-    }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : {
-      double a = clasp_to_double(na);
-      double b = clasp_to_double(nb);
-      if (a < b)
-        return -1;
-      if (a == b)
-        return 0;
-      return 1;
-    }
+  case_Bignum_v_Bignum :
+    return core__next_compare(gc::As_unsafe<Bignum_sp>(na),
+                              gc::As_unsafe<Bignum_sp>(nb));
   case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
+  case_Ratio_v_Bignum: {
+      // FIXME: See FIXME in Fixnum_v_Ratio
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class raz = ra->numerator_as_mpz();
-      if (raz < z)
-        return -1;
-      if (raz == z)
-        return 0;
-      return 1;
+      Number_sp right = contagen_mul(ra->denominator(), nb);
+      return basic_compare(ra->numerator(), right);
     }
   case_Ratio_v_Ratio : {
+      // a/b <=> c/d is equivalent to ad <=> bc
+      // FIXME: probably also can be done by division instead.
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
-      if (z1 < z)
-        return -1;
-      if (z1 == z)
-        return 0;
-      return 1;
+      Number_sp left = contagen_mul(ra->numerator(), rb->denominator());
+      Number_sp right = contagen_mul(rb->numerator(), ra->denominator());
+      return basic_compare(left, right);
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
+  case_SingleFloat_v_Ratio: {
+      float s = na.unsafe_single_float();
+      if (std::isinf(s)) {
+        if (s > 0.0f) return 1; else return -1;
+      } else return basic_compare(DoubleFloat_O::rational(s), nb);
+    }
   case_SingleFloat_v_SingleFloat : {
-      float a = clasp_to_float(na);
-      float b = clasp_to_float(nb);
-      if (a < b)
-        return -1;
-      if (a == b)
-        return 0;
-      return 1;
+      float a = na.unsafe_single_float();
+      float b = nb.unsafe_single_float();
+      if (a < b) return -1;
+      else if (a > b) return 1;
+      else return 0;
     }
   case_DoubleFloat_v_Fixnum:
-    return -double_fix_compare(unbox_fixnum(gc::As<Fixnum_sp>(nb)), gc::As<DoubleFloat_sp>(na)->get());
-    break;
-  case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
+  case_DoubleFloat_v_Ratio: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
+      if (d->isinf_()) {
+        if (d->plusp_()) return 1; else return -1;
+      } else return basic_compare(d->rational_(), nb);
+    }
+  case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
-  case_DoubleFloat_v_DoubleFloat : {
+  case_DoubleFloat_v_DoubleFloat: {
       double a = clasp_to_double(na);
       double b = clasp_to_double(nb);
-      if (a < b)
-        return -1;
-      if (a == b)
-        return 0;
-      return 1;
+      if (a < b) return -1;
+      else if (a > b) return 1;
+      else return 0;
     }
 #ifdef CLASP_LONG_FLOAT
   case_Fixnum_v_LongFloat:
@@ -1006,7 +943,6 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_LongFloat:
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -1116,78 +1052,61 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
       gctools::Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
       return fa == fb;
     }
-  case_Fixnum_v_Bignum : {
-      mpz_class za = clasp_to_mpz(gc::As<Fixnum_sp>(na));
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
-      return za == zb;
-    }
+  case_Fixnum_v_Bignum:
+  case_Bignum_v_Fixnum:
+    // bignums are never in fixnum range.
+    return false;
   case_Fixnum_v_Ratio:
-  case_Bignum_v_Ratio : {
-      mpz_class za(clasp_to_mpz(na));
-      Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class zb_den = rb->denominator_as_mpz();
-      mpz_class za_scaled = za * rb->denominator_as_mpz();
-      mpz_class zr = za_scaled - rb->numerator_as_mpz();
-      return (zr == 0);
+  case_Ratio_v_Fixnum:
+  case_Bignum_v_Ratio:
+  case_Ratio_v_Bignum:
+    // Normalized ratios are never integers.
+    return false;
+  case_Fixnum_v_SingleFloat:
+  case_Bignum_v_SingleFloat:
+  case_Ratio_v_SingleFloat: {
+      float s = nb.unsafe_single_float();
+      if (isinf(s)) return false;
+      else return basic_equalp(na, DoubleFloat_O::rational(s));
     }
-  case_Fixnum_v_SingleFloat : {
-      float a = clasp_to_float(na);
-      float b = clasp_to_float(nb);
-      return a == b;
-    }
-  case_Fixnum_v_DoubleFloat : {
-      double a = clasp_to_double(na);
-      double b = clasp_to_double(nb);
-      return a == b;
-    }
-  case_Bignum_v_Fixnum : {
-      mpz_class &za(gc::As<Bignum_sp>(na)->mpz_ref());
-      mpz_class zb = GMP_LONG(unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-      return za == zb;
+  case_Fixnum_v_DoubleFloat:
+  case_Bignum_v_DoubleFloat:
+  case_Ratio_v_DoubleFloat: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(nb);
+      if (d->isinf_()) return false;
+      else return basic_equalp(na, d->rational_());
     }
   case_Bignum_v_Bignum : {
-      mpz_class &za = gc::As<Bignum_sp>(na)->mpz_ref();
-      mpz_class &zb = gc::As<Bignum_sp>(nb)->mpz_ref();
-      return (za == zb);
+      return (core__next_compare(gc::As_unsafe<Bignum_sp>(na),
+                                 gc::As_unsafe<Bignum_sp>(nb)) == 0);
     }
-  case_Bignum_v_SingleFloat:
-  case_Ratio_v_SingleFloat : {
-      float a = clasp_to_float(na);
-      float b = clasp_to_float(nb);
-      return a == b;
-    }
-  case_Bignum_v_DoubleFloat:
-  case_Ratio_v_DoubleFloat : {
-      double a = clasp_to_double(na);
-      double b = clasp_to_double(nb);
-      return a == b;
-    }
-  case_Ratio_v_Fixnum:
-  case_Ratio_v_Bignum : {
-      Ratio_sp ra = gc::As<Ratio_sp>(na);
-      mpz_class z = ra->denominator_as_mpz() * clasp_to_mpz(nb);
-      mpz_class raz = ra->numerator_as_mpz();
-      return raz == z;
-    }
-  case_Ratio_v_Ratio : {
+  case_Ratio_v_Ratio: {
+      // ratios are normalized
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      mpz_class z1 = ra->numerator_as_mpz() * rb->denominator_as_mpz();
-      mpz_class z = ra->denominator_as_mpz() * rb->numerator_as_mpz();
-      return (z1 == z);
+      return (basic_equalp(ra->numerator(), rb->numerator())
+              && basic_equalp(ra->denominator(), rb->denominator()));
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
-  case_SingleFloat_v_Ratio:
+  case_SingleFloat_v_Ratio: {
+      float s = na.unsafe_single_float();
+      if (isinf(s)) return false;
+      else return basic_equalp(DoubleFloat_O::rational(s), nb);
+    }
   case_SingleFloat_v_SingleFloat : {
       float a = clasp_to_float(na);
       float b = clasp_to_float(nb);
       return a == b;
     }
-  case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Bignum:
-  case_DoubleFloat_v_Ratio:
+  case_DoubleFloat_v_Ratio: {
+      DoubleFloat_sp d = gc::As_unsafe<DoubleFloat_sp>(na);
+      if (d->isinf_()) return false;
+      else return basic_equalp(d->rational_(), nb);
+    }
+  case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat : {
       double a = clasp_to_double(na);
@@ -1200,7 +1119,6 @@ bool basic_equalp(Number_sp na, Number_sp nb) {
   case_SingleFloat_v_LongFloat:
   case_DoubleFloat_v_LongFloat:
   case_LongFloat_v_Fixnum:
-  case_LongFloat_v_Bignum:
   case_LongFloat_v_Ratio:
   case_LongFloat_v_SingleFloat:
   case_LongFloat_v_DoubleFloat:
@@ -1340,24 +1258,57 @@ bool Number_O::equal(T_sp obj) const {
   return cl__eql(this->asSmartPtr(), obj);
 }
 
+bool Number_O::equalp(T_sp obj) const {
+  if (gc::IsA<Number_sp>(obj))
+    return basic_equalp(this->asSmartPtr(), gc::As_unsafe<Number_sp>(obj));
+  else return false;
+}
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
   mpz_class q, r;
-  ASSERT(denom != 0);
   if (denom == 0)
     ERROR_DIVISION_BY_ZERO(Integer_O::create(num),Integer_O::create(denom));
-  if (denom == 1) {
-    return Integer_O::create(num);
+  else if (denom == 1) return Integer_O::create(num);
+  else {
+    mpz_tdiv_qr(q.get_mpz_t(), r.get_mpz_t(),
+                num.get_mpz_t(), denom.get_mpz_t());
+    if (r == 0) return Integer_O::create(q);
+    else return Ratio_O::create(num, denom);
   }
-  mpz_cdiv_qr(q.get_mpz_t(), r.get_mpz_t(), num.get_mpz_t(), denom.get_mpz_t());
-  if (r == 0) {
-    return Integer_O::create(q);
-  }
-  return Ratio_O::create(num, denom);
 }
 
 Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
-  return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
+  if (num.fixnump()) {
+    Fixnum fnum = num.unsafe_fixnum();
+    if (denom.fixnump()) {
+      Fixnum fdenom = denom.unsafe_fixnum();
+      switch (fdenom) {
+      case 0: ERROR_DIVISION_BY_ZERO(num, denom);
+      case 1: return num;
+      case -1: return gc::As_unsafe<Integer_sp>(clasp_negate(num));
+      default: {
+      // check if they divide.
+      // (Note that the case of fnum == 0 is covered here.)
+        if ((fnum % fdenom) == 0)
+          return clasp_make_fixnum(fnum / fdenom);
+        else return Ratio_O::create(num, denom); // no
+      }
+      }
+    } else {
+      // Fixnum divided by a bignum.
+      // This will never be exact except in the exceptional case
+      // that num = most-negative-fixnum, denom = -num,
+      // or if fnum == 0.
+      if (fnum == 0) return clasp_make_fixnum(0);
+      else if (fnum == gc::most_negative_fixnum) {
+        Number_sp ndenom = clasp_negate(denom);
+        if (ndenom.fixnump()
+            && (ndenom.unsafe_fixnum() == gc::most_negative_fixnum))
+          return clasp_make_fixnum(-1);
+      }
+      return Ratio_O::create(num, denom);
+    }
+  } else return num->ratdivide(denom);
 }
 
 CL_DOCSTRING("Return a number that is NAN");
@@ -1373,17 +1324,11 @@ T_sp Integer_O::makeIntegerType(gc::Fixnum low, gc::Fixnum hi) {
 }
 
 
-Integer_sp Integer_O::create( gctools::Fixnum v )
-{
-  if ( v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum )
-  {
+Integer_sp Integer_O::create(gctools::Fixnum v) {
+  if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum)
     return make_fixnum(v);
-  }
-  Bignum z(GMP_LONG(v));
-  return Bignum_O::create( z );
+  else return Bignum_O::create(v);
 }
-
-
 
 Integer_sp Integer_O::create( int8_t v)
 {
@@ -1419,30 +1364,24 @@ Integer_sp Integer_O::create( uint32_t v )
 Integer_sp Integer_O::create( int64_t v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
     return Integer_O::create(static_cast<Fixnum>(v));
-  }
-
-  return Bignum_O::create( v );
+  else return Bignum_O::create( v );
 }
 #endif
 
 Integer_sp Integer_O::create( uint64_t v )
 {
-  if (v <= gc::most_positive_fixnum) {
+  if (v <= gc::most_positive_fixnum)
     return Integer_O::create(static_cast<Fixnum>(v));
-  }
-  return Bignum_O::create( v );
+  else return Bignum_O::create( v );
 }
 
 #if !defined( CLASP_LONG_LONG_IS_INT64 )
 Integer_sp Integer_O::create( long long v )
 {
   if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum ))
-  {
     return clasp_make_fixnum((Fixnum) v );
-  }
-  return Bignum_O::create( v );
+  else return Bignum_O::create( v );
 }
 #endif
 
@@ -1450,21 +1389,19 @@ Integer_sp Integer_O::create( long long v )
 Integer_sp Integer_O::create( unsigned long long v )
 {
   if ( v <= gc::most_positive_fixnum )
-  {
     return clasp_make_fixnum((Fixnum)v);
-  }
-  return Bignum_O::create( v );
+  else return Bignum_O::create( v );
 }
 #endif
 
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD)
 Integer_sp Integer_O::create( uintptr_t v) {
-  if ( v <= gc::most_positive_fixnum ) {
+  if ( v <= gc::most_positive_fixnum )
     return clasp_make_fixnum((Fixnum)v);
-  }
-  return Bignum_O::create( (uint64_t)v );
+  else return Bignum_O::create( (uint64_t)v );
 }
 #endif
+
 /* Why >= and <? Because most-negative-fixnum is a negative power of two,
  * exactly representable by a float. most-positive-fixnum is slightly less than
  * a positive power of two. So (double)mpf is a double that, cast to an integer,
@@ -1474,37 +1411,26 @@ Integer_sp Integer_O::create( uintptr_t v) {
 Integer_sp Integer_O::create(float v) {
   if (v >= (float)gc::most_negative_fixnum && v <= (float)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(double v) {
   if (v >= (double)gc::most_negative_fixnum && v <= (double)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::createLongFloat(LongFloat v) {
   if (v >= (LongFloat)gc::most_negative_fixnum && v <= (LongFloat)gc::most_positive_fixnum) {
     return make_fixnum((Fixnum)v);
-  }
-  Bignum rop;
-  mpz_set_d(rop.get_mpz_t(), v);
-  return Bignum_O::create(rop);
+  } else return Bignum_O::create(v);
 }
 
 Integer_sp Integer_O::create(const mpz_class &v) {
   if (v >= gc::most_negative_fixnum && v <= gc::most_positive_fixnum) {
     Fixnum fv = mpz_get_si(v.get_mpz_t());
     return make_fixnum(fv);
-  }
-  return Bignum_O::create(v);
+  } else return Bignum_O::create(v);
 }
 
 }; // namespace core
@@ -1674,10 +1600,6 @@ Number_sp LongFloat_O::copy() const {
   return LongFloat_O::create(this->_Value);
 }
 
-void LongFloat_O::setFromString(const string &str) {
-  this->_Value = atof(str.c_str());
-}
-
 Number_sp LongFloat_O::reciprocal_() const {
   return LongFloat_O::create(1.0 / this->_Value);
 }
@@ -1742,7 +1664,7 @@ float Ratio_O::as_float_() const {
 }
 
 // translated from https://gitlab.com/embeddable-common-lisp/ecl/blob/develop/src/c/number.d#L663
-static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den, int digits, gc::Fixnum *exponent) {
+static Integer_sp mantissa_and_exponent_from_ratio(Integer_sp num, Integer_sp den, int digits, gc::Fixnum *exponent) {
   /* We have to cook our own routine because GMP does not round. The
    * recipe is simple: we multiply the numerator by a large enough
    * number so that the integer length of the division by the
@@ -1751,9 +1673,9 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
    * appropriate exponent.
    */
   bool negative = false;
-  if (num->minusp_()) {
+  if (clasp_minusp(num)) {
     negative = true;
-    num = gc::As<Bignum_sp>(num->negate_());
+    num = gc::As_unsafe<Integer_sp>(clasp_negate(num));
   }
   gc::Fixnum num_digits = clasp_integer_length(num);
   gc::Fixnum den_digits = clasp_integer_length(den);
@@ -1762,7 +1684,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
    * truncated to an integer has a length of digits+1 or digits+2. If
    * scale is negative, we simply shift out unnecessary digits of num,
    * which don't affect the quotient. */
-  num = gc::As<Bignum_sp>(clasp_ash(num, scale));
+  num = clasp_ash(num, scale);
   Integer_sp quotient = clasp_integer_divide(num, den);
   if (clasp_integer_length(quotient) > digits+1) {
     /* quotient is too large, shift out an unnecessary digit */
@@ -1771,7 +1693,7 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
   }
   /* round quotient */
   if (clasp_oddp(quotient)) {
-    quotient = gc::As<Integer_sp>(clasp_one_plus(quotient));
+    quotient = gc::As_unsafe<Integer_sp>(clasp_one_plus(quotient));
   }
   /* shift out the remaining unnecessary digit of quotient */
   quotient = clasp_ash(quotient, -1);
@@ -1784,20 +1706,19 @@ static Integer_sp mantissa_and_exponent_from_ratio(Bignum_sp num, Bignum_sp den,
 }
 
 double Ratio_O::as_double_() const {
-  if (core__bignump(this->_numerator) && core__bignump(this->_denominator)) {
-    gc::Fixnum exponent;
-    Integer_sp mantissa = mantissa_and_exponent_from_ratio(gc::As<Bignum_sp>(this->_numerator),gc::As<Bignum_sp>(this->_denominator), DBL_MANT_DIG, &exponent);
-    double output;
-    if (mantissa.fixnump())
-      output = gc::As<Fixnum_sp>(mantissa).unsafe_fixnum();
-    else
-      output = mantissa->as_double_();
-    return ldexp(output, exponent);
-  }
-  else {
+  if ((this->_numerator).fixnump() && (this->_denominator).fixnump()) {
     double d = clasp_to_double(this->_numerator);
     d /= clasp_to_double(this->_denominator);
     return d;
+  } else {
+    gc::Fixnum exponent;
+    Integer_sp mantissa = mantissa_and_exponent_from_ratio(this->_numerator,this->_denominator, DBL_MANT_DIG, &exponent);
+    double output;
+    if (mantissa.fixnump())
+      output = mantissa.unsafe_fixnum();
+    else
+      output = mantissa->as_double_();
+    return ldexp(output, exponent);
   }
 }
 
@@ -1812,16 +1733,8 @@ string Ratio_O::__repr__() const {
   return ss.str();
 }
 
-mpz_class Ratio_O::numerator_as_mpz() const {
-  return clasp_to_mpz(this->_numerator);
-}
-
-mpz_class Ratio_O::denominator_as_mpz() const {
-  return clasp_to_mpz(this->_denominator);
-}
-
 Number_sp Ratio_O::abs_() const {
-  return Ratio_O::create(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
+  return Ratio_O::create_primitive(gc::As_unsafe<Integer_sp>(clasp_abs(gc::As<Integer_sp>(this->_numerator))), this->_denominator);
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
@@ -1852,7 +1765,19 @@ Number_sp Ratio_O::sqrt_() const {
 }
 
 Number_sp Ratio_O::reciprocal_() const {
-  return Ratio_O::create(this->_denominator, this->_numerator);
+  Integer_sp num = this->_numerator, denom = this->_denominator;
+  if (num.fixnump()) {
+    switch (num.unsafe_fixnum()) {
+    case 1: return denom;
+    case -1: return clasp_negate(denom);
+    }
+  }
+  if (clasp_minusp(num)) {
+    Integer_sp indenom = gc::As_unsafe<Integer_sp>(clasp_negate(denom));
+    Integer_sp innum = gc::As_unsafe<Integer_sp>(clasp_negate(num));
+    return Ratio_O::create_primitive(indenom, innum);
+  }
+  else return Ratio_O::create_primitive(denom, num);
 }
 
 void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
@@ -1874,7 +1799,7 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
     }
     return;
   }
-  if (clasp_to_mpz(denom) < 0) {
+  if (clasp_minusp(idenom)) {
     this->_numerator = gc::As<Integer_sp>(clasp_negate(num));
     this->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
   } else {
@@ -1882,17 +1807,6 @@ void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom)
     this->_denominator = denom;
   }
 }
-
-void Ratio_O::setFromString(const string &str) {
-  vector<string> parts = split(str, "/");
-  ASSERT(parts.size() == 2);
-  Integer_sp num = Integer_O::create(parts[0]);
-  Integer_sp denom = Integer_O::create(parts[1]);
-  this->setf_numerator_denominator(num,denom);
-}
-
-
-
 
 // --------------------------------------------------------------------------------
 
@@ -1989,26 +1903,33 @@ Number_sp Complex_O::sqrt_() const {
   return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
 
+// NOTE: The following definition is wrong. CLHS specifies we can return only
+// a single or a rational. Double is not allowed. That's kind of dumb but it's
+// pretty explicitly what it says.
 Number_sp Bignum_O::sqrt_() const {
   // Could move the <0 logic out to another function, to share
   // Might try to convert to a double-float, if this does not fit into a single-float
+  // hypothetically we could use mpn_sqrtrem instead, but i imagine it's slower.
   float z = this->as_float_();
-  if (std::isinf (z)) {
+  if (std::isinf(z)) {
     double z1 = this->as_double_();
     if (z1 < 0)
-      return clasp_make_complex(clasp_make_double_float(0.0), clasp_make_double_float(sqrt(-z)));
-    else
-      return clasp_make_double_float(sqrt(z1));
+      return clasp_make_complex(clasp_make_double_float(0.0),
+                                clasp_make_double_float(sqrt(-z1)));
+    else return clasp_make_double_float(sqrt(z1));
   } else {
     if (z < 0)
-      return clasp_make_complex(clasp_make_single_float(0.0), clasp_make_single_float(sqrt(-z)));
-    else
-      return clasp_make_single_float(sqrt(z));
+      return clasp_make_complex(clasp_make_single_float(0.0),
+                                clasp_make_single_float(sqrt(-z)));
+    else return clasp_make_single_float(sqrt(z));
   }
 }
 
 Number_sp Bignum_O::reciprocal_() const {
-  return Rational_O::create(clasp_to_mpz(clasp_make_fixnum(1)), this->_value);
+  if (this->minusp_())
+    return Ratio_O::create_primitive(clasp_make_fixnum(-1),
+                                     gc::As_unsafe<Integer_sp>(this->negate_()));
+  else return Ratio_O::create_primitive(clasp_make_fixnum(1), this->asSmartPtr());
 }
 
 CL_LAMBDA(arg);
@@ -2545,15 +2466,15 @@ clasp_expt(Number_sp x, Number_sp y) {
   } else if (clasp_minusp(gc::As<Real_sp>(y))) {
     z = clasp_negate(y);
     z = clasp_expt(x, z);
-    z = clasp_divide(clasp_make_fixnum(1), z);
+    z = clasp_reciprocal(z);
   } else {
     z = clasp_make_fixnum(1);
     Integer_sp iy = gc::As<Integer_sp>(y);
     do {
-      /* INV: clasp_integer_divide outputs an integer */
+      // Exponentiation by squaring.
       if (!clasp_evenp(iy))
         z = clasp_times(z, x);
-      iy = clasp_integer_divide(iy, clasp_make_fixnum(2));
+      iy = clasp_shift(iy, -1); // divide by two
       if (clasp_zerop(iy))
         break;
       x = clasp_times(x, x);
@@ -2769,12 +2690,19 @@ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i) {
 
 Number_sp Bignum_O::log1_() const {
   Bignum_sp bignum = this->asSmartPtr();
-  if (clasp_minusp(bignum)) {
-    return clasp_log1_complex_inner(bignum, make_fixnum(0));
-  } else {
+  if (this->minusp_())
+    return clasp_log1_complex_inner(bignum, clasp_make_fixnum(0));
+  else {
+    // In order to avoid floating point overflow,
+    // we take the log of (x/2^n), n being the number of bits in the bignum,
+    // and add back to the result.
+    // FIXME: This can probably be accomplished more efficiently, though.
+    // For example, take the most significant two words of the bignum, as we
+    // do when converting bignums to floats (as of this writing), but don't
+    // shift the result.
     Fixnum length = clasp_integer_length(bignum) - 1;
     Integer_sp ash = clasp_ash(make_fixnum(1), length);
-    Rational_sp rational = clasp_make_rational(bignum, ash);
+    Rational_sp rational = Rational_O::create(bignum, ash);
     float d = logf(clasp_to_float(rational)) + length * logf(2.0);
     return clasp_make_single_float(d);
   }
@@ -2826,20 +2754,28 @@ Number_sp Rational_O::log1p_() const {
 }
 
 // translated from ECL cl_rational
-Number_sp DoubleFloat_O::rational(double d) {
+Rational_sp DoubleFloat_O::rational(double d) {
   if (d == 0) {
     return clasp_make_fixnum(0);
   }
   int e;
   d = frexp(d, &e);
   e -= DBL_MANT_DIG;
-  Number_sp x = _clasp_double_to_integer(ldexp(d,DBL_MANT_DIG));
-  if (e!=0) {
-    x = clasp_times(clasp_expt(clasp_make_fixnum(FLT_RADIX),
-                               clasp_make_fixnum(e)),
-                    x);
-  }
-  return x;
+  Integer_sp x = _clasp_double_to_integer(ldexp(d,DBL_MANT_DIG));
+#if 0 //(FLT_RADIX == 2) // runtime is sane (or at least IEEE 754)
+  if (e > 0)
+    return clasp_shift(x, e);
+  else if (e < 0)
+    // Efficiency note: This could be done faster by exploiting the fact
+    // that the denominator is a power of two. Rather than take the full
+    // gcd, you can just shift out any shared less significant zero bits.
+    return Rational_O::create(x, clasp_shift(clasp_make_fixnum(1), -e));
+  else return x;
+#else
+  Number_sp radixexp = clasp_expt(clasp_make_fixnum(FLT_RADIX),
+                                  clasp_make_fixnum(e));
+  return gc::As_unsafe<Integer_sp>(clasp_times(x, radixexp));
+#endif
 }
 
 
@@ -2892,49 +2828,12 @@ Integer_sp clasp_ash(Integer_sp x, int bits) {
   return clasp_shift(x, bits);
 };
 
-unsigned char clasp_toUint8(T_sp n) {
-  if (n.notnilp()) {
-    if (n.fixnump()) {
-      Fixnum_sp fn = gc::As<Fixnum_sp>(n);
-      Fixnum fi = unbox_fixnum(fn);
-      if (fi >= 0 && fi <= 255) {
-        return fi;
-      }
-    }
-  }
-  TYPE_ERROR(n, Cons_O::create(cl::_sym_UnsignedByte, make_fixnum(8)));
-}
-
-signed char clasp_toSignedInt8(T_sp n) {
-  if (n.fixnump()) {
-    Fixnum fi = unbox_fixnum(gc::As<Fixnum_sp>(n));
-    if (fi >= -128 && fi <= 127) {
-      return fi;
-    }
-  }
-  TYPE_ERROR(n, Cons_O::create(cl::_sym_SignedByte, make_fixnum(8)));
-}
-
 cl_index clasp_toSize(T_sp f) {
-  if (f.fixnump()) {
-    Fixnum_sp fn(gc::As<Fixnum_sp>(f));
-    Fixnum ff = unbox_fixnum(fn);
-    if (ff >= 0) {
-      return ff;
-    }
-  }
-  TYPE_ERROR(f, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(MOST_POSITIVE_FIXNUM)));
+  return clasp_to_integral<cl_index>(f);
 }
 
-gctools::Fixnum
-fixint(T_sp x) {
-  if (core__fixnump(x))
-    return unbox_fixnum(gc::As<Fixnum_sp>(x));
-  if (core__bignump(x)) {
-    IMPLEMENT_MEF("Implement convert Bignum to fixint");
-  }
-  ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_fixnum, x, cl::_sym_fixnum);
-  UNREACHABLE();
+gctools::Fixnum fixint(T_sp x) {
+  return clasp_to_integral<gc::Fixnum>(x);
 }
 
 CL_LAMBDA(i);
@@ -2989,315 +2888,31 @@ SYMBOL_EXPORT_SC_(ClPkg, exp);
 
   // === CLASP_TO- TRANSLATORS ===
 
-  // --- FIXNUM ---
-
-Fixnum clasp_to_fixnum( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    LIKELY_if ( bx->mpz_ref()>=gc::most_negative_fixnum && bx->mpz_ref() <= gc::most_positive_fixnum) {
-      return static_cast<size_t>(bx->mpz_ref().get_si());
-    }
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-};
-
-Fixnum clasp_to_fixnum( core::Integer_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    LIKELY_if ( bx->mpz_ref()>=gc::most_negative_fixnum && bx->mpz_ref() <= gc::most_positive_fixnum) {
-      return static_cast<size_t>(bx->mpz_ref().get_si());
-    }
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-};
-
-
-  // --- SHORT ---
-
-short clasp_to_short( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= gc::most_negative_short && farg <= gc::most_positive_short);
-    return (int) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_short();
-}
-
-unsigned short clasp_to_ushort( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= 0 && farg <= gc::most_positive_ushort);
-    return (int) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_ushort();
-}
-
-  // --- INT ---
-
-int clasp_to_int( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= gc::most_negative_int && farg <= gc::most_positive_int);
-    return (int) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_int();
-}
-
-unsigned int clasp_to_uint( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= 0 && farg <= gc::most_positive_uint);
-    return (uint) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_uint();
-}
-
-  // --- LONG ---
-
-long clasp_to_long( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() ) {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= gc::most_negative_long && farg <= gc::most_positive_long);
-    return (long) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_long();
-}
-
-unsigned long clasp_to_ulong( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= 0 && farg <= gc::most_positive_ulong); 
-   return (long) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_ulong();
-}
-
-  // --- long long  ---
-long long clasp_to_longlong( core::T_sp x )
-{
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= gc::most_negative_longlong && farg <= gc::most_positive_longlong);
-    return (long long) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_longlong();
-}
-
-unsigned long long clasp_to_ulonglong( core::T_sp x )
-{
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(farg >= 0 && farg <= gc::most_positive_ulonglong);
-    return (unsigned long long) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_ulonglong();
-}
-
-  // --- INT8 ---
-
-int8_t clasp_to_int8( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int8 && x.unsafe_fixnum() <= gc::most_positive_int8);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_int8_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_int8),
-                                    Integer_O::create(gc::most_positive_int8)));
-}
-
-uint8_t clasp_to_uint8( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint8);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_uint8_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(0),
-                                    Integer_O::create(gc::most_positive_uint8)));
-}
-
-int8_t clasp_to_int8_t( core::T_sp x )
-{
-  return clasp_to_int8(x);
-}
-
-
-uint8_t clasp_to_uint8_t( core::T_sp x )
-{
-  return clasp_to_uint8(x);
-}
-
-  // --- INT16 ---
-
-int16_t clasp_to_int16( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int16 && x.unsafe_fixnum() <= gc::most_positive_int16);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_int16_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_int16),
-                                    Integer_O::create(gc::most_positive_int16)));
-}
-
-uint16_t clasp_to_uint16( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint16);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_uint16_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(0),
-                                    Integer_O::create(gc::most_positive_uint16)));
-}
-
-int16_t clasp_to_int16_t( core::T_sp x )
-{
-  return clasp_to_int16(x);
-}
-
-uint16_t clasp_to_uint16_t( core::T_sp x )
-{
-  return clasp_to_uint16(x);
-}
-
-  // --- INT32 ---
-
-int32_t clasp_to_int32( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int32 && x.unsafe_fixnum() <= gc::most_positive_int32);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_int32_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_int32),
-                                    Integer_O::create(gc::most_positive_int32)));
-}
-
-uint32_t clasp_to_uint32( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint32);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_uint32_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(0),
-                                    Integer_O::create(gc::most_positive_uint32)));
-}
-
-uint32_t clasp_to_uint32_t( core::T_sp x )
-{
-  return clasp_to_uint32( x );
-}
-
-int32_t clasp_to_int32_t( core::T_sp x )
-{
-  return clasp_to_int32( x );
-}
-
-  // --- INT64 ---
-
-int64_t clasp_to_int64_t( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_int64 && x.unsafe_fixnum() <= gc::most_positive_int64);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_int64_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_int64),
-                                    Integer_O::create(gc::most_positive_int64)));
-}
-
-uint64_t clasp_to_uint64_t( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >= 0 && x.unsafe_fixnum() <= gc::most_positive_uint64);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_uint64_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(0),
-                                    Integer_O::create(gc::most_positive_uint64)));
-}
-
-
-  // --- UINTPTR_T ---
-uintptr_t clasp_to_uintptr_t( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() >=gc::most_negative_uintptr && x.unsafe_fixnum() <= gc::most_positive_uintptr);
-    return x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    return bx->as_uintptr_t();
-  }
-  TYPE_ERROR( x, Cons_O::createList(cl::_sym_Integer_O,
-                                    Integer_O::create(gc::most_negative_uintptr),
-                                    Integer_O::create(gc::most_positive_uintptr)));
-}
-
-
-  // --- PTRDIFF_T ---
-
-ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
-{
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-    ASSERT(!(farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff));
-    return (ptrdiff_t) farg;
-  }
-  return (gc::As< Integer_sp >(x))->as_ptrdiff_t();
-}
-
-  // --- MPZ ---
+Fixnum clasp_to_fixnum(T_sp x) { return clasp_to_integral<Fixnum>(x); }
+short clasp_to_short(T_sp x) { return clasp_to_integral<short>(x); }
+unsigned short clasp_to_ushort(T_sp x) { return clasp_to_integral<unsigned short>(x);}
+int clasp_to_int(T_sp x) { return clasp_to_integral<int>(x); }
+unsigned int clasp_to_uint(T_sp x) { return clasp_to_integral<unsigned int>(x); }
+long clasp_to_long(T_sp x) { return clasp_to_integral<long>(x); }
+unsigned long clasp_to_ulong(T_sp x) { return clasp_to_integral<unsigned long>(x); }
+long long clasp_to_longlong(T_sp x) { return clasp_to_integral<long long>(x); }
+unsigned long long clasp_to_ulonglong(T_sp x) { return clasp_to_integral<unsigned long long>(x); }
+int8_t clasp_to_int8_t(T_sp x) { return clasp_to_integral<int8_t>(x); }
+uint8_t clasp_to_uint8_t(T_sp x) { return clasp_to_integral<uint8_t>(x); }
+int16_t clasp_to_int16_t(T_sp x) { return clasp_to_integral<int16_t>(x); }
+uint16_t clasp_to_uint16_t(T_sp x) { return clasp_to_integral<uint16_t>(x); }
+int32_t clasp_to_int32_t(T_sp x) { return clasp_to_integral<int32_t>(x); }
+uint32_t clasp_to_uint32_t(T_sp x) { return clasp_to_integral<uint32_t>(x); }
+int64_t clasp_to_int64_t(T_sp x) { return clasp_to_integral<int64_t>(x); }
+uint64_t clasp_to_uint64_t(T_sp x) { return clasp_to_integral<uint64_t>(x); }
+intptr_t clasp_to_intptr_t(T_sp x) { return clasp_to_integral<intptr_t>(x); }
+uintptr_t clasp_to_uintptr_t(T_sp x) { return clasp_to_integral<uintptr_t>(x); }
+ptrdiff_t clasp_to_ptrdiff_t(T_sp x) { return clasp_to_integral<ptrdiff_t>(x); }
+size_t clasp_to_size_t(T_sp x) { return clasp_to_integral<size_t>(x); }
+// FIXME: Replace all uses with clasp_to_size_t
+size_t clasp_to_size(T_sp x) { return clasp_to_integral<size_t>(x); }
+ssize_t clasp_to_ssize_t(T_sp x) { return clasp_to_integral<ssize_t>(x); }
+ssize_t clasp_to_ssize(T_sp x) { return clasp_to_integral<ssize_t>(x); }
 
 mpz_class clasp_to_mpz( core::T_sp x )
 {
@@ -3307,72 +2922,8 @@ mpz_class clasp_to_mpz( core::T_sp x )
     mpz_class z = GMP_LONG(fn);
     return z;
   }
-  return (gc::As<Bignum_sp>(x))->mpz_ref();
+  return (gc::As<Integer_sp>(x))->mpz();
 }
-
-  // --- LONG LONG ---
-
-unsigned long long clasp_to_unsigned_long_long( core::T_sp x )
-{
-  ASSERT(!x.single_floatp());
-  if ( x.fixnump() )
-  {
-    gc::Fixnum f = x.unsafe_fixnum();
-    ASSERT(f >= 0 && f <= gc::most_positive_ulonglong);
-    return (unsigned long long)f;
-  }
-  return (gc::As< Integer_sp >(x))->as_ulonglong();
-};
-
-  // --- SIZE ---
-
-size_t clasp_to_size_t( core::T_sp x )
-{
-  if ( x.fixnump() ) {
-    ASSERT(x.unsafe_fixnum() <= gc::most_positive_size);
-    return (size_t) x.unsafe_fixnum();
-  } else if (gc::IsA<Bignum_sp>(x)) {
-    Bignum_sp bx = gc::As_unsafe<Bignum_sp>(x);
-    LIKELY_if ( bx->mpz_ref()>=0 && bx->mpz_ref() <= gc::most_positive_size) {
-      return static_cast<size_t>(bx->mpz_ref().get_ui());
-    }
-  }    
-  TYPE_ERROR(x, Cons_O::create(cl::_sym_UnsignedByte, Bignum_O::create((uint64_t)gc::most_positive_size)));
-}
-
-cl_index clasp_to_size( core::T_sp x )
-{
-  return clasp_to_size_t( x );
-}
-
-  // --- SSIZE ---
-
-ssize_t clasp_to_ssize_t( core::T_sp x )
-{
-  if ( x.fixnump() )
-  {
-    gctools::Fixnum farg = x.unsafe_fixnum();
-
-    if (farg < gc::most_negative_ssize|| farg > gc::most_positive_ssize)
-    {
-      SIMPLE_ERROR(BF("Cannot convert uintptr_t to char. Value out of range  for ssize_t"));
-    }
-    return (ssize_t) farg;
-  }
-
-  Integer_sp sp_i = gc::As< Integer_sp >( x );
-  if( sp_i )
-    return sp_i->as_size_t();
-  else
-    SIMPLE_ERROR(BF("Cannot convert uintptr_t to char."));
-}
-
-ssize_t clasp_to_ssize( core::T_sp x )
-{
-  return clasp_to_size_t( x );
-}
-
-  // --- FLOAT ---
 
 float clasp_to_float(core::Number_sp x)
 {
@@ -3386,8 +2937,6 @@ float clasp_to_float(core::Number_sp x)
   }
   return x->as_float_();
 }
-
-// --- DOUBLE ---
 
 double clasp_to_double(core::Number_sp x)
 {
@@ -3452,10 +3001,6 @@ double clasp_to_double( core::DoubleFloat_sp x )
   return x->get();
 };
 
-
-
-
-
 LongFloat clasp_to_long_float(Number_sp x)
 {
   return x->as_long_float_();
@@ -3516,10 +3061,7 @@ CL_DEFUN DoubleFloat_sp ext__bits_to_double_float(Integer_sp integer) {
     double     d;
     uint64_t   i;
   } converter;
-  if (integer.fixnump())
-    converter.i = unbox_fixnum(integer);
-  else // bignum
-    converter.i = integer->as_uint64_t();
+  converter.i = clasp_to_uint64_t(integer);
   return clasp_make_double_float(converter.d);
 }
 

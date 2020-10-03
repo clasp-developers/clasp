@@ -62,26 +62,28 @@
                (ext:constant-form-value class-designatorf env))))
     (multiple-value-bind (keys syms bindings validp)
         (extract initargs env)
-      (if validp
-          (if class-designator
-              ;; Class is constant: get cell at load time
-              (let ((cellg (gensym "CONSTRUCTOR-CELL")))
-                (when (boundp '*constructors-during-build*)
-                  (pushnew (cons class-designator keys)
-                           *constructors-during-build*
-                           :test #'equal))
-                `(let ((,cellg
-                         (load-time-value
-                          (ensure-constructor-cell ',class-designator ',keys)))
-                       ,@bindings)
-                   (funcall ,cellg ,@syms)))
-              ;; Non-constant class: Get cell at runtime
-              `(let (,@bindings)
-                 (funcall
-                  (ensure-constructor-cell ,class-designatorf ',keys)
-                  ,@syms)))
-          ;; Non-constant initargs, but maybe we can do just a bit.
-          (if (and class-designator (symbolp class-designator))
-              `(locally (declare (notinline make-instance))
-                 (make-instance (find-class ',class-designator) ,@initargs))
-              form)))))
+      (cond ((not validp)
+             ;; Non-constant initargs, but maybe we can do just a bit.
+             (if (and class-designator (symbolp class-designator))
+                 `(locally (declare (notinline make-instance))
+                    (make-instance (find-class ',class-designator) ,@initargs))
+                 form))
+            (class-designator
+             ;; Class is constant: get cell at load time
+             (let ((cellg (gensym "CONSTRUCTOR-CELL")))
+               (when (boundp '*constructors-during-build*)
+                 (pushnew (cons class-designator keys)
+                          *constructors-during-build*
+                          :test #'equal))
+               `(let ((,cellg
+                        (load-time-value
+                         (ensure-constructor-cell ',class-designator ',keys)))
+                      ,@bindings)
+                  (funcall ,cellg ,@syms))))
+            (t
+             ;; Non-constant class: Get cell at runtime
+             (let ((cellg (gensym "CONSTRUCTOR-CELL")))
+               `(let ((,cellg
+                        (ensure-constructor-cell ,class-designatorf ',keys))
+                      ,@bindings)
+                (funcall ,cellg ,@syms))))))))

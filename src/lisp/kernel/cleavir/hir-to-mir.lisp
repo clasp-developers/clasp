@@ -418,6 +418,8 @@
                     (cmp::element-type->llvm-type (cleavir-ir:element-type instruction)))
   instruction)
 
+;;; Some KLUDGEs here because I don't know what order instructions are
+;;; specialized in, if any.
 (defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:save-values-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
   (let ((sp-loc (cleavir-ir:new-temporary))
@@ -429,6 +431,24 @@
     (change-class instruction 'cc-mir:clasp-save-values-instruction
                   :outputs (list (first (cleavir-ir:outputs instruction)) ; dynenv
                                  sp-loc nvals-loc vals-loc))))
+
+(defmethod cleavir-hir-to-mir:specialize ((instruction cc-mir:clasp-save-values-instruction)
+                                          (impl clasp-cleavir:clasp)
+                                          proc os)
+  ;; Do nothing. Particularly, do not call the previous method.
+  (declare (ignore proc os))
+  instruction)
+
+(defmethod cleavir-hir-to-mir:specialize ((instruction cleavir-ir:load-values-instruction)
+                                          (impl clasp-cleavir:clasp)
+                                          proc os)
+  (let* ((dyn (cleavir-ir:dynamic-environment instruction))
+         (save (clasp-cleavir::dynenv-definer dyn)))
+    (check-type save cleavir-ir:save-values-instruction)
+    (unless (typep save 'cc-mir:clasp-save-values-instruction)
+      (cleavir-hir-to-mir:specialize save impl proc os))
+    (change-class instruction 'cc-mir:clasp-load-values-instruction
+                  :inputs (cddr (cleavir-ir:outputs save)))))
 
 (defmacro define-float-specializer (instruction-class-name)
   `(defmethod cleavir-hir-to-mir:specialize ((instruction ,instruction-class-name)

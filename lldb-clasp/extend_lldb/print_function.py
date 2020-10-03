@@ -332,31 +332,37 @@ def lbt(debugger, command, result, internal_dict):
         thread.GetThreadID(), thread.GetName(), thread.GetQueueName()) + desc,
           file=result)
     for i in range(depth):
-        frame = thread.GetFrameAtIndex(i)
-        function = frame.GetFunction()
-        load_addr = addrs[i].GetLoadAddress(target)
-        if not function:
-            file_addr = addrs[i].GetFileAddress()
-            start_addr = frame.GetSymbol().GetStartAddress().GetFileAddress()
-            symbol_offset = file_addr - start_addr
-            sym = symbols[i]
-            if (sym == None):
-                sym_start = extend_lldb.loadperf.lookup_address(load_addr)
-                sym = sym_start[0]
-                symbol_offset = load_addr-sym_start[1]
-            mmod = mods[i]
-            if (mmod == None):
-                mmod = ""
-            print('  frame #{num}: {addr:#016x} {mod}`{symbol} + {offset}'.format(
-                num=i, addr=load_addr, mod=mmod, symbol=sym, offset=symbol_offset)
-                  ,file=result)
-        else:
-            print('  frame #{num}: {addr:#016x} {mod}`{func} at {file}:{line} {args}'.format(
-                num=i, addr=load_addr, mod=mods[i],
-                func='%s [inlined]' % funcs[i] if frame.IsInlined() else funcs[i],
-                file=files[i], line=lines[i],
-                args=get_args_as_string(frame, showFuncName=False) if not frame.IsInlined() else '()')
-                  ,file=result)
+        try:
+            frame = thread.GetFrameAtIndex(i)
+            function = frame.GetFunction()
+            load_addr = addrs[i].GetLoadAddress(target)
+            if not function:
+                file_addr = addrs[i].GetFileAddress()
+                start_addr = frame.GetSymbol().GetStartAddress().GetFileAddress()
+                symbol_offset = file_addr - start_addr
+                sym = symbols[i]
+                if (sym == None):
+                    sym_start = extend_lldb.loadperf.lookup_address(load_addr)
+                    if (sym_start):
+                        sym = sym_start[0]
+                        symbol_offset = load_addr-sym_start[1]
+                    else:
+                        sym = "UNKNOWN-SYM"
+                mmod = mods[i]
+                if (mmod == None):
+                    mmod = ""
+                print('  frame #{num}: {addr:#016x} {mod}`{symbol} + {offset}'.format(
+                          num=i, addr=load_addr, mod=mmod, symbol=sym, offset=symbol_offset)
+                          ,file=result)
+            else:
+               print('  frame #{num}: {addr:#016x} {mod}`{func} at {file}:{line} {args}'.format(
+                         num=i, addr=load_addr, mod=mods[i],
+                         func='%s [inlined]' % funcs[i] if frame.IsInlined() else funcs[i],
+                         file=files[i], line=lines[i],
+                         args=get_args_as_string(frame, showFuncName=False) if not frame.IsInlined() else '()')
+                         ,file=result)
+        except Error:
+            print("Could not print frame %d" % i)
     print("Done backtrace")
 
 def do_lldb_init_module(debugger, internal_dict,prefix):

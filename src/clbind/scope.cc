@@ -177,11 +177,11 @@ package_::package_(string const &name, std::list<std::string> nicknames, std::li
     }
   }
   this->_PackageDynamicVariable = new core::DynamicScopeManager(cl::_sym_STARpackageSTAR, pkg);
-  LOG_SCOPE(("%s:%d package scope_ -> %p\n", __FILE__, __LINE__, &this->_Scope));
+  LOG_SCOPE(("%s:%d package scope_ -> %p\n", __FILE__, __LINE__, this ));
 }
 
 package_::~package_() {
-  _Scope.register_();
+  this->register_();
   delete this->_PackageDynamicVariable;
 };
 

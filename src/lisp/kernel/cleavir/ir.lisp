@@ -69,9 +69,7 @@
 (defun %intrinsic-call (function-name args &optional (label ""))
   (let* ((info (gethash function-name (cmp::get-primitives)))
          (does-not-throw (getf (cmp::primitive-properties info) :does-not-throw)))
-    (when (and (null does-not-throw)                     ; it throws
-               (not (string= function-name "cc_unwind")) ; it's not cc_unwind
-               (not (string= function-name "cc_throw"))) ; it's not cc_throw
+    (when (and (null does-not-throw)) ; it's not cc_throw
       ;; If we are using llvm CALL to call the intrinsic but it can
       ;; + throw an exception then print a warning - it should be
       ;; + called with %intrinsic-invoke-if-landing-pad-or-call

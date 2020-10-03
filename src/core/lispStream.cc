@@ -577,7 +577,7 @@ generic_read_byte_unsigned8(T_sp strm) {
 
 static void
 generic_write_byte_unsigned8(T_sp byte, T_sp strm) {
-  unsigned char c = clasp_toUint8(byte);
+  unsigned char c = clasp_to_uint8_t(byte);
   StreamOps(strm).write_byte8(strm, &c, 1);
 }
 
@@ -591,7 +591,7 @@ generic_read_byte_signed8(T_sp strm) {
 
 static void
 generic_write_byte_signed8(T_sp byte, T_sp strm) {
-  signed char c = clasp_toSignedInt8(byte);
+  signed char c = clasp_to_int8_t(byte);
   StreamOps(strm).write_byte8(strm, (unsigned char *)&c, 1);
 }
 

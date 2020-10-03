@@ -1191,14 +1191,13 @@ if not possible."
       (core:SIMPLE-MDARRAY-T (simple-array T *))
       (core:abstract-simple-vector (simple-array * (*)))
 
-      (core:abstract-simple-vector (simple-array * (*)))
-
       (STRING (ARRAY CHARACTER (*)))
       #+unicode
       (BASE-STRING (ARRAY BASE-CHAR (*)))
       (SIMPLE-STRING (SIMPLE-ARRAY CHARACTER (*)))
       #+unicode
       (SIMPLE-BASE-STRING (SIMPLE-ARRAY BASE-CHAR (*)))
+      (core:simple-character-string (SIMPLE-ARRAY CHARACTER (*)))
       (BIT-VECTOR (ARRAY BIT (*)))
 
       (SEQUENCE (OR CONS (MEMBER NIL) (ARRAY * (*))))

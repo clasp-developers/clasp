@@ -48,35 +48,42 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/num_arith.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/mathDispatch.h>
 
 namespace core {
 
-SYMBOL_EXPORT_SC_(CorePkg, integer_divide);
+// This is a truncating division.
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y) {
-  NumberType tx, ty;
-  tx = clasp_t_of(x);
-  ty = clasp_t_of(y);
-  if (tx == number_Fixnum) {
-    if (ty == number_Fixnum) {
-      if (y.unsafe_fixnum() == 0)
+  MATH_DISPATCH_BEGIN(x, y) {
+  case_Fixnum_v_Fixnum : {
+      Fixnum fy = y.unsafe_fixnum();
+      if (fy == 0)
         ERROR_DIVISION_BY_ZERO(x, y);
-      return (clasp_make_fixnum(x.unsafe_fixnum() / y.unsafe_fixnum()));
-    } else if (ty == number_Bignum) {
-      return _clasp_fix_divided_by_big(x.unsafe_fixnum(), gc::As_unsafe<Bignum_sp>(y));
-    } else {
-      ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 2, y, cl::_sym_Integer_O);
+      else
+        // Note that / truncates towards zero as of C++11, as we want.
+        return clasp_make_fixnum(x.unsafe_fixnum() / fy);
     }
-  }
-  if (tx == number_Bignum) {
-    if (ty == number_Bignum) {
-      return _clasp_big_divided_by_big(gc::As_unsafe<Bignum_sp>(x), gc::As_unsafe<Bignum_sp>(y));
-    } else if (ty == number_Fixnum) {
-      return _clasp_big_divided_by_fix(gc::As_unsafe<Bignum_sp>(x), y.unsafe_fixnum());
-    } else {
-      QERROR_WRONG_TYPE_NTH_ARG(2, y, cl::_sym_Integer_O);
+  case_Fixnum_v_Bignum :
+    return fix_divided_by_next(x.unsafe_fixnum(),
+                               gc::As_unsafe<Bignum_sp>(x));
+  case_Bignum_v_Fixnum : {
+      T_mv trunc = core__next_ftruncate(gc::As_unsafe<Bignum_sp>(x),
+                                        y.unsafe_fixnum());
+      T_sp quotient = trunc;
+      return gc::As_unsafe<Integer_sp>(trunc);
     }
-  }
-  ERROR_WRONG_TYPE_NTH_ARG(core::_sym_integer_divide, 1, x, cl::_sym_Integer_O);
+  case_Bignum_v_Bignum : {
+      // FIXME: MPN doesn't export a quotient-only division that I can see,
+      // but we could call a version of truncate that doesn't cons up the
+      // actual bignum for the remainder, hypothetically.
+      // Would save some heap allocation.
+      T_mv trunc = core__next_truncate(gc::As_unsafe<Bignum_sp>(x),
+                                       gc::As_unsafe<Bignum_sp>(y));
+      T_sp quotient = trunc;
+      return gc::As_unsafe<Integer_sp>(trunc);
+    }
+  };
+  MATH_DISPATCH_END();
   UNREACHABLE();
 }
 
@@ -99,6 +106,10 @@ CL_DEFUN Integer_sp cl__gcd(List_sp nums) {
   return gcd;
 }
 
+// NOTE: C++17 defines a gcd which could hypothetically be faster than
+// Euclid's algorithm. (Probably not though, machine integers are small.)
+// In any case we should probably use it, if C++ implementations ever
+// reliably get that far.
 gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 {
     if (a == 0)
@@ -107,32 +118,21 @@ gc::Fixnum gcd(gc::Fixnum a, gc::Fixnum b)
 }
 
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx) {
-  switch (clasp_t_of(x)) {
-  case number_Fixnum: {
-    if (clasp_t_of(y) == number_Fixnum)
-      return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
-    Bignum_sp big(Bignum_O::create(x.unsafe_fixnum()));
-    x = big;
-  }
-  case number_Bignum:
-    break;
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(yidx, x, cl::_sym_Integer_O);
-  }
-  switch (clasp_t_of(y)) {
-  case number_Fixnum: {
-    Bignum_sp big(Bignum_O::create(y.unsafe_fixnum()));
-    y = big;
-  }
-  case number_Bignum:
-    break;
-  default:
-    QERROR_WRONG_TYPE_NTH_ARG(1 + yidx, y, cl::_sym_Integer_O);
-  }
-  Bignum_sp temp = gc::As<Bignum_sp>(_clasp_big_gcd(gc::As<Bignum_sp>(x), gc::As<Bignum_sp>(y)));
-  if (temp->fits_sint_p())
-    return clasp_make_fixnum(temp->as_int());
-  else return temp;
+  MATH_DISPATCH_BEGIN(x, y) {
+  case_Fixnum_v_Fixnum :
+    return clasp_make_fixnum(gcd(x.unsafe_fixnum(), y.unsafe_fixnum()));
+  case_Fixnum_v_Bignum :
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(y),
+                           x.unsafe_fixnum());
+  case_Bignum_v_Fixnum :
+    return core__next_fgcd(gc::As_unsafe<Bignum_sp>(x),
+                           y.unsafe_fixnum());
+  case_Bignum_v_Bignum :
+    return core__next_gcd(gc::As_unsafe<Bignum_sp>(x),
+                          gc::As_unsafe<Bignum_sp>(y));
+    default: UNREACHABLE();
+  };
+  MATH_DISPATCH_END();
 }
 
 CL_LAMBDA(&rest args);
