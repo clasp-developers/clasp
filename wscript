@@ -1204,6 +1204,7 @@ def configure(cfg):
 # --------------------------------------------------
 # --------------------------------------------------
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
+    cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-declarations'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-return-type-c-linkage'] )

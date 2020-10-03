@@ -3443,8 +3443,8 @@ CL_LISPIFY_NAME(createLICMPass);
   //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);
   CL_LISPIFY_NAME(createTailCallEliminationPass);
   CL_EXTERN_DEFUN(&llvm::createTailCallEliminationPass);
-  CL_LISPIFY_NAME(createConstantPropagationPass);
-  CL_EXTERN_DEFUN(&llvm::createConstantPropagationPass);
+//  CL_LISPIFY_NAME(createConstantPropagationPass);
+//  CL_EXTERN_DEFUN(&llvm::createConstantPropagationPass);
   //    core::af_def(LlvmoPkg,"createDemoteMemoryToRegisterPass",&llvm::createDemoteMemoryToRegisterPass);
   CL_LISPIFY_NAME(createVerifierPass);
   CL_EXTERN_DEFUN(&llvm::createVerifierPass);
@@ -4333,7 +4333,7 @@ ClaspJIT_O::ClaspJIT_O() {
                      .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
 //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
                                                      auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
-                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(jitlink::InProcessEHFrameRegistrar::getInstance()));
+                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                                                      ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                                                      ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                                                      return ObjLinkingLayer;
