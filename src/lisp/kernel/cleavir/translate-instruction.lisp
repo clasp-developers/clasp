@@ -60,7 +60,8 @@
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value abi function-info)
   (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
-         (label (safe-llvm-name (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
+         (label (safe-llvm-name
+                 (clasp-cleavir-hir:precalc-value-instruction-form instruction)))
          (value (cmp:irc-load
                  (cmp:irc-gep-variable (literal:ltv-global) (list (%size_t 0) (%i64 index)) label))))
     (out value (first (cleavir-ir:outputs instruction)))))

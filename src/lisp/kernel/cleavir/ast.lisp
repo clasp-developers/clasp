@@ -621,12 +621,12 @@
 
 (defclass precalc-value-reference-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin cleavir-ast:ast)
   ((%ref-index :initarg :index :accessor precalc-value-reference-ast-index)
-   (%original-object :initarg :original-object :accessor precalc-value-reference-ast-original-object)))
+   (%form :initarg :form :accessor precalc-value-reference-ast-form)))
 
 
 (cleavir-io:define-save-info precalc-value-reference-ast
   (:index precalc-value-reference-ast-index)
-  (:original-object precalc-value-reference-ast-original-object))
+  (:form precalc-value-reference-ast-form))
 
 (defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
   nil)
@@ -637,11 +637,11 @@
 (defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
   (with-output-to-string (s)
     (format s "precalc-val-ref ; ")
-    (let ((original-object (escaped-string
-                            (format nil "~s" (precalc-value-reference-ast-original-object ast)))))
-      (if (> (length original-object) 10)
-	  (format s "~a..." (subseq original-object 0 10))
-	  (princ original-object s)))))
+    (let ((form (escaped-string
+                 (format nil "~s" (precalc-value-reference-ast-form ast)))))
+      (if (> (length form) 10)
+	  (format s "~a..." (subseq form 0 10))
+	  (princ form s)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -695,15 +695,15 @@ precalculated-vector and returns the index."
      (let* ((value (ext:constant-form-value form env))
             (immediate (core:create-tagged-immediate-value-or-nil value)))
        (if immediate
-           (values immediate t)
+           (values immediate t t value)
            (multiple-value-bind (index indexp)
                (literal:reference-literal value t)
              ;; FIXME: Might not to reorganize things deeper.
              (unless indexp
                (error "BUG: create-tagged-immediate-value-or-nil is inconsistent with literal machinery."))
-             (values index nil)))))
-    ;; Currently read-only-p is ignored from here on.
-    ;; But it might be possible to coalesce EQ forms or something.
+             (values index nil t value)))))
+    ;; Currently read-only-p is mostly ignored from here on,
+    ;; but it might be possible to coalesce EQ forms or something.
     ;; COMPLE-FILE will generate a function for the form in the Module
     ;; and arrange for it's evaluation at load time
     ;; and to make its result available as a value
@@ -711,14 +711,14 @@ precalculated-vector and returns the index."
          'cl:compile-file)
      (values (literal:with-load-time-value
                  (clasp-cleavir::compile-form form env))
-             nil))
+             nil nil nil))
     ;; COMPILE on the other hand evaluates the form and puts its
     ;; value in the run-time environment.
     (t
      (let ((value (cleavir-env:eval form env env)))
        (multiple-value-bind (index-or-immediate index-p)
            (literal:codegen-rtv-cclasp value)
-         (values index-or-immediate (not index-p)))))))
+         (values index-or-immediate (not index-p) read-only-p value))))))
 
 (defun hoist-load-time-value (ast env)
   (let ((ltvs nil))
@@ -729,13 +729,24 @@ precalculated-vector and returns the index."
      ast)
     (dolist (ltv ltvs)
       (let ((form (cleavir-ast:form ltv)))
-        (multiple-value-bind (index-or-immediate immediatep literal-name)
+        (multiple-value-bind (index-or-immediate immediatep
+                              constantp constant-value)
             (process-ltv env form (cleavir-ast:read-only-p ltv))
-          (if immediatep
-              (change-class ltv 'cleavir-ast:immediate-ast
-                            :value index-or-immediate)
-              (change-class ltv 'precalc-value-reference-ast
-                            :index index-or-immediate
-                            :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ltv) 999901)
-                            :original-object form)))))
+          (cond
+            (immediatep
+             (change-class ltv 'cleavir-ast:immediate-ast
+                           :value index-or-immediate))
+            #+(or)
+            (constantp
+             (change-class ltv 'precalc-constant-reference-ast
+                           :index index-or-immediate
+                           :origin (clasp-cleavir::ensure-origin
+                                    (cleavir-ast:origin ltv) 999901)
+                           :value constant-value))
+            (t
+             (change-class ltv 'precalc-value-reference-ast
+                           :index index-or-immediate
+                           :origin (clasp-cleavir::ensure-origin
+                                    (cleavir-ast:origin ltv) 999901)
+                           :form form))))))
     ast))

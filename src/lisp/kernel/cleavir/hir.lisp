@@ -456,19 +456,19 @@
 
 (defclass precalc-value-instruction (cleavir-ir:one-successor-mixin cleavir-ir:instruction)
   ((%index :initarg :index :accessor precalc-value-instruction-index)
-   (%original-object :initarg :original-object :accessor precalc-value-instruction-original-object)))
+   (%form :initarg :form :accessor precalc-value-instruction-form)))
 
-(defun make-precalc-value-instruction (index output &key successor original-object
-                                                      (origin (if (boundp 'cleavir-ir:*origin*)
-                                                                  cleavir-ir:*origin*
-                                                                  nil)
-                                                              originp))
+(defun make-precalc-value-instruction (index output
+                                       &key successor form
+                                         (origin (if (boundp 'cleavir-ir:*origin*)
+                                                     cleavir-ir:*origin*
+                                                     nil)))
   (make-instance 'precalc-value-instruction
     :outputs (list output)
     :successors (if (null successor) nil (list successor))
     :origin origin
     :index index
-    :original-object original-object))
+    :form form))
 
 (defun escaped-string (str)
   (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
@@ -476,14 +476,14 @@
 (defmethod cleavir-ir-graphviz:label ((instr precalc-value-instruction))
   (with-output-to-string (s)
     (format s "precalc-value-ref ; ")
-    (let ((original-object (escaped-string
-			 (format nil "~s" (precalc-value-instruction-original-object instr)))))
-      (if (> (length original-object) 30)
-	  (format s "~a..." (subseq original-object 0 30))
-	  (princ original-object s)))))
+    (let ((form (escaped-string
+                 (format nil "~s" (precalc-value-instruction-form instr)))))
+      (if (> (length form) 30)
+	  (format s "~a..." (subseq form 0 30))
+	  (princ form s)))))
 
 (defmethod cleavir-ir:clone-initargs append ((instruction precalc-value-instruction))
-  (list :original-object (precalc-value-instruction-original-object instruction)
+  (list :form (precalc-value-instruction-form instruction)
         :index (precalc-value-instruction-index instruction)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

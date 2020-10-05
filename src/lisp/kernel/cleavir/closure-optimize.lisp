@@ -56,10 +56,10 @@ PROGN."
                  (only-one-fdef-input-definer (= (length fdef-input-definers) 1))
                  (precalc (first fdef-input-definers))
                  (is-precalc (typep precalc 'clasp-cleavir-hir:precalc-value-instruction))
-                 (callee (let ((original-object (clasp-cleavir-hir:precalc-value-instruction-original-object precalc)))
-                           (if (consp original-object)
-                               (second original-object)
-                               (error "The original-object ~s must be consp - precalc object ~s" original-object precalc)))))
+                 (callee (let ((form (clasp-cleavir-hir:precalc-value-instruction-form precalc)))
+                           (if (consp form)
+                               (second form)
+                               (error "The form ~s must be consp - precalc object ~s" form precalc)))))
                 (case callee
                   ((core:progv-function
                     cleavir-primop:call-with-variable-bound)

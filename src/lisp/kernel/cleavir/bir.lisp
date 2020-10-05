@@ -2,8 +2,8 @@
 
 (defclass precalc-value (cleavir-bir::no-input cleavir-bir:computation)
   ((%index :initarg :index :accessor precalc-value-index)
-   (%original-form :initarg :form
-                   :accessor precalc-value-original-form)))
+   (%form :initarg :form
+          :accessor precalc-value-form)))
 (defmethod cleavir-bir:rtype ((d precalc-value)) :object)
 
 (defmethod cleavir-ast-to-bir:compile-ast
@@ -13,7 +13,7 @@
     inserter
     (make-instance 'precalc-value
       :index (cc-ast:precalc-value-reference-ast-index ast)
-      :value (cc-ast:precalc-value-reference-ast-original-object ast)))))
+      :form (cc-ast:precalc-value-reference-ast-form ast)))))
 
 (defclass unwind-protect (cleavir-bir:dynamic-environment
                           cleavir-bir::one-input cleavir-bir::no-output

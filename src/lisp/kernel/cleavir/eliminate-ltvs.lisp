@@ -9,7 +9,7 @@
                   (cleavir-ir:*dynamic-environment*
                     (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                        index input :original-object value
+                        index input :form value
                         :origin (cleavir-ir:origin instr))))
              (cleavir-ir:insert-instruction-before pvi instr))))
 
@@ -32,7 +32,7 @@
                   (cleavir-ir:*dynamic-environment*
                     (cleavir-ir:dynamic-environment instr))
                   (pvi (clasp-cleavir-hir:make-precalc-value-instruction
-                        index input :original-object form
+                        index input :form form
                         :origin (cleavir-ir:origin instr))))
              (cleavir-ir:insert-instruction-before pvi instr))))
 

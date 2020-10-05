@@ -76,7 +76,7 @@
    #:debug-break
    #:precalc-value-reference-ast
    #:precalc-value-reference-ast-index
-   #:precalc-value-reference-ast-original-object
+   #:precalc-value-reference-ast-form
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
@@ -130,7 +130,7 @@
    #:setf-fdefinition-instruction
    #:throw-instruction
    #:precalc-value-instruction-index
-   #:precalc-value-instruction-original-object
+   #:precalc-value-instruction-form
    #:instruction-id
    #:vector-length-instruction
    #:displacement-instruction
