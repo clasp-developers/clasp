@@ -77,6 +77,8 @@
    #:precalc-value-reference-ast
    #:precalc-value-reference-ast-index
    #:precalc-value-reference-ast-form
+   #:precalc-constant-reference-ast
+   #:precalc-constant-reference-ast-value
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
@@ -156,7 +158,7 @@
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:shadow #:unwind-protect)
-  (:export #:precalc-value #:precalc-value-index
+  (:export #:precalc-value #:precalc-value-index #:precalc-constant
            #:unwind-protect #:mv-foreign-call #:function-name #:bind
            #:header-stamp-case))
 

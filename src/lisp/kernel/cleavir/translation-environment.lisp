@@ -38,7 +38,10 @@
 
 (defun out (value datum)
   (check-type datum cleavir-bir:transfer)
-  (assert (not (gethash datum *datum-values*)))
+  (assert (not (gethash datum *datum-values*))
+          ()
+          "Double OUT for ~a: Old value ~a, new value ~a"
+          datum (gethash datum *datum-values*) value)
   (setf (gethash datum *datum-values*) value))
 
 (defun phi-out (value datum llvm-block)

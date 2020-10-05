@@ -645,6 +645,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class PRECALC-CONSTANT-REFERENCE-AST
+;;;
+;;; As above, but the value (or something similar to the value, rather) is
+;;; known at compile time.
+
+(defclass precalc-constant-reference-ast (precalc-value-reference-ast)
+  ((%value :initarg :value :accessor precalc-constant-reference-ast-value)))
+
+(cleavir-io:define-save-info precalc-constant-reference-ast
+    (:value precalc-constant-reference-ast-value))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class BIND-VA-LIST-AST
 ;;;
 ;;; Bind variables according to an ordinary lambda list based on a va_list.
@@ -736,12 +749,12 @@ precalculated-vector and returns the index."
             (immediatep
              (change-class ltv 'cleavir-ast:immediate-ast
                            :value index-or-immediate))
-            #+(or)
             (constantp
              (change-class ltv 'precalc-constant-reference-ast
                            :index index-or-immediate
                            :origin (clasp-cleavir::ensure-origin
                                     (cleavir-ast:origin ltv) 999901)
+                           :form form
                            :value constant-value))
             (t
              (change-class ltv 'precalc-value-reference-ast

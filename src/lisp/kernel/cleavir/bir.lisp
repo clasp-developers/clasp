@@ -15,6 +15,18 @@
       :index (cc-ast:precalc-value-reference-ast-index ast)
       :form (cc-ast:precalc-value-reference-ast-form ast)))))
 
+(defclass precalc-constant (cleavir-bir:constant precalc-value) ())
+
+(defmethod cleavir-ast-to-bir:compile-ast
+    ((ast cc-ast:precalc-constant-reference-ast) inserter)
+  (list
+   (cleavir-ast-to-bir:insert
+    inserter
+    (make-instance 'precalc-constant
+      :index (cc-ast:precalc-value-reference-ast-index ast)
+      :form (cc-ast:precalc-value-reference-ast-form ast)
+      :value (cc-ast:precalc-constant-reference-ast-value ast)))))
+
 (defclass unwind-protect (cleavir-bir:dynamic-environment
                           cleavir-bir::one-input cleavir-bir::no-output
                           cleavir-bir:terminator1 cleavir-bir:operation)

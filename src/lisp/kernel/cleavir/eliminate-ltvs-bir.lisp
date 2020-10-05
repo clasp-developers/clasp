@@ -4,8 +4,8 @@
   (let* ((use (cleavir-bir:use input))
          (cleavir-bir:*policy* (cleavir-bir:policy use))
          (cleavir-bir:*origin* (cleavir-bir:origin use)))
-    (change-class input 'cc-bir:precalc-value
-                  :form `',value :index index)
+    (change-class input 'cc-bir:precalc-constant
+                  :form `',value :index index :value value)
     (cleavir-bir:insert-instruction-before input use)))
 
 (defun replace-constant-with-immediate (value input)
@@ -45,7 +45,8 @@
   (cleavir-bir:map-instructions
    (lambda (instruction)
      (loop for input in (cleavir-bir:inputs instruction)
-           when (typep input 'cleavir-bir:constant)
+           when (typep input '(and cleavir-bir:constant
+                               (not cc-bir:precalc-value)))
              do (eliminate-constant-input input env)
            when (typep input 'cleavir-bir:load-time-value)
              do (eliminate-load-time-value-input input env)))
