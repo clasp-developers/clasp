@@ -38,7 +38,8 @@
 (defmacro define-cleavir-compiler-macro (name lambda-list &body body)
   `(define-compiler-macro ,name (,@lambda-list)
      ;; I just picked this since it's the first variable in auto-compile.lisp.
-     (unless (eq cmp:*cleavir-compile-hook* 'cclasp-compile*)
+     (unless (eq cmp:*cleavir-compile-hook*
+                 'clasp-cleavir-translate-bir::bir-compile)
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
