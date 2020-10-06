@@ -7,7 +7,8 @@
 (defmethod cleavir-bir:rtype ((d precalc-value)) :object)
 
 (defmethod cleavir-ast-to-bir:compile-ast
-    ((ast cc-ast:precalc-value-reference-ast) inserter)
+    ((ast cc-ast:precalc-value-reference-ast) inserter system)
+  (declare (ignore system))
   (list
    (cleavir-ast-to-bir:insert
     inserter
@@ -18,7 +19,8 @@
 (defclass precalc-constant (cleavir-bir:constant precalc-value) ())
 
 (defmethod cleavir-ast-to-bir:compile-ast
-    ((ast cc-ast:precalc-constant-reference-ast) inserter)
+    ((ast cc-ast:precalc-constant-reference-ast) inserter system)
+  (declare (ignore system))
   (list
    (cleavir-ast-to-bir:insert
     inserter
@@ -33,8 +35,9 @@
   ())
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
-                                            inserter)
-  (let ((fu (cleavir-ast-to-bir:compile-ast (cc-ast:cleanup-ast ast) inserter)))
+                                            inserter system)
+  (let ((fu (cleavir-ast-to-bir:compile-ast (cc-ast:cleanup-ast ast)
+                                            inserter system)))
     (if (eq fu :no-return)
         :no-return
         (let* ((uw (make-instance 'unwind-protect
@@ -46,7 +49,7 @@
           (cleavir-ast-to-bir:terminate inserter uw)
           (cleavir-ast-to-bir:begin inserter during)
           (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                                     inserter)))
+                                                    inserter system)))
             (cond ((eq rv :no-return) :no-return)
                   (t
                    (let ((next (cleavir-ast-to-bir:make-iblock
@@ -62,10 +65,11 @@
                 cleavir-bir::no-output cleavir-bir:operation)
   ())
 
-(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:bind-ast) inserter)
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:bind-ast)
+                                           inserter system)
   (let ((args (cleavir-ast-to-bir:compile-arguments
                (list (cleavir-ast:name-ast ast) (cleavir-ast:value-ast ast))
-               inserter)))
+               inserter system)))
     (when (eq args :no-return)
       (return-from cleavir-ast-to-bir:compile-ast args))
     (let* ((during (cleavir-ast-to-bir:make-iblock inserter))
@@ -75,7 +79,7 @@
       (cleavir-ast-to-bir:terminate inserter bind)
       (cleavir-ast-to-bir:begin inserter during)
       (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                                 inserter)))
+                                                inserter system)))
         (cond ((eq rv :no-return) :no-return)
               (t
                (let ((next (cleavir-ast-to-bir:make-iblock
@@ -97,9 +101,9 @@
 (defmethod cleavir-bir:rtype ((d mv-foreign-call)) :multiple-values)
 
 (defmethod cleavir-ast-to-bir:compile-ast
-    ((ast cc-ast:multiple-value-foreign-call-ast) inserter)
+    ((ast cc-ast:multiple-value-foreign-call-ast) inserter system)
   (let ((args (cleavir-ast-to-bir:compile-arguments
-               (cc-ast:argument-asts ast) inserter)))
+               (cc-ast:argument-asts ast) inserter system)))
     (if (eq args :no-return)
         :no-return
         (cleavir-ast-to-bir:insert
@@ -113,8 +117,9 @@
   ())
 
 (defmethod cleavir-ast-to-bir:compile-test-ast
-    ((ast cc-ast:header-stamp-case-ast) inserter)
-  (let ((rv (cleavir-ast-to-bir:compile-ast (cc-ast:stamp-ast ast) inserter)))
+    ((ast cc-ast:header-stamp-case-ast) inserter system)
+  (let ((rv (cleavir-ast-to-bir:compile-ast (cc-ast:stamp-ast ast)
+                                            inserter system)))
     (when (eq rv :no-return) (return-from cleavir-ast-to-bir:compile-test-ast rv))
     (let* ((ibs
              (loop repeat 4 collect (cleavir-ast-to-bir:make-iblock inserter)))

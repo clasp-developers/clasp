@@ -766,8 +766,8 @@
     (cmp::potentially-save-module)
     result))
 
-(defun ast->bir (ast)
-  (cleavir-ast-to-bir:compile-toplevel ast))
+(defun ast->bir (ast system)
+  (cleavir-ast-to-bir:compile-toplevel ast system))
 
 (defun bir->bmir (ir env)
   (cleavir-bir:verify ir)
@@ -781,8 +781,9 @@
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
                                   (linkage 'llvm-sys:internal-linkage)
-                                    (env clasp-cleavir::*clasp-env*))
-  (let* ((bir (ast->bir ast))
+                                    (env clasp-cleavir::*clasp-env*)
+                                    (system clasp-cleavir::*clasp-system*))
+  (let* ((bir (ast->bir ast system))
          (bmir (bir->bmir bir env)))
     (translate bmir :abi abi :linkage linkage)))
 
