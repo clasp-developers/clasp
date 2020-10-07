@@ -69,7 +69,7 @@
 
 (defgeneric undo-dynenv (dynamic-environment return-value))
 
-(defmethod undo-dynenv ((dynamic-environment cleavir-bir:leti) return-value)
+(defmethod undo-dynenv ((dynamic-environment cleavir-bir:dynamic-leti) return-value)
   ;; Could undo stack allocated cells here
   (declare (ignore return-value)))
 (defmethod undo-dynenv ((dynenv cleavir-bir:catch) return-value)
@@ -115,13 +115,6 @@
         ;; just an alloca
         (setf (gethash var *variable-allocas*)
               (cmp:alloca-t*)))))
-
-(defmethod translate-terminator ((instruction cleavir-bir:leti)
-                                 return-value abi next)
-  (declare (ignore return-value abi))
-  (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v instruction))
-                      (cleavir-bir:bindings instruction))
-  (cmp:irc-br (first next)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
                                  return-value abi next)
@@ -355,6 +348,12 @@
                         (or (gethash var *datum-values*)
                             (error "BUG: Cell missing: ~a" var)))
                       enclose-list))))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:leti)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v instruction))
+                      (cleavir-bir:bindings instruction)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:writevar)
                                          return-value abi)
