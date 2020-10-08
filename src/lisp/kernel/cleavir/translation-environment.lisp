@@ -44,9 +44,12 @@
                           (error "BUG: Cell missing: ~a" variable)))
                 (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
             (cmp:irc-load-atomic (cmp::gen-memref-address cell offset))))
-      (let ((alloca (or (gethash variable *variable-allocas*)
-                        (error "BUG: Variable missing: ~a" variable))))
-        (cmp:irc-load alloca))))
+      (if (cleavir-bir:immutablep variable)
+          (or (gethash variable *datum-values*)
+              (error "BUG: Variable missing: ~a" variable))
+          (let ((alloca (or (gethash variable *variable-allocas*)
+                            (error "BUG: Variable missing: ~a" variable))))
+            (cmp:irc-load alloca)))))
 
 (defun out (value datum)
   (check-type datum cleavir-bir:transfer)
@@ -72,9 +75,11 @@
             (cmp:irc-store-atomic
              value
              (cmp::gen-memref-address cell offset))))
-      (let ((alloca (or (gethash variable *variable-allocas*)
-                        (error "BUG: Variable missing: ~a" variable))))
-        (cmp:irc-store value alloca))))
+      (if (cleavir-bir:immutablep variable)
+          (setf (gethash variable *datum-values*) value)
+          (let ((alloca (or (gethash variable *variable-allocas*)
+                            (error "BUG: Variable missing: ~a" variable))))
+            (cmp:irc-store value alloca)))))
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv cleavir-bir:dynamic-environment)

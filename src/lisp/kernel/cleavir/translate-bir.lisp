@@ -115,9 +115,13 @@
                   ;; make a cell
                   (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
                    "cc_makeCell" nil "")))
-        ;; just an alloca
-        (setf (gethash var *variable-allocas*)
-              (cmp:alloca-t*)))))
+        (if (cleavir-bir:immutablep var)
+            (setf (gethash var *datum-values*)
+                  ;; This should get initialized eventually.
+                  nil)
+            ;; just an alloca
+            (setf (gethash var *variable-allocas*)
+                  (cmp:alloca-t*))))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
                                  return-value abi next)
