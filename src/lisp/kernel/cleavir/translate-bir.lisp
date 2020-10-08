@@ -384,6 +384,22 @@
   (declare (ignore return-value abi))
   (variable-in (first (cleavir-bir:inputs instruction))))
 
+(defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
+                                         return-value abi)
+  (let* ((callee (cleavir-bir:callee instruction))
+         (arguments (mapcar #'in (rest (cleavir-bir:inputs instruction))))
+         (real-args (cmp:irc-calculate-real-args arguments))
+         (args (list* (cmp:irc-undef-value-get cmp:%i8*%)
+                      (clasp-cleavir::%size_t (length arguments))
+                      real-args))
+         (lambda-name (get-or-create-lambda-name callee))
+         (function (memoized-layout-procedure callee lambda-name abi))
+         (result-in-registers
+           (if cmp::*current-unwind-landing-pad-dest*
+               (cmp:irc-create-invoke function args cmp::*current-unwind-landing-pad-dest*)
+               (cmp:irc-create-call function args))))
+    (clasp-cleavir::store-tmv result-in-registers return-value)))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
   (declare (ignore abi))
