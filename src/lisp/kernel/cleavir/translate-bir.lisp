@@ -108,10 +108,13 @@
 (defun bind-if-necessary (var binder)
   (when (eq (cleavir-bir:binder var) binder)
     (if (cleavir-bir:closed-over-p var)
-        ;; make a cell
         (setf (gethash var *datum-values*)
-              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-               "cc_makeCell" nil ""))
+              (if (cleavir-bir:immutablep var)
+                  ;; This should get initialized eventually.
+                  nil
+                  ;; make a cell
+                  (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                   "cc_makeCell" nil "")))
         ;; just an alloca
         (setf (gethash var *variable-allocas*)
               (cmp:alloca-t*)))))
@@ -340,14 +343,25 @@
          (enclose
            (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
             "cc_enclose" enclose-args)))
-    (prog1 enclose
-      (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-       "cc_initialize_closure"
-       (list* enclose sninputs
-              (mapcar (lambda (var)
-                        (or (gethash var *datum-values*)
-                            (error "BUG: Cell missing: ~a" var)))
-                      enclose-list))))))
+    ;; We don't initialize the closure immediately in case it partakes
+    ;; in mutual reference.
+    (delay-initializer
+     (lambda ()
+       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+        "cc_initialize_closure"
+        (list* enclose sninputs
+               (mapcar (lambda (var)
+                         (or (gethash var *datum-values*)
+                             (error "BUG: Cell missing: ~a" var)))
+                       enclose-list)))))
+    enclose))
+
+(defmethod translate-simple-instruction :before
+    ((instruction cleavir-bir:abstract-call)
+     return-value abi)
+  (declare (ignore instruction return-value abi))
+  ;; We must force all closure initializers to run before a call.
+  (force-initializers))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:leti)
                                          return-value abi)
@@ -618,14 +632,17 @@
   (cmp:with-landing-pad (maybe-entry-landing-pad
                          (cleavir-bir:dynamic-environment iblock)
                          return-value *tags*)
-    (loop with end = (cleavir-bir:end iblock)
-          for instruction = (cleavir-bir:start iblock)
-            then (cleavir-bir:successor instruction)
-          until (eq instruction end)
-          do (translate-simple-instruction instruction return-value abi)
-          finally (translate-terminator
-                   instruction return-value abi
-                   (mapcar #'iblock-tag (cleavir-bir:next end))))))
+    (let ((*enclose-initializers* '()))
+      (loop with end = (cleavir-bir:end iblock)
+            for instruction = (cleavir-bir:start iblock)
+              then (cleavir-bir:successor instruction)
+            until (eq instruction end)
+            do (translate-simple-instruction instruction return-value abi)
+            finally (progn
+                      (force-initializers)
+                      (translate-terminator
+                       instruction return-value abi
+                       (mapcar #'iblock-tag (cleavir-bir:next end))))))))
 
 (defun layout-procedure* (the-function ir calling-convention
                           body-irbuilder body-block
