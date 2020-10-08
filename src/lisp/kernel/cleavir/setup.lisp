@@ -97,6 +97,7 @@ when this is t a lot of graphs will be generated.")
   (cleavir-env:variable-info *clasp-env* symbol))
 
 (defvar *fn-attributes* (make-hash-table :test #'equal))
+(defvar *fn-transforms* (make-hash-table :test #'equal))
 
 (macrolet ((set-dyn-calls (&rest names)
              `(progn ,@(loop for name in names
@@ -176,14 +177,16 @@ when this is t a lot of graphs will be generated.")
      (let* ((cleavir-ast (inline-ast function-name))
             (inline-status (core:global-inline-status function-name))
             (attr (or (gethash function-name *fn-attributes*)
-                      (cleavir-attributes:default-attributes))))
+                      (cleavir-attributes:default-attributes)))
+            (transforms (gethash function-name *fn-transforms*)))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :type (global-ftype function-name)
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
                       :ast cleavir-ast
-                      :attributes attr)))
+                      :attributes attr
+                      :transforms transforms)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
     ;; which is hooked up so that among other things this works.
