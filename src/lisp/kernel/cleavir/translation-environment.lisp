@@ -96,8 +96,4 @@
 (defun function-enclose-list (code)
   (or (gethash code *function-enclose-lists*)
       (setf (gethash code *function-enclose-lists*)
-            (cleavir-set:filter 'list
-                                (lambda (variable)
-                                  (and (not (eq (cleavir-bir:function variable) code))
-                                       (cleavir-bir:closed-over-p variable)))
-                                (cleavir-bir:variables code)))))
+            (cleavir-set:set-to-list (cleavir-bir:environment code)))))

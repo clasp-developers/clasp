@@ -813,6 +813,7 @@
   (cc-bir-to-bmir:reduce-primops ir)
   (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
   (cleavir-bir-transformations:process-captured-variables ir)
+  (cleavir-bir-transformations:local-call-analyze-module (cleavir-bir:module ir))
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
