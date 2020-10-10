@@ -10,7 +10,7 @@
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
 (defvar *compiled-enters*)
-(defvar *function-enclose-lists*)
+(defvar *function-environments*)
 (defvar *enclose-initializers*)
 
 (defun delay-initializer (initializer-thunk)
@@ -93,7 +93,5 @@
   (or (gethash iblock *unwind-ids*)
       (error "Missing unwind ID for ~a" iblock)))
 
-(defun function-enclose-list (code)
-  (or (gethash code *function-enclose-lists*)
-      (setf (gethash code *function-enclose-lists*)
-            (cleavir-set:set-to-list (cleavir-bir:environment code)))))
+(defun function-environment (code)
+  (gethash code *function-environments*))
