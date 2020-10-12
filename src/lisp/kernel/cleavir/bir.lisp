@@ -35,31 +35,28 @@
   ())
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:unwind-protect-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-ast (fu (cc-ast:cleanup-ast ast)
                                             inserter system)
-  (let ((fu (cleavir-ast-to-bir:compile-ast (cc-ast:cleanup-ast ast)
-                                            inserter system)))
-    (if (eq fu :no-return)
-        :no-return
-        (let* ((uw (make-instance 'unwind-protect
-                     :inputs (cleavir-ast-to-bir:adapt inserter fu '(:object))))
-               (ode (cleavir-ast-to-bir:dynamic-environment inserter))
-               (during (cleavir-ast-to-bir:make-iblock
-                        inserter :dynamic-environment uw)))
-          (setf (cleavir-bir:next uw) (list during))
-          (cleavir-ast-to-bir:terminate inserter uw)
-          (cleavir-ast-to-bir:begin inserter during)
-          (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
-                                                    inserter system)))
-            (cond ((eq rv :no-return) :no-return)
-                  (t
-                   (let ((next (cleavir-ast-to-bir:make-iblock
-                                inserter :dynamic-environment ode)))
-                     (cleavir-ast-to-bir:terminate
-                      inserter
-                      (make-instance 'cleavir-bir:jump
-                        :inputs () :outputs () :unwindp t :next (list next)))
-                     (cleavir-ast-to-bir:begin inserter next))
-                   rv)))))))
+    (let* ((uw (make-instance 'unwind-protect :inputs fu))
+           (ode (cleavir-ast-to-bir:dynamic-environment inserter))
+           (during (cleavir-ast-to-bir:make-iblock
+                    inserter :dynamic-environment uw)))
+      (setf (cleavir-bir:next uw) (list during))
+      (cleavir-ast-to-bir:terminate inserter uw)
+      (cleavir-ast-to-bir:begin inserter during)
+      (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
+                                                inserter system)))
+        (cond ((eq rv :no-return) :no-return)
+              (t
+               (let ((next (cleavir-ast-to-bir:make-iblock
+                            inserter :dynamic-environment ode)))
+                 (cleavir-ast-to-bir:terminate
+                  inserter
+                  (make-instance 'cleavir-bir:jump
+                    :inputs () :outputs () :unwindp t :next (list next)))
+                 (cleavir-ast-to-bir:begin inserter next))
+               rv))))))
 
 (defclass bind (cleavir-bir:dynamic-environment cleavir-bir:terminator1
                 cleavir-bir::no-output cleavir-bir:operation)
@@ -67,11 +64,10 @@
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:bind-ast)
                                            inserter system)
-  (let ((args (cleavir-ast-to-bir:compile-arguments
-               (list (cleavir-ast:name-ast ast) (cleavir-ast:value-ast ast))
-               inserter system)))
-    (when (eq args :no-return)
-      (return-from cleavir-ast-to-bir:compile-ast args))
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:name-ast ast)
+                                                (cleavir-ast:value-ast ast))
+                                               inserter system
+                                               (:object :object))
     (let* ((during (cleavir-ast-to-bir:make-iblock inserter))
            (ode (cleavir-ast-to-bir:dynamic-environment inserter))
            (bind (make-instance 'bind :inputs args :next (list during))))
@@ -102,15 +98,13 @@
 
 (defmethod cleavir-ast-to-bir:compile-ast
     ((ast cc-ast:multiple-value-foreign-call-ast) inserter system)
-  (let ((args (cleavir-ast-to-bir:compile-arguments
-               (cc-ast:argument-asts ast) inserter system)))
-    (if (eq args :no-return)
-        :no-return
-        (cleavir-ast-to-bir:insert
-         inserter
-         (make-instance 'mv-foreign-call
-           :function-name (cc-ast:function-name ast)
-           :inputs args)))))
+  (cleavir-ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
+                                                    inserter system)
+    (cleavir-ast-to-bir:insert
+     inserter
+     (make-instance 'mv-foreign-call
+       :function-name (cc-ast:function-name ast)
+       :inputs (mapcar #'first args)))))
 
 (defclass header-stamp-case (cleavir-bir::one-input cleavir-bir::no-output
                              cleavir-bir:terminator cleavir-bir:operation)
@@ -118,14 +112,12 @@
 
 (defmethod cleavir-ast-to-bir:compile-test-ast
     ((ast cc-ast:header-stamp-case-ast) inserter system)
-  (let ((rv (cleavir-ast-to-bir:compile-ast (cc-ast:stamp-ast ast)
-                                            inserter system)))
-    (when (eq rv :no-return) (return-from cleavir-ast-to-bir:compile-test-ast rv))
+  (cleavir-ast-to-bir:with-compiled-ast (rv (cc-ast:stamp-ast ast)
+                                            inserter system)
     (let* ((ibs
              (loop repeat 4 collect (cleavir-ast-to-bir:make-iblock inserter)))
            (hsc (make-instance 'header-stamp-case
-                  :next ibs
-                  :inputs (cleavir-ast-to-bir:adapt inserter rv '(:object)))))
+                  :next ibs :inputs rv)))
       (cleavir-ast-to-bir:terminate inserter hsc)
       (copy-list ibs))))
 
