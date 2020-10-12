@@ -712,6 +712,12 @@
      :form nil
      :spi spi)))
 
+(defun iblock-name (iblock)
+  (let ((name (cleavir-bir:name iblock)))
+    (if name
+        (string-downcase (symbol-name name))
+        "iblock")))
+
 (defun layout-procedure (ir lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
   (let* ((*tags* (make-hash-table :test #'eq))
@@ -748,7 +754,8 @@
             (cleavir-bir:map-iblocks
              (lambda (ib)
                (setf (gethash ib *tags*)
-                     (cmp:irc-basic-block-create "iblock"))
+                     (cmp:irc-basic-block-create
+                      (iblock-name ib)))
                (initialize-iblock-translation ib))
              ir))
           (cmp:irc-set-insert-point-basic-block entry-block
@@ -811,7 +818,7 @@
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
 (defun bir->bmir (ir env)
-  (cleavir-bir:verify ir)
+  (cleavir-bir:verify (cleavir-bir:module ir))
   (cleavir-bir-transformations:inline-functions ir)
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
