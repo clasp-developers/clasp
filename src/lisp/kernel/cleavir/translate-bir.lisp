@@ -105,23 +105,22 @@
           do (phi-out (in in) out (llvm-sys:get-insert-block cmp:*irbuilder*)))
   (cmp:irc-br (first next)))
 
-(defun bind-if-necessary (var binder)
-  (when (eq (cleavir-bir:binder var) binder)
-    (if (cleavir-bir:closed-over-p var)
-        (setf (gethash var *datum-values*)
-              (if (cleavir-bir:immutablep var)
-                  ;; This should get initialized eventually.
-                  nil
-                  ;; make a cell
-                  (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                   "cc_makeCell" nil "")))
-        (if (cleavir-bir:immutablep var)
-            (setf (gethash var *datum-values*)
-                  ;; This should get initialized eventually.
-                  nil)
-            ;; just an alloca
-            (setf (gethash var *variable-allocas*)
-                  (cmp:alloca-t*))))))
+(defun bind-variable (var)
+  (if (cleavir-bir:closed-over-p var)
+      (setf (gethash var *datum-values*)
+            (if (cleavir-bir:immutablep var)
+                ;; This should get initialized eventually.
+                nil
+                ;; make a cell
+                (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                 "cc_makeCell" nil "")))
+      (if (cleavir-bir:immutablep var)
+          (setf (gethash var *datum-values*)
+                ;; This should get initialized eventually.
+                nil)
+          ;; just an alloca
+          (setf (gethash var *variable-allocas*)
+                (cmp:alloca-t*)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
                                  return-value abi next)
@@ -195,8 +194,7 @@
     ((cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
      (cmp:irc-br (first next)))
     (t
-     ;; Bind the variable if needed.
-     (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
+     (bind-variable (first (cleavir-bir:outputs instruction)))
      (cond
        ((cleavir-bir-transformations:simple-unwinding-p instruction)
         (translate-sjlj-catch 
@@ -369,8 +367,7 @@
 (defmethod translate-simple-instruction ((instruction cleavir-bir:leti)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v instruction))
-                      (cleavir-bir:bindings instruction)))
+  (cleavir-set:mapset nil #'bind-variable (cleavir-bir:bindings instruction)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:writevar)
                                          return-value abi)
@@ -675,9 +672,6 @@
         (with-catch-pad-prep
             (cmp:irc-begin-block body-block)
           (cmp:with-landing-pad (never-entry-landing-pad ir return-value)
-            ;; Allocate any new cells, and allocas for local variables.
-            (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v ir))
-                                (cleavir-bir:variables ir))
             ;; Import cells.
             (let ((imports (function-environment ir))
                   (closure-vec
