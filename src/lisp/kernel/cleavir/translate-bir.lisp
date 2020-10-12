@@ -105,16 +105,22 @@
           do (phi-out (in in) out (llvm-sys:get-insert-block cmp:*irbuilder*)))
   (cmp:irc-br (first next)))
 
-(defun bind-if-necessary (var binder)
-  (when (eq (cleavir-bir:binder var) binder)
-    (if (cleavir-bir:closed-over-p var)
-        ;; make a cell
-        (setf (gethash var *datum-values*)
-              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-               "cc_makeCell" nil ""))
-        ;; just an alloca
-        (setf (gethash var *variable-allocas*)
-              (cmp:alloca-t*)))))
+(defun bind-variable (var)
+  (if (cleavir-bir:closed-over-p var)
+      (setf (gethash var *datum-values*)
+            (if (cleavir-bir:immutablep var)
+                ;; This should get initialized eventually.
+                nil
+                ;; make a cell
+                (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                 "cc_makeCell" nil "")))
+      (if (cleavir-bir:immutablep var)
+          (setf (gethash var *datum-values*)
+                ;; This should get initialized eventually.
+                nil)
+          ;; just an alloca
+          (setf (gethash var *variable-allocas*)
+                (cmp:alloca-t*)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
                                  return-value abi next)
@@ -188,8 +194,7 @@
     ((cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
      (cmp:irc-br (first next)))
     (t
-     ;; Bind the variable if needed.
-     (bind-if-necessary (first (cleavir-bir:outputs instruction)) instruction)
+     (bind-variable (first (cleavir-bir:outputs instruction)))
      (cond
        ((cleavir-bir-transformations:simple-unwinding-p instruction)
         (translate-sjlj-catch 
@@ -325,13 +330,12 @@
                                          return-value abi)
   (declare (ignore return-value))
   (let* ((code (cleavir-bir:code instruction))
-         (enclose-list (function-enclose-list code))
-         (lambda-name (get-or-create-lambda-name code))
-         (enclosed-function (memoized-layout-procedure code lambda-name abi))
+         (environment (function-environment code))
+         (enclosed-function (find-llvm-function code))
          (function-description
            (llvm-sys:get-named-global
             cmp:*the-module* (cmp::function-description-name enclosed-function)))
-         (ninputs (length enclose-list))
+         (ninputs (length environment))
          (sninputs (clasp-cleavir::%size_t ninputs))
          (enclose-args
            (list enclosed-function
@@ -340,20 +344,30 @@
          (enclose
            (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
             "cc_enclose" enclose-args)))
-    (prog1 enclose
-      (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-       "cc_initialize_closure"
-       (list* enclose sninputs
-              (mapcar (lambda (var)
-                        (or (gethash var *datum-values*)
-                            (error "BUG: Cell missing: ~a" var)))
-                      enclose-list))))))
+    ;; We don't initialize the closure immediately in case it partakes
+    ;; in mutual reference.
+    (delay-initializer
+     (lambda ()
+       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+        "cc_initialize_closure"
+        (list* enclose sninputs
+               (mapcar (lambda (var)
+                         (or (gethash var *datum-values*)
+                             (error "BUG: Cell missing: ~a" var)))
+                       environment)))))
+    enclose))
+
+(defmethod translate-simple-instruction :before
+    ((instruction cleavir-bir:abstract-call)
+     return-value abi)
+  (declare (ignore instruction return-value abi))
+  ;; We must force all closure initializers to run before a call.
+  (force-initializers))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:leti)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v instruction))
-                      (cleavir-bir:bindings instruction)))
+  (cleavir-set:mapset nil #'bind-variable (cleavir-bir:bindings instruction)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:writevar)
                                          return-value abi)
@@ -365,6 +379,22 @@
                                          return-value abi)
   (declare (ignore return-value abi))
   (variable-in (first (cleavir-bir:inputs instruction))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
+                                         return-value abi)
+  (let* ((callee (cleavir-bir:callee instruction))
+         (arguments (mapcar #'in (rest (cleavir-bir:inputs instruction))))
+         (real-args (cmp:irc-calculate-real-args arguments))
+         (args (list* (cmp:irc-undef-value-get cmp:%i8*%)
+                      (clasp-cleavir::%size_t (length arguments))
+                      real-args))
+         (lambda-name (get-or-create-lambda-name callee))
+         (function (find-llvm-function callee))
+         (result-in-registers
+           (if cmp::*current-unwind-landing-pad-dest*
+               (cmp:irc-create-invoke function args cmp::*current-unwind-landing-pad-dest*)
+               (cmp:irc-create-call function args))))
+    (clasp-cleavir::store-tmv result-in-registers return-value)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
@@ -618,14 +648,17 @@
   (cmp:with-landing-pad (maybe-entry-landing-pad
                          (cleavir-bir:dynamic-environment iblock)
                          return-value *tags*)
-    (loop with end = (cleavir-bir:end iblock)
-          for instruction = (cleavir-bir:start iblock)
-            then (cleavir-bir:successor instruction)
-          until (eq instruction end)
-          do (translate-simple-instruction instruction return-value abi)
-          finally (translate-terminator
-                   instruction return-value abi
-                   (mapcar #'iblock-tag (cleavir-bir:next end))))))
+    (let ((*enclose-initializers* '()))
+      (loop with end = (cleavir-bir:end iblock)
+            for instruction = (cleavir-bir:start iblock)
+              then (cleavir-bir:successor instruction)
+            until (eq instruction end)
+            do (translate-simple-instruction instruction return-value abi)
+            finally (progn
+                      (force-initializers)
+                      (translate-terminator
+                       instruction return-value abi
+                       (mapcar #'iblock-tag (cleavir-bir:next end))))))))
 
 (defun layout-procedure* (the-function ir calling-convention
                           body-irbuilder body-block
@@ -639,16 +672,8 @@
         (with-catch-pad-prep
             (cmp:irc-begin-block body-block)
           (cmp:with-landing-pad (never-entry-landing-pad ir return-value)
-            ;; Assign IDs to unwind destinations.
-            (let ((i 0))
-              (cleavir-set:doset (entrance (cleavir-bir:entrances ir))
-                                 (setf (gethash entrance *unwind-ids*) i)
-                                 (incf i)))
-            ;; Allocate any new cells, and allocas for local variables.
-            (cleavir-set:mapset nil (lambda (v) (bind-if-necessary v ir))
-                                (cleavir-bir:variables ir))
             ;; Import cells.
-            (let ((imports (gethash ir *function-enclose-lists*))
+            (let ((imports (function-environment ir))
                   (closure-vec
                     (first (llvm-sys:get-argument-list the-function))))
               (loop for import in imports for i from 0
@@ -698,14 +723,8 @@
          (cmp:*gv-current-function-name*
            (cmp:module-make-global-string llvm-function-name "fn-name"))
          (llvm-function-type cmp:%fn-prototype%))
-    (multiple-value-bind
-          (the-function function-description)
-        (cmp:irc-cclasp-function-create
-         llvm-function-type
-         linkage
-         llvm-function-name
-         cmp:*the-module*
-         (calculate-function-info ir lambda-name))
+    (destructuring-bind (the-function function-description)
+        (gethash ir *compiled-enters*)
       (let* ((cmp:*current-function* the-function)
              (cmp:*current-function-description* function-description)
              (entry-block (cmp:irc-basic-block-create "entry" the-function))
@@ -746,24 +765,47 @@
                                    body-irbuilder body-block
                                    abi :linkage linkage)))))))))
 
-(defun memoized-layout-procedure (bir lambda-name abi
-                                  &key (linkage 'llvm-sys:internal-linkage))
-  (or (gethash bir *compiled-enters*)
-      (setf (gethash bir *compiled-enters*)
-            (layout-procedure bir lambda-name abi :linkage linkage))))
+(defun find-llvm-function (bir)
+  (or (car (gethash bir *compiled-enters*))
+      (error "LLVM function not found for BIR function ~a." bir)))
 
 (defun get-or-create-lambda-name (bir)
   (or (cleavir-bir:name bir) 'top-level))
 
+(defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
+  (let ((functions (cleavir-bir:functions module)))
+    ;; Create llvm IR functions for each BIR function.
+    (cleavir-set:doset (function functions)
+      (let* ((lambda-name (get-or-create-lambda-name function))
+             (llvm-function-name (cmp:jit-function-name lambda-name))
+             (llvm-function-type cmp:%fn-prototype%))
+        (setf (gethash function *compiled-enters*)
+              (multiple-value-list
+               (cmp:irc-cclasp-function-create
+                llvm-function-type
+                linkage
+                llvm-function-name
+                cmp:*the-module*
+                (calculate-function-info function lambda-name))))
+        ;; Allocate the environment upfront. We need an ordered list.
+        (setf (gethash function *function-environments*)
+              (cleavir-set:set-to-list (cleavir-bir:environment function)))
+        ;; Assign IDs to unwind destinations.
+        (let ((i 0))
+          (cleavir-set:doset (entrance (cleavir-bir:entrances function))
+            (setf (gethash entrance *unwind-ids*) i)
+            (incf i)))))
+    (cleavir-set:doset (function functions)
+      (layout-procedure function (get-or-create-lambda-name function)
+                        abi :linkage linkage))))
+
 (defun translate (bir &key abi linkage)
-  (let* ((*function-enclose-lists* (make-hash-table :test #'eq))
+  (let* ((*function-environments* (make-hash-table :test #'eq))
          (*unwind-ids* (make-hash-table :test #'eq))
-         (*compiled-enters* (make-hash-table :test #'eq))
-         (lambda-name (get-or-create-lambda-name bir))
-         (result
-           (memoized-layout-procedure bir lambda-name abi :linkage linkage)))
+         (*compiled-enters* (make-hash-table :test #'eq)))
+    (layout-module (cleavir-bir:module bir) abi :linkage linkage)
     (cmp::potentially-save-module)
-    result))
+    (find-llvm-function bir)))
 
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
