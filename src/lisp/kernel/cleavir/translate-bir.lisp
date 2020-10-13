@@ -820,6 +820,8 @@
 (defun bir->bmir (ir env)
   (cleavir-bir:verify (cleavir-bir:module ir))
   (cleavir-bir-transformations:inline-functions ir)
+  (cleavir-bir-transformations::module-eliminate-catches
+   (cleavir-bir:module ir))
   (cleavir-bir-transformations:delete-temporary-variables ir)
   (cc-bir-to-bmir:reduce-typeqs ir)
   (cc-bir-to-bmir:reduce-primops ir)
