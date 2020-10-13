@@ -594,7 +594,7 @@
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
-  (let ((alloca (cleavir-bir:dynamic-environment inst)))
+  (let ((alloca (cleavir-bir:alloca inst)))
     (check-type alloca cleavir-bir:alloca)
     ;; only handling m-v-prog1 for the moment
     (assert (eq (cleavir-bir:rtype alloca) :multiple-values))
@@ -611,7 +611,7 @@
 (defmethod translate-simple-instruction ((inst cleavir-bir:readtemp)
                                          return-value abi)
   (declare (ignore abi))
-  (let ((alloca (cleavir-bir:dynamic-environment inst)))
+  (let ((alloca (cleavir-bir:alloca inst)))
     (check-type alloca cleavir-bir:alloca)
     (assert (eq (cleavir-bir:rtype alloca) :multiple-values))
     (destructuring-bind (stackpos storage1 storage2)
