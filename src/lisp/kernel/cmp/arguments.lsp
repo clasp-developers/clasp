@@ -386,7 +386,7 @@ a_p = a_p_temp; a = a_temp;
         (compile-error-if-not-enough-arguments wrong-nargs-block creq nargs))
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
-          We could save miniscule time by not generating.
+          ;; We could save miniscule time by not generating.
           (iNIL (irc-nil)) (iT (irc-t)))
       (if (or rest-var key-flag)
           ;; We have &key and/or &rest, so parse with that expectation.

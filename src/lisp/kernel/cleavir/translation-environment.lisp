@@ -9,8 +9,7 @@
 (defvar *variable-allocas*)
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
-(defvar *compiled-enters*)
-(defvar *function-environments*)
+(defvar *function-info*)
 (defvar *enclose-initializers*)
 
 (defun delay-initializer (initializer-thunk)
@@ -93,5 +92,6 @@
   (or (gethash iblock *unwind-ids*)
       (error "Missing unwind ID for ~a" iblock)))
 
-(defun function-environment (code)
-  (gethash code *function-environments*))
+(defun find-llvm-function-info (function)
+  (or (gethash function *function-info*)
+      (error "Missing llvm function info for BIR function ~a." function)))
