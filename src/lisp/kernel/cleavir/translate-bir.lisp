@@ -542,8 +542,8 @@
   (cmp:irc-tag-fixnum
    (cmp:irc-array-rank (in (first (cleavir-bir:inputs inst))))))
 (defmethod translate-primop ((name (eql 'core::%array-dimension)) inst)
-  (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst))
-                                (second (cleavir-bir:inputs inst)))))
+  (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst)))
+                            (in (second (cleavir-bir:inputs inst)))))
 (defmethod translate-primop ((name (eql 'clos:standard-instance-access)) inst)
   (cmp::gen-instance-ref (in (first (cleavir-bir:inputs inst)))
                          (in (second (cleavir-bir:inputs inst)))))
@@ -698,8 +698,7 @@
   the-function)
 
 (defun function-source-pos-info (irfunction)
-  (declare (ignore irfunction))
-  (core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
+  (ensure-origin (origin-spi (cleavir-bir:origin irfunction)) 999909))
 
 (defun calculate-function-info (irfunction lambda-name)
   (let* ((origin (cleavir-bir:origin irfunction))
@@ -762,15 +761,17 @@
                                                 cmp:*irbuilder-function-alloca*)
           (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
             (cmp:with-debug-info-source-position (source-pos-info)
-              (let* ((fn-args (llvm-sys:get-argument-list the-function))
-                     (lambda-list (cleavir-bir:lambda-list ir))
-                     (calling-convention
-                       (cmp:setup-calling-convention
-                        fn-args
-                        :cleavir-lambda-list lambda-list)))
-                (layout-procedure* the-function ir calling-convention
-                                   body-irbuilder body-block
-                                   abi :linkage linkage)))))))))
+              (cmp:with-dbg-lexical-block
+                  (:lineno (core:source-pos-info-lineno source-pos-info))
+                (let* ((fn-args (llvm-sys:get-argument-list the-function))
+                       (lambda-list (cleavir-bir:lambda-list ir))
+                       (calling-convention
+                         (cmp:setup-calling-convention
+                          fn-args
+                          :cleavir-lambda-list lambda-list)))
+                  (layout-procedure* the-function ir calling-convention
+                                     body-irbuilder body-block
+                                     abi :linkage linkage))))))))))
 
 (defun find-llvm-function (bir)
   (or (car (gethash bir *compiled-enters*))
@@ -818,7 +819,7 @@
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
 (defun bir->bmir (ir env)
-  (cleavir-bir:verify (cleavir-bir:module ir))
+  ;;(cleavir-bir:verify (cleavir-bir:module ir))
   (cleavir-bir-transformations:module-eliminate-catches
    (cleavir-bir:module ir))
   (cleavir-bir-transformations:inline-functions ir)
@@ -827,6 +828,7 @@
   (cc-bir-to-bmir:reduce-primops ir)
   (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
   (cleavir-bir-transformations:process-captured-variables ir)
+  (cleavir-bir:verify (cleavir-bir:module ir))
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
