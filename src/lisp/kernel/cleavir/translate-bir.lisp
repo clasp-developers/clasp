@@ -875,6 +875,10 @@
                  (calling-convention
                    (cmp:setup-calling-convention
                     fn-args
+                    :debug-on
+                    (cleavir-policy:policy-value
+                     (cleavir-bir:policy function)
+                     'clasp-cleavir::save-register-args)
                     :cleavir-lambda-list lambda-list)))
             (layout-xep-function* xep-function function calling-convention
                                   abi :linkage linkage)))))))
