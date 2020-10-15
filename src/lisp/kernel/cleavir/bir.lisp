@@ -87,11 +87,6 @@
                  (cleavir-ast-to-bir:begin inserter next))
                rv))))))
 
-(defmethod cleavir-bir::disassemble-instruction ((inst bind))
-  `(,(cleavir-bir::dis-label inst) ,@(mapcar #'cleavir-bir::disassemble-datum
-                                             (cleavir-bir:inputs inst))
-    ,(cleavir-bir::dis-iblock (first (cleavir-bir:next inst)))))
-
 (defclass mv-foreign-call (cleavir-bir:computation)
   ((%function-name :initarg :function-name :reader function-name)))
 (defmethod cleavir-bir:rtype ((d mv-foreign-call)) :multiple-values)
