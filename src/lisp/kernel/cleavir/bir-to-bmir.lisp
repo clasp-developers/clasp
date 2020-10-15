@@ -14,12 +14,18 @@
                   (change-class typeq 'cc-bmir:headerq :info header-info))
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
 
-(defun reduce-typeqs (ir)
-  (cleavir-bir:map-instructions
-   (lambda (i)
-     (when (typep i 'cleavir-bir:typeq)
-       (replace-typeq i)))
-   ir))
+(defun reduce-local-typeqs (function)
+  (cleavir-bir:map-iblocks
+   (lambda (ib)
+     (let ((term (cleavir-bir:end ib)))
+       (when (typep term 'cleavir-bir:typeq)
+         (replace-typeq term))))
+   function))
+
+(defun reduce-module-typeqs (module)
+  (cleavir-set:mapset nil
+                      #'reduce-local-typeqs
+                      (cleavir-bir:functions module)))
 
 (defun maybe-replace-primop (primop)
   (case (cleavir-bir:name (cleavir-bir::info primop))

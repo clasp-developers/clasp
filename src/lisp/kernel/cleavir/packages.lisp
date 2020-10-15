@@ -180,7 +180,7 @@
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
-  (:export #:reduce-typeqs)
+  (:export #:reduce-module-typeqs)
   (:export #:reduce-primops))
 
 (defpackage #:cc-mir
