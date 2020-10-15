@@ -6,7 +6,6 @@
 
 (defvar *tags*)
 (defvar *datum-values*)
-(defvar *variable-allocas*)
 (defvar *dynenv-storage*)
 (defvar *unwind-ids*)
 (defvar *function-info*)
@@ -23,6 +22,23 @@
 (defun iblock-tag (iblock)
   (or (gethash iblock *tags*)
       (error "BUG: No tag for iblock: ~a" iblock)))
+
+(defun bind-variable (var)
+  (if (cleavir-bir:closed-over-p var)
+      (setf (gethash var *datum-values*)
+            (if (cleavir-bir:immutablep var)
+                ;; This should get initialized eventually.
+                nil
+                ;; make a cell
+                (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                 "cc_makeCell" nil "")))
+      (if (cleavir-bir:immutablep var)
+          (setf (gethash var *datum-values*)
+                ;; This should get initialized eventually.
+                nil)
+          ;; just an alloca
+          (setf (gethash var *datum-values*)
+                (cmp:alloca-t*)))))
 
 (defun in (datum)
   (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
@@ -46,12 +62,12 @@
       (if (cleavir-bir:immutablep variable)
           (or (gethash variable *datum-values*)
               (error "BUG: Variable missing: ~a" variable))
-          (let ((alloca (or (gethash variable *variable-allocas*)
+          (let ((alloca (or (gethash variable *datum-values*)
                             (error "BUG: Variable missing: ~a" variable))))
             (cmp:irc-load alloca)))))
 
 (defun out (value datum)
-  (check-type datum cleavir-bir:transfer)
+  (check-type datum cleavir-bir:ssa)
   (assert (not (gethash datum *datum-values*))
           ()
           "Double OUT for ~a: Old value ~a, new value ~a"
@@ -76,7 +92,7 @@
              (cmp::gen-memref-address cell offset))))
       (if (cleavir-bir:immutablep variable)
           (setf (gethash variable *datum-values*) value)
-          (let ((alloca (or (gethash variable *variable-allocas*)
+          (let ((alloca (or (gethash variable *datum-values*)
                             (error "BUG: Variable missing: ~a" variable))))
             (cmp:irc-store value alloca)))))
 
