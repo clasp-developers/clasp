@@ -146,9 +146,11 @@
                         ,@(loop for var in vars
                                 for ty in required
                                 unless (cleavir-ctype:top-p ty system)
-                                  collect `(if (typep ,var
-                                                      ',(discrimination-type
-                                                         ty))
+                                  collect `(if (cleavir-primop:typew
+                                                ,var ,ty
+                                                (typep ,var
+                                                       ',(discrimination-type
+                                                          ty)))
                                                nil
                                                (error 'type-error
                                                       :datum ,var

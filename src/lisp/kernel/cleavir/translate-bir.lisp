@@ -337,6 +337,11 @@
   (declare (ignore return-value abi))
   (cmp:irc-br (third next)))
 
+(defmethod translate-terminator ((instruction cleavir-bir:choke)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (cmp:irc-br (first next)))
+
 (defmacro define-tag-test (inst mask tag)
   `(defmethod translate-terminator ((instruction ,inst) return-value abi next)
      (declare (ignore return-value abi))
@@ -950,6 +955,8 @@
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
+(defvar *dis* nil)
+
 (defun bir->bmir (ir env)
   (let ((module (cleavir-bir:module ir)))
     (cleavir-bir:verify module)
@@ -960,7 +967,10 @@
     (cc-bir-to-bmir:reduce-module-primops module)
     (eliminate-load-time-value-inputs
      module clasp-cleavir::*clasp-system* env)
-    (cleavir-bir-transformations:process-captured-variables ir))
+    (cleavir-bir-transformations:process-captured-variables ir)
+    (when *dis*
+      (cleavir-bir::print-disasm
+       (cleavir-bir:disassemble module))))
   ir)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
