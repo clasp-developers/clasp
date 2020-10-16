@@ -171,23 +171,6 @@
           do (phi-out (in in) out (llvm-sys:get-insert-block cmp:*irbuilder*)))
   (cmp:irc-br (first next)))
 
-(defun bind-variable (var)
-  (if (cleavir-bir:closed-over-p var)
-      (setf (gethash var *datum-values*)
-            (if (cleavir-bir:immutablep var)
-                ;; This should get initialized eventually.
-                nil
-                ;; make a cell
-                (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                 "cc_makeCell" nil "")))
-      (if (cleavir-bir:immutablep var)
-          (setf (gethash var *datum-values*)
-                ;; This should get initialized eventually.
-                nil)
-          ;; just an alloca
-          (setf (gethash var *variable-allocas*)
-                (cmp:alloca-t*)))))
-
 (defmethod translate-terminator ((instruction cleavir-bir:eqi)
                                  return-value abi next)
   (declare (ignore return-value abi))
@@ -233,10 +216,10 @@
                                                                  immediate))
                                         dest)))))
 
-(defun translate-sjlj-catch (variable return-value successors)
+(defun translate-sjlj-catch (catch return-value successors)
   ;; Call setjmp, switch on the result.
   (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
-    (variable-out (cmp:irc-bit-cast bufp cmp:%t*%) variable)
+    (out (cmp:irc-bit-cast bufp cmp:%t*%) catch)
     (let* ((sj (clasp-cleavir::%intrinsic-call "_setjmp" (list bufp)))
            (blocks (loop repeat (length (rest successors))
                          collect (cmp:irc-basic-block-create
@@ -260,17 +243,15 @@
     ((cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
      (cmp:irc-br (first next)))
     (t
-     (bind-variable (first (cleavir-bir:outputs instruction)))
      (cond
        ((cleavir-bir-transformations:simple-unwinding-p instruction)
-        (translate-sjlj-catch 
-         (first (cleavir-bir:outputs instruction)) return-value next))
+        (translate-sjlj-catch instruction return-value next))
        (t
-        ;; Fill the variable with the continuation.
-        (variable-out (clasp-cleavir::%intrinsic-call
-                       "llvm.frameaddress"
-                       (list (clasp-cleavir::%i32 0)) "frame")
-                      (first (cleavir-bir:outputs instruction)))
+        ;; Assign the catch the continuation.
+        (out (clasp-cleavir::%intrinsic-call
+              "llvm.frameaddress"
+              (list (clasp-cleavir::%i32 0)) "frame")
+             instruction)
         ;; Unconditional branch to the normal successor;
         ;; dynamic environment stuff is handled in layout-iblock.
         (cmp:irc-br (first next)))))))
@@ -278,18 +259,18 @@
 (defmethod translate-terminator ((instruction cleavir-bir:unwind)
                                  return-value abi next)
   (declare (ignore abi next))
-  (let* ((inputs (cleavir-bir:inputs instruction))
-         (cont (in (first inputs)))
-         (rv (second inputs))
+  (let* ((cont (in (cleavir-bir:catch instruction)))
+         (inputs (cleavir-bir:inputs instruction))
+         (rv (first inputs))
          (destination (cleavir-bir:destination instruction))
          (destination-id (get-destination-id destination)))
     ;; We can only transmit multiple values, so make sure the adapter in
     ;; bir.lisp forced that properly
     (ecase (length inputs)
       ;; GO
-      (1)
+      (0)
       ;; RETURN-FROM
-      (2 (assert (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values))))
+      (1 (assert (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values))))
     ;; Transmit those values
     (when rv
       (clasp-cleavir::save-multiple-value-0 return-value))
@@ -804,8 +785,7 @@
         (cmp:irc-ret
          (cmp:irc-create-call
           (main-function (find-llvm-function-info ir))
-          ;; Augment the environment variables as a local call
-          ;; would.
+          ;; Augment the environment lexicals as a local call would.
           (append environment-values (mapcar #'in (lambda-list-arguments ir))))))))
   the-function)
 
@@ -824,9 +804,9 @@
             ;; Bind the arguments and the environment values
             ;; appropriately.
             (loop for arg in (llvm-sys:get-argument-list the-function)
-                  for var in (append (environment (find-llvm-function-info ir))
-                                     (lambda-list-arguments ir))
-                  do (setf (gethash var *datum-values*) arg))
+                  for lexical in (append (environment (find-llvm-function-info ir))
+                                         (lambda-list-arguments ir))
+                  do (setf (gethash lexical *datum-values*) arg))
             ;; Branch to the start block.
             (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
             ;; Lay out blocks.
@@ -887,7 +867,6 @@
                              &aux (linkage 'llvm-sys:private-linkage))
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
-         (*variable-allocas* (make-hash-table :test #'eq))
          (*dynenv-storage* (make-hash-table :test #'eq))
          (llvm-function-name (cmp:jit-function-name lambda-name))
          (cmp:*current-function-name* llvm-function-name)
