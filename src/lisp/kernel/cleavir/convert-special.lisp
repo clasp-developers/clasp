@@ -116,7 +116,6 @@
           ,@(mapcar #'discrimination-type (rest ctype))))
        (t ctype)))))
 
-#+(or)
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
@@ -127,36 +126,36 @@
           (cleavir-policy:policy-value
            (cleavir-env:policy (cleavir-env:optimize-info env))
            'clasp-cleavir::insert-type-checks))
-        (required (cleavir-ctype:required ctype system)))
-    (if (or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
-            (null required)) ; nothing to check/top type
+        (required (cleavir-ctype:values-required ctype system)))
+    (cond
+      ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
+           (null required))
         ;; We don't even generate an m-v-extract, because while semantically
         ;; meaningless, saving and loading values constantly slows things down
         ;; very hard.
-        ast
-        (cleavir-cst-to-ast:convert
-         (cst:cst-from-expression
-          (let ((vars (loop repeat (length required) collect (gensym "CHECKED"))))
-            `(cleavir-primop:let-uninitialized (,@vars)
-               (cleavir-primop:multiple-value-extract (,@vars)
-                 (cleavir-primop:ast ,ast)
-                 ,@(loop for var in vars
-                         for ty in required
-                         unless (cleavir-ctype:top-p ty system)
-                           collect (if insert-type-checks
-                                       `(if (cleavir-primop:typew
-                                             ,var ,ty
-                                             (typep ,var ',(discrimination-type ty)))
-                                            nil
-                                            (error 'type-error
-                                                   :datum ,var
-                                                   :expected-type ',ty))
-                                       `(cleavir-primop:the-typew
-                                         ,var ,ty
-                                         (error 'type-error
-                                                :datum ,var
-                                                :expected-type ',ty))))))))
-         env system))))
+       ast)
+      (insert-type-checks
+       (let ((check
+               (cleavir-cst-to-ast:convert
+                (cst:cst-from-expression
+                 (let ((vars (loop repeat (length required)
+                                   collect (gensym "CHECKED"))))
+                   `(let (,@vars)
+                      (cleavir-primop:multiple-value-extract (,@vars)
+                          (cleavir-primop:ast ,ast)
+                        ,@(loop for var in vars
+                                for ty in required
+                                unless (cleavir-ctype:top-p ty system)
+                                  collect `(if (typep ,var
+                                                      ',(discrimination-type
+                                                         ty))
+                                               nil
+                                               (error 'type-error
+                                                      :datum ,var
+                                                      :expected-type ',ty)))))))
+                env system)))
+         (cleavir-ast:make-the-ast check ctype :origin origin)))
+      (t (cleavir-ast:make-the-ast ast ctype :origin origin)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
