@@ -41,8 +41,8 @@
         (replace-load-time-value-with-precalc
          (cleavir-bir:form input) index-or-immediate input))))
 
-(defun eliminate-load-time-value-inputs (ir system env)
-  (cleavir-bir:map-instructions
+(defun eliminate-function-load-time-value-inputs (function system env)
+  (cleavir-bir:map-local-instructions
    (lambda (instruction)
      (loop for input in (cleavir-bir:inputs instruction)
            when (typep input '(and cleavir-bir:constant
@@ -50,4 +50,8 @@
              do (eliminate-constant-input input env)
            when (typep input 'cleavir-bir:load-time-value)
              do (eliminate-load-time-value-input input env)))
-   ir))
+   function))
+
+(defun eliminate-load-time-value-inputs (module system env)
+  (cleavir-set:doset (f (cleavir-bir:functions module))
+    (eliminate-function-load-time-value-inputs f system env)))

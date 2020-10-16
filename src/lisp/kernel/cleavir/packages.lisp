@@ -181,7 +181,7 @@
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
   (:export #:reduce-module-typeqs)
-  (:export #:reduce-primops))
+  (:export #:reduce-module-primops))
 
 (defpackage #:cc-mir
   (:use #:common-lisp)

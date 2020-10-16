@@ -957,8 +957,9 @@
     (cleavir-bir-transformations:find-module-local-calls module)
     (cleavir-bir-transformations:delete-temporary-variables ir)
     (cc-bir-to-bmir:reduce-module-typeqs module)
-    (cc-bir-to-bmir:reduce-primops ir)
-    (eliminate-load-time-value-inputs ir clasp-cleavir::*clasp-system* env)
+    (cc-bir-to-bmir:reduce-module-primops module)
+    (eliminate-load-time-value-inputs
+     module clasp-cleavir::*clasp-system* env)
     (cleavir-bir-transformations:process-captured-variables ir))
   ir)
 

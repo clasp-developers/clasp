@@ -62,9 +62,12 @@
          (cleavir-bir:insert-instruction-before mr primop)
          (setf (cleavir-bir:inputs primop) (list (second in) mr)))))))
 
-(defun reduce-primops (ir)
-  (cleavir-bir:map-instructions
+(defun reduce-primops (function)
+  (cleavir-bir:map-local-instructions
    (lambda (i)
      (when (typep i 'cleavir-bir:primop)
        (maybe-replace-primop i)))
-   ir))
+   function))
+
+(defun reduce-module-primops (module)
+  (cleavir-set:mapset nil #'reduce-primops (cleavir-bir:functions module)))
