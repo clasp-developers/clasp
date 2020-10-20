@@ -955,31 +955,32 @@
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
-(defvar *dis* nil)
+(defun bir-transformations (module env)
+  (cleavir-bir-transformations:module-eliminate-catches module)
+  (cleavir-bir-transformations:find-module-local-calls module)
+  (cleavir-bir-transformations:delete-temporary-variables module)
+  (cc-bir-to-bmir:reduce-module-typeqs module)
+  (cc-bir-to-bmir:reduce-module-primops module)
+  (eliminate-load-time-value-inputs
+   module clasp-cleavir::*clasp-system* env)
+  (cleavir-bir-transformations:process-captured-variables module)
+  (values))
 
-(defun bir->bmir (ir env)
-  (let ((module (cleavir-bir:module ir)))
-    (cleavir-bir:verify module)
-    (cleavir-bir-transformations:module-eliminate-catches module)
-    (cleavir-bir-transformations:find-module-local-calls module)
-    (cleavir-bir-transformations:delete-temporary-variables ir)
-    (cc-bir-to-bmir:reduce-module-typeqs module)
-    (cc-bir-to-bmir:reduce-module-primops module)
-    (eliminate-load-time-value-inputs
-     module clasp-cleavir::*clasp-system* env)
-    (cleavir-bir-transformations:process-captured-variables ir)
-    (when *dis*
-      (cleavir-bir::print-disasm
-       (cleavir-bir:disassemble module))))
-  ir)
+(defvar *dis* nil)
 
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
                                   (linkage 'llvm-sys:internal-linkage)
                                     (env clasp-cleavir::*clasp-env*)
                                     (system clasp-cleavir::*clasp-system*))
   (let* ((bir (ast->bir ast system))
-         (bmir (bir->bmir bir env)))
-    (translate bmir :abi abi :linkage linkage)))
+         (module (cleavir-bir:module bir)))
+    ;;(cleavir-bir:verify module)
+    (bir-transformations module env)
+    (cleavir-bir:verify module)
+    (when *dis*
+      (cleavir-bir::print-disasm
+       (cleavir-bir:disassemble module)))
+    (translate bir :abi abi :linkage linkage)))
 
 (defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
                           (linkage 'llvm-sys:internal-linkage)
