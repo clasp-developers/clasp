@@ -439,7 +439,7 @@
 (defun parse-local-call-arguments (instruction callee)
   (let* ((lambda-list (cleavir-bir:lambda-list callee))
          (callee-info (find-llvm-function-info callee))
-         (present-arguments (copy-list (rest (cleavir-bir:inputs instruction))))
+         (present-arguments (rest (cleavir-bir:inputs instruction)))
          (environment (environment callee-info))
          (state :required)
          (arguments '()))
