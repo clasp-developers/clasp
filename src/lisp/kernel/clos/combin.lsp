@@ -419,7 +419,7 @@ argument list designator."
                                            (let ((.method-qualifiers. (method-qualifiers .method.)))
                                              (cond ,@(nreverse group-checks)
                                                    (t (invalid-method-error .method.
-                                                                            "Method qualifiers ~S are not allowed in the method~
+                                                                            "Method qualifiers ~S are not allowed in the method ~
 			      combination ~S." .method-qualifiers. ',name)))))
                                          ,@group-after
                                          ,@body)))))))
