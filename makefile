@@ -33,6 +33,11 @@ TAGS:
 	rm TAGS
 	find src/ -type f -iname "*.cc" | etags --append -
 	find include/ -type f -iname "*.h" | etags --append -
+#build time configs
+	find build/ -type f -iname "*.h" | etags --append -
+#mps
+	find src/mps/code/ -type f -iname "*.h" | etags --append -
+	find src/mps/code/ -type f -iname "*.c" | etags --append -
 
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl && git pull origin master)
