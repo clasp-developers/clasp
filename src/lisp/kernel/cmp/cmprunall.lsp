@@ -54,8 +54,7 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
        (let* ((*run-all-function* ,run-all-fn)
               (*irbuilder-run-all-alloca* ,irbuilder-alloca)
               (*irbuilder-run-all-body* ,irbuilder-body)
-              (*current-function* ,run-all-fn)
-              (*run-all-objects* nil))
+              (*current-function* ,run-all-fn))
          (cmp:with-dbg-function (:lineno 0
                                  :linkage-name (llvm-sys:get-name ,run-all-fn)
                                  :function ,run-all-fn

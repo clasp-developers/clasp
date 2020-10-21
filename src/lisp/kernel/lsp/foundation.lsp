@@ -14,7 +14,7 @@
 
 ;; Temporary check-type - everything is true
 (fset 'check-type
-      #'(lambda (whole env) t)
+      #'(lambda (whole env) (declare (ignore whole env)) t)
       t)
 
 (defun 1- (num) (- num 1))
@@ -25,6 +25,7 @@
 #||
 (si::fset 'and
           #'(lambda (whole env)
+              (declare (ignore env))
               (let ((forms (cdr whole)))
                 (if (null forms)
                     t
@@ -37,6 +38,7 @@
 
 (si::fset 'or
           #'(lambda (whole env)
+              (declare (ignore env))
               (let ((forms (cdr whole)))
                 (if (null forms)
                     nil
@@ -53,17 +55,19 @@
 
 
 (defun constantly (object)
-  #'(lambda (&rest arguments) object))
+  #'(lambda (&rest arguments) (declare (ignore arguments)) object))
 
 
 (defun simple-program-error (e1 &rest args)
   (apply 'error e1 args))
 
 (defun simple-reader-error (stream e1 &rest args)
+  (declare (ignore stream))
   (apply 'error e1 args))
 
 
 (fset 'return #'(lambda (whole env)
+                  (declare (ignore env))
                   (let ((val (cadr whole)))
                     `(return-from nil ,val)))
       t)
@@ -71,6 +75,7 @@
 #| --- loose this - its in evalmacros where ecl had it |#
 #+clasp-min
 (si::fset 'psetq #'(lambda (whole env)
+                     (declare (ignore env))
                      "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
 the corresponding VAR.  Returns NIL."
@@ -91,11 +96,13 @@ the corresponding VAR.  Returns NIL."
 
 
 (fset 'when #'(lambda (def env)
+                (declare (ignore env))
                 `(if ,(cadr def) (progn ,@(cddr def))))
       t)
 
 
 (fset 'unless #'(lambda (def env)
+                  (declare (ignore env))
                   `(if ,(cadr def) nil (progn ,@(cddr def))))
       t)
 
@@ -112,24 +119,33 @@ the corresponding VAR.  Returns NIL."
         (,jmp-op ,test (GO ,label)))))
 
 (fset 'si::while #'(lambda (def env)
+                     (declare (ignore env))
                      (si::while-until (cadr def) (cddr def) 'when))
       t)
 
 
 (fset 'si::until #'(lambda (def env)
+                     (declare (ignore env))
                      (si::while-until (cadr def) (cddr def) 'unless))
       t)
 
 
-(fset 'cons-car #'(lambda (def env) `(car (the cons ,(cadr def)))) t)
-(fset 'cons-cdr #'(lambda (def env) `(cdr (the cons ,(cadr def)))) t)
+(fset 'cons-car #'(lambda (def env)
+                    (declare (ignore env))
+                    `(car (the cons ,(cadr def))))
+      t)
+(fset 'cons-cdr #'(lambda (def env)
+                    (declare (ignore env))
+                    `(cdr (the cons ,(cadr def))))
+      t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (select-package :ext))
 
 (core:fset 'checked-value
-      #'(lambda (whole env)
-          `(the ,@(cdr whole)))
+           #'(lambda (whole env)
+               (declare (ignore env))
+               `(the ,@(cdr whole)))
       t)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -137,6 +153,7 @@ the corresponding VAR.  Returns NIL."
 
 
 (si::fset 'prog1 #'(lambda (whole env)
+                     (declare (ignore env))
                      (let ((sym (gensym))
                            (first (cadr whole))
                            (body (cddr whole)))
@@ -199,6 +216,7 @@ the corresponding VAR.  Returns NIL."
 
 ;; in-package macro is re-defined in evalmacros.lsp
 (si::fset 'in-package #'(lambda (whole env)
+                          (declare (ignore env))
                           `(eval-when (:compile-toplevel :load-toplevel :execute)
                              (si::select-package ,(string (cadr whole)))
                              *package*))

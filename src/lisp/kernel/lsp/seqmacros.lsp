@@ -41,7 +41,7 @@
 		     (funcall ,',akey ,value))))
        ,@body)))
 
-(defmacro with-tests (&whole whole (test test-not &optional key) &body body)
+(defmacro with-tests ((test test-not &optional key) &body body)
   (with-unique-names (%test %test-not %test-fn)
     `(let* ((,%test ,test)
 	    (,%test-not ,test-not)

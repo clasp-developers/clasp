@@ -123,8 +123,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
    ;; Documentation in help.lsp
    (multiple-value-bind (decls body doc-string) 
        (process-declarations body t)
-     (let* ((fn (gensym))
-            (doclist (when doc-string (list doc-string)))
+     (let* ((doclist (when doc-string (list doc-string)))
             (global-function
               `#'(lambda ,lambda-list
                    (declare (core:lambda-name ,name) ,@decls) 
@@ -155,7 +154,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
           (progn (remhash name *compiler-macros*) nil)
           (error 'type-error :datum cmf :expected-type '(or function null)))))
 
-(defmacro define-compiler-macro (&whole whole name vl &rest body &environment env)
+(defmacro define-compiler-macro (name vl &rest body &environment env)
   ;; CLHS doesn't actually say d-c-m has compile time effects, but it's nice to match defmacro
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (funcall #'(setf compiler-macro-function)

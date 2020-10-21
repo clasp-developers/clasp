@@ -128,9 +128,7 @@
                           nil)))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
-  (let ((path (gensym))
-        (file-name (gensym))
-        (dir-name (gensym)))
+  (let ((path (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
          (let* ((,path (pathname ,source-pathname))
                 (*dbg-current-file* (make-file-metadata ,path)))

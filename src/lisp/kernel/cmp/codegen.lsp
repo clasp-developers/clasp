@@ -108,7 +108,7 @@ Could return more functions that provide lambda-list for swank for example"
 Return the same things that generate-llvm-function-from-code returns"
   (let ((lambda-list (cadr lambda-or-lambda-block))
 	(body (cddr lambda-or-lambda-block)))
-    (multiple-value-bind (declares code docstring specials )
+    (multiple-value-bind (declares code docstring)
 	(process-declarations body t)
       (cmp-log "About to create lambda-list-handler%N")
       (generate-llvm-function-from-code nil

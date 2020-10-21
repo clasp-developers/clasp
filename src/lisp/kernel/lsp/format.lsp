@@ -2917,6 +2917,7 @@
                ;; Remaining arguments are collected in a list.
                ;; They can be used by e.g. ~@{
                (args (list ,@(nthcdr (length variables) args))))
+           (declare (ignorable args))
            ,guts))))
 
 ;;;; Compile-time checking of format arguments and control string

@@ -45,6 +45,7 @@
           (with-make-new-run-all (run-all-function)
             (with-literal-table
                 (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
+                  (declare (ignore fn))
                   ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
                   ))))
         (llvm-sys::module-delete module))))

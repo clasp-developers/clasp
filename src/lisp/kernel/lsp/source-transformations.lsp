@@ -44,7 +44,9 @@
           `(,fun ,first-arg ,arg)
           (simple-associate-args fun `(,fun ,first-arg ,arg) next))))
 
-  (defun expand-associative (fun two-arg-fun args identity &optional (one-arg-result-type 'number))
+  (defun expand-associative (fun two-arg-fun args identity
+                             &optional (one-arg-result-type 'number))
+    (declare (ignore fun))
     (case (length args)
       (0 identity)
       (1 `(values (the ,one-arg-result-type ,(first args))))

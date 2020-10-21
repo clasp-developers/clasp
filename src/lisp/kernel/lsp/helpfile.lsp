@@ -30,6 +30,7 @@
       (when (not end)
         (let* ((key (read file))
                (value (read file)))
+          (declare (ignorable key))
           #+ecl(si::hash-set core::hash-table-setf-gethash key h value)
           #+clasp(core::hash-table-setf-gethash h key value)
 	  )))))
@@ -60,7 +61,10 @@
              (close file)
              path)))
 
-#+clasp (defun search-help-file (key path) nil) ;; we don't have help-files in clasp yet
+#+clasp
+(defun search-help-file (key path)
+  (declare (ignore key path))
+  nil) ;; we don't have help-files in clasp yet
 #+(or)
 (defun search-help-file (key path &aux (pos 0))
   (labels ((bin-search (file start end &aux (delta 0) (middle 0) sym)

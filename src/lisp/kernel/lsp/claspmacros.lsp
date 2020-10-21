@@ -88,7 +88,7 @@
 ;;;
 ;;; core:debug-message is a macro to mimic the core:debug-message special operator
 ;;;
-(defmacro debug-message (msg) nil)
+(defmacro debug-message (msg) (declare (ignore msg)) nil)
 (export 'debug-message)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -176,7 +176,7 @@
       (make-package "MP" :use '(common-lisp))))
 
 (in-package :mp)
-(defmacro with-lock ((sym) &rest body)
+(defmacro with-lock ((sym) (declare (ignore sym)) &rest body)
   #+threading(warn "Make the mp:with-lock macro actually lock a symbol")
   `(progn ,@body))
 (export 'with-lock)
@@ -198,6 +198,8 @@
 
 
 (defmacro with-monitor-message-scope ((fmt &rest args) &body body)
+  #-debug-monitor
+  (declare (ignore fmt args body))
   #+debug-monitor
   (let ((msg (gensym)))
     `(let ((,msg (format nil ,fmt ,@args)))
@@ -210,6 +212,8 @@
   nil)
 
 (defmacro monitor-message (fmt &rest args)
+  #-debug-monitor
+  (declare (ignore fmt args))
   #+debug-monitor
   `(sys:monitor-write (core:bformat nil "%s%N" (format nil ,fmt ,@args)))
   #-debug-monitor

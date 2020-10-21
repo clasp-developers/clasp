@@ -237,56 +237,56 @@
          (make-hash-table :test #'eq :thread-safe t)))
 
 (si:fset 'core::defvar #'(lambda (whole env)
-			     (let ((var (cadr whole))
-				   (formp (cddr whole))
-				   (form (caddr whole))
-				   (doc-string (cadddr whole)))
-				  "Syntax: (defvar name form [doc])
+                           (declare (ignore env))
+                           (let ((var (cadr whole))
+                                 (formp (cddr whole))
+                                 (form (caddr whole)))
+                             "Syntax: (defvar name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     ,@(if formp
-					     `((if (boundp ',var)
-						   ',var
-						   (progn
-                                                     (setq ,var ,form)
-                                                     ',var)))))))
-	  t )
+                             `(LOCALLY (DECLARE (SPECIAL ,var))
+                                (SYS:*MAKE-SPECIAL ',var)
+                                ,@(if formp
+                                      `((if (boundp ',var)
+                                            ',var
+                                            (progn
+                                              (setq ,var ,form)
+                                              ',var)))))))
+         t)
 (export 'defvar)
 
 (si:fset 'core::defparameter #'(lambda (whole env)
-                            (let ((var (cadr whole))
-                                  (form (caddr whole))
-                                  (doc-string (cadddr whole)))
-                                  "Syntax: (defparameter name form [doc])
+                                 (declare (ignore env))
+                                 (let ((var (cadr whole))
+                                       (form (caddr whole)))
+                                   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form)
-                                     ',var)))
-	  t )
+                                   `(LOCALLY (DECLARE (SPECIAL ,var))
+                                      (SYS:*MAKE-SPECIAL ',var)
+                                      (SETQ ,var ,form)
+                                      ',var)))
+         t)
 (export 'defparameter)
 
 
 
 (si:fset 'core::defconstant #'(lambda (whole env)
-                            (let ((var (cadr whole))
-                                  (form (caddr whole))
-                                  (doc-string (cadddr whole)))
+                                (declare (ignore env))
+                                (let ((var (cadr whole))
+                                      (form (caddr whole)))
                                   "Syntax: (defconstant name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-                              `(if (core:symbol-constantp ',var)
-                                   nil
-                                   (progn
-                                     (set ',var ,form)
-                                     (funcall #'(setf core:symbol-constantp) t ',var)))))
-	  t )
+                                  `(if (core:symbol-constantp ',var)
+                                       nil
+                                       (progn
+                                         (set ',var ,form)
+                                         (funcall #'(setf core:symbol-constantp) t ',var)))))
+         t)
 (export 'defconstant)
 
 (if (boundp '+ecl-safe-declarations+)
