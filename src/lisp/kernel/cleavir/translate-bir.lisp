@@ -958,7 +958,7 @@
 (defun bir-transformations (module env)
   (cleavir-bir-transformations:module-eliminate-catches module)
   (cleavir-bir-transformations:find-module-local-calls module)
-  (cleavir-bir-transformations:delete-temporary-variables module)
+  (cleavir-bir-transformations:module-optimize-variables module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (eliminate-load-time-value-inputs
