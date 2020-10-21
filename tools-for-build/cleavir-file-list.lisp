@@ -101,6 +101,8 @@
  "src/lisp/kernel/contrib/Cleavir/BIR/primops"
  "src/lisp/kernel/contrib/Cleavir/BIR/instructions"
  "src/lisp/kernel/contrib/Cleavir/BIR/map"
+ "src/lisp/kernel/contrib/Cleavir/BIR/conditions"
+ "src/lisp/kernel/contrib/Cleavir/BIR/condition-reporters-english"
  "src/lisp/kernel/contrib/Cleavir/BIR/graph-modifications"
  "src/lisp/kernel/contrib/Cleavir/BIR/verify"
  "src/lisp/kernel/contrib/Cleavir/BIR/disassemble"

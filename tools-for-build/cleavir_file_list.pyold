@@ -130,6 +130,7 @@ cleavir_file_list = [
     "src/lisp/kernel/contrib/Cleavir/AST-to-BIR/compile-primops",
     "src/lisp/kernel/contrib/Cleavir/AST-to-BIR/compile-fixnum-related-asts",
     "src/lisp/kernel/contrib/Cleavir/BIR-transformations/packages",
+    "src/lisp/kernel/contrib/Cleavir/BIR-transformations/eliminate-catches",
     "src/lisp/kernel/contrib/Cleavir/BIR-transformations/process-captured-variables",
     "src/lisp/kernel/contrib/Cleavir/BIR-transformations/delete-temporary-variables",
     "src/lisp/kernel/contrib/Cleavir/BIR-transformations/interpolate-function",
