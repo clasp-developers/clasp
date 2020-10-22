@@ -14,6 +14,7 @@
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
+               :cleavir-conditions
                :cleavir-attributes
                :cleavir-ast-to-hir
                :cleavir-ast-transformations

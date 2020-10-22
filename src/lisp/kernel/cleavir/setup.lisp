@@ -427,9 +427,10 @@ when this is t a lot of graphs will be generated.")
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
 
-(defmethod cmp:compiler-condition-origin ((condition cleavir-cst-to-ast:compilation-condition))
+(defmethod cmp:compiler-condition-origin
+    ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
-  (ignore-errors (car (cst:source (cleavir-cst-to-ast:cst condition)))))
+  (ignore-errors (car (cleavir-conditions:origin condition))))
 
 (defun build-and-draw-ast (filename cst)
   (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
