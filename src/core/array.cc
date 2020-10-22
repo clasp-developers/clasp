@@ -90,6 +90,15 @@ void badIndexError(T_sp array, size_t axis, gc::Fixnum index, size_t dimension) 
                               kw::_sym_object, array,
                               kw::_sym_axis, clasp_make_fixnum(axis)));
 }
+void badRMIndexError(T_sp array, gc::Fixnum index, size_t totalSize) {
+  ERROR(core::_sym_row_major_out_of_bounds,
+        core::lisp_createList(kw::_sym_expected_type,
+                              core::lisp_createList(cl::_sym_integer,
+                                                    clasp_make_fixnum(0),
+                                                    core::lisp_createList(clasp_make_fixnum(totalSize))),
+                              kw::_sym_datum, clasp_make_fixnum(index),
+                              kw::_sym_object, array));
+}
 void indexNotFixnumError(T_sp index) {
   TYPE_ERROR(index,cl::_sym_fixnum);
 }
@@ -459,15 +468,25 @@ CL_DEFUN size_t cl__arrayRowMajorIndex(Array_sp array, VaList_sp indices) {
 
 
 CL_LISPIFY_NAME("core:rowMajorAset");
-CL_DEFUN T_sp cl__rowMajorAset(Array_sp array, size_t idx, T_sp value)
+CL_DEFUN T_sp cl__rowMajorAset(Array_sp array, gc::Fixnum idx, T_sp value)
 {
+  // bounds check
+  size_t max = array->arrayTotalSize();
+  unlikely_if ((idx < 0) || (idx >= max))
+    badRMIndexError(array, idx, max);
+  // set
   array->rowMajorAset(idx,value);
   return value;
 }
 
 CL_LISPIFY_NAME("cl:rowMajorAref");
-CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, size_t idx)
+CL_DEFUN  T_sp cl__rowMajorAref(Array_sp array, gc::Fixnum idx)
 {
+  // bounds check
+  size_t max = array->arrayTotalSize();
+  unlikely_if ((idx < 0) || (idx >= max))
+    badRMIndexError(array, idx, max);
+  // actual ref
   return array->rowMajorAref(idx);
 }
 
