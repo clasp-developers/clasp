@@ -293,11 +293,14 @@ in the generic function lambda-list to the generic function lambda-list"
 	      (pop args)
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
-    (multiple-value-bind (lambda-list required-parameters specializers)
+    (multiple-value-bind (lambda-list
+                          required-parameters specializers specializedps)
         (parse-specialized-lambda-list specialized-lambda-list)
       (multiple-value-bind (lambda-expression lambda-name fn-lambda-list body
                             declarations documentation)
-	  (make-raw-lambda name lambda-list required-parameters specializers body env qualifiers)
+	  (make-raw-lambda name lambda-list
+                           required-parameters specializers specializedps
+                           body env qualifiers)
         (multiple-value-bind (fn-form options)
             (method-lambda
              name lambda-expression env
@@ -371,20 +374,32 @@ in the generic function lambda-list to the generic function lambda-list"
           ,@(loop for (var default) on aux by #'cddr
                   collect `(,var ,default))))))
 
-(defun make-raw-lambda (name lambda-list required-parameters specializers body env qualifiers)
+(defun make-raw-lambda (name lambda-list
+                        required-parameters specializers specializedps
+                        body env qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body t)
     (let* ((qualifiers (if qualifiers (list qualifiers)))
            (copied-variables '())
            (class-declarations
-            (nconc (when *add-method-argument-declarations*
-                     (loop for name in required-parameters
-                        for type in specializers
-                        when (and (not (eq type t)) (symbolp type))
-                        do (push `(,name ,name) copied-variables) and
-                        nconc `((type ,type ,name)
-                                (si::no-check-type ,name))))
-                   (cdar declarations)))
+             (when *add-method-argument-declarations*
+               (loop for name in required-parameters
+                     for type in specializers
+                     for specializedp in specializedps
+                     when (and specializedp (symbolp type))
+                       do (push `(,name ,name) copied-variables) and
+                     nconc `((type ,type ,name)
+                             (si::no-check-type ,name)))))
+           (ignorability-declaration
+             `(ignorable ,@(loop for name in required-parameters
+                                 for specializedp
+                                   in specializedps
+                                 when specializedp
+                                   collect name)))
+           (total-declarations
+             (list* `(declare ,@class-declarations)
+                    `(declare ,ignorability-declaration)
+                    declarations))
            (block `(block ,(si::function-block-name name) ,@real-body))
            (lambda-list (fixup-method-lambda-list lambda-list))
            (lambda-name `(method ,name ,@qualifiers ,(fixup-specializers specializers)))
@@ -398,11 +413,15 @@ in the generic function lambda-list to the generic function lambda-list"
             ;; arguments to the code walk.
              `(lambda ,lambda-list
                 (declare (core:lambda-name ,lambda-name))
-                ,@(and class-declarations `((declare ,@class-declarations)))
+                ,@total-declarations
                 ,(if copied-variables
-                     `(let* ,copied-variables ,block)
+                     `(let* ,copied-variables
+                        (declare
+                         (ignorable ,@(mapcar #'first copied-variables)))
+                        ,block)
                      block))))
-      (values method-lambda lambda-name lambda-list (list block) declarations documentation))))
+      (values method-lambda lambda-name lambda-list (list block)
+              total-declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
   (declare (ignore gf method))
@@ -508,9 +527,13 @@ in the generic function lambda-list to the generic function lambda-list"
 ;; For some reason clasp needs this at compile time but ecl does not
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (defun parse-specialized-lambda-list (specialized-lambda-list)
-    "This function takes a method lambda list and outputs the list of required
-arguments, the list of specializers and a new lambda list where the specializer
-have disappeared."
+    "This function takes a method lambda list and outputs a new lambda list
+where the specializers have disappeared, the list of required arguments, the
+list of specializers, and a list where each element is true iff that
+argument was specialized.
+(The last is useful for implementing IGNORE behavior.)"
+    ;; That is, clhs defmethod says that a specialized parameter is
+    ;; ignorable, essentially.
     (ext:with-current-source-form (specialized-lambda-list)
       ;; SI:PROCESS-LAMBDA-LIST will ensure that the lambda list is
       ;; syntactically correct and will output as a second value
@@ -522,26 +545,29 @@ have disappeared."
             (ll lambda-list (rest ll))
             (required-parameters '())
             (specializers '())
-            arg variable specializer)
+            (specializedps '())
+            arg variable specializer specializedp)
            ((null arglist)
             (values lambda-list
                     (nreverse required-parameters)
-                    (nreverse specializers)))
+                    (nreverse specializers)
+                    (nreverse specializedps)))
         (setf arg (first arglist))
         (ext:with-current-source-form (arg)
           (cond
             ;; Just a variable
             ((atom arg)
-             (setf variable arg specializer T))
+             (setf variable arg specializer T specializedp nil))
             ;; List contains more elements than variable and specializer
             ((not (endp (cddr arg)))
              (si::simple-program-error "Syntax error in method specializer ~A" arg))
             ;; Specializer is NIL
             ((null (setf variable (first arg)
+                         specializedp t
                          specializer (second arg)))
              (si::simple-program-error
               "NIL is not a valid specializer in a method lambda list"))
-            ;; Specializer is a class name
+            ;; Specializer looks like a class name
             ((atom specializer))
             ;; Specializer is (EQL value)
             ((and (eql (first specializer) 'EQL)
@@ -552,7 +578,8 @@ have disappeared."
              (si::simple-program-error "Syntax error in method specializer ~A" arg)))
           (setf (first ll) variable)
           (push variable required-parameters)
-          (push specializer specializers))))))
+          (push specializer specializers)
+          (push specializedp specializedps))))))
 
 (defun declaration-specializers (arglist declarations)
   (do ((argscan arglist (cdr argscan))
