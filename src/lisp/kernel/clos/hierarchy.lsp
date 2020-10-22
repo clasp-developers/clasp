@@ -27,7 +27,7 @@
   (defmacro mlog (fmt &rest fmtargs)
     `(core:bformat *error-output* ,fmt ,@fmtargs)))
 ;;#+(or)
-(defmacro mlog (fmt &rest fmtargs) nil)
+(defmacro mlog (fmt &rest fmtargs) (declare (ignore fmt fmtargs)))
 
 ;;; ----------------------------------------------------------------------
 ;;; Class SPECIALIZER

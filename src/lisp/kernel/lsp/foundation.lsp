@@ -353,6 +353,7 @@ the corresponding VAR.  Returns NIL."
 (core:fset 'multiple-value-bind
            #'(lambda (whole env)
                (declare (core:lambda-name multiple-value-bind-macro))
+               (declare (ignore env))
                (let ((vars (cadr whole))
                      (form (caddr whole))
                      (body (cdddr whole))
@@ -379,6 +380,7 @@ the corresponding VAR.  Returns NIL."
 (in-package :core)
 
 (defun warn-or-ignore (x &rest args)
+  (declare (ignore x args))
   nil)
 (export 'warn-or-ignore)
 

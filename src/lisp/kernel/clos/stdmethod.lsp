@@ -21,8 +21,7 @@
 
 (defmethod shared-initialize ((method standard-method) slot-names &rest initargs
 			      &key (specializers nil spec-supplied-p)
-			      (lambda-list nil lambda-supplied-p)
-			      generic-function)
+			      (lambda-list nil lambda-supplied-p))
   (declare (ignore initargs))
   (when slot-names
     (unless spec-supplied-p

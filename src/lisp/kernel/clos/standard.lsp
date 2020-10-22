@@ -15,7 +15,7 @@
 #+(or)
 (defmacro dbg-standard (fmt &rest args)
   `(format t ,fmt ,@args))
-(defmacro dbg-standard (fmt &rest args))
+(defmacro dbg-standard (fmt &rest args) (declare (ignore fmt args)))
 
 ;;; ----------------------------------------------------------------------
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION

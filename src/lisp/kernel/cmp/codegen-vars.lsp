@@ -36,8 +36,9 @@
     
 ;;#+(or)
 (progn
-  (defmacro cv-log (fmt &rest fmt-args) nil)
+  (defmacro cv-log (fmt &rest fmt-args) (declare (ignore fmt fmt-args)) nil)
   (defmacro cv-log-do (&rest body)
+    (declare (ignore body))
     nil))
 
 

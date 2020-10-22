@@ -452,7 +452,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           *proclaim-hook*))
 
 ;; Discard documentation until helpfile.lsp is loaded
-(defun set-documentation (o d s) nil)
+(defun set-documentation (o d s) (declare (ignore o d s)) nil)
 
 (defun proclaim (decl)
   "Args: (decl-spec)
@@ -519,32 +519,35 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (si:fset 'and
-           #'(lambda (whole env)
-               (let ((forms (cdr whole)))
-                 (if (null forms)
-                     t
-                     (if (null (cdr forms))
-                         (car forms)
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((forms (cdr whole)))
+               (if (null forms)
+                   t
+                   (if (null (cdr forms))
+                       (car forms)
                          `(if ,(car forms)
                               (and ,@(cdr forms)))))))
            t)
 
 (si:fset 'or
-           #'(lambda (whole env)
-               (let ((forms (cdr whole)))
-                 (if (null forms)
-                     nil
-                     (if ( null (cdr forms))
-                         (car forms)
-                         (let ((tmp (gensym)))
-                           `(let ((,tmp ,(car forms)))
-                              (if ,tmp
-                                  ,tmp
-                                  (or ,@(cdr forms)))))))))
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((forms (cdr whole)))
+               (if (null forms)
+                   nil
+                   (if ( null (cdr forms))
+                       (car forms)
+                       (let ((tmp (gensym)))
+                         `(let ((,tmp ,(car forms)))
+                            (if ,tmp
+                                ,tmp
+                                (or ,@(cdr forms)))))))))
            t )
 (export '(and or))
 
 (defun build-target-dir (type &optional stage)
+  (declare (ignore type))
   (let* ((stage (if stage
                     stage
                     (default-target-stage)))
@@ -637,8 +640,7 @@ the stage, the +application-name+ and the +bitcode-name+"
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((target-host "lib")
-          (target-dir (build-target-dir type stage))
-          pn)
+          (target-dir (build-target-dir type stage)))
       #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s%N" module)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s%N" target-host)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s%N" target-dir)

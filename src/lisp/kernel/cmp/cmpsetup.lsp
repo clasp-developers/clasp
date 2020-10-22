@@ -141,7 +141,7 @@ Options are :tagbody :go :all :eh-landing-pads
   `(when *debug-compiler*
      (compile-file-quick-module-dump ,module ,name-modifier)))
 
-(defmacro cmp-log-dump-function (fn) nil)
+(defmacro cmp-log-dump-function (fn) (declare (ignore fn)) nil)
 
 (defmacro cmp-log-dump-module (module)
   `(if (is-debug-compiler-on)

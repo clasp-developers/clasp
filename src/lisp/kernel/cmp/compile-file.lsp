@@ -236,8 +236,7 @@ Compile a lisp source file into an LLVM module."
 				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
-	 (module-name (cf-module-name type given-input-pathname))
-	 warnings-p failure-p)
+	 (module-name (cf-module-name type given-input-pathname)))
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
