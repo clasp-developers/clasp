@@ -22,38 +22,46 @@
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,make_dispatch_macro_character);
 (defmethod eclector.readtable:make-dispatch-macro-character
     ((readtable t) char &optional non-terminating-p)
+  (declare (ignore char non-terminating-p))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,get_macro_character);
 
+;;; to avoid breaking (get-macro-character c nil)
+(defmethod eclector.readtable:get-macro-character ((readtable null) char)
+  (cl:get-macro-character char cl:*readtable*))
+
 (defmethod eclector.readtable:get-macro-character ((readtable t) char)
-  (if (null readtable)
-      ;;; to avoid breaking (get-macro-character #\{ nil)
-      (cl:get-macro-character char cl:*readtable*)
-      (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable)))
+  (declare (ignore char))
+  (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_macro_character);
 (defmethod eclector.readtable:set-macro-character
     ((readtable t) char function &optional non-terminating-p)
+  (declare (ignore char function non-terminating-p))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,get_dispatch_macro_character);
 (defmethod eclector.readtable:get-dispatch-macro-character
     ((readtable t) disp-char sub-char)
+  (declare (ignore disp-char sub-char))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,set_dispatch_macro_character);
 (defmethod eclector.readtable:set-dispatch-macro-character
     ((readtable t) disp-char sub-char function)
+  (declare (ignore disp-char sub-char function))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,syntax_type);
 (defmethod eclector.readtable:syntax-type ((readtable t) char)
+  (declare (ignore char))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,setf_syntax_type);
 (defmethod (setf eclector.readtable:syntax-type)
     (syntax-type (readtable t) char)
+  (declare (ignore syntax-type char))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'eclector.readtable.simple:readtable))
 
 ;;; SYMBOL_EXPORT_SC_(EclectorReadtablePkg,copy_readtable_into);

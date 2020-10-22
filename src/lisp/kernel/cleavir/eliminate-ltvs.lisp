@@ -51,6 +51,7 @@
 
 ;;; Main entry point.
 (defun eliminate-load-time-value-inputs (initial-instruction system env)
+  (declare (ignore system))
   (cleavir-ir:reinitialize-data initial-instruction)
   (cleavir-ir:map-instructions-arbitrary-order
    (lambda (instruction)

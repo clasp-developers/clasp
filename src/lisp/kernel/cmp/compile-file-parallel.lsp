@@ -4,8 +4,7 @@
 #+(or)
 (defmacro cf2-log (fmt &rest args)
   `(format *error-output* ,fmt ,@args))
-(defmacro cf2-log (fmt &rest args)
-  nil)
+(defmacro cf2-log (fmt &rest args) (declare (ignore fmt args)))
 
 #+(or)
 (progn
@@ -17,8 +16,7 @@
             (format *error-output* ,fmt ,@args))
        (mp:giveup-lock *cfp-message-mutex*))))
 ;;;#+(or)
-(defmacro cfp-log (fmt &rest args)
-  nil)
+(defmacro cfp-log (fmt &rest args) (declare (ignore fmt args)))
 
 (defstruct (ast-job (:type vector) :named)
   ast environment output-stream

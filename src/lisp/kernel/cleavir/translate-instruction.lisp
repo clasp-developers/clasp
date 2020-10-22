@@ -7,6 +7,7 @@
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value (abi abi-x86-64) function-info)
+  (declare (ignore return-value))
   (let ((lambda-list (cleavir-ir:lambda-list instr))
         (closed-env-dest (cleavir-ir:static-environment instr))
         (dynenv (cleavir-ir:dynamic-environment-output instr))
@@ -20,6 +21,7 @@
 
 (defmethod translate-simple-instruction
     ((instr clasp-cleavir-hir:bind-va-list-instruction) return-value (abi abi-x86-64) function-info)
+  (declare (ignore return-value function-info))
   (let* ((lambda-list          (cleavir-ir:lambda-list instr))
          (vaslist              (first (cleavir-ir:inputs instr)))
          (vaslist-value        (in vaslist))
@@ -33,6 +35,7 @@
                                 :nargs (cmp:irc-load src-remaining-nargs*)
                                 :va-list* local-va_list*
                                 :rest-alloc (clasp-cleavir-hir:rest-alloc instr))))
+    (declare (ignore _))
     (cmp:compile-lambda-list-code lambda-list callconv
                                   ;; BIND-VA-LIST is used exclusively internally, and furthermore,
                                   ;; in method bodies. In that case the generic function does the
@@ -42,10 +45,12 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:instruction) return-value abi function-info)
+  (declare (ignore return-value function-info))
   (error "Implement instruction: ~a for abi: ~a~%" instruction abi))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:assignment-instruction) return-value abi function-info)
+  (declare (ignore return-value abi function-info))
   (out (in (first (cleavir-ir:inputs instruction))) (first (cleavir-ir:outputs instruction))))
 
 (defun safe-llvm-name (obj)
@@ -58,16 +63,23 @@
     (t "object")))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value abi function-info)
+    ((instruction clasp-cleavir-hir:precalc-value-instruction)
+     return-value abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
-         (label (safe-llvm-name
-                 (clasp-cleavir-hir:precalc-value-instruction-form instruction)))
+         (label
+           (safe-llvm-name
+            (clasp-cleavir-hir:precalc-value-instruction-form instruction)))
          (value (cmp:irc-load
-                 (cmp:irc-gep-variable (literal:ltv-global) (list (%size_t 0) (%i64 index)) label))))
+                 (cmp:irc-gep-variable (literal:ltv-global)
+                                       (list (%size_t 0) (%i64 index))
+                                       label))))
     (out value (first (cleavir-ir:outputs instruction)))))
 
 (defmethod translate-simple-instruction
-    ((instruction cleavir-ir:fixed-to-multiple-instruction) return-value (abi abi-x86-64) function-info)
+    ((instruction cleavir-ir:fixed-to-multiple-instruction)
+     return-value (abi abi-x86-64) function-info)
+  (declare (ignore function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (ninputs (length inputs)))
     (with-return-values (return-value abi nret ret-regs)
@@ -81,7 +93,9 @@
             do (cmp:irc-store (%nil) (return-value-elt ret-regs i))))))
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-ir:multiple-to-fixed-instruction) return-value (abi abi-x86-64) function-info)
+    ((instr cleavir-ir:multiple-to-fixed-instruction)
+     return-value (abi abi-x86-64) function-info)
+  (declare (ignore function-info))
   ;; Outputs that are returned in registers (see +pointers-returned-in-registers+) can be
   ;; unconditionally assigned, as things that return values ensure that those return registers
   ;; are always valid - e.g., (values) explicitly sets them to NIL.
@@ -148,7 +162,8 @@
                   do (out phi out))))))))
 
 (defmethod translate-simple-instruction
-    ((instr cc-mir:clasp-save-values-instruction) return-value abi function-info)
+    ((instr cc-mir:clasp-save-values-instruction)
+     return-value abi function-info)
   (declare (ignore function-info))
   (with-return-values (return-value abi nvalsl return-regs)
     (let* ((outputs (cleavir-ir:outputs instr))

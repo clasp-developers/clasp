@@ -37,6 +37,7 @@
   (setf (cl:readtable-case readtable) mode))
 
 (defmethod (setf eclector.readtable:readtable-case) (mode readtable)
+  (declare (ignore mode))
   (error 'type-error :datum readtable :EXPECTED-TYPE 'cl:readtable))
  
 (defmethod eclector.readtable:readtablep ((object cl:readtable)) t)
