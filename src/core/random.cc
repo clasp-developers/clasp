@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/hashTable.h>
+#include <clasp/core/lispStream.fwd.h>
+#include <clasp/core/print.h>
 #include <clasp/core/random.h>
 #include <clasp/core/wrappers.h>
 
@@ -106,6 +108,23 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
 }
 
 
+void RandomState_O::__write__(T_sp stream) const {
+  bool readably = clasp_print_readably();
+  if (readably) {
+    this->__writeReadable__(stream);
+    return;
+  }
+  clasp_write_string("#<RANDOM-STATE>",stream);
+}
+
+
+void RandomState_O::__writeReadable__(T_sp stream) const {
+  clasp_write_string("#.(core:random-state-set (make-random-state t) \"",stream);
+  std::string state = this->random_state_get();
+  clasp_write_string(state,stream);
+  clasp_write_string("\")",stream);
+}
+  
 
 
 

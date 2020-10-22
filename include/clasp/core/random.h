@@ -67,14 +67,15 @@ public: // ctor/dtor for classes with shared virtual base
   };
   virtual ~RandomState_O() {}
 
-  CL_DEFMETHOD std::string random_state_get() {
+  CL_DEFMETHOD std::string random_state_get() const {
     stringstream ss;
     ss << this->_Producer;
     return ss.str();
   }
-  CL_DEFMETHOD void random_state_set(const std::string& s) {
+  CL_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
     stringstream ss(s);
     ss >> this->_Producer;
+    return this->asSmartPtr();
   }
 
  public: // Functions here
@@ -87,6 +88,9 @@ public: // ctor/dtor for classes with shared virtual base
     GC_ALLOCATE_VARIADIC(RandomState_O, b, true );
     return b;
   }
+
+  virtual void __write__(T_sp strm) const;
+  virtual void __writeReadable__(T_sp strm) const;
 
 }; // RandomState class
 
