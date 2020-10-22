@@ -43,7 +43,6 @@
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
             module-literal-table
-            *load-time-initializer-environment*
             *gv-current-function-name*
             *gv-source-namestring*
             *implicit-compile-hook*

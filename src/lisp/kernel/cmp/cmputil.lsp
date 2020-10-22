@@ -142,16 +142,10 @@
   "Initialize the environment to protect nested compilations from each other"
   (declare (ignore options)) ; FIXME: Find a use or remove
   `(let ((*the-module* nil)
-	 (*irbuilder-ltv-function-alloca* nil)
-	 (*irbuilder-ltv-function-body* nil)
-	 (*ltv-function-landing-pad-block* nil)
 	 (*irbuilder-function-alloca* nil)
 	 (*irbuilder-function-body* nil)
 	 (*generate-compile-file-load-time-values* nil)
-	 (*table-index* nil)
 	 (*load-time-value-holder-global-var* nil)
-	 (*load-time-value-coalesce* nil)
-	 (*load-time-initializer-environment* nil)
 	 (*the-module-dibuilder* nil)
 	 (*readtable* *readtable*)
 	 (*package* *package*))

@@ -26,7 +26,8 @@ struct gctools::GCInfo<core::Record_O> {
 };
 
 namespace core {
-SMART(Record);
+FORWARD(Record);
+FORWARD(SharpEqualWrapper);
 class Record_O : public General_O {
   LISP_CLASS(core, CorePkg, Record_O, "Record",General_O);
 public:
@@ -110,7 +111,23 @@ public:
       RECORD_LOG(BF("saving apair: %s") % _rep_(apair));
       this->_alist = core::Cons_O::create(apair, this->_alist);
     } break;
-    case initializing:
+    case initializing: {
+      List_sp find = core__alist_assoc_eq(this->_alist, name);
+      if (!find.consp())
+        SIMPLE_ERROR_SPRINTF("Could not find field %s",  _rep_(name).c_str());
+      Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
+      RECORD_LOG(BF("init/load find apair %s\n") % _rep_(apair));
+      // Set the value and ignore its type!!!!!! This is to allow placeholders
+      T_sp v = CONS_CDR(apair);
+      if (!gc::IsA<gc::smart_ptr<OT>>(v)) {
+        class_id expected_typ = reg::registered_class<OT>::id;
+        lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(v.raw_()));
+      }
+      RECORD_LOG(BF("init/load v: %s v.raw_=%p\n") % _rep_(v) % (void*)v.raw_());
+      value.setRaw_(reinterpret_cast<gc::Tagged>(v.raw_()));
+      if (this->stage() == initializing)
+        this->flagSeen(apair);
+    } break;
     case loading: {
       List_sp find = core__alist_assoc_eq(this->_alist, name);
       if (!find.consp())
@@ -547,6 +564,10 @@ public:
       else {
         Cons_sp apair = gc::As_unsafe<Cons_sp>(find);
         value = gc::As<gc::smart_ptr<OT>>(CONS_CDR(apair));
+        if (!gc::IsA<gc::smart_ptr<OT>>(value)) {
+          class_id expected_typ = reg::registered_class<OT>::id;
+          lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O *>(value.raw_()));
+        }
         this->flagSeen(apair);
       }
     } break;

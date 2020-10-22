@@ -82,8 +82,7 @@ For sbcl
       (irc-add-clause landpad (llvm-sys:constant-pointer-null-get %i8*%)))))
 
 (defmacro with-begin-end-catch ((exn exception-ptr rethrow-bb) &rest body)
-  (let ((cont-gs (gensym))
-        (exn-gs (gensym)))
+  (let ((exn-gs (gensym)))
     `(let ((,exn-gs ,exn))
        (multiple-value-prog1
            (with-landing-pad ,rethrow-bb
@@ -127,6 +126,7 @@ For sbcl
 		 (,matches-type-gs (irc-icmp-eq ,sel-gs ,typeid-gs))
 		 (,handler-block-gs (irc-basic-block-create (concatenate 'base-string ,name "." ,(symbol-name handler-block-gs))))
 		 )
+            #+debug-eh(declare (ignore _))
 ;;	    (irc-intrinsic "debugPrintI32" ,sel-gs)
 ;;	    (irc-intrinsic "debugPrintI32" ,typeid-gs)
 	    (irc-cond-br ,matches-type-gs ,handler-block-gs ,next-dispatcher-block)
@@ -169,14 +169,16 @@ For sbcl
                                      ehselector.slot)
   (let* ((rethrow-cleanup       (irc-basic-block-create "TRY.rethrow-cleanup" function))
          (_                     (irc-begin-block rethrow-cleanup))
-         (lp                    (irc-create-landing-pad (length previous-exception-clause-types-to-handle) "rethrow-cleanup"))
-         (_                     (try.add-landing-pad-clauses lp previous-exception-clause-types-to-handle))
-         (_                     (irc-set-cleanup lp t))
-         (_                     (preserve-exception-info lp exn.slot ehselector.slot))
-         #+debug-eh(_                     (irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*))))
-         (_                     (with-landing-pad *current-function-terminate-landing-pad*
-                                    (irc-intrinsic "__cxa_end_catch")))
-         (_                     (irc-br previous-exception-handler-cleanup-block)))
+         (lp                    (irc-create-landing-pad (length previous-exception-clause-types-to-handle) "rethrow-cleanup")))
+    (declare (ignore _))
+    (try.add-landing-pad-clauses lp previous-exception-clause-types-to-handle)
+    (irc-set-cleanup lp t)
+    (preserve-exception-info lp exn.slot ehselector.slot)
+    #+debug-eh
+    (irc-intrinsic "debugPrintI32" (jit-constant-i32 (incf *next-i32*)))
+    (with-landing-pad *current-function-terminate-landing-pad*
+      (irc-intrinsic "__cxa_end_catch"))
+    (irc-br previous-exception-handler-cleanup-block)
     rethrow-cleanup))
 
 (defun generate-ehcleanup-and-resume-code (function exn.slot ehselector.slot)
@@ -192,6 +194,7 @@ For sbcl
          (lpad.val        (llvm-sys:create-insert-value ehbuilder undef exn7 '(0) "lpad.val"))
          (lpad.val8       (llvm-sys:create-insert-value ehbuilder lpad.val sel '(1) "lpad.val8"))
          (_               (llvm-sys:create-resume ehbuilder lpad.val8)))
+    (declare (ignore _))
     ehcleanup))
 
 ;;; ------------------------------------------------------------
@@ -278,6 +281,11 @@ exceptions to higher levels of the code and unwinding the stack.
                   (,cont-block-gs (irc-basic-block-create (core:bformat nil "%s.try-cont" ,name)))
                   (,previous-exception-handler-cleanup-block-gs *exception-handler-cleanup-block*)
                   (*exception-handler-cleanup-block* ,dispatch-header-gs ))
+             (declare
+              (ignore
+               ,@(when exception-clauses
+                   `(,previous-exception-handler-cleanup-block-gs
+                     ,previous-exception-clause-types-to-handle-gs))))
              (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)
              (let ,(mapcar #'(lambda (var-name)
                                (list var-name `(irc-basic-block-create (concatenate 'base-string ,name "." ,(symbol-name var-name)))))

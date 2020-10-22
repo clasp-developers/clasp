@@ -37,8 +37,9 @@
                                      start end))
 
 (defun disassemble-function-to-asm (function)
-  (multiple-value-bind (symbol start end type)
+  (multiple-value-bind (symbol start end)
       (core:lookup-address (core:function-pointer function))
+    (declare (ignore symbol))
     (disassemble-assembly start end)
     (bformat t "Done%N")))
 

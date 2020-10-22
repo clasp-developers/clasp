@@ -43,7 +43,7 @@
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name dolist))
-             (let (body pop finished control var expr exit)
+             (let (body control var expr exit)
                (setq body (rest whole))
                (when (endp body)
                  (simple-program-error "Syntax error in ~A:~%~A" 'DOLIST whole))
@@ -70,7 +70,7 @@
 
 (let ((f #'(lambda (whole env)
              (declare (ignore env) (core:lambda-name dotimes))
-             (let (body pop finished control var expr exit)
+             (let (body control var expr exit)
                (setq body (rest whole))
                (when (endp body)
                  (simple-program-error "Syntax error in ~A:~%~A" 'DOTIMES whole))

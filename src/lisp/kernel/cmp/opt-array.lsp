@@ -36,6 +36,8 @@
                                           (initial-element nil iesp) (initial-contents nil icsp)
                                           (displaced-to nil dp) (displaced-index-offset 0 diop)
                                           &environment env)
+  (declare (ignore adjustable fill-pointer
+                   displaced-to displaced-index-offset))
   (if (constantp element-type env)
       (let ((et (ext:constant-form-value element-type env)))
         (multiple-value-bind (make-sv make-smdarray)
@@ -89,6 +91,8 @@
             (displaced-to nil dp) (displaced-index-offset 0 diop)
             initial-element iesp
             &environment env)
+  (declare (ignore adjustable fill-pointer
+                   displaced-to displaced-index-offset))
   ;; FIXME: This should do better for constant NIL adjustable, etc.
   ;; As is, we won't expand if initial-element is provided.
   (if (and (constantp element-type env)

@@ -108,8 +108,13 @@
   (call-next-method)
   23)
 
-(test  test-issue-1031
-  (not (numberp (make-instance ' %foo-1 :a 1))))
+(test test-issue-1031
+      (not (numberp (make-instance '%foo-1 :a 1))))
+
+(defgeneric congruent-gf (a &key b &allow-other-keys))
+(test clos-lambda-list-congruent-allow-other-keys
+      (defmethod congruent-gf (a &key)
+        a))
  
 
 

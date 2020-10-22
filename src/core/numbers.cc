@@ -255,9 +255,11 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   case_Bignum_v_Bignum :
     return core__next_add(gc::As_unsafe<Bignum_sp>(na),
                           gc::As_unsafe<Bignum_sp>(nb));
+  case_Bignum_v_SingleFloat :
   case_Ratio_v_SingleFloat : {
       return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
     }
+  case_Bignum_v_DoubleFloat :
   case_Ratio_v_DoubleFloat : {
       return DoubleFloat_O::create(clasp_to_double(na) + clasp_to_double(nb));
     }
@@ -283,12 +285,14 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
                                 gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
+  case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
     return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
   case_SingleFloat_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) + clasp_to_float(nb));
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
+  case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_Ratio:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
@@ -308,6 +312,7 @@ CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
 #endif // CLASP_LONG_FLOAT
   case_Complex_v_Fixnum:
   case_Complex_v_Ratio:
+  case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
       Number_sp aux = na;
@@ -398,12 +403,14 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
                                 gc::As_unsafe<Integer_sp>(d));
     }
   case_SingleFloat_v_Fixnum:
+  case_SingleFloat_v_Bignum:
   case_SingleFloat_v_Ratio:
     return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
   case_SingleFloat_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) - clasp_to_float(nb));
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
+  case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_Ratio:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
@@ -423,6 +430,7 @@ CL_DEFUN Number_sp contagen_sub(Number_sp na, Number_sp nb) {
   case_Complex_v_LongFloat:
   case_Complex_v_Fixnum:
   case_Complex_v_Ratio:
+  case_Complex_v_Bignum:
   case_Complex_v_SingleFloat:
   case_Complex_v_DoubleFloat : {
       return clasp_make_complex(gc::As<Real_sp>(contagen_sub(gc::As<Complex_sp>(na)->real(), nb)),
@@ -545,6 +553,7 @@ CL_DEFUN Number_sp contagen_mul(Number_sp na, Number_sp nb) {
       goto Complex_v_Y;
     }
   case_Fixnum_v_Complex:
+  case_Bignum_v_Complex:
   case_Ratio_v_Complex:
   case_SingleFloat_v_Complex:
   case_DoubleFloat_v_Complex:
@@ -613,8 +622,10 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
   case_Fixnum_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
+  case_Bignum_v_SingleFloat:
   case_Ratio_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
+  case_Bignum_v_DoubleFloat:
   case_Ratio_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
   case_Ratio_v_Fixnum:
@@ -632,11 +643,13 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Ratio:
+  case_SingleFloat_v_Bignum:
   case_SingleFloat_v_SingleFloat:
     return clasp_make_single_float(clasp_to_float(na) / clasp_to_float(nb));
   case_SingleFloat_v_DoubleFloat:
   case_DoubleFloat_v_Fixnum:
   case_DoubleFloat_v_Ratio:
+  case_DoubleFloat_v_Bignum:
   case_DoubleFloat_v_SingleFloat:
   case_DoubleFloat_v_DoubleFloat:
     return DoubleFloat_O::create(clasp_to_double(na) / clasp_to_double(nb));
