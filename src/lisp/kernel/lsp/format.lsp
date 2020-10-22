@@ -21,7 +21,7 @@
 (in-package "SYS")
 
 ;;(defmacro fmt-log (&rest args) `(core:bformat t "FMT-LOG: %s%N" (list ,@args)))
-(defmacro fmt-log (&rest args) nil)
+(defmacro fmt-log (&rest args) (declare (ignore args)))
 
 (pushnew :cdr-7 *features*)
 
@@ -2015,7 +2015,6 @@
       #+(or ecl clasp)
       (let* ((posn (position close directives))
 	     (before (subseq directives 0 posn))
-	     (jumped t)
 	     (after (nthcdr (1+ posn) directives))
 	     (string (make-array 10 :element-type 'character
 				    :adjustable t :fill-pointer 0)))
@@ -2850,9 +2849,7 @@
         (control-string (and (constantp control-string env)
                              (ext:constant-form-value control-string env))))
     (if (stringp control-string)
-        (let ((fun-sym (gensym "FUN"))
-              (out-sym (gensym "OUT"))
-              (dest-sym (gensym "DEST")))
+        (let ((dest-sym (gensym "DEST")))
           (multiple-value-bind (guts variables)
               ;; We call %formatter-guts here because it has the side effect
               ;; of signaling an error if the control string is invalid.

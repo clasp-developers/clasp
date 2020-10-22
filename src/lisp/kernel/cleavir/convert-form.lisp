@@ -2,6 +2,7 @@
 
 #-cst
 (defmethod cleavir-generate-ast:convert-code (lambda-list body env (system clasp-cleavir:clasp) &key block-name )
+  (declare (ignore env))
   (let ((function-ast (call-next-method)))
     (multiple-value-bind (declarations documentation forms)
         (cleavir-code-utilities:separate-function-body body)
@@ -19,9 +20,11 @@
 
 #+cst
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
-                                            env (system clasp-cleavir:clasp) &key block-name-cst origin)
+                                            env (system clasp-cleavir:clasp)
+                                            &key block-name-cst origin)
+  (declare (ignore env block-name-cst origin))
   (let ((cst:*ordinary-lambda-list-grammar* clasp-cleavir:*clasp-ordinary-lambda-list-grammar*))
-    (multiple-value-bind (declaration-csts documentation form-csts)
+    (multiple-value-bind (declaration-csts documentation)
         (cst:separate-function-body body)
       (declare (ignore documentation)) ; handled by cleavir
       (let* ((dspecs (loop for declaration-cst in declaration-csts

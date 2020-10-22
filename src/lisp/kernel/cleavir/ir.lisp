@@ -18,6 +18,7 @@
       gep)))
 
 (defun %literal-value (value &optional (label "literal"))
+  (declare (ignore label))
   (cmp:irc-load (%literal-ref value)))
 
 (defun %closurette-index (function function-description)
@@ -239,7 +240,7 @@ And convert everything to JIT constants."
          (result-in-registers
            (if cmp::*current-unwind-landing-pad-dest*
                (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
-               (cmp::irc-create-call func args))))
+               (cmp::irc-create-call func args label))))
     (store-tmv result-in-registers return-value)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))

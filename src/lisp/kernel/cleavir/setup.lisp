@@ -33,17 +33,23 @@ when this is t a lot of graphs will be generated.")
                                                               (cst:source cst))))
 
 #-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
+(defmethod cleavir-generate-ast:convert-constant-to-immediate
+    ((n integer) environment (system clasp))
+  (declare (ignore environment))
   ;; convert fixnum into immediate but bignums return nil
- (core:create-tagged-immediate-value-or-nil n))
+  (core:create-tagged-immediate-value-or-nil n))
 
 #-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
+(defmethod cleavir-generate-ast:convert-constant-to-immediate
+    ((n character) environment (system clasp))
+  (declare (ignore environment))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
 #-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
+(defmethod cleavir-generate-ast:convert-constant-to-immediate
+    ((n float) environment (system clasp))
+  (declare (ignore environment))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
 
@@ -51,17 +57,23 @@ when this is t a lot of graphs will be generated.")
 ;;;
 ;;; cst-to-ast methods for convert-constant-to-immediate
 #+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
+    ((n integer) environment (system clasp))
+  (declare (ignore environment))
   ;; convert fixnum into immediate but bignums return nil
   (core:create-tagged-immediate-value-or-nil n))
 
 #+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
+    ((n character) environment (system clasp))
+  (declare (ignore environment))
   ;; convert character to an immediate
   (core:create-tagged-immediate-value-or-nil n))
 
 #+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
+(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
+    ((n float) environment (system clasp))
+  (declare (ignore environment))
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
 

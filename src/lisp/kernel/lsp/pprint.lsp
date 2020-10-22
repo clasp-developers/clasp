@@ -850,7 +850,7 @@
 (defmacro pprint-logical-block
 	  ((stream-symbol object &key (prefix "" prefix-p)
 			  (per-line-prefix "" per-line-prefix-p)
-			  (suffix "" suffix-p))
+			  (suffix ""))
 	   &body body)
   "Group some output into a logical block.  STREAM-SYMBOL should be either a
    stream, T (for *TERMINAL-IO*), or NIL (for *STANDARD-OUTPUT*).  The printer

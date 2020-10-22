@@ -3,12 +3,14 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   ;; By default just return the current instruction
   instr)
 
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:car-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
@@ -16,6 +18,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:cdr-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)
@@ -24,6 +27,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplaca-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
@@ -32,6 +36,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:rplacd-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
@@ -58,6 +63,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:fetch-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (let ((env (first (cleavir-ir:inputs instr)))
         (idx (cleavir-ir:value (second (cleavir-ir:inputs instr)))))
     (change-class instr 'cleavir-ir:memref2-instruction
@@ -67,6 +73,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:read-cell-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memref2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr)))
                 :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)
@@ -74,6 +81,7 @@
 
 (defmethod cleavir-hir-to-mir:specialize ((instr cleavir-ir:write-cell-instruction)
                                           (impl clasp-cleavir:clasp) proc os)
+  (declare (ignore proc os))
   (change-class instr 'cleavir-ir:memset2-instruction
                 :inputs (list (first (cleavir-ir:inputs instr))
                               (second (cleavir-ir:inputs instr)))
