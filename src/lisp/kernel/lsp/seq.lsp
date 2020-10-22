@@ -375,7 +375,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun concatenate-into-sequence (seq core:&va-rest sequences)
   ;; seq is assumed to be non complex and have the correct length.
   (reckless
-   (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
+   (sequence:with-sequence-iterator (it nil from-end step nil nil setelt)
        (seq)
      (dovaslist (sequence sequences seq)
        (sequence:dosequence (elt sequence)

@@ -100,6 +100,7 @@
                                        :dntk-default ; 13 DebugNameTableKind
                                        nil ; 14 RangesBaseAddress
                                        )))
+             (declare (ignorable ,dir-name)) ; cmp-log may expand empty
              (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
              (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
              (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)

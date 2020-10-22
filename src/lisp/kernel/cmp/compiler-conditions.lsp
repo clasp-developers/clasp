@@ -13,7 +13,7 @@
 ;;; Otherwise NIL.
 ;;; This has methods defined on it for cleavir condition types later.
 (defgeneric compiler-condition-origin (condition)
-  (:method (condition) nil))
+  (:method (condition) (declare (ignore condition)) nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

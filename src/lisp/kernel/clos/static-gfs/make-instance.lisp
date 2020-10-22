@@ -13,6 +13,7 @@
         (default-make-instance-form class class-form keys params))))
 
 (defun default-make-instance-form (class class-form keys params)
+  (declare (ignore class))
   ;; This is strictly worse than not inlining,
   ;; but it's rare to define methods on make-instance.
   `(locally

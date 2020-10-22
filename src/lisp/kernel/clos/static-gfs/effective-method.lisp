@@ -33,7 +33,8 @@
         (error "BUG: Missing patch for ~a" method))))
 
 (defun static-effective-method (gf applicable-methods patch-args patch-list
-                               argument-forms)
+                                argument-forms)
+  (declare (ignore gf))
   (multiple-value-bind (primary before after)
       (loop for method in applicable-methods
             for qualifiers = (method-qualifiers method)

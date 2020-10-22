@@ -65,6 +65,7 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'member sequence-args :start-end nil :environment env)
+    (declare (ignore key-flag test-flag))
     ;; When having complex arguments (:allow-other-keys, etc)
     ;; we just give up.
     (when (null key-function)
@@ -101,6 +102,7 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'assoc sequence-args :start-end nil :environment env)
+    (declare (ignore key-flag test-flag))
     (when test-function
       (si::with-unique-names (%value %list %sublist %elt %car)
         `(let ((,%value ,value)
@@ -128,6 +130,7 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'adjoin sequence-args :start-end nil :environment env)
+    (declare (ignore test-flag key-flag))
     (when test-function
       (si::with-unique-names
 	  (%value %sublist %elt %car %list %value-after-key-function-)
@@ -142,6 +145,7 @@
 		 (return ,%list)))))))))
 
 (define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
+  (declare (ignore value list sequence-args))
   (or (apply #'expand-adjoin env (rest whole))
       whole))
 

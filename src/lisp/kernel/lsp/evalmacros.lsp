@@ -410,7 +410,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
     (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
   (put-sysprop name 'ext:symbol-macro expander))
 
-(defmacro define-symbol-macro (&whole whole symbol expansion)
+(defmacro define-symbol-macro (symbol expansion)
   (cond ((not (symbolp symbol))
 	 (error "DEFINE-SYMBOL-MACRO: ~A is not a symbol"
 		symbol))

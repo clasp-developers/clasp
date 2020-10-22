@@ -559,6 +559,7 @@ a_p = a_p_temp; a = a_temp;
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
+    (declare (ignore unused-auxs))
     (cmp-log "About to calling-convention-use-only-registers%N")
     (cmp-log "    reqargs -> %s%N" reqargs)
     (cmp-log "    optargs -> %s%N" optargs)
@@ -653,8 +654,9 @@ a_p = a_p_temp; a = a_temp;
 
 
 (defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list)
-  (multiple-value-bind (reqs opts rest key-flag keys aok-p auxargs-dummy va-rest-p)
+  (multiple-value-bind (reqs opts rest key-flag keys)
       (process-cleavir-lambda-list cleavir-lambda-list)
+    (declare (ignore key-flag))
     ;; Create the register lexicals using allocas
     (let (bindings
           (index -1))

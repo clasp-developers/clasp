@@ -26,7 +26,8 @@
 #+(or)
 (defmacro debug-boot (msg &rest args)
   `(format t ,msg ,@args))
-(defmacro debug-boot (msg &rest args))
+(defmacro debug-boot (msg &rest args)
+  (declare (ignore msg args)))
 
 
 ;; This ensures that each new class has its class-for-instances set
@@ -142,6 +143,7 @@
     (defvar +the-funcallable-standard-class+))
 
 (defmacro dbg-boot (fmt &rest fmt-args)
+  (declare (ignore fmt fmt-args))
   nil)
 
 #++

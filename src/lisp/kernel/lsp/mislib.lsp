@@ -56,7 +56,6 @@ successfully, T is returned, else error."
 	 (run-start (get-internal-run-time))
          (start-unwinds (gctools:thread-local-unwind-counter))
          end-unwinds
-	 gc-start
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end

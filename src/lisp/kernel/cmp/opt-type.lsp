@@ -394,7 +394,9 @@
          (expanded (typep-expansion type macro-env whole)))
     (if (eq expanded whole)
         whole ; failure
-        `(let ((object ,object)) ,expanded))))
+        `(let ((object ,object))
+           (declare (ignorable object)) ; e.g. for type T
+           ,expanded))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

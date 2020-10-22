@@ -28,6 +28,7 @@
   (clos::gf-log "     class -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
+    (declare (ignore direct-superclasses))
     (setf class (apply #'make-instance metaclass :name name options))
     (when name
       (si:create-type-name name)
@@ -66,6 +67,7 @@
 #+threads
 (defmethod cas-slot-value-using-class
     (old new (class built-in-class) object slotd)
+  (declare (ignore old new object slotd))
   (error "Cannot modify slots of object with built-in-class"))
 
 ;;; ======================================================================

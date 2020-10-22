@@ -19,7 +19,7 @@
 ;;; DEFGENERIC
 ;;;
 
-(defmacro defgeneric (&whole whole &rest args)
+(defmacro defgeneric (&rest args)
   (multiple-value-bind (function-specifier lambda-list options)
       (parse-defgeneric args)
     (parse-lambda-list lambda-list)
@@ -124,7 +124,7 @@
   (rest (si::process-lambda-list lambda-list t)))
 
 (defmethod shared-initialize :before
-    ((gfun standard-generic-function) slot-names &rest initargs
+    ((gfun standard-generic-function) slot-names
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
        (documentation nil) (method-class nil m-c-p)
@@ -173,7 +173,7 @@ Not a valid documentation object ~A"
             (make-array nreq :initial-element nil)))))
 
 (defmethod shared-initialize :after
-    ((gfun standard-generic-function) slot-names &rest initargs
+    ((gfun standard-generic-function) slot-names
      &key (name nil name-p) (lambda-list nil l-l-p)
        (documentation nil documentation-p)
        (argument-precedence-order nil a-o-p)

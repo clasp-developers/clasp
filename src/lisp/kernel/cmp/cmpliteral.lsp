@@ -31,7 +31,7 @@
 #+(or)
 (defmacro llog (fmt &rest args)
   `(format *error-output* ,fmt ,@args))
-(defmacro llog (fmt &rest args) nil)
+(defmacro llog (fmt &rest args) (declare (ignore fmt args)))
 
 (defvar *gcroots-in-module*)
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))

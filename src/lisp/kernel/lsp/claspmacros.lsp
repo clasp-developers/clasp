@@ -176,7 +176,8 @@
       (make-package "MP" :use '(common-lisp))))
 
 (in-package :mp)
-(defmacro with-lock ((sym) (declare (ignore sym)) &rest body)
+(defmacro with-lock ((sym) &rest body)
+  (declare (ignore sym))
   #+threading(warn "Make the mp:with-lock macro actually lock a symbol")
   `(progn ,@body))
 (export 'with-lock)
