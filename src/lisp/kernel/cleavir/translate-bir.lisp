@@ -1013,10 +1013,11 @@
     (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
 
 (defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
-  (literal:with-top-level-form
-    (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
-           (ast (clasp-cleavir::wrap-ast pre-ast)))
-      (translate-ast ast :env env :linkage cmp:*default-linkage*))))
+  (let ((cmp:*default-condition-origin* (origin-spi (cst:source cst))))
+    (literal:with-top-level-form
+        (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
+               (ast (clasp-cleavir::wrap-ast pre-ast)))
+          (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))

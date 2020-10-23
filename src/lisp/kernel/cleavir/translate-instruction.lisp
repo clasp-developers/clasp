@@ -1059,7 +1059,9 @@
 ;;; float types. Types are more important for un/boxing.
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-less-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-less-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))
@@ -1067,7 +1069,9 @@
     (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-not-greater-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-not-greater-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))
@@ -1075,7 +1079,9 @@
     (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-equal-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-equal-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))

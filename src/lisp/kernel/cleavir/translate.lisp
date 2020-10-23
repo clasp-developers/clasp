@@ -867,14 +867,17 @@ This works like compile-lambda-function in bclasp."
 
 #+cst
 (defun cleavir-compile-file-cst (cst &optional (env *clasp-env*))
-  (literal:with-top-level-form
-      (if cmp::*debug-compile-file*
-          (compiler-time (let* ((pre-ast (cst->ast cst env))
-                                (ast (wrap-ast pre-ast)))
-                           (translate-ast ast :env env :linkage cmp:*default-linkage*)))
-          (let* ((pre-ast (cst->ast cst env))
-                 (ast (wrap-ast pre-ast)))
-            (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
+  (let ((cmp:*default-condition-origin* (cst:source cst)))
+    (literal:with-top-level-form
+        (if cmp::*debug-compile-file*
+            (compiler-time (let* ((pre-ast (cst->ast cst env))
+                                  (ast (wrap-ast pre-ast)))
+                             (translate-ast ast
+                                            :env env
+                                            :linkage cmp:*default-linkage*)))
+            (let* ((pre-ast (cst->ast cst env))
+                   (ast (wrap-ast pre-ast)))
+              (translate-ast ast :env env :linkage cmp:*default-linkage*))))))
 
 #-cst
 (defun cleavir-compile-file-form (form &optional (env *clasp-env*))

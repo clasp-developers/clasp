@@ -5,15 +5,19 @@
 ;;;; Much or most of this was originally cribbed from SBCL,
 ;;;; especially ir1report.lisp and main.lisp.
 
-;;; For later
-(defgeneric deencapsulate-compiler-condition (condition)
-  (:method (condition) condition))
+;;; This variable can be bound to a source location; then any compiler
+;;; conditions that don't have an origin attached can use this.
+;;; This lets conditions be localized to at least a top level form,
+;;; even if they're unexpected.
+(defvar *default-condition-origin* nil)
 
 ;;; If a condition has source info associated with it, return that.
 ;;; Otherwise NIL.
 ;;; This has methods defined on it for cleavir condition types later.
 (defgeneric compiler-condition-origin (condition)
-  (:method (condition) (declare (ignore condition)) nil))
+  (:method ((condition condition)) nil)
+  (:method :around ((condition condition))
+    (or (call-next-method) *default-condition-origin*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
