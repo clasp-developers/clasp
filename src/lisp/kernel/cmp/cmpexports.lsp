@@ -327,7 +327,8 @@
           ))
 
 ;;; exports for conditions
-(export '(*default-condition-origin*
+(export '(deencapsulate-compiler-condition
+          *default-condition-origin*
           compiler-condition-origin
           compiled-program-error
           compiler-condition

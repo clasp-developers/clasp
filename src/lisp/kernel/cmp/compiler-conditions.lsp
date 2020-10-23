@@ -11,6 +11,10 @@
 ;;; even if they're unexpected.
 (defvar *default-condition-origin* nil)
 
+;;; For later
+(defgeneric deencapsulate-compiler-condition (condition)
+  (:method ((condition condition)) condition))
+
 ;;; If a condition has source info associated with it, return that.
 ;;; Otherwise NIL.
 ;;; This has methods defined on it for cleavir condition types later.
