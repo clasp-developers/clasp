@@ -493,7 +493,7 @@
               ,@(when (eq (car option) :print-function) '(0))))))
       ((:predicate)
        `(defgeneric ,(second option) (object)
-          (:method (object) nil)
+          (:method (object) (declare (ignore object)) nil)
           (:method ((object ,structure-name)) t)))
       ((:copier)
        ;; It might seem like we can do better here- basically copy
