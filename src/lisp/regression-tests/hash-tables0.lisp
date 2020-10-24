@@ -59,7 +59,8 @@
                         (gethash :key table))))
 (test clrhash (clrhash (make-hash-table)))
 (test maphash (progn
-                (maphash #'(lambda(a b))
+                (maphash #'(lambda(a b)
+                             (declare (ignore a b)))
                          (make-hash-table))
                 t))
 
@@ -98,7 +99,8 @@
                                  (gethash :key table))))
 (test clrhash-weak-key (clrhash (make-hash-table :test #'eq :weakness :key)))
 (test maphash-weak-key (progn
-                         (maphash #'(lambda(a b))
+                         (maphash #'(lambda(a b)
+                                      (declare (ignore a b)))
                                   (make-hash-table :test #'eq :weakness :key))
                          t))
 (test remhash-weak-key (progn

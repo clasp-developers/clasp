@@ -79,16 +79,17 @@
 (defmacro test-type= (t1 t2)
   `(test (and (subtypep ,t1 ,t2) (subtypep ,t2 ,t1))))
 
+#+(or)
 (defun expand-test-expect-error (fn)
   (handler-case
       (progn
         (funcall fn)
         nil)
-    (error (err) t)))
+    (error () t)))
 
 (defmacro test-expect-error (name form &key (type 'error) description)
   `(test ,name (handler-case (progn ,form nil)
-                 (,type (err) t)) :description ,description))
+                 (,type () t)) :description ,description))
 
 (defun load-if-compiled-correctly (file)
   (handler-case

@@ -89,6 +89,7 @@ documentation (x symbol) (doc-type (eql 'variable))
 
 (define-compiler-macro stupid-function (&whole form arg)
   "This is an empty compiler macro"
+  (declare (ignore form))
   `(list ,arg))
 
 (test describe-compiler-macro (test-documentation-without-args 'stupid-function 'compiler-macro))

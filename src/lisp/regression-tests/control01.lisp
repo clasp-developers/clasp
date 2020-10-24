@@ -62,11 +62,11 @@
 (test-expect-error fdefinition.6 (fdefinition '(SETF  %%%nada%%%)) :type undefined-function)
 (test-expect-error fdefinition.7 (fdefinition '%%%nada%%%) :type undefined-function)
 
-(test-expect-error setf-fdefinition.1 (setf (fdefinition '(SETF)) #'(lambda(&rest was) nil)) :type type-error)
-(test-expect-error setf-fdefinition.2 (setf (fdefinition '(SETF dummy . BAR)) #'(lambda(&rest was))) :type type-error)
-(test-expect-error setf-fdefinition.3 (setf (fdefinition '(SETF dummy BAR)) #'(lambda(&rest was))) :type type-error)
-(test-expect-error setf-fdefinition.4 (setf (fdefinition '(SETF . dummy)) #'(lambda(&rest was))) :type type-error)
-(test              setf-fdefinition.5 (setf (fdefinition '%%%nada%%%) #'(lambda(&rest was))))
+(test-expect-error setf-fdefinition.1 (setf (fdefinition '(SETF)) #'(lambda(&rest was) (declare (ignore was)) nil)) :type type-error)
+(test-expect-error setf-fdefinition.2 (setf (fdefinition '(SETF dummy . BAR)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
+(test-expect-error setf-fdefinition.3 (setf (fdefinition '(SETF dummy BAR)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
+(test-expect-error setf-fdefinition.4 (setf (fdefinition '(SETF . dummy)) #'(lambda(&rest was)(declare (ignore was)))) :type type-error)
+(test              setf-fdefinition.5 (setf (fdefinition '%%%nada%%%) #'(lambda(&rest was)(declare (ignore was)))))
 
 (test equalp-babel
       (equalp 
