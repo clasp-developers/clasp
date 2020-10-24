@@ -132,8 +132,17 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, size_t index) {
     return sequence.unsafe_cons()->elt(index);
   } else if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
-  } else if (Vector_sp vseq = sequence.asOrNull<Vector_O>()) {
-    return vseq->rowMajorAref(index);
+  } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
+    size_t max = vsequence->length();
+    unlikely_if (index < 0 || index >= max)
+      ERROR(core::_sym_sequence_out_of_bounds,
+            core::lisp_createList(kw::_sym_expected_type,
+                                  core::lisp_createList(cl::_sym_integer,
+                                                        clasp_make_fixnum(0),
+                                                        core::lisp_createList(clasp_make_fixnum(max))),
+                                  kw::_sym_datum, clasp_make_fixnum(index),
+                                  kw::_sym_object, vsequence));
+    return vsequence->rowMajorAref(index);
   } else {
     T_sp tindex = clasp_make_fixnum(index);
     return eval::funcall(seqext::_sym_elt, sequence, tindex);
@@ -151,6 +160,15 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
   } else if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
+    size_t max = vsequence->length();
+    unlikely_if (index < 0 || index >= max)
+      ERROR(core::_sym_sequence_out_of_bounds,
+            core::lisp_createList(kw::_sym_expected_type,
+                                  core::lisp_createList(cl::_sym_integer,
+                                                        clasp_make_fixnum(0),
+                                                        core::lisp_createList(clasp_make_fixnum(max))),
+                                  kw::_sym_datum, clasp_make_fixnum(index),
+                                  kw::_sym_object, vsequence));
     vsequence->rowMajorAset(index, value);
     return value;
   } else {
