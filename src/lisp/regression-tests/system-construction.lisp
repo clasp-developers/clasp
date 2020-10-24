@@ -22,14 +22,14 @@
 
 (test
  compile-file-pathname-3a
- (let ((*use-human-readable-bitcode* t))
+ (let ((cmp:*use-human-readable-bitcode* t))
    (string-equal
     (cmp::cfp-output-extension :bitcode)
     (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl" :output-type :bitcode)))))
 
 (test
  compile-file-pathname-3b
- (let ((*use-human-readable-bitcode* nil))
+ (let ((cmp:*use-human-readable-bitcode* nil))
    (string-equal
     (cmp::cfp-output-extension :bitcode)
     (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl" :output-type :bitcode)))))

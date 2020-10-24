@@ -19,6 +19,7 @@
               (eval '(im-am-not-defined))
             (undefined-function (e) (values :undefined-functions-error e))
             (program-error (p) (values :program-error p)))
+        (declare (ignore error))
         (eql :undefined-functions-error key)))
 
 (test cell-2
@@ -28,6 +29,7 @@
               (eval 'im-am-not-bound)
             (unbound-variable (e) (values :unbound-variable-error e))
             (program-error (p) (values :program-error p)))
+        (declare (ignore error))
         (eql :unbound-variable-error key)))
 
 (defclass foo ()((bar :accessor %bar)))
@@ -39,6 +41,7 @@
               (%bar (make-instance 'foo))
             (unbound-slot (e) (values :unbound-slot-error e))
             (error (p) (values :error p)))
+        (declare (ignore error))
         (eql :unbound-slot-error key)))
 
 (defun test-disassemble (&rest args)
@@ -226,6 +229,7 @@
                                            (b (first a))
                                            (c (second a))
                                            (d (third a)))
+                                      (declare (ignore b c d))
                                       (format t "Ignoring everything~%"))))))
         (error (e)
           (values nil e))))

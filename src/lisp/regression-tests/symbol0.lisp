@@ -21,7 +21,7 @@
 
 (test-expect-error makunbound-1
                    (let ((foo 23))
-                     (makunbound 23))
+                     (makunbound foo))
                    :type type-error)
                    
 (test-expect-error gensym-2
