@@ -465,16 +465,30 @@ T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
 
 T_sp Cons_O::elt(cl_index index) const {
   _OF();
-  if (index < 0 || index >= this->length()) {
-    SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
+  size_t max = this->length();
+  unlikely_if (index < 0 || index >= max) {
+    ERROR(core::_sym_sequence_out_of_bounds,
+          core::lisp_createList(kw::_sym_expected_type,
+                                core::lisp_createList(cl::_sym_integer,
+                                                      clasp_make_fixnum(0),
+                                                      core::lisp_createList(clasp_make_fixnum(max))),
+                                kw::_sym_datum, clasp_make_fixnum(index),
+                                kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->onth(index)));
 }
 
 T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
   _OF();
-  if (index < 0 || index >= this->length()) {
-    SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
+  size_t max = this->length();
+  unlikely_if (index < 0 || index >= this->length()) {
+    ERROR(core::_sym_sequence_out_of_bounds,
+          core::lisp_createList(kw::_sym_expected_type,
+                                core::lisp_createList(cl::_sym_integer,
+                                                      clasp_make_fixnum(0),
+                                                      core::lisp_createList(clasp_make_fixnum(max))),
+                                kw::_sym_datum, clasp_make_fixnum(index),
+                                kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->setf_nth(index, value)));
 }
