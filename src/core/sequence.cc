@@ -165,7 +165,14 @@ CL_DEFUN T_sp core__setf_elt(T_sp sequence, size_t index, T_sp value) {
     sequence.unsafe_cons()->setf_elt(index, value);
     return value;
   } else if (sequence.nilp()) {
-    TYPE_ERROR(sequence, cl::_sym_sequence);
+    // nil is a sequence, so can't type error on sequence
+    ERROR(core::_sym_sequence_out_of_bounds,
+            core::lisp_createList(kw::_sym_expected_type,
+                                  core::lisp_createList(cl::_sym_integer,
+                                                        clasp_make_fixnum(0),
+                                                        core::lisp_createList(clasp_make_fixnum(0))),
+                                  kw::_sym_datum, clasp_make_fixnum(index),
+                                  kw::_sym_object, sequence));
   } else if (Vector_sp vsequence = sequence.asOrNull<Vector_O>()) {
     size_t max = vsequence->length();
     unlikely_if (index < 0 || index >= max)
