@@ -508,6 +508,13 @@
    return-value (mapcar #'in (cleavir-bir:inputs instruction)) abi))
 
 (defmethod translate-simple-instruction
+    ((instruction cc-bir:foreign-call-pointer) return-value abi)
+  (let ((inputs (cleavir-bir:inputs instruction)))
+    (clasp-cleavir:unsafe-foreign-call-pointer
+     :call (cc-bir:foreign-types instruction) (in (first inputs))
+     (mapcar #'in (rest inputs)) abi)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-bir:fixed-to-multiple)
      return-value (abi clasp-cleavir::abi-x86-64))
   (let* ((inputs (cleavir-bir:inputs instruction))

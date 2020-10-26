@@ -111,6 +111,21 @@
        :function-name (cc-ast:function-name ast)
        :inputs (mapcar #'first args)))))
 
+(defclass foreign-call-pointer (cleavir-bir:computation)
+  ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
+(defmethod cleavir-bir:rtype ((d foreign-call-pointer)) :object)
+
+(defmethod cleavir-ast-to-bir:compile-ast
+    ((ast cc-ast:foreign-call-pointer-ast) inserter system)
+  (cleavir-ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
+                                                    inserter system)
+    (list
+     (cleavir-ast-to-bir:insert
+      inserter
+      (make-instance 'foreign-call-pointer
+        :foreign-types (cc-ast:foreign-types ast)
+        :inputs (mapcar #'first args))))))
+
 (defclass header-stamp-case (cleavir-bir::one-input cleavir-bir::no-output
                              cleavir-bir:terminator cleavir-bir:operation)
   ())
