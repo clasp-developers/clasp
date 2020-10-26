@@ -515,6 +515,16 @@
      (mapcar #'in (rest inputs)) abi)))
 
 (defmethod translate-simple-instruction
+    ((instruction cc-bir:defcallback)
+     return-value (abi clasp-cleavir::abi-x86-64))
+  (let* ((args (cc-bir:defcallback-args instruction))
+         (closure (in (first (cleavir-bir:inputs instruction)))))
+    (cmp::gen-defcallback
+     (first args) (second args) (third args) (fourth args)
+     (fifth args) (sixth args) (seventh args) (eighth args)
+     closure)))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-bir:fixed-to-multiple)
      return-value (abi clasp-cleavir::abi-x86-64))
   (let* ((inputs (cleavir-bir:inputs instruction))

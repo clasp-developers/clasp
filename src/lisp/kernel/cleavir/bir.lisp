@@ -126,6 +126,20 @@
         :foreign-types (cc-ast:foreign-types ast)
         :inputs (mapcar #'first args))))))
 
+(defclass defcallback (cleavir-bir:operation)
+  ((%args :initarg :args :reader defcallback-args)))
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:defcallback-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-ast (rv (cleavir-ast:callee-ast ast)
+                                            inserter system)
+    (cleavir-ast-to-bir:insert
+     inserter
+     (make-instance 'defcallback
+       :args (cc-ast:defcallback-args ast)
+       :inputs rv :outputs ())))
+  ())
+
 (defclass header-stamp-case (cleavir-bir::one-input cleavir-bir::no-output
                              cleavir-bir:terminator cleavir-bir:operation)
   ())

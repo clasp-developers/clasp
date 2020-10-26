@@ -161,6 +161,7 @@
   (:export #:precalc-value #:precalc-value-index #:precalc-constant
            #:unwind-protect #:bind #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
+           #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name))
 
 (defpackage #:clasp-cleavir-ast-to-hir
