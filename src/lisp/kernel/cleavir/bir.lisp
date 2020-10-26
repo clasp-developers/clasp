@@ -16,7 +16,17 @@
       :index (cc-ast:precalc-value-reference-ast-index ast)
       :form (cc-ast:precalc-value-reference-ast-form ast)))))
 
+(defmethod cleavir-bir-transformations::clone-initargs append
+    ((instruction precalc-value) stack map)
+  (declare (ignore stack map))
+  (list :index (precalc-value-index instruction)
+        :form (precalc-value-form instruction)))
+
 (defclass precalc-constant (cleavir-bir:constant precalc-value) ())
+
+(defmethod cleavir-bir-transformations::clone-initargs append
+    ((instruction precalc-constant) stack map)
+  (list :value (cleavir-bir:constant-value instruction)))
 
 (defmethod cleavir-ast-to-bir:compile-ast
     ((ast cc-ast:precalc-constant-reference-ast) inserter system)
