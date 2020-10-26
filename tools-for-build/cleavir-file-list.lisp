@@ -139,6 +139,7 @@
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/process-captured-variables"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/delete-temporary-variables"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/interpolate-function"
+ "src/lisp/kernel/contrib/Cleavir/BIR-transformations/copy-function"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/inline"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/simple-unwind"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/Destructuring/generic-functions"
