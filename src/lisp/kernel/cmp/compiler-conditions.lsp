@@ -167,11 +167,18 @@
 (defmethod print-compiler-condition :after (condition)
   (let ((origin (compiler-condition-origin condition)))
     (when origin
-      (format *error-output* "~&    at ~a ~d:~d~%"
-              (file-scope-pathname
-               (file-scope origin))
-              (source-pos-info-lineno origin)
-              (source-pos-info-column origin)))))
+      (let (;; deal with start/end pairs
+            (origin (if (consp origin) (car origin) origin)))
+        (handler-case
+            (format *error-output* "~&    at ~a ~d:~d~%"
+                    (file-scope-pathname
+                     (file-scope origin))
+                    (source-pos-info-lineno origin)
+                    (source-pos-info-column origin))
+          (error (e)
+            ;; Recursive errors are annoying. Therefore,
+            (format *error-output* "~&    at #<error printing origin ~a>~%"
+                    origin)))))))
 
 (defun format-compiler-condition (what condition)
   (format *error-output* "caught ~S:~%~@<  ~@;~A~:>" what condition))
