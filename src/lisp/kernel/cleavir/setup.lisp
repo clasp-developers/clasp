@@ -53,30 +53,6 @@ when this is t a lot of graphs will be generated.")
   ;; single-float's can be converted to immediates, anything else will return nil
   (core:create-tagged-immediate-value-or-nil n))
 
-;;; ------------------------------------------------------------
-;;;
-;;; cst-to-ast methods for convert-constant-to-immediate
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
-    ((n integer) environment (system clasp))
-  (declare (ignore environment))
-  ;; convert fixnum into immediate but bignums return nil
-  (core:create-tagged-immediate-value-or-nil n))
-
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
-    ((n character) environment (system clasp))
-  (declare (ignore environment))
-  ;; convert character to an immediate
-  (core:create-tagged-immediate-value-or-nil n))
-
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate
-    ((n float) environment (system clasp))
-  (declare (ignore environment))
-  ;; single-float's can be converted to immediates, anything else will return nil
-  (core:create-tagged-immediate-value-or-nil n))
-
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
   (cond (;; We can check whether this symbol names a constant variable

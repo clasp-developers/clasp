@@ -972,7 +972,12 @@
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
+(defvar *dis* nil)
+
 (defun bir-transformations (module env)
+  (when *dis*
+    (cleavir-bir::print-disasm
+     (cleavir-bir:disassemble module)))
   (cleavir-bir-transformations:module-eliminate-catches module)
   (cleavir-bir-transformations:find-module-local-calls module)
   (cleavir-bir-transformations:module-optimize-variables module)
@@ -983,8 +988,6 @@
   (cleavir-bir-transformations:process-captured-variables module)
   (values))
 
-(defvar *dis* nil)
-
 (defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
                                   (linkage 'llvm-sys:internal-linkage)
                                     (env clasp-cleavir::*clasp-env*)
@@ -994,15 +997,12 @@
     ;;(cleavir-bir:verify module)
     (bir-transformations module env)
     (cleavir-bir:verify module)
-    (when *dis*
-      (cleavir-bir::print-disasm
-       (cleavir-bir:disassemble module)))
     (translate bir :abi abi :linkage linkage)))
 
 (defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
                           (linkage 'llvm-sys:internal-linkage)
                             (env clasp-cleavir::*clasp-env*))
-  (let ((hoisted-ast (clasp-cleavir::hoist-ast ast env)))
+  (let ((hoisted-ast ast))
     (translate-hoisted-ast hoisted-ast :abi abi :linkage linkage :env env)))
 
 (defun bir-compile (form env pathname
