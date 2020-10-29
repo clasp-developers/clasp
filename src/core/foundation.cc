@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/corePackage.h>
@@ -1422,8 +1423,8 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   eval::funcall(_sym_signalSimpleError,
                 core::_sym_simpleProgramError,    //arg0
                 _Nil<T_O>(),              // arg1
-                SimpleBaseString_O::make(fmt.str()), // arg2
-                _Nil<T_O>());
+                SimpleBaseString_O::make("~a"),
+                core::Cons_O::createList(SimpleBaseString_O::make(fmt.str())));
   UNREACHABLE();
 }
 
