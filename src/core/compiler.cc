@@ -355,6 +355,12 @@ CL_DEFUN void core__startup_functions_invoke(List_sp literals)
   abort();
 };
 
+CL_DEFUN void core__test_simple_error(T_sp msg) {
+  core::String_sp smsg = gc::As<core::String_sp>(msg);
+  std::string ss = smsg->get_std_string();
+  SIMPLE_ERROR(BF(ss));
+}
+
 
 };
 
