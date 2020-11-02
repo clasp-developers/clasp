@@ -211,7 +211,7 @@
 
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
-  (:shadow #:characterp #:consp)
+  (:shadow #:characterp #:consp #:load)
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store))
