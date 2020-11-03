@@ -77,14 +77,6 @@ core::Fixnum not_fixnum_error( core::T_sp o )
                  % naclass % nbclass);
 }
 
-CL_DEFUN core::Number_sp add_mod8(core::T_O* x, core::T_O* y)
-{
-  uint64_t z = (reinterpret_cast<uint64_t>(x)
-                + reinterpret_cast<uint64_t>(y))
-    & (0xFF<<gctools::tag_shift);
-  return core::Number_sp((gc::Tagged)reinterpret_cast<core::T_O*>(z));
-};
-
 void clasp_report_divide_by_zero(Number_sp x) {
    ERROR_DIVISION_BY_ZERO(clasp_make_fixnum(1),x);
 }
@@ -197,7 +189,8 @@ CL_DECLARE();
 CL_DOCSTRING("min");
 CL_DEFUN Real_sp cl__min(Real_sp min, List_sp nums) {
   /* INV: type check occurs in clasp_number_compare() for the rest of
-	   numbers, but for the first argument it happens in clasp_zerop(). */
+	   numbers, but for the first argument it's due to the Real_sp decl
+           above. */
   for (auto cur : nums) {
     Real_sp numi = gc::As<Real_sp>(oCar(cur));
     min = clasp_min2(min, numi);
@@ -209,8 +202,7 @@ CL_LAMBDA(max &rest nums);
 CL_DECLARE();
 CL_DOCSTRING("max");
 CL_DEFUN Real_sp cl__max(Real_sp max, List_sp nums) {
-  /* INV: type check occurs in clasp_number_compare() for the rest of
-	   numbers, but for the first argument it happens in clasp_zerop(). */
+  /* INV: type checks the same as cl__min. */
   for (auto cur : nums) {
     Real_sp numi = gc::As<Real_sp>(oCar(cur));
     max = clasp_max2(max, numi);
