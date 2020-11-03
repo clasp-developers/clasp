@@ -284,7 +284,14 @@ CL_DEFUN core::SimpleVector_sp gctools__allocation_counts()
   }
   return counts;
 }
-  
+
 #endif
+
+CL_DEFUN size_t gctools__thread_local_unwinds()
+{
+  return
+    my_thread->_unwinds;
+}
+
 
 };
