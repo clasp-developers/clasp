@@ -356,12 +356,6 @@ void clasp_truncate(Real_sp dividend, Real_sp divisor,
   MATH_DISPATCH_END();
 }
 
-CL_DEFUN Real_mv core__test_truncate(Real_sp dividend, Real_sp divisor) {
-  Real_sp quotient, remainder;
-  clasp_truncate(dividend, divisor, quotient, remainder);
-  return Values(quotient, remainder);
-}
-
 Real_mv clasp_floor1(Real_sp x) {
   Real_sp v0, v1;
   switch (clasp_t_of(x)) {
@@ -422,13 +416,21 @@ Real_mv clasp_floor1(Real_sp x) {
   clasp_return2(the_env, v0, v1);
 }
 
-Real_mv clasp_floor2(Real_sp x, Real_sp y) {
+void clasp_floor(Real_sp dividend, Real_sp divisor,
+                 Real_sp& quotient, Real_sp& remainder) {
+  clasp_truncate(dividend, divisor, quotient, remainder);
+  if (!(clasp_zerop(remainder))
+      && (clasp_minusp(divisor)
+          ? clasp_plusp(dividend) : clasp_minusp(dividend))) {
+    quotient = gc::As_unsafe<Real_sp>(clasp_one_minus(quotient));
+    remainder = gc::As_unsafe<Real_sp>(clasp_plus(remainder, divisor));
+  }
+}
+
+Real_mv clasp_floor2(Real_sp dividend, Real_sp divisor) {
   Real_sp v0, v1;
-  clasp_truncate(x, y, v0, v1);
-  if (!(clasp_zerop(v1))
-      && (clasp_minusp(y) ? clasp_plusp(x) : clasp_minusp(x)))
-    return Values(clasp_one_minus(v0), clasp_plus(v1, y));
-  else return Values(v0, v1);
+  clasp_floor(dividend, divisor, v0, v1);
+  return Values(v0, v1);
 }
 
 CL_LAMBDA(x &optional y);
@@ -694,18 +696,19 @@ CL_DEFUN Number_mv cl__round(Real_sp x, T_sp y) {
 CL_LAMBDA(x y);
 CL_DECLARE();
 CL_DOCSTRING("mod");
-CL_DEFUN Real_sp cl__mod(Real_sp x, Real_sp y) {
-  /* INV: #'floor always outputs two values */
-  Real_mv mv_v = cl__floor(x, y);
-  return gc::As<Real_sp>(mv_v.valueGet_(1));
+CL_DEFUN Real_sp cl__mod(Real_sp dividend, Real_sp divisor) {
+  Real_sp q, mod;
+  clasp_floor(dividend, divisor, q, mod);
+  return mod;
 }
 
 CL_LAMBDA(x y);
 CL_DECLARE();
 CL_DOCSTRING("rem");
-CL_DEFUN Real_sp cl__rem(Real_sp x, Real_sp y) {
-  Real_mv mv_v = cl__truncate(x, y);
-  return gc::As<Real_sp>(mv_v.valueGet_(1));
+CL_DEFUN Real_sp cl__rem(Real_sp dividend, Real_sp divisor) {
+  Real_sp q, rem;
+  clasp_truncate(dividend, divisor, q, rem);
+  return rem;
 }
 
 CL_LAMBDA(x);
