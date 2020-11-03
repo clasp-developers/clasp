@@ -605,12 +605,11 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
-  printf("%s:%d This should never be reached\n", __FILE__, __LINE__ );
-  abort();
+  UNREACHABLE();
 };
 
 CL_DOCSTRING("functionWrongTypeArgument");
-CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
@@ -635,12 +634,13 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING("wrongTypeArgument");
-CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
@@ -665,12 +665,13 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING("wrongTypeNthArg");
-CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
@@ -696,6 +697,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
