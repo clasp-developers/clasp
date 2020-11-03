@@ -636,13 +636,13 @@ public:
   T_mv returnObject() { return this->_ReturnObject; };
 };
 
-void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
 
-void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
 
-void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
+[[noreturn]] void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
 
 [[noreturn]] void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
