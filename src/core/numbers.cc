@@ -844,13 +844,11 @@ int basic_compare(Number_sp na, Number_sp nb) {
     }
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio: {
-      // x <=> a/b is equivalent to xa <=> b
-      // FIXME: Rather than multiplying, and consing up a potentially
-      // huge bignum, we should just divide the ratio through.
-      // Look at how e.g. SBCL does it.
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      Number_sp left = contagen_mul(na, rb->denominator());
-      return basic_compare(left, rb->numerator());
+      Real_sp trunc = clasp_truncate2(rb->numerator(), rb->denominator());
+      int res = basic_compare(na, trunc);
+      if (res == 0) return (clasp_minusp(rb) ? 1 : -1);
+      else return res;
     }
   // FIXME: Can do this more efficiently for integers
   case_Fixnum_v_SingleFloat:
@@ -878,10 +876,11 @@ int basic_compare(Number_sp na, Number_sp nb) {
                               gc::As_unsafe<Bignum_sp>(nb));
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
-      // FIXME: See FIXME in Fixnum_v_Ratio
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      Number_sp right = contagen_mul(ra->denominator(), nb);
-      return basic_compare(ra->numerator(), right);
+      Real_sp trunc = clasp_truncate2(ra->numerator(), ra->denominator());
+      int res = basic_compare(trunc, nb);
+      if (res == 0) return (clasp_minusp(ra) ? -1 : 1);
+      else return res;
     }
   case_Ratio_v_Ratio : {
       // a/b <=> c/d is equivalent to ad <=> bc
