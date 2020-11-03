@@ -607,7 +607,7 @@ static void clasp_round(Real_sp dividend, Real_sp divisor,
       }
     }
     quotient = q1;
-    remainder = gc::As<Real_sp>(number_remainder(dividend, divisor, q1));
+    remainder = gc::As_unsafe<Real_sp>(number_remainder(dividend, divisor, q1));
     return;
   }
   default:
@@ -991,15 +991,12 @@ CL_DEFUN Real_sp cl__realpart(Number_sp x) {
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
 #endif
-    break;
-  case number_Complex: {
-    x = gc::As<Complex_sp>(x)->real();
-    break;
-  }
+      return gc::As_unsafe<Real_sp>(x);
+  case number_Complex:
+      return gc::As_unsafe<Complex_sp>(x)->real();
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
+      QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
   }
-  return gc::As<Real_sp>(x);
 }
 
 CL_LAMBDA(x);
@@ -1010,35 +1007,29 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   case number_Fixnum:
   case number_Bignum:
   case number_Ratio:
-    x = clasp_make_fixnum(0);
-    break;
+    return clasp_make_fixnum(0);
   case number_SingleFloat:
     if (std::signbit(x.unsafe_single_float()))
-      x = _lisp->singleFloatMinusZero();
+      return _lisp->singleFloatMinusZero();
     else
-      x = _lisp->singleFloatPlusZero();
-    break;
+      return _lisp->singleFloatPlusZero();
   case number_DoubleFloat:
       if (std::signbit(gc::As_unsafe<DoubleFloat_sp>(x)->get()))
-      x = _lisp->doubleFloatMinusZero();
-    else
-      x = _lisp->doubleFloatPlusZero();
-    break;
+        return _lisp->doubleFloatMinusZero();
+      else
+        return _lisp->doubleFloatPlusZero();
 #ifdef CLASP_LONG_FLOAT
   case number_LongFloat:
     if (std::signbit(clasp_long_float(x)))
-      x = _lisp->longFloatMinusZero();
+      return _lisp->longFloatMinusZero();
     else
-      x = _lisp->longFloatPlusZero();
-    break;
+      return _lisp->longFloatPlusZero();
 #endif
   case number_Complex:
-    x = gc::As<Complex_sp>(x)->imaginary();
-    break;
+      return gc::As_unsafe<Complex_sp>(x)->imaginary();
   default:
-    QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
+      QERROR_WRONG_TYPE_NTH_ARG(1, x, cl::_sym_Number_O);
   }
-  return gc::As<Real_sp>(x);
 }
 
   SYMBOL_EXPORT_SC_(ClPkg, float);
