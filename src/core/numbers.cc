@@ -883,13 +883,20 @@ int basic_compare(Number_sp na, Number_sp nb) {
       else return res;
     }
   case_Ratio_v_Ratio : {
-      // a/b <=> c/d is equivalent to ad <=> bc
-      // FIXME: probably also can be done by division instead.
+      // First, divide through the ratios and compare those.
+      // That can give us an answer not requiring consing larger numbers.
+      // Failing that, use a/b <=> c/d is equivalent to ad <=> bc.
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      Number_sp left = contagen_mul(ra->numerator(), rb->denominator());
-      Number_sp right = contagen_mul(rb->numerator(), ra->denominator());
-      return basic_compare(left, right);
+      Real_sp ta = clasp_truncate2(ra->numerator(), ra->denominator());
+      Real_sp tb = clasp_truncate2(rb->numerator(), rb->denominator());
+      int res = basic_compare(ta, tb);
+      if (res != 0) return res;
+      else {
+        Number_sp left = contagen_mul(ra->numerator(), rb->denominator());
+        Number_sp right = contagen_mul(rb->numerator(), ra->denominator());
+        return basic_compare(left, right);
+      }
     }
   case_SingleFloat_v_Fixnum:
   case_SingleFloat_v_Bignum:
