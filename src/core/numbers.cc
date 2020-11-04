@@ -2822,10 +2822,6 @@ cl_index clasp_toSize(T_sp f) {
   return clasp_to_integral<cl_index>(f);
 }
 
-gctools::Fixnum fixint(T_sp x) {
-  return clasp_to_integral<gc::Fixnum>(x);
-}
-
 CL_LAMBDA(i);
 CL_DECLARE();
 CL_DOCSTRING("integerLength");

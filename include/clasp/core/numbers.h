@@ -838,8 +838,6 @@ namespace core {
 
   cl_index clasp_toSize(T_sp f);
 
-  gctools::Fixnum fixint(T_sp x);
-
 }; // namespace core
 
 namespace core {

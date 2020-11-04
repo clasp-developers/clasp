@@ -5578,9 +5578,9 @@ clasp_off_t
 clasp_integer_to_off_t(T_sp offset) {
   clasp_off_t output = 0;
   if (sizeof(clasp_off_t) == sizeof(gctools::Fixnum)) {
-    output = fixint(offset);
+    output = clasp_to_integral<clasp_off_t>(offset);
   } else if (core__fixnump(offset)) {
-    output = fixint(offset);
+    output = clasp_to_integral<clasp_off_t>(offset);
   } else if (core__bignump(offset)) {
     IMPLEMENT_MEF("Implement convert Bignum to clasp_off_t");
   } else {
