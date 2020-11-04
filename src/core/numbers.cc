@@ -1902,27 +1902,17 @@ Number_sp LongFloat_O::sqrt_() const {
 Number_sp Complex_O::sqrt_() const {
   return cl__expt(this->asSmartPtr(), _lisp->plusHalf());
 }
-
-// NOTE: The following definition is wrong. CLHS specifies we can return only
-// a single or a rational. Double is not allowed. That's kind of dumb but it's
-// pretty explicitly what it says.
 Number_sp Bignum_O::sqrt_() const {
   // Could move the <0 logic out to another function, to share
-  // Might try to convert to a double-float, if this does not fit into a single-float
   // hypothetically we could use mpn_sqrtrem instead, but i imagine it's slower.
-  float z = this->as_float_();
-  if (std::isinf(z)) {
-    double z1 = this->as_double_();
-    if (z1 < 0)
-      return clasp_make_complex(clasp_make_double_float(0.0),
-                                clasp_make_double_float(sqrt(-z1)));
-    else return clasp_make_double_float(sqrt(z1));
-  } else {
-    if (z < 0)
-      return clasp_make_complex(clasp_make_single_float(0.0),
-                                clasp_make_single_float(sqrt(-z)));
-    else return clasp_make_single_float(sqrt(z));
-  }
+  // We convert to a double for maximum range, but return a single as required
+  // by CLHS.
+  double z = this->as_double_();
+  if (z < 0)
+    return clasp_make_complex(clasp_make_single_float(0.0),
+                              clasp_make_single_float(sqrt(-z)));
+  else
+    return clasp_make_single_float(sqrt(z));
 }
 
 Number_sp Bignum_O::reciprocal_() const {
