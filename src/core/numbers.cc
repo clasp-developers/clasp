@@ -845,7 +845,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio: {
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      Real_sp trunc = clasp_truncate2(rb->numerator(), rb->denominator());
+      Integer_sp trunc
+        = clasp_integer_divide(rb->numerator(), rb->denominator());
       int res = basic_compare(na, trunc);
       if (res == 0) return (clasp_minusp(rb) ? 1 : -1);
       else return res;
@@ -877,7 +878,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
   case_Ratio_v_Fixnum:
   case_Ratio_v_Bignum: {
       Ratio_sp ra = gc::As<Ratio_sp>(na);
-      Real_sp trunc = clasp_truncate2(ra->numerator(), ra->denominator());
+      Integer_sp trunc
+        = clasp_integer_divide(ra->numerator(), ra->denominator());
       int res = basic_compare(trunc, nb);
       if (res == 0) return (clasp_minusp(ra) ? -1 : 1);
       else return res;
@@ -888,8 +890,8 @@ int basic_compare(Number_sp na, Number_sp nb) {
       // Failing that, use a/b <=> c/d is equivalent to ad <=> bc.
       Ratio_sp ra = gc::As<Ratio_sp>(na);
       Ratio_sp rb = gc::As<Ratio_sp>(nb);
-      Real_sp ta = clasp_truncate2(ra->numerator(), ra->denominator());
-      Real_sp tb = clasp_truncate2(rb->numerator(), rb->denominator());
+      Integer_sp ta = clasp_integer_divide(ra->numerator(), ra->denominator());
+      Integer_sp tb = clasp_integer_divide(rb->numerator(), rb->denominator());
       int res = basic_compare(ta, tb);
       if (res != 0) return res;
       else {
