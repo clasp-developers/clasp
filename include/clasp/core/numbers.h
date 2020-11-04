@@ -836,8 +836,6 @@ namespace core {
 #define clasp_lower(x, y) (clasp_number_compare((x), (y)) < 0)
 #define clasp_greater(x, y) (clasp_number_compare((x), (y)) > 0)
 
-  cl_index clasp_toSize(T_sp f);
-
 }; // namespace core
 
 namespace core {

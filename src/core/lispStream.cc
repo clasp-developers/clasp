@@ -1566,7 +1566,7 @@ clos_stream_column(T_sp strm) {
   /* FIXME! The Gray streams specifies NIL is a valid
 	 * value but means "unknown". Should we make it
 	 * zero? */
-  return col.nilp() ? 0 : clasp_toSize(col);
+  return col.nilp() ? 0 : clasp_to_integral<int>(col);
 }
 
 static T_sp
@@ -1731,7 +1731,7 @@ str_out_set_position(T_sp strm, T_sp pos) {
   if (pos.nilp()) {
     disp = StringOutputStreamOutputString(strm)->arrayTotalSize();
   } else {
-    disp = clasp_toSize(pos);
+    disp = clasp_to_integral<Fixnum>(pos);
   }
   if (disp < StringFillp(string)) {
     SetStringFillp(string,disp);
@@ -1926,7 +1926,7 @@ str_in_set_position(T_sp strm, T_sp pos) {
   if (pos.nilp()) {
     disp = StringInputStreamInputLimit(strm);
   } else {
-    disp = clasp_toSize(pos);
+    disp = clasp_to_integral<gctools::Fixnum>(pos);
     if (disp >= StringInputStreamInputLimit(strm)) {
       disp = StringInputStreamInputLimit(strm);
     }
@@ -5218,9 +5218,9 @@ clasp_normalize_stream_element_type(T_sp element_type) {
   }
   if ((element_type).consp()) {
     if (oCar(element_type) == cl::_sym_UnsignedByte)
-      return clasp_toSize(oCadr(element_type));
+      return clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
     if (oCar(element_type) == cl::_sym_SignedByte)
-      return -clasp_toSize(oCadr(element_type));
+      return -clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
   }
   for (size = 8; 1; size++) {
     T_sp type;

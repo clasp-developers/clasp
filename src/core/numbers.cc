@@ -2818,10 +2818,6 @@ Integer_sp clasp_ash(Integer_sp x, int bits) {
   return clasp_shift(x, bits);
 };
 
-cl_index clasp_toSize(T_sp f) {
-  return clasp_to_integral<cl_index>(f);
-}
-
 CL_LAMBDA(i);
 CL_DECLARE();
 CL_DOCSTRING("integerLength");
