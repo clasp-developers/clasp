@@ -100,8 +100,6 @@ public: // Functions here
   mp_size_t length() const { return _limbs.signedLength(); }
   const mp_limb_t* limbs() const { return &(_limbs._Data[0]);}
 
-  NumberType number_type_() const override { return number_Bignum; };
-
   void sxhash_(HashGenerator &hg) const;
 
   mpz_class mpz() const;

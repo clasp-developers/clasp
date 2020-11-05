@@ -180,7 +180,6 @@ namespace core {
     static Number_sp create(gc::Fixnum val);
     //	static Number_sp create(size_t val);
   public:
-    virtual NumberType number_type_() const { SUBIMP(); };
     virtual Number_sp signum_() const {
       SUBCLASS_MUST_IMPLEMENT();
     };
@@ -399,7 +398,6 @@ namespace core {
     };
 
   public:
-    NumberType number_type_() const override { return number_ShortFloat; };
     float get() const { return this->_Value; };
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
@@ -467,7 +465,6 @@ namespace core {
   public:
     static Rational_sp rational(double val);
   public:
-    NumberType number_type_() const override { return number_DoubleFloat; };
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
     string __repr__() const override;
@@ -532,7 +529,6 @@ namespace core {
     };
 
   public:
-    NumberType number_type_() const override { return number_LongFloat; };
 
     DEFAULT_CTOR_DTOR(LongFloat_O);
   };
@@ -561,8 +557,6 @@ namespace core {
     }
 
   public:
-    NumberType number_type_() const override { return number_Complex; };
-
     Real_sp real() const { return this->_real; };
     Real_sp imaginary() const { return this->_imaginary; };
 
@@ -643,7 +637,6 @@ namespace core {
     // Only useful for creating Ratio in fasl files.
     void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
   public:
-    NumberType number_type_() const override { return number_Ratio; };
     virtual bool zerop_() const override { return clasp_zerop(this->_numerator); };
     virtual Number_sp negate_() const override { return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
@@ -972,12 +965,25 @@ namespace core {
   }
 
   inline NumberType clasp_t_of(Number_sp n) {
-    if (n.fixnump()) {
+    if (n.fixnump())
       return number_Fixnum;
-    } else if (n.single_floatp()) {
+    else if (n.single_floatp())
       return number_SingleFloat;
-    }
-    return n->number_type_();
+    else if (gc::IsA<Bignum_sp>(n))
+      return number_Bignum;
+    else if (gc::IsA<Ratio_sp>(n))
+      return number_Ratio;
+    else if (gc::IsA<ShortFloat_sp>(n))
+      return number_ShortFloat;
+    else if (gc::IsA<DoubleFloat_sp>(n))
+      return number_DoubleFloat;
+#ifdef CLASP_LONG_FLOAT
+    else if (gc::IsA<LongFloat_sp>(n))
+      return number_LongFloat;
+#endif
+    else if (gc::IsA<Complex_sp>(n))
+      return number_Complex;
+    UNREACHABLE();
   }
 
   inline Integer_sp clasp_shift(Integer_sp n, Fixnum bits) {
