@@ -2147,9 +2147,9 @@ Number_sp Complex_O::sinh_() const {
         */
   Number_sp dx = this->_real;
   Number_sp dy = this->_imaginary;
-  Number_sp a = clasp_times(clasp_sinh(dx), clasp_cos(dy));         // clasp_sinh(dx), clasp_cos(dy));
-  Number_sp b = clasp_times(clasp_cosh(dx), clasp_sin(dy));         // clasp_cosh(dx), clasp_sin(dy));
-  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b)); // clasp_make_complex(a, b);
+  Number_sp a = clasp_times(clasp_sinh(dx), clasp_cos(dy));
+  Number_sp b = clasp_times(clasp_cosh(dx), clasp_sin(dy));
+  return clasp_make_complex(gc::As<Real_sp>(a), gc::As<Real_sp>(b));
 }
 
 CL_LAMBDA(x);
