@@ -2285,12 +2285,9 @@ CL_DEFUN Number_sp cl__tanh(Number_sp x) {
     See file '../Copyright' for full details.
 */
 
-Number_sp Real_O::conjugate_() const {
-  return this->asSmartPtr();
-}
-
-Number_sp Complex_O::conjugate_() const {
-  return Complex_O::create(this->_real, gc::As<Real_sp>(clasp_negate(this->_imaginary)));
+Complex_sp Complex_O::conjugate() const {
+  return Complex_O::create(this->_real,
+                           gc::As_unsafe<Real_sp>(clasp_negate(this->_imaginary)));
 }
 
 CL_LAMBDA(x);

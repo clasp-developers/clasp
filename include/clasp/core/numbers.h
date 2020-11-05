@@ -222,7 +222,6 @@ namespace core {
     virtual double as_double_() const { SUBIMP(); }
     virtual LongFloat as_long_float_() const { SUBIMP(); };
 
-    virtual Number_sp conjugate_() const { SUBIMP(); };
     virtual Number_sp sin_() const { SUBIMP(); };
     virtual Number_sp cos_() const { SUBIMP(); };
     virtual Number_sp tan_() const { SUBIMP(); };
@@ -245,8 +244,6 @@ namespace core {
     // functions shared by all Real
     virtual bool plusp_() const { SUBIMP(); };
     virtual bool minusp_() const { SUBIMP(); };
-
-    virtual Number_sp conjugate_() const override;
 
     Real_O() {};
     virtual ~Real_O() {};
@@ -607,8 +604,8 @@ namespace core {
     virtual Number_sp cosh_() const override;
     virtual Number_sp tanh_() const override;
 
-    virtual Number_sp conjugate_() const override;
     virtual Number_sp reciprocal_() const override;
+    Complex_sp conjugate() const;
 
     virtual void __write__(T_sp strm) const override;
 
@@ -1159,11 +1156,9 @@ namespace core {
   }
 
   inline Number_sp clasp_conjugate(Number_sp x) {
-    if (x.fixnump())
-      return x;
-    if (x.single_floatp())
-      return x;
-    return x->conjugate_();
+    if (gc::IsA<Complex_sp>(x))
+      return gc::As_unsafe<Complex_sp>(x)->conjugate();
+    else return x;
   }
 
   inline bool clasp_float_nan_p(Float_sp num) {
