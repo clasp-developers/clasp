@@ -812,7 +812,6 @@ namespace core {
   }
 #endif
 
-#define clasp_return2(ENV, n1, n2) return Values(n1, n2);
 #define CLASP_REAL_TYPE_P(y) (gc::IsA<Real_sp>(y))
 
 #define CLASP_FIXNUMP(n) (gc::IsA<Fixnum_sp>(n))
