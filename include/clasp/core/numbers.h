@@ -190,12 +190,6 @@ namespace core {
     virtual Number_sp abs_() const {
       SUBCLASS_MUST_IMPLEMENT();
     };
-    virtual T_sp floor(Number_sp divisor) const {
-      SUBCLASS_MUST_IMPLEMENT();
-    };
-    virtual T_sp ffloor(Number_sp divisor) const {
-      SUBCLASS_MUST_IMPLEMENT();
-    };
     virtual bool equal(T_sp obj) const override;
     virtual bool equalp(T_sp obj) const override;
 
