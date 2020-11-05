@@ -363,7 +363,7 @@ CL_DEFUN Bignum_sp core__mul_fixnums(Fixnum left, Fixnum right) {
   mp_limb_t msl = mpn_mul_1(limbs, limbs, 1, std::abs(right));
   if (msl == 0) --result_size; else limbs[1] = msl;
   // We unconditionally return a bignum because this is only called
-  // from contagen_mul in the case that multiplication is known to
+  // from contagion_mul in the case that multiplication is known to
   // overflow.
   // TODO: Because of that, msl might always be nonzero? Double check,
   // we could save a branch.

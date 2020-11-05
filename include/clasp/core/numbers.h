@@ -165,10 +165,10 @@ namespace core {
 
   typedef double LongFloat;
 
-  Number_sp contagen_add(Number_sp na, Number_sp nb);
-  Number_sp contagen_sub(Number_sp na, Number_sp nb);
-  Number_sp contagen_mul(Number_sp na, Number_sp nb);
-  Number_sp contagen_div(Number_sp na, Number_sp nb);
+  Number_sp contagion_add(Number_sp na, Number_sp nb);
+  Number_sp contagion_sub(Number_sp na, Number_sp nb);
+  Number_sp contagion_mul(Number_sp na, Number_sp nb);
+  Number_sp contagion_div(Number_sp na, Number_sp nb);
   int basic_compare(Number_sp na, Number_sp nb);
 
   SMART(Number);
@@ -671,8 +671,8 @@ namespace core {
   public:
     virtual bool eql_(T_sp obj) const override;
 
-    Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagen_add(this->_numerator, this->_denominator)), this->_denominator); };
-    Number_sp oneMinus_() const override { return create(gc::As<Integer_sp>(contagen_sub(this->_numerator, this->_denominator)), this->_denominator); };
+    Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagion_add(this->_numerator, this->_denominator)), this->_denominator); };
+    Number_sp oneMinus_() const override { return create(gc::As<Integer_sp>(contagion_sub(this->_numerator, this->_denominator)), this->_denominator); };
 
     virtual float as_float_() const override;
     virtual double as_double_() const override;
@@ -694,10 +694,10 @@ namespace core {
     virtual ~Ratio_O() {};
   };
 
-  inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagen_add(na, nb); };
-  inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagen_sub(na, nb); };
-  inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagen_mul(na, nb); };
-  inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagen_div(na, nb); };
+  inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagion_add(na, nb); };
+  inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagion_sub(na, nb); };
+  inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagion_mul(na, nb); };
+  inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div(na, nb); };
 
   inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 

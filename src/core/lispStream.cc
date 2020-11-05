@@ -3220,7 +3220,7 @@ struct FileReadBuffer {
        * decoders consume bytes in multiples of the byte size. */ \
       T_sp fp = clasp_file_position(this->__stream);
       if (fp.fixnump()) {
-        clasp_file_position_set(this->__stream,contagen_sub(gc::As_unsafe<Number_sp>(fp),
+        clasp_file_position_set(this->__stream,contagion_sub(gc::As_unsafe<Number_sp>(fp),
                                                   make_fixnum((this->__buffer_end - this->__buffer_pos)/this->__stream->_ByteSize/8)));
       } else {
         SIMPLE_ERROR(BF("clasp_file_position is not a number"));
