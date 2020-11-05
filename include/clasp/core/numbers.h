@@ -209,12 +209,7 @@ namespace core {
     virtual Number_sp negate_() const { SUBIMP(); };
 
     virtual Number_sp exp_() const { SUBIMP(); };
-/*
-    virtual bool operator<(T_sp obj) const;
-    virtual bool operator<=(T_sp obj) const;
-    virtual bool operator>(T_sp obj) const;
-    virtual bool operator>=(T_sp obj) const;
-*/
+
     virtual uint as_uint_() const { SUBIMP(); }
     virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
     virtual float as_float_() const { SUBIMP(); };
