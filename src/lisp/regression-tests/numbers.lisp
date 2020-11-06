@@ -407,20 +407,20 @@
              (SQRT 28022395738783732117648967388274923619871355234097921/122167958641777737216225939000892255646232346624)))
         (and (typep result 'float)(not (ext:float-nan-p result)))))
 
-(test sqrt-bignum-should-fit-in-double-1
+(test sqrt-bignum-should-fit-in-single-float-1
       (let ((result 
              (sqrt 28022395738783732117648967388274923619871355234097921)))
         (and (typep result 'float)(not (ext:float-nan-p result))(not (ext:float-infinity-p result)))))
 
-(test sqrt-bignum-should-fit-in-double-2
+(test sqrt-bignum-does-not-fit-in-single-float-overflow-1
       (let ((result 
              (sqrt 2802239573878373211764896738827492361987135523409792123423423468273647283642783467283643456837465347653487563847658346587346523847687324678236487234687234627834687234678236478237687623423426862843627834623846782346234239479283472934798237498273423467823642342342837468723467283462348762378462342347862344998)))
-        (and (typep result 'float)(not (ext:float-nan-p result))(not (ext:float-infinity-p result)))))
+        (and (typep result 'float)(ext:float-infinity-p result))))
 
-(test sqrt-bignum-should-fit-in-double-overflow
+(test sqrt-bignum-should-fit-in-single-float-overflow-2
       (let ((result 
              (sqrt 280223957387837321176489673882749236198713552340979212342342346827364728364278346728364345683746534765348756384765834658734652384768732467823648723468723462783468723467823647823768762342342686284362783462384678234623423947928347293479823749827342346782364234234283746872346728346234876237846234234786234499889)))
-        (and (typep result 'float)(not (ext:float-nan-p result))(ext:float-infinity-p result))))
+        (and (typep result 'float)(ext:float-infinity-p result))))
 
 ;;; the following all have &rest numbers+ in the definition, so need at least 1 argument
 (test-expect-error number-compare-1 (=) :type program-error)
