@@ -23,33 +23,23 @@
 
 (defvar *code-walker* nil)
 
-#+cst
 (defmethod cleavir-cst-to-ast:convert :before (cst environment (system clasp-64bit))
   (declare (ignore system))
   (when *code-walker*
     (let ((form (cst:raw cst)))
       (funcall *code-walker* form environment))))
 
-#-cst
-(defmethod cleavir-generate-ast:convert :before (form environment (system clasp-64bit))
-  (declare (ignore system))
-  (when *code-walker*
-    (funcall *code-walker* form environment)))
-
 (defun code-walk-using-cleavir (code-walker-function form env)
-  (let* (#+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
-         #-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+  (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)
          (*code-walker* code-walker-function))
     (handler-bind
         ((cleavir-env:no-variable-info
            (lambda (condition)
-             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                             #-cst 'cleavir-generate-ast:consider-special)))
+             (invoke-restart 'cleavir-cst-to-ast:consider-special)))
          (cleavir-env:no-function-info
            (lambda (condition)
-             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                             #-cst 'cleavir-generate-ast:consider-global)))
+             (invoke-restart 'cleavir-cst-to-ast:consider-global)))
          ;; No point printing warnings twice (now, and when the method body
          ;; is actually compiled)
          (warning #'muffle-warning)
@@ -58,10 +48,7 @@
          (error (lambda (e)
                   (declare (ignore e))
                   (return-from code-walk-using-cleavir nil))))
-      #+cst
-      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*)
-      #-cst
-      (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*)))
   t)
 
 (export 'code-walk-using-cleavir)
@@ -124,8 +111,6 @@
   (setq core:*proclaim-hook* 'proclaim-hook))
 
 ;;; The following code sets up the chain of inlined-at info in AST origins.
-#+cst
-(progn
 
 ;;; Basically we want to recurse until we hit a SPI with no inlined-at,
 ;;; and set its inlined-at to the provided value. Also we clone everything,
@@ -190,5 +175,3 @@
                    ((null source) core:*current-source-pos-info*)
                    (t source))))))))
   (call-next-method))
-
-) ; #+cst (progn...)
