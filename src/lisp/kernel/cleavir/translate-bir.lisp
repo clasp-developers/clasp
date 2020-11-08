@@ -738,6 +738,21 @@
                                  (clasp-cleavir::%i64 index))
                            label))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:constant-reference)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((constant (first (cleavir-bir:inputs inst)))
+         (immediate-or-index (gethash constant *constant-values*)))
+    (assert immediate-or-index () "Constant not found!")
+    (if (integerp immediate-or-index)
+        (cmp:irc-load
+         (cmp:irc-gep-variable (literal:ltv-global)
+                               (list (clasp-cleavir::%size_t 0)
+                                     (clasp-cleavir::%i64 immediate-or-index))
+                               ;; Maybe we can have a nice label for this.
+                               ""))
+        immediate-or-index)))
+
 (defun initialize-iblock-translation (iblock)
   (let ((phis (cleavir-bir:inputs iblock)))
     (unless (null phis)
@@ -947,6 +962,20 @@
 (defun get-or-create-lambda-name (bir)
   (or (cleavir-bir:name bir) 'top-level))
 
+;;; Given a BIR module, allocate its constants. We translate
+;;; immediates directly, and use an index into the literal table for
+;;; non-immediate cosntants.
+(defun allocate-module-constants (module)
+  (cleavir-set:doset (constant (cleavir-bir:constants module))
+    (let* ((value (cleavir-bir:constant-value constant))
+           (immediate (core:create-tagged-immediate-value-or-nil value)))
+      (setf (gethash constant *constant-values*)
+            (if immediate
+                (cmp:irc-int-to-ptr
+                 (clasp-cleavir::%i64 immediate)
+                 cmp:%t*%)
+                (literal:reference-literal value t))))))
+
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   (let ((functions (cleavir-bir:functions module)))
     ;; Create llvm IR functions for each BIR function.
@@ -958,13 +987,15 @@
           (incf i)))
       (setf (gethash function *function-info*)
             (allocate-llvm-function-info function :linkage linkage)))
+    (allocate-module-constants module)
     (cleavir-set:doset (function functions)
       (layout-procedure function (get-or-create-lambda-name function)
                         abi :linkage linkage))))
 
 (defun translate (bir &key abi linkage)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
-         (*function-info* (make-hash-table :test #'eq)))
+         (*function-info* (make-hash-table :test #'eq))
+         (*constant-values* (make-hash-table :test #'eq)))
     (layout-module (cleavir-bir:module bir) abi :linkage linkage)
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))

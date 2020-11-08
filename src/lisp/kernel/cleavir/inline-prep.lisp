@@ -103,7 +103,22 @@
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
                (fix-inline-ast
-                (cleavir-primop:cst-to-ast ,function-form)))))))
+                ;; Must use file compilation semantics here to compile
+                ;; load-time-value correctly.
+                (cleavir-primop:cst-to-ast ,function-form t)))))))
+
+;; When we inline expand, the saved ast will be as if we had a
+;; load-time-value ast. Fix those up if we are not file compiling.
+(defun eval-load-time-value-asts (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (when (typep ast 'cleavir-ast:load-time-value-ast)
+       ;; Fixup saved load-time-value asts by evaling them if need be.
+       (unless (eq cleavir-cst-to-ast:*compiler* 'cl:compile-file)
+         (change-class ast 'cleavir-ast:constant-ast
+                       :value (eval (cleavir-ast:form ast))))))
+   ast)
+  ast)
 
 (export '(*code-walker*))
 
@@ -168,10 +183,11 @@
         (when (hash-table-p cmp:*track-inlined-functions*)
           (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
         (return-from cleavir-cst-to-ast:convert-called-function-reference
-          (fix-inline-source-positions
-           (cleavir-ast-transformations:clone-ast ast)
-           (let ((source (cst:source cst)))
-             (cond ((consp source) (car source))
-                   ((null source) core:*current-source-pos-info*)
-                   (t source))))))))
+          (eval-load-time-value-asts
+            (fix-inline-source-positions
+             (cleavir-ast-transformations:clone-ast ast)
+             (let ((source (cst:source cst)))
+               (cond ((consp source) (car source))
+                     ((null source) core:*current-source-pos-info*)
+                     (t source)))))))))
   (call-next-method))
