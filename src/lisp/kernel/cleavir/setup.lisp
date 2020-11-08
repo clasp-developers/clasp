@@ -366,17 +366,12 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *use-ast-interpreter* t)
 
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (simple-eval form env
-               (cond (core:*use-interpreter-for-eval*
-                      (lambda (form env)
-                        (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter* #'ast-interpret-form)
-                     (t #'cclasp-eval-with-env))))
-
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
+
+(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
 
 (defvar *use-cst-eval* t)
 

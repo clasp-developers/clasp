@@ -216,7 +216,7 @@
                       (cst:raw params) (cst:raw placeholder))))
       (make-instance 'cc-ast:defcallback-ast
                      :args args
-                     :callee (cleavir-cst-to-ast:cst-to-ast lisp-callback env system)))))
+                     :callee (cleavir-cst-to-ast:convert lisp-callback env system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -1047,22 +1047,11 @@
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             #+cst
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-             #-cst
-             (form (read source-sin nil eof-value)))
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        #+cst
         (if (eq cst eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))
-        #-cst
-        (if (eq form eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form form))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (cleavir-compile-file-form form))))))))
+                (compile-file-cst cst environment))))))))
