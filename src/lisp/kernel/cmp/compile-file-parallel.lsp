@@ -120,11 +120,12 @@
                     (progn
                       (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
                       (handler-case
-                          (funcall compile-func ast-job
-                                   :optimize optimize
-                                   :optimize-level optimize-level
-                                   :intermediate-output-type intermediate-output-type
-                                   :write-bitcode write-bitcode)
+                          (with-compilation-results ()
+                            (funcall compile-func ast-job
+                                     :optimize optimize
+                                     :optimize-level optimize-level
+                                     :intermediate-output-type intermediate-output-type
+                                     :write-bitcode write-bitcode))
                         (error (e)
                           (setf (ast-job-error ast-job) e)))
                       (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
@@ -177,31 +178,34 @@ multithreaded performance that we should explore."
            (ast-threads
              (loop for thread-num below number-of-threads
                    collect
-                   (mp:process-run-function
-                    (format nil "compile-file-parallel-~a" thread-num)
-                    (lambda ()
-                      (wait-for-ast-job ast-queue
-                                        :compile-func (if compile-from-module
-                                                          'compile-from-module
-                                                          'compile-from-ast)
-                                        :optimize optimize
-                                        :optimize-level optimize-level
-                                        :intermediate-output-type intermediate-output-type
-                                        :write-bitcode write-bitcode))
-                    `((*compile-print* . ',*compile-print*)
-                      (*compile-file-parallel* . ',*compile-file-parallel*)
-                      (*generate-faso* . ',*generate-faso*)
-                      (*compile-verbose* . ',*compile-verbose*)
-                      (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
-                      (*package* . ',*package*)
-                      (*compile-file-pathname* . ',*compile-file-pathname*)
-                      (*compile-file-truename* . ',*compile-file-truename*)
-                      #+cclasp(#-cst cleavir-generate-ast:*compiler*
-                               #+cst cleavir-cst-to-ast:*compiler*
-                               . #-cst ',cleavir-generate-ast:*compiler*
-                                 #+cst ',cleavir-cst-to-ast:*compiler*)
-                      #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
-                      (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
+                      (mp:process-run-function
+                       (format nil "compile-file-parallel-~a" thread-num)
+                       (lambda ()
+                           (wait-for-ast-job ast-queue
+                                             :compile-func (if compile-from-module
+                                                               'compile-from-module
+                                                               'compile-from-ast)
+                                             :optimize optimize
+                                             :optimize-level optimize-level
+                                             :intermediate-output-type intermediate-output-type
+                                             :write-bitcode write-bitcode))
+                       `((*compile-print* . ',*compile-print*)
+                         (*compile-file-parallel* . ',*compile-file-parallel*)
+                         (*generate-faso* . ',*generate-faso*)
+                         (*compile-verbose* . ',*compile-verbose*)
+                         (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
+                         (*package* . ',*package*)
+                         (*compile-file-pathname* . ',*compile-file-pathname*)
+                         (*compile-file-truename* . ',*compile-file-truename*)
+                         #+cclasp(#-cst cleavir-generate-ast:*compiler*
+                                  #+cst cleavir-cst-to-ast:*compiler*
+                                  . #-cst ',cleavir-generate-ast:*compiler*
+                                    #+cst ',cleavir-cst-to-ast:*compiler*)
+                         #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
+                         (*global-function-refs* . ',*global-function-refs*)
+                         (*compiler-error-count* . ',*compiler-error-count*)
+                         (*compiler-warning-count* . ',*compiler-error-count*)
+                         (*compiler-style-warning-count* . ',*compiler-style-warning-count*))))))
       (unwind-protect
            (loop
              ;; Required to update the source pos info. FIXME!?
