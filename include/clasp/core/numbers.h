@@ -555,15 +555,11 @@ namespace core {
     Real_sp real() const { return this->_real; };
     Real_sp imaginary() const { return this->_imaginary; };
 
-    void setf_realpart(Real_sp r) { this->_real = r; };
-    void setf_imagpart(Real_sp i) { this->_imaginary = i; };
-
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
     string __repr__() const override;
     Number_sp signum_() const override;
     Number_sp abs_() const override;
-    bool isnan_() const;
     Rational_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
   public:
     //	virtual	bool	eqn(T_sp obj) const;
