@@ -292,7 +292,14 @@ multithreaded performance that we should explore."
         ;; (which is why we use WARN and not SIGNAL). Kind of ugly.
         (mapc #'warn (ast-job-warnings job))
         (when (ast-job-serious-condition job)
-          (error (ast-job-serious-condition job)))))
+          ;; We use SIGNAL rather than ERROR although the condition is serious.
+          ;; This is because the AST job has already exited and therefore there
+          ;; is no way to debug the problem. with-compilation-results will
+          ;; still understand that it's an error and report compilation failure.
+          ;; It's possible we coudl save the original backtrace and so on, but
+          ;; if you want to debug problems, it would probably be easier to
+          ;; use the serial compiler and debug them as they appear.
+          (signal (ast-job-serious-condition job)))))
     ;; Now print the names of the startup ctor functions
     ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
     ;;      then it should add this new module to the result list so it can be linked with the others.
@@ -356,7 +363,8 @@ Compile a lisp source file into an LLVM module."
        #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
        (let* ((object-files (loop for ast-job in ast-jobs
                                   for index = (ast-job-form-index ast-job)
-                                  collect (cons index (ast-job-output-stream ast-job))))
+                                  for ostream = (ast-job-output-stream ast-job)
+                                  collect (cons index ostream)))
               (sorted-object-files (sort object-files #'< :key #'car)))
          #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
          (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
@@ -425,11 +433,15 @@ Each bitcode filename will contain the form-index.")
                      :optimize-level optimize-level
                      :ast-only ast-only
                      :write-bitcode write-bitcode)))
-              (cond (dry-run (format t "Doing nothing further~%"))
+              (cond (dry-run (format t "Doing nothing further~%") nil)
                     ((null output-path)
                      (error "The output-file is nil for input filename ~a~%" input-file))
-                    (t (output-cfp-result ast-jobs output-path output-type)))
-              output-path)))))))
+                    ((some #'ast-job-serious-condition ast-jobs)
+                     ;; There was an insurmountable error - stop.
+                     nil)
+                    ;; Usual result
+                    (t (output-cfp-result ast-jobs output-path output-type)
+                       output-path)))))))))
 
 (defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p)
                                                 output-file (verbose *compile-verbose*) &allow-other-keys)
