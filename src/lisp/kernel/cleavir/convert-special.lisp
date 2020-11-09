@@ -45,7 +45,7 @@
 ;;; INITARGS is a list of initargs to make-instance that class.
 
 (defmacro define-functionlike-special-form (name ast (&rest initargs))
-  (let ((nargs (length initargs))
+  (let (#-cst(nargs (length initargs))
         (syms (loop for i in initargs collect (gensym (symbol-name i)))))
     `(progn
        #-cst
@@ -173,6 +173,7 @@
 #+cst
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core:debug-message)) cst environment (system clasp-cleavir:clasp))
+  (declare (ignore environment))
   (assert (typep (cst:raw (cst:second cst)) 'string))
   (make-instance 'clasp-cleavir-ast:debug-message-ast
                  :debug-message (cst:raw (cst:second cst))
@@ -193,11 +194,13 @@
 #-cst
 (defmethod cleavir-generate-ast:convert-special
     ((symbol (eql 'core:debug-break)) form environment (system clasp-cleavir:clasp))
+  (declare (ignore environment))
   (make-instance 'clasp-cleavir-ast:debug-break-ast))
 
 #+cst
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core:debug-break)) cst environment (system clasp-cleavir:clasp))
+  (declare (ignore environment))
   (make-instance 'clasp-cleavir-ast:debug-break-ast
                  :origin (cst:source cst)))
 
@@ -595,14 +598,15 @@
   ;; (bind-va-list lambda-list va . body)
   ;; => `(apply (lambda ,lambda-list . ,body) ,va)
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
-          (cleavir-cst-to-ast:convert
-           (cst:list (cst:cst-from-expression 'apply)
-                     (cst:cons (cst:cst-from-expression 'lambda)
-                               (cst:cons lambda-list-cst body-cst
-                                         :source origin)
-                               :source origin)
-                     va-list-cst)
-           environment system)))
+    (declare (ignore op))
+    (cleavir-cst-to-ast:convert
+     (cst:list (cst:cst-from-expression 'apply)
+               (cst:cons (cst:cst-from-expression 'lambda)
+                         (cst:cons lambda-list-cst body-cst
+                                   :source origin)
+                         :source origin)
+               va-list-cst)
+     environment system)))
 
 #+(or) ;;#+cst
 (defmethod cleavir-cst-to-ast:convert-special

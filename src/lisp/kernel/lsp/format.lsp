@@ -1425,6 +1425,7 @@
 (defun non-finite-float-p (number)
   ;; FIXME: Get infinityp and nanp predicates.
   ;; numbers.h has them, but only for singles.
+  #-(or) (declare (ignore number))
   #+(or)
   (and (floatp number)
        (or (float-infinity-p number)

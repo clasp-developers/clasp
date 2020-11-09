@@ -371,8 +371,10 @@ argument list designator."
 	    (syntax-error))))
       (dolist (group method-groups)
 	(destructuring-bind (group-name predicate &key description
-					(order :most-specific-first) (required nil))
+                                                    (order :most-specific-first)
+                                                    (required nil))
 	    group
+          (declare (ignore description)) ; FIXME?
 	  (if (symbolp group-name)
 	      (push group-name group-names)
 	      (syntax-error))

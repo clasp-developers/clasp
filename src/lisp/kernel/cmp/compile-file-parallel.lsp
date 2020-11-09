@@ -312,7 +312,6 @@ multithreaded performance that we should explore."
 
 (defun compile-file-to-result (given-input-pathname
                                &key
-                                 compile-file-hook
                                  output-type
                                  output-path
                                  environment
@@ -323,7 +322,6 @@ multithreaded performance that we should explore."
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
-- compile-file-hook :: A function that will do the compile-file
 - environment :: Arbitrary, passed only to hook
 Compile a lisp source file into an LLVM module."
   ;; TODO: Save read-table and package with unwind-protect
@@ -334,8 +332,7 @@ Compile a lisp source file into an LLVM module."
            (if (pathname-match-p given-input-pathname clasp-source)
                (enough-namestring given-input-pathname clasp-source-root)
                given-input-pathname))
-         (source-sin (open given-input-pathname :direction :input))
-         warnings-p failure-p)
+         (source-sin (open given-input-pathname :direction :input)))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
@@ -427,7 +424,6 @@ Each bitcode filename will contain the form-index.")
                     (compile-file-to-result input-pathname
                      :output-type output-type
                      :output-path output-path
-                     :compile-file-hook *cleavir-compile-file-hook*
                      :environment environment
                      :optimize optimize
                      :optimize-level optimize-level
