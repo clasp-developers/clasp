@@ -171,6 +171,7 @@
 ;;; Convert the second argument of a usual call-method into a list
 ;;; of methods.
 (defun call-method-next-methods (gf next-methods &optional (arg-info '(t)))
+  (declare (ignore arg-info))
   (loop for nmethod in next-methods
         collect (call-method-aux gf nmethod)))
 
@@ -314,6 +315,7 @@ argument list designator."
 
 ;; Will be upgraded into a generic function later.
 (defun find-method-combination (gf method-combination-type-name method-combination-options)
+  (declare (ignore gf))
   (make-method-combination method-combination-type-name
 			   (or (search-method-combination method-combination-type-name)
                                (error "~A does not name a method combination"
@@ -412,7 +414,8 @@ argument list designator."
                                         group-after)))))))
       `(install-method-combination ',name
 				   (lambda (,generic-function .methods-list. ,@lambda-list)
-                                     (declare (core:lambda-name ,name))
+                                     (declare (core:lambda-name ,name)
+                                              (ignorable ,generic-function))
                                      (block ,name 
                                        (let (,@group-names)
                                          (dolist (.method. .methods-list.)

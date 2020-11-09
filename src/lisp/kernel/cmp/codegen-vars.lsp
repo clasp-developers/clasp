@@ -149,6 +149,7 @@
                (when (eq kind-of-allocate :register-allocate)
                  (multiple-value-bind (env index symbol)
                      (destructure-binding-key register-key)
+                   (declare (ignore index))
                    (let ((register (generate-register-alloca symbol env)))
                      (setf (gethash register-key variable-map) register)))))
              variable-map)
