@@ -23,7 +23,8 @@
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
-  (error nil) current-source-pos-info startup-function-name form-output-path)
+  (serious-condition nil) (warnings nil) (other-conditions nil)
+  current-source-pos-info startup-function-name form-output-path)
 
 
 (defun compile-from-module (job &key
@@ -119,14 +120,26 @@
              do (if ast-job
                     (progn
                       (cfp-log "Thread ~a compiling form~%" (mp:process-name mp:*current-process*))
-                      (handler-case
+                      (block nil
+                        (handler-bind
+                            ((serious-condition
+                               (lambda (e)
+                                 (setf (ast-job-serious-condition ast-job) e)
+                                 ;; Cannot continue with this job
+                                 (return)))
+                             (warning
+                               (lambda (w)
+                                 (push w (ast-job-warnings ast-job))
+                                 ;; Will be reported in the main thread instead.
+                                 (muffle-warning w)))
+                             ((not (or error warning))
+                               (lambda (c)
+                                 (push c (ast-job-other-conditions ast-job)))))
                           (funcall compile-func ast-job
                                    :optimize optimize
                                    :optimize-level optimize-level
                                    :intermediate-output-type intermediate-output-type
-                                   :write-bitcode write-bitcode)
-                        (error (e)
-                          (setf (ast-job-error ast-job) e)))
+                                   :write-bitcode write-bitcode)))
                       (cfp-log "Thread ~a done with form~%" (mp:process-name mp:*current-process*)))
                     (cfp-log "Thread ~a timed out during dequeue - trying again~%" (mp:process-name mp:*current-process*))))
     (cfp-log "Leaving thread ~a~%" (mp:process-name mp:*current-process*))))
@@ -268,13 +281,18 @@ multithreaded performance that we should explore."
             do (mp:process-join thread)
                (cfp-log "Process-join of thread ~a~%" (mp:process-name thread))))
     (dolist (job ast-jobs)
-      (when (ast-job-error job)
-        (let ((cmp:*default-condition-origin*
-                (ignore-errors (cleavir-ast:origin (ast-job-ast job)))))
+      (let ((cmp:*default-condition-origin*
+              (ignore-errors (cleavir-ast:origin (ast-job-ast job)))))
+        (mapc #'signal (ast-job-other-conditions job))
+        ;; We use WARN rather than SIGNAL because the with-compilation-results
+        ;; handlers call MUFFLE-WARNING. The WARN calls here never actually
+        ;; print warnings. Kind of a kludge.
+        (mapc #'warn (ast-job-warnings job))
+        (when (ast-job-serious-condition job)
           ;; NOTE: We could wrap this resignaled condition with an explanation
           ;; of the truncated backtrace. This would inhibit handlers trying to
           ;; handle any particular condition types, though.
-          (error (ast-job-error job)))))
+          (error (ast-job-serious-condition job)))))
     ;; Now print the names of the startup ctor functions
     ;;     Next we need to compile a new module that declares these ctor functions and puts them in a ctor list
     ;;      then it should add this new module to the result list so it can be linked with the others.
