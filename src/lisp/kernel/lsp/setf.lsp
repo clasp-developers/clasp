@@ -65,7 +65,7 @@
               (values (ldiff lambda-list last-two) (second last-two))
               (values lambda-list nil))))))
 
-(defmacro defsetf (&whole whole access-fn &rest rest)
+(defmacro defsetf (access-fn &rest rest)
   "Syntax: (defsetf symbol update-fun [doc])
         or
         (defsetf symbol lambda-list (store-var*) {decl | doc}* {form}*)
