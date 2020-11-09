@@ -91,7 +91,7 @@
 
 (define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
   ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
-  (or (apply #'expand-member env (rest whole))
+  (or (apply #'expand-member env value list sequence-args)
       whole))
 
 ;;;
