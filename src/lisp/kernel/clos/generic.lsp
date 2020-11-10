@@ -130,6 +130,7 @@
        (documentation nil) (method-class nil m-c-p)
      &allow-other-keys
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
+  (declare (ignore slot-names))
   ;; Check the validity of several fields.
   (when a-o-p
     (unless l-l-p
@@ -180,7 +181,7 @@ Not a valid documentation object ~A"
        ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
        ((source-position spi) nil spi-p)
        &allow-other-keys)
-  (declare (ignore slot-names)
+  (declare (ignore slot-names argument-precedence-order)
            (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))

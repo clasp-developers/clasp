@@ -177,8 +177,8 @@
                       (source-pos-info-column origin))
             (error (e)
               ;; Recursive errors are annoying. Therefore,
-              (format *error-output* "~&    at #<error printing origin ~a>~%"
-                      origin))))
+              (format *error-output* "~&    at #<error printing origin ~a: ~a>~%"
+                      origin e))))
         (format *error-output* "~&    at unknown location~%"))))
 
 (defun format-compiler-condition (what condition)
