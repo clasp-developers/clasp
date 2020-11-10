@@ -738,6 +738,17 @@
                                  (clasp-cleavir::%i64 index))
                            label))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((index (gethash inst *constant-values*))
+         (label ""))
+    (cmp:irc-load
+     (cmp:irc-gep-variable (literal:ltv-global)
+                           (list (clasp-cleavir::%size_t 0)
+                                 (clasp-cleavir::%i64 index))
+                           label))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:constant-reference)
                                          return-value abi)
   (declare (ignore return-value abi))
@@ -962,9 +973,9 @@
 (defun get-or-create-lambda-name (bir)
   (or (cleavir-bir:name bir) 'top-level))
 
-;;; Given a BIR module, allocate its constants. We translate
-;;; immediates directly, and use an index into the literal table for
-;;; non-immediate cosntants.
+;;; Given a BIR module, allocate its constants and load time
+;;; values. We translate immediates directly, and use an index into
+;;; the literal table for non-immediate constants.
 (defun allocate-module-constants (module)
   (cleavir-set:doset (constant (cleavir-bir:constants module))
     (let* ((value (cleavir-bir:constant-value constant))
@@ -974,7 +985,17 @@
                 (cmp:irc-int-to-ptr
                  (clasp-cleavir::%i64 immediate)
                  cmp:%t*%)
-                (literal:reference-literal value t))))))
+                (literal:reference-literal value t)))))
+  (assert (or (cleavir-set:empty-set-p (cleavir-bir:load-time-values module))
+              (eq cleavir-cst-to-ast:*compiler* 'cl:compile-file))
+          ()
+          "Found load-time-values to dump but not file compiling!")
+  (cleavir-set:doset (load-time-value (cleavir-bir:load-time-values module))
+    (let ((form (cleavir-bir:form load-time-value)))
+      (setf (gethash load-time-value *constant-values*)
+            ;; Allocate an index in the literal table for this load-time-value.
+            (literal:with-load-time-value
+                (clasp-cleavir::compile-form form clasp-cleavir::*clasp-env*))))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   (let ((functions (cleavir-bir:functions module)))
@@ -1005,7 +1026,7 @@
 
 (defvar *dis* nil)
 
-(defun bir-transformations (module env)
+(defun bir-transformations (module)
   (when *dis*
     (cleavir-bir::print-disasm
      (cleavir-bir:disassemble module)))
@@ -1014,8 +1035,6 @@
   (cleavir-bir-transformations:module-optimize-variables module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
-  (eliminate-load-time-value-inputs
-   module clasp-cleavir::*clasp-system* env)
   (cleavir-bir-transformations:process-captured-variables module)
   (values))
 
@@ -1026,7 +1045,7 @@
   (let* ((bir (ast->bir ast system))
          (module (cleavir-bir:module bir)))
     ;;(cleavir-bir:verify module)
-    (bir-transformations module env)
+    (bir-transformations module)
     (cleavir-bir:verify module)
     (translate bir :abi abi :linkage linkage)))
 
@@ -1055,8 +1074,7 @@
      function startup-fn shutdown-fn ordered-raw-constants-list)))
 
 (defun bir-compile-in-env (form &optional env)
-  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
-        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
+  (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
 
