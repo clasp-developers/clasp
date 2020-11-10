@@ -11,9 +11,10 @@
     ;;    (print (list "lambda-list" lambda-list))
     (multiple-value-bind (simple-lambda-list dispatch-symbol dispatch-class dispatch-index)
         (core:process-single-dispatch-lambda-list lambda-list)
-      ;;    (print (list "body" body))
+      (declare (ignore dispatch-symbol dispatch-index))
       (multiple-value-bind (declares code docstring specials)
           (core:process-declarations body t)
+        (declare (ignore specials))
         (let* ((fn `(lambda ,simple-lambda-list
                       (flet ((call-next-method (&rest args)
                                (error "In defvirtual defined call-next-method implement a proper one")))

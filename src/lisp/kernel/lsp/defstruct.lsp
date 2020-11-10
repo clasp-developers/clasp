@@ -236,7 +236,7 @@
 ;;; for an unrelated slot to imply the same accessor names as a parent
 ;;; definition, and we don't handle that correctly.
 (defun final-slot-descriptions (conc-name new-slotds over-slotds old-slotds)
-  (let ((output nil) (old-slotds (copy-list old-slotds)))
+  (let ((old-slotds (copy-list old-slotds)))
     ;; Apply overrides to old slots.
     (do ((old-slotds old-slotds (rest old-slotds)))
         ((endp old-slotds))
@@ -298,7 +298,7 @@
               :expected-type ',structure-name)))
 
 (defun defstruct-class-cas-body (structure-name element-type location)
-  (declare (ignore element-type))
+  (declare (ignore structure-name element-type))
   `(mp::get-cas-expansion (list 'clos::standard-instance-access
                                 object
                                 ,location)
@@ -326,6 +326,7 @@
   (destructuring-bind (slot-name &key (type t) reader accessor
                        &allow-other-keys)
       slotd
+    (declare (ignore slot-name))
     (multiple-value-bind (accessor read-only)
         (if accessor (values accessor nil) (values reader t))
       (unless (not accessor) ; no reader OR accessor
@@ -517,7 +518,7 @@
           `(setf (row-major-aref ,obj ,loc) ,var))))
       ((:predicate)
        (let ((pred (second option)) (name-loc (third option)))
-         `(defun ,(second option) (object)
+         `(defun ,pred (object)
             (and (typep object '(simple-array ,element-type (*)))
                  (>= (length object) ,(length slot-descriptions))
                  (eq (row-major-aref object ,(+ name-loc included-size))
@@ -701,7 +702,7 @@
             (t
              (error "Name of a structure class must be a symbol, not ~a"
                     name&opts)))
-    (let (type include overriding-slot-descs conc-name seen-conc-name
+    (let (type include conc-name seen-conc-name
           overriding-slot-descriptions
           constructors kw-constructors no-constructor
           predicate seen-predicate copier seen-copier (named nil)

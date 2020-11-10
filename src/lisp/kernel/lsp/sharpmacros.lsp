@@ -125,7 +125,7 @@
 ;; Reader macro for builtin objects
 ;;
 (defun read-cxx-object (stream char n)
-  (declare (ignore char))
+  (declare (ignore char n))
   (let ((description (read stream t nil t)))
     (apply #'core:load-cxx-object (car description) (cdr description))))
 
