@@ -486,7 +486,10 @@
 ;; We check proactively.
 
 (defun ast-interpret-cst (cst env)
-  (let ((ast (cst->ast cst env)))
+  (let* (;; Make sure we convert to ast without file compilation
+         ;; semantics.
+         (cleavir-cst-to-ast:*compiler* 'cl:eval)
+         (ast (cst->ast cst env)))
     (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
