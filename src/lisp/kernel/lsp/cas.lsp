@@ -173,7 +173,7 @@ are no bindings (in which case the global, thread-shared value is used.")
 (define-cas-expander first (cons &environment env)
   (get-cas-expansion `(car ,cons) env))
 (define-cas-expander rest (cons &environment env)
-  (get-cas-expansion `(cdr cons) env))
+  (get-cas-expansion `(cdr ,cons) env))
 
 (define-cas-expander svref (vector index)
   (let ((old (gensym "OLD")) (new (gensym "NEW"))

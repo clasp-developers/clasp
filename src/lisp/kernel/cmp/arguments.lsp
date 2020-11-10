@@ -637,8 +637,7 @@ a_p = a_p_temp; a = a_temp;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (arguments
-                                 &key debug-on rest-alloc cleavir-lambda-list
-                                   ignore-arguments)
+                                 &key debug-on rest-alloc cleavir-lambda-list)
   (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup

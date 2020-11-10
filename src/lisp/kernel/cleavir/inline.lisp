@@ -28,6 +28,7 @@
        (core:bformat t "%N")
        (finish-output)))
   (defmacro debug-inline (msg &rest msg-args)
+    (declare (ignore msg msg-args))
     nil))
 
 ;;; This defines compiler macros that only come into effect when using cclasp.

@@ -181,11 +181,13 @@
                   nil
                   (list
                    `(let ((object (cleavir-primop:car object)))
+                      (declare (ignorable object))
                       ,(typep-expansion cart env))))
             ,@(if (eq cdrt '*)
                   nil
                   (list
                    `(let ((object (cleavir-primop:cdr object)))
+                      (declare (ignorable object))
                       ,(typep-expansion cdrt env)))))
        nil))
 

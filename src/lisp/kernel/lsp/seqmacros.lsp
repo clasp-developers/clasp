@@ -238,6 +238,7 @@
 (defmacro do-subsequence ((elt sequence start end &rest args
                            &key setter index output specialize)
                           &body body)
+  (declare (ignore setter index output specialize))
   (with-unique-names (%sequence)
     (let ((args (list* elt %sequence start end args)))
       `(let ((,%sequence ,sequence))
