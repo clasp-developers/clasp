@@ -1,4 +1,3 @@
-(in-package #:clasp-cleavir)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -866,6 +865,7 @@
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value successors abi function-info)
+  (declare (ignore function-info abi return-value))
   (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
                          cmp:+immediate-mask+ cmp:+single-float-tag+
                          (first successors) (second successors)))
@@ -895,6 +895,7 @@
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:header-stamp-case-instruction)
      return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((stamp (in (first (cleavir-ir:inputs instruction))))
          (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
          (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))

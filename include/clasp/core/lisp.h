@@ -191,6 +191,8 @@ class Lisp_O {
     List_sp _DefaultSpecialBindings;
     mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
 #endif
+    mutable mp::SharedMutex _CallbackMutex;
+    mutable gctools::Vec0<T_sp>  _Callbacks;
     // FIXME: Remove this mutex - I've switched to thread-safe hash tables
     //        and its not needed
 #ifdef CLASP_THREADS
@@ -949,6 +951,11 @@ public:
 };
 };
 
+namespace core {
+  size_t core__push_callback(T_sp callback);
+  T_sp core__lookup_callback(size_t index);
+};
+ 
 namespace core {
 
   void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);

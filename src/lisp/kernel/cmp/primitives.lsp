@@ -238,6 +238,8 @@
          (primitive         "cm_vref" %return-type% (list %t*% %t*%))
          (primitive         "cm_vset" %return-type% (list %t*% %t*% %t*%))
          (primitive         "cc_ensure_valid_object" %t*% (list %t*%))
+         (primitive         "cc_push_callback" %size_t% (list %t*%))
+         (primitive         "cc_lookup_callback" %t*% (list %size_t%))
          (primitive         "cc_getPointer" %i8*% (list %t*%))
          (primitive-unwinds "cc_makeCell" %t*% nil)
          (primitive         "cc_simpleBitVectorAref" %i8% (list %t*% %size_t%))

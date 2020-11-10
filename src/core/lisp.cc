@@ -205,6 +205,7 @@ Lisp_O::GCRoots::GCRoots() :
   _FinalizersMutex(MPSMESSG_NAMEWORD),
   _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
+  _CallbackMutex(CALLBACK_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
   _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -795,6 +796,25 @@ void Lisp_O::remove_process(mp::Process_sp process) {
 List_sp Lisp_O::processes() const {
   WITH_READ_LOCK(this->_Roots._ActiveThreadsMutex);
   return cl__copy_list(this->_Roots._ActiveThreads);
+}
+
+
+CL_DEFUN size_t core__push_callback(T_sp callback)
+{
+  WITH_READ_WRITE_LOCK(_lisp->_Roots._CallbackMutex);
+  size_t idx = _lisp->_Roots._Callbacks.size();
+  _lisp->_Roots._Callbacks.push_back(callback);
+  return idx;
+}
+
+
+CL_DEFUN T_sp core__lookup_callback(size_t index)
+{
+  if (index<_lisp->_Roots._Callbacks.size()) {
+    WITH_READ_LOCK(_lisp->_Roots._CallbackMutex);
+    return _lisp->_Roots._Callbacks[index];
+  }
+  SIMPLE_ERROR(BF("Illegal index for callback %d") % index);
 }
 
 void Lisp_O::push_default_special_binding(Symbol_sp symbol, T_sp form)
