@@ -177,8 +177,7 @@ multithreaded performance that we should explore."
   (let ((form-index (core:next-startup-position))
         (form-counter 0)
         (eof-value (gensym))
-        #+cclasp (#-cst cleavir-generate-ast:*compiler*
-                  #+cst cleavir-cst-to-ast:*compiler*
+        #+cclasp (cleavir-cst-to-ast:*compiler*
                   'cl:compile-file)
         #+cclasp(core:*use-cleavir-compiler* t)
         #+cclasp(eclector.reader:*client* clasp-cleavir::*cst-client*)
@@ -211,10 +210,8 @@ multithreaded performance that we should explore."
                       (*package* . ',*package*)
                       (*compile-file-pathname* . ',*compile-file-pathname*)
                       (*compile-file-truename* . ',*compile-file-truename*)
-                      #+cclasp(#-cst cleavir-generate-ast:*compiler*
-                               #+cst cleavir-cst-to-ast:*compiler*
-                               . #-cst ',cleavir-generate-ast:*compiler*
-                                 #+cst ',cleavir-cst-to-ast:*compiler*)
+                      #+cclasp(cleavir-cst-to-ast:*compiler*
+                               . ',cleavir-cst-to-ast:*compiler*)
                       #+cclasp(core:*use-cleavir-compiler* . ',core:*use-cleavir-compiler*)
                       (cmp::*global-function-refs* . ',cmp::*global-function-refs*))))))
       (unwind-protect
@@ -228,28 +225,14 @@ multithreaded performance that we should explore."
                       (make-pathname
                        :name (format nil "~a_~d" (pathname-name output-path) form-counter)
                        :defaults output-path))
-                    #+cst
                     (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-                    #+cst
                     (_ (when (eq cst eof-value) (return nil)))
-                    #+cst
                     (form (cst:raw cst))
-                    #+cst
                     (pre-ast
                       (if cmp::*debug-compile-file*
                           (clasp-cleavir::compiler-time
                            (clasp-cleavir::cst->ast cst))
                           (clasp-cleavir::cst->ast cst)))
-                    #-cst
-                    (form (read source-sin nil eof-value))
-                    #-cst
-                    (_ (when (eq form eof-value) (return nil)))
-                    #-cst
-                    (pre-ast
-                      (if cmp::*debug-compile-file*
-                          (clasp-cleavir::compiler-time
-                           (clasp-cleavir::generate-ast form))
-                          (clasp-cleavir::generate-ast form)))
                     (ast (clasp-cleavir::wrap-ast pre-ast)))
                (declare (ignore _))
                (let ((ast-job (make-ast-job :ast ast
