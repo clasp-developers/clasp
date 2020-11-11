@@ -387,28 +387,31 @@
          (enclosed-function (xep-function (find-llvm-function-info code)))
          (function-description
            (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function)))
-         (ninputs (length environment))
-         (sninputs (clasp-cleavir::%size_t ninputs))
-         (enclose-args
-           (list enclosed-function
-                 (cmp:irc-bit-cast function-description cmp:%i8*%)
-                 sninputs))
-         (enclose
-           (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-            "cc_enclose" enclose-args)))
-    ;; We don't initialize the closure immediately in case it partakes
-    ;; in mutual reference.
-    (delay-initializer
-     (lambda ()
-       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-        "cc_initialize_closure"
-        (list* enclose sninputs
-               (mapcar (lambda (var)
-                         (or (gethash var *datum-values*)
-                             (error "BUG: Cell missing: ~a" var)))
-                       environment)))))
-    enclose))
+            cmp:*the-module* (cmp::function-description-name enclosed-function))))
+    (if environment
+        (let* ((sninputs (clasp-cleavir::%size_t (length environment)))
+               (enclose
+                 (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_enclose"
+                  (list enclosed-function
+                        (cmp:irc-bit-cast function-description cmp:%i8*%)
+                        sninputs))))
+          ;; We don't initialize the closure immediately in case it partakes
+          ;; in mutual reference.
+          (delay-initializer
+           (lambda ()
+             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+              "cc_initialize_closure"
+              (list* enclose sninputs
+                     (mapcar (lambda (var)
+                               (or (gethash var *datum-values*)
+                                   (error "BUG: Cell missing: ~a" var)))
+                             environment)))))
+          enclose)
+        ;; When the function has no environment, it can be compiled and
+        ;; referenced as literal.
+        (clasp-cleavir::%closurette-value enclosed-function
+                                          function-description))))
 
 (defmethod translate-simple-instruction :before
     ((instruction cleavir-bir:abstract-call)
