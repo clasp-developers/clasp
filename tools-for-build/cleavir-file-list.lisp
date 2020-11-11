@@ -329,7 +329,6 @@
  "src/lisp/kernel/cleavir/bir" "src/lisp/kernel/cleavir/bmir"
  "src/lisp/kernel/cleavir/bir-to-bmir"
  "src/lisp/kernel/cleavir/landing-pad-bir"
- "src/lisp/kernel/cleavir/eliminate-ltvs-bir"
  "src/lisp/kernel/cleavir/translate-bir"
  "src/lisp/kernel/cleavir/fixup-eclector-readtables"
  "src/lisp/kernel/cleavir/activate-clasp-readtables-for-eclector"

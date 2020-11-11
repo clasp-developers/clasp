@@ -485,17 +485,11 @@
 ;; to give up immediately, because of inner closures.
 ;; We check proactively.
 
-(defun ast-interpret-form (form env)
-  (let ((ast #+cst(cst->ast (cst:cst-from-expression form) env)
-             #-cst(generate-ast form env)))
-    (if (interpret-ast:can-interpret-ast-p ast)
-        (interpret-ast:interpret ast)
-        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
-
-#+cst
 (defun ast-interpret-cst (cst env)
-  (let ((ast #+cst(cst->ast cst env)
-             #-cst(generate-ast (cst:raw cst) env)))
+  (let* (;; Make sure we convert to ast without file compilation
+         ;; semantics.
+         (cleavir-cst-to-ast:*compiler* 'cl:eval)
+         (ast (cst->ast cst env)))
     (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))

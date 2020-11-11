@@ -366,17 +366,12 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *use-ast-interpreter* t)
 
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (simple-eval form env
-               (cond (core:*use-interpreter-for-eval*
-                      (lambda (form env)
-                        (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter* #'ast-interpret-form)
-                     (t #'cclasp-eval-with-env))))
-
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
+
+(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
 
 (defvar *use-cst-eval* t)
 
@@ -430,42 +425,6 @@ when this is t a lot of graphs will be generated.")
       (with-open-file (stream pn :direction :output)
         (cleavir-ir-graphviz:draw-flowchart hir stream))
       pn)))
-
-(defun draw-form-cst-hir (form)
-  "Generate a HIR graph for the form using the cst compiler"
-  (let (result)
-    (cmp::with-compiler-env ()
-      (let* ((module (cmp::create-run-time-module-for-compile)))
-        ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module module
-                           :optimize nil)
-          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-            (literal:with-rtv
-                (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-                       (cst (cst:cst-from-expression form))
-                       (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
-                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                  (setq result hir)
-                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
-    result))
-
-#-cst
-(defun draw-form-ast-hir (form)
-  "Generate a HIR graph for the form using the ast compiler"
-  (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile)))
-      ;; Link the C++ intrinsics into the module
-      (cmp::with-module (:module module
-                         :optimize nil)
-        (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-          (literal:with-rtv
-              (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-                     (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
-                     (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                     (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
-                hir)))))))
 
 (defun draw-ast (&optional (ast *ast*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
