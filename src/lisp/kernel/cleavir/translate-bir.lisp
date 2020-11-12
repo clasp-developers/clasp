@@ -423,7 +423,8 @@
 (defmethod translate-simple-instruction ((instruction cleavir-bir:leti)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (cleavir-set:mapset nil #'bind-variable (cleavir-bir:bindings instruction)))
+  (bind-variable (first (cleavir-bir:outputs instruction)))
+  (call-next-method))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:writevar)
                                          return-value abi)
