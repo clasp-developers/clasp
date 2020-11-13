@@ -772,11 +772,12 @@
   (let ((phis (cleavir-bir:inputs iblock)))
     (unless (null phis)
       (cmp:irc-begin-block (iblock-tag iblock))
-      (loop for phi in phis
-            for ndefinitions = (cleavir-set:size (cleavir-bir:definitions phi))
-            unless (eq (cleavir-bir:rtype phi) :multiple-values)
-              do (setf (gethash phi *datum-values*)
-                       (cmp:irc-phi cmp:%t*% ndefinitions))))))
+      (let ((ndefinitions (+ (cleavir-set:size (cleavir-bir:predecessors iblock))
+                             (cleavir-set:size (cleavir-bir:entrances iblock)))))
+        (loop for phi in phis
+              unless (eq (cleavir-bir:rtype phi) :multiple-values)
+                do (setf (gethash phi *datum-values*)
+                         (cmp:irc-phi cmp:%t*% ndefinitions)))))))
 
 (defun layout-iblock (iblock return-value abi)
   (cmp:irc-begin-block (iblock-tag iblock))
