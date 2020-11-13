@@ -22,23 +22,6 @@
   (list :index (precalc-value-index instruction)
         :form (precalc-value-form instruction)))
 
-(defclass precalc-constant (cleavir-bir:constant precalc-value) ())
-
-(defmethod cleavir-bir-transformations::clone-initargs append
-    ((instruction precalc-constant) stack map)
-  (list :value (cleavir-bir:constant-value instruction)))
-
-(defmethod cleavir-ast-to-bir:compile-ast
-    ((ast cc-ast:precalc-constant-reference-ast) inserter system)
-  (declare (ignore system))
-  (list
-   (cleavir-ast-to-bir:insert
-    inserter
-    (make-instance 'precalc-constant
-      :index (cc-ast:precalc-value-reference-ast-index ast)
-      :form (cc-ast:precalc-value-reference-ast-form ast)
-      :value (cc-ast:precalc-constant-reference-ast-value ast)))))
-
 (defclass unwind-protect (cleavir-bir:dynamic-environment
                           cleavir-bir::one-input cleavir-bir::no-output
                           cleavir-bir:terminator1 cleavir-bir:operation)

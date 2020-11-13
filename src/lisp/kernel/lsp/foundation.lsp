@@ -228,6 +228,7 @@ the corresponding VAR.  Returns NIL."
 
 
 (fset 'apply-key #'(lambda (w e)
+                     (declare (ignore e))
                      (let ((key (cadr w))
                            (element (caddr w)))
                        `(if ,key
@@ -255,6 +256,7 @@ the corresponding VAR.  Returns NIL."
 
 ;; Required by REGISTER-GLOBAL in cmp/cmpvar.lsp
 (si::fset 'pushnew #'(lambda (w e)
+                       (declare (ignore e))
                        (let ((item (cadr w))
                              (place (caddr w)))
                          `(setq ,place (adjoin ,item ,place))))

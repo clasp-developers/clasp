@@ -30,15 +30,6 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction :around
     (instruction return-value abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
-    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq 'compile-file
-                   #-cst cleavir-generate-ast:*compiler*
-                   #+cst cleavir-cst-to-ast:*compiler*))
-;;;    (error "translate-simple-instruction :around")
-      (unless (and (typep instruction 'cleavir-ir:assignment-instruction)
-                   (ssablep (first (cleavir-ir:inputs instruction)))
-                   (ssablep (first (cleavir-ir:outputs instruction))))
-        (format *error-output* "simple-instruction with nil origin: ~a~%" instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999902))
       (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-ir:dynamic-environment instruction)
@@ -51,11 +42,6 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-branch-instruction :around
     (instruction return-value successors abi current-function-info)
   (let ((origin (cleavir-ir:origin instruction)))
-    (when (and *trap-null-origin* (null (cleavir-ir:origin instruction))
-               (eq 'compile-file
-                   #-cst cleavir-generate-ast:*compiler*
-                   #+cst cleavir-cst-to-ast:*compiler*))
-      (format *error-output* "Instruction with nil origin: ~a  origin: ~a~%" instruction (cleavir-ir:origin instruction)))
     (cmp:with-debug-info-source-position ((ensure-origin origin 999903))
       (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-ir:dynamic-environment instruction)
@@ -768,20 +754,6 @@ and go-indices as third."
     (translate-hoisted-ast hoisted-ast
                            :abi abi :linkage linkage :env env)))
 
-(defun translate-lambda-expression-to-llvm-function (lambda-expression)
-  "Compile a lambda expression into an llvm-function and return it.
-This works like compile-lambda-function in bclasp."
-  (let* (#+cst
-         (cst (cst:cst-from-expression lambda-expression))
-         #+cst
-         (ast (cst->ast cst))
-         #-cst
-         (ast (generate-ast lambda-expression))
-         (hir (ast->hir (hoist-ast ast))))
-    (multiple-value-bind (mir function-info-map go-indices)
-        (hir->mir hir)
-      (translate mir function-info-map go-indices))))
-
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
 
@@ -799,16 +771,8 @@ This works like compile-lambda-function in bclasp."
   (setf *ct-start* (compiler-timer-elapsed))
   (let* (function lambda-name
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
-         #+cst
-         (cleavir-cst-to-ast:*compiler* 'cl:compile)
-         #-cst
-         (cleavir-generate-ast:*compiler* 'cl:compile)
-         #+cst
          (cst (cst:cst-from-expression form))
-         #+cst
-         (ast (cst->ast cst env))
-         #-cst
-         (ast (generate-ast form env)))
+         (ast (cst->ast cst env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
@@ -856,13 +820,9 @@ This works like compile-lambda-function in bclasp."
 
 (defun compile-form (form &optional (env *clasp-env*))
   (setf *ct-start* (compiler-timer-elapsed))
-  #+cst
   (let* ((cst (cst:cst-from-expression form))
          (pre-ast (cst->ast cst env))
          (ast (wrap-ast pre-ast)))
-    (translate-ast ast :env env))
-  #-cst
-  (let ((ast (generate-ast form env)))
     (translate-ast ast :env env)))
 
 #+cst
@@ -932,25 +892,14 @@ This works like compile-lambda-function in bclasp."
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             #+cst
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-             #-cst
-             (form (read source-sin nil eof-value)))
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        #+cst
         (if (eq cst eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (cleavir-compile-file-cst cst environment))))
-        #-cst
-        (if (eq form eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form form))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (cleavir-compile-file-form form))))))))
+                (cleavir-compile-file-cst cst environment))))))))
 
 ;;; The ENV is still needed for evaluating load time value forms and stuff.
 ;;; It's not great.

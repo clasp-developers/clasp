@@ -55,7 +55,6 @@
                (:file "bmir")
                (:file "bir-to-bmir")
                (:file "landing-pad-bir")
-               (:file "eliminate-ltvs-bir")
                (:file "translate-bir")
                ;; end BIR
                ;;                (:file "satiation")

@@ -387,28 +387,31 @@
          (enclosed-function (xep-function (find-llvm-function-info code)))
          (function-description
            (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function)))
-         (ninputs (length environment))
-         (sninputs (clasp-cleavir::%size_t ninputs))
-         (enclose-args
-           (list enclosed-function
-                 (cmp:irc-bit-cast function-description cmp:%i8*%)
-                 sninputs))
-         (enclose
-           (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-            "cc_enclose" enclose-args)))
-    ;; We don't initialize the closure immediately in case it partakes
-    ;; in mutual reference.
-    (delay-initializer
-     (lambda ()
-       (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-        "cc_initialize_closure"
-        (list* enclose sninputs
-               (mapcar (lambda (var)
-                         (or (gethash var *datum-values*)
-                             (error "BUG: Cell missing: ~a" var)))
-                       environment)))))
-    enclose))
+            cmp:*the-module* (cmp::function-description-name enclosed-function))))
+    (if environment
+        (let* ((sninputs (clasp-cleavir::%size_t (length environment)))
+               (enclose
+                 (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_enclose"
+                  (list enclosed-function
+                        (cmp:irc-bit-cast function-description cmp:%i8*%)
+                        sninputs))))
+          ;; We don't initialize the closure immediately in case it partakes
+          ;; in mutual reference.
+          (delay-initializer
+           (lambda ()
+             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+              "cc_initialize_closure"
+              (list* enclose sninputs
+                     (mapcar (lambda (var)
+                               (or (gethash var *datum-values*)
+                                   (error "BUG: Cell missing: ~a" var)))
+                             environment)))))
+          enclose)
+        ;; When the function has no environment, it can be compiled and
+        ;; referenced as literal.
+        (clasp-cleavir::%closurette-value enclosed-function
+                                          function-description))))
 
 (defmethod translate-simple-instruction :before
     ((instruction cleavir-bir:abstract-call)
@@ -738,6 +741,32 @@
                                  (clasp-cleavir::%i64 index))
                            label))))
 
+(defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((index (gethash inst *constant-values*))
+         (label ""))
+    (cmp:irc-load
+     (cmp:irc-gep-variable (literal:ltv-global)
+                           (list (clasp-cleavir::%size_t 0)
+                                 (clasp-cleavir::%i64 index))
+                           label))))
+
+(defmethod translate-simple-instruction ((inst cleavir-bir:constant-reference)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let* ((constant (first (cleavir-bir:inputs inst)))
+         (immediate-or-index (gethash constant *constant-values*)))
+    (assert immediate-or-index () "Constant not found!")
+    (if (integerp immediate-or-index)
+        (cmp:irc-load
+         (cmp:irc-gep-variable (literal:ltv-global)
+                               (list (clasp-cleavir::%size_t 0)
+                                     (clasp-cleavir::%i64 immediate-or-index))
+                               ;; Maybe we can have a nice label for this.
+                               ""))
+        immediate-or-index)))
+
 (defun initialize-iblock-translation (iblock)
   (let ((phis (cleavir-bir:inputs iblock)))
     (unless (null phis)
@@ -947,6 +976,30 @@
 (defun get-or-create-lambda-name (bir)
   (or (cleavir-bir:name bir) 'top-level))
 
+;;; Given a BIR module, allocate its constants and load time
+;;; values. We translate immediates directly, and use an index into
+;;; the literal table for non-immediate constants.
+(defun allocate-module-constants (module)
+  (cleavir-set:doset (constant (cleavir-bir:constants module))
+    (let* ((value (cleavir-bir:constant-value constant))
+           (immediate (core:create-tagged-immediate-value-or-nil value)))
+      (setf (gethash constant *constant-values*)
+            (if immediate
+                (cmp:irc-int-to-ptr
+                 (clasp-cleavir::%i64 immediate)
+                 cmp:%t*%)
+                (literal:reference-literal value t)))))
+  (assert (or (cleavir-set:empty-set-p (cleavir-bir:load-time-values module))
+              (eq cleavir-cst-to-ast:*compiler* 'cl:compile-file))
+          ()
+          "Found load-time-values to dump but not file compiling!")
+  (cleavir-set:doset (load-time-value (cleavir-bir:load-time-values module))
+    (let ((form (cleavir-bir:form load-time-value)))
+      (setf (gethash load-time-value *constant-values*)
+            ;; Allocate an index in the literal table for this load-time-value.
+            (literal:with-load-time-value
+                (clasp-cleavir::compile-form form clasp-cleavir::*clasp-env*))))))
+
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   (let ((functions (cleavir-bir:functions module)))
     ;; Create llvm IR functions for each BIR function.
@@ -958,13 +1011,15 @@
           (incf i)))
       (setf (gethash function *function-info*)
             (allocate-llvm-function-info function :linkage linkage)))
+    (allocate-module-constants module)
     (cleavir-set:doset (function functions)
       (layout-procedure function (get-or-create-lambda-name function)
                         abi :linkage linkage))))
 
 (defun translate (bir &key abi linkage)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
-         (*function-info* (make-hash-table :test #'eq)))
+         (*function-info* (make-hash-table :test #'eq))
+         (*constant-values* (make-hash-table :test #'eq)))
     (layout-module (cleavir-bir:module bir) abi :linkage linkage)
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))
@@ -974,7 +1029,7 @@
 
 (defvar *dis* nil)
 
-(defun bir-transformations (module env)
+(defun bir-transformations (module)
   (when *dis*
     (cleavir-bir::print-disasm
      (cleavir-bir:disassemble module)))
@@ -983,8 +1038,6 @@
   (cleavir-bir-transformations:module-optimize-variables module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
-  (eliminate-load-time-value-inputs
-   module clasp-cleavir::*clasp-system* env)
   (cleavir-bir-transformations:process-captured-variables module)
   (values))
 
@@ -995,7 +1048,7 @@
   (let* ((bir (ast->bir ast system))
          (module (cleavir-bir:module bir)))
     ;;(cleavir-bir:verify module)
-    (bir-transformations module env)
+    (bir-transformations module)
     (cleavir-bir:verify module)
     (translate bir :abi abi :linkage linkage)))
 
@@ -1024,8 +1077,7 @@
      function startup-fn shutdown-fn ordered-raw-constants-list)))
 
 (defun bir-compile-in-env (form &optional env)
-  (let (#-cst (cleavir-generate-ast:*compiler* 'cl:compile)
-        #+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
+  (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
 
@@ -1047,22 +1099,11 @@
       (peek-char t source-sin nil)
       ;; FIXME: if :environment is provided we should probably use a different read somehow
       (let* ((core:*current-source-pos-info* (cmp:compile-file-source-pos-info source-sin))
-             #+cst
-             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value))
-             #-cst
-             (form (read source-sin nil eof-value)))
+             (cst (eclector.concrete-syntax-tree:cst-read source-sin nil eof-value)))
         #+debug-monitor(sys:monitor-message "source-pos ~a" core:*current-source-pos-info*)
-        #+cst
         (if (eq cst eof-value)
             (return nil)
             (progn
               (when *compile-print* (cmp::describe-form (cst:raw cst)))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (compile-file-cst cst environment))))
-        #-cst
-        (if (eq form eof-value)
-            (return nil)
-            (progn
-              (when *compile-print* (cmp::describe-form form))
-              (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (cleavir-compile-file-form form))))))))
+                (compile-file-cst cst environment))))))))

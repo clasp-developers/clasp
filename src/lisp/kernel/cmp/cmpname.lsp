@@ -42,10 +42,11 @@ machine."
 (defun compute-init-name (pathname &key kind 
                                      (prefix nil)
                                      (wrapper nil))
+  #-(or)(declare (ignore wrapper))
   "Computes initialization function name. Libraries, FASLS and
 programs init function names can't be randomized to allow
 initialization from the C code which wants to use it."
-  (let ((filename (pathname-name (translate-logical-pathname pathname)))
+  (let (#+(or)(filename (pathname-name (translate-logical-pathname pathname)))
         (unique-name (unique-init-name pathname)))
     (case kind
       ((:object :c)
@@ -84,19 +85,18 @@ initialization from the C code which wants to use it."
                  ((digit-char-p c)
                   c)
                  (t
-                  #\p)))
-         (disambiguation (c)
-           (case kind
-             ((:object :c) "")
-             ((:fasl :fas) "fas_")
-             ((:library :static-library :lib) "lib_")
-             ((:shared-library :dll) "dll_")
-             ((:program) "exe_")
-             (otherwise (error "Not a valid argument to INIT-FUNCTION-NAME: kind = ~S"
-                               kind)))))
+                  #\p))))
     (setq s (map 'string #'translate-char (string s)))
     (concatenate 'string
                  (or prefix "init_")
-                 (disambiguation kind)
+                 (case kind
+                   ((:object :c) "")
+                   ((:fasl :fas) "fas_")
+                   ((:library :static-library :lib) "lib_")
+                   ((:shared-library :dll) "dll_")
+                   ((:program) "exe_")
+                   (otherwise
+                    (error "Not a valid argument to INIT-FUNCTION-NAME: kind = ~S"
+                           kind)))
                  (map 'string #'translate-char (string s)))))
 

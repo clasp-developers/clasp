@@ -489,6 +489,7 @@ in the generic function lambda-list to the generic function lambda-list"
   (let ((call-next-method-p nil)
         (next-method-p-p nil))
     (flet ((code-walker (form env)
+             (declare (ignore env))
 	     (unless (atom form)
 	       (let ((name (first form)))
 		 (case name

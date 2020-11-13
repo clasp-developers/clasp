@@ -81,15 +81,6 @@
            ,@(nreverse *ltv-forms*)
            ,result)))))
 
-;;; Excepting LTV, this is all of compile-file-form.
-(defun %compile-file-form (form environment system)
-  (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file) ; could be moved outward
-	 (ast (cleavir-generate-ast:generate-ast form environment system))
-	 (hoisted (cleavir-ast-transformations:hoist-load-time-value ast))
-	 (hir (cleavir-ast-to-hir:compile-toplevel-unhoisted hoisted)))
-    `(,(cleavir-hir-interpreter:translate hir)
-       ,@(mapcar (lambda (f) (ensure-ltv f environment system)) (cleavir-ast:forms hoisted)))))
-
 (defun ensure-ltv (form environment system)
   (if (constantp form)
       (ensure-object (eval form) environment system)

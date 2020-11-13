@@ -2850,7 +2850,8 @@
         (control-string (and (constantp control-string env)
                              (ext:constant-form-value control-string env))))
     (if (stringp control-string)
-        (let ((dest-sym (gensym "DEST")))
+        (let ((dest-sym (gensym "DEST"))
+              (stream-sym (gensym "STREAM")))
           (multiple-value-bind (guts variables)
               ;; We call %formatter-guts here because it has the side effect
               ;; of signaling an error if the control string is invalid.
@@ -2861,8 +2862,9 @@
             (let* ((body
                      (if (eq variables 't)
                          `(,(%formatter-lambda control-string guts variables)
-                           stream ,@args)
-                         (gen-inline-format control-string guts variables args)))
+                           ,stream-sym ,@args)
+                         (gen-inline-format
+                          control-string guts variables stream-sym args)))
                    (dest-constantp (constantp destination env))
                    (dest (and dest-constantp
                               (ext:constant-form-value destination env))))
@@ -2870,9 +2872,9 @@
               ;; at runtime.
               ;; NOTE: With constant propagation this would be unnecessary.
               (cond ((and dest-constantp (eq dest nil))
-                     `(with-output-to-string (stream) ,body))
+                     `(with-output-to-string (,stream-sym) ,body))
                     ((eq dest 't) ; must be constant
-                     `(let ((stream *standard-output*)) ,body))
+                     `(let ((,stream-sym *standard-output*)) ,body))
                     (t
                      ;; no dice - runtime dispatch
                      ;; NOTE: If the body exits abnormally, which it can because of
@@ -2880,16 +2882,17 @@
                      ;; closed. However unlike normal with-output-to-string, nothing
                      ;; can refer to it, so hopefully it'll just be GC'd normally.
                      `(let* ((,dest-sym ,destination)
-                             (stream (cond ((null ,dest-sym)
-                                            (make-string-output-stream))
-                                           ((eq ,dest-sym t) *standard-output*)
-                                           ((stringp ,dest-sym)
-                                            (core:make-string-output-stream-from-string
-                                             ,dest-sym))
-                                           (t ,dest-sym))))
+                             (,stream-sym
+                               (cond ((null ,dest-sym)
+                                      (make-string-output-stream))
+                                     ((eq ,dest-sym t) *standard-output*)
+                                     ((stringp ,dest-sym)
+                                      (core:make-string-output-stream-from-string
+                                       ,dest-sym))
+                                     (t ,dest-sym))))
                         ,body
                         (if (null ,dest-sym)
-                            (get-output-stream-string stream)
+                            (get-output-stream-string ,stream-sym)
                             nil)))))))
         whole)))
 
@@ -2897,7 +2900,7 @@
 ;;; expand into some code to execute it with the given args.
 ;;; NOTE: If we could inline functions with &optional &rest, this would be
 ;;; redundant. At the moment we can't.
-(defun gen-inline-format (control-string guts variables args)
+(defun gen-inline-format (control-string guts variables streamvar args)
   (if (> (length variables) (length args))
       ;; not enough args is special cased.
       ;; note check-min/max-format-arguments already issued a warning.
@@ -2905,13 +2908,19 @@
              (first-unsupplied-offset (cdr (nth nargs variables)))
              (varsyms (mapcar #'car variables))
              (bound-vars (subseq varsyms 0 nargs)))
-        `(let (,@(mapcar #'list bound-vars args))
-           (declare (ignore ,@bound-vars))
+        `(let (,@(mapcar #'list bound-vars args)
+               (stream ,streamvar))
+           (declare (ignore ,@bound-vars stream))
            ,(simple-formatter-param-err-form control-string
                                              first-unsupplied-offset)))
       ;; Normal case
       (let* ((varsyms (mapcar #'car variables)))
         `(let (,@(mapcar #'list varsyms args)
+               ;; It's important that we bind these fixed variables
+               ;; only AFTER evaluating the format arguments.
+               ;; Otherwise, something like (format nil ... core::stream)
+               ;; will be problematic.
+               (stream ,streamvar)
                ;; Remaining arguments are collected in a list.
                ;; They can be used by e.g. ~@{
                (args (list ,@(nthcdr (length variables) args))))
