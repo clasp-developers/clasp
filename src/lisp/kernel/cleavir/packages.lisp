@@ -53,8 +53,7 @@
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
   (:use #:common-lisp)
-  (:export 
-   #:hoist-load-time-value
+  (:export
    #:precalculated-value-ast
    #:debug-message-ast
    #:debug-break-ast

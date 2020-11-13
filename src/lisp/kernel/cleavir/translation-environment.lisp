@@ -25,21 +25,17 @@
       (error "BUG: No tag for iblock: ~a" iblock)))
 
 (defun bind-variable (var)
-  (if (cleavir-bir:closed-over-p var)
-      (setf (gethash var *datum-values*)
-            (if (cleavir-bir:immutablep var)
-                ;; This should get initialized eventually.
-                nil
+  (setf (gethash var *datum-values*)
+        (if (cleavir-bir:immutablep var)
+            ;; This should get initialized eventually.
+            nil
+            (if (cleavir-bir:closed-over-p var)
                 ;; make a cell
                 (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                 "cc_makeCell" nil "")))
-      (if (cleavir-bir:immutablep var)
-          (setf (gethash var *datum-values*)
-                ;; This should get initialized eventually.
-                nil)
-          ;; just an alloca
-          (setf (gethash var *datum-values*)
-                (cmp:alloca-t*)))))
+                 "cc_makeCell" nil "")
+                ;; just an alloca
+                (setf (gethash var *datum-values*)
+                      (cmp:alloca-t*))))))
 
 (defun in (datum)
   (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
@@ -48,17 +44,14 @@
 
 (defun variable-in (variable)
   (check-type variable cleavir-bir:variable)
-  (if (cleavir-bir:closed-over-p variable)
-      (if (cleavir-bir:immutablep variable)
-          (or (gethash variable *datum-values*)
-              (error "BUG: Closure variable missing: ~a" variable))
+  (if (cleavir-bir:immutablep variable)
+      (or (gethash variable *datum-values*)
+          (error "BUG: Variable missing: ~a" variable))
+      (if (cleavir-bir:closed-over-p variable)
           (let ((cell (or (gethash variable *datum-values*)
                           (error "BUG: Cell missing: ~a" variable)))
                 (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-            (cmp:irc-load-atomic (cmp::gen-memref-address cell offset))))
-      (if (cleavir-bir:immutablep variable)
-          (or (gethash variable *datum-values*)
-              (error "BUG: Variable missing: ~a" variable))
+            (cmp:irc-load-atomic (cmp::gen-memref-address cell offset)))
           (let ((alloca (or (gethash variable *datum-values*)
                             (error "BUG: Variable missing: ~a" variable))))
             (cmp:irc-load alloca)))))
@@ -78,17 +71,15 @@
 
 (defun variable-out (value variable)
   (check-type variable cleavir-bir:variable)
-  (if (cleavir-bir:closed-over-p variable)
-      (if (cleavir-bir:immutablep variable)
-          (setf (gethash variable *datum-values*) value)
+  (if (cleavir-bir:immutablep variable)
+      (setf (gethash variable *datum-values*) value)
+      (if (cleavir-bir:closed-over-p variable)
           (let ((cell (or (gethash variable *datum-values*)
                           (error "BUG: Cell missing: ~a" variable)))
                 (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
             (cmp:irc-store-atomic
              value
-             (cmp::gen-memref-address cell offset))))
-      (if (cleavir-bir:immutablep variable)
-          (setf (gethash variable *datum-values*) value)
+             (cmp::gen-memref-address cell offset)))
           (let ((alloca (or (gethash variable *datum-values*)
                             (error "BUG: Variable missing: ~a" variable))))
             (cmp:irc-store value alloca)))))
