@@ -193,6 +193,8 @@ VALID_OPTIONS = [
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
     "ADDRESS_SANITIZER",
+    # Turn on memory sanitizer
+    "SANITIZE_MEMORY",
     # Turn on address sanitizer
     "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
@@ -1188,6 +1190,10 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.SANITIZE_MEMORY):
+        cfg.env.append_value('CXXFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'] )
+        cfg.env.append_value('CFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'] )
+        cfg.env.append_value('LINKFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'])
     if (cfg.env.THREAD_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=thread'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=thread'])
