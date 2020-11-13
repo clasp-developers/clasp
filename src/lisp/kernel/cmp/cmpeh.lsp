@@ -283,7 +283,7 @@ exceptions to higher levels of the code and unwinding the stack.
                   (*exception-handler-cleanup-block* ,dispatch-header-gs ))
              (declare
               (ignore
-               ,@(when exception-clauses
+               ,@(unless exception-clauses
                    `(,previous-exception-handler-cleanup-block-gs
                      ,previous-exception-clause-types-to-handle-gs))))
              (cmp-log "====>> In TRY --> parent-cleanup-block: %s%N" ,parent-cleanup-block-gs)

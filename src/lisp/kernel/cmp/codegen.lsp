@@ -157,7 +157,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
           (with-output-to-string (*standard-output*)
             (llvm-sys:dump-module *the-module* *standard-output*)))))
 
-(defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
+(defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
       (multiple-value-bind (fn function-kind wrapped-env lambda-name)
           (with-debug-info-generator (:module *the-module* :pathname pathname)
@@ -173,7 +173,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
         (cmp-log-dump-module *the-module*)
         (values fn function-kind wrapped-env lambda-name))))
 
-(defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage) linkage-name)
+(defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)
     (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
@@ -182,12 +182,11 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                :definition definition
                :env env
                :pathname pathname
-               :linkage linkage
-               :linkage-name linkage-name)))
+               :linkage linkage)))
       (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
 
-(defun bclasp-compile* (definition env pathname &key (linkage 'llvm-sys:internal-linkage)
-                                                  linkage-name)
+(defun bclasp-compile* (definition env pathname
+                        &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition using the bclasp compiler"
   (when core:*debug-startup*
     (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
@@ -196,8 +195,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        :definition definition
        :env env
        :pathname pathname
-       :linkage linkage
-       :linkage-name linkage-name)
+       :linkage linkage)
+    (declare (ignore function-kind wrapped-env lambda-name constants-table))
     (quick-module-dump *the-module* "preoptimize")
     (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
       compiled-function)))

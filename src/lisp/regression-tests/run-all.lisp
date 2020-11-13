@@ -39,6 +39,7 @@
 (load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
 (load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
+(load-if-compiled-correctly "sys:regression-tests;unwind.lisp")
 #+unicode
 (load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
