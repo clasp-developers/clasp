@@ -665,11 +665,6 @@ Does not hoist."
       (setf *ct-generate-ast* (compiler-timer-elapsed))
       ast)))
 
-(defun hoist-ast (ast &optional (env *clasp-env*))
-  (prog1
-      (clasp-cleavir-ast:hoist-load-time-value ast env)
-    (setf *ct-hoist-ast* (compiler-timer-elapsed))))
-
 ;;; Given an AST that may not be a function-ast, wrap it
 ;;; in a function AST. Useful for the pattern of
 ;;; (eval form) = (funcall (compile nil `(lambda () ,form)))
@@ -748,11 +743,9 @@ and go-indices as third."
 
 
 (defun translate-ast (ast &key (abi *abi-x86-64*)
-                            (linkage 'llvm-sys:internal-linkage)
-                            (env *clasp-env*))
-  (let ((hoisted-ast (hoist-ast ast env)))
-    (translate-hoisted-ast hoisted-ast
-                           :abi abi :linkage linkage :env env)))
+                               (linkage 'llvm-sys:internal-linkage)
+                               (env *clasp-env*))
+  (translate-hoisted-ast ast :abi abi :linkage linkage :env env))
 
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
@@ -776,8 +769,7 @@ and go-indices as third."
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (let* ((ast (hoist-ast ast env))
-                   (hir (ast->hir ast)))
+            (let ((hir (ast->hir ast)))
               (multiple-value-bind (mir function-info-map go-indices)
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)
@@ -800,8 +792,7 @@ and go-indices as third."
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (let* ((ast (hoist-ast ast env))
-                   (hir (ast->hir ast)))
+            (let ((hir (ast->hir ast)))
               (multiple-value-bind (mir function-info-map go-indices)
                   (hir->mir hir env)
                 (multiple-value-setq (function lambda-name)

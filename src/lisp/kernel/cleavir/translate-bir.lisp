@@ -731,17 +731,6 @@
                                        (list storage1 storage2))
        return-value))))
 
-(defmethod translate-simple-instruction ((inst cc-bir:precalc-value)
-                                         return-value abi)
-  (declare (ignore return-value abi))
-  (let* ((index (cc-bir:precalc-value-index inst))
-         (label ""))
-    (cmp:irc-load
-     (cmp:irc-gep-variable (literal:ltv-global)
-                           (list (clasp-cleavir::%size_t 0)
-                                 (clasp-cleavir::%i64 index))
-                           label))))
-
 (defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
                                          return-value abi)
   (declare (ignore return-value abi))
@@ -1043,22 +1032,15 @@
   (cleavir-bir-transformations:process-captured-variables module)
   (values))
 
-(defun translate-hoisted-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
-                                  (linkage 'llvm-sys:internal-linkage)
-                                    (env clasp-cleavir::*clasp-env*)
-                                    (system clasp-cleavir::*clasp-system*))
+(defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
+                               (linkage 'llvm-sys:internal-linkage)
+                               (system clasp-cleavir::*clasp-system*))
   (let* ((bir (ast->bir ast system))
          (module (cleavir-bir:module bir)))
     ;;(cleavir-bir:verify module)
     (bir-transformations module)
     (cleavir-bir:verify module)
     (translate bir :abi abi :linkage linkage)))
-
-(defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
-                          (linkage 'llvm-sys:internal-linkage)
-                            (env clasp-cleavir::*clasp-env*))
-  (let ((hoisted-ast ast))
-    (translate-hoisted-ast hoisted-ast :abi abi :linkage linkage :env env)))
 
 (defun bir-compile (form env pathname
                     &key (linkage 'llvm-sys:internal-linkage))
@@ -1070,7 +1052,7 @@
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
-            (setq function (translate-ast ast :env env)))))
+            (setq function (translate-ast ast)))))
     (unless function
       (error "There was no function returned by translate-ast"))
     ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
@@ -1088,7 +1070,7 @@
     (literal:with-top-level-form
         (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
                (ast (clasp-cleavir::wrap-ast pre-ast)))
-          (translate-ast ast :env env :linkage cmp:*default-linkage*)))))
+          (translate-ast ast :linkage cmp:*default-linkage*)))))
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))

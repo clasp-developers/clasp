@@ -1,27 +1,5 @@
 (in-package #:cc-bir)
 
-(defclass precalc-value (cleavir-bir::no-input cleavir-bir:computation)
-  ((%index :initarg :index :accessor precalc-value-index)
-   (%form :initarg :form
-          :accessor precalc-value-form)))
-(defmethod cleavir-bir:rtype ((d precalc-value)) :object)
-
-(defmethod cleavir-ast-to-bir:compile-ast
-    ((ast cc-ast:precalc-value-reference-ast) inserter system)
-  (declare (ignore system))
-  (list
-   (cleavir-ast-to-bir:insert
-    inserter
-    (make-instance 'precalc-value
-      :index (cc-ast:precalc-value-reference-ast-index ast)
-      :form (cc-ast:precalc-value-reference-ast-form ast)))))
-
-(defmethod cleavir-bir-transformations::clone-initargs append
-    ((instruction precalc-value) stack map)
-  (declare (ignore stack map))
-  (list :index (precalc-value-index instruction)
-        :form (precalc-value-form instruction)))
-
 (defclass unwind-protect (cleavir-bir:dynamic-environment
                           cleavir-bir::one-input cleavir-bir::no-output
                           cleavir-bir:terminator1 cleavir-bir:operation)
