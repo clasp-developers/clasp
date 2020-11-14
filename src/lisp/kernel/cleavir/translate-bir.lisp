@@ -38,7 +38,8 @@
 
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
-         (llvm-function-name (cmp:jit-function-name lambda-name)))
+         (llvm-function-name (cmp:jit-function-name lambda-name))
+         (function-info (calculate-function-info function lambda-name)))
     (multiple-value-bind (the-function function-description)
         (cmp:irc-cclasp-function-create
          (llvm-sys:function-type-get
@@ -49,7 +50,7 @@
          'llvm-sys:private-linkage
          llvm-function-name
          cmp:*the-module*
-         (calculate-function-info function lambda-name))
+         function-info)
       (multiple-value-bind (xep-function xep-function-description)
           (if (xep-needed-p function)
               (cmp:irc-cclasp-function-create
@@ -57,7 +58,7 @@
                linkage
                llvm-function-name
                cmp:*the-module*
-               (calculate-function-info function lambda-name))
+               function-info)
               (values :xep-unallocated :xep-unallocated))
         (make-instance 'llvm-function-info
                        :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
@@ -734,8 +735,8 @@
 (defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (let* ((index (gethash inst *constant-values*))
-         (label ""))
+  (let ((index (gethash inst *constant-values*))
+        (label ""))
     (cmp:irc-load
      (cmp:irc-gep-variable (literal:ltv-global)
                            (list (clasp-cleavir::%size_t 0)
