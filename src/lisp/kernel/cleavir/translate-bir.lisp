@@ -5,28 +5,14 @@
   (;; In BIR, function environments are sets but we'd like to have it
    ;; be a list to ensure ordering.
    (%environment :initarg :environment :type list :reader environment)
+   ;; The argument variables of the function lambda list.
+   (%arguments :initarg :arguments :type list :reader arguments)
    ;; The eXternal Entry Point is in charge of loading values and
    ;; cells from the closure vector and parsing the number of arguments.
    (%xep-function :initarg :xep-function :reader xep-function)
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
    (%main-function :initarg :main-function :reader main-function)
    (%main-function-description :initarg :main-function-description :reader main-function-description)))
-
-;; The arguments of the function lambda list.
-(defun lambda-list-arguments (function)
-  (let ((arglist '()))
-    (dolist (item (cleavir-bir:lambda-list function))
-      (unless (symbolp item)
-        (if (consp item)
-            (ecase (length item)
-              (2
-               (push (first item) arglist)
-               (push (second item) arglist))
-              (3
-               (push (second item) arglist)
-               (push (third item) arglist)))
-            (push item arglist))))
-    (nreverse arglist)))
 
 ;; Assume that functions with no encloses and no local calls are
 ;; toplevel and need a XEP.
@@ -39,13 +25,27 @@
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
   (let* ((lambda-name (get-or-create-lambda-name function))
          (llvm-function-name (cmp:jit-function-name lambda-name))
-         (function-info (calculate-function-info function lambda-name)))
+         (function-info (calculate-function-info function lambda-name))
+         (arguments
+           (let ((arglist '()))
+             (dolist (item (cleavir-bir:lambda-list function))
+               (unless (symbolp item)
+                 (if (consp item)
+                     (ecase (length item)
+                       (2
+                        (push (first item) arglist)
+                        (push (second item) arglist))
+                       (3
+                        (push (second item) arglist)
+                        (push (third item) arglist)))
+                     (push item arglist))))
+             (nreverse arglist))))
     (multiple-value-bind (the-function function-description)
         (cmp:irc-cclasp-function-create
          (llvm-sys:function-type-get
           cmp::%tmv%
           (make-list (+ (cleavir-set:size (cleavir-bir:environment function))
-                        (length (lambda-list-arguments function)))
+                        (length arguments))
                      :initial-element cmp::%t*%))
          'llvm-sys:private-linkage
          llvm-function-name
@@ -61,11 +61,12 @@
                function-info)
               (values :xep-unallocated :xep-unallocated))
         (make-instance 'llvm-function-info
-                       :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
-                       :main-function the-function
-                       :main-function-description function-description
-                       :xep-function xep-function
-                       :xep-function-description xep-function-description)))))
+          :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
+          :main-function the-function
+          :main-function-description function-description
+          :xep-function xep-function
+          :xep-function-description xep-function-description
+          :arguments arguments)))))
 
 ;;; For a computation, return its llvm value (for the :around method).
 ;;; For other instructions, return value is unspecified/irrelevant.
@@ -469,11 +470,11 @@
     ;; Augment the environment values to the arguments of the
     ;; call. Make sure to get the variable location and not
     ;; necessarily the value.
-    (append (mapcar (lambda (variable)
-                      (or (gethash variable *datum-values*)
-                          (error "Closure value or cell missing: ~a" variable)))
-                    environment)
-            (nreverse arguments))))
+    (nconc (mapcar (lambda (variable)
+                     (or (gethash variable *datum-values*)
+                         (error "Closure value or cell missing: ~a" variable)))
+                   environment)
+           (nreverse arguments))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
@@ -809,27 +810,28 @@
 (defun layout-xep-function* (the-function ir calling-convention
                              abi &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+      ;; Parse lambda list.
+    (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
+                                  calling-convention
+                                  :argument-out #'out)
     ;; Import cells.
-    (let* ((llvm-arglist (llvm-sys:get-argument-list the-function))
-           (closure-vec (first llvm-arglist))
+    (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
+           (llvm-function-info (find-llvm-function-info ir))
            (environment-values
-             (loop for import in (environment (find-llvm-function-info ir)) for i from 0
+             (loop for import in (environment llvm-function-info)
+                   for i from 0
                    for offset = (cmp:%closure-with-slots%.offset-of[n]/t* i)
                    collect (cmp:irc-load-atomic
                             (cmp::gen-memref-address closure-vec offset)))))
-      ;; Parse lambda list.
-      (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
-                                    calling-convention
-                                    :argument-out #'out)
       ;; Tail call the real function.
       (cmp:with-debug-info-source-position
           ((core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
         ;; FIXME: USE FASTCC CONVENTION HERE.
         (cmp:irc-ret
          (cmp:irc-create-call
-          (main-function (find-llvm-function-info ir))
+          (main-function llvm-function-info)
           ;; Augment the environment lexicals as a local call would.
-          (append environment-values (mapcar #'in (lambda-list-arguments ir))))))))
+          (nconc environment-values (mapcar #'in (arguments llvm-function-info))))))))
   the-function)
 
 (defun layout-main-function* (the-function ir
@@ -846,10 +848,11 @@
           (cmp:with-landing-pad (never-entry-landing-pad ir return-value)
             ;; Bind the arguments and the environment values
             ;; appropriately.
-            (loop for arg in (llvm-sys:get-argument-list the-function)
-                  for lexical in (append (environment (find-llvm-function-info ir))
-                                         (lambda-list-arguments ir))
-                  do (setf (gethash lexical *datum-values*) arg))
+            (let ((llvm-function-info (find-llvm-function-info ir)))
+              (loop for arg in (llvm-sys:get-argument-list the-function)
+                    for lexical in (append (environment llvm-function-info)
+                                           (arguments llvm-function-info))
+                    do (setf (gethash lexical *datum-values*) arg)))
             ;; Branch to the start block.
             (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
             ;; Lay out blocks.
