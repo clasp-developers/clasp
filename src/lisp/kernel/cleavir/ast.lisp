@@ -731,34 +731,3 @@ precalculated-vector and returns the index."
        (multiple-value-bind (index-or-immediate index-p)
            (literal:codegen-rtv-cclasp value)
          (values index-or-immediate (not index-p) read-only-p value))))))
-
-(defun hoist-load-time-value (ast env)
-  (let ((ltvs nil))
-    (cleavir-ast:map-ast-depth-first-preorder
-     (lambda (ast)
-       (when (typep ast 'cleavir-ast:load-time-value-ast)
-         (push ast ltvs)))
-     ast)
-    (dolist (ltv ltvs)
-      (let ((form (cleavir-ast:form ltv)))
-        (multiple-value-bind (index-or-immediate immediatep
-                              constantp constant-value)
-            (process-ltv env form (cleavir-ast:read-only-p ltv))
-          (cond
-            (immediatep
-             (change-class ltv 'cleavir-ast:immediate-ast
-                           :value index-or-immediate))
-            (constantp
-             (change-class ltv 'precalc-constant-reference-ast
-                           :index index-or-immediate
-                           :origin (clasp-cleavir::ensure-origin
-                                    (cleavir-ast:origin ltv) 999901)
-                           :form form
-                           :value constant-value))
-            (t
-             (change-class ltv 'precalc-value-reference-ast
-                           :index index-or-immediate
-                           :origin (clasp-cleavir::ensure-origin
-                                    (cleavir-ast:origin ltv) 999901)
-                           :form form))))))
-    ast))

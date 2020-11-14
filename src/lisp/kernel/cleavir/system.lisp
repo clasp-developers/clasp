@@ -113,7 +113,6 @@
 (defvar *ct-start*)
 (defvar *ct-end*)
 (defvar *ct-generate-ast*)
-(defvar *ct-hoist-ast*)
 (defvar *ct-generate-hir*)
 (defvar *ct-process-captured-variables*)
 (defvar *ct-liveness*)
@@ -130,7 +129,6 @@
   (+ *ct-start*
      *ct-end*
      *ct-generate-ast*
-     *ct-hoist-ast*
      *ct-generate-hir*
      *ct-process-captured-variables*
      *ct-liveness*
@@ -158,7 +156,6 @@
          (*ct-start* 0)
          (*ct-end* 0)
          (*ct-generate-ast* 0)
-         (*ct-hoist-ast* 0)
          (*ct-generate-hir* 0)
          (*ct-process-captured-variables* 0)
          (*ct-liveness* 0)
@@ -179,7 +176,6 @@
                (list
                 (float (/ *ct-start* internal-time-units-per-second)) "*ct-start*"
                 (float (/ *ct-generate-ast* internal-time-units-per-second)) "*ct-generate-ast*"
-                (float (/ *ct-hoist-ast* internal-time-units-per-second)) "*ct-hoist-ast*"
                 (float (/ *ct-generate-hir* internal-time-units-per-second)) "*ct-generate-hir*"
                 (float (/ *ct-process-captured-variables* internal-time-units-per-second)) "*ct-process-captured-variables*"
                 (float (/ *ct-liveness* internal-time-units-per-second)) "*ct-liveness*"
