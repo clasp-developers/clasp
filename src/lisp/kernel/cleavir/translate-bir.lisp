@@ -416,11 +416,7 @@
            (lambda ()
              (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
               "cc_initialize_closure"
-              (list* enclose sninputs
-                     (mapcar (lambda (var)
-                               (or (gethash var *datum-values*)
-                                   (error "BUG: Cell missing: ~a" var)))
-                             environment)))))
+              (list* enclose sninputs (mapcar #'variable-as-argument environment)))))
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
@@ -482,11 +478,7 @@
     ;; Augment the environment values to the arguments of the
     ;; call. Make sure to get the variable location and not
     ;; necessarily the value.
-    (nconc (mapcar (lambda (variable)
-                     (or (gethash variable *datum-values*)
-                         (error "Closure value or cell missing: ~a" variable)))
-                   environment)
-           (nreverse arguments))))
+    (nconc (mapcar #'variable-as-argument environment) (nreverse arguments))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
@@ -1046,8 +1038,10 @@
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   ;; These should happen last since they are like "post passes".
-  (cleavir-bir-transformations:process-captured-variables module)
-  (cleavir-bir-transformations:dynamic-extent-analyze-closures module)
+  ;; NOTE: These must come in this order to maximize analysis.
+  (cleavir-bir-transformations:determine-function-environments module)
+  (cleavir-bir-transformations:determine-closure-extents module)
+  (cleavir-bir-transformations:determine-variable-extents module)
   (values))
 
 (defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
