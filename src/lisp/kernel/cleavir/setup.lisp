@@ -92,7 +92,13 @@ when this is t a lot of graphs will be generated.")
                              collect `(set-dyn-call ,name))))
            (set-dyn-call (name)
              `(setf (gethash ',name *fn-attributes*)
-                    (cleavir-attributes:make-attributes :dyn-call))))
+                    (cleavir-attributes:make-attributes :dyn-call)))
+           (set-dx-calls (&rest names)
+             `(progn ,@(loop for name in names
+                             collect `(set-dx-call ,name))))
+           (set-dx-call (name)
+             `(setf (gethash ',name *fn-attributes*)
+                    (cleavir-attributes:make-attributes :dx-call))))
   (set-dyn-calls
    apply funcall
    every some notevery notany
@@ -108,6 +114,34 @@ when this is t a lot of graphs will be generated.")
    ;; functions can do arbitrary things.
    map map-into merge
    cleavir-ast:map-ast-depth-first-preorder
+   cleavir-bir:map-iblocks
+   cleavir-bir:map-iblock-instructions
+   cleavir-ir:map-instructions
+   cleavir-ir:map-instructions-with-owner
+   cleavir-ir:map-instructions-arbitrary-order
+   cleavir-ir:filter-instructions
+   cleavir-ir:map-local-instructions
+   cleavir-ir:filter-local-instructions)
+  (set-dx-calls
+   core:progv-function
+   core:catch-function
+   core:funwind-protect
+   ;; FIXME: Can't do this for many things like APPLY, FUNCALL, etc.
+   ;; because we don't distinguish between *which* functional argument
+   ;; is DX.
+   every some notevery notany
+   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
+   member member-if member-if-not
+   mapc mapcar mapcan mapl maplist mapcon
+   assoc assoc-if assoc-if-not
+   rassoc rassoc-if rassoc-if-not
+   intersection nintersection adjoin
+   set-difference nset-difference
+   set-exclusive-or nset-exclusive-or subsetp union nunion
+   map map-into merge
+   cleavir-ast:map-ast-depth-first-preorder
+   cleavir-bir:map-iblocks
+   cleavir-bir:map-iblock-instructions
    cleavir-ir:map-instructions
    cleavir-ir:map-instructions-with-owner
    cleavir-ir:map-instructions-arbitrary-order
