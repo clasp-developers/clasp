@@ -391,13 +391,25 @@
            (llvm-sys:get-named-global
             cmp:*the-module* (cmp::function-description-name enclosed-function))))
     (if environment
-        (let* ((sninputs (clasp-cleavir::%size_t (length environment)))
+        (let* ((ninputs (length environment))
+               (sninputs (clasp-cleavir::%size_t ninputs))
                (enclose
-                 (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_enclose"
-                  (list enclosed-function
-                        (cmp:irc-bit-cast function-description cmp:%i8*%)
-                        sninputs))))
+                 (ecase (cleavir-bir:extent instruction)
+                   (:dynamic
+                    (clasp-cleavir::%intrinsic-call
+                     "cc_stack_enclose"
+                     (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
+                                           :alignment cmp:+alignment+
+                                           :label "stack-allocated-closure")
+                           enclosed-function
+                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           sninputs)))
+                   (:indefinite
+                    (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                     "cc_enclose"
+                     (list enclosed-function
+                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           sninputs))))))
           ;; We don't initialize the closure immediately in case it partakes
           ;; in mutual reference.
           (delay-initializer
@@ -1033,7 +1045,9 @@
   (cleavir-bir-transformations:module-optimize-variables module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
+  ;; These should happen last since they are like "post passes".
   (cleavir-bir-transformations:process-captured-variables module)
+  (cleavir-bir-transformations:dynamic-extent-analyze-closures module)
   (values))
 
 (defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
