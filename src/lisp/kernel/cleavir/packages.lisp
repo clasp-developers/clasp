@@ -161,7 +161,8 @@
            #:unwind-protect #:bind #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
-           #:mv-foreign-call #:function-name))
+           #:mv-foreign-call #:function-name
+           #:acas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)

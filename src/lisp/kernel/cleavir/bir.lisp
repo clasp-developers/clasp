@@ -116,6 +116,36 @@
       (cleavir-ast-to-bir:terminate inserter hsc)
       (copy-list ibs))))
 
+(defclass acas (cleavir-bir:computation)
+  ((%element-type :initarg :element-type :reader element-type)
+   (%simple-p :initarg :simple-p :reader simple-p)
+   (%boxed-p :initarg :boxed-p :reader boxed-p)))
+(defmethod cleavir-bir:rtype ((d acas))
+  (case (element-type d)
+    ((t) :object)
+    (otherwise (error "BUG: CAS only of general vectors is supported as of yet, sorry!"))))
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:acas-ast)
+                                           inserter system)
+  (let ((boxed-p (cleavir-ast:boxed-p ast)))
+    (unless boxed-p
+      (error "BUG: CAS of only vectors with boxed elements is supported as of yet, sorry!"))
+    (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:array-ast ast)
+                                                  (cleavir-ast:index-ast ast)
+                                                  (cc-ast:cmp-ast ast)
+                                                  (cleavir-ast:value-ast ast))
+                                                 inserter system
+                                                 (:object :object
+                                                  :object :object))
+      (list
+       (cleavir-ast-to-bir:insert
+        inserter
+        (make-instance 'acas
+          :inputs args
+          :element-type (cleavir-ast:element-type ast)
+          :simple-p (cleavir-ast:simple-p ast)
+          :boxed-p boxed-p))))))
+
 ;;;
 
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)

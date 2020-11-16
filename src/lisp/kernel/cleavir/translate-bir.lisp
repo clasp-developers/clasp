@@ -707,6 +707,17 @@
         (t
          (error "BUG: Don't know how to translate primop ~a" name))))
 
+(defmethod translate-simple-instruction ((inst cc-bir:acas) return-value abi)
+  (declare (ignore return-value))
+  (let ((et (cc-bir:element-type inst))
+        (inputs (cleavir-bir:inputs inst)))
+    (cmp:irc-cmpxchg
+     ;; This will err if et = bit or the like.
+     (clasp-cleavir::gen-vector-effective-address
+      (in (first inputs)) (in (second inputs)) et
+      (clasp-cleavir::%default-int-type abi))
+     (in (third inputs)) (in (fourth inputs)))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
   (let ((alloca (cleavir-bir:alloca inst)))
