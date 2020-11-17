@@ -171,7 +171,7 @@ VALID_OPTIONS = [
     #   This is probably not as fast as bitcode (maybe a few percent slower) but it links fast.
     # If "faso" then CL generates faso files.
     #   This is good for development.
-    # Default = "object"
+    # Default = "faso"
     "CLASP_BUILD_MODE",
     # Use external-linkage for StartUp functions
     "FORCE_STARTUP_EXTERNAL_LINKAGE",
@@ -913,7 +913,7 @@ def configure(cfg):
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env['CLASP_BUILD_MODE'] = 'faso'
         else:
-            cfg.env['CLASP_BUILD_MODE'] = 'object'
+            cfg.env['CLASP_BUILD_MODE'] = 'faso'
     if ((cfg.env['CLASP_BUILD_MODE'] =='bitcode')):
         cfg.define("CLASP_BUILD_MODE",2) # thin-lto
         cfg.env.CLASP_BUILD_MODE = 'bitcode'
