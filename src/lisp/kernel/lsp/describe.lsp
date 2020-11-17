@@ -497,7 +497,7 @@ Prints information about OBJECT to STREAM."
   (values))
 
 (defun print-doc (symbol &optional (called-from-apropos-doc-p nil)
-                  &aux (f nil) x)
+                  &aux (f nil))
   (labels ((doc-value (value indicator)
              (setq f t)
              (format t "~&~15A~62s" indicator value))
@@ -506,10 +506,6 @@ Prints information about OBJECT to STREAM."
              (format t
                      "~&-----------------------------------------------------------------------------~%~53S~24@A~%"
                      symbol ind))
-           (good-package ()
-             (if (eq (symbol-package symbol) (find-package "CL"))
-                 (find-package "SYSTEM")
-                 *package*))
            (describe-symbol (category-string)
              (doc-separation category-string)
              (doc-value (or (documentation symbol 'FUNCTION) "") "Documentation:")

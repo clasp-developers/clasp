@@ -11,7 +11,8 @@
              (multiple-value-list
               (let* ((sym (gensym))
                      (method
-                      (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
+                       (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
+                (declare (ignore method))
                 (values
                  (fboundp sym)
                  (let ((x (cons 1 2))) (list (funcall (fdefinition `(setf ,sym)) 3 x) x)))))))
@@ -30,6 +31,7 @@
 (defmethod slot-missing ((class t) (obj slot-missing-class-01)
                          (slot-name t) (operation t)
                          &optional (new-value nil new-value-p))
+  (declare (ignore new-value))
   42)
 
 (test slot-missing-2-simplified
@@ -104,7 +106,7 @@
   ((a :initform :a)))
 
 (defmethod initialize-instance ((me  %foo-1) &rest initargs &key policy provider (hash-test 'eql) &allow-other-keys)
-  (declare (ignore initargs))
+  (declare (ignore initargs policy provider hash-test))
   (call-next-method)
   23)
 

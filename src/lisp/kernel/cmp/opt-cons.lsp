@@ -91,7 +91,7 @@
 
 (define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
   ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
-  (or (apply #'expand-member env (rest whole))
+  (or (apply #'expand-member env value list sequence-args)
       whole))
 
 ;;;
@@ -119,7 +119,7 @@
                    (error 'type-error :datum ,%elt :expected-type 'list)))))))))
 
 (define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
-  (or (apply #'expand-assoc env (rest whole))
+  (or (apply #'expand-assoc env value list sequence-args)
       whole))
 
 ;;;
@@ -133,7 +133,7 @@
     (declare (ignore test-flag key-flag))
     (when test-function
       (si::with-unique-names
-	  (%value %sublist %elt %car %list %value-after-key-function-)
+	  (%value %sublist %elt %list %value-after-key-function-)
 	`(let ((,%value ,value)
 	       (,%list ,list)
 	       ,@init)

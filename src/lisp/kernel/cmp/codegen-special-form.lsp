@@ -1499,13 +1499,18 @@ jump to blocks within this tagbody."
                         return-type-name return-translator-name
                         argument-type-names argument-translator-names
                         parameters place-holder closure-value)
-  (declare (ignore convention))         ; FIXME
+  (declare (ignore convention place-holder))         ; FIXME
   ;; parameters should be a list of symbols, i.e. lambda list with only required.
   (unless (= (length argument-type-names) (length parameters) (length argument-translator-names))
     (error "BUG: Callback function parameters and types have a length mismatch"))
 ;;; Generate a variable and put the closure in it.
-  (let* ((closure-literal-slot-index (literal:lookup-literal-index place-holder))
+  (let* ((closure-literal-slot-index (literal:new-table-index))
          (closure-var-name (core:bformat nil "%s_closure_var" c-name)))
+    #+(or)(progn
+            (format t "gen-defcallback - the (literal::literal-machine-table-index literal::*literal-machine*) -> ~d~%" (literal::literal-machine-table-index literal::*literal-machine*))
+            (format t "gen-defcallback cmp:*load-time-value-holder-global-var* -> ~a~%" cmp:*load-time-value-holder-global-var*)
+            (format t "gen-defcallback closure-value -> ~a~%" closure-value)
+            (format t "gen-defcallback closure-literal-slot-index -> ~a~%" closure-literal-slot-index))
     (irc-t*-result closure-value (literal:constants-table-reference closure-literal-slot-index))
     ;; Now generate the C function.
     ;; We don't actually "do" anything with it- just leave it there to be linked/used like a C function.

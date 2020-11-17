@@ -54,6 +54,7 @@
         (multiple-value-bind
               (copy a b c)
             (values (copy-otto2 instance) (otto2-a instance)(otto2-b instance)(otto2-c instance))
+          (declare (ignore copy))
           (and (eql a 1)(eql b 2)(eql c 3)))))
 
 (setf (find-class 'otto2) nil)
@@ -66,6 +67,7 @@
         (multiple-value-bind
               (copy a b c)
             (values (copy-otto3 instance) (otto3-a instance)(otto3-b instance)(otto3-c instance))
+          (declare (ignore copy))
           (and (eql a 1)(eql b 2)(eql c 3)))))
 
 (setf (find-class 'otto3) nil)

@@ -8,6 +8,9 @@
   :depends-on (:concrete-syntax-tree
                :eclector-concrete-syntax-tree
                :eclector
+               :cleavir-bir
+               :cleavir-ast-to-bir
+               :cleavir-bir-transformations
                :cleavir-cst-to-ast
                :cleavir-ir
                :cleavir-compilation-policy
@@ -46,6 +49,14 @@
                (:file "closure-optimize")
                (:file "translate")
                (:file "translate-instruction")
+               ;; BIR
+               (:file "translation-environment")
+               (:file "bir")
+               (:file "bmir")
+               (:file "bir-to-bmir")
+               (:file "landing-pad-bir")
+               (:file "translate-bir")
+               ;; end BIR
                ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
                (:file "activate-clasp-readtables-for-eclector")

@@ -10,6 +10,7 @@
 ;;; ------------------------------------------------------------
 ;;; Run tests
 (reset-clasp-tests)
+(load-if-compiled-correctly "sys:regression-tests;defcallback-native.lisp")
 (load-if-compiled-correctly "sys:regression-tests;fastgf.lisp")
 (load-if-compiled-correctly "sys:regression-tests;stamps.lisp")
 (load-if-compiled-correctly "sys:regression-tests;array0.lisp")
@@ -39,6 +40,7 @@
 (load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
 (load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
+(load-if-compiled-correctly "sys:regression-tests;unwind.lisp")
 #+unicode
 (load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
@@ -46,7 +48,6 @@
 (load-if-compiled-correctly "sys:regression-tests;float-features.lisp")
 (load-if-compiled-correctly "sys:regression-tests;debug.lisp")
 (load-if-compiled-correctly "sys:regression-tests;posix.lisp")
-
 (progn
   (note-test-finished)
   (format t "Passes: ~a~%" *passes*)

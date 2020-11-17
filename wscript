@@ -193,6 +193,8 @@ VALID_OPTIONS = [
     "DEBUG_OPTIONS",
     # Turn on address sanitizer
     "ADDRESS_SANITIZER",
+    # Turn on memory sanitizer
+    "SANITIZE_MEMORY",
     # Turn on address sanitizer
     "THREAD_SANITIZER",
     # Link libraries statically vs dynamically
@@ -289,7 +291,7 @@ def update_dependencies(cfg):
                        "838e25d0afd96fdeca8e9fc385d96d48abfe9506")
     fetch_git_revision("src/lisp/kernel/contrib/Concrete-Syntax-Tree",
                        "https://github.com/s-expressionists/Concrete-Syntax-Tree.git",
-                       "3524caff0894cb5bf6ea51abac53b520cc5580c3")
+                       "ffade18bb5b390d9aee960d587701367f4aac92b")
     fetch_git_revision("src/lisp/kernel/contrib/closer-mop",
                        "https://github.com/pcostanza/closer-mop.git",
                        "d4d1c7aa6aba9b4ac8b7bb78ff4902a52126633f")
@@ -1188,6 +1190,10 @@ def configure(cfg):
     if (cfg.env.ADDRESS_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.SANITIZE_MEMORY):
+        cfg.env.append_value('CXXFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'] )
+        cfg.env.append_value('CFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'] )
+        cfg.env.append_value('LINKFLAGS', ['-fsanitize=memory', '-fsanitize-memory-track-origins=1'])
     if (cfg.env.THREAD_SANITIZER):
         cfg.env.append_value('CXXFLAGS', ['-fsanitize=thread'] )
         cfg.env.append_value('LINKFLAGS', ['-fsanitize=thread'])

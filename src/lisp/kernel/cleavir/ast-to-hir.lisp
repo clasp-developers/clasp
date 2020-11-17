@@ -115,11 +115,8 @@
               :successors (cleavir-ast-to-hir::successors context)))))))
 
 (defmethod cleavir-ast-to-hir:compile-ast ((ast cc-ast:header-stamp-case-ast) context)
-  (let ((derivable (cleavir-ast-to-hir:compile-ast (cc-ast:derivable-ast ast) context))
-        (rack (cleavir-ast-to-hir:compile-ast (cc-ast:rack-ast ast) context))
-        (wrapped (cleavir-ast-to-hir:compile-ast (cc-ast:wrapped-ast ast) context))
-        (header (cleavir-ast-to-hir:compile-ast (cc-ast:header-ast ast) context))
-        (temp (cleavir-ir:new-temporary)))
+  (cleavir-ast-to-hir::assert-context ast context 0 4)
+  (let ((temp (cleavir-ir:new-temporary)))
     (cleavir-ast-to-hir:compile-ast
      (cc-ast:stamp-ast ast)
      (cleavir-ast-to-hir:clone-context
@@ -127,7 +124,7 @@
       :results (list temp)
       :successors
       (list (clasp-cleavir-hir:make-header-stamp-case-instruction
-             temp derivable rack wrapped header))))))
+             temp (cleavir-ast-to-hir::successors context)))))))
 
 ;; FIXME: export names, deexport make-, have macroexpansion assert context
 (cleavir-ast-to-hir::define-compile-functional-ast
@@ -288,7 +285,7 @@
      index
      (first (cleavir-ast-to-hir::results context))
      :successor (first (cleavir-ast-to-hir::successors context))
-     :original-object (clasp-cleavir-ast:precalc-value-reference-ast-original-object ast)
+     :form (clasp-cleavir-ast:precalc-value-reference-ast-form ast)
      :origin (clasp-cleavir::ensure-origin (cleavir-ast:origin ast) 999910)
      )))
 

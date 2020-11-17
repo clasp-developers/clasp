@@ -5,15 +5,23 @@
 ;;;; Much or most of this was originally cribbed from SBCL,
 ;;;; especially ir1report.lisp and main.lisp.
 
+;;; This variable can be bound to a source location; then any compiler
+;;; conditions that don't have an origin attached can use this.
+;;; This lets conditions be localized to at least a top level form,
+;;; even if they're unexpected.
+(defvar *default-condition-origin* nil)
+
 ;;; For later
 (defgeneric deencapsulate-compiler-condition (condition)
-  (:method (condition) condition))
+  (:method ((condition condition)) condition))
 
 ;;; If a condition has source info associated with it, return that.
 ;;; Otherwise NIL.
 ;;; This has methods defined on it for cleavir condition types later.
 (defgeneric compiler-condition-origin (condition)
-  (:method (condition) (declare (ignore condition)) nil))
+  (:method ((condition condition)) nil)
+  (:method :around ((condition condition))
+    (or (call-next-method) *default-condition-origin*)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -158,12 +166,20 @@
 
 (defmethod print-compiler-condition :after (condition)
   (let ((origin (compiler-condition-origin condition)))
-    (when origin
-      (format *error-output* "~&    at ~a ~d:~d~%"
-              (file-scope-pathname
-               (file-scope origin))
-              (source-pos-info-lineno origin)
-              (source-pos-info-column origin)))))
+    (if origin
+        (let (;; deal with start/end pairs
+              (origin (if (consp origin) (car origin) origin)))
+          (handler-case
+              (format *error-output* "~&    at ~a ~d:~d~%"
+                      (file-scope-pathname
+                       (file-scope origin))
+                      (source-pos-info-lineno origin)
+                      (source-pos-info-column origin))
+            (error (e)
+              ;; Recursive errors are annoying. Therefore,
+              (format *error-output* "~&    at #<error printing origin ~a: ~a>~%"
+                      origin e))))
+        (format *error-output* "~&    at unknown location~%"))))
 
 (defun format-compiler-condition (what condition)
   (format *error-output* "caught ~S:~%~@<  ~@;~A~:>" what condition))

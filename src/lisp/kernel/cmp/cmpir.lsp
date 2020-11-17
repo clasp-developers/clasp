@@ -843,14 +843,13 @@ the type LLVMContexts don't match - so they were defined in different threads!"
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
   (cmp-log "Expanding with-new-function name: %s%N" function-name)
-  (let ((cleanup-block-gs (gensym "cleanup-block"))
-	(traceid-gs (gensym "traceid"))
+  (let ((traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
         (temp (gensym))
         (function-metadata-name (gensym))
 	(irbuilder-body (gensym))
         (function-description (gensym)))
-    `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
+    `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
 	 (irc-bclasp-function-create ,function-name ,parent-env
                                      :function-type ,function-type
                                      :argument-names ,argument-names
@@ -1040,8 +1039,7 @@ But no irbuilders or basic-blocks. Return the fn."
                                      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
                                      (linkage 'llvm-sys:internal-linkage)
                                      function-info)
-  "Returns the new function, the lexical environment for the function 
-and the block that cleans up the function and rethrows exceptions,
+  "Returns the new function, the lexical environment for the function,
 followed by the traceid for this function and then the current insert block,
 and then the irbuilder-alloca, irbuilder-body."
   (when (or function-type-p argument-names-p)
@@ -1061,7 +1059,7 @@ and then the irbuilder-alloca, irbuilder-body."
                           function-info))
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
-	 cleanup-block traceid
+         traceid
 	 (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
 	 (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
 	 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
@@ -1076,7 +1074,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	(irc-set-insert-point-basic-block body-bb irbuilder-body)))
     (setf-metadata func-env :cleanup ())
     (let ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result"))))
-      (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result fn-description))))
+      (values fn func-env irbuilder-alloca irbuilder-body result fn-description))))
 
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)

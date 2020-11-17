@@ -48,17 +48,19 @@
 (test-expect-error fill-pointer-nil-array (fill-pointer #0anil) :type type-error)
 
 ;;; used to give off by 1 wrong error message about the upper bound of the limit
-;;; Right message is Invalid index 5 for axis 0 of array: expected 0-2
+;;; Right message is Invalid index 5 for axis 0 of array: expected 0-2 or
+;;; Row-major array index 5 is out of bounds (INTEGER 0 (3)).
 (test
  simple-array-out-of-bounds-message
- (search "expected 0-2"
-         (let ()
-           (handler-case 
-               (locally (declare (optimize (speed 0)(safety 3)))
-                 (aref (make-array 3 :initial-element 5) 5)
-                 "nada")
-             (error (e)
-               (princ-to-string e))))))
+ (let ((message
+         (handler-case 
+             (locally (declare (optimize (speed 0)(safety 3)))
+               (aref (make-array 3 :initial-element 5) 5)
+               "nada")
+           (error (e)
+             (princ-to-string e)))))
+   (or  (search "expected 0-2" message)
+        (search "(INTEGER 0 (3))" message))))
 
 ;;; Drmeister on #clasp
 ;;; Bike: (make-array '(nil 5)) doesn't generate an error but it should

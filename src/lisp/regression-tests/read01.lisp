@@ -127,8 +127,8 @@
           (CLOSE S))
         (handler-case (LET ((S (OPEN "foo.txt" :DIRECTION :INPUT)))
                         (UNWIND-PROTECT (READ-BYTE S) (CLOSE S)))
-          (end-of-file (e) nil)
-          (error (e) t))))
+          (end-of-file () nil)
+          (error () t))))
 
 (test READ-BYTE.ERROR.4.simplyfied
       (stringp
@@ -338,7 +338,7 @@
         (eq :good
             (handler-case
                 (READ-FROM-STRING "#:a:b")
-              (reader-error (e) :good)))))
+              (reader-error () :good)))))
 
 (test SYNTAX.SHARP-B.5 (= 17/4 (READ-FROM-STRING "#b010001/100")))
 

@@ -69,8 +69,7 @@
   (let* ((index (clasp-cleavir-hir:precalc-value-instruction-index instruction))
          (label
            (safe-llvm-name
-            (clasp-cleavir-hir:precalc-value-instruction-original-object
-             instruction)))
+            (clasp-cleavir-hir:precalc-value-instruction-form instruction)))
          (value (cmp:irc-load
                  (cmp:irc-gep-variable (literal:ltv-global)
                                        (list (%size_t 0) (%i64 index))
@@ -867,6 +866,7 @@
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:single-float-p-instruction) return-value successors abi function-info)
+  (declare (ignore function-info abi return-value))
   (cmp:compile-tag-check (in (first (cleavir-ir:inputs instruction)))
                          cmp:+immediate-mask+ cmp:+single-float-tag+
                          (first successors) (second successors)))
@@ -880,7 +880,7 @@
 
 (defmethod translate-branch-instruction
     ((instruction cc-mir:headerq-instruction) return-value successors abi function-info)
-  (declare (ignore return-value outputs abi function-info))
+  (declare (ignore return-value abi function-info))
   (cmp:compile-header-check
    (cc-mir:header-value-min-max instruction)
    (in (first (cleavir-ir:inputs instruction))) (first successors) (second successors)))
@@ -896,6 +896,7 @@
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:header-stamp-case-instruction)
      return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((stamp (in (first (cleavir-ir:inputs instruction))))
          (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
          (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
@@ -1060,7 +1061,9 @@
 ;;; float types. Types are more important for un/boxing.
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-less-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-less-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))
@@ -1068,7 +1071,9 @@
     (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-not-greater-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-not-greater-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))
@@ -1076,7 +1081,9 @@
     (cmp:irc-cond-br cmp (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-    ((instruction cleavir-ir:float-equal-instruction) return-value successors abi function-info)
+    ((instruction cleavir-ir:float-equal-instruction)
+     return-value successors abi function-info)
+  (declare (ignore return-value abi function-info))
   (let* ((inputs (cleavir-ir:inputs instruction))
          (x (in (first inputs)))
          (y (in (second inputs)))

@@ -93,7 +93,8 @@
      %nnmc
      (if (null method)
          (lambda (core:&va-rest args)
-           (declare (core:lambda-name %no-next-method-continuation.slow.bad))
+           (declare (core:lambda-name %no-next-method-continuation.slow.bad)
+                    (ignore args))
            (error "No next method"))
          (let ((gf (method-generic-function method)))
            (lambda (core:&va-rest args)
@@ -161,8 +162,9 @@
 (defun contf-lambda (lambda-list lambda-name decls doc body
                      call-next-method-p no-next-method-p-p)
   (let ((contsym (gensym "METHOD-CONTINUATION")))
-    (multiple-value-bind (req opt rest keyf keys aok-p aux va-p)
+    (multiple-value-bind (req opt rest keyf keys aok-p aux)
         (core:process-lambda-list lambda-list 'function)
+      (declare (ignore keys aok-p))
       (if (or (not (zerop (car opt))) rest keyf)
           `(lambda (,contsym core:&va-rest .method-args.)
              (declare (core:lambda-name ,lambda-name))
@@ -285,7 +287,7 @@ in the generic function lambda-list to the generic function lambda-list"
              fn-form)
          options)))))
 
-(defmacro defmethod (&whole whole name &rest args &environment env)
+(defmacro defmethod (name &rest args &environment env)
   (let* ((qualifiers (loop while (and args (not (listp (first args))))
 			collect (pop args)))
 	 (specialized-lambda-list
@@ -300,7 +302,7 @@ in the generic function lambda-list to the generic function lambda-list"
                             declarations documentation)
 	  (make-raw-lambda name lambda-list
                            required-parameters specializers specializedps
-                           body env qualifiers)
+                           body qualifiers)
         (multiple-value-bind (fn-form options)
             (method-lambda
              name lambda-expression env
@@ -376,7 +378,7 @@ in the generic function lambda-list to the generic function lambda-list"
 
 (defun make-raw-lambda (name lambda-list
                         required-parameters specializers specializedps
-                        body env qualifiers)
+                        body qualifiers)
   (multiple-value-bind (declarations real-body documentation)
       (sys::find-declarations body t)
     (let* ((qualifiers (if qualifiers (list qualifiers)))
@@ -487,6 +489,7 @@ in the generic function lambda-list to the generic function lambda-list"
   (let ((call-next-method-p nil)
         (next-method-p-p nil))
     (flet ((code-walker (form env)
+             (declare (ignore env))
 	     (unless (atom form)
 	       (let ((name (first form)))
 		 (case name

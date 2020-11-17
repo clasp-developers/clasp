@@ -1252,6 +1252,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "**DEFINED**" : "undefined") ).str();
 
+  bool sanitize_memory = false;
+#ifdef SANITIZE_MEMORY
+  sanitize_memory = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("SANITIZE-MEMORY"),features);
+#endif
+  if (buildReport) ss << (BF("SANITIZE_MEMORY = %s\n") % (sanitize_memory ? "**DEFINED**" : "undefined") ).str();
+
 
   bool debug_bclasp_lisp = false;
 #ifdef DEBUG_BCLASP_LISP

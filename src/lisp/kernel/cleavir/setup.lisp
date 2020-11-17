@@ -64,13 +64,20 @@ when this is t a lot of graphs will be generated.")
   (cleavir-env:variable-info *clasp-env* symbol))
 
 (defvar *fn-attributes* (make-hash-table :test #'equal))
+(defvar *fn-transforms* (make-hash-table :test #'equal))
 
 (macrolet ((set-dyn-calls (&rest names)
              `(progn ,@(loop for name in names
                              collect `(set-dyn-call ,name))))
            (set-dyn-call (name)
              `(setf (gethash ',name *fn-attributes*)
-                    (cleavir-attributes:make-attributes :dyn-call))))
+                    (cleavir-attributes:make-attributes :dyn-call)))
+           (set-dx-calls (&rest names)
+             `(progn ,@(loop for name in names
+                             collect `(set-dx-call ,name))))
+           (set-dx-call (name)
+             `(setf (gethash ',name *fn-attributes*)
+                    (cleavir-attributes:make-attributes :dx-call))))
   (set-dyn-calls
    apply funcall
    every some notevery notany
@@ -86,6 +93,34 @@ when this is t a lot of graphs will be generated.")
    ;; functions can do arbitrary things.
    map map-into merge
    cleavir-ast:map-ast-depth-first-preorder
+   cleavir-bir:map-iblocks
+   cleavir-bir:map-iblock-instructions
+   cleavir-ir:map-instructions
+   cleavir-ir:map-instructions-with-owner
+   cleavir-ir:map-instructions-arbitrary-order
+   cleavir-ir:filter-instructions
+   cleavir-ir:map-local-instructions
+   cleavir-ir:filter-local-instructions)
+  (set-dx-calls
+   core:progv-function
+   core:catch-function
+   core:funwind-protect
+   ;; FIXME: Can't do this for many things like APPLY, FUNCALL, etc.
+   ;; because we don't distinguish between *which* functional argument
+   ;; is DX.
+   every some notevery notany
+   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
+   member member-if member-if-not
+   mapc mapcar mapcan mapl maplist mapcon
+   assoc assoc-if assoc-if-not
+   rassoc rassoc-if rassoc-if-not
+   intersection nintersection adjoin
+   set-difference nset-difference
+   set-exclusive-or nset-exclusive-or subsetp union nunion
+   map map-into merge
+   cleavir-ast:map-ast-depth-first-preorder
+   cleavir-bir:map-iblocks
+   cleavir-bir:map-iblock-instructions
    cleavir-ir:map-instructions
    cleavir-ir:map-instructions-with-owner
    cleavir-ir:map-instructions-arbitrary-order
@@ -143,14 +178,16 @@ when this is t a lot of graphs will be generated.")
      (let* ((cleavir-ast (inline-ast function-name))
             (inline-status (core:global-inline-status function-name))
             (attr (or (gethash function-name *fn-attributes*)
-                      (cleavir-attributes:default-attributes))))
+                      (cleavir-attributes:default-attributes)))
+            (transforms (gethash function-name *fn-transforms*)))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :type (global-ftype function-name)
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
                       :ast cleavir-ast
-                      :attributes attr)))
+                      :attributes attr
+                      :transforms transforms)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
     ;; which is hooked up so that among other things this works.
@@ -342,17 +379,12 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *use-ast-interpreter* t)
 
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (simple-eval form env
-               (cond (core:*use-interpreter-for-eval*
-                      (lambda (form env)
-                        (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter* #'ast-interpret-form)
-                     (t #'cclasp-eval-with-env))))
-
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
+
+(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
 
 (defvar *use-cst-eval* t)
 
@@ -382,7 +414,8 @@ when this is t a lot of graphs will be generated.")
 (defmethod cmp:compiler-condition-origin
     ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
-  (ignore-errors (car (cleavir-conditions:origin condition))))
+  (let ((origin (cleavir-conditions:origin condition)))
+    (ignore-errors (if (consp origin) (car origin) origin))))
 
 (defun build-and-draw-ast (filename cst)
   (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
@@ -405,42 +438,6 @@ when this is t a lot of graphs will be generated.")
       (with-open-file (stream pn :direction :output)
         (cleavir-ir-graphviz:draw-flowchart hir stream))
       pn)))
-
-(defun draw-form-cst-hir (form)
-  "Generate a HIR graph for the form using the cst compiler"
-  (let (result)
-    (cmp::with-compiler-env ()
-      (let* ((module (cmp::create-run-time-module-for-compile)))
-        ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module module
-                           :optimize nil)
-          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-            (literal:with-rtv
-                (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-                       (cst (cst:cst-from-expression form))
-                       (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
-                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                  (setq result hir)
-                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
-    result))
-
-#-cst
-(defun draw-form-ast-hir (form)
-  "Generate a HIR graph for the form using the ast compiler"
-  (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile)))
-      ;; Link the C++ intrinsics into the module
-      (cmp::with-module (:module module
-                         :optimize nil)
-        (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-          (literal:with-rtv
-              (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-                     (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
-                     (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                     (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
-                hir)))))))
 
 (defun draw-ast (&optional (ast *ast*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))

@@ -46,6 +46,7 @@ extern "C" {
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/arguments.h>
+#include <clasp/core/lisp.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/compPackage.h>
 #include <clasp/core/package.h>
@@ -183,6 +184,7 @@ ALWAYS_INLINE void cc_pop_InvocationHistoryFrame(core::T_O* tagged_closure, Invo
   core::pop_InvocationHistoryStack(frame);
   NO_UNWIND_END();
 }
+
 
 ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object)
 {NO_UNWIND_BEGIN();

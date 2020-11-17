@@ -70,7 +70,6 @@
       `(list :name ',slot)
       (do* (output
 	    (options (rest slot))
-	    (value nil)
 	    (extra nil)
             (initfunction))
 	   ((null options)

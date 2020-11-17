@@ -309,7 +309,7 @@
           (loop repeat nreq collect (gensym "REQ-ARG")))))
 
 (defun compute-outcome
-    (generic-function method-combination methods actual-specializers &key log)
+    (generic-function method-combination methods actual-specializers)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
   ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
@@ -706,6 +706,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun force-dispatcher (generic-function)
   (let (log-output)
+    #-debug-fastgf (declare (ignore log-output))
     #+debug-fastgf
     (progn
       (if (eq (class-of generic-function) (find-class 'standard-generic-function))
@@ -801,6 +802,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
              (return-from call-history-entry-key-contains-specializers t))))
 
 (defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
+  (declare (ignorable gf))
   (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
   #+debug-long-call-history
   (when (> (length call-history) 16384)
@@ -841,8 +843,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
          (_ (gf-log "        %s%N" generic-functions))
          (unique-generic-functions (remove-duplicates generic-functions))
          (_ (gf-log "  unique-generic-functions...%N"))
-         (_ (gf-log "        %s%N" unique-generic-functions))
-         edited)
+         (_ (gf-log "        %s%N" unique-generic-functions)))
     (gf-log "   subclasses* -> %s%N" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions

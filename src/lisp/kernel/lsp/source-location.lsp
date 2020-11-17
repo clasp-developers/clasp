@@ -125,7 +125,6 @@
 - kind : A symbol (:function :method :class)
 Return the source-location for the name/kind pair"
   (labels ((fix-paths-and-make-source-locations (rels)
-             (declare (core:lambda-name 'fix-paths-and-make-source-locations))
              (let ((source-dir (translate-logical-pathname #P"source-dir:")))
                (mapcar (lambda (dir-pos)
                          (let ((dir (first dir-pos))

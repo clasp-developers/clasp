@@ -43,16 +43,17 @@
    #:*code-walker*
    #:alloca-i8
    #:inline-ast
-))
+   ))
+
+(defpackage #:clasp-cleavir-translate-bir
+  (:use #:cl))
 
 (defpackage #:cc-generate-ast)
-
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
   (:use #:common-lisp)
-  (:export 
-   #:hoist-load-time-value
+  (:export
    #:precalculated-value-ast
    #:debug-message-ast
    #:debug-break-ast
@@ -74,7 +75,9 @@
    #:debug-break
    #:precalc-value-reference-ast
    #:precalc-value-reference-ast-index
-   #:precalc-value-reference-ast-original-object
+   #:precalc-value-reference-ast-form
+   #:precalc-constant-reference-ast
+   #:precalc-constant-reference-ast-value
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
@@ -128,7 +131,7 @@
    #:setf-fdefinition-instruction
    #:throw-instruction
    #:precalc-value-instruction-index
-   #:precalc-value-instruction-original-object
+   #:precalc-value-instruction-form
    #:instruction-id
    #:vector-length-instruction
    #:displacement-instruction
@@ -150,6 +153,17 @@
    #:bind-instruction #:unwind-protect-instruction
    ))
 
+(defpackage #:clasp-cleavir-bir
+  (:use #:cl)
+  (:nicknames #:cc-bir)
+  (:shadow #:unwind-protect)
+  (:export #:precalc-value #:precalc-value-index #:precalc-constant
+           #:unwind-protect #:bind #:header-stamp-case
+           #:foreign-call-pointer #:foreign-types
+           #:defcallback #:defcallback-args
+           #:mv-foreign-call #:function-name
+           #:acas #:element-type #:simple-p #:boxed-p))
+
 (defpackage #:clasp-cleavir-ast-to-hir
   (:use #:common-lisp)
   (:export
@@ -164,7 +178,12 @@
   (:use #:common-lisp)
   (:export
    #:reduce-typeqs)
-)
+  )
+
+(defpackage #:cc-bir-to-bmir
+  (:use #:cl)
+  (:export #:reduce-module-typeqs)
+  (:export #:reduce-module-primops))
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
@@ -189,6 +208,13 @@
    #:describe-mir
    #+stealth-gids #:assign-mir-instruction-datum-ids
    ))
+
+(defpackage #:clasp-cleavir-bmir
+  (:nicknames #:cc-bmir)
+  (:shadow #:characterp #:consp #:load)
+  (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
+           #:headerq #:info)
+  (:export #:memref2 #:offset #:load #:store))
 
 (defpackage #:cleavir-ir-gml
   (:use #:common-lisp #:cleavir-ir)

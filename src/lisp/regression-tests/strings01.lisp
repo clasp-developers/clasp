@@ -19,14 +19,16 @@
 ;;; previous test does not seem to be as specified in http://www.lispworks.com/documentation/HyperSpec/Body/f_parse_.htm
 ;;; if something follows space, signal an error
 (test-expect-error parse-integer0 (multiple-value-bind (val pos)
-                                      (parse-integer "123 456"))
+                                      (parse-integer "123 456")
+                                    (declare (ignore val pos)))
                    :type parse-error)
 (test parse-integer1 (multiple-value-bind (val pos)
                          (parse-integer " 123 ")
                        (and (= val 123) (= pos 5))))
 
 (test-expect-error parse-integer2 (multiple-value-bind (val pos)
-                                      (parse-integer "   123a"))
+                                      (parse-integer "   123a")
+                                    (declare (ignore val pos)))
                    :type parse-error)
 (test parse-integer3
       (multiple-value-bind (val pos)
@@ -40,7 +42,8 @@
 
 (test-expect-error parse-integer4
       (multiple-value-bind (val pos)
-          (parse-integer " +-123 "))
+          (parse-integer " +-123 ")
+        (declare (ignore val pos)))
       :type parse-error)
 
 (test parse-integer5 (multiple-value-bind (val pos)
@@ -49,33 +52,39 @@
 
 (test-expect-error parse-integer6
       (multiple-value-bind (val pos)
-          (parse-integer "+"))
+          (parse-integer "+")
+        (declare (ignore val pos)))
       :type parse-error)
 
 (test-expect-error parse-integer7
       (multiple-value-bind (val pos)
-          (parse-integer "-"))
+          (parse-integer "-")
+        (declare (ignore val pos)))
       :type parse-error)
 
 (test-expect-error parse-integer8
       (multiple-value-bind (val pos)
-          (parse-integer ""))
+          (parse-integer "")
+        (declare (ignore val pos)))
       :type parse-error)
 
 (test parse-integer9
       (not
        (multiple-value-bind (val pos)
-           (parse-integer "+" :junk-allowed t))))
+           (parse-integer "+" :junk-allowed t)
+         (declare (ignore val pos)))))
 
 (test parse-integer10
       (not
        (multiple-value-bind (val pos)
-           (parse-integer "-" :junk-allowed t))))
+           (parse-integer "-" :junk-allowed t)
+         (declare (ignore val pos)))))
 
 (test parse-integer11
       (not
        (multiple-value-bind (val pos)
-           (parse-integer "" :junk-allowed t))))
+           (parse-integer "" :junk-allowed t)
+         (declare (ignore val pos)))))
 
 (test type-of-string (or (subtypep (type-of "abc") '(simple-array base-char (3)))
                          (subtypep (type-of "abc") '(simple-array character (3)))))

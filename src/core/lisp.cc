@@ -797,6 +797,7 @@ List_sp Lisp_O::processes() const {
   return cl__copy_list(this->_Roots._ActiveThreads);
 }
 
+
 void Lisp_O::push_default_special_binding(Symbol_sp symbol, T_sp form)
 {
   WITH_READ_WRITE_LOCK(this->_Roots._DefaultSpecialBindingsMutex);
