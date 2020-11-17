@@ -126,7 +126,7 @@
           (cleavir-policy:policy-value
            (cleavir-env:policy (cleavir-env:optimize-info env))
            'clasp-cleavir::insert-type-checks))
-        (required (cleavir-ctype:required ctype system)))
+        (required (cleavir-ctype:values-required ctype system)))
     (if (or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
             (null required)) ; nothing to check/top type
         ;; We don't even generate an m-v-extract, because while semantically

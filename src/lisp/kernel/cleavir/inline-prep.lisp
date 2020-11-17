@@ -116,7 +116,7 @@
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
                (fix-inline-ast
-                (cleavir-primop:cst-to-ast ,function-form)))))))
+                (cleavir-primop:cst-to-ast ,function-form t)))))))
 
 (export '(*code-walker*))
 
