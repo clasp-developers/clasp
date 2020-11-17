@@ -626,6 +626,7 @@
   (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
       whole
       `(svref/no-bounds-check ,vector ,index)))
+#+(or)
 (define-cleavir-compiler-macro (setf svref)
     (&whole whole value vector index &environment env)
   (if (environment-has-policy-p env 'core::insert-array-bounds-checks)
