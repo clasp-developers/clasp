@@ -92,10 +92,23 @@
    mapc mapcar mapcan mapl maplist mapcon
    assoc assoc-if assoc-if-not
    rassoc rassoc-if rassoc-if-not
+   remove remove-if remove-if-not
+   delete delete-if delete-if-not
+   reduce
+   remove-duplicates
+   delete-duplicates
+   substitute substitute-if substitute-if-not
+   nsubstitute nsubstitute-if nsubstitute-if-not
+   count count-if count-if-not
+   find find-if find-if-not
+   position position-if position-if-not
+   mismatch search
+   sort stable-sort
    intersection nintersection adjoin
    set-difference nset-difference
    set-exclusive-or nset-exclusive-or subsetp union nunion
    map map-into merge
+   maphash
    cleavir-ast:map-ast-depth-first-preorder
    cleavir-bir:map-iblocks
    cleavir-bir:map-iblock-instructions))
