@@ -371,8 +371,26 @@ Compile a lisp source file into an LLVM module."
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
+(defun compile-file-output-module-to-faso (module output-file input-file
+                                           &key position (output-bitcode t))
+  "Generate a faso file from the module"
+  (when output-bitcode
+    (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                    :output-file output-file :output-type :bitcode)))
+      (ensure-directories-exist temp-bitcode-file)
+      (when *compile-verbose*
+        (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+      (output-bitcode module (core:coerce-to-filename temp-bitcode-file))))
+  (when *compile-verbose*
+    (bformat t "Writing faso file to: %s%N" output-file)
+    (finish-output))
+  (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
+                                         'llvm-sys:code-gen-file-type-object-file
+                                         (reloc-model))))
+    (core:write-faso output-file (list stream) :start-object-id position)))
+
 (defun compile-file-output-module (module output-file output-type output-path input-file type
-                                   &key position)
+                                   &key position (output-bitcode t))
   (when (null output-path)
     (error "The output-path is nil for input filename ~a~%" input-file))
   (ensure-directories-exist output-path)
@@ -393,19 +411,8 @@ Compile a lisp source file into an LLVM module."
              (when (eq type :kernel)
                (output-kernel-fasl output-file temp-bitcode-file :object)))))
         ((eq output-type :faso)
-         (let ((temp-bitcode-file (compile-file-pathname input-file
-                                                         :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (when *compile-verbose*
-             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (when *compile-verbose*
-             (bformat t "Writing faso file to: %s%N" output-file)
-             (finish-output))
-           (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
-                                                  'llvm-sys:code-gen-file-type-object-file
-                                                  (reloc-model))))
-             (core:write-faso output-file (list stream) :start-object-id position))))
+         (compile-file-output-module-to-faso module output-file input-file
+                                             :position position :output-bitcode output-bitcode))
         ((eq output-type :bitcode)
          (when *compile-verbose*
            (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))

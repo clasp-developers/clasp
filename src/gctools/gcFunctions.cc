@@ -1400,6 +1400,15 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
 #endif
   if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s") % USE_COMPILE_FILE_PARALLEL);
+
+  bool force_startup_external_linkage = true;
+#if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
+  force_startup_external_linkage = false;
+  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_Nil<core::T_O>());
+#else
+  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+#endif
+  if (buildReport) ss << (BF("FORCE_STARTUP_EXTERNAL_LINKAGE = %s") % FORCE_STARTUP_EXTERNAL_LINKAGE);
   
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls

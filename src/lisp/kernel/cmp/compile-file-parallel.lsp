@@ -462,4 +462,4 @@ Each bitcode filename will contain the form-index.")
 
 (eval-when (:load-toplevel)
   (setf *compile-file-parallel* cmp:*use-compile-file-parallel*
-        *generate-faso* cmp:*use-compile-file-parallel*))
+        *generate-faso* (or *generate-faso* cmp:*use-compile-file-parallel*)))

@@ -173,7 +173,9 @@ VALID_OPTIONS = [
     #   This is good for development.
     # Default = "object"
     "CLASP_BUILD_MODE",
-    # Use compile-file-praallel once everything is built - by default this is False
+    # Use external-linkage for StartUp functions
+    "FORCE_STARTUP_EXTERNAL_LINKAGE",
+    # Use compile-file-parallel once everything is built - by default this is False
     "USE_COMPILE_FILE_PARALLEL",
     # Tell clasp that GC_enumerate_reachable_objects_inner is available
     "BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE",
@@ -953,6 +955,14 @@ def configure(cfg):
     else:
         cfg.define("USE_COMPILE_FILE_PARALLEL",0) 
         cfg.env.USE_COMPILE_FILE_PARALLEL = False
+
+    log.debug("cfg.env['FORCE_STARTUP_EXTERNAL_LINKAGE'] = %s", cfg.env['FORCE_STARTUP_EXTERNAL_LINKAGE'])
+    if ((not 'FORCE_STARTUP_EXTERNAL_LINKAGE' in cfg.env) or cfg.env['FORCE_STARTUP_EXTERNAL_LINKAGE'] ):
+        cfg.define("FORCE_STARTUP_EXTERNAL_LINKAGE",1) 
+        cfg.env.FORCE_STARTUP_EXTERNAL_LINKAGE = True
+    else:
+        cfg.define("FORCE_STARTUP_EXTERNAL_LINKAGE",0) 
+        cfg.env.FORCE_STARTUP_EXTERNAL_LINKAGE = False
 
     cur_clang_version = run_llvm_config(cfg, "--version")
     log.debug("cur_clang_version = %s", cur_clang_version)
