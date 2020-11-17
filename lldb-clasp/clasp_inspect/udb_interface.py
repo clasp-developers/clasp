@@ -11,7 +11,7 @@ global_udb_interface = None
 class UdbInterface(Interface):
     def __init__(self):
         global global_Structs
-        print "In clasp_inspect for UdbInterface"
+        print( "In clasp_inspect for UdbInterface")
         filename = "/tmp/clasp-layout.py"
         with open(filename, "rb") as source_file:
             code = compile(source_file.read(), filename, "exec")
@@ -21,11 +21,11 @@ class UdbInterface(Interface):
         self._verbose = False
         
     def print_(self,msg):
-        print msg
+        print(msg)
 
     def dbg_print(self,msg):
         if (self._verbose):
-            print msg
+            print(msg)
 
     def read_memory(self,address,len):
         i = gdb.inferiors()[0]
@@ -60,13 +60,13 @@ def inspect(args):
     global global_udb_interface
     tptr = arg_to_tptr(global_udb_interface,args)
     obj = translate_tagged_ptr(global_udb_interface,tptr)
-    print obj.__repr__()
+    print( obj.__repr__())
     return obj
 
 def do_udb_init_module():
     global global_udb_interface
-    print "In do__init_module"
+    print( "In do__init_module")
     global_udb_interface = UdbInterface()
-    print "Leaving do_lldb_init_module with global_udb_interface = %s" % global_udb_interface
+    print( "Leaving do_lldb_init_module with global_udb_interface = %s" % global_udb_interface)
     
     

@@ -1,7 +1,7 @@
 import os
 
 dir = os.path.dirname(os.path.expanduser(__file__))
-print "dir = %s" % dir
+print( "dir = %s" % dir)
 
 sys.path.insert(0,dir)
 
