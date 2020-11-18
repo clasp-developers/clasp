@@ -44,7 +44,6 @@
                (:file "hir-to-mir")
                (:file "ir")
                (:file "gml-drawing")
-               (:file "landing-pad")
                ;;		 (:file "arguments")
                (:file "closure-optimize")
                (:file "translate")

@@ -330,7 +330,6 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/hir-to-mir",
     "src/lisp/kernel/cleavir/ir",
     "src/lisp/kernel/cleavir/gml-drawing",
-    "src/lisp/kernel/cleavir/landing-pad",
     "src/lisp/kernel/cleavir/closure-optimize",
     "src/lisp/kernel/cleavir/translate",
     "src/lisp/kernel/cleavir/translate-instruction",
