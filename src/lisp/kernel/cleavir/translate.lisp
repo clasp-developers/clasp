@@ -1,21 +1,5 @@
 (cl:in-package #:clasp-cleavir)
 
-(defvar *debug-cleavir* nil
-  "controls if graphs are generated as forms are being compiled.")
-(defvar *debug-cleavir-literals* nil
-  "controls if cleavir debugging is carried out on literal compilation. 
-when this is t a lot of graphs will be generated.")
-
-(defvar *eliminate-typeq* t
-  "Controls whether the typew/typeq elimination phase of the compiler
-  runs.")
-
-;;; Clasp cleavir entry point for CL:COMPILE.
-
-;; Set this to T to watch cclasp-compile* run
-(defvar *cleavir-compile-verbose* nil)
-(export '*cleavir-compile-verbose*)
-
 ;;; So that non-cst-client can inherit behaviour
 (defclass clasp-eclector-client-mixin ()())
 
@@ -23,7 +7,8 @@ when this is t a lot of graphs will be generated.")
 
 ;; singleton- don't bother with constructor
 (defvar *cst-client*
-  (locally (declare (notinline make-instance)) (make-instance 'clasp-cst-client)))
+  (locally (declare (notinline make-instance))
+    (make-instance 'clasp-cst-client)))
 
 (defmethod eclector.parse-result:source-position
     ((client clasp-cst-client) stream)
@@ -42,12 +27,10 @@ when this is t a lot of graphs will be generated.")
                 (if (keywordp key) key (intern (string key) :keyword))
                 value)))
 
-(defmethod eclector.reader:make-structure-instance ((client clasp-eclector-client-mixin) name initargs)
+(defmethod eclector.reader:make-structure-instance
+    ((client clasp-eclector-client-mixin) name initargs)
   ;;; see discussion in https://github.com/s-expressionists/Eclector/issues/63
   ;;; initargs might be string-designators, not keywords, need to transform
   (core::make-structure
    name
    (map-make-structure-arguments initargs)))
-
-(export '(open-debug-log close-debug-log))
-  
