@@ -47,7 +47,6 @@
                ;;		 (:file "arguments")
                (:file "closure-optimize")
                (:file "translate")
-               (:file "translate-instruction")
                ;; BIR
                (:file "translation-environment")
                (:file "bir")

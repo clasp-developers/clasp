@@ -332,7 +332,6 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/gml-drawing",
     "src/lisp/kernel/cleavir/closure-optimize",
     "src/lisp/kernel/cleavir/translate",
-    "src/lisp/kernel/cleavir/translate-instruction",
     "src/lisp/kernel/cleavir/translation-environment",
     "src/lisp/kernel/cleavir/bir",
     "src/lisp/kernel/cleavir/bmir",

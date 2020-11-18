@@ -323,7 +323,6 @@
  "src/lisp/kernel/cleavir/mir" "src/lisp/kernel/cleavir/hir-to-mir"
  "src/lisp/kernel/cleavir/ir" "src/lisp/kernel/cleavir/gml-drawing"
  "src/lisp/kernel/cleavir/closure-optimize" "src/lisp/kernel/cleavir/translate"
- "src/lisp/kernel/cleavir/translate-instruction"
  "src/lisp/kernel/cleavir/translation-environment"
  "src/lisp/kernel/cleavir/bir" "src/lisp/kernel/cleavir/bmir"
  "src/lisp/kernel/cleavir/bir-to-bmir"
