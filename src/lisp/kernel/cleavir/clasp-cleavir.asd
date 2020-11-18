@@ -15,8 +15,7 @@
                :cleavir-compilation-policy
                :cleavir-conditions
                :cleavir-attributes
-               :cleavir-ast-transformations
-               :cleavir-escape)
+               :cleavir-ast-transformations)
   :serial t
   :components ((:file "packages")
                (:file "cleavir-fixups-and-hacks")

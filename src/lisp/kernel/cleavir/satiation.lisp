@@ -152,7 +152,6 @@
   (clos:satiate #'cleavir-compilation-policy:compute-policy-quality
                 #+(or)
                 '((eql cleavir-kildall-type-inference:insert-type-checks) cons clasp-global-environment)
-                '((eql cleavir-escape:trust-dynamic-extent) cons clasp-global-environment)
                 '((eql core::insert-array-bounds-checks) cons clasp-global-environment)
                 '((eql save-register-args) cons clasp-global-environment)
                 '((eql do-type-inference) cons clasp-global-environment)
