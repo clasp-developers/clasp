@@ -12,18 +12,11 @@
                :cleavir-ast-to-bir
                :cleavir-bir-transformations
                :cleavir-cst-to-ast
-               :cleavir-ir
                :cleavir-compilation-policy
                :cleavir-conditions
                :cleavir-attributes
-               :cleavir-ast-to-hir
                :cleavir-ast-transformations
-               :cleavir-escape
-               :cleavir-hir-transformations
-               :cleavir-partial-inlining
-               :cleavir-remove-useless-instructions
-               :cleavir-hir-to-mir
-               :cleavir-basic-blocks)
+               :cleavir-escape)
   :serial t
   :components ((:file "packages")
                (:file "cleavir-fixups-and-hacks")
