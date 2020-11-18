@@ -215,7 +215,6 @@ cleavir_file_list = [
     "src/lisp/kernel/contrib/Cleavir/CST-to-AST/convert-cst",
     "src/lisp/kernel/contrib/Cleavir/CST-to-AST/cst-to-ast",
     "src/lisp/kernel/cleavir/packages",
-    "src/lisp/kernel/cleavir/cleavir-fixups-and-hacks",
     "src/lisp/kernel/cleavir/system",
     "src/lisp/kernel/cleavir/policy",
     "src/lisp/kernel/cleavir/reader",

@@ -18,7 +18,6 @@
                :cleavir-ast-transformations)
   :serial t
   :components ((:file "packages")
-               (:file "cleavir-fixups-and-hacks")
                (:file "system")
                (:file "policy")
                (:file "reader")
