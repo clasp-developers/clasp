@@ -458,9 +458,9 @@
 ;;;
 
 (defmethod cleavir-cst-to-ast:convert-special-binding
-    (variable-cst value-ast next-thunk env (system clasp-cleavir:clasp))
+    (variable-cst value-ast next-ast env (system clasp-cleavir:clasp))
   (make-instance 'cc-ast:bind-ast
     :name-ast (cleavir-cst-to-ast:convert-constant variable-cst env system)
     :value-ast value-ast
-    :body-ast (funcall next-thunk)
+    :body-ast next-ast
     :origin (cst:source variable-cst)))
