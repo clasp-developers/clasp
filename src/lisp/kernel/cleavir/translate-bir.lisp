@@ -1034,6 +1034,71 @@
     (cmp::potentially-save-module)
     (xep-function (find-llvm-function-info bir))))
 
+(defun conversion-error-handler (condition)
+  ;; Resignal the condition to see if anything higher up wants to handle it.
+  ;; If not, continue compilation by replacing the errant form with a form
+  ;; that will signal an error if it's reached at runtime.
+  ;; The nature of this form is a bit tricky because it can't just include
+  ;; the original condition, if we're in COMPILE-FILE - conditions aren't
+  ;; necessarily dumpable, and nor is the source.
+  ;; For now we just assume we're in COMPILE-FILE.
+  (signal condition)
+  (let* ((cst (cleavir-cst-to-ast:cst condition))
+         (form (cst:raw cst))
+         (origin (cst:source cst)))
+    (invoke-restart 'cleavir-cst-to-ast:substitute-cst
+                    (cst:reconstruct
+                     `(error 'cmp:compiled-program-error
+                             :form ,(with-standard-io-syntax
+                                      (write-to-string form
+                                                       :escape t :pretty t
+                                                       :circle t :array nil))
+                             :origin ',(origin-spi origin)
+                             :condition ,(princ-to-string condition))
+                     cst clasp-cleavir:*clasp-system* :default-source origin))))
+
+(defun cst->ast (cst &optional (env clasp-cleavir::*clasp-env*))
+  "Compile a cst into an AST and return it.
+Does not hoist.
+COMPILE might call this with an environment in ENV.
+COMPILE-FILE will use the default *clasp-env*."
+  (handler-bind
+      ((cleavir-env:no-variable-info
+         (lambda (condition)
+           (cmp:warn-undefined-global-variable
+            (origin-spi (cleavir-env:origin condition))
+            (cleavir-environment:name condition))
+           (invoke-restart 'cleavir-cst-to-ast:consider-special)))
+       (cleavir-env:no-function-info
+         (lambda (condition)
+           (cmp:register-global-function-ref
+            (cleavir-environment:name condition)
+            (origin-spi (cleavir-env:origin condition)))
+           (invoke-restart 'cleavir-cst-to-ast:consider-global)))
+       (cleavir-cst-to-ast:compiler-macro-expansion-error
+         (lambda (condition)
+           (warn 'cmp:compiler-macro-expansion-error-warning
+                 :origin (origin-spi (cst:source (cleavir-cst-to-ast:cst condition)))
+                 :condition condition)
+           (continue condition)))
+       ((and cleavir-cst-to-ast:compilation-program-error
+             ;; If something goes wrong evaluating an eval-when,
+             ;; we just want a normal error signal-
+             ;; we can't recover and keep compiling.
+             (not cleavir-cst-to-ast:eval-error))
+         #'conversion-error-handler))
+    (cleavir-cst-to-ast:cst-to-ast cst env clasp-cleavir:*clasp-system*)))
+
+;;; Given an AST that may not be a function-ast, wrap it
+;;; in a function AST. Useful for the pattern of
+;;; (eval form) = (funcall (compile nil `(lambda () ,form)))
+;;; as this essentially does the lambda wrap.
+(defun wrap-ast (ast)
+  (cleavir-ast:make-function-ast
+   ast nil
+   :origin (cleavir-ast:origin ast)
+   :policy (cleavir-ast:policy ast)))
+
 (defun ast->bir (ast system)
   (cleavir-ast-to-bir:compile-toplevel ast system))
 
@@ -1071,7 +1136,7 @@
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-cst-to-ast:*compiler* 'cl:compile)
          (cst (cst:cst-from-expression form))
-         (ast (clasp-cleavir::cst->ast cst env)))
+         (ast (cst->ast cst env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
         (literal:with-rtv
@@ -1090,15 +1155,15 @@
 
 (defun compile-form (form &optional (env clasp-cleavir::*clasp-env*))
   (let* ((cst (cst:cst-from-expression form))
-         (pre-ast (clasp-cleavir::cst->ast cst env))
-         (ast (clasp-cleavir::wrap-ast pre-ast)))
+         (pre-ast (cst->ast cst env))
+         (ast (wrap-ast pre-ast)))
     (translate-ast ast)))
 
 (defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
   (let ((cmp:*default-condition-origin* (origin-spi (cst:source cst))))
     (literal:with-top-level-form
-        (let* ((pre-ast (clasp-cleavir::cst->ast cst env))
-               (ast (clasp-cleavir::wrap-ast pre-ast)))
+        (let* ((pre-ast (cst->ast cst env))
+               (ast (wrap-ast pre-ast)))
           (translate-ast ast :linkage cmp:*default-linkage*)))))
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)

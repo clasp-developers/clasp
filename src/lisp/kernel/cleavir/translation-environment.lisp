@@ -24,6 +24,19 @@
   (or (gethash iblock *tags*)
       (error "BUG: No tag for iblock: ~a" iblock)))
 
+(defun datum-name-as-string (datum)
+  ;; We need to write out setf names as well as symbols, in a simple way.
+  ;; "simple" means no pretty printer, for a start.
+  ;; Using SYMBOL-NAME like this is about 25x faster than using write-to-string,
+  ;; and this function is called rather a lot so it's nice to make it faster.
+  (let ((name (cleavir-bir:name datum)))
+    (if (symbolp name)
+        (symbol-name name)
+        (write-to-string name
+                         :escape nil
+                         :readably nil
+                         :pretty nil))))
+
 (defun bind-variable (var)
   (if (cleavir-bir:immutablep var)
       ;; This should get initialized eventually.
@@ -32,11 +45,11 @@
             (ecase (cleavir-bir:extent var)
               ((:local :dynamic)
                ;; just an alloca
-               (cmp:alloca-t*))
+               (cmp:alloca-t* (datum-name-as-string var)))
               ((:indefinite)
                ;; make a cell
                (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-                "cc_makeCell" nil ""))))))
+                "cc_makeCell" nil (datum-name-as-string var)))))))
 
 ;; Return either the value or cell of a closed over variable depending
 ;; on whether it is immutable so we can close over the memory location

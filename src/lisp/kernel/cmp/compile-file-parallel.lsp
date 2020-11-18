@@ -230,9 +230,9 @@ multithreaded performance that we should explore."
                     (pre-ast
                       (if cmp::*debug-compile-file*
                           (clasp-cleavir::compiler-time
-                           (clasp-cleavir::cst->ast cst))
-                          (clasp-cleavir::cst->ast cst)))
-                    (ast (clasp-cleavir::wrap-ast pre-ast)))
+                           (clasp-cleavir-translate-bir::cst->ast cst))
+                          (clasp-cleavir-translate-bir::cst->ast cst)))
+                    (ast (clasp-cleavir-translate-bir::wrap-ast pre-ast)))
                (declare (ignore _))
                (let ((ast-job (make-ast-job :ast ast
                                             :environment environment
