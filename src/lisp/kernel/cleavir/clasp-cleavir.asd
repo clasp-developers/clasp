@@ -29,14 +29,14 @@
                (:file "setup")
                (:file "ir")
                ;;		 (:file "arguments")
-               (:file "translate")
+               (:file "compile-file-client")
                ;; BIR
                (:file "translation-environment")
                (:file "bir")
                (:file "bmir")
                (:file "bir-to-bmir")
-               (:file "landing-pad-bir")
-               (:file "translate-bir")
+               (:file "landing-pad")
+               (:file "translate")
                ;; end BIR
                ;;                (:file "satiation")
                (:file "fixup-eclector-readtables")
