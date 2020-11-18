@@ -37,7 +37,6 @@
                (:file "toplevel")
                (:file "setup")
                (:file "ir")
-               (:file "gml-drawing")
                ;;		 (:file "arguments")
                (:file "translate")
                ;; BIR

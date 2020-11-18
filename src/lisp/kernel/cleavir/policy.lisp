@@ -110,23 +110,6 @@
 
 ;;;
 
-(defun has-policy-p (instruction quality)
-  (cleavir-policy:policy-value (cleavir-ir:policy instruction) quality))
-
 (defun environment-has-policy-p (environment quality)
   (cleavir-policy:policy-value
    (cleavir-env:policy (cleavir-env:optimize-info environment)) quality))
-
-;;; Kildall can only be done on whole functions, due to how control flow in
-;;; HIR works. But do not affect the top level enter instruction most of the time.
-;;; So we have this helper that sees if the policy is in place anywhere at all in
-;;; the function.
-;;; KLUDGE. It should be easier to limit optimizations to lexical regions.
-
-(defun policy-anywhere-p (initial-instruction quality)
-  (cleavir-ir:map-instructions-arbitrary-order
-   (lambda (instruction)
-     (when (has-policy-p instruction quality)
-       (return-from policy-anywhere-p t)))
-   initial-instruction)
-  nil)

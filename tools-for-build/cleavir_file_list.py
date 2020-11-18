@@ -323,7 +323,6 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/toplevel",
     "src/lisp/kernel/cleavir/setup",
     "src/lisp/kernel/cleavir/ir",
-    "src/lisp/kernel/cleavir/gml-drawing",
     "src/lisp/kernel/cleavir/translate",
     "src/lisp/kernel/cleavir/translation-environment",
     "src/lisp/kernel/cleavir/bir",

@@ -318,7 +318,7 @@
  "src/lisp/kernel/cleavir/convert-special"
  "src/lisp/kernel/cleavir/ast-interpreter" "src/lisp/kernel/cleavir/toplevel"
  "src/lisp/kernel/cleavir/setup" "src/lisp/kernel/cleavir/ir"
- "src/lisp/kernel/cleavir/gml-drawing" "src/lisp/kernel/cleavir/translate"
+ "src/lisp/kernel/cleavir/translate"
  "src/lisp/kernel/cleavir/translation-environment"
  "src/lisp/kernel/cleavir/bir" "src/lisp/kernel/cleavir/bmir"
  "src/lisp/kernel/cleavir/bir-to-bmir"

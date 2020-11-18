@@ -94,13 +94,7 @@ when this is t a lot of graphs will be generated.")
    map map-into merge
    cleavir-ast:map-ast-depth-first-preorder
    cleavir-bir:map-iblocks
-   cleavir-bir:map-iblock-instructions
-   cleavir-ir:map-instructions
-   cleavir-ir:map-instructions-with-owner
-   cleavir-ir:map-instructions-arbitrary-order
-   cleavir-ir:filter-instructions
-   cleavir-ir:map-local-instructions
-   cleavir-ir:filter-local-instructions)
+   cleavir-bir:map-iblock-instructions)
   (set-dx-calls
    core:progv-function
    core:catch-function
@@ -120,13 +114,7 @@ when this is t a lot of graphs will be generated.")
    map map-into merge
    cleavir-ast:map-ast-depth-first-preorder
    cleavir-bir:map-iblocks
-   cleavir-bir:map-iblock-instructions
-   cleavir-ir:map-instructions
-   cleavir-ir:map-instructions-with-owner
-   cleavir-ir:map-instructions-arbitrary-order
-   cleavir-ir:filter-instructions
-   cleavir-ir:map-local-instructions
-   cleavir-ir:filter-local-instructions))
+   cleavir-bir:map-iblock-instructions))
 
 (defun treat-as-special-operator-p (name)
   (cond
@@ -422,23 +410,6 @@ when this is t a lot of graphs will be generated.")
     (cleavir-ast-graphviz:draw-ast ast filename)
     ast))
 
-(defun build-and-draw-hir (filename cst)
-  (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env*))
-	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ir-graphviz:draw-flowchart hir stream))))
-
-(defun quick-hir-pathname (&optional (file-name-modifier "hir"))
-  (when *debug-cleavir*
-    (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
-
-(defun quick-draw-hir (hir &optional (file-name-modifier "hir"))
-  (when *debug-cleavir*
-    (let ((pn (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
-      (with-open-file (stream pn :direction :output)
-        (cleavir-ir-graphviz:draw-flowchart hir stream))
-      pn)))
-
 (defun draw-ast (&optional (ast *ast*) filename)
   (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
   (let* ((filename (merge-pathnames filename))
@@ -447,77 +418,3 @@ when this is t a lot of graphs will be generated.")
     (with-open-file (stream filename :direction :output)
       (cleavir-ast-graphviz:draw-ast ast dot-pathname))
     (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))
-
-(defun draw-hir (&optional (hir *hir*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/hir"))))
-  (let* ((filename (merge-pathnames filename))
-         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream dot-pathname :direction :output)
-      (cleavir-ir-graphviz:draw-flowchart hir stream))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring filename)))
-    (ext:system (format nil "open -n ~a" (namestring pdf-pathname)))))
-
-(defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
-  (with-open-file (stream filename :direction :output)
-    (cleavir-ir-graphviz:draw-flowchart mir stream))
-  (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
-  (ext:system "open -n /tmp/mir.eps"))
-
-(defvar *hir-single-step* nil)
-(defun hir-single-step (&optional (on t))
-  (setq *hir-single-step* on))
-
-
-(define-condition continue-hir (condition) ())
-
-(defun do-continue-hir ()
-  (format t "Continuing processing forms~%")
-  (signal 'continue-hir))
-
-(defun dump-hir (initial-instruction &optional (stream t))
-  (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
-        initials)
-    (cleavir-ir:map-instructions
-     (lambda (instr)
-       (when (typep instr 'cleavir-ir:enter-instruction)
-         (push instr initials))) initial-instruction)
-    (dolist (procedure-initial initials)
-      (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
-      (let ((basic-blocks (remove procedure-initial
-                                  all-basic-blocks
-                                  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
-        (dolist (bb basic-blocks)
-          (with-accessors ((first cleavir-basic-blocks:first-instruction)
-                           (last cleavir-basic-blocks:last-instruction)
-                           (owner cleavir-basic-blocks:owner))
-              bb
-            (format stream "-------------------basic-block owner: ~a~%" 
-                    (cc-mir:describe-mir owner))
-            (loop for instruction = first
-               then (first (cleavir-ir:successors instruction))
-               until (eq instruction last)
-               do (format stream "~a~%" (cc-mir:describe-mir instruction)))
-            (format stream "~a~%" (cc-mir:describe-mir last))))))))
-
-;;; These should be set up in Cleavir code
-;;; Remove them once beach implements them
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplaca-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplacd-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
-
-
-
-(setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
-            (fdefinition 'core:call-with-variable-bound))
-
-#++
-(defmacro cleavir-primop:call-with-variable-bound (symbol value thunk)
-  `(clasp-cleavir-hir:multiple-value-foreign-call-instruction "call_with_variable_bound" ,symbol ,value ,thunk))

@@ -79,27 +79,6 @@
                 :direct-superclasses direct-superclasses
                 arguments))
        ',name))
-
-
-
-  (define-stealth-mixin secret-instruction-id () cleavir-ir:instruction
-                        ((%gid :initform 0 :accessor instruction-gid)))
-
-  (define-stealth-mixin secret-datum-id () cleavir-ir:datum
-                        ((%gid :initform 0 :accessor datum-gid)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Add labels to graphviz drawings
-;;;
-
-  (defmethod cleavir-ir-graphviz:label :around (instr)
-             (with-output-to-string (s)
-               (format s "~a:~a" (call-next-method) (instruction-gid instr))))
-
-  (defmethod cleavir-ir-graphviz::name :around (datum)
-             (with-output-to-string (s)
-               (format s "~a:~a" (call-next-method) (datum-gid datum))))
   )
 
 
