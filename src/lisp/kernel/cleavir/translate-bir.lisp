@@ -1088,6 +1088,12 @@
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
 
+(defun compile-form (form &optional (env clasp-cleavir::*clasp-env*))
+  (let* ((cst (cst:cst-from-expression form))
+         (pre-ast (clasp-cleavir::cst->ast cst env))
+         (ast (clasp-cleavir::wrap-ast pre-ast)))
+    (translate-ast ast)))
+
 (defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
   (let ((cmp:*default-condition-origin* (origin-spi (cst:source cst))))
     (literal:with-top-level-form
