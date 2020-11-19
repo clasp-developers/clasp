@@ -14,12 +14,9 @@
    #:literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
-   #:*use-type-inference*
    #:cleavir-compile-eval
    #:compile-cst-or-form
    #:clasp
-   #:invoke-instruction
-   #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:*debug-final-gml*
    #:*debug-cleavir*
@@ -30,10 +27,8 @@
    #:unsafe-foreign-call-pointer
    #:datum-gid
    #:create-landing-pad
-   #:translate-datum
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
-   #:optimize-stack-enclose
    #:cleavir-compile
    #:cleavir-compile-file
    #:cclasp-compile-in-env
