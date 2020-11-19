@@ -41,14 +41,14 @@
 ;; Set up the cmp:*CLEAVIR-COMPILE-HOOK* so that COMPILE uses Cleavir
 ;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-hook* 'clasp-cleavir-translate-bir::bir-compile))
+  (setq cmp:*cleavir-compile-hook* 'bir-compile))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the cmp:*CLEAVIR-COMPILE-FILE-HOOK* so that COMPILE-FILE uses Cleavir
 ;;
 (eval-when (:execute :load-toplevel)
-  (setq cmp:*cleavir-compile-file-hook* 'clasp-cleavir-translate-bir::bir-loop-read-and-compile-file-forms))
+  (setq cmp:*cleavir-compile-file-hook* 'bir-loop-read-and-compile-file-forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

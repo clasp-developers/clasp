@@ -1,4 +1,4 @@
-(in-package #:clasp-cleavir-translate-bir)
+(in-package #:clasp-cleavir)
 
 ;;;; Variables and accessors used in the translation process.
 ;;;; In a separate file because translate-bir and landing-pad-bir both need

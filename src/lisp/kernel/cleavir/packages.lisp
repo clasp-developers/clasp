@@ -8,7 +8,7 @@
 
 (defpackage #:clasp-cleavir
   (:use #:common-lisp #:core)
-  (:nicknames #:cc)
+  (:nicknames #:cc #:clasp-cleavir-translate-bir)
   (:export
    #:*use-cst*
    #:literal
@@ -44,9 +44,6 @@
    #:alloca-i8
    #:inline-ast
    ))
-
-(defpackage #:clasp-cleavir-translate-bir
-  (:use #:cl))
 
 (defpackage #:cc-generate-ast)
 

@@ -1,4 +1,4 @@
-(in-package :clasp-cleavir-translate-bir)
+(in-package :clasp-cleavir)
 
 ;;; When we perform an invocation, we can guess whether there is any possibility that we
 ;;; will actually handle any exception, or if we just need to clean up (if there is any cleanup).

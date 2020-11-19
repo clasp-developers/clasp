@@ -1,4 +1,4 @@
-(in-package #:clasp-cleavir-translate-bir)
+(in-package #:clasp-cleavir)
 
 ;;; Backend information associated with a BIR function.
 (defclass llvm-function-info ()

@@ -489,7 +489,7 @@
   (let* (;; Make sure we convert to ast without file compilation
          ;; semantics.
          (cleavir-cst-to-ast:*compiler* 'cl:eval)
-         (ast (clasp-cleavir-translate-bir::cst->ast cst env)))
+         (ast (cst->ast cst env)))
     (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
