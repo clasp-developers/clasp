@@ -1655,6 +1655,34 @@ size_t lisp_badge(T_sp object) {
 }
 
 
+CL_DEFUN size_t core__get_badge(T_sp object)
+{
+  return lisp_badge(object);
+}
+
+CL_DEFUN void core__set_badge(T_sp object, size_t badge)
+{
+  if (object.consp()) {
+#ifdef USE_BOEHM
+    object.rawRef_() = (core::T_O*)badge;
+    return;
+#else
+    // USE_MPS
+# ifdef MPS_CONS_AWL_POOL
+    SIMPLE_ERROR(BF("Cant set badge for MPS_CONS_AWL_POOL"));
+    return (size_t)object.unsafe_cons();
+# else
+    (size_t)object.unsafe_cons()->_badge = badge;
+    return
+# endif
+#endif    
+  }
+  gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
+  header->_header_badge = badge;
+}
+
+
+
 size_t lisp_random()
 {
   return my_thread->random();
