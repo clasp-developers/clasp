@@ -1,4 +1,4 @@
-(in-package :cc-generate-ast)
+(in-package #:clasp-cleavir)
 
 #-cst
 (defmethod cleavir-generate-ast:convert-code (lambda-list body env (system clasp-cleavir:clasp) &key block-name )
