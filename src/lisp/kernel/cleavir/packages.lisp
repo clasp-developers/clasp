@@ -8,12 +8,9 @@
    #:literal
    #:%literal-index
    #:*clasp-ordinary-lambda-list-grammar*
-   #:*use-type-inference*
    #:cleavir-compile-eval
    #:compile-cst-or-form
    #:clasp
-   #:invoke-instruction
-   #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:*debug-final-gml*
    #:*debug-cleavir*
@@ -24,10 +21,8 @@
    #:unsafe-foreign-call-pointer
    #:datum-gid
    #:create-landing-pad
-   #:translate-datum
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
-   #:optimize-stack-enclose
    #:cleavir-compile
    #:cleavir-compile-file
    #:cclasp-compile-in-env
@@ -43,7 +38,6 @@
   (:nicknames #:cc-ast)
   (:use #:common-lisp)
   (:export
-   #:precalculated-value-ast
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast
@@ -62,11 +56,6 @@
    #:make-setf-fdefinition-ast
    #:debug-message
    #:debug-break
-   #:precalc-value-reference-ast
-   #:precalc-value-reference-ast-index
-   #:precalc-value-reference-ast-form
-   #:precalc-constant-reference-ast
-   #:precalc-constant-reference-ast-value
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
@@ -95,8 +84,7 @@
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:shadow #:unwind-protect)
-  (:export #:precalc-value #:precalc-value-index #:precalc-constant
-           #:unwind-protect #:bind #:header-stamp-case
+  (:export #:unwind-protect #:bind #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
@@ -137,4 +125,3 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store))
-

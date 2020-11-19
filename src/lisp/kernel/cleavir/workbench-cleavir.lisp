@@ -49,29 +49,6 @@
 (trace cleavir-cst-to-ast::convert-lambda-function)
 (trace cleavir-cst-to-ast::convert-special)
 
-(progn
-  (trace cleavir-ast-to-hir::compile-toplevel)
-  (trace cleavir-ir:make-enter-instruction)
-  (trace cleavir-ir:make-top-level-enter-instruction)
-  (trace clasp-cleavir-hir::make-named-enter-instruction)
-  (trace clasp-cleavir::compile-cst-or-form-to-mir)
-  )
-
-
-(progn
-  (trace clasp-cleavir::set-instruction-source-position)
-  (trace llvm-sys:clear-current-debug-location)
-  (trace clasp-cleavir::translate-simple-instruction)
-  (trace clasp-cleavir::layout-procedure)
-  (trace clasp-cleavir::layout-procedure*)
-  (trace clasp-cleavir::%intrinsic-call)
-  (trace clasp-cleavir::do-debug-info-source-position)
-  (trace clasp-cleavir::alloca)
-  (trace llvm-sys:create-alloca))
-
-(trace clasp-cleavir::setup-function-scope-metadata)
-
-
 (let ((clasp-cleavir::*save-compile-file-info* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
   (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print nil))
@@ -98,26 +75,8 @@ clasp-cleavir::*saved-compile-file-info*
                             (core:source-pos-info-lineno source-pos-info)
                             (core:source-pos-info-column source-pos-info))))
       (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
-    label))
+    label)))
 (cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/before.dot")
-
-(defmethod cleavir-ir-graphviz::label :around (ast)
-  (let* ((label (call-next-method))
-         (origin (cleavir-ir:origin ast)))
-    (if origin
-      (let* ((source (if (consp origin)
-                         (car origin)
-                         origin))
-             (source-pos-info (source-pos-info source)))
-        (setf label (format nil "~a~%@(~a/~a:~a)" label
-                            (core:source-pos-info-file-handle source-pos-info)
-                            (core:source-pos-info-lineno source-pos-info)
-                            (core:source-pos-info-column source-pos-info))))
-      (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
-    label))
-(cleavir-ir-graphviz:draw-flowchart (third (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/hir.dot")
-
-
 
 
 
@@ -578,9 +537,6 @@ clasp-cleavir::*use-cst*
 (trace mapcar)
 
 
-(cleavir-generate-ast:generate-ast '(lambda () 1)  *clasp-env* *clasp-system*)
-
-
 (let ((cmp:*compile-file-debug-dump-module* t))
   (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp"
                                       :optimize nil))
@@ -608,17 +564,6 @@ clasp-cleavir::*use-cst*
   (print (reverse clos::*dispatch-log*))
   nil)
 
-(cleavir-generate-ast:convert-special
-(let ((clos::*monitor-dispatch* t)
-      (clos::*dispatch-log* nil))
-  (clasp-cleavir:cleavir-compile-file #P"sys:kernel;lsp;foundation.lsp" :print t)
-  (print "------- dispatch-log----")
-  (print clos::*dispatch-log*))
-
-
-
-
-
 (time (clasp-cleavir:cleavir-compile 'myfoo '(lambda (x y) (+ x y))))
 
 
@@ -632,7 +577,6 @@ clasp-cleavir::*use-cst*
 (apropos "header-stamp")
 (apropos "get-instance-stamp")
 (apropos "instance-class")
-(core:get-instance-stamp (find-class 'cleavir-ir:dynamic-lexical-location))
 (time (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y))))
 
 (clos::generic-function-call-history #'cleavir-ir:name)

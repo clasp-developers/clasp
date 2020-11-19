@@ -154,7 +154,7 @@
                    (close is)))))))
 
 (test READ-SYMBOL.11 (symbolp (READ-FROM-STRING "\\.")))
-#+cst (test glsl-toolkit-grammar.lisp-1 (eq '|.| '\.))
+(test glsl-toolkit-grammar.lisp-1 (eq '|.| '\.))
 
 (test-expect-error SYNTAX.DOT-ERROR.2 (read-from-string "..") :type reader-error)
 (test-expect-error SYNTAX.DOT-ERROR.3 (read-from-string "...") :type reader-error)

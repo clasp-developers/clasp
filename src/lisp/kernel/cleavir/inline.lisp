@@ -88,7 +88,6 @@
          ,@body))))
 
 ;;; Ditto, a compiler macro to avoid confusing bclasp.
-#+cst
 (define-cleavir-compiler-macro ext:with-current-source-form
     (&whole f (&rest forms) &body body)
   `(cleavir-cst-to-ast:with-current-source-form (,@forms) ,@body))

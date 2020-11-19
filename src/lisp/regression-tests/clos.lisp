@@ -24,7 +24,7 @@
 (test issue-698
       (vectorp (foo-bar (make-array 23 :adjustable T))))
 
-#+cst (test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
+(test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
 
 (defclass slot-missing-class-01 () (a))
 

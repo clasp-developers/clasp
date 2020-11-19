@@ -35,11 +35,11 @@
         ((nth-value 1 (gethash var (car env))) (car env))
         (t (variable-frame var (cdr env)))))
 
-(defun (setf variable) (new var env)
-  (let ((frame (variable-frame var env)))
-    (if (null frame) ; var not found, set it locally
-        (setf (gethash var (car env)) new)
-        (setf (gethash var frame) new))))
+(defun bind-variable (var value env)
+  (setf (gethash var (car env)) value))
+
+(defun setq-variable (var value env)
+  (setf (gethash var (variable-frame var env)) value))
 
 ;; interface
 
@@ -160,15 +160,18 @@
   (loop for r in required
         if (zerop (core:vaslist-length arguments))
           do (error "Not enough arguments") ; FIXME: message
-        else do (setf (variable r env) (core:vaslist-pop arguments)))
+        else do (bind-variable r (core:vaslist-pop arguments) env))
   (loop for (ovar o-p) in optional
         if (zerop (core:vaslist-length arguments))
-          do (setf (variable o-p env) nil)
-        else do (setf (variable ovar env) (core:vaslist-pop arguments)
-                      (variable o-p env) t))
+          do (bind-variable o-p nil env)
+        else do (bind-variable ovar (core:vaslist-pop arguments) env)
+                (bind-variable o-p t env))
   (when rest
-    (setf (variable rest env)
-          (if va-rest-p arguments (core:list-from-va-list arguments))))
+    (bind-variable rest
+                   (if va-rest-p
+                       arguments
+                       (core:list-from-va-list arguments))
+                   env))
   (when keyp
     (unless (evenp (core:vaslist-length arguments))
       (error "Odd number of keyword arguments")))
@@ -179,9 +182,9 @@
         for (k var var-p) in key
         for value = (getf arguments k indicator)
         if (eq value indicator) ; not present
-          do (setf (variable var-p env) nil)
-        else do (setf (variable var env) value
-                      (variable var-p env) t))
+          do (bind-variable var-p nil env)
+        else do (bind-variable var value env)
+                (bind-variable var-p t env))
   ;; TODO: aokp check blabla
   (values))
 
@@ -215,7 +218,7 @@
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
   (let ((catch-tag (gensym)))
-    (setf (variable ast env) catch-tag)
+    (bind-variable ast catch-tag env)
     (catch catch-tag
       (interpret-ast (cleavir-ast:body-ast ast) env))))
 
@@ -225,10 +228,17 @@
     (throw catch-tag
       (interpret-ast (cleavir-ast:form-ast ast) env))))
 
+(defcan cleavir-ast:lexical-bind-ast)
+(defmethod interpret-ast ((ast cleavir-ast:lexical-bind-ast) env)
+  (bind-variable (cleavir-ast:lhs-ast ast)
+                 (interpret-ast (cleavir-ast:value-ast ast) env)
+                 env))
+
 (defcan cleavir-ast:setq-ast)
 (defmethod interpret-ast ((ast cleavir-ast:setq-ast) env)
-  (setf (variable (cleavir-ast:lhs-ast ast) env)
-        (interpret-ast (cleavir-ast:value-ast ast) env)))
+  (setq-variable (cleavir-ast:lhs-ast ast)
+                 (interpret-ast (cleavir-ast:value-ast ast) env)
+                 env))
 
 (defcan cleavir-ast:multiple-value-setq-ast)
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-setq-ast) env)
@@ -236,7 +246,7 @@
                  (interpret-ast (cleavir-ast:form-ast ast) env))))
     (loop with rvalues = values
           for var in (cleavir-ast:lhs-asts ast)
-          do (setf (variable var env) (pop rvalues)))
+          do (setq-variable var (pop rvalues) env))
     (values-list values)))
 
 (defcan cleavir-ast:tag-ast)
@@ -254,7 +264,7 @@
     ;; Set up the tags
     (loop for (item . rest) on items
           when (typep item 'cleavir-ast:tag-ast)
-            do (setf (variable item env) (cons catch-tag rest)))
+            do (bind-variable item (cons catch-tag rest) env))
     ;; Go
     (loop for to-interpret = items
             then (catch catch-tag

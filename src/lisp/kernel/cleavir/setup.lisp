@@ -50,55 +50,90 @@
 (defvar *fn-attributes* (make-hash-table :test #'equal))
 (defvar *fn-transforms* (make-hash-table :test #'equal))
 
-(macrolet ((set-dyn-calls (&rest names)
-             `(progn ,@(loop for name in names
-                             collect `(set-dyn-call ,name))))
-           (set-dyn-call (name)
+(macrolet ((define-function-attributes (name &rest attributes)
              `(setf (gethash ',name *fn-attributes*)
-                    (cleavir-attributes:make-attributes :dyn-call)))
-           (set-dx-calls (&rest names)
-             `(progn ,@(loop for name in names
-                             collect `(set-dx-call ,name))))
-           (set-dx-call (name)
-             `(setf (gethash ',name *fn-attributes*)
-                    (cleavir-attributes:make-attributes :dx-call))))
-  (set-dyn-calls
-   apply funcall
-   every some notevery notany
-   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
-   member member-if member-if-not
-   mapc mapcar mapcan mapl maplist mapcon
-   assoc assoc-if assoc-if-not
-   rassoc rassoc-if rassoc-if-not
-   intersection nintersection adjoin
-   set-difference nset-difference
-   set-exclusive-or nset-exclusive-or subsetp union nunion
-   ;; Can't do most sequence functions, as ext sequence
-   ;; functions can do arbitrary things.
-   map map-into merge
-   cleavir-ast:map-ast-depth-first-preorder
-   cleavir-bir:map-iblocks
-   cleavir-bir:map-iblock-instructions)
-  (set-dx-calls
-   core:progv-function
-   core:catch-function
-   core:funwind-protect
-   ;; FIXME: Can't do this for many things like APPLY, FUNCALL, etc.
-   ;; because we don't distinguish between *which* functional argument
-   ;; is DX.
-   every some notevery notany
-   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
-   member member-if member-if-not
-   mapc mapcar mapcan mapl maplist mapcon
-   assoc assoc-if assoc-if-not
-   rassoc rassoc-if rassoc-if-not
-   intersection nintersection adjoin
-   set-difference nset-difference
-   set-exclusive-or nset-exclusive-or subsetp union nunion
-   map map-into merge
-   cleavir-ast:map-ast-depth-first-preorder
-   cleavir-bir:map-iblocks
-   cleavir-bir:map-iblock-instructions))
+                    (cleavir-attributes:make-attributes ,@attributes))))
+  ;; FIXME: Can't do DX-call for many things like APPLY, FUNCALL, etc.
+  ;; because we don't distinguish between *which* functional argument
+  ;; is DX.
+  (define-function-attributes apply :dyn-call)
+  (define-function-attributes funcall :dyn-call)
+  (define-function-attributes every :dyn-call :dx-call)
+  (define-function-attributes some :dyn-call :dx-call)
+  (define-function-attributes notevery :dyn-call :dx-call)
+  (define-function-attributes notany :dyn-call :dx-call)
+  (define-function-attributes sublis :dyn-call :dx-call)
+  (define-function-attributes nsublis :dyn-call :dx-call)
+  (define-function-attributes subst-if :dyn-call :dx-call)
+  (define-function-attributes subst-if-not :dyn-call :dx-call)
+  (define-function-attributes nsubst-if :dyn-call :dx-call)
+  (define-function-attributes nsubst-if-not :dyn-call :dx-call)
+  (define-function-attributes member :dyn-call :dx-call)
+  (define-function-attributes member-if :dyn-call :dx-call)
+  (define-function-attributes member-if-not :dyn-call :dx-call)
+  (define-function-attributes mapc :dyn-call :dx-call)
+  (define-function-attributes mapcar :dyn-call :dx-call)
+  (define-function-attributes mapcan :dyn-call :dx-call)
+  (define-function-attributes mapl :dyn-call :dx-call)
+  (define-function-attributes maplist :dyn-call :dx-call)
+  (define-function-attributes mapcon :dyn-call :dx-call)
+  (define-function-attributes assoc :dyn-call :dx-call)
+  (define-function-attributes assoc-if :dyn-call :dx-call)
+  (define-function-attributes assoc-if-not :dyn-call :dx-call)
+  (define-function-attributes rassoc :dyn-call :dx-call)
+  (define-function-attributes rassoc-if :dyn-call :dx-call)
+  (define-function-attributes rassoc-if-not :dyn-call :dx-call)
+  (define-function-attributes intersection :dyn-call :dx-call)
+  (define-function-attributes nintersection :dyn-call :dx-call)
+  (define-function-attributes adjoin :dyn-call :dx-call)
+  (define-function-attributes set-difference :dyn-call :dx-call)
+  (define-function-attributes nset-difference :dyn-call :dx-call)
+  (define-function-attributes set-exclusive-or :dyn-call :dx-call)
+  (define-function-attributes nset-exclusive-or :dyn-call :dx-call)
+  (define-function-attributes subsetp :dyn-call :dx-call)
+  (define-function-attributes union :dyn-call :dx-call)
+  (define-function-attributes nunion :dyn-call :dx-call)
+  (define-function-attributes map :dyn-call :dx-call)
+  (define-function-attributes map-into :dyn-call :dx-call)
+  (define-function-attributes merge :dyn-call :dx-call)
+  (define-function-attributes cleavir-ast:map-ast-depth-first-preorder :dyn-call
+    :dx-call)
+  (define-function-attributes cleavir-bir:map-iblocks :dyn-call :dx-call)
+  (define-function-attributes cleavir-bir:map-iblock-instructions :dyn-call
+    :dx-call)
+  ;; Can't do DYN-CALL for most sequence functions, as ext sequence
+  ;; functions can do arbitrary things.
+  (define-function-attributes core:progv-function :dx-call)
+  (define-function-attributes core:funwind-protect :dx-call)
+  (define-function-attributes maphash :dx-call)
+  (define-function-attributes remove :dx-call)
+  (define-function-attributes remove-if :dx-call)
+  (define-function-attributes remove-if-not :dx-call)
+  (define-function-attributes delete :dx-call)
+  (define-function-attributes delete-if :dx-call)
+  (define-function-attributes delete-if-not :dx-call)
+  (define-function-attributes reduce :dx-call)
+  (define-function-attributes remove-duplicates :dx-call)
+  (define-function-attributes delete-duplicates :dx-call)
+  (define-function-attributes substitute :dx-call)
+  (define-function-attributes substitute-if :dx-call)
+  (define-function-attributes substitute-if-not :dx-call)
+  (define-function-attributes nsubstitute :dx-call)
+  (define-function-attributes nsubstitute-if :dx-call)
+  (define-function-attributes nsubstitute-if-not :dx-call)
+  (define-function-attributes count :dx-call)
+  (define-function-attributes count-if :dx-call)
+  (define-function-attributes count-if-not :dx-call)
+  (define-function-attributes find :dx-call)
+  (define-function-attributes find-if :dx-call)
+  (define-function-attributes find-if-not :dx-call)
+  (define-function-attributes position :dx-call)
+  (define-function-attributes position-if :dx-call)
+  (define-function-attributes position-if-not :dx-call)
+  (define-function-attributes mismatch :dx-call)
+  (define-function-attributes search :dx-call)
+  (define-function-attributes sort :dx-call)
+  (define-function-attributes stable-sort :dx-call))
 
 (defun treat-as-special-operator-p (name)
   (cond

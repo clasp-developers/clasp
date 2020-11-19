@@ -141,10 +141,6 @@
   `(lambda ,lambda-list (block ,(if (listp name) (second name) name) ,@body)))
 
 
-(defun build-and-draw-ast (filename code)
-  (let ((ast (cleavir-generate-ast:generate-ast code *clasp-env*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)))
-
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
 (defparameter *code3* 
