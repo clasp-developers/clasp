@@ -1160,11 +1160,11 @@ COMPILE-FILE will use the default *clasp-env*."
     (translate-ast ast)))
 
 (defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
-  (let ((cmp:*default-condition-origin* (origin-spi (cst:source cst))))
+  (let* ((cmp:*default-condition-origin* (origin-spi (cst:source cst)))
+         (pre-ast (cst->ast cst env))
+         (ast (wrap-ast pre-ast)))
     (literal:with-top-level-form
-        (let* ((pre-ast (cst->ast cst env))
-               (ast (wrap-ast pre-ast)))
-          (translate-ast ast :linkage cmp:*default-linkage*)))))
+        (translate-ast ast :linkage cmp:*default-linkage*))))
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
