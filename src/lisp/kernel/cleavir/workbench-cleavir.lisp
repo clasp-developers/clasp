@@ -49,29 +49,6 @@
 (trace cleavir-cst-to-ast::convert-lambda-function)
 (trace cleavir-cst-to-ast::convert-special)
 
-(progn
-  (trace cleavir-ast-to-hir::compile-toplevel)
-  (trace cleavir-ir:make-enter-instruction)
-  (trace cleavir-ir:make-top-level-enter-instruction)
-  (trace clasp-cleavir-hir::make-named-enter-instruction)
-  (trace clasp-cleavir::compile-cst-or-form-to-mir)
-  )
-
-
-(progn
-  (trace clasp-cleavir::set-instruction-source-position)
-  (trace llvm-sys:clear-current-debug-location)
-  (trace clasp-cleavir::translate-simple-instruction)
-  (trace clasp-cleavir::layout-procedure)
-  (trace clasp-cleavir::layout-procedure*)
-  (trace clasp-cleavir::%intrinsic-call)
-  (trace clasp-cleavir::do-debug-info-source-position)
-  (trace clasp-cleavir::alloca)
-  (trace llvm-sys:create-alloca))
-
-(trace clasp-cleavir::setup-function-scope-metadata)
-
-
 (let ((clasp-cleavir::*save-compile-file-info* t))
 ;;;  (setq (clasp-cleavir::*saved-compile-file-info* nil))
   (clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp" :print nil))
@@ -98,26 +75,8 @@ clasp-cleavir::*saved-compile-file-info*
                             (core:source-pos-info-lineno source-pos-info)
                             (core:source-pos-info-column source-pos-info))))
       (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
-    label))
+    label)))
 (cleavir-ast-graphviz:draw-ast (second (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/before.dot")
-
-(defmethod cleavir-ir-graphviz::label :around (ast)
-  (let* ((label (call-next-method))
-         (origin (cleavir-ir:origin ast)))
-    (if origin
-      (let* ((source (if (consp origin)
-                         (car origin)
-                         origin))
-             (source-pos-info (source-pos-info source)))
-        (setf label (format nil "~a~%@(~a/~a:~a)" label
-                            (core:source-pos-info-file-handle source-pos-info)
-                            (core:source-pos-info-lineno source-pos-info)
-                            (core:source-pos-info-column source-pos-info))))
-      (setf label (format nil "~a~%NO-SOURCE-INFO" label)))
-    label))
-(cleavir-ir-graphviz:draw-flowchart (third (car clasp-cleavir::*saved-compile-file-info*)) "/tmp/hir.dot")
-
-
 
 
 

@@ -612,52 +612,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class PRECALC-VALUE-REFERENCE-AST
-;;;
-;;; This class represents a reference to a value that is precalculated
-;;; at load-time (COMPILE-FILE) or compile-time (COMPILE) and placed into
-;;; a LoadTimeValue object that is passed to the function.
-;;;
-
-(defclass precalc-value-reference-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin cleavir-ast:ast)
-  ((%ref-index :initarg :index :accessor precalc-value-reference-ast-index)
-   (%form :initarg :form :accessor precalc-value-reference-ast-form)))
-
-
-(cleavir-io:define-save-info precalc-value-reference-ast
-  (:index precalc-value-reference-ast-index)
-  (:form precalc-value-reference-ast-form))
-
-(defmethod cleavir-ast:children ((ast precalc-value-reference-ast))
-  nil)
-
-(defun escaped-string (str)
-  (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
-
-(defmethod cleavir-ast-graphviz::label ((ast precalc-value-reference-ast))
-  (with-output-to-string (s)
-    (format s "precalc-val-ref ; ")
-    (let ((form (escaped-string
-                 (format nil "~s" (precalc-value-reference-ast-form ast)))))
-      (if (> (length form) 10)
-	  (format s "~a..." (subseq form 0 10))
-	  (princ form s)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class PRECALC-CONSTANT-REFERENCE-AST
-;;;
-;;; As above, but the value (or something similar to the value, rather) is
-;;; known at compile time.
-
-(defclass precalc-constant-reference-ast (precalc-value-reference-ast)
-  ((%value :initarg :value :accessor precalc-constant-reference-ast-value)))
-
-(cleavir-io:define-save-info precalc-constant-reference-ast
-    (:value precalc-constant-reference-ast-value))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Class BIND-VA-LIST-AST
 ;;;
 ;;; Bind variables according to an ordinary lambda list based on a va_list.
@@ -694,40 +648,3 @@
                                  entry
                                  (cdr entry)))
                             (t (list entry))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Load-time-value hoisting, Clasp-style.
-
-(defun process-ltv (env form read-only-p)
-  "If the form is an immediate constant, returns it. If the form has previously been processed here,
-returns the previous results. Otherwise, generates code for the form that places the result into a
-precalculated-vector and returns the index."
-  (cond
-    ((constantp form env)
-     (let* ((value (ext:constant-form-value form env))
-            (immediate (core:create-tagged-immediate-value-or-nil value)))
-       (if immediate
-           (values immediate t t value)
-           (multiple-value-bind (index indexp)
-               (literal:reference-literal value t)
-             ;; FIXME: Might not to reorganize things deeper.
-             (unless indexp
-               (error "BUG: create-tagged-immediate-value-or-nil is inconsistent with literal machinery."))
-             (values index nil t value)))))
-    ;; Currently read-only-p is mostly ignored from here on,
-    ;; but it might be possible to coalesce EQ forms or something.
-    ;; COMPLE-FILE will generate a function for the form in the Module
-    ;; and arrange for it's evaluation at load time
-    ;; and to make its result available as a value
-    ((cmp:generate-load-time-values)
-     (values (literal:with-load-time-value
-                 (clasp-cleavir::compile-form form env))
-             nil nil nil))
-    ;; COMPILE on the other hand evaluates the form and puts its
-    ;; value in the run-time environment.
-    (t
-     (let ((value (cleavir-env:eval form env env)))
-       (multiple-value-bind (index-or-immediate index-p)
-           (literal:codegen-rtv-cclasp value)
-         (values index-or-immediate (not index-p) read-only-p value))))))

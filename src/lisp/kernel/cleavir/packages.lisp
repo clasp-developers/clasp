@@ -54,7 +54,6 @@
   (:nicknames #:cc-ast)
   (:use #:common-lisp)
   (:export
-   #:precalculated-value-ast
    #:debug-message-ast
    #:debug-break-ast
    #:multiple-value-foreign-call-ast
@@ -73,11 +72,6 @@
    #:make-setf-fdefinition-ast
    #:debug-message
    #:debug-break
-   #:precalc-value-reference-ast
-   #:precalc-value-reference-ast-index
-   #:precalc-value-reference-ast-form
-   #:precalc-constant-reference-ast
-   #:precalc-constant-reference-ast-value
    #:setf-fdefinition-ast
    #:throw-ast
    #:result-ast
@@ -102,82 +96,18 @@
    #:introduce-invoke
    ))
 
-(defpackage #:clasp-cleavir-hir
-  (:use #:common-lisp)
-  (:export 
-   #:precalc-reference-instruction
-   #:frame-holder
-   #:landing-pad
-   #:jump-id
-   #:lambda-list
-   #:rest-alloc
-   #:debug-message-instruction
-   #:debug-break-instruction
-   #:multiple-value-foreign-call-instruction
-   #:foreign-call-instruction
-   #:foreign-call-pointer-instruction
-   #:function-name
-   #:foreign-types
-   #:make-multiple-value-foreign-call-instruction
-   #:make-foreign-call-instruction
-   #:make-foreign-call-pointer-instruction
-   #:make-precalc-value-instruction
-   #:invoke-instruction
-   #:make-setf-fdefinition-instruction
-   #:make-throw-instruction
-   #:precalc-value-instruction #:precalc-value-instruction-p
-   #:debug-message
-   #:debug-break
-   #:setf-fdefinition-instruction
-   #:throw-instruction
-   #:precalc-value-instruction-index
-   #:precalc-value-instruction-form
-   #:instruction-id
-   #:vector-length-instruction
-   #:displacement-instruction
-   #:displaced-index-offset-instruction
-   #:array-total-size-instruction
-   #:array-rank-instruction
-   #:array-dimension-instruction
-   #:header-stamp-instruction #:rack-stamp-instruction
-   #:wrapped-stamp-instruction #:derivable-stamp-instruction
-   #:instance-rack-instruction #:instance-rack-set-instruction
-   #:rack-read-instruction #:rack-write-instruction
-   #:vaslist-pop-instruction #:make-vaslist-pop-instruction
-   #:vaslist-length-instruction #:make-vaslist-length-instruction
-   #:bind-va-list-instruction #:make-bind-va-list-instruction
-   #:defcallback-instruction #:defcallback-args
-   #:header-stamp-case-instruction #:make-header-stamp-case-instruction
-   #:cas-car-instruction #:cas-cdr-instruction #:slot-cas-instruction
-   #:acas-instruction
-   #:bind-instruction #:unwind-protect-instruction
-   ))
-
 (defpackage #:clasp-cleavir-bir
   (:use #:cl)
   (:nicknames #:cc-bir)
   (:shadow #:unwind-protect)
-  (:export #:precalc-value #:precalc-value-index #:precalc-constant
-           #:unwind-protect #:bind #:header-stamp-case
+  (:export #:unwind-protect #:bind #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
            #:acas #:element-type #:simple-p #:boxed-p))
 
-(defpackage #:clasp-cleavir-ast-to-hir
-  (:use #:common-lisp)
-  (:export
-   #:*landing-pad*)
-)
-
 (defpackage #:cc-generate-ast
   (:use #:common-lisp)
-  )
-
-(defpackage #:cc-hir-to-mir
-  (:use #:common-lisp)
-  (:export
-   #:reduce-typeqs)
   )
 
 (defpackage #:cc-bir-to-bmir
@@ -215,11 +145,6 @@
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
   (:export #:memref2 #:offset #:load #:store))
-
-(defpackage #:cleavir-ir-gml
-  (:use #:common-lisp #:cleavir-ir)
-  (:export
-   #:draw-flowchart))
 
 (defpackage #:lisp-executable.creation
   (:use #:common-lisp))
