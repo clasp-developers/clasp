@@ -537,9 +537,6 @@ clasp-cleavir::*use-cst*
 (trace mapcar)
 
 
-(cleavir-generate-ast:generate-ast '(lambda () 1)  *clasp-env* *clasp-system*)
-
-
 (let ((cmp:*compile-file-debug-dump-module* t))
   (clasp-cleavir:cleavir-compile-file "sys:tests;tt.lsp"
                                       :optimize nil))
@@ -567,17 +564,6 @@ clasp-cleavir::*use-cst*
   (print (reverse clos::*dispatch-log*))
   nil)
 
-(cleavir-generate-ast:convert-special
-(let ((clos::*monitor-dispatch* t)
-      (clos::*dispatch-log* nil))
-  (clasp-cleavir:cleavir-compile-file #P"sys:kernel;lsp;foundation.lsp" :print t)
-  (print "------- dispatch-log----")
-  (print clos::*dispatch-log*))
-
-
-
-
-
 (time (clasp-cleavir:cleavir-compile 'myfoo '(lambda (x y) (+ x y))))
 
 
@@ -591,7 +577,6 @@ clasp-cleavir::*use-cst*
 (apropos "header-stamp")
 (apropos "get-instance-stamp")
 (apropos "instance-class")
-(core:get-instance-stamp (find-class 'cleavir-ir:dynamic-lexical-location))
 (time (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y))))
 
 (clos::generic-function-call-history #'cleavir-ir:name)
