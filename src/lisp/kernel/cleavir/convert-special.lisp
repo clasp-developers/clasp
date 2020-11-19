@@ -28,8 +28,7 @@
 ;;; INITARGS is a list of initargs to make-instance that class.
 
 (defmacro define-functionlike-special-form (name ast (&rest initargs))
-  (let (#-cst(nargs (length initargs))
-        (syms (loop for i in initargs collect (gensym (symbol-name i)))))
+  (let ((syms (loop for i in initargs collect (gensym (symbol-name i)))))
     `(defmethod cleavir-cst-to-ast:convert-special
          ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
        (cst:db origin (op ,@syms) cst

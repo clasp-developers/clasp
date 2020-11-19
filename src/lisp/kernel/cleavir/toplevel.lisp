@@ -68,10 +68,6 @@
                    (when (or (member :execute situations)
                              (member 'eval situations))
                      (eval-progn body env))))
-                #-cst
-                ((locally)
-                 (multiple-value-bind (decls body) (core:process-declarations args nil)
-                   (eval-progn body (augment-environment-with-declares decls env))))
                 ((catch)
                  (assert (>= arg-length 1))
                  (let ((tag (first args)) (body (rest args)))
