@@ -48,7 +48,7 @@
                (cmp:alloca-t* (datum-name-as-string var)))
               ((:indefinite)
                ;; make a cell
-               (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+               (%intrinsic-invoke-if-landing-pad-or-call
                 "cc_makeCell" nil (datum-name-as-string var)))))))
 
 ;; Return either the value or cell of a closed over variable depending

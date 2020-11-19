@@ -120,16 +120,16 @@
 (defmethod translate-terminator ((instruction cleavir-bir:returni)
                                  return-value abi next)
   (declare (ignore abi next))
-  (cmp:irc-ret (clasp-cleavir::load-return-value return-value)))
+  (cmp:irc-ret (load-return-value return-value)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:alloca)
                                  return-value abi next)
   ;; For now, we only handle m-v-prog1.
   (assert (eq (cleavir-bir:rtype instruction) :multiple-values))
-  (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
+  (with-return-values (return-value abi nvalsl return-regs)
     (let* ((nvals (cmp:irc-load nvalsl))
            ;; NOTE: Must be done BEFORE the alloca.
-           (save (clasp-cleavir::%intrinsic-call "llvm.stacksave" nil))
+           (save (%intrinsic-call "llvm.stacksave" nil))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (setf (dynenv-storage instruction) (list save nvals mv-temp))))
   ;; Continue
@@ -148,7 +148,7 @@
   (destructuring-bind (stackpos storage1 storage2)
       (dynenv-storage dynenv)
     (declare (ignore storage1 storage2))
-    (clasp-cleavir::%intrinsic-call "llvm.stackrestore" (list stackpos))))
+    (%intrinsic-call "llvm.stackrestore" (list stackpos))))
 
 (defun translate-local-unwind (jump return-value)
   (loop with target = (cleavir-bir:dynamic-environment
@@ -213,16 +213,16 @@
                    for immediate = (core:create-tagged-immediate-value-or-nil object)
                    do (assert (not (null immediate)))
                       (cmp:irc-add-case switch
-                                        (clasp-cleavir::%i64 (if only-fixnums-p
-                                                                 (ash immediate -2)
-                                                                 immediate))
+                                        (%i64 (if only-fixnums-p
+                                                  (ash immediate -2)
+                                                  immediate))
                                         dest)))))
 
 (defun translate-sjlj-catch (catch return-value successors)
   ;; Call setjmp, switch on the result.
   (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
     (out (cmp:irc-bit-cast bufp cmp:%t*%) catch)
-    (let* ((sj (clasp-cleavir::%intrinsic-call "_setjmp" (list bufp)))
+    (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
            (blocks (loop repeat (length (rest successors))
                          collect (cmp:irc-basic-block-create
                                   "catch-restore")))
@@ -230,12 +230,12 @@
            (sw (cmp:irc-switch sj default (length successors))))
       (cmp:irc-begin-block default)
       (cmp:irc-unreachable)
-      (cmp:irc-add-case sw (clasp-cleavir::%i32 0) (first successors))
+      (cmp:irc-add-case sw (%i32 0) (first successors))
       (loop for succ in (rest successors) for block in blocks
             for i from 1
-            do (cmp:irc-add-case sw (clasp-cleavir::%i32 i) block)
+            do (cmp:irc-add-case sw (%i32 i) block)
                (cmp:irc-begin-block block)
-               (clasp-cleavir::restore-multiple-value-0 return-value)
+               (restore-multiple-value-0 return-value)
                (cmp:irc-br succ)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
@@ -250,9 +250,7 @@
         (translate-sjlj-catch instruction return-value next))
        (t
         ;; Assign the catch the continuation.
-        (out (clasp-cleavir::%intrinsic-call
-              "llvm.frameaddress"
-              (list (clasp-cleavir::%i32 0)) "frame")
+        (out (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
              instruction)
         ;; Unconditional branch to the normal successor;
         ;; dynamic environment stuff is handled in layout-iblock.
@@ -275,7 +273,7 @@
       (1 (assert (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values))))
     ;; Transmit those values
     (when rv
-      (clasp-cleavir::save-multiple-value-0 return-value))
+      (save-multiple-value-0 return-value))
     ;; unwind
     (if (cleavir-bir-transformations:simple-unwinding-p
          (cleavir-bir:catch instruction))
@@ -283,16 +281,15 @@
         ;; (Note: No landing pad because in order for SJLJ to occur,
         ;;  the dynamic environment must just be the function.)
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
-          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+          (%intrinsic-invoke-if-landing-pad-or-call
            ;; `+ because we can't pass 0 to longjmp.
-           "longjmp" (list bufp (clasp-cleavir::%i32 (1+ destination-id)))))
+           "longjmp" (list bufp (%i32 (1+ destination-id)))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
                                (cleavir-bir:dynamic-environment instruction)
                                return-value)
-          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
-           "cc_unwind"
-           (list cont (clasp-cleavir::%size_t destination-id))))))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_unwind" (list cont (%size_t destination-id))))))
   (cmp:irc-unreachable))
 
 (defmethod translate-terminator ((instruction cc-bir:unwind-protect)
@@ -305,19 +302,18 @@
   ;; Call the thunk.
   ;; We have to save values around it in case we're in the middle of returning values.
   ;; NOTE: ABI is ignored. literally irrelevant to the macro. FIXME
-  (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
+  (with-return-values (return-value abi nvalsl return-regs)
     (let* ((nvals (cmp:irc-load nvalsl))
-           (primary (cmp:irc-load (clasp-cleavir::return-value-elt return-regs 0)))
+           (primary (cmp:irc-load (return-value-elt return-regs 0)))
            (mv-temp (cmp:alloca-temp-values nvals)))
-      (clasp-cleavir::%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+      (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
       ;; FIXME: Should this be never-entry?
       (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-bir:parent dynenv) return-value *tags*)
-        (clasp-cleavir::closure-call-or-invoke
+        (closure-call-or-invoke
          (dynenv-storage dynenv) return-value nil))
-      (clasp-cleavir::store-tmv
-       (clasp-cleavir::%intrinsic-call "cc_load_values" (list nvals mv-temp))
-       return-value))))
+      (store-tmv (%intrinsic-call "cc_load_values" (list nvals mv-temp))
+                 return-value))))
 
 (defmethod translate-terminator ((instruction cc-bir:bind) return-value abi next)
   (declare (ignore return-value abi))
@@ -325,14 +321,13 @@
          (sym (in (first inputs)))
          (val (in (second inputs))))
     (setf (dynenv-storage instruction)
-          (list sym (clasp-cleavir::%intrinsic-call "cc_TLSymbolValue" (list sym))))
-    (clasp-cleavir::%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
+          (list sym (%intrinsic-call "cc_TLSymbolValue" (list sym))))
+    (%intrinsic-call "cc_setTLSymbolValue" (list sym val)))
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) return-value)
   (declare (ignore return-value))
-  (clasp-cleavir::%intrinsic-call "cc_resetTLSymbolValue"
-                                  (dynenv-storage dynenv)))
+  (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:typew)
                                  return-value abi next)
@@ -370,13 +365,13 @@
   (declare (ignore abi))
   (let* ((stamp (in (first (cleavir-bir:inputs instruction))))
          (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
-         (where (cmp:irc-and stamp-i64 (clasp-cleavir::%i64 cmp:+where-tag-mask+)))
+         (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
          (defaultb (cmp:irc-basic-block-create "impossible-default"))
          (sw (cmp:irc-switch where defaultb 4)))
-    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+derivable-where-tag+) (first next))
-    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+rack-where-tag+) (second next))
-    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+wrapped-where-tag+) (third next))
-    (cmp:irc-add-case sw (clasp-cleavir::%i64 cmp:+header-where-tag+) (fourth next))
+    (cmp:irc-add-case sw (%i64 cmp:+derivable-where-tag+) (first next))
+    (cmp:irc-add-case sw (%i64 cmp:+rack-where-tag+) (second next))
+    (cmp:irc-add-case sw (%i64 cmp:+wrapped-where-tag+) (third next))
+    (cmp:irc-add-case sw (%i64 cmp:+header-where-tag+) (fourth next))
     (cmp:irc-begin-block defaultb)
     (cmp:irc-unreachable)))
 
@@ -392,11 +387,11 @@
             cmp:*the-module* (cmp::function-description-name enclosed-function))))
     (if environment
         (let* ((ninputs (length environment))
-               (sninputs (clasp-cleavir::%size_t ninputs))
+               (sninputs (%size_t ninputs))
                (enclose
                  (ecase (cleavir-bir:extent instruction)
                    (:dynamic
-                    (clasp-cleavir::%intrinsic-call
+                    (%intrinsic-call
                      "cc_stack_enclose"
                      (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
                                            :alignment cmp:+alignment+
@@ -405,7 +400,7 @@
                            (cmp:irc-bit-cast function-description cmp:%i8*%)
                            sninputs)))
                    (:indefinite
-                    (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+                    (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list enclosed-function
                            (cmp:irc-bit-cast function-description cmp:%i8*%)
@@ -414,18 +409,16 @@
           ;; in mutual reference.
           (delay-initializer
            (lambda ()
-             (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+             (%intrinsic-invoke-if-landing-pad-or-call
               "cc_initialize_closure"
               (list* enclose sninputs (mapcar #'variable-as-argument environment)))))
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
-        (clasp-cleavir::%closurette-value enclosed-function
-                                          function-description))))
+        (%closurette-value enclosed-function function-description))))
 
 (defmethod translate-simple-instruction :before
-    ((instruction cleavir-bir:abstract-call)
-     return-value abi)
+    ((instruction cleavir-bir:abstract-call) return-value abi)
   (declare (ignore instruction return-value abi))
   ;; We must force all closure initializers to run before a call.
   (force-initializers))
@@ -492,23 +485,23 @@
                (cmp:irc-create-invoke function arguments cmp::*current-unwind-landing-pad-dest*)
                ;; FIXME: USE FASTCC CONVENTION HERE.
                (cmp:irc-create-call function arguments))))
-    (clasp-cleavir::store-tmv result-in-registers return-value)))
+    (store-tmv result-in-registers return-value)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
   (declare (ignore abi))
   (let ((inputs (cleavir-bir:inputs instruction)))
-    (clasp-cleavir::closure-call-or-invoke
+    (closure-call-or-invoke
      (in (first inputs)) return-value (mapcar #'in (rest inputs)))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:mv-call)
                                          return-value abi)
-  (let ((call-result (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+  (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                       "cc_call_multipleValueOneFormCallWithRet0"
                       (list (in (first (cleavir-bir:inputs instruction)))
-                            (clasp-cleavir::load-return-value return-value)))))
+                            (load-return-value return-value)))))
     ;; call-result is a T_mv, and return-value a T_mv*
-    (clasp-cleavir::store-tmv call-result return-value)
+    (store-tmv call-result return-value)
     call-result))
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
@@ -526,7 +519,7 @@
 
 (defmethod translate-simple-instruction
     ((instruction cc-bir:defcallback)
-     return-value (abi clasp-cleavir::abi-x86-64))
+     return-value (abi abi-x86-64))
   (let* ((args (cc-bir:defcallback-args instruction))
          (closure (in (first (cleavir-bir:inputs instruction)))))
     (cmp::gen-defcallback
@@ -536,31 +529,30 @@
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-bir:fixed-to-multiple)
-     return-value (abi clasp-cleavir::abi-x86-64))
+     return-value (abi abi-x86-64))
   (let* ((inputs (cleavir-bir:inputs instruction))
          (ninputs (length inputs)))
-    (clasp-cleavir::with-return-values (return-value abi nret ret-regs)
-      (cmp:irc-store (clasp-cleavir::%size_t ninputs) nret)
+    (with-return-values (return-value abi nret ret-regs)
+      (cmp:irc-store (%size_t ninputs) nret)
       (dotimes (i ninputs)
         (cmp:irc-store (in (elt inputs i))
-                       (clasp-cleavir::return-value-elt ret-regs i)))
-      (loop for i from ninputs below clasp-cleavir::+pointers-returned-in-registers+
-            do (cmp:irc-store (clasp-cleavir::%nil)
-                              (clasp-cleavir::return-value-elt ret-regs i))))))
+                       (return-value-elt ret-regs i)))
+      (loop for i from ninputs below +pointers-returned-in-registers+
+            do (cmp:irc-store (%nil) (return-value-elt ret-regs i))))))
 
 (defmethod translate-simple-instruction
-    ((instr cleavir-bir:multiple-to-fixed) return-value (abi clasp-cleavir::abi-x86-64))
+    ((instr cleavir-bir:multiple-to-fixed) return-value (abi abi-x86-64))
   ;; Outputs that are returned in registers (see +pointers-returned-in-registers+) can be
   ;; unconditionally assigned, as things that return values ensure that those return registers
   ;; are always valid - e.g., (values) explicitly sets them to NIL.
   ;; Beyond that, we have to branch on nret.
-  (clasp-cleavir::with-return-values (return-value abi nret return-regs)
+  (with-return-values (return-value abi nret return-regs)
     (let* ((outputs (cleavir-bir:outputs instr))
            (nouts (length outputs)))
       ;; The easy ones.
       (loop for out in outputs
-            for i below clasp-cleavir::+pointers-returned-in-registers+
-            do (out (cmp:irc-load (clasp-cleavir::return-value-elt return-regs i)) out))
+            for i below +pointers-returned-in-registers+
+            do (out (cmp:irc-load (return-value-elt return-regs i)) out))
       ;; Now do the branch stuff (if there are enough outputs to require it)
       ;; We end up with a switch on nret. Say we have three outputs and +p-r-i-r+ is 1;
       ;; then we want
@@ -572,9 +564,9 @@
       ;; default: out[1] = values[1]; out[2] = values[1]; break; // any extra values ignored
       ;; }
       ;; We generate SSA directly, so the assignments are just phis.
-      (when (> nouts clasp-cleavir::+pointers-returned-in-registers+)
-        (let* ((rets (loop for i from clasp-cleavir::+pointers-returned-in-registers+ below nouts
-                           collect (clasp-cleavir::return-value-elt return-regs i)))
+      (when (> nouts +pointers-returned-in-registers+)
+        (let* ((rets (loop for i from +pointers-returned-in-registers+ below nouts
+                           collect (return-value-elt return-regs i)))
                (default (cmp:irc-basic-block-create "mtf-enough"))
                (switch (cmp:irc-switch (cmp:irc-load nret) default nouts))
                (final (cmp:irc-basic-block-create "mtf-final"))
@@ -585,25 +577,25 @@
                ;; Generate the switch blocks. Put them in the switch while we're at it.
                ;; The binding here is to a list of (block . vars) so we can phi it.
                (blocks-and-vars
-                 (loop for retn from clasp-cleavir::+pointers-returned-in-registers+ below nouts
+                 (loop for retn from +pointers-returned-in-registers+ below nouts
                        for block = (cmp:irc-basic-block-create (format nil "mtf-~d" retn))
-                       do (cmp:irc-add-case switch (clasp-cleavir::%size_t retn) block)
+                       do (cmp:irc-add-case switch (%size_t retn) block)
                           (cmp:irc-begin-block block)
                        collect (cons block
                                      (loop for ret in rets
-                                           for i from clasp-cleavir::+pointers-returned-in-registers+ below nouts
-                                           collect (if (< i retn) (cmp:irc-load ret) (clasp-cleavir::%nil))))
+                                           for i from +pointers-returned-in-registers+ below nouts
+                                           collect (if (< i retn) (cmp:irc-load ret) (%nil))))
                        do (cmp:irc-br final))))
           ;; Set up all the register-only cases to use the first block.
           ;; (which sets all the outputs to NIL)
           (loop with low = (caar blocks-and-vars)
-                for retn from 0 below clasp-cleavir::+pointers-returned-in-registers+
-                do (cmp:irc-add-case switch (clasp-cleavir::%size_t retn) low))
+                for retn from 0 below +pointers-returned-in-registers+
+                do (cmp:irc-add-case switch (%size_t retn) low))
           ;; Final generation: generate the phis and then output them.
           ;; NOTE: We can't output as we generate because (out ...) may generate a store,
           ;; and phis must not have any stores (or anything but a phi) preceding them.
           (cmp:irc-begin-block final)
-          (let* ((vector-outs (nthcdr clasp-cleavir::+pointers-returned-in-registers+ outputs))
+          (let* ((vector-outs (nthcdr +pointers-returned-in-registers+ outputs))
                  (phis (loop for out in vector-outs
                             for i from 0
                             for phi = (cmp:irc-phi cmp:%t*% (1+ nouts))
@@ -635,7 +627,7 @@
   (translate-primop (cleavir-bir:name (cleavir-bir::info inst)) inst))
 
 (defmethod translate-primop ((name (eql 'symbol-value)) inst)
-  (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+  (%intrinsic-invoke-if-landing-pad-or-call
    "cc_safe_symbol_value" (list (in (first (cleavir-bir:inputs inst))))))
 (defmethod translate-primop ((name (eql 'fdefinition)) inst)
   (let ((symbol (in (first (cleavir-bir:inputs inst)))))
@@ -698,7 +690,7 @@
 
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
-         (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+         (%intrinsic-invoke-if-landing-pad-or-call
           "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
         ((equal name '(setf clos:standard-instance-access))
          (let ((inputs (cleavir-bir:inputs inst)))
@@ -713,9 +705,9 @@
         (inputs (cleavir-bir:inputs inst)))
     (cmp:irc-cmpxchg
      ;; This will err if et = bit or the like.
-     (clasp-cleavir::gen-vector-effective-address
+     (gen-vector-effective-address
       (in (first inputs)) (in (second inputs)) et
-      (clasp-cleavir::%default-int-type abi))
+      (%default-int-type abi))
      (in (third inputs)) (in (fourth inputs)))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
@@ -727,11 +719,11 @@
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage alloca)
       (declare (ignore stackpos storage1))
-      (clasp-cleavir::with-return-values (return-value abi nvalsl return-regs)
-        (clasp-cleavir::%intrinsic-call
+      (with-return-values (return-value abi nvalsl return-regs)
+        (%intrinsic-call
          "cc_save_values"
          (list (cmp:irc-load nvalsl)
-               (cmp:irc-load (clasp-cleavir::return-value-elt return-regs 0))
+               (cmp:irc-load (return-value-elt return-regs 0))
                storage2))))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:readtemp)
@@ -743,9 +735,8 @@
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage alloca)
       (declare (ignore stackpos))
-      (clasp-cleavir::store-tmv
-       (clasp-cleavir::%intrinsic-call "cc_load_values"
-                                       (list storage1 storage2))
+      (store-tmv
+       (%intrinsic-call "cc_load_values" (list storage1 storage2))
        return-value))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
@@ -755,8 +746,8 @@
         (label ""))
     (cmp:irc-load
      (cmp:irc-gep-variable (literal:ltv-global)
-                           (list (clasp-cleavir::%size_t 0)
-                                 (clasp-cleavir::%i64 index))
+                           (list (%size_t 0)
+                                 (%i64 index))
                            label))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:constant-reference)
@@ -768,8 +759,8 @@
     (if (integerp immediate-or-index)
         (cmp:irc-load
          (cmp:irc-gep-variable (literal:ltv-global)
-                               (list (clasp-cleavir::%size_t 0)
-                                     (clasp-cleavir::%i64 immediate-or-index))
+                               (list (%size_t 0)
+                                     (%i64 immediate-or-index))
                                ;; Maybe we can have a nice label for this.
                                ""))
         immediate-or-index)))
@@ -853,10 +844,10 @@
                               body-irbuilder body-block
                               abi &key (linkage 'llvm-sys:internal-linkage))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
-    (let ((return-value (clasp-cleavir::alloca-return)))
-      (clasp-cleavir::with-return-values (return-value abi nret ret-regs)
+    (let ((return-value (alloca-return)))
+      (with-return-values (return-value abi nret ret-regs)
         (declare (ignore ret-regs))
-        (cmp:irc-store (clasp-cleavir::%size_t 0) nret))
+        (cmp:irc-store (%size_t 0) nret))
       (cmp:with-irbuilder (body-irbuilder)
         (with-catch-pad-prep
             (cmp:irc-begin-block body-block)
@@ -894,7 +885,7 @@
          (cmp:*current-function* xep-function)
          (cmp:*current-function-description* xep-function-description)
          (entry-block (cmp:irc-basic-block-create "entry" xep-function))
-         (clasp-cleavir::*function-current-multiple-value-array-address*
+         (*function-current-multiple-value-array-address*
            nil)
          (cmp:*irbuilder-function-alloca*
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -919,7 +910,7 @@
                     :debug-on
                     (cleavir-policy:policy-value
                      (cleavir-bir:policy function)
-                     'clasp-cleavir::save-register-args)
+                     'save-register-args)
                     :cleavir-lambda-list lambda-list)))
             (layout-xep-function* xep-function function calling-convention
                                   abi :linkage linkage)))))))
@@ -940,7 +931,7 @@
          (cmp:*current-function* the-function)
          (cmp:*current-function-description* function-description)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
-         (clasp-cleavir::*function-current-multiple-value-array-address*
+         (*function-current-multiple-value-array-address*
            nil)
          (cmp:*irbuilder-function-alloca*
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -996,7 +987,7 @@
       (setf (gethash constant *constant-values*)
             (if immediate
                 (cmp:irc-int-to-ptr
-                 (clasp-cleavir::%i64 immediate)
+                 (%i64 immediate)
                  cmp:%t*%)
                 (literal:reference-literal value t)))))
   (assert (or (cleavir-set:empty-set-p (cleavir-bir:load-time-values module))
@@ -1008,7 +999,7 @@
       (setf (gethash load-time-value *constant-values*)
             ;; Allocate an index in the literal table for this load-time-value.
             (literal:with-load-time-value
-                (compile-form form clasp-cleavir::*clasp-env*))))))
+                (compile-form form *clasp-env*))))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   (let ((functions (cleavir-bir:functions module)))
@@ -1057,7 +1048,7 @@
                              :condition ,(princ-to-string condition))
                      cst clasp-cleavir:*clasp-system* :default-source origin))))
 
-(defun cst->ast (cst &optional (env clasp-cleavir::*clasp-env*))
+(defun cst->ast (cst &optional (env *clasp-env*))
   "Compile a cst into an AST and return it.
 Does not hoist.
 COMPILE might call this with an environment in ENV.
@@ -1120,9 +1111,9 @@ COMPILE-FILE will use the default *clasp-env*."
   (cleavir-bir-transformations:determine-variable-extents module)
   (values))
 
-(defun translate-ast (ast &key (abi clasp-cleavir::*abi-x86-64*)
+(defun translate-ast (ast &key (abi *abi-x86-64*)
                                (linkage 'llvm-sys:internal-linkage)
-                               (system clasp-cleavir::*clasp-system*))
+                               (system *clasp-system*))
   (let* ((bir (ast->bir ast system))
          (module (cleavir-bir:module bir)))
     ;;(cleavir-bir:verify module)
@@ -1153,13 +1144,13 @@ COMPILE-FILE will use the default *clasp-env*."
         (core:*use-cleavir-compiler* t))
     (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
 
-(defun compile-form (form &optional (env clasp-cleavir::*clasp-env*))
+(defun compile-form (form &optional (env *clasp-env*))
   (let* ((cst (cst:cst-from-expression form))
          (pre-ast (cst->ast cst env))
          (ast (wrap-ast pre-ast)))
     (translate-ast ast)))
 
-(defun compile-file-cst (cst &optional (env clasp-cleavir::*clasp-env*))
+(defun compile-file-cst (cst &optional (env *clasp-env*))
   (let ((cmp:*default-condition-origin* (origin-spi (cst:source cst))))
     (literal:with-top-level-form
         (let* ((pre-ast (cst->ast cst env))
@@ -1168,7 +1159,7 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))
-        (eclector.reader:*client* clasp-cleavir::*cst-client*)
+        (eclector.reader:*client* *cst-client*)
         (eclector.readtable:*readtable* cl:*readtable*)
         (cleavir-cst-to-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))

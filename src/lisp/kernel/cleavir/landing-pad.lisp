@@ -50,7 +50,7 @@
   (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
     ;; Check if frame is correct against tagbody and jump to jumpid
     (cmp:with-landing-pad landing-pad-for-unwind-rethrow
-      (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+      (%intrinsic-invoke-if-landing-pad-or-call
        "cc_landingpadUnwindMatchFrameElseRethrow" 
        (list exception-ptr frame)
        "go-index"))))
@@ -80,7 +80,7 @@
     (let ((bb (cmp:irc-basic-block-create "unbind-special-variable")))
       (cmp:irc-begin-block bb)
       ;; This function cannot throw, so no landing pad needed
-      (clasp-cleavir::%intrinsic-call "cc_setTLSymbolValue" (list symbol old-value))
+      (%intrinsic-call "cc_setTLSymbolValue" (list symbol old-value))
       (cmp:irc-br next)
       bb)))
 
@@ -102,7 +102,7 @@
         ;; intervening exit points. And we indicate that by using for the call
         ;; to the protected thunk the same dynamic-environment that was in place
         ;; upon entry to the unwind-protect.
-        (let* ((nvals (clasp-cleavir::%intrinsic-call "cc_nvalues" nil "nvals"))
+        (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
                ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
                ;; a VLA, for every unwind protect executed. We could at least merge unwind
                ;; protects in the same frame - but what would be really smart would be
@@ -110,12 +110,12 @@
                ;; global (thread-local) values with impunity while unwinding.
                ;; Probably challenging to arrange in C++, though.
                (mv-temp (cmp:alloca-temp-values nvals)))
-          (clasp-cleavir::%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+          (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
           ;; FIXME: Should this be never-entry?
           (cmp:with-landing-pad (maybe-entry-landing-pad
                                  protection-dynenv return-value *tags*)
-            (clasp-cleavir::closure-call-or-invoke thunk return-value nil))
-          (clasp-cleavir::%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
+            (closure-call-or-invoke thunk return-value nil))
+          (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
 
@@ -133,7 +133,7 @@
         (when cleanup-p (llvm-sys:set-cleanup lpad t))
         (cmp:irc-store exception-structure *exn.slot*)
         (cmp:irc-store exception-selector *ehselector.slot*)
-        (let* ((typeid (clasp-cleavir::%intrinsic-call "llvm.eh.typeid.for"
+        (let* ((typeid (%intrinsic-call "llvm.eh.typeid.for"
                                         (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
                (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
           ;; If the exception is Clasp's Unwind exception, we handle it.
@@ -161,7 +161,7 @@
         (cmp:irc-store exception-selector *ehselector.slot*)
         ;; FIXME: Check if end_catch ever actually unwinds. I think no.
         (cmp:with-landing-pad nil
-          (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call "__cxa_end_catch" nil))
+          (%intrinsic-invoke-if-landing-pad-or-call "__cxa_end_catch" nil))
         (cmp:irc-br cleanup-block))
       lp-block)))
 
@@ -196,7 +196,7 @@
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
-               (_ (clasp-cleavir::restore-multiple-value-0 return-value))
+               (_ (restore-multiple-value-0 return-value))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))
@@ -217,7 +217,7 @@
                             (tag-block (gethash dest tags))
                             (existing (assoc jump-id used-ids)))
                        (if (null existing)
-                           (llvm-sys:add-case sw (clasp-cleavir::%size_t
+                           (llvm-sys:add-case sw (%size_t
                                                   jump-id)
                                               tag-block)
                            (unless (eq tag-block (cdr existing))
@@ -247,7 +247,7 @@
       (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
         (cmp:irc-begin-block bb)
         ;; Lose the saved values alloca.
-        (clasp-cleavir::%intrinsic-call "llvm.stackrestore" (list stackpos))
+        (%intrinsic-call "llvm.stackrestore" (list stackpos))
         ;; Continue
         (cmp:irc-br
          (maybe-entry-processor (cleavir-bir:parent instruction)
@@ -269,7 +269,7 @@
     (let ((err (cmp:irc-basic-block-create "bug-in-catch")))
       (cmp:irc-begin-block err)
       (cmp:with-landing-pad nil
-        (clasp-cleavir::%intrinsic-invoke-if-landing-pad-or-call
+        (%intrinsic-invoke-if-landing-pad-or-call
          "cc_error_bugged_catch" (list (cmp:irc-load *go-index.slot*))))
       (cmp:irc-unreachable)
       err)))
@@ -307,8 +307,8 @@
               (never-entry-processor dynenv return-value)
               (dynenv-needs-cleanup-p dynenv)
               return-value
-              (clasp-cleavir::%intrinsic-call
-               "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame"))))
+              (%intrinsic-call
+               "llvm.frameaddress" (list (%i32 0)) "frame"))))
         ((or cc-bir:bind cleavir-bir:alloca cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
@@ -316,8 +316,8 @@
           (never-entry-processor dynenv return-value)
           (dynenv-needs-cleanup-p dynenv)
           return-value
-          (clasp-cleavir::%intrinsic-call
-           "llvm.frameaddress" (list (clasp-cleavir::%i32 0)) "frame"))))
+          (%intrinsic-call
+           "llvm.frameaddress" (list (%i32 0)) "frame"))))
       (never-entry-landing-pad dynenv return-value)))
 
 ;;; never-entry landing pads, for when we always end with a resume.

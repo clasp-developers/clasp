@@ -91,7 +91,7 @@
   (let ((insert-type-checks
           (cleavir-policy:policy-value
            (cleavir-env:policy (cleavir-env:optimize-info env))
-           'clasp-cleavir::insert-type-checks))
+           'insert-type-checks))
         (required (cleavir-ctype:values-required ctype system)))
     (cond
       ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
