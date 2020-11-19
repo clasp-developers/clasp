@@ -699,6 +699,18 @@
         (t
          (error "BUG: Don't know how to translate primop ~a" name))))
 
+(defun gen-vector-effective-address (array index element-type fixnum-type)
+  (let* ((type (llvm-sys:type-get-pointer-to
+                (cmp::simple-vector-llvm-type element-type)))
+         (cast (cmp:irc-bit-cast array type))
+         (untagged (cmp:irc-untag-fixnum index fixnum-type "vector-index")))
+    ;; 0 is for LLVM reasons, that pointers are C arrays. or something.
+    ;; For layout of the vector, check simple-vector-llvm-type's definition.
+    ;; untagged is the actual offset.
+    (cmp:irc-gep-variable
+     cast
+     (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
+
 (defmethod translate-simple-instruction ((inst cc-bir:acas) return-value abi)
   (declare (ignore return-value))
   (let ((et (cc-bir:element-type inst))
