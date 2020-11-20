@@ -61,7 +61,16 @@ DEBUG_OPTIONS = [ "DEBUG_RELEASE",
                   "DEBUG_BCLASP_LISP",
                   "DEBUG_CCLASP_LISP",
                   # other useful options for debugging
-                  # "DEBUG_SLOW",
-                  # "DEBUG_JIT_LOG_SYMBOLS",
-                  # "DEBUG_ASSERT_TYPE_CAST",
+#                  "DEBUG_SLOW",
+#                  "DEBUG_VERIFY_MODULES"
+#                  "DEBUG_JIT_LOG_SYMBOLS",
+#                  "DEBUG_ASSERT_TYPE_CAST",
+                  # options specific to MPS                  
+#                  "DEBUG_MPS_SIZE",
+#                  "CONFIG_VAR_COOL",
+#                  "DEBUG_ALLOC_ALIGNMENT",
+#                  "DEBUG_GUARD",
+#                  "DEBUG_GUARD_VALIDATE",
+#                  "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",
+#                  "DEBUG_RECURSIVE_ALLOCATIONS",
                   ]
