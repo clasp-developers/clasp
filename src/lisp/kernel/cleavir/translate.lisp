@@ -629,7 +629,7 @@
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (translate-primop (cleavir-bir:name (cleavir-bir::info inst)) inst))
+  (translate-primop (cleavir-primop-info:name (cleavir-bir:info inst)) inst))
 
 (defmethod translate-primop ((name (eql 'symbol-value)) inst)
   (%intrinsic-invoke-if-landing-pad-or-call
@@ -691,7 +691,7 @@
 (defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (translate-primop (cleavir-bir:name (cleavir-bir::info inst)) inst))
+  (translate-primop (cleavir-primop-info:name (cleavir-bir:info inst)) inst))
 
 (defmethod translate-primop ((name cons) inst) ; FIXME
   (cond ((equal name '(setf symbol-value))
