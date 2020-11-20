@@ -124,9 +124,11 @@
 
 (defmethod translate-terminator ((instruction cleavir-bir:alloca)
                                  return-value abi next)
+  (declare (ignore abi))
   ;; For now, we only handle m-v-prog1.
   (assert (eq (cleavir-bir:rtype instruction) :multiple-values))
   (with-return-values (return-value abi nvalsl return-regs)
+    (declare (ignore return-regs))
     (let* ((nvals (cmp:irc-load nvalsl))
            ;; NOTE: Must be done BEFORE the alloca.
            (save (%intrinsic-call "llvm.stacksave" nil))
@@ -362,7 +364,7 @@
 
 (defmethod translate-terminator
     ((instruction cc-bir:header-stamp-case) return-value abi next)
-  (declare (ignore abi))
+  (declare (ignore return-value abi))
   (let* ((stamp (in (first (cleavir-bir:inputs instruction))))
          (stamp-i64 (cmp:irc-ptr-to-int stamp cmp:%i64%))
          (where (cmp:irc-and stamp-i64 (%i64 cmp:+where-tag-mask+)))
@@ -377,7 +379,7 @@
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
-  (declare (ignore return-value))
+  (declare (ignore return-value abi))
   (let* ((code (cleavir-bir:code instruction))
          (code-info (find-llvm-function-info code))
          (environment (environment code-info))
@@ -475,10 +477,10 @@
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
+  (declare (ignore abi))
   (let* ((callee (cleavir-bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
          (arguments (parse-local-call-arguments instruction callee))
-         (lambda-name (get-or-create-lambda-name callee))
          (function (main-function callee-info))
          (result-in-registers
            (if cmp::*current-unwind-landing-pad-dest*
@@ -496,6 +498,7 @@
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:mv-call)
                                          return-value abi)
+  (declare (ignore abi))
   (let ((call-result (%intrinsic-invoke-if-landing-pad-or-call
                       "cc_call_multipleValueOneFormCallWithRet0"
                       (list (in (first (cleavir-bir:inputs instruction)))
@@ -512,6 +515,7 @@
 
 (defmethod translate-simple-instruction
     ((instruction cc-bir:foreign-call-pointer) return-value abi)
+  (declare (ignore return-value))
   (let ((inputs (cleavir-bir:inputs instruction)))
     (clasp-cleavir:unsafe-foreign-call-pointer
      :call (cc-bir:foreign-types instruction) (in (first inputs))
@@ -520,6 +524,7 @@
 (defmethod translate-simple-instruction
     ((instruction cc-bir:defcallback)
      return-value (abi abi-x86-64))
+  (declare (ignore return-value))
   (let* ((args (cc-bir:defcallback-args instruction))
          (closure (in (first (cleavir-bir:inputs instruction)))))
     (cmp::gen-defcallback
