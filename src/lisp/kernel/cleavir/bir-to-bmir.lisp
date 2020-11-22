@@ -28,7 +28,7 @@
                       (cleavir-bir:functions module)))
 
 (defun maybe-replace-primop (primop)
-  (case (cleavir-bir:name (cleavir-bir::info primop))
+  (case (cleavir-primop-info:name (cleavir-bir:info primop))
     ((cleavir-primop:car)
      (let ((in (cleavir-bir:inputs primop)))
        (change-class primop 'cc-bmir:load :inputs ())

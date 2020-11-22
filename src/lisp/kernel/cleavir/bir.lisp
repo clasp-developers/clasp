@@ -150,7 +150,7 @@
 
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn
-                (cleavir-bir:defprimop ,name (,@in) (,@out))
+                (cleavir-primop-info:defprimop ,name (,@in) (,@out))
                 (cleavir-ast-to-bir:defprimop ,name ,ast ,@readers))))
   (defprimop setf-fdefinition (:object) (:object)
     cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
