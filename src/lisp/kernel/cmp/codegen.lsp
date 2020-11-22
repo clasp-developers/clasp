@@ -45,7 +45,6 @@ Could return more functions that provide lambda-list for swank for example"
              (fn (with-new-function (fn fn-env result
                                         :function-name name
                                         :parent-env env-around-lambda
-                                        :function-form new-body
                                         :linkage linkage
                                         :function-info (make-function-info
                                                         :function-name name
@@ -355,7 +354,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                               :function-name name
                                               :parent-env env
                                               :linkage cmp:*default-linkage*
-                                              :function-form form
                                               :function-info (make-function-info
                                                               :function-name name
                                                               :lambda-list nil

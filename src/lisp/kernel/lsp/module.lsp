@@ -83,7 +83,7 @@ module."
                                           :name :wild
                                           :type :wild))))
 
-(defparameter *module-extensions* (list "fasl" "FASL" "fasp" "FASP" "lsp" "lisp" "LSP" "LISP"))
+(defparameter *module-extensions* (list "fasl" "FASL" "fasp" "FASP" "faspll" "FASPLL" "faspbc" "FASPBC" "lsp" "lisp" "LSP" "LISP"))
 
 (defun clasp-module-provider (module)
   (flet ((try-it (path)

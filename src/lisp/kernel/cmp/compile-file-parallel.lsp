@@ -19,7 +19,7 @@
 (defmacro cfp-log (fmt &rest args) (declare (ignore fmt args)))
 
 (defstruct (ast-job (:type vector) :named)
-  ast environment output-stream
+  ast environment output-object
   form-index   ; Uses (core:next-startup-position) to keep count
   form-counter ; Counts from zero
   module
@@ -32,6 +32,7 @@
                                   optimize-level
                                   intermediate-output-type
                                   write-bitcode)
+  (declare (ignore optimize optimize-level))
   (let ((module (ast-job-module job)))
     (cond
       ((member intermediate-output-type '(:object :in-memory-object))
@@ -45,11 +46,15 @@
                                     (cfp-output-file-default
                                      (ast-job-form-output-path job)
                                      :bitcode))))
-             (write-bitcode module bitcode-filename)))
+             (write-bitcode module bitcode-filename :output-type :object)))
          (let ((output (generate-obj-asm-stream
-                        module (ast-job-output-stream job)
+                        module (ast-job-output-object job)
                         'llvm-sys:code-gen-file-type-object-file reloc-model)))
-           (when output (setf (ast-job-output-stream job) output)))))
+           (when output (setf (ast-job-output-object job) output)))))
+      ((eq intermediate-output-type :in-memory-module)
+       (let ((llvm-ir (with-output-to-string (sout)
+                        (llvm-sys:dump-module module sout))))
+       (setf (ast-job-output-object job) llvm-ir)))
       #+(or)
       ((eq intermediate-output-type :object)
        (let ((object-file-path (make-pathname :type "o" :defaults (ast-job-form-output-path job))))
@@ -82,7 +87,7 @@
       (with-debug-info-generator (:module module
                                   :pathname *compile-file-truename*)
         (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
-          (with-literal-table
+          (with-literal-table (:id (ast-job-form-index job))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
                 (literal:with-top-level-form
                     (let ((ast (ast-job-ast job)))
@@ -203,7 +208,7 @@ multithreaded performance that we should explore."
                                         :write-bitcode write-bitcode))
                     `((*compile-print* . ',*compile-print*)
                       (*compile-file-parallel* . ',*compile-file-parallel*)
-                      (*generate-faso* . ',*generate-faso*)
+                      (*default-object-type* . ',*default-object-type*)
                       (*compile-verbose* . ',*compile-verbose*)
                       (*compile-file-output-pathname* . ',*compile-file-output-pathname*)
                       (*package* . ',*package*)
@@ -238,8 +243,13 @@ multithreaded performance that we should explore."
                                             :environment environment
                                             :current-source-pos-info current-source-pos-info
                                             :form-output-path form-output-path
-                                            :output-stream (when (eq intermediate-output-type :in-memory-object)
-                                                             :simple-vector-byte8)
+                                            :output-object (cond
+                                                             ((eq intermediate-output-type :in-memory-object)
+                                                              :simple-vector-byte8)
+                                                             ((eq intermediate-output-type :in-memory-module)
+                                                              nil)
+                                                             (t
+                                                              (error "Handle intermediate-output-type ~a" intermediate-output-type)))
                                             :form-index form-index
                                             :form-counter form-counter)))
                  (when compile-from-module
@@ -322,6 +332,10 @@ Compile a lisp source file into an LLVM module."
                                         #+(or)(:fasl :object)
                                         (:fasl :in-memory-object)
                                         (:faso :in-memory-object)
+                                        (:fasoll :in-memory-module)
+                                        (:fasobc :in-memory-module)
+                                        (:faspll :in-memory-module)
+                                        (:faspbc :in-memory-module)
                                         (:fasp :in-memory-object)
                                         (:object :in-memory-object)
                                         (:bitcode :bitcode)
@@ -334,6 +348,21 @@ Compile a lisp source file into an LLVM module."
                       :ast-only ast-only
                       :write-bitcode write-bitcode)))))
 
+
+
+(defun link-compile-file-parallel-modules (output-pathname parts)
+  "Link a bunch of modules together, return the linked module"
+  (let* ((link-module (llvm-create-module (pathname-name output-pathname))))
+    ;; Don't enforce .bc extension for additional-bitcode-pathnames
+    ;; This is where I used to link the additional-bitcode-pathnames
+    (loop for part-llvm-ir in parts
+          for module = (llvm-sys:parse-irstring part-llvm-ir (thread-local-llvm-context))
+          do (multiple-value-bind (failure error-msg)
+                 (llvm-sys:link-modules link-module module)
+               (when failure
+                 (format t "While linking part module encountered error: ~a~%" error-msg))))
+    link-module))
+
 (defun output-cfp-result (ast-jobs output-path output-type)
   (ensure-directories-exist output-path)
   (cond
@@ -342,11 +371,21 @@ Compile a lisp source file into an LLVM module."
        #+(or)(format t "Output the object files in ast-jobs to ~s~%" output-path)
        (let* ((object-files (loop for ast-job in ast-jobs
                                   for index = (ast-job-form-index ast-job)
-                                  for ostream = (ast-job-output-stream ast-job)
+                                  for ostream = (ast-job-output-object ast-job)
                                   collect (cons index ostream)))
               (sorted-object-files (sort object-files #'< :key #'car)))
          #+(or)(format t "sorted-object-files length ~d output-path: ~s~%" (length sorted-object-files) output-path)
          (core:write-faso output-path (mapcar #'cdr sorted-object-files)))))
+    ((member output-type '(:fasoll :fasobc :faspll :faspbc))
+     (let ((module (link-compile-file-parallel-modules (namestring output-path)
+                                                       (mapcar #'ast-job-output-object ast-jobs))))
+       (cond
+         ((member output-type '(:fasoll :faspll))
+          (let ((fout (open output-path :direction :output :if-exists :supersede)))
+            (llvm-sys:dump-module module fout)))
+         ((member output-type '(:fasobc :faspbc))
+          (llvm-sys:write-bitcode-to-file module (namestring output-path)))
+         (t (error "Handle output-type for ~a" output-type)))))
     (t ;; unknown
      (error "Add support for output-type: ~a" output-type))))
 
@@ -368,7 +407,7 @@ Each bitcode filename will contain the form-index.")
                                 ((:source-debug-offset *compile-file-source-debug-offset*) 0)
                                 ((:source-debug-lineno *compile-file-source-debug-lineno*) 0)
                                 ;; output-type can be (or :fasl :bitcode :object)
-                                (output-type (if *generate-faso* :fasp :fasl) output-type-p)
+                                (output-type (default-library-type) output-type-p)
                                 ;; type can be either :kernel or :user (FIXME? unused)
                                 (type :user)
                                 ;; ignored by bclasp
@@ -380,8 +419,9 @@ Each bitcode filename will contain the form-index.")
                                 (cleanup nil)
                                 (write-bitcode *compile-file-parallel-write-bitcode*))
   "See CLHS compile-file."
-  (let ((*compile-file-parallel* t)
-        (*generate-faso* t))
+  (declare (ignore external-format type cleanup))
+  (setf output-type (maybe-fixup-output-type output-type output-type-p))
+  (let ((*compile-file-parallel* t))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
       (let* ((input-pathname (or (probe-file input-file)
@@ -421,14 +461,9 @@ Each bitcode filename will contain the form-index.")
                     (t (output-cfp-result ast-jobs output-path output-type)
                        output-path)))))))))
 
-(defun cl:compile-file (input-file &rest args &key (output-type :fasl output-type-p)
+(defun cl:compile-file (input-file &rest args &key (output-type (default-library-type) output-type-p)
                                                 output-file (verbose *compile-verbose*) &allow-other-keys)
-  (when *generate-faso*
-    (remf args :output-type)
-    (setq output-type (case output-type
-                        (:object :faso)
-                        (:fasl :fasp)
-                        (otherwise output-type))))
+  (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (flet ((do-compile-file ()
            (cond ((or output-type-p (null output-file))
                   (if *compile-file-parallel*
@@ -444,5 +479,4 @@ Each bitcode filename will contain the form-index.")
         (do-compile-file))))
 
 (eval-when (:load-toplevel)
-  (setf *compile-file-parallel* cmp:*use-compile-file-parallel*
-        *generate-faso* (or *generate-faso* cmp:*use-compile-file-parallel*)))
+  (setf *compile-file-parallel* t)) ;; cmp:*use-compile-file-parallel*))

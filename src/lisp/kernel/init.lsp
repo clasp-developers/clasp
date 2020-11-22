@@ -29,14 +29,21 @@
 (sys:*make-special 'core::*clang-bin*)
 (export 'core::*clang-bin*)
 
-(setq cmp:*generate-faso* (if (eq core:*clasp-build-mode* :faso)
-                              t
-                              (if (member :generate-faso *features*)
-                                  t
-                                  nil)))
+;;; 
+(cond
+  ((member :generate-faso *features*)
+   (setq core:*clasp-build-mode* :faso))
+  ((member :generate-fasoll *features*)
+   (setq core:*clasp-build-mode* :fasoll))
+  ((member :generate-fasobc *features*)
+   (setq core:*clasp-build-mode* :fasobc)))
+  
 (if (member :generate-faso *features*)
     (setq core:*clasp-build-mode* :faso))
                                   
+
+(setq cmp:*default-object-type* core:*clasp-build-mode*)
+
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -113,7 +120,7 @@
   (core::select-package :cmp))
 (sys:*make-special '*dbg-generate-dwarf*)
 (setq *dbg-generate-dwarf* (null (member :disable-dbg-generate-dwarf *features*)))
-(export '(llvm-link link-bitcode-modules))
+(export '(llvm-link link-bitcode-modules link-fasoll-modules link-fasobc-modules))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
@@ -622,14 +629,46 @@ a relative path from there."
   (if (eq type :fasl)
       "fasl"
       (if (eq type :bitcode)
-          "bc"
+          (if cmp::*use-human-readable-bitcode*
+              "ll"
+              "bc")
           (if (eq type :ll)
               "ll"
               (if (eq type :object)
                   "o"
-                  (if (eq type :faso)
-                      "faso"
-                      (error "Unsupported build-extension type ~a" type)))))))
+                  (if (eq type :fasp)
+                      "fasp"
+                      (if (eq type :faso)
+                          "faso"
+                          (if (eq type :fasoll)
+                              "fasoll"
+                              (if (eq type :faspll)
+                                  "faspll"
+                                  (if (eq type :fasobc)
+                                      "fasobc"
+                                      (if (eq type :faspbc)
+                                          "faspbc"
+                                          (error "Unsupported build-extension type ~a" type))))))))))))
+
+(defun build-library-type (type)
+  "Given the object-type TYPE return what type of library it generates"
+  (if (eq type :fasl)
+      :fasl
+      (if (eq type :object)
+          :fasl
+          (if (eq type :fasp)
+              :fasp
+              (if (eq type :faso)
+                  :fasp
+                  (if (eq type :fasoll)
+                      :faspll
+                      (if (eq type :faspll)
+                          :faspll
+                          (if (eq type :fasobc)
+                              :faspbc
+                              (if (eq type :faspbc)
+                                  :faspbc
+                                  (error "Unsupported build-extension type ~a" type))))))))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -657,36 +696,22 @@ the stage, the +application-name+ and the +bitcode-name+"
                                         (translate-logical-pathname "GENERATED:")))
                      (t
                       (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((and partial-pathname (eq type :bitcode))
-                 (if cmp::*use-human-readable-bitcode* (setq type :ll))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :object))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :faso))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :fasl))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and (null partial-pathname) (eq type :fasl))
-                 (let* ((stage-char (default-target-stage))
-                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
-                   exec-pathname))
                 ((eq type :executable)
                  (let* ((stage-char (default-target-stage))
                         (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
                         (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
                    exec-pathname))
-                (t (error "Add support for build-pathname type: ~a" type)))))
+                ((and (null partial-pathname) (eq type :fasl))
+                 (let* ((stage-char (default-target-stage))
+                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
+                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
+                   exec-pathname))
+                (t
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host)))))))
         result))))
-(export '(build-pathname))
+(export '(build-pathname build-extension))
 
 
 (eval-when (:execute)
@@ -730,7 +755,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun bitcode-exists-and-up-to-date (entry)
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename))
-         (bitcode-path (build-pathname filename :bitcode))
+         (bitcode-path (build-pathname filename cmp:*default-object-type*))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
         (> (file-write-date bitcode-path)

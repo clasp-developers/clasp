@@ -827,8 +827,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       ;; This is the parent environment of the new function environment that
       ;; will be returned
       parent-env
-      ;; This is the form that will be compiled as the function code
-      function-form
       ;; Set attributes - list of symbols, or string or string pairs
       (function-attributes *default-function-attributes* function-attributes-p )
       ;; This is the LLVM linkage - DONT USE "private" linkage - I encountered some
@@ -842,15 +840,14 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       )
      &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
+  (declare (ignore function-attributes-p argument-names-p function-type-p))
   (cmp-log "Expanding with-new-function name: %s%N" function-name)
-  (let ((traceid-gs (gensym "traceid"))
-	(irbuilder-alloca (gensym))
+  (let ((irbuilder-alloca (gensym))
         (temp (gensym))
-        (function-metadata-name (gensym))
-	(irbuilder-body (gensym))
+        (irbuilder-body (gensym))
         (function-description (gensym)))
     `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
-	 (irc-bclasp-function-create ,function-name ,parent-env
+         (irc-bclasp-function-create ,function-name ,parent-env
                                      :function-type ,function-type
                                      :argument-names ,argument-names
                                      :function-attributes ',function-attributes

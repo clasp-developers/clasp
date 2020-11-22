@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/unixfsys.h>
@@ -103,15 +104,31 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
 
-LLVMContext_sp getLLVMContext()
+void loadModule(llvmo::Module_sp module, core::T_sp startup_name, const std::string& libname)
 {
-  LLVMContext_sp context = gc::As<LLVMContext_sp>(core::eval::funcall(comp::_sym_thread_local_llvm_context));
-  return context;
-}
-
-void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
-{
-  SIMPLE_ERROR(BF("Deprecated"));
+  ClaspJIT_sp jit = core::compiler__jit_engine();
+  JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
+  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
+  std::vector<std::string> startup_functions;
+  for (auto &F : *module->wrappedPtr()) {
+    std::string function_name = F.getName().str();
+//    printf("%s:%d Function: %s\n", __FILE__, __LINE__, function_name.c_str());
+    if (function_name.substr(0,7)=="StartUp") {
+      startup_functions.push_back(function_name);
+    }
+  }
+  jit->addIRModule(jitDylib,module,tsc);
+  for ( auto name : startup_functions ) {
+//    printf("%s:%d Startup function: %s\n", __FILE__, __LINE__, name.c_str());
+    core::Pointer_sp ptr = jit->lookup(*jitDylib->wrappedPtr(),name);
+    voidStartUp startup = (voidStartUp)ptr->ptr();
+//    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
+    (startup)();
+  }
+  size_t num = core::startup_functions_are_waiting();
+//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
+  core::startup_functions_invoke(NULL);
+//  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
 #if 0
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(module);
   engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
@@ -128,7 +145,6 @@ void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
-  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -139,9 +155,9 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = getLLVMContext();
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   Module_sp m = llvm_sys__parseIRFile(namestring,context);
-  loadModule(m,startup_name);
+  loadModule(m,startup_name,namestring->get_std_string());
   return true;
 }
 
@@ -149,7 +165,6 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
-  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -160,14 +175,15 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = getLLVMContext();
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   Module_sp m = llvm_sys__parseBitcodeFile(namestring,context);
-  loadModule(m,startup_name);
+  loadModule(m,startup_name,namestring->get_std_string());
   return true;
 }
 
 CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loaded from a bitcode file");
 
+#if 0
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
@@ -176,7 +192,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
   loadModule(m,startup_name);
   return true;
 }
-
+#endif
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;

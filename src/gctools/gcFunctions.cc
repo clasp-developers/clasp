@@ -1438,6 +1438,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_faso);
+#elif CLASP_BUILD_MODE == 4
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasoll);
+#elif CLASP_BUILD_MODE == 5
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
 #endif
   if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   

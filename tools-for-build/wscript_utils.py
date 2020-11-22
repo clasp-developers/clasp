@@ -280,6 +280,10 @@ def waf_nodes_for_object_files(bld, paths, fasl_dir):
         extension = "o"
     elif (bld.env.CLASP_BUILD_MODE=="faso"):
         extension = "faso"
+    elif (bld.env.CLASP_BUILD_MODE=="fasobc"):
+        extension = "fasobc"
+    elif (bld.env.CLASP_BUILD_MODE=="fasoll"):
+        extension = "fasoll"
     elif (bld.env.CLASP_BUILD_MODE=="bitcode"):
         if (bld.use_human_readable_bitcode):
             extension = "ll"

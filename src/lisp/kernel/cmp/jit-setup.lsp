@@ -60,7 +60,8 @@
 
 (defun thread-local-llvm-context ()
   ;; (core:bformat t "*thread-safe-context* -> %s%N" *thread-safe-context*)
-  (llvm-sys:get-context *thread-safe-context*))
+  (llvm-sys:thread-local-llvm-context))
+
 (export 'thread-local-llvm-context)
 
 
@@ -100,24 +101,36 @@
     (llvm-sys:jit-finalize-run-cxx-function llvm-sys:*jit-engine* dylib function-name)))
 
 
-(defun load-bitcode (filename &key print)
-  (if *use-human-readable-bitcode*
-      (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-        (if print (core:bformat t "Loading %s%N" input-name))
-        (llvm-sys:load-bitcode-ll input-name (thread-local-llvm-context)))
-      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-        (if print (core:bformat t "Loading %s%N" input-name))
-        (llvm-sys:load-bitcode input-name (thread-local-llvm-context)))))
+(defun load-bitcode (filename &key print clasp-build-mode)
+  (cond
+    ((eq clasp-build-mode :bitcode)
+     (if *use-human-readable-bitcode*
+         (let* ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+           (if print (core:bformat t "Loading %s%N" input-name))
+           (llvm-sys:load-bitcode-ll input-name (thread-local-llvm-context)))
+         (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+           (if print (core:bformat t "Loading %s%N" input-name))
+           (llvm-sys:load-bitcode input-name (thread-local-llvm-context)))))
+    (t (error "Add support for load-bitcode with clasp-build-mode of ~a" clasp-build-mode))))
 
-(defun parse-bitcode (filename context &key print)
+(defun parse-bitcode (filename context &key print clasp-build-mode)
   ;; Load a module from a bitcode or .ll file
-  (if *use-human-readable-bitcode*
-      (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
-        (if print (core:bformat t "Loading %s%N" input-name))
-        (llvm-sys:parse-irfile input-name context))
-      (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
-        (if print (core:bformat t "Loading %s%N" input-name))
-        (llvm-sys:parse-bitcode-file input-name context))))
+  (cond
+    ((eq clasp-build-mode :fasobc)
+     (if print (core:bformat t "Loading %s%N" filename))
+     (llvm-sys:parse-bitcode-file filename context))
+    ((eq clasp-build-mode :fasoll)
+     (if print (core:bformat t "Loading %s%N" filename))
+     (llvm-sys:parse-irfile filename context))
+    ((eq clasp-build-mode :bitcode)
+     (if *use-human-readable-bitcode*
+         (let ((input-name (make-pathname :type "ll" :defaults (pathname filename))))
+           (if print (core:bformat t "Loading %s%N" input-name))
+           (llvm-sys:parse-irfile input-name context))
+         (let ((input-name (make-pathname :type "bc" :defaults (pathname filename))))
+           (if print (core:bformat t "Loading %s%N" input-name))
+           (llvm-sys:parse-bitcode-file input-name context))))
+    (t (error "Add support for clasp-build-mode ~a" clasp-build-mode))))
 
 (export '(write-bitcode load-bitcode parse-bitcode load-ir-run-c-function))
 
@@ -146,6 +159,57 @@ using features defined in corePackage.cc"
                            m))
       (get-builtin-target-triple-and-data-layout))))
 
+
+(defun link-bitcode-modules-together (output-pathname part-pathnames
+                                      &key additional-bitcode-pathnames
+                                        clasp-build-mode)
+  "Link a bunch of modules together, return the linked module"
+  (let* ((link-module (llvm-create-module (pathname-name output-pathname))))
+    (let* ((part-index 1))
+      ;; Don't enforce .bc extension for additional-bitcode-pathnames
+      ;; This is where I used to link the additional-bitcode-pathnames
+      (let ((part-pn nil))
+        (tagbody
+         top
+           (if (null part-pathnames) (go done))
+           (setq part-pn (car part-pathnames))
+           (setq part-pathnames (cdr part-pathnames))
+           #+(or)(format t "part-pn: ~a  exists: ~a   size: ~a~%"
+                   part-pn
+                   (probe-file part-pn)
+                   (let ((fin (open part-pn :direction :input)))
+                     (prog1
+                         (file-length fin)
+                       (close fin))))
+           (let* ((part-module (parse-bitcode (namestring (truename part-pn)) (thread-local-llvm-context)
+                                              :clasp-build-mode clasp-build-mode)))
+             (setq part-index (+ 1 part-index))
+             (multiple-value-call (function (lambda (failure error-msg)
+                                    (if failure
+                                        (progn
+                                          (format t "While linking part module: ~a  encountered error: ~a~%" part-pn error-msg)))))
+               (llvm-sys:link-modules link-module part-module)))
+           (go top)
+         done))
+      ;; The following links in additional-bitcode-pathnames
+      (let (part-pn)
+        (tagbody
+         top
+           (if (null additional-bitcode-pathnames) (go done))
+           (setq part-pn (car additional-bitcode-pathnames))
+           (setq additional-bitcode-pathnames (cdr additional-bitcode-pathnames))
+           (let* ((bc-file part-pn)
+                  (part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) (thread-local-llvm-context))))
+             (multiple-value-call (function (lambda (failure error-msg)
+                                    (if failure
+                                        (progn
+                                          (format t "While linking part module: ~a  encountered error: ~a~%" part-pn error-msg)))))
+               (llvm-sys:link-modules link-module part-module)))
+           (go top)
+         done))
+      link-module)))
+(export 'link-bitcode-modules-together)
+
 (defvar *run-time-module-counter* 1)
 (defun next-run-time-module-name ()
   "Return the next module name"
@@ -157,6 +221,13 @@ using features defined in corePackage.cc"
   (let* ((module (llvm-create-module (next-run-time-module-name)))
          (data-layout (llvm-sys:get-data-layout module)))
     (defvar *system-data-layout* data-layout)))
+
+
+(defun load-object-files (&optional (object-files core:*command-line-arguments*))
+  (format t "load-object-files trying to load ~a~%" object-files)
+  (format t "clasp-build-mode = ~a~%" core:*clasp-build-mode*))
+
+(export 'load-object-files)
 
 (defun create-run-time-module-for-compile ()
   "Run time modules are used by COMPILE - a new one needs to be created for every COMPILE.
@@ -526,20 +597,21 @@ The passed module is modified as a side-effect."
     (llvm-sys:link-in-module linker builtins-clone))
   module)
 
-(defun code-model (&key jit (target-faso-file (or cmp:*generate-faso* cmp:*compile-file-parallel*)))
+(defun code-model (&key jit (target-faso-file *default-object-type*))
   "Return the code-model for the compilation mode"
   (multiple-value-bind (llvm-version-string llvm-version-val)
       (ext:llvm-version)
-    (if (and target-faso-file (null jit))
-        (progn
-          (if (>= llvm-version-val 10)
-              (warn "By llvm-version 10 we should not need to use the code-model-large"))
-          #+(or)(format t "llvm-version-val ~a Using llvm-sys:code-model-large cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" llvm-version-val *generate-faso* *compile-file-parallel*)
-          'llvm-sys:code-model-large
-          )
-        (progn
-          #+(or)(format t "Using llvm-sys:code-model-small cmp:*generate-faso* -> ~a   cmp:*compile-file-parallel* -> ~a~%" *generate-faso* *compile-file-parallel*)
-          'llvm-sys:code-model-small))))
+    (cond
+      ((and (eq target-faso-file :faso) (null jit))
+       (progn
+         (if (>= llvm-version-val 10)
+             (warn "By llvm-version 10 we should not need to use the code-model-large"))
+         'llvm-sys:code-model-large
+         ))
+      ((eq target-faso-file :object)
+       (progn
+         'llvm-sys:code-model-small))
+      (t (error "Handle target-faso-file ~a" target-faso-file)))))
 
 (export 'code-model)
 

@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/IR/DiagnosticPrinter.h>
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCDisassembler/MCDisassembler.h"
@@ -320,7 +321,19 @@ CL_DEFUN ThreadSafeContext_sp ThreadSafeContext_O::create_thread_safe_context() 
 };
 
 
-CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() { return this->wrappedPtr()->getContext(); };
+CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() {
+  return this->wrappedPtr()->getContext();
+};
+
+
+CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
+  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
+  llvm::LLVMContext* lc = tsc->wrappedPtr()->getContext();
+  GC_ALLOCATE(LLVMContext_O, context);
+  context->_ptr = lc;
+  return context;
+}
+
 
 };
 
@@ -333,13 +346,63 @@ CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   return self;
 };
 
+static void expectNoDiags(const llvm::DiagnosticInfo &DI, void *C) {
+  printf("%s:%d Got a diagnostic\n", __FILE__, __LINE__ );
+}
+
+};
+namespace {
+struct ClaspDiagnosticHandler : public llvm::DiagnosticHandler {
+  bool handleDiagnostics(const llvm::DiagnosticInfo &DI) override {
+    llvm::raw_ostream &OS = llvm::errs();
+    OS << "llvm-lto: ";
+    switch (DI.getSeverity()) {
+    case llvm::DS_Error:
+        OS << "error";
+        break;
+    case llvm::DS_Warning:
+        OS << "warning";
+        break;
+    case llvm::DS_Remark:
+        OS << "remark";
+        break;
+    case llvm::DS_Note:
+        OS << "note"; 
+        break;
+    }
+    llvm::DiagnosticPrinterRawOStream DP(llvm::errs());
+    DI.print(DP);
+    return true;
+  }
+};
+}
+
+
+namespace llvmo {
 CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
   std::string errorMsg = "llvm::Linker::linkInModule reported an error";
   // Take ownership of the pointer and give it to the linker
   llvm::Module* mptr = module->wrappedPtr();
+  llvm::LLVMContext &Ctx = mptr->getContext();
   module->reset_wrappedPtr();
   std::unique_ptr<llvm::Module> u_module(mptr);
+  Ctx.setDiagnosticHandlerCallBack(expectNoDiags);
   bool res = linker->wrappedPtr()->linkInModule(std::move(u_module));
+  Ctx.setDiagnosticHandlerCallBack(NULL);
+  return Values(_lisp->_boolean(res), core::SimpleBaseString_O::make(errorMsg));
+};
+
+CL_DEFUN core::T_mv llvm_sys__linkModules(Module_sp linkedModule, Module_sp module) {
+  std::string errorMsg = "llvm::Linker::linkModules reported an error";
+  // Take ownership of the pointer and give it to the linker
+  llvm::Module* linkedModulePtr = linkedModule->wrappedPtr();
+  llvm::Module* mptr = module->wrappedPtr();
+  llvm::LLVMContext &Ctx = mptr->getContext();
+  module->reset_wrappedPtr();
+  std::unique_ptr<llvm::Module> u_module(mptr);
+//  Ctx.setDiagnosticHandler(std::make_unique<ClaspDiagnosticHandler>(), true);
+  bool res = llvm::Linker::linkModules(*linkedModulePtr,std::move(u_module));
+//  Ctx.setDiagnosticHandlerCallBack(NULL);
   return Values(_lisp->_boolean(res), core::SimpleBaseString_O::make(errorMsg));
 };
 
@@ -994,6 +1057,24 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 };
 
 
+CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContext_sp context) {
+  core::String_sp source = gc::As<core::String_sp>(llvm_ir_string);
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBufferCopy(source->get_std_string());
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(BF("Could not read the string %s - error: %s") % source->get_std_string() % ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage();
+    SIMPLE_ERROR(BF("Could not load llvm-ir from string %s - error: %s") % source->get_std_string() % message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
@@ -1007,7 +1088,7 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
   llvm::Module* m = module.release();
   if (!m) {
     std::string message = smd.getMessage();
-    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % message );
+    SIMPLE_ERROR(BF("Could not load llvm-ir for file %s - error: %s") % spathname->get_std_string() % message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;

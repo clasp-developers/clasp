@@ -101,7 +101,7 @@ class LLVMContext_O : public core::ExternalObject_O {
   typedef llvm::LLVMContext ExternalType;
   typedef llvm::LLVMContext *PointerToExternalType;
 
-protected:
+public:
   PointerToExternalType _ptr;
 
 public:
@@ -4823,6 +4823,8 @@ struct from_object<llvm::Optional<T>> {
 
 namespace llvmo {
 void dump_objects_for_lldb(FILE* fout);
+LLVMContext_sp llvm_sys__thread_local_llvm_context();
+
 };
 
 #endif //]

@@ -620,7 +620,7 @@ Return files."
              (setq idx (- idx 1))
              (go top))))
     result))
-           
+(export 'command-line-arguments-as-list)           
 
 (defun recursive-remove-from-list (item list)
   (if list
@@ -681,7 +681,7 @@ Return files."
           (format fout "(load #P\"app-fasl:~a\")~%" (namestring relative-name)))))))
 
 (defun link-modules (output-file all-modules)
-  ;;(format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)
+  (format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)
   (cond
     ((eq core:*clasp-build-mode* :bitcode)
      (cmp:link-bitcode-modules output-file all-modules))
@@ -691,12 +691,16 @@ Return files."
     ((eq core:*clasp-build-mode* :faso)
      ;; Do nothing - faso files are the result
      (core:link-faso-files output-file all-modules nil))
+    ((eq core:*clasp-build-mode* :fasoll)
+     (cmp::link-fasoll-modules output-file all-modules))
+    ((eq core::*clasp-build-mode* :fasobc)
+     (cmp::link-fasobc-modules output-file all-modules))
     ((eq core:*clasp-build-mode* :fasl)
      (generate-loader output-file all-modules))
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
     
-(export '(compile-aclasp link-faso))
+(export '(compile-aclasp link-fasl))
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
                          (target-backend (default-target-backend))
@@ -722,16 +726,33 @@ Return files."
               (compile-system files :reload nil #| RELOAD USED T HERE |# :parallel-jobs (min *number-of-jobs* 16) :total-files (length system) :file-order file-order)
               ;;  Just compile the following files and don't reload, they are needed to link
               (compile-system pre-files :reload nil :file-order file-order :total-files (length system))
+              (format t "Done with compile-system of aclasp~%")
               (if epilogue-files (compile-system epilogue-files
                                                  :reload nil
                                                  :total-files (length system)
                                                  :file-order file-order))))))))
 
-(defun link-faso (&key clean
-                      (output-file (build-common-lisp-bitcode-pathname))
-                      (target-backend (default-target-backend))
+(defun link-fasl (&key clean
+                    (output-file (build-common-lisp-bitcode-pathname))
+                    (target-backend (default-target-backend))
                     (system (command-line-arguments-as-list)))
-  (core:link-faso-files output-file system nil))
+  (cond
+    ((eq core:*clasp-build-mode* :bitcode)
+     (cmp:link-bitcode-modules output-file all-modules))
+    ((eq core:*clasp-build-mode* :object)
+     ;; Do nothing - object files are the result
+     )
+    ((eq core:*clasp-build-mode* :faso)
+     ;; Do nothing - faso files are the result
+     (core:link-faso-files output-file system nil))
+    ((eq core:*clasp-build-mode* :fasoll)
+     (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasoll))
+            (fout (open output-file :direction :output :if-exists :supersede)))
+       (llvm-sys:dump-module module fout)))
+    ((eq core::*clasp-build-mode* :fasobc)
+     (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasobc)))
+       (llvm-sys:write-bitcode-to-file module (namestring output-file))))
+    (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()

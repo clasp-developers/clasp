@@ -674,7 +674,7 @@ Return the index of the load-time-value"
 
 
 
-(defun setup-literal-machine-function-vectors (the-module)
+(defun setup-literal-machine-function-vectors (the-module &key (id 0))
   (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
                                                         (length (literal-machine-function-vector *literal-machine*))))
          (function-vector (llvm-sys:make-global-variable
@@ -684,7 +684,7 @@ Return the index of the load-time-value"
                            'llvm-sys:internal-linkage
                            (llvm-sys:constant-array-get function-vector-type
                                                         (coerce (literal-machine-function-vector *literal-machine*) 'list))
-                           "function-vector"))
+                           (core:bformat nil "function-vector-%s" id)))
          (function-descs-type (llvm-sys:array-type-get
                                cmp:%function-description*%
                                (length (literal-machine-function-description-vector *literal-machine*))))
@@ -696,14 +696,14 @@ Return the index of the load-time-value"
                           (llvm-sys:constant-array-get
                            function-descs-type
                            (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
-                          "function-descs")))
+                          (core:bformat nil "function-descs-%s" id))))
     (values (length (literal-machine-function-vector *literal-machine*)) function-vector function-descs)))
 
 
 
 
 
-(defun do-literal-table (body-fn)
+(defun do-literal-table (id body-fn)
   (llog "do-literal-table~%")
   (let ((*gcroots-in-module*
           (llvm-sys:make-global-variable cmp:*the-module*
@@ -736,7 +736,7 @@ Return the index of the load-time-value"
             (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
-                                                                  "startup-byte-code")))
+                                                                  (core:bformat nil "startup-byte-code-%s" id))))
               (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
                                       (list *gcroots-in-module*
                                             (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0))
@@ -762,7 +762,7 @@ Return the index of the load-time-value"
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
             (multiple-value-bind (function-vector-length function-vector function-descs)
-                (setup-literal-machine-function-vectors cmp:*the-module*)
+                (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
                     (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
@@ -787,8 +787,8 @@ Return the index of the load-time-value"
             ;; Erase the dummy holder
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 
-(defmacro with-literal-table (&body body)
-  `(do-literal-table (lambda () ,@body)))
+(defmacro with-literal-table ((&key id)&body body)
+  `(do-literal-table ,id (lambda () ,@body)))
 
 
 
@@ -917,7 +917,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
   (let ((fn (cmp:with-new-function (fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
-                                       :function-form form
                                        :function-info (cmp:make-function-info
                                                        :function-name 'bclasp-top-level-form
                                                        :lambda-list nil
@@ -1091,7 +1090,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (let ((fn (cmp:with-new-function (fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
-                                       :function-form form
                                        :function-info (cmp:make-function-info
                                                        :function-name 'bclasp-top-level-form
                                                        :lambda-list nil

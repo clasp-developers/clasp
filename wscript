@@ -164,7 +164,7 @@ VALID_OPTIONS = [
     "INCLUDES",
     # Add additional link flags
     "LINKFLAGS",
-    # Define how clasp is built - can be one of "bitcode" or "object".
+    # Define how clasp is built - can be one of "faso", "bitcode" or "object".
     # If "bitcode" then C++ and CL compiles to bitcode and thinLTO is used to link everything.
     #   this gives the fastest product but linking takes a long time.
     # If "object" then C++ and CL produce object files and regular linking is used.
@@ -403,8 +403,12 @@ def configure_common(cfg,variant):
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 
 def module_fasl_extension(bld,name):
-    if (bld.env.USE_COMPILE_FILE_PARALLEL or bld.env.CLASP_BUILD_MODE=='faso'):
+    if (bld.env.CLASP_BUILD_MODE=='faso'):
         return "%s.fasp" % name
+    elif (bld.env.CLASP_BUILD_MODE=='fasobc'):
+        return "%s.faspbc" % name
+    elif (bld.env.CLASP_BUILD_MODE=='fasoll'):
+        return "%s.faspll" % name
     else:
         return "%s.fasl" % name
 
@@ -463,6 +467,10 @@ class variant(object):
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.lfasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         elif (build.env.CLASP_BUILD_MODE == 'faso'):
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasp' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
+        elif (build.env.CLASP_BUILD_MODE == 'fasoll'):
+            return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.faspll' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
+        elif (build.env.CLASP_BUILD_MODE == 'fasobc'):
+            return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.faspbc' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         else:
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
     def fasl_dir(self, stage=None):
@@ -928,6 +936,14 @@ def configure(cfg):
         cfg.define("CLASP_BUILD_MODE",3) # object files
         cfg.env.CLASP_BUILD_MODE = 'faso'
         cfg.env.LTO_FLAG = []
+    elif (cfg.env['CLASP_BUILD_MODE']=='fasoll'):
+        cfg.define("CLASP_BUILD_MODE",4) # fasoll
+        cfg.env.CLASP_BUILD_MODE = 'fasoll'
+        cfg.env.LTO_FLAG = []
+    elif (cfg.env['CLASP_BUILD_MODE']=='fasobc'):
+        cfg.define("CLASP_BUILD_MODE",5) # fasobc
+        cfg.env.CLASP_BUILD_MODE = 'fasobc'
+        cfg.env.LTO_FLAG = []
     elif (cfg.env['CLASP_BUILD_MODE']=='fasl'):
         cfg.define("CLASP_BUILD_MODE",0) # object files
         cfg.env.CLASP_BUILD_MODE = 'fasl'
@@ -1127,8 +1143,10 @@ def configure(cfg):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('CFLAGS', cfg.env.LTO_FLAG )
         cfg.env.append_value('LINKFLAGS', cfg.env.LTO_FLAG )
+    if (not cfg.env['USE_LLD']):
+        cfg.env['USE_LLD'] = False
     if (cfg.env['DEST_OS'] == LINUX_OS ):
-        if (cfg.env['USE_LLD'] and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
+        if ( (cfg.env['USE_LLD'] == True) and cfg.env.CLASP_BUILD_MODE == 'bitcode'):
             # Only use lld if USE_LLD is set and CLASP_BUILD_MODE is bitcode
             cfg.env.append_value('LINKFLAGS', '-fuse-ld=lld-%d.0' % LLVM_VERSION)
             linker_in_use = '-fuse-ld=lld-%d.0' % LLVM_VERSION
@@ -1492,6 +1510,7 @@ def build(bld):
 
         #link aclasp from output files
         aclasp_link_product = variant.fasl_name(bld,stage = 'a')
+        print("About to setup link_fasl task: %s -> %s" % (aclasp_common_lisp_output_name_list, aclasp_link_product))
         task = link_fasl(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          builtins_bitcode_node,
@@ -1591,7 +1610,9 @@ def build(bld):
                 os.unlink(clasp_symlink_node.abspath())
     if (bld.stage == 'rebuild' or bld.stage_val >= 4):
         log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
-        if (bld.env.CLASP_BUILD_MODE=='faso'):   # build cclasp executable
+        if (bld.env.CLASP_BUILD_MODE=='faso'
+            or bld.env.CLASP_BUILD_MODE == "fasoll"
+            or bld.env.CLASP_BUILD_MODE == "fasobc" ):
             task = symlink_executable(env=bld.env)
             task.set_inputs(bld.iclasp_executable)
             task.set_outputs(bld.cclasp_executable)
@@ -1688,7 +1709,9 @@ class run_dsymutil(clasp_task):
 
 class link_fasl(clasp_task):
     def run(self):
-        if (self.env.CLASP_BUILD_MODE == "faso"):
+        if (self.env.CLASP_BUILD_MODE == "faso"
+            or self.env.CLASP_BUILD_MODE == "fasoll"
+            or self.env.CLASP_BUILD_MODE == "fasobc" ):
             executable = self.inputs[0].abspath()
             faso_files = []
             for node in self.inputs[3:]:
@@ -1699,7 +1722,8 @@ class link_fasl(clasp_task):
                                           features = ["clasp-min"],
                                           forms = [ '(setq *features* (cons :aclasp *features*))',
                                                     '(load "sys:kernel;clasp-builder.lsp")',
-                                                    '(core:link-faso :output-file #P"%s")' % output_file,
+                                                    '(load "sys:kernel;cmp;jit-setup.lsp")',
+                                                    '(core:link-fasl :output-file #P"%s")' % output_file,
                                                     '(core:exit)'],
                                           *faso_files)
             log.debug("link_fasl = %s\n", cmd)
@@ -1879,6 +1903,10 @@ class compile_module(clasp_task):
         output_type = ":fasl"
         if (self.env.CLASP_BUILD_MODE == "faso"):
             output_type = ":fasp"
+        elif (self.env.CLASP_BUILD_MODE == "fasoll"):
+            output_type = ":faspll"
+        elif (self.env.CLASP_BUILD_MODE == "fasobc"):
+            output_type = ":faspbc"
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = ['ignore-extensions'],

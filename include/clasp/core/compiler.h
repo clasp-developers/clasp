@@ -29,6 +29,10 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 
+namespace llvmo {
+FORWARD(ClaspJIT);
+}
+
 namespace core {
 
 T_sp core__startup_image_pathname(char stage);
@@ -36,6 +40,7 @@ T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_s
 T_mv core__load_binary(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
 T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
+llvmo::ClaspJIT_sp compiler__jit_engine();
 
 void initialize_compiler_primitives(Lisp_sp lisp);
 };
