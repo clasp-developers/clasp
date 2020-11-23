@@ -2,7 +2,6 @@
 #define gctools_cast_H
 
 
-
 namespace cast {
   template <typename TOPTR, typename FROMPTR>
     struct Cast {
@@ -50,7 +49,7 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) || defined(RUNNING_MPSPREP)
 //----------------------------------------------------------------------
 #ifndef SCRAPING
  #define DECLARE_FORWARDS
@@ -70,13 +69,13 @@ namespace cast {
 
 #ifdef USE_MPS
 //----------------------------------------------------------------------
- #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+ #if !defined(RUNNING_MPSPREP) && !defined(SCRAPING)
   #define GC_DECLARE_FORWARDS
    #include CLASP_GC_FILENAME
   #undef GC_DECLARE_FORWARDS
  #endif
 namespace cast {
- #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
+ #if !defined(RUNNING_MPSPREP) && !defined(SCRAPING)
   #define GC_DYNAMIC_CAST
    #include CLASP_GC_FILENAME
   #undef GC_DYNAMIC_CAST
@@ -87,7 +86,7 @@ namespace cast {
 
 
 // Cast assumes that the client pointer is untagged already
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM) || !defined(RUNNING_MPSPREP)
 #ifdef USE_CXX_DYNAMIC_CAST
 namespace gctools {
     template <typename TOPTR>

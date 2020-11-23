@@ -1054,7 +1054,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_MPSPREP
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, weak_obj_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, weak_obj_skip);
@@ -1143,7 +1143,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
-#ifdef RUNNING_GC_BUILDER
+#ifdef RUNNING_MPSPREP
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
   printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);

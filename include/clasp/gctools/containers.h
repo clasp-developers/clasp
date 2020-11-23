@@ -46,7 +46,7 @@ namespace gctools {
 
 template <class Vec>
 class Vec0_impl {
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
   friend GC_RESULT(::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
 public:
@@ -96,7 +96,7 @@ public:
 
 template <class Arr>
 class Array0_impl {
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
   friend GC_RESULT(::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
 #endif
 public:

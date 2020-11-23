@@ -381,7 +381,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
 #ifdef USE_BOEHM
         GC_FREE(&*memory);
 #endif
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
         throw_hard_error("I need a way to deallocate MPS allocated objects that are not moveable or collectable");
         GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
@@ -556,7 +556,7 @@ should not be managed by the GC */
       printf("%s:%d Using GC_FREE to free memory at@%p\n", __FILE__, __LINE__, memory );
       GC_FREE(memory);
 #endif
-#if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
+#if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
       throw_hard_error(" GCObjectAppropriatePoolAllocator<OT, unmanaged > I need a way to deallocate MPS allocated objects that are not moveable or collectable");
       GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif

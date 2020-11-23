@@ -421,7 +421,7 @@ Convert colons to underscores"
 
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
-  (format sout " #ifdef USE_MPS~%")
+  (format sout " #if defined(USE_MPS) && !defined(RUNNING_MPSPREP)~%")
   (format sout "  #error \"Do not include this section when USE_MPS is defined - use the section from clasp_gc_xxx.cc\"~%")
   (format sout " #endif // USE_MPS~%"))
 

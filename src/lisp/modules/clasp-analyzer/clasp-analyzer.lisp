@@ -3563,7 +3563,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   "Build a function that fixes up compile command arguments to run the static analyzer."
   (lambda (args filename) 
     (let ((result (concatenate 'vector args
-                               (vector "-v" "-DRUNNING_GC_BUILDER" "-Wno-nullability-completeness"))))
+                               (vector "-v" "-DRUNNING_MPSPREP" "-Wno-nullability-completeness"))))
       result)))
 
 (defun setup-tools (compilation-tool-database)

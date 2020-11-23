@@ -584,7 +584,7 @@ class mpsprep(mps_base):
     gc_name = 'mpsprep'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep", env=env_copy.derive())
-        cfg.define("RUNNING_GC_BUILDER",1)
+        cfg.define("RUNNING_MPSPREP",1)
         super(mpsprep,self).configure_variant(cfg,env_copy)
 
 class mpsprep_d(mps_base):
@@ -593,7 +593,7 @@ class mpsprep_d(mps_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
-        cfg.define("RUNNING_GC_BUILDER",1)
+        cfg.define("RUNNING_MPSPREP",1)
         super(mpsprep_d,self).configure_variant(cfg,env_copy)
 
 class mps(mps_base):
@@ -712,7 +712,7 @@ class mpsprep_mpi(mps_mpi_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_mpi", env=env_copy.derive())
-        cfg.define("RUNNING_GC_BUILDER",1)
+        cfg.define("RUNNING_MPSPREP",1)
         super(mpsprep_mpi,self).configure_variant(cfg,env_copy)
 
 class mpsprep_mpi_d(mps_mpi_base):
@@ -721,7 +721,7 @@ class mpsprep_mpi_d(mps_mpi_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_mpi_d", env=env_copy.derive())
-        cfg.define("RUNNING_GC_BUILDER",1)
+        cfg.define("RUNNING_MPSPREP",1)
         super(mpsprep_mpi_d,self).configure_variant(cfg,env_copy)
 
 class mps_mpi(mps_mpi_base):

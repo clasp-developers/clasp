@@ -98,11 +98,11 @@ namespace asttooling {
 #endif
 #endif
 #ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER
+ #ifndef RUNNING_MPSPREP
   #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
-#endif
+ #endif
 #endif
 namespace gctools {
 
@@ -118,11 +118,11 @@ namespace gctools {
 #endif
 #endif
 #ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER
- #define GC_STAMP_SELECTORS
- #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
- #undef GC_STAMP_SELECTORS
-#endif
+ #ifndef RUNNING_MPSPREP
+  #define GC_STAMP_SELECTORS
+  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef GC_STAMP_SELECTORS
+ #endif
 #endif
 };
 

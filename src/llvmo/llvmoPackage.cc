@@ -573,7 +573,7 @@ void initialize_llvm(int argc, char **argv) {
 //
 // Include the Kinds
 //
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_MPSPREP
 #define NAMESPACE_llvmo
 #include "clasp_gc.cc"
 #undef NAMESPACE_llvmo

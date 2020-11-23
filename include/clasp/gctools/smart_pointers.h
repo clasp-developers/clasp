@@ -425,7 +425,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 namespace gctools {
 
-#if defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING)
+#if (defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING))
 template <typename T1, typename T2>
 struct Inherits : std::false_type {};
 #define DECLARE_INHERITANCE

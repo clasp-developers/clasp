@@ -1672,8 +1672,8 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
     SIMPLE_ERROR(BF("Cant set badge for MPS_CONS_AWL_POOL"));
     return (size_t)object.unsafe_cons();
 # else
-    (size_t)object.unsafe_cons()->_badge = badge;
-    return
+    object.unsafe_cons()->_badge = badge;
+    return;
 # endif
 #endif    
   }

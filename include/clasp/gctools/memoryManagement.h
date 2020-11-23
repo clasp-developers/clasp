@@ -108,7 +108,7 @@ struct GCHeader {
   typedef Header_s HeaderType;
 #endif
 #ifdef USE_MPS
-#ifdef RUNNING_GC_BUILDER
+#ifdef RUNNING_MPSPREP
   typedef Header_s HeaderType;
 #else
   typedef Header_s HeaderType;
@@ -174,15 +174,15 @@ namespace gctools {
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
- #if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
+ #if defined(USE_BOEHM) || defined(RUNNING_MPSPREP)
   #define GC_ENUM
         STAMP_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
  #endif
 #endif        
-#ifndef RUNNING_GC_BUILDER
- #ifdef USE_MPS
+#ifdef USE_MPS
+ #ifndef RUNNING_MPSPREP
   #define GC_STAMP
    #include CLASP_GC_FILENAME
   #undef GC_STAMP
@@ -773,14 +773,14 @@ namespace gctools {
   template <class OT>
     struct GCStamp {
 #ifdef USE_MPS
-#ifdef RUNNING_GC_BUILDER
+#ifdef RUNNING_MPSPREP
       static GCStampEnum const Stamp = STAMP_null;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
       static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
-#endif // RUNNING_GC_BUILDER
+#endif // RUNNING_MPSPREP
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
