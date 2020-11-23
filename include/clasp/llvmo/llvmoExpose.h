@@ -2985,6 +2985,9 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  void addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
+  core::List_sp getArgumentList() const;
+  llvm::Function* getCalledFunction();
   CallBase_O() : Base(){};
   ~CallBase_O() {}
 
@@ -3002,13 +3005,10 @@ class CallInst_O : public CallBase_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  core::List_sp getArgumentList() const;
-  llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
@@ -3357,13 +3357,10 @@ class InvokeInst_O : public CallBase_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  core::List_sp getArgumentList() const;
-  llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}

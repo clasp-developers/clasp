@@ -1997,8 +1997,7 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
   return NewCI;
 };
 
-
-core::List_sp CallInst_O::getArgumentList() const {
+core::List_sp CallBase_O::getArgumentList() const {
   ql::list l;
   for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
         arg != argEnd; ++arg ) {
@@ -2007,41 +2006,17 @@ core::List_sp CallInst_O::getArgumentList() const {
   return l.cons();
 };  
 
-CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(Instruction_sp callOrInvoke) {
-  if (gc::IsA<CallInst_sp>(callOrInvoke)) {
-    return gc::As<CallInst_sp>(callOrInvoke)->getArgumentList();
-  } else if (gc::IsA<InvokeInst_sp>(callOrInvoke)) {
-    return gc::As<InvokeInst_sp>(callOrInvoke)->getArgumentList();
-  }
-  SIMPLE_ERROR(BF("Only call or invoke can provide arguments"));
+CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(CallBase_sp callOrInvoke) {
+  return callOrInvoke->getArgumentList();
 }
 
-
-CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
+CL_DEFMETHOD void CallBase_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
   this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
-CL_DEFMETHOD llvm::Function* CallInst_O::getCalledFunction() {
+CL_DEFMETHOD llvm::Function* CallBase_O::getCalledFunction() {
   return this->wrappedPtr()->getCalledFunction();
-}
-
-CL_DEFMETHOD void InvokeInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
-{
-  this->wrappedPtr()->addParamAttr(index,attrkind);
-}
-
-CL_DEFMETHOD llvm::Function* InvokeInst_O::getCalledFunction() {
-  return this->wrappedPtr()->getCalledFunction();
-}
-
-core::List_sp InvokeInst_O::getArgumentList() const {
-  ql::list l;
-  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
-        arg != argEnd; ++arg ) {
-    l << translate::to_object<llvm::Value*>::convert(*arg);
-  }
-  return l.cons();
 };  
 
 }; // llvmo
