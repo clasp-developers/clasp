@@ -954,14 +954,15 @@ def configure(cfg):
 
     # default for USE_COMPILE_FILE_PARALLEL for Darwin is True - otherwise False
     if (not 'USE_COMPILE_FILE_PARALLEL' in cfg.env):
+        default_value = True
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             # by default only MacOS has USE_COMPILE_FILE_PARALLEL=True
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = default_value
         elif (cfg.env['DEST_OS'] == LINUX_OS ):
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = default_value
         elif (cfg.env['DEST_OS'] == FREEBSD_OS ):
             # cracauer todo
-            cfg.env['USE_COMPILE_FILE_PARALLEL'] = False
+            cfg.env['USE_COMPILE_FILE_PARALLEL'] = default_value
         else:
             raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
         
