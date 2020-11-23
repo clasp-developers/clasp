@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <cassert>
 #include <atomic>
 #include <thread>
+#include <array>
 #include <unordered_map>
 #include <vector>
 
