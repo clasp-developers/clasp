@@ -172,6 +172,15 @@ class clasp_task(Task.Task):
                 "--disable-mpi",
         ]
 
+        if (self.env.THREAD_SANITIZER):
+            cmd = cmd + [ "-f", "sanitize=thread" ]
+
+        if (self.env.ADDRESS_SANITIZER):
+            cmd = cmd + [ "-f", "sanitize=address" ]
+
+        if (self.env.MEMORY_SANITIZER):
+            cmd = cmd + [ "-f", "sanitize=memory" ]
+
         if resource_dir:
             cmd = cmd + [ "--resource-dir", resource_dir ]
 

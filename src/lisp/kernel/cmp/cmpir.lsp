@@ -1158,8 +1158,10 @@ and then the irbuilder-alloca, irbuilder-body."
   (with-irbuilder (irbuilder)
     (let ((rsa
             (llvm-sys:create-alloca *irbuilder* %register-save-area% (jit-constant-size_t 1) label)))
-      (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0)
-                     rsa)
+      (unless (member :sanitizer=thread *features*)
+        ;; Don't generate calls to llvm.experimental.stackmap when :sanitizer=thread feature is on
+        (irc-intrinsic "llvm.experimental.stackmap" (jit-constant-i64 1234567) (jit-constant-i32 0)
+                       rsa))
       rsa)))
 
 (defun null-t-ptr ()
