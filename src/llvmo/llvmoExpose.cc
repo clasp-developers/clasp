@@ -1997,6 +1997,11 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
   return NewCI;
 };
 
+CL_LISPIFY_NAME(getCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, &llvm::CallBase::getCallingConv);
+CL_LISPIFY_NAME(setCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, &llvm::CallBase::setCallingConv);
+
 core::List_sp CallBase_O::getArgumentList() const {
   ql::list l;
   for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
