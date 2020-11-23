@@ -223,9 +223,9 @@ And convert everything to JIT constants."
                       (%size_t (length arguments))
                       real-args))
          (result-in-registers
-           (if cmp::*current-unwind-landing-pad-dest*
-               (cmp:irc-create-invoke entry-point args cmp::*current-unwind-landing-pad-dest* label)
-               (cmp:irc-create-call entry-point args label))))
+           (cmp::irc-call-or-invoke entry-point args
+                                    cmp::*current-unwind-landing-pad-dest*
+                                    label)))
     (store-tmv result-in-registers return-value)))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
@@ -238,9 +238,9 @@ And convert everything to JIT constants."
                       intrinsic-name
                       cmp:*the-module*))))
          (result-in-registers
-           (if cmp::*current-unwind-landing-pad-dest*
-               (cmp::irc-create-invoke func args cmp::*current-unwind-landing-pad-dest*)
-               (cmp::irc-create-call func args label))))
+           (cmp::irc-call-or-invoke func args
+                                    cmp::*current-unwind-landing-pad-dest*
+                                    label)))
     (store-tmv result-in-registers return-value)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))

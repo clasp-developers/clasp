@@ -483,10 +483,8 @@
          (arguments (parse-local-call-arguments instruction callee))
          (function (main-function callee-info))
          (result-in-registers
-           (if cmp::*current-unwind-landing-pad-dest*
-               (cmp:irc-create-invoke function arguments cmp::*current-unwind-landing-pad-dest*)
-               ;; FIXME: USE FASTCC CONVENTION HERE.
-               (cmp:irc-create-call function arguments))))
+           ;; FIXME: USE FASTCC CONVENTION HERE.
+           (cmp::irc-call-or-invoke function arguments)))
     (store-tmv result-in-registers return-value)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
