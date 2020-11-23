@@ -86,7 +86,7 @@ namespace cast {
 
 
 // Cast assumes that the client pointer is untagged already
-#if defined(USE_BOEHM) || !defined(RUNNING_MPSPREP)
+#if defined(USE_BOEHM)
 #ifdef USE_CXX_DYNAMIC_CAST
 namespace gctools {
     template <typename TOPTR>
@@ -115,6 +115,17 @@ namespace gctools {
 
 
 #ifdef USE_MPS
+#ifdef RUNNING_MPSPREP
+namespace gctools {
+    template <typename TOPTR>
+    struct FromGeneralCast {
+    typedef TOPTR ToType;
+    inline static bool isA(core::General_O* client) {
+      return (dynamic_cast<ToType>(client) != NULL);
+    }
+  };
+};
+#else
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -125,6 +136,7 @@ namespace gctools {
     };
 
 };
+#endif // RUNNING_MPSPREP
 #endif // USE_MPS
 
 
