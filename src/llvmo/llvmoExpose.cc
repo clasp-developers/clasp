@@ -2950,6 +2950,10 @@ CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::empty);
   CL_LISPIFY_NAME(arg_size);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::arg_size);
+  CL_LISPIFY_NAME(setCallingConv);
+  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setCallingConv);
+  CL_LISPIFY_NAME(getCallingConv);
+  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::getCallingConv);
   CL_LISPIFY_NAME(setDoesNotThrow);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotThrow);
   CL_LISPIFY_NAME(doesNotThrow);
