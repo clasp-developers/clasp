@@ -483,8 +483,9 @@
          (arguments (parse-local-call-arguments instruction callee))
          (function (main-function callee-info))
          (result-in-registers
-           ;; FIXME: USE FASTCC CONVENTION HERE.
            (cmp::irc-call-or-invoke function arguments)))
+    ;; fastcc. FIXME: Use enum.
+    (llvm-sys:set-calling-conv result-in-registers 8)
     (store-tmv result-in-registers return-value)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
@@ -847,12 +848,16 @@
       ;; Tail call the real function.
       (cmp:with-debug-info-source-position
           ((core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
-        ;; FIXME: USE FASTCC CONVENTION HERE.
         (cmp:irc-ret
-         (cmp:irc-create-call
-          (main-function llvm-function-info)
-          ;; Augment the environment lexicals as a local call would.
-          (nconc environment-values (mapcar #'in (arguments llvm-function-info))))))))
+         (let ((c
+                 (cmp:irc-create-call
+                  (main-function llvm-function-info)
+                  ;; Augment the environment lexicals as a local call would.
+                  (nconc environment-values
+                         (mapcar #'in (arguments llvm-function-info))))))
+           ;; fastcc. FIXME: Use enum.
+           (llvm-sys:set-calling-conv c 8)
+           c)))))
   the-function)
 
 (defun layout-main-function* (the-function ir
@@ -959,6 +964,8 @@
     (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
                             :function-type llvm-function-type
                             :function the-function)
+      ;; fastcc. FIXME: Use enum.
+      (llvm-sys:set-calling-conv the-function 8)
       (llvm-sys:set-personality-fn the-function
                                    (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)
