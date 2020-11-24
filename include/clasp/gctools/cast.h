@@ -115,17 +115,17 @@ namespace gctools {
 
 
 #ifdef USE_MPS
-#ifdef RUNNING_MPSPREP
-namespace gctools {
-    template <typename TOPTR>
-    struct FromGeneralCast {
-    typedef TOPTR ToType;
-    inline static bool isA(core::General_O* client) {
-      return (dynamic_cast<ToType>(client) != NULL);
-    }
-  };
-};
-#else
+// #ifdef RUNNING_MPSPREP
+// namespace gctools {
+//     template <typename TOPTR>
+//     struct FromGeneralCast {
+//     typedef TOPTR ToType;
+//     inline static bool isA(core::General_O* client) {
+//       return (dynamic_cast<ToType>(client) != NULL);
+//     }
+//   };
+// };
+// #else
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -136,7 +136,7 @@ namespace gctools {
     };
 
 };
-#endif // RUNNING_MPSPREP
+//#endif // RUNNING_MPSPREP
 #endif // USE_MPS
 
 
