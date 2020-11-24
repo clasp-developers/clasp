@@ -295,11 +295,15 @@
 (defmethod interpret-ast ((ast cleavir-ast:load-time-value-ast) env)
   (eval (cleavir-ast:form ast)))
 
-(defcan cleavir-ast:if-ast)
-(defmethod interpret-ast ((ast cleavir-ast:if-ast) env)
-  (if (interpret-boolean-ast (cleavir-ast:test-ast ast) env)
-      (interpret-ast (cleavir-ast:then-ast ast) env)
-      (interpret-ast (cleavir-ast:else-ast ast) env)))
+;; Turns out the AST interpreter is much slower once we start
+;; introducing more complex expressions like this....
+#+(or)
+(progn
+  (defcan cleavir-ast:if-ast)
+  (defmethod interpret-ast ((ast cleavir-ast:if-ast) env)
+    (if (interpret-boolean-ast (cleavir-ast:test-ast ast) env)
+        (interpret-ast (cleavir-ast:then-ast ast) env)
+        (interpret-ast (cleavir-ast:else-ast ast) env))))
 
 (defcan cleavir-ast:multiple-value-call-ast)
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-call-ast) env)

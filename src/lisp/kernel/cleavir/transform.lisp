@@ -238,7 +238,7 @@
     (cleavir-primop:aset vector index value t t t)
     value))
 
-(deftransform length ((s list)) '(lambda (x) (if (cleavir-primop:eq x nil) 0 (core:cons-length x))))
+(deftransform length ((s list)) '(lambda (x) (if x (core:cons-length x) 0)))
 (deftransform length ((s vector)) 'core::vector-length)
 
 #+(or)

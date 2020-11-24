@@ -208,7 +208,7 @@
   (debug-inline "not")
   (declaim (inline cl:not))
   (defun not (object)
-    (if (cleavir-primop:eq object nil) t nil)))
+    (if object nil t)))
 
 (progn
   (debug-inline "identity")
