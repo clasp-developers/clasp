@@ -14,10 +14,20 @@
    (%main-function :initarg :main-function :reader main-function)
    (%main-function-description :initarg :main-function-description :reader main-function-description)))
 
+;; Copied from Cleavir. The fact inlining capability coincides with what
+;; Clasp can call directly is semi-coincidental, though.
+(defun lambda-list-too-hairy-p (lambda-list)
+  (not (every (lambda (item)
+                (or (not (symbolp item))
+                    (eq item '&optional)))
+              lambda-list)))
+
 ;; Assume that functions with no encloses and no local calls are
 ;; toplevel and need a XEP.
 (defun xep-needed-p (function)
   (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
+      ;; We need a XEP for lambda lists that involve consing/iteration.
+      (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
       ;; Else it would have been removed or deleted as it is
       ;; unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
@@ -445,10 +455,9 @@
 ;; Create the argument list for a local call by parsing the callee's
 ;; lambda list and filling in the correct values at compile time. We
 ;; assume that we have already checked the validity of this call.
-(defun parse-local-call-arguments (instruction callee)
+(defun parse-local-call-arguments (callee present-arguments)
   (let* ((lambda-list (cleavir-bir:lambda-list callee))
          (callee-info (find-llvm-function-info callee))
-         (present-arguments (rest (cleavir-bir:inputs instruction)))
          (environment (environment callee-info))
          (state :required)
          (arguments '()))
@@ -480,13 +489,20 @@
   (declare (ignore abi))
   (let* ((callee (cleavir-bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
-         (arguments (parse-local-call-arguments instruction callee))
-         (function (main-function callee-info))
-         (result-in-registers
-           (cmp::irc-call-or-invoke function arguments)))
-    ;; fastcc. FIXME: Use enum.
-    (llvm-sys:set-calling-conv result-in-registers 8)
-    (store-tmv result-in-registers return-value)))
+         (lisp-arguments (rest (cleavir-bir:inputs instruction))))
+    (if (lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
+        ;; Has a &rest or something, so just call the XEP.
+        (cmp::irc-call-or-invoke
+         (xep-function callee)
+         (mapcar #'in lisp-arguments))
+        ;; Call directly.
+        (let* ((arguments (parse-local-call-arguments callee lisp-arguments))
+               (function (main-function callee-info))
+               (result-in-registers
+                 (cmp::irc-call-or-invoke function arguments)))
+          ;; fastcc. FIXME: Use enum.
+          (llvm-sys:set-calling-conv result-in-registers 8)
+          (store-tmv result-in-registers return-value)))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
