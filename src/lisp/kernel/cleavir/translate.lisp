@@ -185,13 +185,33 @@
           do (phi-out (in in) out (llvm-sys:get-insert-block cmp:*irbuilder*)))
   (cmp:irc-br (first next)))
 
-(defmethod translate-terminator ((instruction cleavir-bir:eqi)
-                                 return-value abi next)
-  (declare (ignore return-value abi))
+(defgeneric translate-conditional-test (instruction next))
+
+(defmethod translate-conditional-test (instruction next)
+  ;; When the test is not a conditional test, just grab the value and
+  ;; compare to NIL.
+  (cmp:irc-cond-br (cmp:irc-icmp-eq (in instruction) (cmp::irc-nil))
+                   (second next) (first next)))
+
+(defmethod translate-conditional-test ((instruction cleavir-bir:conditional-test) next)
+  (error "Don't know how to translate this conditional test ~a." instruction))
+
+(defmethod translate-conditional-test ((instruction cleavir-bir:eq-test) next)
   (let ((inputs (cleavir-bir:inputs instruction)))
     (cmp:irc-cond-br
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
      (first next) (second next))))
+
+(defmethod translate-terminator ((instruction cleavir-bir:ifi)
+                                 return-value abi next)
+  (declare (ignore return-value abi))
+  (translate-conditional-test (first (cleavir-bir:inputs instruction)) next))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:conditional-test)
+                                         return-value abi)
+  (declare (ignore instruction return-value abi))
+  ;; Don't do anything besides assert that it is used by an IF.
+  (assert (typep (cleavir-bir:use instruction) 'cleavir-bir:ifi)))
 
 (defmethod translate-terminator ((instruction cleavir-bir:case)
                                  return-value abi next)
