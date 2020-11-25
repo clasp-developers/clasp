@@ -1205,9 +1205,13 @@ CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
       //	    .value(_sym_AttributeAddressSafety,llvm::Attribute::AddressSafety)
   CL_END_ENUM(_sym_AttributeEnum);
   SYMBOL_EXPORT_SC_(LlvmoPkg, attributesGet);
-
-
-
+  SYMBOL_EXPORT_SC_(LlvmoPkg, CallingConv);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, C);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, fastcc);
+  CL_BEGIN_ENUM(llvmo::ClaspCallingConv, _sym_CallingConv, "CallingConv");
+  CL_VALUE_ENUM(_sym_C, llvmo::ClaspCallingConv::C);
+  CL_VALUE_ENUM(_sym_fastcc, llvmo::ClaspCallingConv::Fast);
+  CL_END_ENUM(_sym_CallingConv)
 
 CL_LAMBDA(module value &optional label);
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
@@ -1997,10 +2001,28 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
   return NewCI;
 };
 
+// FIXME: Should be made into a generic function or something.
 CL_LISPIFY_NAME(getCallingConv);
-CL_EXTERN_DEFMETHOD(CallBase_O, &llvm::CallBase::getCallingConv);
+CL_DEFUN llvmo::ClaspCallingConv llvm_sys__get_calling_conv(core::T_sp obj) {
+  if (gc::IsA<CallBase_sp>(obj)) {
+    CallBase_sp cb = gc::As_unsafe<CallBase_sp>(obj);
+    return (llvmo::ClaspCallingConv)(cb->wrappedPtr()->getCallingConv());
+  } else if (gc::IsA<Function_sp>(obj)) {
+    Function_sp f = gc::As_unsafe<Function_sp>(obj);
+    return (llvmo::ClaspCallingConv)(f->wrappedPtr()->getCallingConv());
+  } else SIMPLE_ERROR(BF("Can only get calling conv for calls and functions"));
+}
 CL_LISPIFY_NAME(setCallingConv);
-CL_EXTERN_DEFMETHOD(CallBase_O, &llvm::CallBase::setCallingConv);
+CL_DEFUN void llvm_sys__set_calling_conv(core::T_sp obj,
+                                         llvmo::ClaspCallingConv conv) {
+  if (gc::IsA<CallBase_sp>(obj)) {
+    CallBase_sp cb = gc::As_unsafe<CallBase_sp>(obj);
+    cb->wrappedPtr()->setCallingConv(conv);
+  } else if (gc::IsA<Function_sp>(obj)) {
+    Function_sp f = gc::As_unsafe<Function_sp>(obj);
+    f->wrappedPtr()->setCallingConv(conv);
+  } else SIMPLE_ERROR(BF("Can only set calling conv for calls and functions"));
+}  
 
 core::List_sp CallBase_O::getArgumentList() const {
   ql::list l;
@@ -2930,10 +2952,6 @@ CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::empty);
   CL_LISPIFY_NAME(arg_size);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::arg_size);
-  CL_LISPIFY_NAME(setCallingConv);
-  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setCallingConv);
-  CL_LISPIFY_NAME(getCallingConv);
-  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::getCallingConv);
   CL_LISPIFY_NAME(setDoesNotThrow);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotThrow);
   CL_LISPIFY_NAME(doesNotThrow);

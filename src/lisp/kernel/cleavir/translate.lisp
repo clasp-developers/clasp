@@ -500,8 +500,7 @@
                (function (main-function callee-info))
                (result-in-registers
                  (cmp::irc-call-or-invoke function arguments)))
-          ;; fastcc. FIXME: Use enum.
-          (llvm-sys:set-calling-conv result-in-registers 8)
+          (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
           (store-tmv result-in-registers return-value)))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
@@ -871,8 +870,7 @@
                   ;; Augment the environment lexicals as a local call would.
                   (nconc environment-values
                          (mapcar #'in (arguments llvm-function-info))))))
-           ;; fastcc. FIXME: Use enum.
-           (llvm-sys:set-calling-conv c 8)
+           (llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
            c)))))
   the-function)
 
@@ -980,8 +978,7 @@
     (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
                             :function-type llvm-function-type
                             :function the-function)
-      ;; fastcc. FIXME: Use enum.
-      (llvm-sys:set-calling-conv the-function 8)
+      (llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
       (llvm-sys:set-personality-fn the-function
                                    (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)

@@ -2973,6 +2973,22 @@ struct to_object<llvm::PHINode *> {
 
 
 namespace llvmo {
+
+/* The LLVM enum for calling conventions is completely anonymous, which
+ * makes translating Lisp function arguments annoying.
+ * So here we define our own enum with what we need, and use that.
+ * FIXME: Move, maybe? */
+
+enum ClaspCallingConv {
+    C = llvm::CallingConv::C,
+    Fast = llvm::CallingConv::Fast
+};
+}; // namespace llvmo
+
+ENUM_TRANSLATOR(llvmo::ClaspCallingConv, llvmo::_sym_CallingConv);
+
+namespace llvmo {
+
 FORWARD(CallBase);
 class CallBase_O : public Instruction_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CallBase, CallBase_O, "CallBase", Instruction_O);
