@@ -82,6 +82,14 @@ namespace core {
 
   class Instance_O : public General_O {
     LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
+    // Single dispatch generic function slots
+    typedef enum {
+        REF_SINGLE_DISPATCH_SPECIALIZER_SPECIALIZER_PROFILE = 0,
+        REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR = 1,
+        REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER = 2,
+        REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX = 3,
+        REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS = 4
+    } SingleDispatchSlots;
     // Store the stamp in slot 0 - so offset all the other slots
   // These must be exposed in core__class_slot_sanity_check()
 #define NUMBER_OF_SPECIALIZER_SLOTS 3

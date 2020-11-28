@@ -206,8 +206,6 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 #else
    this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
-  this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-  this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
   this->_PendingInterrupts = _Nil<T_O>();
   this->_CatchTags = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());

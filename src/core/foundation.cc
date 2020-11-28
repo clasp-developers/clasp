@@ -998,7 +998,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   
   T_sp docStr = _Nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  SingleDispatchGenericFunctionClosure_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
+  FuncallableInstance_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   method_body->finishSetup(llhandler);
   method_body->setf_sourcePathname(_Nil<T_O>());

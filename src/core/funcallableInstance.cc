@@ -50,8 +50,10 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/genericFunction.h>
+#include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
@@ -246,6 +248,120 @@ void FuncallableInstance_O::describe(T_sp stream) {
   }
   clasp_write_string(ss.str(), stream);
 }
+
+
+FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
+{
+  size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
+  Vector_sp specializerProfile = SimpleVector_O::make(llhandler->numberOfRequiredArguments(),_Nil<T_O>(),true);
+  specializerProfile->rowMajorAset(singleDispatchArgumentIndex,_lisp->_true());
+  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,_Nil<T_O>(),_Nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SPECIALIZER_PROFILE,specializerProfile);
+  ComplexVector_sp cv = ComplexVector_T_O::make(16,_Nil<T_O>(),make_fixnum(0));
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR,cv);
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
+                          make_fixnum(singleDispatchArgumentIndex));
+  FunctionDescription* fdesc = makeFunctionDescription(gfname);
+  Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,fdesc,class_,rack);
+  gfun->entry = single_dispatch_funcallable_entry_point;
+  return gfun;
+}
+
+LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+//  printf("%s:%d:%s  gfun: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->asSmartPtr()).c_str());
+  size_t singleDispatchArgumentIndex = closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX).unsafe_fixnum();
+  Instance_sp dispatchArgClass;
+  // SingleDispatchGenericFunctions can dispatch on the first or second argument
+  // so we need this switch here.
+  switch (singleDispatchArgumentIndex) {
+  case 0:
+      dispatchArgClass = lisp_instance_class(LCC_ARG0());
+      break;
+  case 1:
+      dispatchArgClass = lisp_instance_class(LCC_ARG1());
+      break;
+  default:
+      SIMPLE_ERROR(BF("Add support to dispatch off of something other than one of the first two arguments - arg: %d") % singleDispatchArgumentIndex);
+  }
+  ComplexVector_T_sp dispatchVector = gc::As<ComplexVector_T_sp>(closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR));
+//  printf("%s:%d Handling single dispatch generic function %s  index: %lu dispatchArgClass: %s\n", __FILE__, __LINE__, _rep_(closure->asSmartPtr()).c_str(), singleDispatchArgumentIndex, _rep_(dispatchArgClass).c_str());
+//  printf("%s:%d    dispatch vector = %s\n", __FILE__, __LINE__, _rep_(dispatchVector).c_str());
+  INITIALIZE_VA_LIST();
+  for (size_t ii = 0; ii<dispatchVector->fillPointer(); ii+= 2) {
+    if ((*dispatchVector)[ii] == dispatchArgClass) {
+      SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>((*dispatchVector)[ii+1]);
+//      printf("%s:%d FOUND Inherited METHOD!!! index: %lu  method: %s\n", __FILE__, __LINE__, ii, _rep_(method).c_str());
+      Function_sp method_function = method->_function;
+      return (method_function->entry.load())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+    }
+  }
+  // There wasn't a direct match with a class that we dispatch on - so search the class-precedence list of the
+  // argument to see if any of the ancestor classes are handled by this generic function
+  // We could satiate this 
+  List_sp classPrecedenceList = dispatchArgClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+  do {
+    Instance_sp class_ = gc::As<Instance_sp>(oCar(classPrecedenceList));
+    if (class_.nilp()) break;
+    for (size_t ii = 0; ii<dispatchVector->fillPointer(); ii+= 2) {
+      if ((*dispatchVector)[ii] == class_) {
+        SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>((*dispatchVector)[ii+1]);
+        // printf("%s:%d FOUND Inherited METHOD!!! index: %lu  method: %s\n", __FILE__, __LINE__, ii, _rep_(method).c_str());
+        Function_sp method_function = method->_function;
+        return (method_function->entry.load())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+      }
+    }
+    classPrecedenceList = oCdr(classPrecedenceList);
+  } while(true);
+  SIMPLE_ERROR(BF("This single dispatch generic function %s does not recognize argument class %s") % _rep_(closure->asSmartPtr()) % _rep_(dispatchArgClass));
+}
+
+
+T_sp FuncallableInstance_O::lambdaListHandler() const
+{
+  if (this->entry == single_dispatch_funcallable_entry_point) {
+    return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER);
+  }
+  SIMPLE_ERROR(BF("Implement lambdaListHandler"));
+}
+
+T_sp FuncallableInstance_O::callHistory() const
+{
+  if (this->entry == FuncallableInstance_O::single_dispatch_funcallable_entry_point) {
+    return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR);
+  }
+  SIMPLE_ERROR(BF("Implement me callHistory"));
+}
+
+CL_DEFUN T_sp core__singleDispatchVector(FuncallableInstance_sp gfun)
+{
+  if (gfun->entry == FuncallableInstance_O::single_dispatch_funcallable_entry_point) {
+    ComplexVector_T_sp dispatchVector = gc::As<ComplexVector_T_sp>(gfun->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR));
+    return dispatchVector;
+  }
+  SIMPLE_ERROR(BF("Only single dispatch funcallable instances are allowed"));
+}
+
+  
+void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp method)
+{
+  if (this->entry == single_dispatch_funcallable_entry_point) {
+    Instance_sp receiverClass = method->receiver_class();
+    printf("%s:%d Adding method to single dispatch method for function %s receiver-class %s\n", __FILE__, __LINE__, _rep_(method->singleDispatchMethodName()).c_str(), _rep_(receiverClass).c_str());
+    T_sp classPrecedenceList = receiverClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+//    printf("%s:%d      receiver_class->%s\n", __FILE__, __LINE__, _rep_(receiverClass).c_str());
+//    printf("%s:%d      precedence_list->%s\n", __FILE__, __LINE__, _rep_(classPrecedenceList).c_str());
+    ComplexVector_T_sp dispatchVector = gc::As<ComplexVector_T_sp>(this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR));
+    dispatchVector->vectorPushExtend(receiverClass);
+    dispatchVector->vectorPushExtend(method);
+    return;
+  }
+  SIMPLE_ERROR(BF("Implement me addSingleDispatchMethod"));
+}
+
 
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {

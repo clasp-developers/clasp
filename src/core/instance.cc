@@ -74,6 +74,10 @@ CL_DEFUN T_sp core__rack_sig(Rack_sp rack) {
   return rack->_Sig;
 }
 
+CL_DEFUN size_t core__rack_size(Rack_sp rack) {
+  return rack->length();
+}
+
 CL_DEFUN T_sp core__rack_ref(Rack_sp rack, size_t i) {
   return rack->low_level_rackRef(i);
 }

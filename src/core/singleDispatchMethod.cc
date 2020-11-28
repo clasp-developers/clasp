@@ -52,15 +52,8 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(T_sp name,
                                                        List_sp declares,
                                                        gc::Nilable<String_sp> docstr,
                                                        Function_sp body) {
-  SingleDispatchMethodFunction_sp method_body;
-  FunctionDescription* fdesc = makeFunctionDescription(name,llh->lambdaList(),docstr,core::_sym_no_filename_single_dispatch_method,0,0,0);
-  if (gc::IsA<BuiltinClosure_sp>(body)) {
-    method_body = gctools::GC<CxxMethodFunction_O>::allocate(fdesc,body);
-  } else {
-    method_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(fdesc,body);
-  }
-  GC_ALLOCATE_VARIADIC(SingleDispatchMethod_O, method, name,receiverClass,llh,declares,docstr,method_body);
-  validateFunctionDescription(__FILE__,__LINE__, method_body);
+  GC_ALLOCATE_VARIADIC(SingleDispatchMethod_O, method, name,receiverClass,llh,declares,docstr,body);
+  //validateFunctionDescription(__FILE__,__LINE__, body);
   // method->_name = name;
   // method->_receiver_class = receiverClass;
   // ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
@@ -75,19 +68,11 @@ string SingleDispatchMethod_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->_classNameAsString()
      << " :name " << _rep_(this->_name)
      << " :receiver-class " << _rep_(this->_receiver_class)
-     << " :code " << _rep_(this->_body)
+     << " :code " << _rep_(this->_function)
      //	   << " :method_builtin " << _rep_(this->_method_builtin)
      << " >";
   return ss.str();
 }
 
-
-DONT_OPTIMIZE_WHEN_DEBUG_RELEASE LCC_RETURN SingleDispatchMethodFunction_O::LISP_CALLING_CONVENTION() {
-      SingleDispatchMethodFunction_O* closure = gctools::untag_general<SingleDispatchMethodFunction_O*>((SingleDispatchMethodFunction_O*)lcc_closure);
-      COPY_VA_LIST();
-      INCREMENT_FUNCTION_CALL_COUNTER(closure);
-      return (closure->_body->entry.load())(LCC_PASS_ARGS_VASLIST(closure->_body.raw_(),lcc_vargs));
-//      return funcall_consume_valist_<core::Function_O>(closure->_body.tagged_(),lcc_vargs);
-    };
 
 }; /* core */

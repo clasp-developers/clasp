@@ -99,11 +99,6 @@ namespace core {
     // thread exits.
     std::map<std::string,FILE*> _MonitorFiles;
 #endif
-#if 1
-// thread local caches work fine
-    /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
-#endif
     /*! Pending interrupts */
     List_sp _PendingInterrupts;
     /*! Save CONS records so we don't need to do allocations

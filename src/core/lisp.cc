@@ -166,7 +166,6 @@ bool global_Started = false;
 bool globalTheSystemIsUp = false;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
 {
@@ -206,7 +205,6 @@ Lisp_O::GCRoots::GCRoots() :
   _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
-  _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
 #ifdef DEBUG_MONITOR_SUPPORT
   _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
@@ -223,6 +221,7 @@ Lisp_O::GCRoots::GCRoots() :
   _UnixSignalHandlers(_Nil<T_O>())
 {
   this->_JITDylibs.store(_Nil<core::T_O>());
+  this->_SingleDispatchGenericFunctions.store(_Nil<core::T_O>());
 };
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
@@ -522,12 +521,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
   }
-  {
-    _BLOCK_TRACE("Create some housekeeping objects");
-//NEW_LTV    this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
-//    this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
-    this->_Roots._SingleDispatchGenericFunctionHashTableEqual = HashTableEqual_O::create_default();
-  }
   this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
   //	LOG(BF("ALL CLASSES: %s")% this->dumpClasses() );
@@ -563,10 +556,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     printf("%s:%d startupLispEnvironment initialize_source_info\n", __FILE__, __LINE__ );
 #endif
     initialize_source_info();
-#ifdef DEBUG_PROGRESS
-    printf("%s:%d startupLispEnvironment initialize_cache\n", __FILE__, __LINE__ );
-#endif
-    initialize_cache();
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_backquote\n", __FILE__, __LINE__ );
 #endif
@@ -635,16 +624,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
     my_thread->initialize_thread(main_process,false);
   }
-  {
-    // initialize caches
-    my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-    my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-  }
-//  printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
-  {
-    _BLOCK_TRACE("Start printing symbols properly");
-    this->_PrintSymbolsProperly = true;
-  }
+  this->_PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
   startup_register_loaded_objects();
@@ -2171,36 +2151,6 @@ void Lisp_O::switchToClassNameHashTable() {
   }
   this->_Roots.bootClassTable.clear();
   this->_BootClassTableIsValid = false;
-}
-
-CL_LAMBDA(gf-symbol &optional errorp);
-CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is true and the generic function isn't found throw an exception - otherwise return _Unbound<SingleDispatchGenericFunctionClosure_O>()");
-CL_LISPIFY_NAME(find_single_dispatch_generic_function);
-CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_generic_function(T_sp gfName, bool errorp) {
-  WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  T_sp tfn = _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->gethash(gfName, _Nil<T_O>());
-  if (tfn.nilp()) {
-    if (errorp) {
-      SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfName));
-    }
-    return _Unbound<SingleDispatchGenericFunctionClosure_O>();
-  }
-  return gc::As<SingleDispatchGenericFunctionClosure_sp>(tfn);
-}
-
-CL_LAMBDA(gf-symbol gf)
-CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
-CL_DOCSTRING("Define a single dispatch generic function");
-CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::setf_find_single_dispatch_generic_function(T_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->setf_gethash(gfName, gf);
-  return gf;
-}
-
-CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
-CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->clrhash();
 }
 
 void Lisp_O::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const {
