@@ -1157,6 +1157,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (cleavir-bir-transformations:module-eliminate-catches module)
   (cleavir-bir-transformations:find-module-local-calls module)
   (cleavir-bir-transformations:module-optimize-variables module)
+  (cleavir-bir-transformations:meta-evaluate-module module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   ;; These should happen last since they are like "post passes".
