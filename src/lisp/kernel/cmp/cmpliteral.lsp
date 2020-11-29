@@ -13,7 +13,6 @@
 ;;;;
 ;;;; External protocol:
 ;;;;
-;;;; * compile-file or with-compilation-unit or whatever wraps what it does in WITH-LTV.
 ;;;; * When the compiler runs into a literal, it calls REFERENCE-LITERAL. This will
 ;;;;   return, an index into the load-time-values table for run-time.
 ;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
@@ -765,8 +764,6 @@ Return the index of the load-time-value"
 (defmacro with-literal-table ((&key id)&body body)
   `(do-literal-table ,id (lambda () ,@body)))
 
-
-
 (defun do-rtv (body-fn)
   (let ((cmp:*generate-compile-file-load-time-values* nil)
         (*gcroots-in-module*
@@ -816,7 +813,7 @@ Once the body has evaluated, if there were run-time values accumulated then sort
 global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
 Then erase the global variable in *load-time-value-holder-global-var* whether or not run time values were found
 and  return the sorted values and the constant-table or (values nil nil)."
-  `(funcall #'do-rtv (lambda () (progn ,@body))))
+  `(do-rtv (lambda () (progn ,@body))))
 
 (defun load-time-reference-literal (object read-only-p &key (toplevelp t))
   "If the object is an immediate object return (values immediate nil).
