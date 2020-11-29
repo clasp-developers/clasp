@@ -414,6 +414,11 @@
 
 (defvar *use-cst-eval* t)
 
+(defun wrap-cst (cst)
+  (cst:list (cst:cst-from-expression 'lambda)
+            (cst:cst-from-expression nil)
+            cst))
+
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
   (declare (ignore system))
@@ -428,11 +433,11 @@
                                 (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
                              (*use-ast-interpreter* #'ast-interpret-cst)
                              (t (lambda (cst env)
-                                  (cclasp-eval-with-env (cst:raw cst) env)))))
+                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
       (cond (core:*use-interpreter-for-eval*
              (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
             (*use-ast-interpreter* (ast-interpret-cst cst env))
-            (t (cclasp-eval-with-env (cst:raw cst) env)))))
+            (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
