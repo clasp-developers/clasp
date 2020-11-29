@@ -1179,10 +1179,13 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-compile (form env pathname
                     &key (linkage 'llvm-sys:internal-linkage))
+  (bir-compile-cst (cst:cst-from-expression form) env pathname :linkage linkage))
+
+(defun bir-compile-cst (cst env pathname
+                        &key (linkage 'llvm-sys:internal-linkage))
   (let* (function
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-cst-to-ast:*compiler* 'cl:compile)
-         (cst (cst:cst-from-expression form))
          (ast (cst->ast cst env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
       (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
@@ -1196,9 +1199,12 @@ COMPILE-FILE will use the default *clasp-env*."
      function startup-fn shutdown-fn ordered-raw-constants-list)))
 
 (defun bir-compile-in-env (form &optional env)
+  (bir-compile-cst-in-env (cst:cst-from-expression form) env))
+
+(defun bir-compile-cst-in-env (cst &optional env)
   (let ((cleavir-cst-to-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t))
-    (cmp:compile-in-env form env #'bir-compile cmp:*default-compile-linkage*)))
+    (cmp:compile-in-env cst env #'bir-compile-cst cmp:*default-compile-linkage*)))
 
 (defun compile-form (form &optional (env *clasp-env*))
   (let* ((cst (cst:cst-from-expression form))
