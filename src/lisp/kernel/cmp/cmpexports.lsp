@@ -378,8 +378,7 @@
           new-table-index
           constants-table-reference
           constants-table-value
-          with-load-time-value
-          with-load-time-value-cleavir
+          load-time-value-from-thunk
           with-rtv
           with-top-level-form
           with-literal-table

@@ -965,10 +965,11 @@ jump to blocks within this tagbody."
   (cmp-log "Starting codegen-load-time-value rest: %s%N" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
+    (declare (ignore read-only-p))
 ;;; Currently if read-only-p is T there is no
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-        (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
+        (let ((index (literal:load-time-value-from-thunk (literal:compile-load-time-value-thunk form))))
           (irc-t*-result (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (literal:codegen-rtv-bclasp result ltv)))))
