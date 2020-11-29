@@ -52,8 +52,7 @@
                        #:treat-as-special-operator-p
                        ))
   (defpackage "LITERAL" (:use :cl)
-              (:export #:with-load-time-value
-                       #:compile-load-time-value-thunk
+              (:export #:compile-load-time-value-thunk
                        ))
 
   (format t "Configuring ASDF for local directories~%")
@@ -81,9 +80,6 @@
   nil)
 
 (in-package :literal)
-(defmacro with-load-time-value (&body body)
-  `(progn
-     ,@body))
 (defun compile-load-time-value-thunk (form)
   nil)
 
