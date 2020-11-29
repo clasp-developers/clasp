@@ -43,6 +43,8 @@ namespace core {
 
 namespace core {
 FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, bool autoExport, size_t singleDispatchArgumentIndex);
+// void core__satiateSingleDispatchGenericFunctions();
+
 };
 
 

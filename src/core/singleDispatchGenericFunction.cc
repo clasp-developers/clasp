@@ -1,3 +1,4 @@
+//#define DEBUG_SINGLE_DISPATCH 1
 /*
     File: singleDispatchGenericFunction.cc
 */
@@ -58,16 +59,13 @@ CL_DEFUN FuncallableInstance_sp core__ensure_single_dispatch_generic_function(T_
   }
   FuncallableInstance_sp gfn;
   if (tgfn.nilp()) {
-      // Use CAS to push the new gfname into the list of single dispatch generic functions
-    T_sp current;
+    // Use CAS to push the new gfname into the list of single dispatch generic functions
     T_sp expected;
     Cons_sp cell = core::Cons_O::create(gfname,_Nil<T_O>());
     do {
-      current = _lisp->_Roots._SingleDispatchGenericFunctions.load();
-      expected = current;
-      cell->rplacd(current);
-      _lisp->_Roots._SingleDispatchGenericFunctions.compare_exchange_strong(expected,gc::As_unsafe<T_sp>(cell));
-    } while (expected != current);
+      expected = _lisp->_Roots._SingleDispatchGenericFunctions.load();
+      cell->rplacd(expected);
+    } while (!_lisp->_Roots._SingleDispatchGenericFunctions.compare_exchange_weak(expected,cell));
     if (gfname.consp() && CONS_CAR(gfname) == cl::_sym_setf) {
       Symbol_sp setf_gfname = CONS_CAR(CONS_CDR(gfname));
       if (setf_gfname->fboundp_setf()) {
@@ -126,6 +124,113 @@ CL_DEFUN void core__ensure_single_dispatch_method(FuncallableInstance_sp gfuncti
     core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );
   }
 };
+
+
+/*! I should probably get the key for each element first and then sort */
+class OrderByClassPrecedence {
+private:
+public:
+  OrderByClassPrecedence() {
+  }
+  bool operator()(Instance_sp x, Instance_sp y) {
+    List_sp yClassPrecedence = y->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+    if (yClassPrecedence.notnilp()) {
+      Cons_sp yCons = gc::As<Cons_sp>(yClassPrecedence);
+      return (yCons->memberEq(x).notnilp());
+    }
+    return false;
+  }
+};
+
+
+ComplexVector_T_sp sortDispatchVectorByClassPrecedence(ComplexVector_T_sp dispatchVector)
+{
+  if (dispatchVector->length()<=2) return dispatchVector;
+  gctools::Vec0<Instance_sp> classes;
+  classes.resize(dispatchVector->length()/2);
+  for ( size_t ii = 0; ii< dispatchVector->length(); ii += 2) {
+    classes[ii/2] = gc::As<Instance_sp>((*dispatchVector)[ii]);
+  }
+  OrderByClassPrecedence orderer;
+  sort::quickSortVec0(classes,0,classes.size(),orderer);
+  ComplexVector_T_sp sorted = ComplexVector_T_O::make(dispatchVector->length(),_Nil<T_O>(),make_fixnum(0));
+  for ( size_t ii = 0; ii<classes.size(); ii++ ) {
+    for (size_t jj = 0; jj<dispatchVector->length(); jj+=2) {
+      if ((*dispatchVector)[jj] == classes[ii]) {
+        sorted->vectorPushExtend(classes[ii]);
+        sorted->vectorPushExtend((*dispatchVector)[jj+1]);
+        goto FOUND;
+      }
+    }
+    printf("%s:%d Could not find class %s\n", __FILE__, __LINE__, _rep_(classes[ii]).c_str());
+    abort();
+  FOUND:
+    (void)0;
+  }
+  return sorted;
+}
+
+
+/*! Recursively descend through dispatchClass subclasses and add them to the dispatch vector */
+void recursivelySatiate(FuncallableInstance_sp gfun, Instance_sp dispatchClass, SingleDispatchMethod_sp method, ComplexVector_T_sp newDispatchVector)
+{
+  for ( size_t ii = 0; ii<newDispatchVector->length(); ii+=2) {
+    if (dispatchClass == gc::As<Instance_sp>((*newDispatchVector)[ii])) {
+      (*newDispatchVector)[ii+1] = method;
+      goto FOUND;
+    }
+  }
+#ifdef DEBUG_SINGLE_DISPATCH
+  printf("%s:%d      In recursivelySatiate gfun: %s for receiver class %s\n", __FILE__, __LINE__, _rep_(gfun).c_str(), _rep_(dispatchClass).c_str());
+#endif
+  newDispatchVector->vectorPushExtend(dispatchClass);
+  newDispatchVector->vectorPushExtend(method);
+ FOUND:
+  List_sp directSubClasses = gc::As<List_sp>(dispatchClass->instanceRef(Instance_O::REF_CLASS_DIRECT_SUBCLASSES));
+  while (directSubClasses.notnilp()) {
+    Instance_sp directSubClass = gc::As<Instance_sp>(oCar(directSubClasses));
+    recursivelySatiate(gfun,directSubClass,method,newDispatchVector);
+    directSubClasses = oCdr(directSubClasses);
+  }
+}
+
+
+#if 0
+CL_DEFUN void core__satiateSingleDispatchGenericFunctions()
+{
+  List_sp singleDispatchGenericFunctions = _lisp->_Roots._SingleDispatchGenericFunctions.load();
+  size_t len = cl__length(singleDispatchGenericFunctions);
+  SimpleVector_sp functions = SimpleVector_O::make(len);
+  size_t index = 0;
+  List_sp cur = singleDispatchGenericFunctions;
+  while (cur.notnilp()) {
+    T_sp tgfunName = oCar(cur);
+    FuncallableInstance_sp gfun = gc::As<FuncallableInstance_sp>(cl__fdefinition(tgfunName));
+    ComplexVector_T_sp dispatchVector = gc::As<ComplexVector_T_sp>(gfun->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR));
+    ComplexVector_T_sp sortedDispatchVector = sortDispatchVectorByClassPrecedence(dispatchVector);
+#ifdef DEBUG_SINGLE_DISPATCH
+    printf("%s:%d vvvvvvvvvvvvvvvvvv  %s with %lu entries\n", __FILE__, __LINE__, _rep_(tgfunName).c_str(), dispatchVector->length()/2 );
+    printf("%s:%d           dispatchVector\n", __FILE__, __LINE__);
+    for ( size_t ii = 0; ii<dispatchVector->length(); ii+= 2) printf("      %s\n", _rep_((*dispatchVector)[ii]).c_str());
+    if (dispatchVector->length()>2) {
+      printf("%s:%d     sortedDispatchVector\n", __FILE__, __LINE__);
+      for ( size_t ii = 0; ii<sortedDispatchVector->length(); ii+= 2) printf("      %s\n", _rep_((*sortedDispatchVector)[ii]).c_str());
+    }
+#endif
+    ComplexVector_T_sp newDispatchVector = ComplexVector_T_O::make(16,_Nil<T_O>(),make_fixnum(0));
+    for (size_t ii = 0; ii<sortedDispatchVector->length(); ii += 2) {
+      Instance_sp dispatchClass = gc::As<Instance_sp>((*sortedDispatchVector)[ii]);
+      SingleDispatchMethod_sp method = gc::As<SingleDispatchMethod_sp>((*sortedDispatchVector)[ii+1]);
+      recursivelySatiate(gfun,dispatchClass,method,newDispatchVector);
+    }
+    gfun->_Rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_VECTOR,newDispatchVector);
+#ifdef DEBUG_SINGLE_DISPATCH
+    printf("%s:%d ^^^^^^^^^^^^^^^^^  satiating %s there are %lu entries\n", __FILE__, __LINE__, _rep_(tgfunName).c_str(), newDispatchVector->length()/2 );
+#endif
+    cur = oCdr(cur);
+  }
+}
+#endif
 
 // ----------------------------------------------------------------------
 //

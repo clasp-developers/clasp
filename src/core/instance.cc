@@ -569,6 +569,30 @@ void Instance_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp
   this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, Cons_O::create(cl, dsc));
 }
 
+/*! Add this class as a direct subclass of the class named by className */
+void Instance_O::addInstanceAsSubClass(Symbol_sp className) {
+//  printf("%s:%d This is where I would add the Instance SubClass for builtin cclasses\n", __FILE__, __LINE__ );
+  Instance_sp cl;
+  if (!(cl::_sym_findClass) || !cl::_sym_findClass->fboundp()) {
+    cl = gc::As<Instance_sp>(cl__find_class(className));
+  } else {
+    cl = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
+  }
+  List_sp dsc = cl->instanceRef(REF_CLASS_DIRECT_SUBCLASSES);
+  cl->instanceSet(REF_CLASS_DIRECT_SUBCLASSES, Cons_O::create(this->asSmartPtr(), dsc));
+  
+#if 0
+  Instance_sp cl;
+  if (!(cl::_sym_findClass) || !cl::_sym_findClass->fboundp()) {
+    cl = gc::As<Instance_sp>(cl__find_class(className));
+  } else {
+    cl = gc::As<Instance_sp>(eval::funcall(cl::_sym_findClass, className, _lisp->_true()));
+  }
+  // When booting _DirectSuperClasses may be undefined
+  List_sp dsc = this->directSuperclasses();
+  this->instanceSet(REF_CLASS_DIRECT_SUPERCLASSES, Cons_O::create(cl, dsc));
+#endif
+}
 
 
 void Instance_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {

@@ -552,6 +552,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
 #endif
     initialize_classes_and_methods();
+    // core__satiateSingleDispatchGenericFunctions();
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_source_info\n", __FILE__, __LINE__ );
 #endif
@@ -1408,6 +1409,13 @@ CL_DEFUN void core__low_level_repl() {
     }
   }
 };
+
+CL_DOCSTRING("Return a list of all single dispatch generic functions.");
+CL_DEFUN List_sp core__singleDispatchGenericFunctions()
+{
+  List_sp result = _lisp->_Roots._SingleDispatchGenericFunctions.load();
+  return result;
+}
 
 CL_DEFUN bool core__noinform_p() {
   return _lisp->_NoInform;

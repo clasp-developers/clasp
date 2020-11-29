@@ -87,7 +87,7 @@
       (debug-boot "      About to get superclasses~%")
       (let ((superclasses (loop for name in direct-superclasses
                              for parent = (find-class name)
-                             do (push class (class-direct-subclasses parent))
+                             do (pushnew class (class-direct-subclasses parent))
                              collect parent)))
         (debug-boot "      Collected superclasses~%")
         (setf (class-direct-superclasses class) superclasses)

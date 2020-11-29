@@ -590,6 +590,10 @@ Convert colons to underscores"
               (format sout "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
                       (as-var-name (tags:namespace% (class-tag% exposed-class))
                                    (tags:name% (class-tag% exposed-class)))
+                      (base% exposed-class))
+              (format sout "~a->addInstanceAsSubClass(~a::static_classSymbol());~%"
+                      (as-var-name (tags:namespace% (class-tag% exposed-class))
+                                   (tags:name% (class-tag% exposed-class)))
                       (base% exposed-class))))
           (format sout "#endif // SET_BASES_ALL_CLASSES~%"))
         (progn

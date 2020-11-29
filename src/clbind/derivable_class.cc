@@ -147,6 +147,7 @@ void derivable_class_registration::register_() const {
     //
     printf("%s:%d           %s inherits from T\n", __FILE__, __LINE__, _rep_(className).c_str());
     crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
+    crep->addInstanceAsSubClass(core::_sym_derivable_cxx_object);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -158,9 +159,9 @@ void derivable_class_registration::register_() const {
       ASSERTF(bcrep.notnilp(), BF("Could not find base class %s") % i->first.name());
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
+      crep->addInstanceAsSubClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
-    crep->addInstanceBaseClass(core::_sym_derivable_cxx_object);
   }
 }
 

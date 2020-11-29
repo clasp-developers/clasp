@@ -677,9 +677,6 @@ public:
   bool isInteractive() { return this->_Interactive; };
   void setInteractive(bool b) { this->_Interactive = b; };
 
-  /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionHashTableEqual by name
-	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
-	 found otherwise return nil */
 private:
   static void setupSpecialSymbols();
   static void finalizeSpecialSymbols();

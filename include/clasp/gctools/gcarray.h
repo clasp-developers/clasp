@@ -114,6 +114,8 @@ public:
                     std::memory_order order = std::memory_order_relaxed) {
     _Data[i].store(value, order);
   }
+  std::atomic<T>& operator[](std::size_t idx)       { return _Data[idx]; }
+  const std::atomic<T>& operator[](std::size_t idx) const { return _Data[idx]; }
 };
 
 template <typename Array>

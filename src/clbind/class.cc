@@ -144,7 +144,8 @@ void class_registration::register_() const {
   if (m_bases.size() == 0) {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
-    crep->addInstanceBaseClass(cl::_sym_T_O);
+    crep->addInstanceBaseClass(core::_sym_General_O);
+    crep->addInstanceAsSubClass(core::_sym_General_O);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -154,6 +155,7 @@ void class_registration::register_() const {
       ClassRep_sp bcrep = registry->find_class(i->first);
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
+      crep->addInstanceAsSubClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
   }
