@@ -1053,8 +1053,8 @@
     (let ((form (cleavir-bir:form load-time-value)))
       (setf (gethash load-time-value *constant-values*)
             ;; Allocate an index in the literal table for this load-time-value.
-            (literal:with-load-time-value
-                (compile-form form *clasp-env*))))))
+            (literal:load-time-value-from-thunk
+             (compile-form form *clasp-env*))))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
   (let ((functions (cleavir-bir:functions module)))
