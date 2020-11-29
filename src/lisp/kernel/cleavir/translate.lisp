@@ -1216,8 +1216,8 @@ COMPILE-FILE will use the default *clasp-env*."
   (let* ((cmp:*default-condition-origin* (origin-spi (cst:source cst)))
          (pre-ast (cst->ast cst env))
          (ast (wrap-ast pre-ast)))
-    (literal:with-top-level-form
-        (translate-ast ast :linkage cmp:*default-linkage*))))
+    (literal:arrange-thunk-as-top-level
+     (translate-ast ast :linkage cmp:*default-linkage*))))
 
 (defun bir-loop-read-and-compile-file-forms (source-sin environment)
   (let ((eof-value (gensym))

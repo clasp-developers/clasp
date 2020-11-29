@@ -89,9 +89,9 @@
         (with-make-new-run-all (run-all-function (format nil "module~a" (ast-job-form-index job)))
           (with-literal-table (:id (ast-job-form-index job))
               (core:with-memory-ramp (:pattern 'gctools:ramp)
-                (literal:with-top-level-form
-                    (let ((ast (ast-job-ast job)))
-                      (clasp-cleavir-translate-bir::translate-ast ast)))))
+                (literal:arrange-thunk-as-top-level
+                 (clasp-cleavir-translate-bir::translate-ast
+                  (ast-job-ast job)))))
           (let ((startup-function (add-global-ctor-function module run-all-function
                                                             :position (ast-job-form-counter job))))
 ;;;                (add-llvm.used module startup-function)

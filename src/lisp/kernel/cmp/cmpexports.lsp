@@ -380,7 +380,7 @@
           constants-table-value
           load-time-value-from-thunk
           with-rtv
-          with-top-level-form
+          arrange-thunk-as-top-level
           with-literal-table
           generate-run-time-code-for-closurette))
 

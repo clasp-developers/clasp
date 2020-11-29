@@ -177,8 +177,6 @@
 ;;;
 ;;;
 
-(defvar *with-ltv-depth* 0)
-
 (defun new-table-index (&optional (toplevelp t))
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
@@ -637,26 +635,6 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 
 (defparameter *ltv-trap* nil)
 
-(defun do-ltv (type body-fn)
-  "Evaluate body-fn in an environment where load-time-values, literals and constants are
-compiled into a DSL of creators and side-effects that can be used to generate calls
-in the RUN-ALL function to recreate those objects in a constants-table.
-The body-fn must return an llvm::Function object that results from compiling code that
-can be arranged to be evaluated in the RUN-ALL function and that will use all of the values in
-the constants-table."
-  (let ((body-return-fn (funcall body-fn)))
-    (or (llvm-sys:valuep body-return-fn)
-        (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
-    (let ((result (cond
-                    ((eq type :toplevel)
-                     (run-all-add-node (make-literal-node-toplevel-funcall
-                                        :arguments (list *gcroots-in-module*
-                                                         (register-function body-return-fn)
-                                                         (llvm-sys:get-name body-return-fn)))))
-                    ((eq type :ltv) body-return-fn)
-                    (t (error "bad ltv type: ~a" type)))))
-      result)))
-
 (defun load-time-value-from-thunk (thunk)
   "Arrange to evaluate the thunk into a load-time-value.
 Return the index of the load-time-value"
@@ -664,11 +642,12 @@ Return the index of the load-time-value"
     (add-creator "ltvc_set_ltv_funcall" datum nil (register-function thunk) (llvm-sys:get-name thunk))
     (literal-datum-index datum)))
 
-(defmacro with-top-level-form (&body body)
-  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-ltv :toplevel (lambda () ,@body))))
-
-
+(defun arrange-thunk-as-top-level (thunk)
+  "Arrange to evaluate the thunk as the top-level form."
+  (run-all-add-node (make-literal-node-toplevel-funcall
+                     :arguments (list *gcroots-in-module*
+                                      (register-function thunk)
+                                      (llvm-sys:get-name thunk)))))
 
 (defun setup-literal-machine-function-vectors (the-module &key (id 0))
   (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
