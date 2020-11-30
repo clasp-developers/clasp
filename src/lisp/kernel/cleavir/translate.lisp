@@ -14,13 +14,13 @@
    (%main-function :initarg :main-function :reader main-function)
    (%main-function-description :initarg :main-function-description :reader main-function-description)))
 
-;; Copied from Cleavir. The fact inlining capability coincides with what
-;; Clasp can call directly is semi-coincidental, though.
 (defun lambda-list-too-hairy-p (lambda-list)
-  (not (every (lambda (item)
-                (or (not (symbolp item))
-                    (eq item '&optional)))
-              lambda-list)))
+  (multiple-value-bind (reqargs optargs rest-var key-flag)
+      (cmp::process-cleavir-lambda-list lambda-list)
+    (declare (ignore reqargs optargs))
+    (or key-flag
+        (and rest-var
+             (not (cleavir-bir:unused-p rest-var))))))
 
 ;; Assume that functions with no encloses and no local calls are
 ;; toplevel and need a XEP.
@@ -477,7 +477,9 @@
             (&key
              (error "I don't know how to do this."))
             (&rest
-             (error "I don't know how to do this either.")))))
+             ;; Due to lambda-list-too-hairy-p, we know this rest argument
+             ;; is unused, so we can pass an undefined.
+             (push (cmp:irc-undef-value-get cmp:%t*%) arguments)))))
     ;; Augment the environment values to the arguments of the
     ;; call. Make sure to get the variable location and not
     ;; necessarily the value.
