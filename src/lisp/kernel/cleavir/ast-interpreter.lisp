@@ -71,7 +71,7 @@
 
 ;;; Some we don't bother with, such as all the arithmetic.
 (defgeneric can-interpret-p (ast))
-(defmethod can-interpret-p (ast) nil)
+(defmethod can-interpret-p (ast) (declare (ignore ast)) nil)
 
 (defun can-interpret-ast-p (ast)
   (cleavir-ast:map-ast-depth-first-preorder
@@ -90,6 +90,7 @@
   (let* ((val (cleavir-ast:value ast))
          (_ (or val (error "AST immediate from ~a is not possible" val)))
          (imm (core:value-from-tagged-immediate val)))
+    (declare (ignore _))
     (or imm (error "AST immediate ~a produced nil" val)))        
   #+(or)
   (error "AST produced for interpretation cannot include immediates: ~a" ast))
@@ -157,6 +158,7 @@
 ;;; given a vaslist of arguments, an env, and the shredded viscera of a lambda list,
 ;;; fill the env with the appropriate bindings.
 (defun bind-list (arguments env required optional rest va-rest-p keyp key aok-p)
+  (declare (ignore aok-p))
   (loop for r in required
         if (zerop (core:vaslist-length arguments))
           do (error "Not enough arguments") ; FIXME: message
