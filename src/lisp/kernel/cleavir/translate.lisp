@@ -425,44 +425,8 @@
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
   (declare (ignore return-value abi))
-  (let* ((code (cleavir-bir:code instruction))
-         (code-info (find-llvm-function-info code))
-         (environment (environment code-info))
-         (enclosed-function (xep-function code-info))
-         (function-description
-           (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function))))
-    (if environment
-        (let* ((ninputs (length environment))
-               (sninputs (%size_t ninputs))
-               (enclose
-                 (ecase (cleavir-bir:extent instruction)
-                   (:dynamic
-                    (%intrinsic-call
-                     "cc_stack_enclose"
-                     (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
-                                           :alignment cmp:+alignment+
-                                           :label "stack-allocated-closure")
-                           enclosed-function
-                           (cmp:irc-bit-cast function-description cmp:%i8*%)
-                           sninputs)))
-                   (:indefinite
-                    (%intrinsic-invoke-if-landing-pad-or-call
-                     "cc_enclose"
-                     (list enclosed-function
-                           (cmp:irc-bit-cast function-description cmp:%i8*%)
-                           sninputs))))))
-          ;; We don't initialize the closure immediately in case it partakes
-          ;; in mutual reference.
-          (delay-initializer
-           (lambda ()
-             (%intrinsic-invoke-if-landing-pad-or-call
-              "cc_initialize_closure"
-              (list* enclose sninputs (mapcar #'variable-as-argument environment)))))
-          enclose)
-        ;; When the function has no environment, it can be compiled and
-        ;; referenced as literal.
-        (%closurette-value enclosed-function function-description))))
+  (enclose (find-llvm-function-info (cleavir-bir:code instruction))
+           (cleavir-bir:extent instruction)))
 
 (defmethod translate-simple-instruction :before
     ((instruction cleavir-bir:abstract-call) return-value abi)
@@ -519,56 +483,50 @@
     ;; necessarily the value.
     (nconc (mapcar #'variable-as-argument environment) (nreverse arguments))))
 
-;; FIXME: Code duplicated from ENCLOSE translator.
-(defun local-closure (callee-info)
-  (let* ((environment (environment callee-info))
-         (enclosed-function (xep-function callee-info))
+(defun enclose (code-info extent &optional (delay t))
+  (let* ((environment (environment code-info))
+         (enclosed-function (xep-function code-info))
          (function-description
            (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function))))
+            cmp:*the-module*
+            (cmp::function-description-name enclosed-function))))
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
                (enclose
-                 (%intrinsic-call
-                  "cc_stack_enclose"
-                  (list (cmp:alloca-i8
-                         (core:closure-with-slots-size ninputs)
-                         :alignment cmp:+alignment+
-                         :label "stack-allocated-called-closure")
-                        enclosed-function
-                        (cmp:irc-bit-cast function-description
-                                          cmp:%i8*%)
-                        sninputs))))
-          (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_initialize_closure"
-           (list* enclose sninputs
-                  (mapcar #'variable-as-argument environment)))
-          enclose)
-        ;; Closurette
-        (%closurette-value enclosed-function function-description))))
-
-;; Allocates a closure on the heap for putting into a condition.
-;; ...or just a closurette.
-;; FIXME: Code duplicated from ENCLOSE translator.
-(defun local-error-closure (callee-info)
-  (let* ((environment (environment callee-info))
-         (enclosed-function (xep-function callee-info))
-         (function-description
-           (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function))))
-    (if environment
-        (let* ((ninputs (length environment))
-               (sninputs (%size_t ninputs))
-               (enclose
+                 (ecase extent
+                   (:dynamic
+                    (%intrinsic-call
+                     "cc_stack_enclose"
+                     (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
+                                           :alignment cmp:+alignment+
+                                           :label "stack-allocated-closure")
+                           enclosed-function
+                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           sninputs)))
+                   (:indefinite
+                    (%intrinsic-invoke-if-landing-pad-or-call
+                     "cc_enclose"
+                     (list enclosed-function
+                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           sninputs))))))
+          ;; We may not initialize the closure immediately in case it partakes
+          ;; in mutual reference.
+          ;; (If DELAY NIL is passed this delay is not necessary.)
+          (if delay
+              (delay-initializer
+               (lambda ()
                  (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_enclose"
-                  (list enclosed-function
-                        (cmp:irc-bit-cast function-description cmp:%i8*%)
-                        sninputs))))
-          (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_initialize_closure"
-           (list* enclose sninputs (mapcar #'variable-as-argument environment))))
+                  "cc_initialize_closure"
+                  (list* enclose sninputs
+                         (mapcar #'variable-as-argument environment)))))
+              (%intrinsic-invoke-if-landing-pad-or-call
+               "cc_initialize_closure"
+               (list* enclose sninputs
+                      (mapcar #'variable-as-argument environment))))
+          enclose)
+        ;; When the function has no environment, it can be compiled and
+        ;; referenced as literal.
         (%closurette-value enclosed-function function-description))))
 
 ;;; FIXME: Share with generic-function-min-max-args?
@@ -598,7 +556,7 @@
              ;;  will get its value from some enclose.
              ;;  FIXME we could use that instead?)
              (closure-call-or-invoke
-              (local-closure callee-info)
+              (enclose callee-info :dynamic nil)
               return-value (mapcar #'in lisp-arguments)))
             ((and (<= min nargs)
                   (or (not max) (<= nargs max)))
@@ -614,7 +572,9 @@
              ;; Wrong number of arguments.
              (cmp::irc-intrinsic-call-or-invoke
               "cc_wrong_number_of_arguments"
-              (list (local-error-closure callee-info)
+              ;; We use a heap closure here as it's going into an error,
+              ;; which can be passed up the stack, etc.
+              (list (enclose callee-info :indefinite nil)
                     (%size_t (length lisp-arguments))
                     ;; low max = no upper limit
                     (%size_t min) (if max (%size_t max) (%size_t 0)))))))))
@@ -634,7 +594,7 @@
          (call-result
            (%intrinsic-invoke-if-landing-pad-or-call
             "cc_call_multipleValueOneFormCallWithRet0"
-            (list (local-closure callee-info)
+            (list (enclose callee-info :dynamic nil)
                   (load-return-value return-value)))))
     (store-tmv call-result return-value)
     call-result))
