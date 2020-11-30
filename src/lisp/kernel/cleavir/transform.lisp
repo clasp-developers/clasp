@@ -94,6 +94,8 @@
                                 (cleavir-env:type info)
                                 'function))
                           'function))
+                     ;; This could be expanded.
+                     ((lambda) 'function)
                      ;; This is really KLUDGEy, but then this whole thing kind of is.
                      ((aref)
                       (if (and (consp form) (consp (cdr form)))
