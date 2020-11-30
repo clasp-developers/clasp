@@ -486,10 +486,7 @@
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
          (enclosed-function (xep-function code-info))
-         (function-description
-           (llvm-sys:get-named-global
-            cmp:*the-module*
-            (cmp::function-description-name enclosed-function))))
+         (function-description (xep-function-description code-info)))
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
