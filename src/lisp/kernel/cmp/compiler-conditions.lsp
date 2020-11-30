@@ -89,6 +89,24 @@
                (source-pos-info-lineno origin)
                (source-pos-info-column origin))))))
 
+(define-condition wrong-argcount-warning
+    (warning compiler-condition)
+  ;; Slots match wrong-number-of-arguments in clos/conditions.lsp.
+  ;; TODO: Shared superclass, shared accessor names (packages!)
+  ((given-nargs :initarg :given-nargs :reader given-nargs)
+   (min-nargs :initarg :min-nargs :reader min-nargs)
+   ;; NIL means no maximum.
+   (max-nargs :initarg :max-nargs :reader max-nargs))
+  (:report (lambda (condition stream)
+             (let* ((min (min-nargs condition)) (max (max-nargs condition)))
+               (format stream "Function called with ~d arguments, but expected ~@?"
+                       (given-nargs condition)
+                       (cond ((null max) "at least ~d")
+                             ((= min max) "exactly ~d")
+                             ((zerop min) "at most ~*~d")
+                             (t "between ~d and ~d"))
+                       min max)))))
+
 ;; not my greatest name, i admit.
 ;; this condition is signaled when a compiler-macroexpander signals an error.
 ;; it's only a warning because we can ignore the compiler macro.

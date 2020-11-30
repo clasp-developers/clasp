@@ -336,6 +336,7 @@
           undefined-function-warning
           undefined-type-warning
           redefined-function-warning
+          wrong-argcount-warning
           compiler-macro-expansion-error-warning))
 
 (in-package :literal)

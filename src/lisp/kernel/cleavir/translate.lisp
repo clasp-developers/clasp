@@ -570,6 +570,9 @@
              (store-tmv result-in-registers return-value)))
             (t
              ;; Wrong number of arguments.
+             (warn 'cmp:wrong-argcount-warning
+                   :origin (car (cleavir-bir:origin instruction))
+                   :given-nargs nargs :min-nargs min :max-nargs max)
              (cmp::irc-intrinsic-call-or-invoke
               "cc_wrong_number_of_arguments"
               ;; We use a heap closure here as it's going into an error,
