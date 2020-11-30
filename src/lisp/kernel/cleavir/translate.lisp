@@ -28,6 +28,21 @@
   (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
       ;; We need a XEP for lambda lists that involve consing/iteration.
       (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
+      ;; We need the XEP for mv calls.
+      (cleavir-set:some (lambda (c) (typep c 'cleavir-bir:mv-local-call))
+                        (cleavir-bir:local-calls function))
+      ;; ...and calls with the wrong number of arguments.
+      ;; This computation is kind of redundant - FIXME
+      (multiple-value-bind (min max)
+          (lambda-list-min-max-args
+           (cleavir-bir:lambda-list function))
+        (cleavir-set:some
+         (lambda (c)
+           (and (typep c 'cleavir-bir:local-call)
+                (let ((nargs (length (rest (cleavir-bir:inputs c)))))
+                  (or (< nargs min)
+                      (and max (> nargs max))))))
+         (cleavir-bir:local-calls function)))
       ;; Else it would have been removed or deleted as it is
       ;; unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
@@ -504,6 +519,7 @@
     ;; necessarily the value.
     (nconc (mapcar #'variable-as-argument environment) (nreverse arguments))))
 
+;; FIXME: Code duplicated from ENCLOSE translator.
 (defun local-closure (callee-info)
   (let* ((environment (environment callee-info))
          (enclosed-function (xep-function callee-info))
@@ -532,33 +548,76 @@
         ;; Closurette
         (%closurette-value enclosed-function function-description))))
 
-(defun local-full-call (callee-info return-value lisp-arguments)
-  ;; Has a &rest or something, so use the normal call protocol.
-  ;; We allocate a fresh closure for every call. Hopefully this
-  ;; isn't too expensive. We can always use stack allocation since
-  ;; there's no possibility of this closure being stored in a closure.
-  ;; (If we local-call a self-referencing closure, the closure cell will
-  ;;  get its value from some enclose; FIXME we could use that instead?)
-  ;; FIXME: Code duplicated from ENCLOSE translator.
-  (closure-call-or-invoke
-   (local-closure callee-info)
-   return-value (mapcar #'in lisp-arguments)))
+;; Allocates a closure on the heap for putting into a condition.
+;; ...or just a closurette.
+;; FIXME: Code duplicated from ENCLOSE translator.
+(defun local-error-closure (callee-info)
+  (let* ((environment (environment callee-info))
+         (enclosed-function (xep-function callee-info))
+         (function-description
+           (llvm-sys:get-named-global
+            cmp:*the-module* (cmp::function-description-name enclosed-function))))
+    (if environment
+        (let* ((ninputs (length environment))
+               (sninputs (%size_t ninputs))
+               (enclose
+                 (%intrinsic-invoke-if-landing-pad-or-call
+                  "cc_enclose"
+                  (list enclosed-function
+                        (cmp:irc-bit-cast function-description cmp:%i8*%)
+                        sninputs))))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_initialize_closure"
+           (list* enclose sninputs (mapcar #'variable-as-argument environment))))
+        (%closurette-value enclosed-function function-description))))
+
+;;; FIXME: Share with generic-function-min-max-args?
+(defun lambda-list-min-max-args (lambda-list)
+  (multiple-value-bind (reqargs optargs rest-var key-flag)
+      (cmp::process-cleavir-lambda-list lambda-list)
+    (values (car reqargs)
+            (if (or rest-var key-flag)
+                nil
+                (+ (car reqargs) (car optargs))))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
   (declare (ignore abi))
   (let* ((callee (cleavir-bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
-         (lisp-arguments (rest (cleavir-bir:inputs instruction))))
-    (if (lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
-        (local-full-call callee-info return-value lisp-arguments)
-        ;; Call directly.
-        (let* ((arguments (parse-local-call-arguments callee lisp-arguments))
-               (function (main-function callee-info))
-               (result-in-registers
-                 (cmp::irc-call-or-invoke function arguments)))
-          (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-          (store-tmv result-in-registers return-value)))))
+         (lisp-arguments (rest (cleavir-bir:inputs instruction)))
+         (nargs (length lisp-arguments)))
+    (multiple-value-bind (min max)
+        (lambda-list-min-max-args (cleavir-bir:lambda-list callee))
+      (cond ((lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
+             ;; Has a &rest or something, so use the normal call protocol.
+             ;; We allocate a fresh closure for every call. Hopefully this
+             ;; isn't too expensive. We can always use stack allocation since
+             ;; there's no possibility of this closure being stored in a closure
+             ;; (If we local-call a self-referencing closure, the closure cell
+             ;;  will get its value from some enclose.
+             ;;  FIXME we could use that instead?)
+             (closure-call-or-invoke
+              (local-closure callee-info)
+              return-value (mapcar #'in lisp-arguments)))
+            ((and (<= min nargs)
+                  (or (not max) (<= nargs max)))
+             ;; Call directly.
+             (let* ((arguments
+                      (parse-local-call-arguments callee lisp-arguments))
+                  (function (main-function callee-info))
+                  (result-in-registers
+                    (cmp::irc-call-or-invoke function arguments)))
+             (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
+             (store-tmv result-in-registers return-value)))
+            (t
+             ;; Wrong number of arguments.
+             (cmp::irc-intrinsic-call-or-invoke
+              "cc_wrong_number_of_arguments"
+              (list (local-error-closure callee-info)
+                    (%size_t (length lisp-arguments))
+                    ;; low max = no upper limit
+                    (%size_t min) (if max (%size_t max) (%size_t 0)))))))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
