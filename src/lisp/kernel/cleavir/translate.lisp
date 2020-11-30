@@ -504,6 +504,34 @@
     ;; necessarily the value.
     (nconc (mapcar #'variable-as-argument environment) (nreverse arguments))))
 
+(defun local-closure (callee-info)
+  (let* ((environment (environment callee-info))
+         (enclosed-function (xep-function callee-info))
+         (function-description
+           (llvm-sys:get-named-global
+            cmp:*the-module* (cmp::function-description-name enclosed-function))))
+    (if environment
+        (let* ((ninputs (length environment))
+               (sninputs (%size_t ninputs))
+               (enclose
+                 (%intrinsic-call
+                  "cc_stack_enclose"
+                  (list (cmp:alloca-i8
+                         (core:closure-with-slots-size ninputs)
+                         :alignment cmp:+alignment+
+                         :label "stack-allocated-called-closure")
+                        enclosed-function
+                        (cmp:irc-bit-cast function-description
+                                          cmp:%i8*%)
+                        sninputs))))
+          (%intrinsic-invoke-if-landing-pad-or-call
+           "cc_initialize_closure"
+           (list* enclose sninputs
+                  (mapcar #'variable-as-argument environment)))
+          enclose)
+        ;; Closurette
+        (%closurette-value enclosed-function function-description))))
+
 (defun local-full-call (callee-info return-value lisp-arguments)
   ;; Has a &rest or something, so use the normal call protocol.
   ;; We allocate a fresh closure for every call. Hopefully this
@@ -512,36 +540,9 @@
   ;; (If we local-call a self-referencing closure, the closure cell will
   ;;  get its value from some enclose; FIXME we could use that instead?)
   ;; FIXME: Code duplicated from ENCLOSE translator.
-  (let* ((environment (environment callee-info))
-         (enclosed-function (xep-function callee-info))
-         (function-description
-           (llvm-sys:get-named-global
-            cmp:*the-module* (cmp::function-description-name enclosed-function)))
-         (closure
-           (if environment
-               (let* ((ninputs (length environment))
-                      (sninputs (%size_t ninputs))
-                      (enclose
-                        (%intrinsic-call
-                         "cc_stack_enclose"
-                         (list (cmp:alloca-i8
-                                (core:closure-with-slots-size ninputs)
-                                :alignment cmp:+alignment+
-                                :label "stack-allocated-called-closure")
-                               enclosed-function
-                               (cmp:irc-bit-cast function-description
-                                                 cmp:%i8*%)
-                               sninputs))))
-                 (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_initialize_closure"
-                  (list* enclose sninputs
-                         (mapcar #'variable-as-argument environment)))
-                 enclose)
-               ;; Closurette
-               (%closurette-value enclosed-function function-description))))
-    (closure-call-or-invoke
-     closure
-     return-value (mapcar #'in lisp-arguments))))
+  (closure-call-or-invoke
+   (local-closure callee-info)
+   return-value (mapcar #'in lisp-arguments)))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
@@ -565,6 +566,19 @@
   (let ((inputs (cleavir-bir:inputs instruction)))
     (closure-call-or-invoke
      (in (first inputs)) return-value (mapcar #'in (rest inputs)))))
+
+(defmethod translate-simple-instruction ((instruction cleavir-bir:mv-local-call)
+                                         return-value abi)
+  (declare (ignore abi))
+  (let* ((callee (cleavir-bir:callee instruction))
+         (callee-info (find-llvm-function-info callee))
+         (call-result
+           (%intrinsic-invoke-if-landing-pad-or-call
+            "cc_call_multipleValueOneFormCallWithRet0"
+            (list (local-closure callee-info)
+                  (load-return-value return-value)))))
+    (store-tmv call-result return-value)
+    call-result))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:mv-call)
                                          return-value abi)
