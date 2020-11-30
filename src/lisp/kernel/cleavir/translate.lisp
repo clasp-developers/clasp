@@ -511,10 +511,43 @@
          (callee-info (find-llvm-function-info callee))
          (lisp-arguments (rest (cleavir-bir:inputs instruction))))
     (if (lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
-        ;; Has a &rest or something, so just call the XEP.
-        (cmp::irc-call-or-invoke
-         (xep-function callee)
-         (mapcar #'in lisp-arguments))
+        ;; Has a &rest or something, so use the normal call protocol.
+        ;; We allocate a fresh closure for every call. Hopefully this
+        ;; isn't too expensive. We can always use stack allocation since
+        ;; there's no possibility of this closure being stored in a closure.
+        ;; (If we local-call a self-referencing closure, the closure cell will
+        ;;  get its value from some enclose; FIXME we could use that instead?)
+        ;; FIXME: Code duplicated from ENCLOES translator.
+        (let* ((environment (environment callee-info))
+               (enclosed-function (xep-function callee-info))
+               (function-description
+                 (llvm-sys:get-named-global
+                  cmp:*the-module* (cmp::function-description-name enclosed-function)))
+               (closure
+                 (if environment
+                     (let* ((ninputs (length environment))
+                            (sninputs (%size_t ninputs))
+                            (enclose
+                              (%intrinsic-call
+                               "cc_stack_enclose"
+                               (list (cmp:alloca-i8
+                                      (core:closure-with-slots-size ninputs)
+                                      :alignment cmp:+alignment+
+                                      :label "stack-allocated-called-closure")
+                                     enclosed-function
+                                     (cmp:irc-bit-cast function-description
+                                                       cmp:%i8*%)
+                                     sninputs))))
+                       (%intrinsic-invoke-if-landing-pad-or-call
+                        "cc_initialize_closure"
+                        (list* enclose sninputs
+                               (mapcar #'variable-as-argument environment)))
+                       enclose)
+                     ;; CLosurette
+                     (%closurette-value enclosed-function function-description))))
+          (closure-call-or-invoke
+           closure
+           return-value (mapcar #'in lisp-arguments)))
         ;; Call directly.
         (let* ((arguments (parse-local-call-arguments callee lisp-arguments))
                (function (main-function callee-info))
