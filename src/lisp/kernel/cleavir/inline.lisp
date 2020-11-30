@@ -292,8 +292,7 @@
   (debug-inline "null")
   (declaim (inline cl:null))
   (defun cl:null (x)
-    (eq x nil)))
-;; (if (cleavir-primop:typeq x null) t nil)
+    (if x nil t)))
 
 (progn
   (debug-inline "endp")
@@ -310,9 +309,9 @@
   (defun cl:car (x)
     (if (cleavir-primop:typeq x cons)
         (cleavir-primop:car x)
-        (if (eq x nil)
-            nil
-            (error 'type-error :datum x :expected-type 'list)))))
+        (if x
+            (error 'type-error :datum x :expected-type 'list)
+            nil))))
 
 (progn
   (debug-inline "cdr")
@@ -320,9 +319,9 @@
   (defun cl:cdr (x)
     (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
-        (if (null x)
-            nil
-            (error 'type-error :datum x :expected-type 'list)))))
+        (if x
+            (error 'type-error :datum x :expected-type 'list)
+            nil))))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -330,9 +329,9 @@
      (declaim (inline ,name))
      (defun ,name (x)
        ,(labels ((rec (ops)
-                   (if (null ops)
-                       'x
-                       `(,(first ops) ,(rec (rest ops))))))
+                   (if ops
+                       `(,(first ops) ,(rec (rest ops)))
+                       'x)))
           (rec ops)))))
 
 (defcr caar   car car)
