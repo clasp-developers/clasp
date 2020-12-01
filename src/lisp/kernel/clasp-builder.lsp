@@ -811,11 +811,7 @@ Return files."
   "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately precede src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files #+(or)(append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
-                             (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                                  #P"src/lisp/kernel/tag/cclasp"
-                                                  :system system))
-               (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
+  (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
         (file-order (calculate-file-order system)))
     ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
@@ -846,6 +842,17 @@ Return files."
               (let* ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
                                                  :system system)))
+                ;; We recompile and load these Eclector files under
+                ;; cclasp because the functions here are performance
+                ;; critical for compilation and cclasp does a much
+                ;; better job at reducing unwinding, thereby speeding
+                ;; up bootstrapping quite a bit by recompiling and
+                ;; loading these as soon as possible.
+                (setq files (append files
+                                    '("src/lisp/kernel/contrib/Eclector/code/reader/tokens"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/read-common"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/macro-functions"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/read")))
                 (load-system files)))
          (pop *features*))
        (push :cleavir *features*)
