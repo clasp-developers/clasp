@@ -25,6 +25,16 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
+(define-compiler-macro not (&whole form objectf)
+  ;; Take care of (not (not x)), which code generates sometimes.
+  (if (and (consp objectf)
+           (eq (car objectf) 'not)
+           (consp (cdr objectf))
+           (null (cddr objectf)))
+      `(if ,(second objectf) t nil)
+      ;; Or just use the obvious
+      `(if ,objectf nil t)))
+
 (define-compiler-macro eql (&whole form x y &environment env)
   (if (constantp x env)
       (when (constantp y env)
@@ -48,14 +58,9 @@
         ;; X can be compared by EQ.
         `(eq ',xv ,y))))
 
-(define-compiler-macro not (&whole form objectf)
-  ;; Take care of (not (not x)), which code generates sometimes.
-  (if (and (consp objectf)
-           (eq (car objectf) 'not)
-           (consp (cdr objectf))
-           (null (cddr objectf)))
-      `(if ,(second objectf) t nil)
-      form))
+(define-compiler-macro identity (object)
+  ;; preserve non-top-level-ness
+  `(the t ,object))
 
 (define-compiler-macro case (&whole form keyform &rest clauses)
   ;;; Check degenerate case

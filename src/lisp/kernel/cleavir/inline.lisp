@@ -43,20 +43,6 @@
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
-;; Convert the following to IF so that general IF optimizations can apply.
-(define-compiler-macro not (&whole form object)
-  `(if ,object nil t))
-
-(define-compiler-macro null (&whole form object)
-  `(if ,object nil t))
-
-(define-compiler-macro endp (&whole form object)
-  `(if (the list ,object) nil t))
-
-(define-compiler-macro identity (&whole form object)
-  ;; preserve non-top-level-ness.
-  `(the t ,object))
-
 ;;; If FORM is of the form #'valid-function-name, return valid-function-name.
 ;;; FIXME?: Give up on expansion and warn if it's invalid?
 (defun constant-function-form (form env)
@@ -496,12 +482,6 @@
     `(primop:inlined-two-arg-+ ,x 1))
   (define-cleavir-compiler-macro 1- (&whole form x)
     `(primop:inlined-two-arg-- ,x 1)))
-
-(define-compiler-macro plusp (&whole form number)
-  `(> ,number 0))
-
-(define-compiler-macro minusp (&whole form number)
-  `(< ,number 0))
 
 ;;; ------------------------------------------------------------
 ;;;

@@ -16,6 +16,9 @@
     (1 `(cons ,object ,(first more-objects)))
     (t form)))
 
+(define-compiler-macro null (object) `(if ,object nil t))
+(define-compiler-macro endp (object) `(if (the list ,object) nil t))
+
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
 (define-compiler-macro nthcdr (&whole whole index list &environment env)
