@@ -43,6 +43,20 @@
        (return-from ,(core:function-block-name name) ,(second lambda-list)))
      ,@body))
 
+;; Convert the following to IF so that general IF optimizations can apply.
+(define-compiler-macro not (&whole form object)
+  `(if ,object nil t))
+
+(define-compiler-macro null (&whole form object)
+  `(if ,object nil t))
+
+(define-compiler-macro endp (&whole form object)
+  `(if (the list ,object) nil t))
+
+(define-compiler-macro identity (&whole form object)
+  ;; preserve non-top-level-ness.
+  `(the t ,object))
+
 ;;; If FORM is of the form #'valid-function-name, return valid-function-name.
 ;;; FIXME?: Give up on expansion and warn if it's invalid?
 (defun constant-function-form (form env)
@@ -134,9 +148,11 @@
          (error 'type-error :datum ,val :expected-type 'fixnum))
      ,else))
 
+(define-cleavir-compiler-macro cl:eq (x y)
+  `(if (cleavir-primop:eq ,x ,y) t nil))
+
 (progn
   (debug-inline "eq")
-  (declaim (inline cl:eq))
   (defun cl:eq (x y)
     (if (cleavir-primop:eq x y) t nil)))
 
@@ -204,19 +220,6 @@
                    (pathname (pathname-equal x y)))))
   )
 
-(progn
-  (debug-inline "not")
-  (declaim (inline cl:not))
-  (defun not (object)
-    (if object nil t)))
-
-(progn
-  (debug-inline "identity")
-  (declaim (inline cl:identity))
-  (defun identity (object)
-    ;; preserve nontoplevelness
-    (the t object)))
-
 ;;; Type predicates.
 (macrolet ((defpred (name type)
              ;; We have to be careful about recursion - if one of these ended up
@@ -231,7 +234,8 @@
                (error "BUG: See comment in inline.lisp DEFPRED"))
              `(progn
                 (debug-inline ,(symbol-name name))
-                (declaim (inline ,name))
+                (define-cleavir-compiler-macro ,name (object)
+                  `(if (cleavir-primop:typeq ,object ,',type) t nil))
                 (defun ,name (o)
                   (if (cleavir-primop:typeq o ,type) t nil))))
            (defpreds (&rest rest)
@@ -282,27 +286,8 @@
       ;; streamp stream ; no good as it's an extensible class... FIXME do it anyway?
       compiled-function-p compiled-function))
 
-(progn
-  (debug-inline atom)
-  (declaim (inline atom))
-  (defun atom (o)
-     (if (cleavir-primop:typeq o cons) nil t)))
-
-(progn
-  (debug-inline "null")
-  (declaim (inline cl:null))
-  (defun cl:null (x)
-    (eq x nil)))
-;; (if (cleavir-primop:typeq x null) t nil)
-
-(progn
-  (debug-inline "endp")
-  ;; more clhs-like definition is (null (the list x))
-  (declaim (inline cl:endp))
-  (defun cl:endp (list)
-    (cond ((cleavir-primop:typeq list cons) nil) ; common case
-          ((null list) t)
-          (t (error 'type-error :datum list :expected-type 'list)))))
+(define-cleavir-compiler-macro atom (&whole form object)
+  `(if (cleavir-primop:typeq ,object cons) nil t))
 
 (progn
   (debug-inline "car")
@@ -310,9 +295,9 @@
   (defun cl:car (x)
     (if (cleavir-primop:typeq x cons)
         (cleavir-primop:car x)
-        (if (eq x nil)
-            nil
-            (error 'type-error :datum x :expected-type 'list)))))
+        (if x
+            (error 'type-error :datum x :expected-type 'list)
+            nil))))
 
 (progn
   (debug-inline "cdr")
@@ -320,9 +305,9 @@
   (defun cl:cdr (x)
     (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
-        (if (null x)
-            nil
-            (error 'type-error :datum x :expected-type 'list)))))
+        (if x
+            (error 'type-error :datum x :expected-type 'list)
+            nil))))
 
 (defmacro defcr (name &rest ops)
   `(progn
@@ -330,9 +315,9 @@
      (declaim (inline ,name))
      (defun ,name (x)
        ,(labels ((rec (ops)
-                   (if (null ops)
-                       'x
-                       `(,(first ops) ,(rec (rest ops))))))
+                   (if ops
+                       `(,(first ops) ,(rec (rest ops)))
+                       'x)))
           (rec ops)))))
 
 (defcr caar   car car)
@@ -512,15 +497,11 @@
   (define-cleavir-compiler-macro 1- (&whole form x)
     `(primop:inlined-two-arg-- ,x 1)))
 
-(progn
-  (debug-inline "plusp")
-  (declaim (inline plusp))
-  (defun plusp (real) (> real 0)))
+(define-compiler-macro plusp (&whole form number)
+  `(> ,number 0))
 
-(progn
-  (debug-inline "minusp")
-  (declaim (inline minusp))
-  (defun minusp (number) (< number 0)))
+(define-compiler-macro minusp (&whole form number)
+  `(< ,number 0))
 
 ;;; ------------------------------------------------------------
 ;;;
