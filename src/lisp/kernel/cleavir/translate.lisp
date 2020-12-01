@@ -205,7 +205,7 @@
 (defmethod translate-conditional-test (instruction next)
   ;; When the test is not a conditional test, just grab the value and
   ;; compare to NIL.
-  (cmp:irc-cond-br (cmp:irc-icmp-eq (in instruction) (cmp::irc-nil))
+  (cmp:irc-cond-br (cmp:irc-icmp-eq (in instruction) (%nil))
                    (second next) (first next)))
 
 (defmethod translate-conditional-test ((instruction cleavir-bir:conditional-test) next)
@@ -472,8 +472,8 @@
                     (push (in (pop present-arguments)) arguments)
                     (push (cmp::irc-t) arguments))
                    (t
-                    (push (cmp::irc-nil) arguments)
-                    (push (cmp::irc-nil) arguments))))
+                    (push (cmp:irc-undef-value-get cmp:%t*%) arguments)
+                    (push (%nil) arguments))))
             (&key
              (error "I don't know how to do this."))
             (&rest
