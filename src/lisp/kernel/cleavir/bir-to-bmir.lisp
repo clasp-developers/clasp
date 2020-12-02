@@ -1,25 +1,32 @@
 (in-package #:cc-bir-to-bmir)
 
 (defun replace-typeq (typeq)
-  (let ((ts (cleavir-bir:type-specifier typeq)))
+  (let* ((ts (cleavir-bir:type-specifier typeq))
+         (ifi (cleavir-bir:use typeq))
+         (inputs (cleavir-bir:inputs typeq)))
+    (setf (cleavir-bir:inputs ifi) '())
+    (cleavir-bir:delete-computation typeq)
+    (setf (cleavir-bir:inputs ifi) inputs)
     (case ts
-      ((fixnum) (change-class typeq 'cc-bmir:fixnump))
-      ((cons) (change-class typeq 'cc-bmir:consp))
-      ((character) (change-class typeq 'cc-bmir:characterp))
-      ((single-float) (change-class typeq 'cc-bmir:single-float-p))
-      ((core:general) (change-class typeq 'cc-bmir:generalp))
+      ((fixnum) (change-class ifi 'cc-bmir:fixnump))
+      ((cons) (change-class ifi 'cc-bmir:consp))
+      ((character) (change-class ifi 'cc-bmir:characterp))
+      ((single-float) (change-class ifi 'cc-bmir:single-float-p))
+      ((core:general) (change-class ifi 'cc-bmir:generalp))
       (t (let ((header-info (gethash ts core:+type-header-value-map+)))
            (cond (header-info
                   (check-type header-info (or integer cons)) ; sanity check
-                  (change-class typeq 'cc-bmir:headerq :info header-info))
+                  (change-class ifi 'cc-bmir:headerq :info header-info))
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
 
 (defun reduce-local-typeqs (function)
   (cleavir-bir:map-iblocks
    (lambda (ib)
      (let ((term (cleavir-bir:end ib)))
-       (when (typep term 'cleavir-bir:typeq)
-         (replace-typeq term))))
+       (when (typep term 'cleavir-bir:ifi)
+         (let ((test (first (cleavir-bir:inputs term))))
+           (when (typep test 'cleavir-bir:typeq-test)
+             (replace-typeq test))))))
    function))
 
 (defun reduce-module-typeqs (module)
