@@ -30,18 +30,6 @@
       ;; We need the XEP for mv calls.
       (cleavir-set:some (lambda (c) (typep c 'cleavir-bir:mv-local-call))
                         (cleavir-bir:local-calls function))
-      ;; ...and calls with the wrong number of arguments.
-      ;; This computation is kind of redundant - FIXME
-      (multiple-value-bind (min max)
-          (lambda-list-min-max-args
-           (cleavir-bir:lambda-list function))
-        (cleavir-set:some
-         (lambda (c)
-           (and (typep c 'cleavir-bir:local-call)
-                (let ((nargs (length (rest (cleavir-bir:inputs c)))))
-                  (or (< nargs min)
-                      (and max (> nargs max))))))
-         (cleavir-bir:local-calls function)))
       ;; Else it would have been removed or deleted as it is
       ;; unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
