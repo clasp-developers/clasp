@@ -1237,16 +1237,15 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
-CL_LAMBDA(function-designator &rest functions);
+CL_LAMBDA(function &rest thunks);
 CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
-CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
-  Function_sp fmv = coerce::functionDesignator(funcDesignator);
+CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
-  for (auto cur : functions) {
+  for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
     T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);

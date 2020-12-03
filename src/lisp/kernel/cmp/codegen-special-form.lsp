@@ -219,7 +219,7 @@
               (irc-tmv-result register-ret result)))
           (codegen result
                    `(core:multiple-value-funcall
-                     ,function-form
+                     (core:coerce-fdesignator ,function-form)
                      ,@(mapcar (lambda (x)
                                  `#'(lambda ()
                                       (declare (core:lambda-name core::mvc-argument-lambda))
