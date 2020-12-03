@@ -15,18 +15,17 @@
    (%main-function-description :initarg :main-function-description :reader main-function-description)))
 
 (defun lambda-list-too-hairy-p (lambda-list)
-  (multiple-value-bind (reqargs optargs rest-var key-flag)
+  (multiple-value-bind (reqargs optargs rest-var
+                        key-flag keyargs aok aux varest-p)
       (cmp::process-cleavir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs))
-    (or key-flag
-        (and rest-var
-             (not (cleavir-bir:unused-p rest-var))))))
+    (declare (ignore reqargs optargs rest-var keyargs aok aux))
+    (or key-flag varest-p)))
 
 ;; Assume that functions with no encloses and no local calls are
 ;; toplevel and need a XEP.
 (defun xep-needed-p (function)
   (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
-      ;; We need a XEP for lambda lists that involve consing/iteration.
+      ;; We need a XEP for more involved lambda lists.
       (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
       ;; We need the XEP for mv calls.
       (cleavir-set:some (lambda (c) (typep c 'cleavir-bir:mv-local-call))
@@ -451,6 +450,13 @@
   (declare (ignore return-value abi))
   (variable-in (first (cleavir-bir:inputs instruction))))
 
+(defun gen-rest-list (present-arguments)
+  ;; Generate a call to cc_list.
+  ;; TODO: DX &rest lists.
+  (%intrinsic-invoke-if-landing-pad-or-call
+   "cc_list" (list* (%size_t (length present-arguments))
+                    (mapcar #'in present-arguments))))
+
 ;; Create the argument list for a local call by parsing the callee's
 ;; lambda list and filling in the correct values at compile time. We
 ;; assume that we have already checked the validity of this call.
@@ -477,9 +483,10 @@
             (&key
              (error "I don't know how to do this."))
             (&rest
-             ;; Due to lambda-list-too-hairy-p, we know this rest argument
-             ;; is unused, so we can pass an undefined.
-             (push (cmp:irc-undef-value-get cmp:%t*%) arguments)))))
+             (push (if (cleavir-bir:unused-p item) ; unused &rest
+                       (cmp:irc-undef-value-get cmp:%t*%)
+                       (gen-rest-list present-arguments))
+                   arguments)))))
     ;; Augment the environment values to the arguments of the
     ;; call. Make sure to get the variable location and not
     ;; necessarily the value.

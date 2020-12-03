@@ -596,6 +596,19 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
   NO_UNWIND_END();
 }
 
+/* Used in cclasp local calls. */
+T_O* cc_list(size_t nargs, ...) {
+  va_list args;
+  va_start(args, nargs);
+  ql::list result;
+  for (int i = 0; i < nargs; ++i) {
+    T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(args, T_O*));
+    result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
+  }
+  va_end(args);
+  return result.result().raw_();
+}
+
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
