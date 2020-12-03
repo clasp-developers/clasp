@@ -557,9 +557,9 @@
              ;; Call directly.
              (let* ((arguments
                       (parse-local-call-arguments callee lisp-arguments))
-                  (function (main-function callee-info))
-                  (result-in-registers
-                    (cmp::irc-call-or-invoke function arguments)))
+                    (function (main-function callee-info))
+                    (result-in-registers
+                      (cmp::irc-call-or-invoke function arguments)))
              (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
              (store-tmv result-in-registers return-value)))
             (t
@@ -583,18 +583,86 @@
     (closure-call-or-invoke
      (in (first inputs)) return-value (mapcar #'in (rest inputs)))))
 
+(defun general-mv-local-call (callee-info return-value)
+  (%intrinsic-invoke-if-landing-pad-or-call
+   "cc_call_multipleValueOneFormCallWithRet0"
+   (list (enclose callee-info :dynamic nil)
+         (load-return-value return-value))))
+
+(defun direct-mv-local-call (return-value abi callee-info nreq nopt)
+  (with-return-values (return-value abi nret return-regs)
+    (let* ((rnret (cmp:irc-load nret))
+           (nfixed (+ nreq nopt))
+           (default (cmp:irc-basic-block-create "lmvc-arg-mismatch"))
+           (merge (cmp:irc-basic-block-create "lmvc-after"))
+           (sw (cmp:irc-switch (cmp:irc-load nret) default (+ 1 nreq nopt)))
+           (environment (environment callee-info)))
+      ;; Generate phis for the merge block's call.
+      (cmp:irc-begin-block merge)
+      (let ((opt-phis
+              (loop for i below nopt
+                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))
+                    collect (cmp:irc-phi cmp:%t*% (1+ nopt)))))
+        ;; Generate the default block.
+        (cmp:irc-begin-block default)
+        (cmp::irc-intrinsic-call-or-invoke
+         "cc_wrong_number_of_arguments"
+         (list (enclose callee-info :indefinite nil) rnret
+               (%size_t nreq) (%size_t nfixed)))
+        (cmp:irc-unreachable)
+        ;; Generate not-enough-args cases.
+        (loop for i below nreq
+              do (cmp:irc-add-case sw (%size_t i) default))
+        ;; Generate optional arg cases, including the exactly-enough case.
+        (loop for i upto nopt
+              for b = (cmp:irc-basic-block-create
+                       (format nil "lmvc-optional-~d" i))
+              for these-opt-phis = opt-phis
+              do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
+                 (cmp:irc-begin-block b)
+                 (loop for j below i
+                       do (cmp:irc-phi-add-incoming
+                           (pop these-opt-phis)
+                           (cmp:irc-load
+                            (return-value-elt return-regs (+ nreq j)))
+                           b)
+                          (cmp:irc-phi-add-incoming (pop these-opt-phis)
+                                                    (cmp::irc-t) b))
+                 (loop repeat (- nopt i)
+                       do (cmp:irc-phi-add-incoming
+                           (pop these-opt-phis)
+                           (cmp:irc-undef-value-get cmp:%t*%)
+                           b)
+                          (cmp:irc-phi-add-incoming (pop these-opt-phis)
+                                                    (%nil) b))
+                 (cmp:irc-br merge))
+        ;; Generate the call, in the merge block.
+        (cmp:irc-begin-block merge)
+        (let* ((arguments
+                 (nconc
+                  (mapcar #'variable-as-argument environment)
+                  (loop for j below nreq
+                        collect (cmp:irc-load (return-value-elt return-regs j)))
+                  opt-phis))
+               (function (main-function callee-info))
+               (call
+                 (cmp::irc-call-or-invoke function arguments)))
+          (llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
+          call)))))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:mv-local-call)
                                          return-value abi)
-  (declare (ignore abi))
   (let* ((callee (cleavir-bir:callee instruction))
-         (callee-info (find-llvm-function-info callee))
-         (call-result
-           (%intrinsic-invoke-if-landing-pad-or-call
-            "cc_call_multipleValueOneFormCallWithRet0"
-            (list (enclose callee-info :dynamic nil)
-                  (load-return-value return-value)))))
-    (store-tmv call-result return-value)
-    call-result))
+         (callee-info (find-llvm-function-info callee)))
+    (multiple-value-bind (req opt rest-var key-flag)
+        (cmp::process-cleavir-lambda-list (cleavir-bir:lambda-list callee))
+      (let ((call-result
+              (if (or rest-var key-flag)
+                  (general-mv-local-call callee-info return-value)
+                  (direct-mv-local-call return-value abi callee-info
+                                        (car req) (car opt)))))
+        (store-tmv call-result return-value)
+        call-result))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:mv-call)
                                          return-value abi)
