@@ -489,6 +489,8 @@
   (let* ((environment (environment code-info))
          (enclosed-function (xep-function code-info))
          (function-description (xep-function-description code-info)))
+    (when (eq enclosed-function :xep-unallocated)
+      (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
@@ -528,15 +530,6 @@
         ;; referenced as literal.
         (%closurette-value enclosed-function function-description))))
 
-;;; FIXME: Share with generic-function-min-max-args?
-(defun lambda-list-min-max-args (lambda-list)
-  (multiple-value-bind (reqargs optargs rest-var key-flag)
-      (cmp::process-cleavir-lambda-list lambda-list)
-    (values (car reqargs)
-            (if (or rest-var key-flag)
-                nil
-                (+ (car reqargs) (car optargs))))))
-
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          return-value abi)
   (declare (ignore abi))
@@ -544,42 +537,28 @@
          (callee-info (find-llvm-function-info callee))
          (lisp-arguments (rest (cleavir-bir:inputs instruction)))
          (nargs (length lisp-arguments)))
-    (multiple-value-bind (min max)
-        (lambda-list-min-max-args (cleavir-bir:lambda-list callee))
-      (cond ((lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
-             ;; Has a &rest or something, so use the normal call protocol.
-             ;; We allocate a fresh closure for every call. Hopefully this
-             ;; isn't too expensive. We can always use stack allocation since
-             ;; there's no possibility of this closure being stored in a closure
-             ;; (If we local-call a self-referencing closure, the closure cell
-             ;;  will get its value from some enclose.
-             ;;  FIXME we could use that instead?)
-             (closure-call-or-invoke
-              (enclose callee-info :dynamic nil)
-              return-value (mapcar #'in lisp-arguments)))
-            ((and (<= min nargs)
-                  (or (not max) (<= nargs max)))
-             ;; Call directly.
-             (let* ((arguments
-                      (parse-local-call-arguments callee lisp-arguments))
-                    (function (main-function callee-info))
-                    (result-in-registers
-                      (cmp::irc-call-or-invoke function arguments)))
+    (cond ((lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
+           ;; Has &key or something, so use the normal call protocol.
+           ;; We allocate a fresh closure for every call. Hopefully this
+           ;; isn't too expensive. We can always use stack allocation since
+           ;; there's no possibility of this closure being stored in a closure
+           ;; (If we local-call a self-referencing closure, the closure cell
+           ;;  will get its value from some enclose.
+           ;;  FIXME we could use that instead?)
+           (closure-call-or-invoke
+            (enclose callee-info :dynamic nil)
+            return-value (mapcar #'in lisp-arguments)))
+          (t
+           ;; Call directly.
+           ;; Note that Cleavir doesn't make local-calls if there's an
+           ;; argcount mismatch, so we don't need to sweat that.
+           (let* ((arguments
+                    (parse-local-call-arguments callee lisp-arguments))
+                  (function (main-function callee-info))
+                  (result-in-registers
+                    (cmp::irc-call-or-invoke function arguments)))
              (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-             (store-tmv result-in-registers return-value)))
-            (t
-             ;; Wrong number of arguments.
-             (warn 'cmp:wrong-argcount-warning
-                   :origin (car (cleavir-bir:origin instruction))
-                   :given-nargs nargs :min-nargs min :max-nargs max)
-             (cmp::irc-intrinsic-call-or-invoke
-              "cc_wrong_number_of_arguments"
-              ;; We use a heap closure here as it's going into an error,
-              ;; which can be passed up the stack, etc.
-              (list (enclose callee-info :indefinite nil)
-                    (%size_t (length lisp-arguments))
-                    ;; low max = no upper limit
-                    (%size_t min) (if max (%size_t max) (%size_t 0)))))))))
+             (store-tmv result-in-registers return-value))))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call)
                                          return-value abi)
