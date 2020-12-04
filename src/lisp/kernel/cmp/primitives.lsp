@@ -181,6 +181,7 @@
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
 
          (primitive         "cc_list" %t*% (list %size_t%) :varargs t)
+         (primitive         "cc_mvcGatherRest" %t*% (list %size_t% %t*% %size_t%))
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
          (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
          (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))

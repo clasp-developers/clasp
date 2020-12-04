@@ -1196,6 +1196,24 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
   return core::funcall_frame(func,mvargs);
 }
 
+T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
+  MultipleValues &mv = core::lisp_multipleValues();
+  ql::list result;
+  if (nret == 0)
+    return _Nil<T_O>().raw_();
+  else {
+    if (nstart == 0) {
+      result << gc::smart_ptr<T_O>((gc::Tagged)ret0);
+      nstart = 1;
+    }
+    for (size_t i = nstart; i < nret; ++i) {
+      T_O* tagged_obj = ENSURE_VALID_OBJECT(mv[i]);
+      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
+    }
+    return result.result().raw_();
+  }
+}
+
 void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
   T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
   if (functionName.nilp())

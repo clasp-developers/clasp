@@ -27,9 +27,14 @@
   (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
       ;; We need a XEP for more involved lambda lists.
       (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
-      ;; We need the XEP for mv calls.
-      (cleavir-set:some (lambda (c) (typep c 'cleavir-bir:mv-local-call))
-                        (cleavir-bir:local-calls function))
+      ;; or for mv-calls that might need to signal an error.
+      (and (cleavir-set:some (lambda (c) (typep c 'cleavir-bir:mv-local-call))
+                             (cleavir-bir:local-calls function))
+           (multiple-value-bind (req opt rest)
+               (cmp::process-cleavir-lambda-list
+                (cleavir-bir:lambda-list function))
+             (declare (ignore opt))
+             (or (plusp (car req)) (not rest))))
       ;; Else it would have been removed or deleted as it is
       ;; unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
@@ -589,30 +594,41 @@
    (list (enclose callee-info :dynamic nil)
          (load-return-value return-value))))
 
-(defun direct-mv-local-call (return-value abi callee-info nreq nopt)
+(defun direct-mv-local-call (return-value abi callee-info nreq nopt rest-var)
   (with-return-values (return-value abi nret return-regs)
     (let* ((rnret (cmp:irc-load nret))
            (nfixed (+ nreq nopt))
-           (default (cmp:irc-basic-block-create "lmvc-arg-mismatch"))
+           (mismatch
+             (unless (and (zerop nreq) rest-var)
+               (cmp:irc-basic-block-create "lmvc-arg-mismatch")))
+           (mte (if rest-var
+                    (cmp:irc-basic-block-create "lmvc-more-than-enough")
+                    mismatch))
            (merge (cmp:irc-basic-block-create "lmvc-after"))
-           (sw (cmp:irc-switch (cmp:irc-load nret) default (+ 1 nreq nopt)))
+           (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
            (environment (environment callee-info)))
       ;; Generate phis for the merge block's call.
       (cmp:irc-begin-block merge)
       (let ((opt-phis
               (loop for i below nopt
                     collect (cmp:irc-phi cmp:%t*% (1+ nopt))
-                    collect (cmp:irc-phi cmp:%t*% (1+ nopt)))))
-        ;; Generate the default block.
-        (cmp:irc-begin-block default)
-        (cmp::irc-intrinsic-call-or-invoke
-         "cc_wrong_number_of_arguments"
-         (list (enclose callee-info :indefinite nil) rnret
-               (%size_t nreq) (%size_t nfixed)))
-        (cmp:irc-unreachable)
+                    collect (cmp:irc-phi cmp:%t*% (1+ nopt))))
+            (rest-phi
+              (cond ((null rest-var) nil)
+                    ((cleavir-bir:unused-p rest-var)
+                     (cmp:irc-undef-value-get cmp:%t*%))
+                    (t (cmp:irc-phi cmp:%t*% (1+ nopt))))))
+        ;; Generate the mismatch block, if it exists.
+        (when mismatch
+          (cmp:irc-begin-block mismatch)
+          (cmp::irc-intrinsic-call-or-invoke
+           "cc_wrong_number_of_arguments"
+           (list (enclose callee-info :indefinite nil) rnret
+                 (%size_t nreq) (%size_t nfixed)))
+          (cmp:irc-unreachable))
         ;; Generate not-enough-args cases.
         (loop for i below nreq
-              do (cmp:irc-add-case sw (%size_t i) default))
+              do (cmp:irc-add-case sw (%size_t i) mismatch))
         ;; Generate optional arg cases, including the exactly-enough case.
         (loop for i upto nopt
               for b = (cmp:irc-basic-block-create
@@ -635,7 +651,31 @@
                            b)
                           (cmp:irc-phi-add-incoming (pop these-opt-phis)
                                                     (%nil) b))
+                 (when (and rest-var
+                            (not (cleavir-bir:unused-p rest-var)))
+                   (cmp:irc-phi-add-incoming rest-phi (%nil) b))
                  (cmp:irc-br merge))
+        ;; If there's a &rest, generate the more-than-enough arguments case.
+        (when rest-var
+          (cmp:irc-begin-block mte)
+          (loop with these-opt-phis = opt-phis
+                for j below nopt
+                do (cmp:irc-phi-add-incoming
+                    (pop these-opt-phis)
+                    (cmp:irc-load (return-value-elt return-regs (+ nreq j)))
+                    mte)
+                   (cmp:irc-phi-add-incoming
+                    (pop these-opt-phis) (cmp::irc-t) mte))
+          (unless (cleavir-bir:unused-p rest-var)
+            (cmp:irc-phi-add-incoming
+             rest-phi
+             (%intrinsic-invoke-if-landing-pad-or-call
+              "cc_mvcGatherRest" (list rnret
+                                       (cmp:irc-load
+                                        (return-value-elt return-regs 0))
+                                       (%size_t nfixed)))
+             mte))
+          (cmp:irc-br merge))
         ;; Generate the call, in the merge block.
         (cmp:irc-begin-block merge)
         (let* ((arguments
@@ -643,7 +683,8 @@
                   (mapcar #'variable-as-argument environment)
                   (loop for j below nreq
                         collect (cmp:irc-load (return-value-elt return-regs j)))
-                  opt-phis))
+                  opt-phis
+                  (when rest-var (list rest-phi))))
                (function (main-function callee-info))
                (call
                  (cmp::irc-call-or-invoke function arguments)))
@@ -654,13 +695,14 @@
                                          return-value abi)
   (let* ((callee (cleavir-bir:callee instruction))
          (callee-info (find-llvm-function-info callee)))
-    (multiple-value-bind (req opt rest-var key-flag)
+    (multiple-value-bind (req opt rest-var key-flag keyargs aok aux varest-p)
         (cmp::process-cleavir-lambda-list (cleavir-bir:lambda-list callee))
+      (declare (ignore keyargs aok aux))
       (let ((call-result
-              (if (or rest-var key-flag)
+              (if (or key-flag varest-p)
                   (general-mv-local-call callee-info return-value)
                   (direct-mv-local-call return-value abi callee-info
-                                        (car req) (car opt)))))
+                                        (car req) (car opt) rest-var))))
         (store-tmv call-result return-value)
         call-result))))
 
