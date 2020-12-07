@@ -87,6 +87,8 @@ public:
     return this->_number_of_values;
   };
 
+  // NOTE: For valueSet_ and valueGet_, idx must be > 0,
+  // as the primary value is stored in the T_mv itself.
   inline void valueSet_(int idx, core::T_sp val) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     mv.valueSet(idx, val);
