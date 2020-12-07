@@ -117,17 +117,17 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v8,10);
     DUMP_VALUES_POS(v9,10);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
-    me.emplace_back(v5);
-    me.emplace_back(v6);
-    me.emplace_back(v7);
-    me.emplace_back(v8);
-    me.emplace_back(v9);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.valueSet(5, v5);
+    me.valueSet(6, v6);
+    me.valueSet(7, v7);
+    me.valueSet(8, v8);
+    me.valueSet(9, v9);
+    me.setSize(10);
     return gctools::return_type(v0.raw_(), 10);
   }
 
@@ -151,16 +151,16 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v7,9);
     DUMP_VALUES_POS(v8,9);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
-    me.emplace_back(v5);
-    me.emplace_back(v6);
-    me.emplace_back(v7);
-    me.emplace_back(v8);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.valueSet(5, v5);
+    me.valueSet(6, v6);
+    me.valueSet(7, v7);
+    me.valueSet(8, v8);
+    me.setSize(9);
     return gctools::return_type(v0.raw_(), 9);
   }
 
@@ -182,15 +182,15 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v6,8);
     DUMP_VALUES_POS(v7,8);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
-    me.emplace_back(v5);
-    me.emplace_back(v6);
-    me.emplace_back(v7);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.valueSet(5, v5);
+    me.valueSet(6, v6);
+    me.valueSet(7, v7);
+    me.setSize(8);
     return gctools::return_type(v0.raw_(), 8);
   }
 
@@ -210,14 +210,14 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v5,7);
     DUMP_VALUES_POS(v6,7);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
-    me.emplace_back(v5);
-    me.emplace_back(v6);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.valueSet(5, v5);
+    me.valueSet(6, v6);
+    me.setSize(7);
     return gctools::return_type(v0.raw_(), 7);
   }
 
@@ -235,13 +235,13 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v4,6);
     DUMP_VALUES_POS(v5,6);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
-    me.emplace_back(v5);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.valueSet(5, v5);
+    me.setSize(6);
     return gctools::return_type(v0.raw_(), 6);
   }
 
@@ -257,12 +257,12 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v3,5);
     DUMP_VALUES_POS(v4,5);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
-    me.emplace_back(v4);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.valueSet(4, v4);
+    me.setSize(5);
     return gctools::return_type(v0.raw_(), 5);
   }
 
@@ -276,11 +276,11 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v2,4);
     DUMP_VALUES_POS(v3,4);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
-    me.emplace_back(v3);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.valueSet(3, v3);
+    me.setSize(4);
     return gctools::return_type(v0.raw_(), 4);
   }
 
@@ -292,10 +292,10 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v1,3);
     DUMP_VALUES_POS(v2,3);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
-    me.emplace_back(v2);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.valueSet(2, v2);
+    me.setSize(3);
     return gctools::return_type(v0.raw_(), 3);
   }
 
@@ -305,9 +305,9 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v0,2);
     DUMP_VALUES_POS(v1,2);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
-    me.emplace_back(v1);
+    me.valueSet(0, v0);
+    me.valueSet(1, v1);
+    me.setSize(2);
     return gctools::return_type(v0.raw_(), 2);
   }
 
@@ -315,8 +315,8 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     inline static gctools::return_type Values(const gctools::smart_ptr<T0> &v0) {
     DUMP_VALUES_POS(v0,1);
     core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
-    me.emplace_back(v0);
+    me.valueSet(0, v0);
+    me.setSize(1);
     return gctools::return_type(v0.raw_(), 1);
   }
 
