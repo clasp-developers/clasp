@@ -127,7 +127,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(7, v7);
     me.valueSet(8, v8);
     me.valueSet(9, v9);
-    me.setSize(10);
     return gctools::return_type(v0.raw_(), 10);
   }
 
@@ -160,7 +159,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(6, v6);
     me.valueSet(7, v7);
     me.valueSet(8, v8);
-    me.setSize(9);
     return gctools::return_type(v0.raw_(), 9);
   }
 
@@ -190,7 +188,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(5, v5);
     me.valueSet(6, v6);
     me.valueSet(7, v7);
-    me.setSize(8);
     return gctools::return_type(v0.raw_(), 8);
   }
 
@@ -217,7 +214,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(4, v4);
     me.valueSet(5, v5);
     me.valueSet(6, v6);
-    me.setSize(7);
     return gctools::return_type(v0.raw_(), 7);
   }
 
@@ -241,7 +237,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(3, v3);
     me.valueSet(4, v4);
     me.valueSet(5, v5);
-    me.setSize(6);
     return gctools::return_type(v0.raw_(), 6);
   }
 
@@ -262,7 +257,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(2, v2);
     me.valueSet(3, v3);
     me.valueSet(4, v4);
-    me.setSize(5);
     return gctools::return_type(v0.raw_(), 5);
   }
 
@@ -280,7 +274,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(1, v1);
     me.valueSet(2, v2);
     me.valueSet(3, v3);
-    me.setSize(4);
     return gctools::return_type(v0.raw_(), 4);
   }
 
@@ -295,7 +288,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     me.valueSet(0, v0);
     me.valueSet(1, v1);
     me.valueSet(2, v2);
-    me.setSize(3);
     return gctools::return_type(v0.raw_(), 3);
   }
 
@@ -307,7 +299,6 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     core::MultipleValues &me = (core::lisp_multipleValues());
     me.valueSet(0, v0);
     me.valueSet(1, v1);
-    me.setSize(2);
     return gctools::return_type(v0.raw_(), 2);
   }
 
@@ -316,14 +307,11 @@ template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, 
     DUMP_VALUES_POS(v0,1);
     core::MultipleValues &me = (core::lisp_multipleValues());
     me.valueSet(0, v0);
-    me.setSize(1);
     return gctools::return_type(v0.raw_(), 1);
   }
 
   template <class T0>
     inline static gctools::return_type Values0() {
-    core::MultipleValues &me = (core::lisp_multipleValues());
-    me.setSize(0);
     return gctools::return_type(_Nil<T0>().raw_(), 0);
   }
 
