@@ -1993,7 +1993,7 @@ public:
     if (tagged_nilp(this->theObject)) {
       return smart_ptr<core::T_O>((Tagged)tag_nil<core::T_O *>());
     }
-    return smart_ptr<core::T_O>(*this);
+    return smart_ptr<core::T_O>((Tagged)this->theObject);
   }
 
   // Convert Nilable<Foo> to smart_ptr<Foo> - signal error if it was NIL

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define clbind_details_H
 
 #include <clasp/clbind/policies.h>
+#include <clasp/clbind/external_policies.h>
 
 namespace clbind {
 
@@ -45,6 +46,11 @@ template <typename T>
 struct IndexOf<policies<>, T> {
   enum { value = -1 };
 };
+
+ template <typename T>
+   struct IndexOf<core::policy::clasp, T> {
+   enum { value = -1 };
+ };
 
 template <typename Head, typename... Tail>
 struct IndexOf<policies<Head, Tail...>, Head> {
@@ -126,6 +132,16 @@ struct or_<> {
 template <typename Policies, int N>
 struct is_outValue {
   typedef typename or_<typename Contains_<Policies, pureOutValue<N>>::type, typename Contains_<Policies, outValue<N>>::type>::type type;
+};
+
+template <typename Policies, int N>
+struct is_pureOutValue {
+  typedef typename Contains_<Policies, pureOutValue<N>>::type type;
+};
+
+template <typename Policies, int N>
+struct not_pureOutValue {
+  typedef typename std::negation<typename Contains_<Policies, pureOutValue<N>>::type>::type type;
 };
 
 template <typename Policies, int N>

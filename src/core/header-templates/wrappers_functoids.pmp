@@ -1,4 +1,4 @@
-$$ Three kinds of return values for the wrapped functions    single-value, multiple-value and void
+$$ Three kinds of return values for the wrapped functions:    single-value(RetSV), void(RetVoid), multiple-value(RetMV)
 $$ I'm screwing everything up for variadic arguments
 $var ReturnTypeCount = 3 
 $var RetSV = 0

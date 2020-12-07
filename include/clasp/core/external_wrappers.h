@@ -34,10 +34,6 @@ THE SOFTWARE.
 
 namespace core {
 
-//    using namespace clbind::policies;
-
-#include <clasp/core/external_policies.h>
-using namespace policies;
 
 template <typename Policies, typename OT, typename Method>
 class IndirectVariadicMethoid : public BuiltinClosure_O {
@@ -157,7 +153,7 @@ public:
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
-    BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(fdesc, mp));
+    BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(fdesc, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;
@@ -169,7 +165,7 @@ public:
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     FunctionDescription* fdesc = makeFunctionDescription(symbol);
-    BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(fdesc, mp));
+    BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(fdesc, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     validateFunctionDescription(__FILE__,__LINE__,m);
     return *this;

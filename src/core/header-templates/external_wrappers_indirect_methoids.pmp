@@ -80,13 +80,15 @@ $$ BEGIN(ArgsToRet) -- Convert arguments to multiple values according to outValu
           ]] $else [[
             int oidx = 1;
           ]]
-            ReturnValueWhen(returnValues,oidx,
-                            typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-                            typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
+            clbind::ReturnValueWhen(returnValues,oidx,
+            typename clbind::is_outValue<Pols,0>::type(),
+            typename clbind::AdoptPointer<Pols,0>::type(),
+            frame->arg(0));
           $for Args_ [[
-            ReturnValueWhen(returnValues,oidx,
-                            typename or_<typename Contains_<Pols,pureOutValue_<$Args_> >::type,
-                            typename Contains_<Pols,    outValue_<$Args_> >::type >::type(),a$Args_._v);
+               clbind::ReturnValueWhen(returnValues,oidx,
+            typename clbind::is_outValue<Pols,$Args_>::type(),
+            typename clbind::AdoptPointer<Pols,$Args_>::type(),
+            a$Args_._v);
           ]]
           $if ret==RetVoid [[
             $if numArgs==0 [[
