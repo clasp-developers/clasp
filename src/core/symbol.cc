@@ -310,9 +310,7 @@ void Symbol_O::sxhash_equal(HashGenerator &hg) const
 }
 
 
-CL_LISPIFY_NAME("cl:copy_symbol");
-CL_LAMBDA(symbol &optional copy-properties);
-CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
+Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
@@ -326,6 +324,14 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   }
   return new_symbol;
 };
+
+
+CL_LISPIFY_NAME("cl:copy_symbol");
+CL_LAMBDA(symbol &optional copy-properties);
+CL_DEFUN Symbol_sp cl__copy_symbol(Symbol_sp symbol, T_sp copy_properties)
+{
+  return symbol->copy_symbol(copy_properties);
+}
 
 
 bool Symbol_O::isKeywordSymbol() {

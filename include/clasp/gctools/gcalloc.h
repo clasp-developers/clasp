@@ -170,10 +170,43 @@ namespace gctools {
 
 
 namespace gctools {
+
+
+
+class DontRegister {};
+class DoRegister {};
+
+template <typename Cons,typename Register=DoRegister>
+struct ConsSizeCalculator {
+  static inline size_t value() {
+#ifdef USE_MPS
+    size_t size = AlignUp(sizeof(Cons));
+#endif
+#ifdef USE_BOEHM
+    size_t size = sizeof(Cons);
+#endif
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,size);
+    return size;
+  }
+};
+
+template <typename Cons>
+struct ConsSizeCalculator<Cons,DontRegister> {
+  static inline size_t value() {
+#ifdef USE_MPS
+    size_t size = AlignUp(sizeof(Cons));
+#endif
+#ifdef USE_BOEHM
+    size_t size = sizeof(Cons);
+#endif
+    return size;
+  }
+};
+
 #ifdef USE_MPS
   extern void bad_cons_mps_reserve_error();
 
-  template <typename Cons, typename... ARGS>
+template <typename Register, typename... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
   __attribute__((always_inline))
 #else
@@ -182,23 +215,22 @@ namespace gctools {
     smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
                                                const char* ap_name,
                                                ARGS &&... args) {
-    gc::smart_ptr<Cons> tagged_obj;
+    gc::smart_ptr<Cons_O> tagged_obj;
     { RAII_DISABLE_INTERRUPTS();
       RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
       // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
       mps_addr_t addr;
-      Cons* cons;
-      size_t cons_size = AlignUp(sizeof(Cons));
+      Cons_O* cons;
+      size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
         if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
-        cons = reinterpret_cast<Cons*>(addr);
-        new (cons) Cons(std::forward<ARGS>(args)...);
-        tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
+        cons = reinterpret_cast<Cons_O*>(addr);
+        new (cons) Cons_O(std::forward<ARGS>(args)...);
+        tagged_obj = smart_ptr<Cons_O>((Tagged)tag_cons(cons));
       } while (!mps_commit(allocation_point, addr, cons_size));
       MAYBE_VERIFY_ALIGNMENT((void*)addr);
       //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
-      my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,cons_size);
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
     handle_all_queued_interrupts();
@@ -208,6 +240,7 @@ namespace gctools {
 #endif    
     return tagged_obj;
   };
+
 
 extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
   
@@ -398,9 +431,9 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     };
 #endif // end TAGGED_POINTER
   
-  template <class Cons>
+template <class Cons, class Register>
   struct ConsAllocator {
-    template <class... ARGS>
+  template <class... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
   __attribute__((always_inline))
 #else
@@ -409,9 +442,9 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     static smart_ptr<Cons> allocate(ARGS &&... args) {
 #ifdef USE_BOEHM
       Cons* cons;
+      size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
       { RAII_DISABLE_INTERRUPTS();
-        cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(sizeof(Cons)));
-        my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,sizeof(Cons));
+        cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(cons_size));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
       handle_all_queued_interrupts();
@@ -419,9 +452,9 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
 #endif
 #ifdef USE_MPS
         mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
-        globalMpsMetrics.consAllocations++;
+        //        globalMpsMetrics.consAllocations++;
         smart_ptr<Cons> obj =
-          cons_mps_allocation<Cons>(obj_ap,"CONS",
+            cons_mps_allocation<Register>(obj_ap,"CONS",
                               std::forward<ARGS>(args)...);
         return obj;
 #endif
