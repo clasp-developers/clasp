@@ -157,7 +157,13 @@
   (defprimop core::%displaced-index-offset (:object) (:object))
   (defprimop core::%array-total-size (:object) (:object))
   (defprimop core::%array-rank (:object) (:object))
-  (defprimop core::%array-dimension (:object :object) (:object)))
+  (defprimop core::%array-dimension (:object :object) (:object))
+
+  (defprimop core:instance-rack (:object) (:object))
+  (defprimop core:instance-rack-set (:object :object) ())
+
+  (defprimop core:rack-ref (:object :object) (:object))
+  (defprimop core:rack-set (:object :object :object) ()))
 
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn
@@ -185,17 +191,6 @@
     cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
     cleavir-ast:slot-number-ast)
-
-  (defprimop core:instance-rack (:object) (:object)
-    cc-ast:instance-rack-ast cleavir-ast:object-ast)
-  (defprimop core:instance-rack-set (:object :object) ()
-    cc-ast:instance-rack-set-ast cleavir-ast:object-ast cleavir-ast:value-ast)
-
-  (defprimop core:rack-ref (:object :object) (:object)
-    cc-ast:rack-read-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop core:rack-set (:object :object :object) ()
-    cc-ast:rack-write-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast
-    cleavir-ast:value-ast)
 
   (defprimop core:vaslist-pop (:object) (:object)
     cc-ast:vaslist-pop-ast cleavir-ast:arg-ast)
