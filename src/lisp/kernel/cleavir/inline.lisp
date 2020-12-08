@@ -281,7 +281,7 @@
   (defun cl:car (x)
     (if (cleavir-primop:typeq x cons)
         (cleavir-primop:car x)
-        (if x
+        (if (the (not cons) x)
             (error 'type-error :datum x :expected-type 'list)
             nil))))
 
@@ -291,7 +291,7 @@
   (defun cl:cdr (x)
     (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
-        (if x
+        (if (the (not cons) x)
             (error 'type-error :datum x :expected-type 'list)
             nil))))
 
