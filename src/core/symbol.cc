@@ -362,8 +362,7 @@ void Symbol_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-CL_LISPIFY_NAME("core:asKeywordSymbol");
-CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
+Symbol_sp Symbol_O::asKeywordSymbol() {
   if (this->getPackage().notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->getPackage());
     if (pkg->isKeywordPackage())
@@ -372,6 +371,12 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   Symbol_sp kwSymbol = _lisp->internKeyword(this->symbolNameAsString());
   return kwSymbol;
 };
+
+CL_LISPIFY_NAME("core:asKeywordSymbol");
+CL_LAMBDA(symbol);
+CL_DEFUN Symbol_sp core__asKeywordSymbol(Symbol_sp symbol) {
+  return symbol->asKeywordSymbol();
+}
 
 #ifdef SYMBOL_CLASS
 T_sp Symbol_O::find_class() {
@@ -405,9 +410,14 @@ ClassHolder_sp Symbol_O::find_class_holder() {
 }
 #endif
 
-CL_LISPIFY_NAME("core:STARmakeSpecial");
-CL_DEFMETHOD void Symbol_O::makeSpecial() {
+void Symbol_O::makeSpecial() {
   this->setf_specialP(true);
+}
+
+CL_LISPIFY_NAME("core:STARmakeSpecial");
+CL_LAMBDA(symbol);
+CL_DEFUN void core__STARmakeSpecial(Symbol_sp symbol) {
+  symbol->makeSpecial();
 }
 
 T_sp Symbol_O::defconstant(T_sp val) {
@@ -425,9 +435,14 @@ T_sp Symbol_O::defparameter(T_sp val) {
   return result;
 }
 
-CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
+void Symbol_O::setf_symbolFunction(Function_sp exec) {
   _Function.store(exec, std::memory_order_relaxed);
+}
+
+CL_LISPIFY_NAME("core:setf_symbolFunction");
+CL_LAMBDA(function symbol);
+CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
+  symbol->setf_symbolFunction(exec);
 }
 
 string Symbol_O::symbolNameAsString() const {
@@ -509,10 +524,15 @@ string Symbol_O::currentName() const {
   return formattedName;
 }
 
-CL_LISPIFY_NAME("core:fullName");
-CL_DEFMETHOD string Symbol_O::fullName() const {
+string Symbol_O::fullName() const {
   string formattedName = this->formattedName(true);
   return formattedName;
+}
+
+CL_LISPIFY_NAME("core:fullName");
+CL_LAMBDA(symbol);
+CL_DEFUN string core__fullname(Symbol_sp symbol){
+  return symbol->fullName();
 }
 
 T_sp Symbol_O::getPackage() const {
