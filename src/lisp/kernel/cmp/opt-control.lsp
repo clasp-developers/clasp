@@ -62,6 +62,13 @@
   ;; preserve non-top-level-ness
   `(the t ,object))
 
+(define-compiler-macro constantly (object)
+  (let ((s (gensym "CONSTANTLY-OBJECT")))
+    `(let ((,s ,object))
+       (lambda (&rest args)
+         (declare (ignore args))
+         ,s))))
+
 (define-compiler-macro case (&whole form keyform &rest clauses)
   ;;; Check degenerate case
   (when (null clauses)
