@@ -61,12 +61,6 @@
    #:result-ast
    #:tag-ast
    #:datum-id
-   #:vector-length-ast
-   #:displacement-ast
-   #:displaced-index-offset-ast
-   #:array-total-size-ast
-   #:array-rank-ast
-   #:array-dimension-ast
    #:vaslist-pop-ast
    #:vaslist-length-ast
    #:header-stamp-ast #:rack-stamp-ast

@@ -223,20 +223,6 @@
 ;;; See their AST classes for more info probably
 ;;;
 
-(define-functionlike-special-form core::vector-length cc-ast:vector-length-ast
-  (:vector))
-(define-functionlike-special-form core::%displacement cc-ast:displacement-ast
-  (:mdarray))
-(define-functionlike-special-form core::%displaced-index-offset
-  cc-ast:displaced-index-offset-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-total-size
-  cc-ast:array-total-size-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-rank cc-ast:array-rank-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-dimension cc-ast:array-dimension-ast
-  (:mdarray :axis))
 (define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
   (:vaslist))
 (define-functionlike-special-form core:vaslist-length cc-ast:vaslist-length-ast
