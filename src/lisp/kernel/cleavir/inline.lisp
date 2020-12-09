@@ -149,7 +149,7 @@
     (cond ((cleavir-primop:eq x y) t)
           ((typep x 'core::eq-incomparable)
            (if (typep y 'core::eq-incomparable)
-               (core:eql-underlying x y)
+               (the boolean (core:eql-underlying x y))
                nil))
           (t nil))))
 
@@ -281,7 +281,7 @@
   (defun cl:car (x)
     (if (cleavir-primop:typeq x cons)
         (cleavir-primop:car x)
-        (if x
+        (if (the (not cons) x)
             (error 'type-error :datum x :expected-type 'list)
             nil))))
 
@@ -291,7 +291,7 @@
   (defun cl:cdr (x)
     (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
-        (if x
+        (if (the (not cons) x)
             (error 'type-error :datum x :expected-type 'list)
             nil))))
 
@@ -491,17 +491,19 @@
 (debug-inline "array-total-size")
 (declaim (inline array-total-size))
 (defun array-total-size (array)
-  (etypecase array
-    ((simple-array * (*)) (core::vector-length array))
-    ;; MDArray
-    (array (core::%array-total-size array))))
+  (the unsigned-byte
+       (etypecase array
+         ((simple-array * (*)) (core::vector-length array))
+         ;; MDArray
+         (array (core::%array-total-size array)))))
 
 (debug-inline "array-rank")
 (declaim (inline array-rank))
 (defun array-rank (array)
-  (etypecase array
-    ((simple-array * (*)) 1)
-    (array (core::%array-rank array))))
+  (the (integer 0 #.array-rank-limit)
+       (etypecase array
+         ((simple-array * (*)) 1)
+         (array (core::%array-rank array)))))
 
 #+(or)
 (progn
@@ -524,10 +526,11 @@
 (debug-inline "%array-dimension")
 (declaim (inline %array-dimension))
 (defun %array-dimension (array axis-number)
-  (etypecase array
-    ((simple-array * (*))
-     (core::vector-length array))
-    (array (core::array-dimension array axis-number))))
+  (the (integer 0 #.array-dimension-limit)
+       (etypecase array
+         ((simple-array * (*))
+          (core::vector-length array))
+         (array (core::array-dimension array axis-number)))))
 
 #+(or)
 (progn
@@ -770,14 +773,14 @@
 
 (declaim (inline schar (setf schar) char (setf char)))
 (defun schar (string index)
-  (row-major-aref (the simple-string string) index))
+  (the character (row-major-aref (the simple-string string) index)))
 (defun (setf schar) (value string index)
-  (core:row-major-aset (the simple-string string) index value))
+  (the character (core:row-major-aset (the simple-string string) index value)))
 
 (defun char (string index)
-  (row-major-aref (the string string) index))
+  (the character (row-major-aref (the string string) index)))
 (defun (setf char) (value string index)
-  (core:row-major-aset (the string string) index value))
+  (the character (core:row-major-aset (the string string) index value)))
 
 (defun row-major-index-computer (array dimsyms subscripts)
   ;; assumes once-only is taken care of.
@@ -903,12 +906,13 @@
   (debug-inline "length")
   (declaim (inline length))
   (defun length (sequence)
-    (typecase sequence
-      (cons (core:cons-length sequence))
-      ;; note: vector-length returns the fill pointer if there is one.
-      (vector (core::vector-length sequence))
-      (null 0)
-      (t (sequence:length sequence)))))
+    (the unsigned-byte
+         (typecase sequence
+           (cons (core:cons-length sequence))
+           ;; note: vector-length returns the fill pointer if there is one.
+           (vector (core::vector-length sequence))
+           (null 0)
+           (t (sequence:length sequence))))))
 
 #+(or)
 (progn
@@ -956,9 +960,10 @@
                 core:coerce-fdesignator))
 (defun core:coerce-fdesignator (fdesignator)
   "Take a CL function designator and spit out a function."
-  (etypecase fdesignator
-    (function fdesignator)
-    (symbol (fdefinition fdesignator))))
+  (the function
+       (etypecase fdesignator
+         (function fdesignator)
+         (symbol (fdefinition fdesignator)))))
 
 ;;; ------------------------------------------------------------
 ;;;
