@@ -414,6 +414,13 @@
     (cmp:irc-begin-block defaultb)
     (cmp:irc-unreachable)))
 
+(defmethod translate-simple-instruction ((instruction cleavir-bir:thei)
+                                         return-value abi)
+  (declare (ignore return-value abi))
+  (let ((input (first (cleavir-bir:inputs instruction))))
+    (unless (eq (cleavir-bir:rtype input) :multiple-values)
+      (in input))))
+
 (defmethod translate-simple-instruction ((instruction cleavir-bir:enclose)
                                          return-value abi)
   (declare (ignore return-value abi))
