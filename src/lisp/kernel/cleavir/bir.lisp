@@ -165,28 +165,15 @@
   (defprimop core:rack-ref (:object :object) (:object))
   (defprimop core:rack-set (:object :object :object) ()))
 
+
+
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn
                 (cleavir-primop-info:defprimop ,name (,@in) (,@out))
                 (cleavir-ast-to-bir:defprimop ,name ,ast ,@readers))))
   (defprimop setf-fdefinition (:object) (:object)
     cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
-
-  (defprimop clos:standard-instance-access (:object :object) (:object)
-    cleavir-ast:slot-read-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop (setf clos:standard-instance-access) (:object :object :object) ()
-    cleavir-ast:slot-write-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
   
-  (defprimop clos:funcallable-standard-instance-access
-      (:object :object) (:object)
-    cleavir-ast:funcallable-slot-read-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop (setf clos:funcallable-standard-instance-access)
-      (:object :object :object) ()
-    cleavir-ast:funcallable-slot-write-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
   (defprimop core::instance-cas (:object :object :object :object) (:object)
     cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast

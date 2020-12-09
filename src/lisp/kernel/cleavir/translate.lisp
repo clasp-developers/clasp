@@ -845,9 +845,13 @@
 (defmethod translate-primop ((name (eql 'core::%array-dimension)) inst)
   (cmp:gen-%array-dimension (in (first (cleavir-bir:inputs inst)))
                             (in (second (cleavir-bir:inputs inst)))))
-(defmethod translate-primop ((name (eql 'clos:standard-instance-access)) inst)
+(defmethod translate-primop ((name (eql 'cleavir-primop:slot-read)) inst)
   (cmp::gen-instance-ref (in (first (cleavir-bir:inputs inst)))
                          (in (second (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'cleavir-primop:slot-write)) inst)
+  (let ((inputs (cleavir-bir:inputs inst)))
+    (cmp::gen-instance-set (in (first inputs)) (in (second inputs))
+                           (in (third inputs)))))
 (defmethod translate-primop ((name (eql 'core::instance-cas)) inst)
   (let ((inputs (cleavir-bir:inputs inst)))
     (cmp::gen-instance-cas (in (third inputs)) (in (fourth inputs))
@@ -886,10 +890,6 @@
   (cond ((equal name '(setf symbol-value))
          (%intrinsic-invoke-if-landing-pad-or-call
           "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
-        ((equal name '(setf clos:standard-instance-access))
-         (let ((inputs (cleavir-bir:inputs inst)))
-           (cmp::gen-instance-set (in (first inputs)) (in (second inputs))
-                                  (in (third inputs)))))
         (t
          (error "BUG: Don't know how to translate primop ~a" name))))
 
