@@ -469,10 +469,6 @@
 
 ;; The array access ASTs, like vector-length, are annoying to do non-metacircularly, so we don't.
 
-(defcan cc-ast:vaslist-pop-ast)
-(defmethod interpret-ast ((ast cc-ast:vaslist-pop-ast) env)
-  (core:vaslist-pop (interpret-ast (cleavir-ast:arg-ast ast) env)))
-
 #-cst (defcan cc-ast:bind-va-list-ast)
 #-cst ; bind-va-list doesn't inline right - FIXME
 (defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)

@@ -163,9 +163,10 @@
   (defprimop core:instance-rack-set (:object :object) ())
 
   (defprimop core:rack-ref (:object :object) (:object))
-  (defprimop core:rack-set (:object :object :object) ()))
+  (defprimop core:rack-set (:object :object :object) ())
 
-
+  (defprimop core:vaslist-pop (:object) (:object))
+  (defprimop core:vaslist-length (:object) (:object)))
 
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn
@@ -178,11 +179,6 @@
     cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
     cleavir-ast:slot-number-ast)
-
-  (defprimop core:vaslist-pop (:object) (:object)
-    cc-ast:vaslist-pop-ast cleavir-ast:arg-ast)
-  (defprimop core:vaslist-length (:object) (:object)
-    cc-ast:vaslist-length-ast cleavir-ast:arg-ast)
 
   (defprimop core::header-stamp (:object) (:object)
     cc-ast:header-stamp-ast cleavir-ast:arg-ast)

@@ -223,11 +223,6 @@
 ;;; See their AST classes for more info probably
 ;;;
 
-(define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
-  (:vaslist))
-(define-functionlike-special-form core:vaslist-length cc-ast:vaslist-length-ast
-  (:vaslist))
-
 (define-functionlike-special-form core::header-stamp cc-ast:header-stamp-ast (:arg))
 (define-functionlike-special-form core::rack-stamp cc-ast:rack-stamp-ast (:arg))
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
