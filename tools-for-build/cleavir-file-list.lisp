@@ -143,6 +143,7 @@
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/inline"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/simple-unwind"
  "src/lisp/kernel/contrib/Cleavir/BIR-transformations/meta-evaluate"
+ "src/lisp/kernel/contrib/Cleavir/BIR-transformations/generate-type-checks"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/Destructuring/generic-functions"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/Destructuring/conditions"
  "src/lisp/kernel/contrib/Concrete-Syntax-Tree/Destructuring/required-parameters"
