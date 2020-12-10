@@ -105,24 +105,21 @@
                 (cst:cst-from-expression
                  (let ((vars (loop repeat (length required)
                                    collect (gensym "CHECKED"))))
-                   `(let (,@vars)
-                      (cleavir-primop:multiple-value-extract (,@vars)
-                          (cleavir-primop:ast ,ast)
-                        ,@(loop for var in vars
-                                for ty in required
-                                unless (cleavir-ctype:top-p ty system)
-                                  collect `(if (cleavir-primop:typew
-                                                ,var ,ty
-                                                (typep ,var
-                                                       ',(discrimination-type
-                                                          ty)))
-                                               nil
-                                               (error 'type-error
-                                                      :datum ,var
-                                                      :expected-type ',ty)))))))
+                   `(lambda (,@vars &rest ignore)
+                      (declare (ignore ignore))
+                      ,@(loop for var in vars
+                              for ty in required
+                              unless (cleavir-ctype:top-p ty system)
+                                collect `(if (typep ,var
+                                                    ',(discrimination-type
+                                                       ty))
+                                             ,var
+                                             (error 'type-error
+                                                    :datum ,var
+                                                    :expected-type ',ty))))))
                 env system)))
-         (cleavir-ast:make-the-ast check ctype :origin origin)))
-      (t (cleavir-ast:make-the-ast ast ctype :origin origin)))))
+         (cleavir-ast:make-the-ast ast ctype check :origin origin)))
+      (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
