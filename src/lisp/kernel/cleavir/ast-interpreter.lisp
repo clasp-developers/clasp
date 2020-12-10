@@ -291,7 +291,7 @@
 (defcan cleavir-ast:typeq-ast)
 (defmethod interpret-boolean-ast ((condition cleavir-ast:typeq-ast) env)
   (typep (interpret-ast (cleavir-ast:form-ast condition) env)
-         (cleavir-ast:type-specifier condition)))
+         (cleavir-ast:ctype condition)))
 
 (defcan cleavir-ast:load-time-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:load-time-value-ast) env)
