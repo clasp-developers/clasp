@@ -1322,7 +1322,9 @@ COMPILE-FILE will use the default *clasp-env*."
   (cleavir-bir-transformations:meta-evaluate-module module)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
-  ;; These should happen last since they are like "post passes".
+  (cleavir-bir-transformations:module-generate-type-checks module)
+  ;; These should happen last since they are like "post passes" which
+  ;; do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.
   (cleavir-bir-transformations:determine-function-environments module)
   (cleavir-bir-transformations:determine-closure-extents module)
