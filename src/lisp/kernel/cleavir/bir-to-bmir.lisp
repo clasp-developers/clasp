@@ -1,7 +1,7 @@
 (in-package #:cc-bir-to-bmir)
 
 (defun replace-typeq (typeq)
-  (let* ((ts (cleavir-bir:ctype typeq))
+  (let* ((ts (cleavir-bir:test-ctype typeq))
          (ifi (cleavir-bir:use typeq))
          (inputs (cleavir-bir:inputs typeq)))
     (setf (cleavir-bir:inputs ifi) '())
