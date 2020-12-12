@@ -276,6 +276,11 @@
 (define-cleavir-compiler-macro atom (&whole form object)
   `(if (cleavir-primop:typeq ,object cons) nil t))
 
+(declaim (ftype (function (&rest t) list) list))
+(declaim (ftype (function (&rest t) list) list*))
+(declaim (ftype (function (t t) cons) cons))
+
+(declaim (ftype (function (list) t) car cdr))
 (progn
   (debug-inline "car")
   (declaim (inline cl:car))
@@ -299,7 +304,8 @@
 (defmacro defcr (name &rest ops)
   `(progn
      (debug-inline ,(symbol-name name))
-     (declaim (inline ,name))
+     (declaim (inline ,name)
+              (ftype (function (list) t) ,name))
      (defun ,name (x)
        ,(labels ((rec (ops)
                    (if ops
