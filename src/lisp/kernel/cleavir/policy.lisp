@@ -8,6 +8,18 @@
      (cleavir-policy:optimize-value optimize 'speed)))
 
 (defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'type-check-ftype-arguments))
+     optimize
+     (environment clasp-cleavir::clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'safety) 3))
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'type-check-ftype-return-values))
+     optimize
+     (environment clasp-cleavir::clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'safety) 3))
+
+(defmethod cleavir-policy:compute-policy-quality
     (quality optimize (environment null))
     (cleavir-policy:compute-policy-quality quality optimize *clasp-env*))
 
@@ -17,7 +29,9 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (do-dx-analysis boolean t)
+    (type-check-ftype-arguments boolean t)
+    (type-check-ftype-return-values boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
@@ -25,7 +39,9 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (do-dx-analysis boolean t)
+    (type-check-ftype-arguments boolean t)
+    (type-check-ftype-return-values boolean t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

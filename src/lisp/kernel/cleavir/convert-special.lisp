@@ -81,6 +81,22 @@
           ,@(mapcar #'discrimination-type (rest ctype))))
        (t ctype)))))
 
+(defun make-type-check-form (required system)
+  (let ((vars (loop repeat (length required)
+                    collect (gensym "CHECKED"))))
+    `(lambda (,@vars &rest ignore)
+       (declare (ignore ignore))
+       ,@(loop for var in vars
+               for ty in required
+               unless (cleavir-ctype:top-p ty system)
+                 collect `(if (typep ,var
+                                     ',(discrimination-type
+                                        ty))
+                              ,var
+                              (error 'type-error
+                                     :datum ,var
+                                     :expected-type ',ty))))))
+
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
@@ -95,31 +111,45 @@
     (cond
       ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
            (null required))
-        ;; We don't even generate an m-v-extract, because while semantically
-        ;; meaningless, saving and loading values constantly slows things down
-        ;; very hard.
        ast)
       (insert-type-checks
        (let ((check
                (cleavir-cst-to-ast:convert
                 (cst:cst-from-expression
-                 (let ((vars (loop repeat (length required)
-                                   collect (gensym "CHECKED"))))
-                   `(lambda (,@vars &rest ignore)
-                      (declare (ignore ignore))
-                      ,@(loop for var in vars
-                              for ty in required
-                              unless (cleavir-ctype:top-p ty system)
-                                collect `(if (typep ,var
-                                                    ',(discrimination-type
-                                                       ty))
-                                             ,var
-                                             (error 'type-error
-                                                    :datum ,var
-                                                    :expected-type ',ty))))))
+                 (make-type-check-form required system))
                 env system)))
          (cleavir-ast:make-the-ast ast ctype check :origin origin)))
       (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
+
+(defmethod cleavir-cst-to-ast:type-wrap-argument
+    (ast ctype origin env (system clasp-cleavir:clasp))
+  ;; Insert an externally checked THE and insert type checks as well
+  ;; on high safety, unless the type is top in which case we do
+  ;; nothing.
+  ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
+  (let ((insert-type-checks
+          (cleavir-policy:policy-value
+           (cleavir-env:policy (cleavir-env:optimize-info env))
+           'type-check-ftype-arguments))
+        (required (cleavir-ctype:values-required ctype system)))
+    (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
+           (null required))
+           ast)
+          #+(or) ;; FIXME: doesn't work yet for some reason.
+          (insert-type-checks
+           (let ((check
+                   (cleavir-cst-to-ast:convert
+                    (cst:cst-from-expression
+                     (make-type-check-form ctype system))
+                    env system)))
+             (cleavir-ast:make-the-ast ast ctype check :origin origin)))
+          (t (cleavir-ast:make-the-ast ast ctype :external :origin origin)))))
+
+(defmethod cleavir-cst-to-ast:type-wrap-return-values
+    (ast ctype origin env (system clasp-cleavir:clasp))
+  ;; FIXME: same semantics as TYPE-WRAP but should probably use the
+  ;; different policy value. didn't want to copy and paste though.
+  (cleavir-cst-to-ast:type-wrap ast ctype origin env system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
