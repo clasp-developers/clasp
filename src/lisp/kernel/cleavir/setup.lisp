@@ -340,12 +340,17 @@
           (values type-specifier nil)))))
 
 (defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)
-  (loop with ever-expanded = nil
-        do (multiple-value-bind (expansion expanded)
-               (type-expand-1 type-specifier environment)
-             (if expanded
-                 (setf ever-expanded t type-specifier expansion)
-                 (return (values type-specifier ever-expanded))))))
+  ;; BEWARE: bclasp is really bad at unwinding, and mvb creates a
+  ;; lambda, so we write this loop in a way that avoids RETURN. cclasp
+  ;; will contify this and produce more efficient code anyway.
+  (labels ((expand (type-specifier ever-expanded)
+             (multiple-value-bind (expansion expanded)
+                 (type-expand-1 type-specifier environment)
+               (if expanded
+                   (expand expansion t)
+                   (values type-specifier ever-expanded)))))
+    (expand type-specifier nil)))
+
 (defmethod cleavir-env:type-expand ((environment null) type-specifier)
   (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
 
