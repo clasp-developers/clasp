@@ -717,7 +717,7 @@
 
 ;; keys are impl defined
 (declaim (ftype (function (pathname-designator &key &allow-other-keys) list) directory)
-         (ftype (function (pathname-designator) (maybe string)) probe-file)
+         (ftype (function (pathname-designator) (maybe pathname)) probe-file)
          (ftype (function (pathname-designator &key (:verbose t))
                           (values pathname-designator t))
                 ensure-directories-exist)
