@@ -4,6 +4,18 @@
 ;; changed by de/proclaim
 (defvar *ftypes* (make-hash-table :test #'equal))
 
+(defun global-ftype (name)
+  (multiple-value-bind (value presentp) (gethash name *ftypes*)
+    (if presentp
+        value
+        (load-time-value (cleavir-ctype:function-top *clasp-system*)))))
+
+(defun (setf global-ftype) (type name)
+  (setf (gethash name *ftypes*)
+        (cleavir-env:parse-type-specifier type
+                                          *clasp-env*
+                                          *clasp-system*)))
+
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
                                                               default-source

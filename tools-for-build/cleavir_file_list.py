@@ -226,7 +226,6 @@ cleavir_file_list = [
     "src/lisp/kernel/cleavir/ast-interpreter",
     "src/lisp/kernel/cleavir/toplevel",
     "src/lisp/kernel/cleavir/setup",
-    "src/lisp/kernel/cleavir/env",
     "src/lisp/kernel/cleavir/ir",
     "src/lisp/kernel/cleavir/compile-file-client",
     "src/lisp/kernel/cleavir/translation-environment",
