@@ -717,7 +717,7 @@
          (ftype (function (pathname-designator) physical-pathname) truename)
          (ftype (function (pathname-designator) (maybe string)) file-author)
          (ftype (function (pathname-designator) (maybe universal-time)) file-write-date)
-         (ftype (function (pathname-designator (and pathname-designator (not stream)))
+         (ftype (function (pathname-designator (and pathname-designator (not stream)) &key (if-exists t)) ; FIXME: give a more precise type here.
                           (values pathname physical-pathname physical-pathname))
                 rename-file)
          (ftype (function (pathname-designator) (eql t)) delete-file)
