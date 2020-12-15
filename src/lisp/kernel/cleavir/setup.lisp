@@ -4,13 +4,6 @@
 ;; changed by de/proclaim
 (defvar *ftypes* (make-hash-table :test #'equal))
 
-(defun global-ftype (name)
-  (multiple-value-bind (value presentp) (gethash name *ftypes*)
-    (if presentp value 'function)))
-
-(defun (setf global-ftype) (type name)
-  (setf (gethash name *ftypes*) type))
-
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
                                                               default-source
