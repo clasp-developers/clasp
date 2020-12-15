@@ -65,6 +65,7 @@
 (deftype extended-function-designator (&optional lambda-list return-values)
   `(or function-name (function ,lambda-list ,return-values)))
 
+(deftype predicate-function () '(function (t) boolean))
 (deftype predicate () '(function-designator (t)))
 
 (deftype class-designator () '(or class symbol))
@@ -195,8 +196,8 @@
          (ftype (function (function-designator &rest t)) funcall)
          (ftype (function (function) (values (maybe lambda-expression) t t))
                 function-lambda-expression)
-         (ftype predicate functionp)
-         (ftype predicate compiled-function-p)
+         (ftype predicate-function functionp)
+         (ftype predicate-function compiled-function-p)
          (ftype (function (t) boolean) not)
          (ftype (function (t t) t) eq eql equal equalp)
          (ftype (function (t) t) function)
@@ -290,7 +291,7 @@
 
 ;;; Chapter 10 Symbols
 
-(declaim (ftype predicate symbolp keywordp boundp)
+(declaim (ftype predicate-function symbolp keywordp boundp)
          (ftype (function (string) symbol) make-symbol)
          (ftype (function (symbol &optional t) symbol) copy-symbol)
          (ftype (function (&optional (or string (integer 0))) symbol) gensym)
@@ -332,7 +333,7 @@
          (ftype (function (package-designator) (maybe string)) package-name)
          (ftype (function (package-designator) list)
                 package-nicknames package-shadowing-symbols package-use-list package-used-by-list)
-         (ftype predicate packagep)
+         (ftype predicate-function packagep)
          (ftype (function (package-error) package-designator) package-error-package))
 
 ;;; Chapter 12 Numbers
@@ -366,7 +367,7 @@
          (ftype (function ((or (integer (0)) (float (0.0))) &optional random-state)
                           (real (0)))
                 random)
-         (ftype predicate random-state-p numberp complexp realp rationalp integerp floatp)
+         (ftype predicate-function random-state-p numberp complexp realp rationalp integerp floatp)
          (ftype (function (real) complex) cis)
          (ftype (function (real &optional real) (or rational complex)) complex)
          (ftype (function (type-specifier &optional environment) type-specifier)
@@ -410,7 +411,7 @@
                 char-equal char-not-equal char-lessp char-greaterp
                 char-not-greaterp char-not-lessp)
          (ftype (function (character-designator) character) character)
-         (ftype predicate characterp)
+         (ftype predicate-function characterp)
          (ftype (function (character) t)
                 alpha-char-p alphanumericp graphic-char-p standard-char-p
                 upper-case-p lower-case-p both-case-p)
@@ -426,7 +427,7 @@
 ;;; Chapter 14 Conses
 
 (declaim (ftype (function (t t) cons) cons)
-         (ftype predicate consp atom listp null)
+         (ftype predicate-function consp atom listp null)
          (ftype (function (cons t) cons) rplaca rplacd)
          (ftype (function (list) t)
                 car cdr caar cadr cdar cddr caaar caadr cadar cdaar caddr cdadr cddar cdddr
@@ -514,7 +515,7 @@
          (ftype (function (array &rest valid-array-index) valid-row-major-index)
                 array-row-major-index)
          (ftype (function (array) valid-array-size) array-total-size)
-         (ftype predicate arrayp simple-vector-p vectorp bit-vector-p simple-bit-vector-p)
+         (ftype predicate-function arrayp simple-vector-p vectorp bit-vector-p simple-bit-vector-p)
          (ftype (function (vector) valid-array-index) fill-pointer)
          (ftype (function (valid-array-index vector) valid-array-index) (setf fill-pointer))
          (ftype (function (array valid-row-major-index) t) row-major-aref)
@@ -538,7 +539,7 @@
 
 ;;; Chapter 16 Strings
 
-(declaim (ftype predicate simple-string-p stringp)
+(declaim (ftype predicate-function simple-string-p stringp)
          (ftype (function (string valid-array-index) character) char)
          (ftype (function (character string valid-array-index) character) (setf char))
          (ftype (function (simple-string valid-array-index) character) schar)
@@ -634,7 +635,7 @@
                                 (:rehash-threshold (real 0 1)))
                           hash-table)
                 make-hash-table)
-         (ftype predicate hash-table-p)
+         (ftype predicate-function hash-table-p)
          (ftype (function (hash-table) (integer 0)) hash-table-count hash-table-size)
          (ftype (function (hash-table) (or (integer 1) (float (1.0)))) hash-table-rehash-size)
          (ftype (function (hash-table) (real 0 1)) hash-table-rehash-threshold)
@@ -659,7 +660,7 @@
                                 (:case pathname-case))
                           pathname)
                 make-pathname)
-         (ftype predicate pathnamep)
+         (ftype predicate-function pathnamep)
          (ftype (function (pathname-designator &key (:case pathname-case)) valid-pathname-host)
                 pathname-host)
          (ftype (function (pathname-designator &key (:case pathname-case)) valid-pathname-device)
@@ -726,7 +727,7 @@
 (declaim (ftype (function (stream) t)
                 input-stream-p output-stream-p interactive-stream-p open-stream-p)
          (ftype (function (stream) type-specifier) stream-element-type)
-         (ftype predicate streamp)
+         (ftype predicate-function streamp)
          (ftype (function (stream &optional t t) integer) read-byte)
          (ftype (function (integer stream) integer) write-byte)
          (ftype (function (&optional (or character boolean) stream-designator t t t) t)
@@ -838,7 +839,7 @@
          (ftype (function (readtable) case-sensitivity-mode) readtable-case)
          (ftype (function (case-sensitivity-mode readtable) case-sensitivity-mode)
                 (setf readtable-case))
-         (ftype predicate readtablep)
+         (ftype predicate-function readtablep)
          (ftype (function (character character &optional readtable-designator)
                           (maybe function-designator))
                 get-dispatch-macro-character)
