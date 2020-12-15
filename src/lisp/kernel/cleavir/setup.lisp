@@ -213,6 +213,7 @@
     ((cmp:known-function-p function-name)
      (make-instance 'cleavir-env:global-function-info
                     :name function-name
+                    :type (global-ftype function-name)
                     :compiler-macro (compiler-macro-function function-name)
                     :inline (core:global-inline-status function-name)
                     :ast (inline-ast function-name)))
