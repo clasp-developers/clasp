@@ -349,6 +349,10 @@
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:find-class (name environment (system clasp) &optional errorp)
+  (declare (ignore environment))
+  name)
+
 (defmethod cleavir-env:parse-expanded-type-specifier
     ((type-specifier symbol) environment (system clasp))
   (declare (ignore environment))

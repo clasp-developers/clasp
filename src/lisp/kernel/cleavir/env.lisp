@@ -11,7 +11,6 @@
 
 (defun (setf global-ftype) (type name)
   (setf (gethash name *ftypes*)
-        (cleavir-env:parse-type-specifier
-         type
-         clasp-cleavir::*clasp-env*
-         clasp-cleavir::*clasp-system*)))
+        (cleavir-env:parse-type-specifier type
+                                          *clasp-env*
+                                          *clasp-system*)))
