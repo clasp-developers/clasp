@@ -371,6 +371,11 @@
   (declare (ignore environment))
   type-specifier)
 
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier (eql 'cl:function)) environment (system clasp))
+  (declare (ignore environment))
+  (cleavir-ctype:function-top system))
+
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
 (defmethod cleavir-env:has-extended-char-p ((environment null))
