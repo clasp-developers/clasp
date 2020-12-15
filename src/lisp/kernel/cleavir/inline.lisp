@@ -900,7 +900,7 @@
          (ftype (function (t &optional stream-designator) (values)) describe)
          (ftype (function (t stream)) describe-object)
          (ftype (function () (integer 0)) get-internal-real-time get-internal-run-time)
-         (ftype (function ((or lambda-expression extended-function-designator)) null)
+         (ftype (function ((or lambda-expression extended-function-designator) &key) null) ; clasp has custom keywords. maybe give a more precise type here.
                 disassemble)
          (ftype (function (t symbol) (maybe string)) documentation)
          (ftype (function (string t symbol) string) (setf documentation))
