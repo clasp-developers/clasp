@@ -559,9 +559,16 @@
                                              (:start2 sequence-index)
                                              (:end2 end-index-designator))
                           (maybe sequence-index))
-                string= string/= string< string> string<= string>=
-                string-equal string-not-equal string-lessp string-greaterp
+                string/= string< string> string<= string>=
+                string-not-equal string-lessp string-greaterp
                 string-not-greaterp string-not-lessp)
+         (ftype (function (string-designator string-designator
+                                             &key (:start1 sequence-index)
+                                             (:end1 end-index-designator)
+                                             (:start2 sequence-index)
+                                             (:end2 end-index-designator))
+                          t)
+                string= string-equal)
          (ftype (function (valid-array-dimension &key (:initial-element character)
                                                  (:element-type type-specifier))
                           simple-string)
