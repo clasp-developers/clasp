@@ -27,7 +27,6 @@
                (:file "ast-interpreter")
                (:file "toplevel")
                (:file "setup")
-               (:file "env")
                (:file "ir")
                ;;		 (:file "arguments")
                (:file "compile-file-client")
