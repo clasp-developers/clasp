@@ -139,6 +139,21 @@
   (declare (ignore abi next))
   (cmp:irc-ret (load-return-value return-value)))
 
+(defmethod translate-terminator ((inst cleavir-bir:values-save)
+                                 return-value abi next)
+  (with-return-values (return-value abi nvalsl return-regs)
+    (let* ((nvals (cmp:irc-load nvalsl))
+           ;; NOTE: Must be done BEFORE the alloca.
+           (save (%intrinsic-call "llvm.stacksave" nil))
+           (mv-temp (cmp:alloca-temp-values nvals)))
+      (setf (dynenv-storage inst) (list save nvals mv-temp))
+      (%intrinsic-call
+       "cc_save_values"
+       (list nvals (cmp:irc-load (return-value-elt return-regs 0))
+             mv-temp))))
+  ;; Continue
+  (cmp:irc-br (first next)))
+
 (defmethod translate-terminator ((instruction cleavir-bir:alloca)
                                  return-value abi next)
   (declare (ignore abi))
@@ -162,6 +177,12 @@
 (defmethod undo-dynenv ((dynenv cleavir-bir:catch) return-value)
   ;; ditto, and mark the continuation out of extent
   (declare (ignore return-value)))
+(defmethod undo-dynenv ((dynenv cleavir-bir:values-save) return-value)
+  (declare (ignore return-value))
+  (destructuring-bind (stackpos storage1 storage2)
+      (dynenv-storage dynenv)
+    (declare (ignore storage1 storage2))
+    (%intrinsic-call "llvm.stackrestore" (list stackpos))))
 (defmethod undo-dynenv ((dynenv cleavir-bir:alloca) return-value)
   (declare (ignore return-value))
   (destructuring-bind (stackpos storage1 storage2)
@@ -922,6 +943,17 @@
       (in (first inputs)) (in (second inputs)) et
       (%default-int-type abi))
      (in (third inputs)) (in (fourth inputs)))))
+
+(defmethod translate-simple-instruction ((inst cleavir-bir:values-collect)
+                                         return-value abi)
+  (let ((vs (first (cleavir-bir:inputs inst))))
+    (check-type vs cleavir-bir:values-save)
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage vs)
+      (declare (ignore stackpos))
+      (store-tmv
+       (%intrinsic-call "cc_load_values" (list storage1 storage2))
+       return-value))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)

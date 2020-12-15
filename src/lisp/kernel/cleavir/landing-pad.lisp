@@ -239,6 +239,22 @@
                                     return-value tags)
                        return-value))
 
+(defmethod compute-maybe-entry-processor ((instruction cleavir-bir:values-save)
+                                          return-value tags)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder
+                        (cmp:thread-local-llvm-context)))
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage instruction)
+      (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+        (cmp:irc-begin-block bb)
+        ;; Lose the saved values alloca.
+        (%intrinsic-call "llvm.stackrestore" (list stackpos))
+        ;; Continue
+        (cmp:irc-br
+         (maybe-entry-processor (cleavir-bir:parent instruction)
+                                return-value tags))
+        bb))))
+
 (defmethod compute-maybe-entry-processor
     ((instruction cleavir-bir:alloca) return-value tags)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
@@ -279,7 +295,8 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    ((or cleavir-bir:leti cleavir-bir:alloca cc-bir:unwind-protect cc-bir:bind)
+    ((or cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca
+         cc-bir:unwind-protect cc-bir:bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
      (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -309,7 +326,8 @@
               return-value
               (%intrinsic-call
                "llvm.frameaddress" (list (%i32 0)) "frame"))))
-        ((or cc-bir:bind cleavir-bir:alloca cleavir-bir:leti cc-bir:unwind-protect
+        ((or cc-bir:bind cleavir-bir:values-save cleavir-bir:alloca
+             cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
           (maybe-entry-processor dynenv return-value tags)
@@ -348,6 +366,9 @@
   (generate-resume-block *exn.slot* *ehselector.slot*))
 
 (defmethod compute-never-entry-processor
+    ((dynenv cleavir-bir:values-save) return-value)
+  (never-entry-processor (cleavir-bir:parent dynenv) return-value))
+(defmethod compute-never-entry-processor
     ((dynenv cleavir-bir:alloca) return-value)
   ;; This whole frame is being discarded, so no smaller stack unwinding is necessary.
   (never-entry-processor (cleavir-bir:parent dynenv) return-value))
@@ -377,7 +398,7 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
-         cleavir-bir:leti cleavir-bir:alloca)
+         cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
@@ -386,7 +407,8 @@
 
 (defun compute-never-entry-landing-pad (dynenv return-value)
   (etypecase dynenv
-    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:alloca)
+    ((or cleavir-bir:catch cleavir-bir:leti
+         cleavir-bir:values-save cleavir-bir:alloca)
      ;; We never catch, so just keep going up.
      (never-entry-landing-pad (cleavir-bir:parent dynenv) return-value))
     ((or cc-bir:bind cc-bir:unwind-protect)
