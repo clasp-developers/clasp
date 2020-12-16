@@ -944,16 +944,70 @@
       (%default-int-type abi))
      (in (third inputs)) (in (fourth inputs)))))
 
+(defun values-collect-multi (inst return-value abi)
+  (loop with seen-non-save = nil
+        for input in (cleavir-bir:inputs inst)
+        if (not (typep input 'cleavir-bir:values-save))
+          do (if seen-non-save
+                 (error "BUG: Can only have one non-save-values input!")
+                 (setf seen-non-save t)))
+  (with-return-values (return-value abi nvalsl return-regs)
+    (let* (;; FIXME: Ugly code. Not sure how to improve
+           (sub-n-values
+             (loop for input in (cleavir-bir:inputs inst)
+                   for n = (%size_t 0)
+                   ;; thisn from previous iteration
+                     then (cmp:irc-add n thisn "n-partial-values")
+                   for thisn = (if (typep input 'cleavir-bir:values-save)
+                                   (second (dynenv-storage input))
+                                   (cmp:irc-load nvalsl))
+                   collect n))
+           (n-total-values
+             (cmp:irc-add
+              (first (last sub-n-values))
+              (let ((input (first (last (cleavir-bir:inputs inst)))))
+                (if (typep input 'cleavir-bir:values-save)
+                    (second (dynenv-storage input))
+                    (cmp:irc-load nvalsl)))
+              "n-total-values")))
+      (let ((store (cmp:alloca-temp-values n-total-values)))
+        (loop for input in (cleavir-bir:inputs inst)
+              for sub-n-value in sub-n-values
+              for dest = (cmp:irc-gep-variable store (list sub-n-value))
+              if (typep input 'cleavir-bir:values-save)
+                do (%intrinsic-call "llvm.memcpy.p0i8.p0i8.i64"
+                                    (list
+                                     (cmp:irc-bit-cast dest cmp:%i8*%)
+                                     (cmp:irc-bit-cast
+                                      (third (dynenv-storage input))
+                                      cmp:%i8*%)
+                                     ;; Multiply by sizeof(T_O*)
+                                     (cmp::irc-shl
+                                      (second (dynenv-storage input))
+                                      3 :nuw t)
+                                     (%i1 0)))
+              else
+                do (%intrinsic-call "cc_save_values"
+                                    (cmp:irc-load nvalsl)
+                                    (cmp:irc-load
+                                     (return-value-elt return-regs 0))
+                                    dest))
+        (store-tmv
+         (%intrinsic-call "cc_load_values" (list n-total-values store))
+         return-value)))))
+
 (defmethod translate-simple-instruction ((inst cleavir-bir:values-collect)
                                          return-value abi)
-  (let ((vs (first (cleavir-bir:inputs inst))))
-    (check-type vs cleavir-bir:values-save)
-    (destructuring-bind (stackpos storage1 storage2)
-        (dynenv-storage vs)
-      (declare (ignore stackpos))
-      (store-tmv
-       (%intrinsic-call "cc_load_values" (list storage1 storage2))
-       return-value))))
+  (if (= (length (cleavir-bir:inputs inst)) 1)
+      (let ((vs (first (cleavir-bir:inputs inst))))
+        (check-type vs cleavir-bir:values-save)
+        (destructuring-bind (stackpos storage1 storage2)
+            (dynenv-storage vs)
+          (declare (ignore stackpos))
+          (store-tmv
+           (%intrinsic-call "cc_load_values" (list storage1 storage2))
+           return-value)))
+      (values-collect-multi inst return-value abi)))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
