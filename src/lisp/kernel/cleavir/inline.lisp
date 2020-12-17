@@ -925,6 +925,22 @@
 
 ;;;; End standard CL function types.
 
+;;;; Function types for Clasp specific operators.
+
+(declaim (ftype (function (number number) number)
+                core:two-arg-+ core:two-arg-*
+                core:two-arg-- core:two-arg-/)) ; for / we also have that the denominator can't be zero.
+(declaim (ftype (function (real real) t)
+                core:two-arg-< core:two-arg-> core:two-arg-<=
+                core:two-arg->= core:two-arg-=))
+(declaim (ftype (function (character character) t)
+                core:two-arg-char-equal core:two-arg-char-greaterp
+                core:two-arg-char-lessp core:two-arg-char-not-greaterp
+                core:two-arg-char-not-lessp core:two-arg-char<
+                core:two-arg-char<= core:two-arg-char> core:two-arg-char>=))
+
+;;;; End function types for Clasp specific operators.
+
 (progn
   #+(or)
   (eval-when (:execute)
