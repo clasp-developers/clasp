@@ -368,8 +368,7 @@
       ;; FIXME: Should this be never-entry?
       (cmp:with-landing-pad (maybe-entry-landing-pad
                              (cleavir-bir:parent dynenv) return-value *tags*)
-        (closure-call-or-invoke
-         (dynenv-storage dynenv) return-value nil))
+        (%closure-call-or-invoke (dynenv-storage dynenv) nil))
       (store-tmv (%intrinsic-call "cc_load_values" (list nvals mv-temp))
                  return-value))))
 

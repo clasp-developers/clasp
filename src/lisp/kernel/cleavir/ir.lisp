@@ -216,17 +216,19 @@ And convert everything to JIT constants."
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call-or-invoke (closure return-value arguments &key (label ""))
+(defun %closure-call-or-invoke (closure arguments &key (label ""))
   (let* ((entry-point (cmp:irc-calculate-entry closure))
          (real-args (cmp:irc-calculate-real-args arguments))
          (args (list* closure
                       (%size_t (length arguments))
-                      real-args))
-         (result-in-registers
-           (cmp::irc-call-or-invoke entry-point args
-                                    cmp::*current-unwind-landing-pad-dest*
-                                    label)))
-    (store-tmv result-in-registers return-value)))
+                      real-args)))
+    (cmp::irc-call-or-invoke entry-point args
+                             cmp::*current-unwind-landing-pad-dest*
+                             label)))
+
+(defun closure-call-or-invoke (closure return-value arguments &key (label ""))
+  (store-tmv (%closure-call-or-invoke closure arguments :label label)
+             return-value))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)

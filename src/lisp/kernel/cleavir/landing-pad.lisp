@@ -46,7 +46,7 @@
 ;;; An alternate strategy would be to test whether it's an unwind, and if not, cleanup and/or resume
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
-(defun generate-match-unwind (return-value frame landing-pad-for-unwind-rethrow exn.slot)
+(defun generate-match-unwind (frame landing-pad-for-unwind-rethrow exn.slot)
   (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
     ;; Check if frame is correct against tagbody and jump to jumpid
     (cmp:with-landing-pad landing-pad-for-unwind-rethrow
@@ -114,14 +114,14 @@
           ;; FIXME: Should this be never-entry?
           (cmp:with-landing-pad (maybe-entry-landing-pad
                                  protection-dynenv return-value *tags*)
-            (closure-call-or-invoke thunk return-value nil))
+            (%closure-call-or-invoke thunk nil))
           (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
 
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
-(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p return-value frame)
+(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p frame)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
@@ -143,7 +143,7 @@
       ;; and get the go index.
       (cmp:irc-begin-block is-unwind-block)
       (let ((go-index (generate-match-unwind
-                       return-value frame (generate-end-catch-landing-pad cleanup-block)
+                       frame (generate-end-catch-landing-pad cleanup-block)
                        *exn.slot*)))
         (cmp:irc-store go-index *go-index.slot*)
         (cmp:irc-br next))
@@ -323,7 +323,6 @@
               (maybe-entry-processor dynenv return-value tags)
               (never-entry-processor dynenv return-value)
               (dynenv-needs-cleanup-p dynenv)
-              return-value
               (%intrinsic-call
                "llvm.frameaddress" (list (%i32 0)) "frame"))))
         ((or cc-bir:bind cleavir-bir:values-save cleavir-bir:alloca
@@ -333,7 +332,6 @@
           (maybe-entry-processor dynenv return-value tags)
           (never-entry-processor dynenv return-value)
           (dynenv-needs-cleanup-p dynenv)
-          return-value
           (%intrinsic-call
            "llvm.frameaddress" (list (%i32 0)) "frame"))))
       (never-entry-landing-pad dynenv return-value)))
