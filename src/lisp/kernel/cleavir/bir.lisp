@@ -25,7 +25,7 @@
                  (cleavir-ast-to-bir:terminate
                   inserter
                   (make-instance 'cleavir-bir:jump
-                    :inputs () :outputs () :unwindp t :next (list next)))
+                    :inputs () :outputs () :next (list next)))
                  (cleavir-ast-to-bir:begin inserter next))
                rv))))))
 
@@ -54,7 +54,7 @@
                  (cleavir-ast-to-bir:terminate
                   inserter
                   (make-instance 'cleavir-bir:jump
-                    :inputs () :outputs () :unwindp t :next (list next)))
+                    :inputs () :outputs () :next (list next)))
                  (cleavir-ast-to-bir:begin inserter next))
                rv))))))
 
