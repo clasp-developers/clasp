@@ -304,17 +304,15 @@
   (cond
     ((cleavir-set:empty-set-p (cleavir-bir:unwinds instruction))
      (cmp:irc-br (first next)))
+    ((cleavir-bir-transformations:simple-unwinding-p instruction)
+     (translate-sjlj-catch instruction return-value next))
     (t
-     (cond
-       ((cleavir-bir-transformations:simple-unwinding-p instruction)
-        (translate-sjlj-catch instruction return-value next))
-       (t
-        ;; Assign the catch the continuation.
-        (out (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
-             instruction)
-        ;; Unconditional branch to the normal successor;
-        ;; dynamic environment stuff is handled in layout-iblock.
-        (cmp:irc-br (first next)))))))
+     ;; Assign the catch the continuation.
+     (out (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
+          instruction)
+     ;; Unconditional branch to the normal successor;
+     ;; dynamic environment stuff is handled in layout-iblock.
+     (cmp:irc-br (first next)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:unwind)
                                  return-value abi next)
