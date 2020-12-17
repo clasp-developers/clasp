@@ -6,10 +6,15 @@
 
 (defun global-ftype (name)
   (multiple-value-bind (value presentp) (gethash name *ftypes*)
-    (if presentp value 'function)))
+    (if presentp
+        value
+        (load-time-value (cleavir-ctype:function-top *clasp-system*)))))
 
 (defun (setf global-ftype) (type name)
-  (setf (gethash name *ftypes*) type))
+  (setf (gethash name *ftypes*)
+        (cleavir-env:parse-type-specifier type
+                                          *clasp-env*
+                                          *clasp-system*)))
 
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
@@ -220,6 +225,7 @@
     ((cmp:known-function-p function-name)
      (make-instance 'cleavir-env:global-function-info
                     :name function-name
+                    :type (global-ftype function-name)
                     :compiler-macro (compiler-macro-function function-name)
                     :inline (core:global-inline-status function-name)
                     :ast (inline-ast function-name)))
@@ -356,10 +362,19 @@
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:find-class (name environment (system clasp) &optional errorp)
+  (declare (ignore environment))
+  name)
+
 (defmethod cleavir-env:parse-expanded-type-specifier
     ((type-specifier symbol) environment (system clasp))
   (declare (ignore environment))
   type-specifier)
+
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier (eql 'cl:function)) environment (system clasp))
+  (declare (ignore environment))
+  (cleavir-ctype:function-top system))
 
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)

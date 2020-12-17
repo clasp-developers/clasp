@@ -24,7 +24,11 @@
                        (simple-array character (*))))
            (equal ts '(or (simple-array character (*))
                        (simple-array base-char (*)))))
-       (setf ts 'simple-string)))
+       (setf ts 'simple-string))
+      ((and (consp ts) (eq (car ts) 'function))
+       ;; We should check that this does not specialize, because
+       ;; obviously we can't check that.
+       (setf ts 'function)))
     (case ts
       ((fixnum) (change-class ifi 'cc-bmir:fixnump))
       ((cons) (change-class ifi 'cc-bmir:consp))

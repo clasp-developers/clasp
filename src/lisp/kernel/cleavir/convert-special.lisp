@@ -77,6 +77,9 @@
                     collect (gensym "CHECKED"))))
     `(lambda (,@vars &rest ignore)
        (declare (ignore ignore))
+       ;; We don't want to insert type checks for typep and error, or
+       ;; else we risk getting trapped in an infinite recursion.
+       (declare (optimize (safety 0)))
        ,@(loop for var in vars
                for ty in required
                unless (cleavir-ctype:top-p ty system)
@@ -86,7 +89,8 @@
                               ,var
                               (error 'type-error
                                      :datum ,var
-                                     :expected-type ',ty))))))
+                                     :expected-type ',ty)))
+       (values ,@vars))))
 
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))

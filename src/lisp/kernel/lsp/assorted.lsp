@@ -76,8 +76,6 @@
 
 (declaim (ftype (function (list list function) (or null (eql t)))
 		tree-equal-TEST tree-equal-TEST-NOT))
-(declaim (ftype (function (list list &key t t) (or null (eql t)))
-		tree-equal))
 (defun tree-equal-TEST (tree-1 tree-2 test)
   (cond ((consp tree-1)
 	 (and (consp tree-2)
