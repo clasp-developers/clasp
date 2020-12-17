@@ -988,10 +988,11 @@
                                      (%i1 0)))
               else
                 do (%intrinsic-call "cc_save_values"
-                                    (cmp:irc-load nvalsl)
-                                    (cmp:irc-load
-                                     (return-value-elt return-regs 0))
-                                    dest))
+                                    (list
+                                     (cmp:irc-load nvalsl)
+                                     (cmp:irc-load
+                                      (return-value-elt return-regs 0))
+                                     dest)))
         (store-tmv
          (%intrinsic-call "cc_load_values" (list n-total-values store))
          return-value)))))

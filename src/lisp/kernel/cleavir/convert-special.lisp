@@ -45,23 +45,14 @@
 ;;;
 ;;; Converting MULTIPLE-VALUE-CALL.
 ;;;
-;;; In the case where there is one multiple-value form this gets converted
-;;; into a multiple-value-call-ast.  In the general case with multiple forms
-;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
-;;;
 
 (def-convert-macro multiple-value-call (function-form &rest forms)
-  ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
-  ;;; probably not a big deal.
-  (if (eql (length forms) 1)
-      `(cleavir-primop:multiple-value-call (core:coerce-fdesignator ,function-form) ,@forms)
-      `(core:multiple-value-funcall
-        (core:coerce-fdesignator ,function-form)
-        ,@(mapcar (lambda (x)
-                    `#'(lambda ()
-                         (declare (core:lambda-name core::mvc-argument-lambda))
-                         (progn ,x)))
-                  forms))))
+  (let ((cf `(core:coerce-fdesignator ,function-form)))
+    (case (length forms)
+      (0
+       `(cleavir-primop:funcall ,cf))
+      (t
+       `(cleavir-primop:multiple-value-call ,cf ,@forms)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
