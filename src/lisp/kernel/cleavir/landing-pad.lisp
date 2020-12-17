@@ -196,7 +196,7 @@
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
-               (_ (restore-multiple-value-0 return-value))
+               (_ (store-tmv (restore-multiple-value-0) return-value))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))

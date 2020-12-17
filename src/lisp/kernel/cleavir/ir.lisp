@@ -203,10 +203,10 @@ And convert everything to JIT constants."
 
 ;;; These functions are like cc_{save,restore}MultipleValue0
 ;; FIXME: we don't really need intrinsics for these - they're easy
-(defun save-multiple-value-0 (return-value)
-  (%intrinsic-call "cc_saveMultipleValue0" (list (load-return-value return-value))))
-(defun restore-multiple-value-0 (return-value)
-  (store-tmv (%intrinsic-call "cc_restoreMultipleValue0" nil) return-value))
+(defun save-multiple-value-0 (tmv)
+  (%intrinsic-call "cc_saveMultipleValue0" (list tmv)))
+(defun restore-multiple-value-0 ()
+  (%intrinsic-call "cc_restoreMultipleValue0" nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -295,7 +295,7 @@
             for i from 1
             do (cmp:irc-add-case sw (%i32 i) block)
                (cmp:irc-begin-block block)
-               (restore-multiple-value-0 return-value)
+               (store-tmv (restore-multiple-value-0) return-value)
                (cmp:irc-br succ)))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:catch)
@@ -331,7 +331,7 @@
       (1 (assert (cleavir-bir:rtype= (cleavir-bir:rtype rv) :multiple-values))))
     ;; Transmit those values
     (when rv
-      (save-multiple-value-0 return-value))
+      (save-multiple-value-0 (load-return-value return-value)))
     ;; unwind
     (if (cleavir-bir-transformations:simple-unwinding-p
          (cleavir-bir:catch instruction))
