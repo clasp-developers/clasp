@@ -123,7 +123,7 @@
 
 (defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p frame)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-    (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad"))
+    (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
