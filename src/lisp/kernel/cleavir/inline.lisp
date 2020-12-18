@@ -1719,7 +1719,7 @@
 (defun (setf char) (value string index)
   (core:row-major-aset (the string string) index value))
 
-(defun row-major-index-computer (array dimsyms subscripts)
+(defun row-major-index-computer (dimsyms subscripts)
   ;; assumes once-only is taken care of.
   ;; array is a symbol bound to an array.
   ;; dimsyms is a list of symbols bound to the array dimensions of the array.
@@ -1784,7 +1784,7 @@
                        for axis below rank
                        collect `(core:check-index ,ssub ,dimsym ,axis)))
              ;; Now we know we're good, do the actual computation
-             ,(row-major-index-computer sarray dimsyms ssubscripts))))))
+             ,(row-major-index-computer dimsyms ssubscripts))))))
 
 #+(or)
 (define-cleavir-compiler-macro aref (&whole form array &rest subscripts

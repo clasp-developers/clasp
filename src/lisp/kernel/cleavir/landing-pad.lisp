@@ -245,6 +245,7 @@
                         (cmp:thread-local-llvm-context)))
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage instruction)
+      (declare (ignore storage1 storage2))
       (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
         (cmp:irc-begin-block bb)
         ;; Lose the saved values alloca.
@@ -260,6 +261,7 @@
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage instruction)
+      (declare (ignore storage1 storage2))
       (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
         (cmp:irc-begin-block bb)
         ;; Lose the saved values alloca.
@@ -269,11 +271,6 @@
          (maybe-entry-processor (cleavir-bir:parent instruction)
                                 return-value tags))
         bb))))
-
-(defmethod compute-maybe-entry-processor
-    ((instruction cleavir-bir:leti) return-value tags)
-  ;; In the future we might want to unwind cell bindings here or something.
-  (maybe-entry-processor (cleavir-bir:parent instruction) return-value tags))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
                                           return-value tags)

@@ -65,8 +65,7 @@
                    (column-start (search ", column " line))
                    (column-pos (+ column-start (length ", column ")))
                    (start-line-start (search ", start line" line))
-                   (line-no (parse-integer line :start line-pos :end column-start))
-                   (column (parse-integer line :start column-pos :end start-line-start)))
+                   (line-no (parse-integer line :start line-pos :end column-start)))
               (push (cons :line-info-line line-no) info)
               (go done)))))
        (go top)
@@ -97,6 +96,7 @@
                            (namestring pathname))))
             (multiple-value-bind (err error-msg stream)
                 (ext:vfork-execvp cmd t)
+              (declare (ignore err error-msg))
               (parse-llvm-dwarfdump stream)))))))
 
 (defun object-file-address-information (addr &key verbose)
@@ -121,6 +121,7 @@
     ;; OK no good, so try it as an address from a library.
     (multiple-value-bind (symbol start end type library-name library-origin offset-from-start-of-library)
         (core:lookup-address address)
+      (declare (ignore symbol start library-origin end type))
       (if library-name
           (multiple-value-bind (source-pathname line-number column)
               (run-llvm-dwarfdump offset-from-start-of-library library-name)

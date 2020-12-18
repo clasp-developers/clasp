@@ -33,7 +33,7 @@
 (in-package :compiler)
 
 
-(defun irc-single-step-callback (env)
+(defun irc-single-step-callback ()
   (irc-intrinsic "singleStepCallback" ))
 
 (defun irc-lexical-function-lookup (classified start-env)
@@ -279,14 +279,11 @@
       (irc-intrinsic-call function-name args label)))    
 
 (defun irc-size_t-*current-source-pos-info*-filepos ()
-  (let ((csp core:*current-source-pos-info*))
-    (jit-constant-size_t (core:source-pos-info-filepos csp))))
+  (jit-constant-size_t (core:source-pos-info-filepos core:*current-source-pos-info*)))
 (defun irc-size_t-*current-source-pos-info*-lineno ()
-  (let ((csp core:*current-source-pos-info*))
-    (jit-constant-size_t (core:source-pos-info-lineno csp))))
+  (jit-constant-size_t (core:source-pos-info-lineno core:*current-source-pos-info*)))
 (defun irc-size_t-*current-source-pos-info*-column ()
-  (let ((csp core:*current-source-pos-info*))
-    (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*))))
+  (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*)))
 
 ;; ---------------------------------------------------------------------------------------
 ;;
@@ -308,8 +305,7 @@
 (defun irc-do-unwind-environment (env &optional verbose)
   "Unwind the environment and return whatever was unwound"
   (cmp-log "irc-do-unwind-environment for: %s%N" env)
-  (let ((unwind (local-metadata env :unwind))
-        unwound-something)
+  (let ((unwind (local-metadata env :unwind)))
     (dolist (cc unwind)
       (let ((head (car cc)))
 	(cond

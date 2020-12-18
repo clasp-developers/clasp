@@ -508,9 +508,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun default-link-flags ()
   "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
-  (let (err error-msg stream)
-    (multiple-value-setq (err error-msg stream)
-      (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))
+  (let ((stream (nth-value 2 (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))))
     (let* ((ldflags (split-at-white-space (read-line stream)))
            #+(or)(clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
            (libdir (read-line stream))

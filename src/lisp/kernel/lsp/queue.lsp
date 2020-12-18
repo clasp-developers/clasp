@@ -118,6 +118,7 @@ DO:         Atomically, dequeue the first message from the QUEUE.  If
 
 RETURN:     the dequeued MESSAGE.
 "
+  (declare (ignore time))
   (mp:with-lock ((queue-lock queue))
     (loop :until (queue-head queue)
           :do (mp:condition-variable-wait (queue-not-empty queue) (queue-lock queue)))

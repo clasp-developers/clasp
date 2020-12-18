@@ -141,6 +141,7 @@
 
 (defmethod translate-terminator ((inst cleavir-bir:values-save)
                                  return-value abi next)
+  (declare (ignore abi))
   (with-return-values (return-value abi nvalsl return-regs)
     (let* ((nvals (cmp:irc-load nvalsl))
            ;; NOTE: Must be done BEFORE the alloca.
@@ -222,6 +223,7 @@
                    (second next) (first next)))
 
 (defmethod translate-conditional-test ((instruction cleavir-bir:conditional-test) next)
+  (declare (ignore next))
   (error "Don't know how to translate this conditional test ~a." instruction))
 
 (defmethod translate-conditional-test ((instruction cleavir-bir:eq-test) next)
@@ -560,8 +562,7 @@
   (declare (ignore abi))
   (let* ((callee (cleavir-bir:callee instruction))
          (callee-info (find-llvm-function-info callee))
-         (lisp-arguments (rest (cleavir-bir:inputs instruction)))
-         (nargs (length lisp-arguments)))
+         (lisp-arguments (rest (cleavir-bir:inputs instruction))))
     (cond ((lambda-list-too-hairy-p (cleavir-bir:lambda-list callee))
            ;; Has &key or something, so use the normal call protocol.
            ;; We allocate a fresh closure for every call. Hopefully this
@@ -599,6 +600,7 @@
          (load-return-value return-value))))
 
 (defun direct-mv-local-call (return-value abi callee-info nreq nopt rest-var)
+  (declare (ignore abi))
   (with-return-values (return-value abi nret return-regs)
     (let* ((rnret (cmp:irc-load nret))
            (nfixed (+ nreq nopt))
@@ -942,6 +944,7 @@
      (in (third inputs)) (in (fourth inputs)))))
 
 (defun values-collect-multi (inst return-value abi)
+  (declare (ignore abi))
   (loop with seen-non-save = nil
         for input in (cleavir-bir:inputs inst)
         if (not (typep input 'cleavir-bir:values-save))
@@ -949,6 +952,7 @@
                  (error "BUG: Can only have one non-save-values input!")
                  (setf seen-non-save t)))
   (with-return-values (return-value abi nvalsl return-regs)
+    (declare (ignore abi))
     (let* (;; FIXME: Ugly code. Not sure how to improve
            (sub-n-values
              (loop for input in (cleavir-bir:inputs inst)
@@ -1009,6 +1013,7 @@
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:writetemp)
                                          return-value abi)
+  (declare (ignore abi))
   (let ((alloca (cleavir-bir:alloca inst)))
     (check-type alloca cleavir-bir:alloca)
     ;; only handling m-v-prog1 for the moment
@@ -1110,8 +1115,8 @@
         (string-downcase (symbol-name name))
         "iblock")))
 
-(defun layout-xep-function* (the-function ir calling-convention
-                             abi &key (linkage 'llvm-sys:internal-linkage))
+(defun layout-xep-function* (the-function ir calling-convention abi)
+  (declare (ignore abi))
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
       ;; Parse lambda list.
     (cmp:compile-lambda-list-code (cleavir-bir:lambda-list ir)
@@ -1171,8 +1176,7 @@
     (cmp:irc-br body-block))
   the-function)
 
-(defun layout-xep-function (function lambda-name abi
-                            &key (linkage 'llvm-sys:internal-linkage))
+(defun layout-xep-function (function lambda-name abi)
   (let* ((*datum-values* (make-hash-table :test #'eq))
          (llvm-function-name (cmp:jit-function-name lambda-name))
          (cmp:*current-function-name* llvm-function-name)
@@ -1190,7 +1194,6 @@
          (cmp:*irbuilder-function-alloca*
            (llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
          (source-pos-info (function-source-pos-info function))
-         (fileid (core:source-pos-info-file-handle source-pos-info))
          (lineno (core:source-pos-info-lineno source-pos-info)))
     (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
                             :function-type llvm-function-type
@@ -1212,8 +1215,7 @@
                      (cleavir-bir:policy function)
                      'save-register-args)
                     :cleavir-lambda-list lambda-list)))
-            (layout-xep-function* xep-function function calling-convention
-                                  abi :linkage linkage)))))))
+            (layout-xep-function* xep-function function calling-convention abi)))))))
 
 (defun layout-main-function (function lambda-name abi
                              &aux (linkage 'llvm-sys:private-linkage))
@@ -1239,7 +1241,6 @@
                           (cmp:thread-local-llvm-context)))
          (body-block (cmp:irc-basic-block-create "body"))
          (source-pos-info (function-source-pos-info function))
-         (fileid (core:source-pos-info-file-handle source-pos-info))
          (lineno (core:source-pos-info-lineno source-pos-info)))
     (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
                             :function-type llvm-function-type
@@ -1263,16 +1264,14 @@
           (cmp:with-dbg-lexical-block
               (:lineno (core:source-pos-info-lineno source-pos-info))
             
-            (let* ((fn-args (llvm-sys:get-argument-list the-function))
-                   (lambda-list (cleavir-bir:lambda-list function)))
-              (layout-main-function* the-function function
-                                     body-irbuilder body-block
-                                     abi :linkage linkage))))))))
+            (layout-main-function* the-function function
+                                   body-irbuilder body-block
+                                   abi :linkage linkage)))))))
 
 (defun layout-procedure (function lambda-name abi
                          &key (linkage 'llvm-sys:internal-linkage))
   (when (xep-needed-p function)
-    (layout-xep-function function lambda-name abi :linkage linkage))
+    (layout-xep-function function lambda-name abi))
   (layout-main-function function lambda-name abi))
 
 (defun get-or-create-lambda-name (bir)
@@ -1431,6 +1430,7 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defun bir-compile-cst (cst env pathname
                         &key (linkage 'llvm-sys:internal-linkage))
+  (declare (ignore linkage))
   (let* (function
          ordered-raw-constants-list constants-table startup-fn shutdown-fn
          (cleavir-cst-to-ast:*compiler* 'cl:compile)

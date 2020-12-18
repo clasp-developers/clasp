@@ -53,6 +53,7 @@
                    (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                    (link-time llvm-sys:*accumulated-clang-link-time*))
                (when verbose
+                 #+(or)
                  (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
                                         ""))
@@ -66,7 +67,7 @@
                           (if report-link-time
                               (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
                               (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
-                   #+(or)(core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
+                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time

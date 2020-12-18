@@ -320,10 +320,6 @@ Compile a lisp source file into an LLVM module."
   (let* ((*package* *package*)
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
-         (source-location
-           (if (pathname-match-p given-input-pathname clasp-source)
-               (enough-namestring given-input-pathname clasp-source-root)
-               given-input-pathname))
          (source-sin (open given-input-pathname :direction :input)))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*

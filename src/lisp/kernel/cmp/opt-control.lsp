@@ -25,7 +25,7 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
-(define-compiler-macro not (&whole form objectf)
+(define-compiler-macro not (objectf)
   ;; Take care of (not (not x)), which code generates sometimes.
   (if (and (consp objectf)
            (eq (car objectf) 'not)

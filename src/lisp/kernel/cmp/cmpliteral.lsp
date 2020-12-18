@@ -386,12 +386,12 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
                (load-time-reference-literal (package-name package) read-only-p :toplevelp nil)))
 
 (defun ltv/single-float (single index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
+  (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-single-float-datum :value single)))
     (add-creator "ltvc_make_float" index single constant)))
 
 (defun ltv/double-float (double index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
+  (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-double-float-datum :value double)))
     (add-creator "ltvc_make_double" index double constant)))
 
@@ -405,7 +405,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
        (every (lambda (f) (constantp f env)) (rest form))))
 
 (defun ltv/mlf (object index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
+  (declare (ignore toplevelp read-only-p))
   (multiple-value-bind (create initialize)
       (make-load-form object)
     (prog1
@@ -841,6 +841,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (progn
           (llog "immediate-datum ~s~%" immediate-datum)
           (let ((val (immediate-datum-value immediate-datum)))
+            (declare (ignorable val))
             (llog "immediate-datum value ~s~%" val)
             (values immediate-datum nil)))
         (multiple-value-bind (similarity creator)
@@ -879,6 +880,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun run-time-reference-literal (object read-only-p)
   "If the object is an immediate object return (values immediate nil nil).
    Otherwise return (values creator T index)."
+  (declare (ignore read-only-p))
   (let ((immediate-datum (immediate-datum-or-nil object)))
     (if immediate-datum
         (values immediate-datum NIL)
@@ -913,6 +915,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :form nil
                                                        :spi core:*current-source-pos-info*))
               (let* ((given-name (llvm-sys:get-name fn)))
+                (declare (ignorable given-name))
                 ;; Map the function argument names
                 (cmp:cmp-log "Creating ltv thunk with name: %s%N" given-name)
                 (cmp:codegen fn-result form fn-env)))))
@@ -1026,7 +1029,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
   (multiple-value-bind (data-or-index in-array literal-name)
       (reference-literal literal t)
     (if in-array
-        (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
+        (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
 (defun codegen-rtv-bclasp (result obj)
@@ -1096,14 +1099,14 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;; Access load-time-values
 ;;;
 
-(defun constants-table-reference (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*) literal-name)
+(defun constants-table-reference (index &optional (holder cmp:*load-time-value-holder-global-var*) literal-name)
   (let ((label (if literal-name
                    (bformat nil "values-table[%d]/%s" index literal-name)
                    (bformat nil "values-table[%d]" index))))
     (llvm-sys:create-const-gep2-64 cmp:*irbuilder* holder 0 index label)))
 
-(defun constants-table-value (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
-  (cmp:irc-load (constants-table-reference index label holder)))
+(defun constants-table-value (index &optional (holder cmp:*load-time-value-holder-global-var*))
+  (cmp:irc-load (constants-table-reference index holder)))
 
 
 
@@ -1135,9 +1138,8 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 (defun build-one-c++-function (op &optional (stream *standard-output*))
   (destructuring-bind (op-kind name return-type argument-types &key varargs ltvc)
       op
-    (declare (ignore op-kind ltvc))
-    (let ((index (second argument-types))
-          (arg-types (nthcdr 2 argument-types)))
+    (declare (ignore op-kind return-type ltvc))
+    (let ((arg-types (nthcdr 2 argument-types)))
       (format stream "void parse_~a(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {~%" name)
       (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
       (let* ((arg-index 0)
@@ -1198,7 +1200,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (let ((code 65))
       (dolist (prim primitives)
         (let ((func-name (second prim)))
-          (setf (gethash (second prim) map) code)
+          (setf (gethash func-name map) code)
           (incf code))))
     map))
 

@@ -658,6 +658,7 @@ jump to blocks within this tagbody."
           (codegen-literal result nil env))))))
 
 (defun codegen-go (result rest env)
+  (declare (ignore result))
   (let* ((tag (car rest))
 	 (classified-tag (classify-tag env tag)))
     (cond
@@ -765,6 +766,7 @@ jump to blocks within this tagbody."
           (irc-begin-block after-return-block))))))
 
 (defun codegen-return-from (result rest env)
+  (declare (ignore result))
   (let* ((temp-mv-result (alloca-tmv "temp-mv-result"))
 	 (block-symbol (car rest))
 	 (return-form (cadr rest)))
@@ -935,7 +937,7 @@ jump to blocks within this tagbody."
   (with-dbg-lexical-block ()
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
-      (declare (ignore specials))
+      (declare (ignore doc-string))
       (let ((new-env (irc-new-unbound-value-environment-of-size
 		      env
 		      :number-of-arguments (length specials)
@@ -1313,6 +1315,7 @@ jump to blocks within this tagbody."
 
 (defparameter *nexti* 10000)
 (defun codegen-dbg-i32 (result rest env)
+  (declare (ignore result env))
   (let ((giveni (car rest)))
     (if (null giveni)
 	(progn
@@ -1323,10 +1326,12 @@ jump to blocks within this tagbody."
 ;;; DEBUG-MESSAGE
 
 (defun codegen-debug-message (result rest env)
+  (declare (ignore result env))
   (let ((message (jit-constant-unique-string-ptr (car rest))))
     (irc-intrinsic "debugMessage" message)))
 
 (defun codegen-debug-break (result rest env)
+  (declare (ignore result rest env))
   (irc-intrinsic "debugBreak"))
 
 ;;; LLVM-INLINE
@@ -1357,8 +1362,7 @@ jump to blocks within this tagbody."
         (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
           (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
-          (let ((debug-on nil)
-                (eval-vaslist (alloca-t* "bind-vaslist")))
+          (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
                    (src-remaining-nargs* (irc-vaslist-remaining-nargs-address lvaslist))
@@ -1370,6 +1374,7 @@ jump to blocks within this tagbody."
                                                            :va-list* local-va_list*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
+              (declare (ignore _))
               ;; See comment in cleavir bind-va-list w/r/t safep.
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
@@ -1384,7 +1389,6 @@ jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
   ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
   (let* ((intrinsic-name (car form))
-         (nargs (length (cdr form)))
          args
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
@@ -1440,7 +1444,6 @@ jump to blocks within this tagbody."
   (let* ((foreign-types (first form))
          (intrinsic-name (second form))
          (fargs (cddr form))
-         (nargs (length fargs))
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
@@ -1468,7 +1471,6 @@ jump to blocks within this tagbody."
   (let* ((foreign-types (first form))
          (func-pointer (second form))
          (fargs (cddr form))
-         (nargs (length fargs))
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     (let ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))

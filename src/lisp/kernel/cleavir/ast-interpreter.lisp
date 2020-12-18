@@ -295,6 +295,7 @@
 
 (defcan cleavir-ast:load-time-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:load-time-value-ast) env)
+  (declare (ignore env))
   (eval (cleavir-ast:form ast)))
 
 ;; Turns out the AST interpreter is much slower once we start
@@ -332,6 +333,7 @@
 
 (defcan cleavir-ast:unreachable-ast)
 (defmethod interpret-ast ((ast cleavir-ast:unreachable-ast) env)
+  (declare (ignore env))
   (error "BUG: Unreachable"))
 
 (defcan cleavir-ast:eq-ast)
