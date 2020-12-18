@@ -191,6 +191,11 @@ And convert everything to JIT constants."
       (let ((multiple-value-pointer (multiple-value-array-address)))
         (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx)))))
 
+(defun %return-value-elt (idx)
+  (assert (>= idx +pointers-returned-in-registers+))
+  (let ((multiple-value-pointer (multiple-value-array-address)))
+    (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx))))
+
 ;;; Given an above return-value, bind nret and ret-regs to the actual pointers.
 ;;; (ABI is currently ignored.)
 (defmacro with-return-values ((return-value abi nret ret-regs) &body body)
@@ -230,7 +235,8 @@ And convert everything to JIT constants."
   (store-tmv (%closure-call-or-invoke closure arguments :label label)
              return-value))
 
-(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
+(defun %unsafe-multiple-value-foreign-call (intrinsic-name args abi
+                                            &key (label ""))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                    (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                          (varargs nil))
@@ -238,12 +244,15 @@ And convert everything to JIT constants."
                       (llvm-sys:function-type-get cmp:%return-type% arg-types varargs)
                       'llvm-sys::external-linkage
                       intrinsic-name
-                      cmp:*the-module*))))
-         (result-in-registers
-           (cmp::irc-call-or-invoke func args
-                                    cmp::*current-unwind-landing-pad-dest*
-                                    label)))
-    (store-tmv result-in-registers return-value)))
+                      cmp:*the-module*)))))
+    (cmp::irc-call-or-invoke func args
+                             cmp::*current-unwind-landing-pad-dest*
+                             label)))
+
+(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
+  (store-tmv (%unsafe-multiple-value-foreign-call
+              intrinsic-name args abi :label label)
+             return-value))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array
