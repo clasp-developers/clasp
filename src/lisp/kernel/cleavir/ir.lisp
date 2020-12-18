@@ -158,53 +158,10 @@ And convert everything to JIT constants."
 ;; Only one pointer and one integer can be returned in registers (from X86 System V ABI)
 ;; so we return one pointer (value) and the number of returned values.
 
-;;; The "return-value" we use throughout translate is actually a list (nreg register...)
-;;; Using scalars helps LLVM, in that mem2reg can eliminate a structure alloca.
-;;; We have to return something here that's compatible (through load-return-value)
-;;; with %return-type%.
-;;; FIXME: An alternate scheme would be to actually alloca a return value, but load it as
-;;; a whole and use extractvalue/insertvalue. Previously we allocad it but used geps to get
-;;; pointers to the fields; llvm then chokes during mem2reg, leaving the structure in memory.
-
-;;; We have nret before the primary, which is backwards from %return-type%, in case we want
-;;; to add more registers at some point.
-(defun alloca-return ()
-  (list (cmp:alloca-size_t "nret")
-        ;; only one register
-        (cmp:alloca-t* "primary-return-value")))
-
-;;; given the above "return-value", generate code to make an actual return-value,
-;;; and return that LLVM::Value. (Note the type is tmv, not tmv*.)
-(defun load-return-value (return-value)
-  (let ((nret (cmp:irc-load (first return-value)))
-        (val0 (cmp:irc-load (second return-value))))
-    (cmp:irc-make-tmv nret val0)))
-
-;;; given a tmv, store it in a "return-value".
-(defun store-tmv (tmv return-value)
-  (cmp:irc-store (cmp:irc-tmv-nret tmv) (first return-value))
-  (cmp:irc-store (cmp:irc-tmv-primary tmv) (second return-value)))
-
-(defun return-value-elt (return-regs idx)
-  (if (< idx +pointers-returned-in-registers+)
-      (elt return-regs idx)
-      (let ((multiple-value-pointer (multiple-value-array-address)))
-        (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx)))))
-
-(defun %return-value-elt (idx)
+(defun return-value-elt (idx)
   (assert (>= idx +pointers-returned-in-registers+))
   (let ((multiple-value-pointer (multiple-value-array-address)))
     (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx))))
-
-;;; Given an above return-value, bind nret and ret-regs to the actual pointers.
-;;; (ABI is currently ignored.)
-(defmacro with-return-values ((return-value abi nret ret-regs) &body body)
-  (declare (ignore abi))
-  (let ((rvs (gensym "RETURN-VALUE")))
-    `(let* ((,rvs ,return-value)
-            (,nret (first ,rvs))
-            (,ret-regs (rest ,rvs)))
-       ,@body)))
 
 ;;; These functions are like cc_{save,restore}MultipleValue0
 ;; FIXME: we don't really need intrinsics for these - they're easy
@@ -221,7 +178,7 @@ And convert everything to JIT constants."
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun %closure-call-or-invoke (closure arguments &key (label ""))
+(defun closure-call-or-invoke (closure arguments &key (label ""))
   (let* ((entry-point (cmp:irc-calculate-entry closure))
          (real-args (cmp:irc-calculate-real-args arguments))
          (args (list* closure
@@ -231,11 +188,7 @@ And convert everything to JIT constants."
                              cmp::*current-unwind-landing-pad-dest*
                              label)))
 
-(defun closure-call-or-invoke (closure return-value arguments &key (label ""))
-  (store-tmv (%closure-call-or-invoke closure arguments :label label)
-             return-value))
-
-(defun %unsafe-multiple-value-foreign-call (intrinsic-name args abi
+(defun unsafe-multiple-value-foreign-call (intrinsic-name args abi
                                             &key (label ""))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                    (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
@@ -248,11 +201,6 @@ And convert everything to JIT constants."
     (cmp::irc-call-or-invoke func args
                              cmp::*current-unwind-landing-pad-dest*
                              label)))
-
-(defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
-  (store-tmv (%unsafe-multiple-value-foreign-call
-              intrinsic-name args abi :label label)
-             return-value))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
   ;; Write excess arguments into the multiple-value array

@@ -114,7 +114,7 @@
           ;; FIXME: Should this be never-entry?
           (cmp:with-landing-pad (maybe-entry-landing-pad
                                  protection-dynenv *tags*)
-            (%closure-call-or-invoke thunk nil))
+            (closure-call-or-invoke thunk nil))
           (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))

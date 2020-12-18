@@ -364,7 +364,7 @@
            ;; (block nil (unwind-protect (... (return ...)) ... (return ...)))
            (cmp:with-landing-pad (maybe-entry-landing-pad
                                   (cleavir-bir:parent dynenv) *tags*)
-             (%closure-call-or-invoke (dynenv-storage dynenv) nil))))
+             (closure-call-or-invoke (dynenv-storage dynenv) nil))))
     ;; We have to save values around it if we're in the middle of
     ;; returning values.
     (if tmv
@@ -565,7 +565,7 @@
            ;; (If we local-call a self-referencing closure, the closure cell
            ;;  will get its value from some enclose.
            ;;  FIXME we could use that instead?)
-           (%closure-call-or-invoke
+           (closure-call-or-invoke
             (enclose callee-info :dynamic nil)
             (mapcar #'in lisp-arguments)))
           (t
@@ -583,7 +583,7 @@
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call) abi)
   (declare (ignore abi))
   (let ((inputs (cleavir-bir:inputs instruction)))
-    (%closure-call-or-invoke
+    (closure-call-or-invoke
      (in (first inputs)) (mapcar #'in (rest inputs)))))
 
 (defun general-mv-local-call (callee-info tmv)
@@ -607,7 +607,7 @@
     (flet ((load-return-value (n)
              (if (zerop n)
                  rprimary
-                 (cmp:irc-load (%return-value-elt n)))))
+                 (cmp:irc-load (return-value-elt n)))))
       ;; Generate phis for the merge block's call.
       (cmp:irc-begin-block merge)
       (let ((opt-phis
@@ -712,7 +712,7 @@
 
 (defmethod translate-simple-instruction ((instruction cc-bir:mv-foreign-call)
                                          abi)
-  (%unsafe-multiple-value-foreign-call
+  (unsafe-multiple-value-foreign-call
    (cc-bir:function-name instruction)
    (mapcar #'in (cleavir-bir:inputs instruction)) abi))
 
@@ -738,7 +738,7 @@
          (ninputs (length inputs)))
     (loop for i from 1 below ninputs
           do (cmp:irc-store (in (elt inputs i))
-                            (%return-value-elt i)))
+                            (return-value-elt i)))
     (cmp:irc-make-tmv (%size_t ninputs)
                       (if (zerop ninputs)
                           (%nil)
@@ -770,7 +770,7 @@
     (when (> nouts +pointers-returned-in-registers+)
       (let* ((rets (loop for i from +pointers-returned-in-registers+
                            below nouts
-                         collect (%return-value-elt i)))
+                         collect (return-value-elt i)))
              (default (cmp:irc-basic-block-create "mtf-enough"))
              (switch (cmp:irc-switch (cmp:irc-tmv-nret mv) default nouts))
              (final (cmp:irc-basic-block-create "mtf-final"))
