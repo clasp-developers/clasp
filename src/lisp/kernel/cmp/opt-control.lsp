@@ -59,8 +59,8 @@
         `(eq ',xv ,y))))
 
 (define-compiler-macro identity (object)
-  ;; preserve non-top-level-ness
-  `(the t ,object))
+  ;; ensure only the primary value is returned.
+  `(prog1 ,object))
 
 (define-compiler-macro constantly (object)
   (let ((s (gensym "CONSTANTLY-OBJECT")))
