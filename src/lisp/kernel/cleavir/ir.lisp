@@ -231,6 +231,7 @@ And convert everything to JIT constants."
              return-value))
 
 (defun unsafe-multiple-value-foreign-call (intrinsic-name return-value args abi &key (label ""))
+  (declare (ignore abi))
   (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                    (let ((arg-types (make-list (length args) :initial-element cmp:%t*%))
                          (varargs nil))
@@ -265,7 +266,8 @@ And convert everything to JIT constants."
         (let ((foreign-result (cmp::irc-call-or-invoke func arguments)))
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result))))))
 
-(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi &key (label ""))
+(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi)
+  (declare (ignore abi))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
                               (%intrinsic-invoke-if-landing-pad-or-call

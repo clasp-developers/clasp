@@ -363,7 +363,7 @@
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
 (defmethod cleavir-env:find-class (name environment (system clasp) &optional errorp)
-  (declare (ignore environment))
+  (declare (ignore environment errorp))
   name)
 
 (defmethod cleavir-env:parse-expanded-type-specifier
@@ -467,17 +467,3 @@
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((origin (cleavir-conditions:origin condition)))
     (ignore-errors (if (consp origin) (car origin) origin))))
-
-(defun build-and-draw-ast (filename cst)
-  (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)
-    ast))
-
-(defun draw-ast (&optional (ast *ast*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
-  (let* ((filename (merge-pathnames filename))
-         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ast-graphviz:draw-ast ast dot-pathname))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))
