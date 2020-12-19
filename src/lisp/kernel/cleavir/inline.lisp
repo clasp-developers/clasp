@@ -287,7 +287,8 @@
          (ftype (function (restart-designator)) invoke-restart-interactively)
          (ftype (function (restart) symbol) restart-name)
          (ftype (function (&optional (maybe condition)) nil) abort muffle-warning)
-         (ftype (function (&optional (maybe condition)) null) continue store-value use-value))
+         (ftype (function (&optional (maybe condition)) null) continue)
+         (ftype (function (t &optional (maybe condition)) null) store-value use-value))
 
 ;;; Chapter 10 Symbols
 
