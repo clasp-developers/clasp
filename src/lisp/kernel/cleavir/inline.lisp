@@ -399,7 +399,7 @@
          (ftype (function (float) integer) float-radix)
          (ftype (function (float &optional float) float) float-sign)
          (ftype (function (float) (integer 0)) float-digits float-precision)
-         (ftype (function (float) (values float integer (member -1 1))) integer-decode-float)
+         (ftype (function (float) (values integer integer (member -1 1))) integer-decode-float)
          (ftype (function (real &optional float) float) float)
          (ftype (function (arithmetic-error) list) arithmetic-error-operands)
          (ftype (function (arithmetic-error) function-designator) arithmetic-error-operation))
