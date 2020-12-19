@@ -365,7 +365,7 @@
          (ftype (function ((integer 0)) (integer 0)) isqrt)
          (ftype (function (&optional (or random-state boolean)) random-state) make-random-state)
          (ftype (function ((or (integer (0)) (float (0.0))) &optional random-state)
-                          (real (0)))
+                          (or (float 0.0) (integer 0)))
                 random)
          (ftype predicate-function random-state-p numberp complexp realp rationalp integerp floatp)
          (ftype (function (real) complex) cis)
