@@ -735,7 +735,7 @@
                 input-stream-p output-stream-p interactive-stream-p open-stream-p)
          (ftype (function (stream) type-specifier) stream-element-type)
          (ftype predicate-function streamp)
-         (ftype (function (stream &optional t t) integer) read-byte)
+         (ftype (function (stream &optional t t) t) read-byte) ; can be eof value
          (ftype (function (integer stream) integer) write-byte)
          (ftype (function (&optional (or character boolean) stream-designator t t t) t)
                 peek-char)
