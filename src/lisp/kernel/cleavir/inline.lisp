@@ -668,7 +668,7 @@
                           pathname)
                 make-pathname)
          (ftype predicate-function pathnamep)
-         (ftype (function (pathname-designator &key (:case pathname-case)) valid-pathname-host)
+         (ftype (function (pathname-designator &key (:case pathname-case)) valid-physical-pathname-host)
                 pathname-host)
          (ftype (function (pathname-designator &key (:case pathname-case)) valid-pathname-device)
                 pathname-device)
@@ -690,7 +690,7 @@
          (ftype (function (pathname-designator &optional pathname-designator) (maybe string))
                 enough-namestring)
          (ftype (function ((or string pathname stream)
-                           &optional (or valid-pathname-host logical-host null)
+                           &optional (or valid-physical-pathname-host logical-host null)
                            pathname-designator
                            &key (:start sequence-index) (:end end-index-designator)
                            (:junk-allowed t))
