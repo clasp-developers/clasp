@@ -102,8 +102,7 @@
 
 (defun phi-out (value datum llvm-block)
   (check-type datum cleavir-bir:phi)
-  (unless (eq (cleavir-bir:rtype datum) :multiple-values)
-    (llvm-sys:add-incoming (in datum) value llvm-block)))
+  (llvm-sys:add-incoming (in datum) value llvm-block))
 
 (defun variable-out (value variable)
   (check-type variable cleavir-bir:variable)
