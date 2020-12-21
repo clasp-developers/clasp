@@ -473,7 +473,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                :test #'eq))))
 
 (defun memoize-call (generic-function new-entry)
-  "Memoizes the call and installs a new discriminator function - returns nothing"
+  "Add an entry to the generic function's call history based on a call.
+Return true iff a new entry was added; so for example it will return false if another thread has already added the entry."
   (let ((memoized-key (car new-entry)))
     (gf-log "Specializers key: %s%N" memoized-key)
     (gf-log "The specializer-profile: %s%N"
@@ -486,9 +487,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
             for found-key = (call-history-find-key call-history memoized-key)
             for new-call-history = (if found-key
                                        (progn
-                                         (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                         (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
                                                  (generic-function-name generic-function))
-                                         call-history)
+                                         (return-from memoize-call nil))
                                        (progn
                                          (gf-log "Pushing entry into call history%N")
                                          (cons new-entry call-history)))
@@ -512,8 +513,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       #+debug-long-call-history
       (when (> (length (generic-function-call-history generic-function)) 16384)
         (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
-      (force-dispatcher generic-function)
-      (values))))
+      t)))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
@@ -640,7 +640,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
     (multiple-value-bind (outcome new-ch-entry)
         (dispatch-miss-info generic-function arguments)
       (when new-ch-entry
-        (memoize-call generic-function new-ch-entry))
+        (when (memoize-call generic-function new-ch-entry)
+          (force-dispatcher generic-function)))
       (gf-log "Performing outcome %s%N" outcome)
       #+debug-fastgf
       (let ((results (multiple-value-list
