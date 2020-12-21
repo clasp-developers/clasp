@@ -193,15 +193,6 @@
             (update-instance i)))))
     invalid-instance))
 
-;; A call history selector a list of classes and eql-specializers
-;; So to compute the applicable methods we need to consider the following cases for each
-;; possible entry selector ...
-;; 1) The selector is a list of just classes
-;;      In that case behavior like that of compute-applicable-methods-using-classes can be used
-;; 2) The selector is a mix of classes and eql-specializers
-;;      In this case something like compute-applicable-methods needs to be used - but
-;;         compute-applicable-methods takes a list of ARGUMENTS
-;;        So I think we 
 (defun applicable-method-p (method specializers)
   (loop for spec in (method-specializers method)
         for argspec in specializers
@@ -209,6 +200,25 @@
                       (and (eql-specializer-p argspec)
                            (eql (eql-specializer-object argspec)
                                 (eql-specializer-object spec))))
+                     ((eql-specializer-p argspec)
+                      ;; This is (typep (e-s-o ...) spec) but we know spec is
+                      ;; a class so we skip to this.
+                      (subclassp (class-of (eql-specializer-object argspec))
+                                 spec))
+                     (t (subclassp argspec spec)))))
+
+;;; This "fuzzed" applicable-method-p is used in
+;;; update-call-history-for-add-method, below, to handle added EQL-specialized
+;;; methods properly. See bug #1009.
+(defun fuzzed-applicable-method-p (method specializers)
+  (loop for spec in (method-specializers method)
+        for argspec in specializers
+        always (cond ((eql-specializer-p spec)
+                      (if (eql-specializer-p argspec)
+                          (eql (eql-specializer-object argspec)
+                               (eql-specializer-object spec))
+                          (subclassp argspec
+                                     (class-of (eql-specializer-object spec)))))
                      ((eql-specializer-p argspec)
                       (subclassp (class-of (eql-specializer-object argspec))
                                  spec))
@@ -406,19 +416,8 @@
   (let ((call-history (copy-list orig-call-history)))
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
-          when (applicable-method-p method specializers)
-            do (let* ((methods (compute-applicable-methods-using-specializers
-                                generic-function
-                                specializers))
-                      (outcome (outcome
-                                generic-function
-                                (generic-function-method-combination
-                                 generic-function)
-                                ;; I have actual specializers from the call history
-                                ;; in specializers
-                                methods specializers)))
-                 (rplacd entry outcome)))
-    call-history))
+          unless (fuzzed-applicable-method-p method specializers)
+            collect entry)))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
   "When a method is added then we update the effective-method-functions for
@@ -433,20 +432,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (let (new-call-history)
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
-          if (applicable-method-p method specializers)
-            do (let* ((methods (compute-applicable-methods-using-specializers
-                                generic-function
-                                specializers))
-                      (outcome (if methods
-                                   (outcome
-                                    generic-function
-                                    (generic-function-method-combination
-                                     generic-function)
-                                    methods specializers)
-                                   nil)))
-                 (when outcome
-                   (push (cons (car entry) outcome) new-call-history)))
-          else
+          unless (applicable-method-p method specializers)
             do (push (cons (car entry) (cdr entry)) new-call-history))
     new-call-history))
 
