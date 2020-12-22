@@ -134,7 +134,7 @@
                 (:stream stream-designator))
              ,ret))
 
-(deftype case-sensitivity-mode () '(or :upcase :downcase :preserve :invert))
+(deftype case-sensitivity-mode () '(member :upcase :downcase :preserve :invert))
 
 (deftype universal-time () '(integer 0))
 ;; CLHS specifies time zones must be "rational multiples" of 1/3600.
