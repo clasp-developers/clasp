@@ -310,6 +310,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
                                      T_sp name, T_sp type, T_sp version,
                                      T_sp fromcase, bool logical) {
   T_sp x, component;
+//  printf("%s:%d:%s directory->%s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(directory).c_str());
   Pathname_sp p;
   if (logical) {
     p = LogicalPathname_O::create();
@@ -404,6 +405,7 @@ Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
     //cl__error(3, @'file-error', kw::_sym_pathname, p);
   }
   p->_Directory = directory;
+//  printf("%s:%d:%s result->%s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(p).c_str());
   return (p);
 }
 

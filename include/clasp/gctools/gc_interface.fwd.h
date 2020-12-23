@@ -29,4 +29,8 @@ THE SOFTWARE.
 extern "C" {
 extern void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr);
 };
+
+void dumpBoehmLayoutTables(FILE* fout);
+
+
 #endif

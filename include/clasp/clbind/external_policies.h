@@ -35,7 +35,9 @@ namespace core {
   namespace policy {
 
 /* A policy for clasp functions */
-    struct clasp {};
+    struct clasp {
+      constexpr clasp() {};
+    };
 
   }
 }

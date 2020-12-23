@@ -33,7 +33,6 @@ template <class T>
 class multiple_values : public smart_ptr<T> {
 private:
   mutable size_t _number_of_values;
-
 public:
   multiple_values() : smart_ptr<T>(), _number_of_values(0){};
   multiple_values(void *p, size_t num) : smart_ptr<T>((gc::Tagged)p), _number_of_values(num){};
@@ -65,6 +64,7 @@ public:
     mv.setSize(this->number_of_values());
   };
 
+  void set_number_of_values(size_t num) { this->_number_of_values = num; };
   return_type as_return_type() const {
     return return_type(this->raw_(), this->_number_of_values);
   }

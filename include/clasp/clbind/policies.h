@@ -107,7 +107,7 @@ struct LambdaList {
     std::string m_lambda_list;
     LambdaList(const std::string& val) : m_lambda_list(val) {};
 };
- 
+
 template <class...PTypes>
 struct policies {
     std::vector<Keyword> m_keywords;

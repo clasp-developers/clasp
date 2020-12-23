@@ -1193,7 +1193,7 @@ void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
 
 T_O **cc_multipleValuesArrayAddress()
 {NO_UNWIND_BEGIN();
-  return &lisp_multipleValues().callingArgsStart()[0];
+  return lisp_multipleValues().returnValues(0);
   NO_UNWIND_END();
 }
 

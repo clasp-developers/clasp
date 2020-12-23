@@ -237,18 +237,21 @@ def translate_tagged_ptr(debugger,tptr):
         if (header):
             stamp = header>>4
             if (debugger._verbose): debugger.dbg_print("header@%x stamp = %d" % (header_ptr,stamp))
-            class_ = clasp_inspect.object_layout.global_Kinds[stamp]
-            name = class_._name
-            debugger.dbg_print("general object class name = %s" % name)
-            if (name=="core::Package_O"):
-                return Package_O(debugger,tptr)
-            if (name=="core::Symbol_O"):
-                return Symbol_O(debugger,tptr)
-            if (name=="core::SimpleBaseString_O"):
-                return SimpleBaseString_O(debugger,tptr)
-            if (name=="core::SimpleCharacterString_O"):
-                return SimpleCharacterString_O(debugger,tptr)
-            return General_O(debugger,tptr)
+            if (stamp not in clasp_inspect.object_layout.global_kinds):
+                debugger.dbg_print("Could not find class for stamp: %d" % stamp)
+            else:
+                class_ = clasp_inspect.object_layout.global_Kinds[stamp]
+                name = class_._name
+                debugger.dbg_print("general object class name = %s" % name)
+                if (name=="core::Package_O"):
+                    return Package_O(debugger,tptr)
+                if (name=="core::Symbol_O"):
+                    return Symbol_O(debugger,tptr)
+                if (name=="core::SimpleBaseString_O"):
+                    return SimpleBaseString_O(debugger,tptr)
+                if (name=="core::SimpleCharacterString_O"):
+                    return SimpleCharacterString_O(debugger,tptr)
+                return General_O(debugger,tptr)
         return
     if (consp(tptr)):
         return Cons_O(debugger,tptr)

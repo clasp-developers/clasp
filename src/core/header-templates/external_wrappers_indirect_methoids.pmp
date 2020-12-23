@@ -1,3 +1,4 @@
+
 $var MaxArgs = 16
 $var ConstTypeCount = 2
 $var ReturnTypeCount = 2
@@ -57,6 +58,7 @@ $for isConst [[
 	    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
             lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
           ]]
+          DEBUG_DUMP_FRAME(frame);
           $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame->arg($Args_));
           ]]
           gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));

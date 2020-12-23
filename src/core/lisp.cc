@@ -46,6 +46,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
@@ -439,6 +440,9 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+#ifdef DEBUG_FLAGS_SET
+  printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
+#endif
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   {
@@ -1308,13 +1312,15 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef USE_MPS 
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-    llvmo::dump_objects_for_lldb(fout);
+    llvmo::dump_objects_for_lldb(fout,"  ");
     fclose(fout);
     printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
-    exit(0);
 #else
-    printf("%s:%d Only MPS can describe datastructures\n", __FILE__, __LINE__ );
-    abort();
+    FILE* fout = fopen(options._DescribeFile.c_str(),"w");
+    dumpBoehmLayoutTables(fout);
+    llvmo::dump_objects_for_lldb(fout,"");
+    fclose(fout);
+    printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
 #endif
   }
     

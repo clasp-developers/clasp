@@ -1471,7 +1471,8 @@ LongFloat ShortFloat_O::as_long_float_() const {
   return (LongFloat) this->_Value;
 }
 
-Integer_sp ShortFloat_O::castToInteger() const {
+CL_LISPIFY_NAME("core:castToInteger");
+CL_DEFMETHOD   Integer_sp ShortFloat_O::castToInteger() const {
   if (this->_Value < 0) {
     float f = -this->_Value;
     int cf = *(int *)&f;
@@ -1524,7 +1525,8 @@ LongFloat DoubleFloat_O::as_long_float_() const {
   return (LongFloat) this->_Value;
 }
 
-Integer_sp DoubleFloat_O::castToInteger() const {
+CL_LISPIFY_NAME("core:castToInteger");
+CL_DEFMETHOD   Integer_sp DoubleFloat_O::castToInteger() const {
   TESTING();
   if (this->_Value < 0) {
     double f = -this->_Value;
@@ -1583,7 +1585,8 @@ LongFloat LongFloat_O::as_long_float() const {
   return (LongFloat) this->_Value;
 }
 
-Integer_sp LongFloat_O::castToInteger() const {
+CL_LISPIFY_NAME("core:castToInteger");
+CL_DEFMETHOD   Integer_sp LongFloat_O::castToInteger() const {
   IMPLEMENT_MEF("How do I cast the value to a bignum?");
 #if 0
   if (this->_Value < 0) {

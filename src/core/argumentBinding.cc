@@ -53,6 +53,11 @@ int PASS_FUNCTION_REQUIRED(core::T_sp closure,
     _BLOCK_TRACE("Assigning required arguments");
     for (gctools::Vec0<RequiredArgument>::const_iterator it = reqs.begin(); it != reqs.end(); ++it) {
       T_sp value = PASS_NEXT_ARG(arg_idx);
+#ifdef DEBUG_EVALUATE
+      if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+        printf("%s:%d required arg%d %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
+      }
+#endif      
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
       scope.new_binding(*it, value);
       ++arg_idx;
@@ -84,6 +89,11 @@ int PASS_FUNCTION_OPTIONAL(core::T_sp closure,
         break;
       }
       T_sp value = PASS_NEXT_ARG(arg_idx);
+#ifdef DEBUG_EVALUATE
+      if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+        printf("%s:%d optional arg%d %s\n", __FILE__, __LINE__, arg_idx, _rep_(value).c_str());
+      }
+#endif      
       LOG(BF("Binding value[%s] to target[%s]") % _rep_(value) % it->asString());
       scope.new_binding(*it, value);
       if (it->_Sensor.isDefined()) {
@@ -172,8 +182,9 @@ int PASS_FUNCTION_KEYWORD(T_sp closure,
             if (!scope.lexicalElementBoundP(*fi)) {
               scope.new_binding(*fi, value);
             }
-            if (fi->_Sensor.isDefined())
+            if (fi->_Sensor.isDefined()) {
               scope.new_binding(fi->_Sensor, _lisp->_true());
+            }
             sawkeys[ik] = 1;
             break;
           }

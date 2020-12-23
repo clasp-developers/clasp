@@ -803,7 +803,7 @@ if not possible."
     (dolist (i *elementary-types*)
       (let ((type (car i)))
 	(when (typep object type)
-	  (cons-setf-cdr i (logior tag (cdr i))))))
+	  (rplacd i (logior tag (cdr i))))))
     tag))
 
 ;; We convert number into intervals, so that (AND INTEGER (NOT (EQL
@@ -1275,7 +1275,9 @@ if not possible."
   (dolist (type *elementary-types*)
     (let ((other-tag (cdr type)))
       (when (zerop (logandc2 minimal-supertype-tag other-tag))
-	(cons-setf-cdr type (logior tag other-tag))))))
+	(let ((val (logior tag other-tag)))
+          (rplacd type val)
+          val)))))
 
 ;;----------------------------------------------------------------------
 ;; (CANONICAL-TYPE TYPE)

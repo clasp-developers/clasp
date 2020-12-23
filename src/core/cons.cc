@@ -372,8 +372,9 @@ bool Cons_O::equalp(T_sp obj) const {
   return cl__equalp(this_cdr, other_cdr);
 }
 
-CL_LISPIFY_NAME("core:extend");
-CL_DEFMETHOD List_sp Cons_O::extend(List_sp rest) {
+//CL_LISPIFY_NAME("core:extend");
+//CL_DEFMETHOD
+List_sp Cons_O::extend(List_sp rest) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp nc = first;
   Cons_sp next, newCur;

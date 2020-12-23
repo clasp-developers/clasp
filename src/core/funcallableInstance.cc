@@ -274,6 +274,11 @@ LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_AR
   Instance_sp dispatchArgClass;
   // SingleDispatchGenericFunctions can dispatch on the first or second argument
   // so we need this switch here.
+#ifdef DEBUG_EVALUATE
+  if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+    printf("%s:%d single dispatch arg0 %s\n", __FILE__, __LINE__, _rep_(LCC_ARG0()).c_str());
+  }
+#endif
   switch (singleDispatchArgumentIndex) {
   case 0:
       dispatchArgClass = lisp_instance_class(LCC_ARG0());

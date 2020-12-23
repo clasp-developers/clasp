@@ -172,11 +172,13 @@ ThreadLocalState::~ThreadLocalState() {
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup)
 {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup,my_thread->_CleanupFunctions);
+//  printf("%s:%d:%s %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)node);
   my_thread->_CleanupFunctions = node;
 }
 
 
 void thread_local_invoke_and_clear_cleanup() {
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   CleanupFunctionNode* node = my_thread->_CleanupFunctions;
   while (node) {
     node->_CleanupFunction();

@@ -1,3 +1,6 @@
+ERROR ERROR THIS pump output has been deprecated
+
+
 $$ Three kinds of return values for the wrapped functions:    single-value(RetSV), void(RetVoid), multiple-value(RetMV)
 $$ I'm screwing everything up for variadic arguments
 $var ReturnTypeCount = 3 

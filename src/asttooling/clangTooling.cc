@@ -729,8 +729,9 @@ void initialize_clangTooling() {
         .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands);
     class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>> cljcd(m,"JSONCompilationDatabase");
     /*This was used when exposing the original clang function, the wrapped one doesn't have a second string parameter */
-    m.def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile,
-          adopt<result>() ,outValue<2>());
+    m.def("getFieldOffset",&getFieldOffset);
+    m.def("getRecordSize",&getRecordSize);
+// RESTOREME   m.def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile, adopt<result>() ,outValue<1>());
     class_<clang::ASTConsumer> cl_aa(m,"Clang-ASTConsumer");
     class_<clang::LangOptions> cl_ab(m,"LangOptions");
     class_<clang::Lexer> cl_ac(m,"Lexer");
@@ -752,8 +753,6 @@ void initialize_clangTooling() {
         .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
         .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
         .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>());
-    m.def("getFieldOffset",&getFieldOffset);
-    m.def("getRecordSize",&getRecordSize);
     class_<clang::SourceLocation> cl_ag(m,"SourceLocation");
     cl_ag.def("isFileID", &clang::SourceLocation::isFileID)
         .def("printToString", &clang::SourceLocation::printToString);

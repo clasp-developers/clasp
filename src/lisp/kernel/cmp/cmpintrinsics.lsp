@@ -351,7 +351,6 @@ Boehm and MPS use a single pointer"
 (defconstant +rack.length-index+ 4)
 (defconstant +rack.data-index+ 5)
 
-
 (define-c++-struct %mdarray% +general-tag+
   ((%i8*% :vtable)
    (%badge% :badge)

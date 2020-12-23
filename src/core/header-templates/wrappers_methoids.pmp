@@ -1,3 +1,6 @@
+ERROR ERROR THIS pump output has been deprecated
+
+
 //
 // Methods
 //
@@ -23,12 +26,12 @@ $for isConst [[
       // numArgs = $numArgs 
       // numVoids = $numVoids    
       /* Specialization */
-      template <int DispatchOn $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs>1 [[,]]  $for Args_ ,[[typename ARG$Args_]] >
+      template <int DispatchOn, typename Policies $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs>1 [[,]]  $for Args_ ,[[typename ARG$Args_]] >
       class VariadicMethoid
-      <DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
+      <DispatchOn,Policies, $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
         : public BuiltinClosure_O {
       public:
-        typedef VariadicMethoid<DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
+        typedef VariadicMethoid<DispatchOn,Policies,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] > MyType;
         typedef BuiltinClosure_O TemplatedBase;
       public:
 	virtual const char* describe() const {return "VariadicMethoid";};

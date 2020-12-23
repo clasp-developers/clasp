@@ -86,7 +86,7 @@ public:
   static T_sp clasp_find_block_named_environment(T_sp env, Symbol_sp blockName);
   static bool clasp_findValueEnvironmentAtDepth(T_sp env, int searchDepth, int& depth, bool& crossesFunction, T_sp& found_env);
   static bool clasp_calculateRuntimeVisibleEnvironmentDepth(T_sp env, T_sp searchEnv, int& depth);
-protected:
+  public:
   static void clasp_environmentStackFill(T_sp env, int level, stringstream &sout);
   static List_sp clasp_gather_metadata(T_sp env, Symbol_sp key);
   static string clasp_summaryOfContents(T_sp env);

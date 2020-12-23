@@ -1107,6 +1107,443 @@ void initialize_clasp_Kinds()
   #endif
 }
 
+void dumpBoehmLayoutTables(FILE* fout) {
+#define Init_class_kind(_class_) \
+  fprintf(fout, "Init_class_kind( stamp=%lu, name=\"%s\", size=%lu)\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_class_,sizeof(*(_class_*)0x0));
+#define Init_templated_kind(_class_) \
+  fprintf(fout, "Init_templated_kind( stamp=%lu, name=\"%s\", size=%lu)\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_class_,sizeof(*(_class_*)0x0));
+#define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
+  fprintf(fout, "Init__fixed_field( stamp=%lu, index=%d, data_type=%d,field_name=\"%s\",field_offset=%lu);\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+#define Init__variable_array0(_class_,_data_field_) \
+  fprintf(fout,"Init__variable_array0( stamp=%lu, name=\"%s\", offset=24 );\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_data_field_,offsetof(_class_,_data_field_));
+#define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
+  fprintf(fout,"Init__variable_capacity( stamp=%lu, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
+#define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
+  fprintf(fout,"Init__variable_field( stamp=%lu, index=%d, data_type=%d, field_name=\"%s\", field_offset=%d );\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_data_type_,_field_name_,_field_offset_);
+
+  #if 0
+  fprintf(fout, "Init_data_type( data_type=1, name=\"tagged_ptr\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=2, name=\"array\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=3, name=\"pointer\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=4, name=\"constant_array\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=5, name=\"double\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=6, name=\"float\",sizeof=4)\n");
+  fprintf(fout, "Init_data_type( data_type=7, name=\"int\",sizeof=4)\n");
+  fprintf(fout, "Init_data_type( data_type=8, name=\"short\",sizeof=2)\n");
+  fprintf(fout, "Init_data_type( data_type=10, name=\"signed_char\",sizeof=1)\n");
+  fprintf(fout, "Init_data_type( data_type=11, name=\"unsigned_short\",sizeof=2)\n");
+  fprintf(fout, "Init_data_type( data_type=12, name=\"signed_short\",sizeof=2)\n");
+  fprintf(fout, "Init_data_type( data_type=13, name=\"unsigned_long\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=14, name=\"unsigned_int\",sizeof=4)\n");
+  fprintf(fout, "Init_data_type( data_type=15, name=\"long\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=16, name=\"long_long\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=17, name=\"char\",sizeof=1)\n");
+  fprintf(fout, "Init_data_type( data_type=18, name=\"_Bool\",sizeof=1)\n");
+  fprintf(fout, "Init_data_type( data_type=19, name=\"enum_core__StreamMode\",sizeof=4)\n");
+  fprintf(fout, "Init_data_type( data_type=21, name=\"const_char_ptr\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=22, name=\"size_t\",sizeof=8)\n");
+  fprintf(fout, "Init_data_type( data_type=23, name=\"opaque_ptr\",sizeof=8)\n");
+#endif
+
+  gctools::dump_data_types(fout,"");
+  
+  Init_class_kind(core::T_O);
+  Init_class_kind(core::General_O);
+  Init_class_kind(core::Cons_O);
+  Init__fixed_field(core::Cons_O,0,SMART_PTR_OFFSET,_Car);
+  Init__fixed_field(core::Cons_O,1,SMART_PTR_OFFSET,_Cdr);
+  Init_class_kind(core::SimpleBaseString_O);
+  Init__variable_array0(core::SimpleBaseString_O,_Data._Data);
+  Init__variable_capacity(core::SimpleBaseString_O,value_type,_Data._MaybeSignedLength,_Data._MaybeSignedLength);
+  Init__variable_field(core::SimpleBaseString_O,gctools::ctype_unsigned_char, 0, "only", 0);
+
+  Init_class_kind(core::Function_O);
+  
+  Init_class_kind(core::Symbol_O);
+  Init__fixed_field(core::Symbol_O,0,SMART_PTR_OFFSET,_Name);
+  Init__fixed_field(core::Symbol_O,1,SMART_PTR_OFFSET,_HomePackage);
+  Init__fixed_field(core::Symbol_O,2,SMART_PTR_OFFSET,_GlobalValue);
+  Init__fixed_field(core::Symbol_O,3,SMART_PTR_OFFSET,_Function);
+  Init__fixed_field(core::Symbol_O,4,SMART_PTR_OFFSET,_SetfFunction);
+  Init__fixed_field(core::Symbol_O,5,SMART_PTR_OFFSET,_PropertyList);
+
+  Init_class_kind(core::FuncallableInstance_O);
+  Init__fixed_field(core::FuncallableInstance_O,0,SMART_PTR_OFFSET,_Rack);
+  Init__fixed_field(core::FuncallableInstance_O,1,SMART_PTR_OFFSET,_Class);
+  Init__fixed_field(core::FuncallableInstance_O,2,SMART_PTR_OFFSET,_CompiledDispatchFunction);
+
+  Init_templated_kind(core::BuiltinClosure_O);
+  Init__fixed_field( core::BuiltinClosure_O, 0,SMART_PTR_OFFSET,_lambdaListHandler);
+  
+  Init_class_kind(core::ClosureWithSlots_O);
+  Init__variable_array0(core::ClosureWithSlots_O,_Slots._Data);
+  Init__variable_capacity(core::ClosureWithSlots_O,value_type,_Slots._MaybeSignedLength,_Slots._MaybeSignedLength);
+  Init__variable_field(core::ClosureWithSlots_O,SMART_PTR_OFFSET,0,"only",0);
+
+  Init_templated_kind( core::WrappedPointer_O );
+  Init__fixed_field( core::WrappedPointer_O, 0, SMART_PTR_OFFSET, Class_ );
+
+  Init_class_kind(core::Package_O);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _InternalSymbols);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _ExternalSymbols);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Shadowing);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Name);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Nicknames);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _LocalNicknames);
+  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Documentation);
+  
+
+  Init_class_kind(core::LambdaListHandler_O);
+  Init__fixed_field(core::LambdaListHandler_O,0,SMART_PTR_OFFSET,_ClassifiedSymbolList);
+  Init__fixed_field(core::LambdaListHandler_O,1,POINTER_OFFSET,_SpecialSymbolSet.theObject);
+#if 0
+ {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_SpecialSymbolSet.theObject), "_SpecialSymbolSet.theObject" }, // atomic: NIL public: (T T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_DeclareSpecifierList), "_DeclareSpecifierList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::RequiredArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredArguments._Vector._Contents), "_RequiredArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::OptionalArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_OptionalArguments._Vector._Contents), "_OptionalArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RestArgument._ArgTarget), "_RestArgument._ArgTarget" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeyFlag), "_KeyFlag" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::KeywordArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_KeywordArguments._Vector._Contents), "_KeywordArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AllowOtherKeys), "_AllowOtherKeys" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<core::AuxArgument>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_AuxArguments._Vector._Contents), "_AuxArguments._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_Comment), "_Comment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), "_LexicalVariableNamesForDebugging" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+#endif
+
+
+     Init_class_kind(core::VaList_dummy_O);
+     Init_class_kind(core::Unused_dummy_O);
+     Init_class_kind(core::ClassHolder_O);
+     Init_class_kind(core::FdSet_O);
+     Init_class_kind(core::SymbolToEnumConverter_O);
+     Init_class_kind(llvmo::Attribute_O);
+     Init_class_kind(core::LambdaListHandler_O);
+     Init_class_kind(llvmo::AttributeSet_O);
+     Init_class_kind(core::AtomicT_Holder_O);
+     Init_class_kind(core::ClassRepCreator_O);
+     Init_class_kind(core::DerivableCxxClassCreator_O);
+     Init_class_kind(core::FuncallableInstanceCreator_O);
+     Init_class_kind(clbind::DummyCreator_O);
+     Init_class_kind(core::InstanceCreator_O);
+     Init_class_kind(core::StandardClassCreator_O);
+     Init_class_kind(core::SpecialForm_O);
+     Init_class_kind(core::TranslationFunctor_O);
+     Init_class_kind(core::SingleDispatchGenericFunctionClosure_O);
+     Init_class_kind(core::ImmobileObject_O);
+     Init_class_kind(core::WeakPointer_O);
+     Init_class_kind(llvmo::DebugLoc_O);
+     Init_class_kind(core::Pointer_O);
+     Init_class_kind(clasp_ffi::ForeignData_O);
+     Init_class_kind(core::CxxObject_O);
+     Init_class_kind(core::NativeVector_float_O);
+     Init_class_kind(llvmo::MDBuilder_O);
+     Init_class_kind(mp::ConditionVariable_O);
+     Init_class_kind(core::NativeVector_double_O);
+     Init_class_kind(core::NativeVector_int_O);
+     Init_class_kind(llvmo::FunctionCallee_O);
+     Init_class_kind(core::Serializer_O);
+     Init_class_kind(llvmo::DINodeArray_O);
+     Init_class_kind(mp::Mutex_O);
+     Init_class_kind(mp::RecursiveMutex_O);
+     Init_class_kind(llvmo::DITypeRefArray_O);
+     Init_class_kind(mp::SharedMutex_O);
+     Init_class_kind(mp::Process_O);
+     Init_class_kind(core::SingleDispatchMethod_O);
+     Init_class_kind(core::Iterator_O);
+     Init_class_kind(core::DirectoryIterator_O);
+     Init_class_kind(core::RecursiveDirectoryIterator_O);
+     Init_class_kind(core::Array_O);
+     Init_class_kind(core::MDArray_O);
+     Init_class_kind(core::MDArray_int16_t_O);
+     Init_class_kind(core::MDArray_int8_t_O);
+     Init_class_kind(core::MDArray_int32_t_O);
+     Init_class_kind(core::MDArray_byte4_t_O);
+     Init_class_kind(core::MDArray_float_O);
+     Init_class_kind(core::MDArray_size_t_O);
+     Init_class_kind(core::MDArray_byte8_t_O);
+     Init_class_kind(core::MDArray_int64_t_O);
+     Init_class_kind(core::MDArray_byte32_t_O);
+     Init_class_kind(core::MDArray_byte2_t_O);
+     Init_class_kind(core::MDArray_int2_t_O);
+     Init_class_kind(core::MDArray_fixnum_O);
+     Init_class_kind(core::MDArrayBaseChar_O);
+     Init_class_kind(core::MDArray_byte64_t_O);
+     Init_class_kind(core::MDArrayCharacter_O);
+     Init_class_kind(core::MDArrayT_O);
+     Init_class_kind(core::MDArrayBit_O);
+     Init_class_kind(core::MDArray_byte16_t_O);
+     Init_class_kind(core::SimpleMDArray_O);
+     Init_class_kind(core::SimpleMDArray_int8_t_O);
+     Init_class_kind(core::SimpleMDArray_double_O);
+     Init_class_kind(core::SimpleMDArray_byte32_t_O);
+     Init_class_kind(core::SimpleMDArrayT_O);
+     Init_class_kind(core::SimpleMDArray_int2_t_O);
+     Init_class_kind(core::SimpleMDArray_byte4_t_O);
+     Init_class_kind(core::SimpleMDArray_int32_t_O);
+     Init_class_kind(core::SimpleMDArray_float_O);
+     Init_class_kind(core::SimpleMDArray_int16_t_O);
+     Init_class_kind(core::SimpleMDArray_size_t_O);
+     Init_class_kind(core::SimpleMDArray_int4_t_O);
+     Init_class_kind(core::SimpleMDArrayCharacter_O);
+     Init_class_kind(core::SimpleMDArray_byte2_t_O);
+     Init_class_kind(core::SimpleMDArray_fixnum_O);
+     Init_class_kind(core::SimpleMDArray_byte16_t_O);
+     Init_class_kind(core::SimpleMDArrayBaseChar_O);
+     Init_class_kind(core::SimpleMDArray_byte64_t_O);
+     Init_class_kind(core::SimpleMDArrayBit_O);
+     Init_class_kind(core::SimpleMDArray_byte8_t_O);
+     Init_class_kind(core::SimpleMDArray_int64_t_O);
+     Init_class_kind(core::MDArray_int4_t_O);
+     Init_class_kind(core::MDArray_double_O);
+     Init_class_kind(core::ComplexVector_O);
+     Init_class_kind(core::ComplexVector_double_O);
+     Init_class_kind(core::ComplexVector_int8_t_O);
+     Init_class_kind(core::ComplexVector_byte64_t_O);
+     Init_class_kind(core::ComplexVector_T_O);
+     Init_class_kind(core::ComplexVector_int2_t_O);
+     Init_class_kind(core::ComplexVector_int32_t_O);
+     Init_class_kind(core::ComplexVector_byte16_t_O);
+     Init_class_kind(core::ComplexVector_float_O);
+     Init_class_kind(core::ComplexVector_int16_t_O);
+     Init_class_kind(core::ComplexVector_int4_t_O);
+     Init_class_kind(core::ComplexVector_size_t_O);
+     Init_class_kind(core::ComplexVector_byte2_t_O);
+     Init_class_kind(core::ComplexVector_byte8_t_O);
+     Init_class_kind(core::ComplexVector_byte32_t_O);
+     Init_class_kind(core::BitVectorNs_O);
+     Init_class_kind(core::StrNs_O);
+     Init_class_kind(core::Str8Ns_O);
+     Init_class_kind(core::StrWNs_O);
+     Init_class_kind(core::ComplexVector_byte4_t_O);
+     Init_class_kind(core::ComplexVector_fixnum_O);
+     Init_class_kind(core::ComplexVector_int64_t_O);
+     Init_class_kind(core::AbstractSimpleVector_O);
+     Init_class_kind(core::SimpleString_O);
+     Init_class_kind(core::SimpleCharacterString_O);
+     Init_class_kind(core::SimpleBaseString_O);
+     Init_class_kind(core::SimpleVector_int16_t_O);
+     Init_class_kind(core::SimpleVector_byte16_t_O);
+     Init_class_kind(core::SimpleBitVector_O);
+     Init_class_kind(core::SimpleVector_int4_t_O);
+     Init_class_kind(core::SimpleVector_byte32_t_O);
+     Init_class_kind(core::SimpleVector_size_t_O);
+     Init_class_kind(core::SimpleVector_double_O);
+     Init_class_kind(core::SimpleVector_byte64_t_O);
+     Init_class_kind(core::SimpleVector_int2_t_O);
+     Init_class_kind(core::SimpleVector_int64_t_O);
+     Init_class_kind(core::SimpleVector_fixnum_O);
+     Init_class_kind(core::SimpleVector_int8_t_O);
+     Init_class_kind(core::SimpleVector_float_O);
+     Init_class_kind(core::SimpleVector_O);
+     Init_class_kind(core::SimpleVector_byte8_t_O);
+     Init_class_kind(core::SimpleVector_byte2_t_O);
+     Init_class_kind(core::SimpleVector_int32_t_O);
+     Init_class_kind(core::SimpleVector_byte4_t_O);
+     Init_class_kind(core::Null_O);
+     Init_class_kind(core::Character_dummy_O);
+     Init_class_kind(llvmo::DataLayout_O);
+     Init_class_kind(core::LoadTimeValues_O);
+     Init_class_kind(core::SharpEqualWrapper_O);
+     Init_class_kind(llvmo::ClaspJIT_O);
+     Init_class_kind(core::Readtable_O);
+     Init_class_kind(core::PosixTime_O);
+     Init_class_kind(core::Exposer_O);
+     Init_class_kind(core::CoreExposer_O);
+     Init_class_kind(asttooling::AsttoolingExposer_O);
+     Init_class_kind(llvmo::StructLayout_O);
+     Init_class_kind(core::PosixTimeDuration_O);
+     Init_class_kind(clasp_ffi::ForeignTypeSpec_O);
+     Init_class_kind(core::Instance_O);
+     Init_class_kind(core::DerivableCxxObject_O);
+     Init_class_kind(clbind::ClassRep_O);
+     Init_class_kind(core::SmallMap_O);
+     Init_class_kind(mpip::Mpi_O);
+     Init_class_kind(core::ExternalObject_O);
+     Init_class_kind(llvmo::Pass_O);
+     Init_class_kind(llvmo::ModulePass_O);
+     Init_class_kind(llvmo::ImmutablePass_O);
+     Init_class_kind(llvmo::TargetLibraryInfoWrapperPass_O);
+     Init_class_kind(llvmo::FunctionPass_O);
+     Init_class_kind(llvmo::ExecutionEngine_O);
+     Init_class_kind(llvmo::MCSubtargetInfo_O);
+     Init_class_kind(llvmo::TargetSubtargetInfo_O);
+     Init_class_kind(llvmo::Type_O);
+     Init_class_kind(llvmo::FunctionType_O);
+     Init_class_kind(llvmo::CompositeType_O);
+     Init_class_kind(llvmo::SequentialType_O);
+     Init_class_kind(llvmo::PointerType_O);
+     Init_class_kind(llvmo::ArrayType_O);
+     Init_class_kind(llvmo::VectorType_O);
+     Init_class_kind(llvmo::StructType_O);
+     Init_class_kind(llvmo::IntegerType_O);
+     Init_class_kind(llvmo::JITDylib_O);
+     Init_class_kind(llvmo::DIContext_O);
+     Init_class_kind(llvmo::TargetPassConfig_O);
+     Init_class_kind(llvmo::IRBuilderBase_O);
+     Init_class_kind(llvmo::IRBuilder_O);
+     Init_class_kind(llvmo::APFloat_O);
+     Init_class_kind(llvmo::APInt_O);
+     Init_class_kind(llvmo::DIBuilder_O);
+     Init_class_kind(llvmo::SectionedAddress_O);
+     Init_class_kind(llvmo::EngineBuilder_O);
+     Init_class_kind(llvmo::PassManagerBase_O);
+     Init_class_kind(llvmo::PassManager_O);
+     Init_class_kind(llvmo::FunctionPassManager_O);
+     Init_class_kind(llvmo::Metadata_O);
+     Init_class_kind(llvmo::MDNode_O);
+     Init_class_kind(llvmo::DINode_O);
+     Init_class_kind(llvmo::DIVariable_O);
+     Init_class_kind(llvmo::DILocalVariable_O);
+     Init_class_kind(llvmo::DIScope_O);
+     Init_class_kind(llvmo::DIFile_O);
+     Init_class_kind(llvmo::DIType_O);
+     Init_class_kind(llvmo::DICompositeType_O);
+     Init_class_kind(llvmo::DIDerivedType_O);
+     Init_class_kind(llvmo::DIBasicType_O);
+     Init_class_kind(llvmo::DISubroutineType_O);
+     Init_class_kind(llvmo::DILocalScope_O);
+     Init_class_kind(llvmo::DISubprogram_O);
+     Init_class_kind(llvmo::DILexicalBlockBase_O);
+     Init_class_kind(llvmo::DILexicalBlock_O);
+     Init_class_kind(llvmo::DICompileUnit_O);
+     Init_class_kind(llvmo::DIExpression_O);
+     Init_class_kind(llvmo::DILocation_O);
+     Init_class_kind(llvmo::ValueAsMetadata_O);
+     Init_class_kind(llvmo::MDString_O);
+     Init_class_kind(llvmo::Value_O);
+     Init_class_kind(llvmo::Argument_O);
+     Init_class_kind(llvmo::BasicBlock_O);
+     Init_class_kind(llvmo::MetadataAsValue_O);
+     Init_class_kind(llvmo::User_O);
+     Init_class_kind(llvmo::Instruction_O);
+     Init_class_kind(llvmo::UnaryInstruction_O);
+     Init_class_kind(llvmo::VAArgInst_O);
+     Init_class_kind(llvmo::LoadInst_O);
+     Init_class_kind(llvmo::AllocaInst_O);
+     Init_class_kind(llvmo::SwitchInst_O);
+     Init_class_kind(llvmo::AtomicRMWInst_O);
+     Init_class_kind(llvmo::LandingPadInst_O);
+     Init_class_kind(llvmo::StoreInst_O);
+     Init_class_kind(llvmo::UnreachableInst_O);
+     Init_class_kind(llvmo::ReturnInst_O);
+     Init_class_kind(llvmo::ResumeInst_O);
+     Init_class_kind(llvmo::AtomicCmpXchgInst_O);
+     Init_class_kind(llvmo::FenceInst_O);
+     Init_class_kind(llvmo::CallBase_O);
+     Init_class_kind(llvmo::CallInst_O);
+     Init_class_kind(llvmo::InvokeInst_O);
+     Init_class_kind(llvmo::PHINode_O);
+     Init_class_kind(llvmo::IndirectBrInst_O);
+     Init_class_kind(llvmo::BranchInst_O);
+     Init_class_kind(llvmo::Constant_O);
+     Init_class_kind(llvmo::GlobalValue_O);
+     Init_class_kind(llvmo::Function_O);
+     Init_class_kind(llvmo::GlobalVariable_O);
+     Init_class_kind(llvmo::BlockAddress_O);
+     Init_class_kind(llvmo::ConstantDataSequential_O);
+     Init_class_kind(llvmo::ConstantDataArray_O);
+     Init_class_kind(llvmo::ConstantStruct_O);
+     Init_class_kind(llvmo::ConstantInt_O);
+     Init_class_kind(llvmo::ConstantFP_O);
+     Init_class_kind(llvmo::ConstantExpr_O);
+     Init_class_kind(llvmo::ConstantPointerNull_O);
+     Init_class_kind(llvmo::UndefValue_O);
+     Init_class_kind(llvmo::ConstantArray_O);
+     Init_class_kind(llvmo::TargetMachine_O);
+     Init_class_kind(llvmo::LLVMTargetMachine_O);
+     Init_class_kind(llvmo::ThreadSafeContext_O);
+     Init_class_kind(llvmo::NamedMDNode_O);
+     Init_class_kind(llvmo::Triple_O);
+     Init_class_kind(llvmo::DWARFContext_O);
+     Init_class_kind(llvmo::TargetOptions_O);
+     Init_class_kind(llvmo::ObjectFile_O);
+     Init_class_kind(llvmo::LLVMContext_O);
+     Init_class_kind(llvmo::PassManagerBuilder_O);
+     Init_class_kind(llvmo::Module_O);
+     Init_class_kind(llvmo::Target_O);
+     Init_class_kind(llvmo::Linker_O);
+     Init_class_kind(core::Rack_O);
+     Init_class_kind(core::SmallMultimap_O);
+     Init_class_kind(core::Sigset_O);
+     Init_class_kind(core::Environment_O);
+     Init_class_kind(core::GlueEnvironment_O);
+     Init_class_kind(core::LexicalEnvironment_O);
+     Init_class_kind(core::RuntimeVisibleEnvironment_O);
+     Init_class_kind(core::FunctionValueEnvironment_O);
+     Init_class_kind(core::TagbodyEnvironment_O);
+     Init_class_kind(core::BlockEnvironment_O);
+     Init_class_kind(core::ValueEnvironment_O);
+     Init_class_kind(core::CompileTimeEnvironment_O);
+     Init_class_kind(core::CatchEnvironment_O);
+     Init_class_kind(core::MacroletEnvironment_O);
+     Init_class_kind(core::SymbolMacroletEnvironment_O);
+     Init_class_kind(core::FunctionContainerEnvironment_O);
+     Init_class_kind(core::UnwindProtectEnvironment_O);
+     Init_class_kind(core::ActivationFrame_O);
+     Init_class_kind(core::ValueFrame_O);
+     Init_class_kind(core::FunctionFrame_O);
+     Init_class_kind(core::RandomState_O);
+     Init_class_kind(core::AtomicFixnumHolder_O);
+     Init_class_kind(core::HashTableBase_O);
+     Init_class_kind(core::WeakKeyHashTable_O);
+     Init_class_kind(core::HashTable_O);
+     Init_class_kind(core::HashTableEqualp_O);
+     Init_class_kind(core::HashTableEq_O);
+     Init_class_kind(core::HashTableEql_O);
+     Init_class_kind(core::HashTableEqual_O);
+     Init_class_kind(llvmo::InsertPoint_O);
+     Init_class_kind(core::Scope_O);
+     Init_class_kind(core::FileScope_O);
+     Init_class_kind(core::Path_O);
+     Init_class_kind(core::Pathname_O);
+     Init_class_kind(core::LogicalPathname_O);
+     Init_class_kind(core::Number_O);
+     Init_class_kind(core::Real_O);
+     Init_class_kind(core::Rational_O);
+     Init_class_kind(core::Ratio_O);
+     Init_class_kind(core::Integer_O);
+     Init_class_kind(core::Bignum_O);
+     Init_class_kind(core::Fixnum_dummy_O);
+     Init_class_kind(core::Float_O);
+     Init_class_kind(core::DoubleFloat_O);
+     Init_class_kind(core::SingleFloat_dummy_O);
+     Init_class_kind(core::LongFloat_O);
+     Init_class_kind(core::ShortFloat_O);
+     Init_class_kind(core::Complex_O);
+     Init_class_kind(core::Stream_O);
+     Init_class_kind(core::AnsiStream_O);
+     Init_class_kind(core::TwoWayStream_O);
+     Init_class_kind(core::SynonymStream_O);
+     Init_class_kind(core::ConcatenatedStream_O);
+     Init_class_kind(core::FileStream_O);
+     Init_class_kind(core::IOFileStream_O);
+     Init_class_kind(core::IOStreamStream_O);
+     Init_class_kind(core::BroadcastStream_O);
+     Init_class_kind(core::StringStream_O);
+     Init_class_kind(core::StringOutputStream_O);
+     Init_class_kind(core::StringInputStream_O);
+     Init_class_kind(core::EchoStream_O);
+     Init_class_kind(core::FileStatus_O);
+     Init_class_kind(core::InvocationHistoryFrameIterator_O);
+     Init_class_kind(core::SourcePosInfo_O);
+     Init_class_kind(core::IntArray_O);
+     Init_class_kind(core::DirectoryEntry_O);
+     Init_class_kind(core::LightUserData_O);
+     Init_class_kind(core::UserData_O);
+     Init_class_kind(core::Record_O);
+     Init_class_kind(clbind::ClassRegistry_O);
+     Init_class_kind(core::Frame_O);
+     Init_class_kind(core::MultiStringBuffer_O);
+     Init_class_kind(core::Cons_O);
+     Init_class_kind(asttooling::AstVisitor_O);
+
+     Init_templated_kind(core::WrappedPointer_O);
+     Init_templated_kind(core::Creator_O);
+     Init_templated_kind(clbind::ConstructorCreator_O);
+     Init_templated_kind(core::Closure_O);
+     Init_templated_kind(core::BuiltinClosure_O);
+
+};
 
 
 void initialize_clasp()
@@ -1230,3 +1667,5 @@ extern "C" {
 #endif
 };
 #endif // #ifndef SCRAPING at top
+
+

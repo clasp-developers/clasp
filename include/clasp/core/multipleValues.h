@@ -58,11 +58,7 @@ public: // Functions here
 
   //        GC_RESULT scanGCRoots(GC_SCAN_ARGS_PROTOTYPE);
 
-  /*! When calling functions with more arguments than can be passed in registers 
-	  the remaining arguments are written into and read out of a MultipleValues array.
-	callingArgs returns a pointer to the first value for when the values passed in registers
-	need to be written into the array for easier parsing*/
-  T_O **callingArgsStart() { return &this->_Values[0]; }
+  T_O **returnValues(size_t start=0) { return &this->_Values[start]; }
 
   //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
   void setSize(size_t sz) { this->_Size = sz; };
