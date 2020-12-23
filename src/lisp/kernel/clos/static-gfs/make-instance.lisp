@@ -109,6 +109,4 @@
   (let ((valid-keywords (valid-keywords class)))
     (if (eq valid-keywords t)
         nil
-        (loop for key in keys
-              unless (member key valid-keywords)
-                collect key))))
+        (set-difference keys valid-keywords))))
