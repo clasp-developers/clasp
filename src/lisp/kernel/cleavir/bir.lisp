@@ -19,15 +19,31 @@
       (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
                                                 inserter system)))
         (cond ((eq rv :no-return) :no-return)
-              (t
-               (let ((next (cleavir-ast-to-bir:make-iblock
-                            inserter :dynamic-environment ode)))
+              ((listp rv)
+               (let* ((next (cleavir-ast-to-bir:make-iblock
+                             inserter :dynamic-environment ode)))
                  (cleavir-ast-to-bir:terminate
                   inserter
                   (make-instance 'cleavir-bir:jump
                     :inputs () :outputs () :next (list next)))
                  (cleavir-ast-to-bir:begin inserter next))
-               rv))))))
+               rv)
+              (t
+               ;; We need to pass the values through a phi so that
+               ;; unwind-dynenv can deal with them. KLUDGEy?
+               (let* ((next (cleavir-ast-to-bir:make-iblock
+                             inserter :dynamic-environment ode))
+                      (phi (make-instance 'cleavir-bir:phi
+                             :iblock next :rtype :multiple-values)))
+                 (setf (cleavir-bir:inputs next) (list phi))
+                 (cleavir-ast-to-bir:terminate
+                  inserter
+                  (make-instance 'cleavir-bir:jump
+                    :inputs (cleavir-ast-to-bir:adapt
+                             inserter rv :multiple-values)
+                    :outputs (list phi) :next (list next)))
+                 (cleavir-ast-to-bir:begin inserter next)
+                 phi)))))))
 
 (defclass bind (cleavir-bir:dynamic-environment cleavir-bir:terminator1
                 cleavir-bir::no-output cleavir-bir:operation)
