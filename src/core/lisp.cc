@@ -2105,8 +2105,9 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
 CL_LAMBDA(cformat eformat &rest arguments);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS cerror");
-CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
+CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   eval::funcall(_sym_universalErrorHandler, cformat, eformat, arguments);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(arg);
