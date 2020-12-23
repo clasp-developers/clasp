@@ -807,8 +807,8 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun call-history-entry-key-contains-specializers (key specializers)
   (loop for specializer in specializers
-        do (when (find specializer key :test #'eq)
-             (return-from call-history-entry-key-contains-specializers t))))
+        when (find specializer key :test #'eq)
+          return t))
 
 (defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
   (declare (ignorable gf))
