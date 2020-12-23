@@ -550,21 +550,9 @@ Return true iff a new entry was added; so for example it will return false if an
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)
 
-(defun all-eql-specialized-p (specializer-profile arguments)
-  ;; Make sure that any argument in a position with eql-specializers
-  ;; is an eql specializer object.
-  ;; If they all are, return a memoization key. If not, NIL.
-  ;; See comment in do-dispatch-miss for rationale.
-  (loop for spec across specializer-profile
-        for arg in arguments
-        collect (if (consp spec) ; this parameter is eql-specialized by some method
-                    (if (member arg spec)
-                        (intern-eql-specializer arg)
-                        (return-from all-eql-specialized-p nil))
-                    (class-of arg))
-          into key
-        finally (return (coerce key 'simple-vector))))
-
+;;; Given a list of lists of specializers, expand out all combinations.
+;;; So for example, ((a b) (c) (d e)) => ((a c d) (b c d) (a c e) (b c e))
+;;; in some arbitrary order.
 (defun specializers-combinate (list)
   (if (null list)
       '(nil)
