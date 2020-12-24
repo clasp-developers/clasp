@@ -937,7 +937,7 @@ public:
 
 namespace core {
 
-  void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
+  T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
   T_mv cl__macroexpand_1(T_sp form, T_sp env);
   T_mv cl__macroexpand(T_sp form, T_sp env);
 

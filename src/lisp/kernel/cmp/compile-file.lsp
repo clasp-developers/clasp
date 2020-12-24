@@ -53,6 +53,7 @@
                    (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                    (link-time llvm-sys:*accumulated-clang-link-time*))
                (when verbose
+                 #+(or)
                  (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
                                         ""))
@@ -66,7 +67,7 @@
                           (if report-link-time
                               (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
                               (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
-                   #+(or)(core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
+                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time
@@ -346,9 +347,10 @@ Compile a lisp source file into an LLVM module."
   (let* ((*compile-file-parallel* nil))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
-      (let* ((output-path (if output-type-p
-                              (compile-file-pathname input-file :output-file output-file :output-type output-type)
-                              (compile-file-pathname input-file :output-file output-file)))
+      (let* ((output-path
+               (if output-type-p
+                    (compile-file-pathname input-file :output-file output-file :output-type output-type)
+                    (compile-file-pathname input-file :output-file output-file)))
              (*track-inlined-functions* (make-hash-table :test #'equal))
              (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
              (*compilation-module-index* 0) ; FIXME: necessary?
@@ -381,7 +383,7 @@ Compile a lisp source file into an LLVM module."
                                           :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))
               (gctools:thread-local-cleanup)
-              output-path)))))))
+              (truename output-path))))))))
 
 (defun reloc-model ()
   (cond

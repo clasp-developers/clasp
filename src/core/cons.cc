@@ -152,11 +152,14 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   if (size < 0)
     TYPE_ERROR(osize, cl::_sym_UnsignedByte);
   else {
-    ql::list result;
+    T_sp result = _Nil<T_O>();
     for (size_t i = 0; i < size; i++) {
-      result << initial_element;
+      result = gctools::ConsAllocator<Cons_O,gctools::DontRegister>::allocate(initial_element,result);
     }
-    return (result.cons());
+    size_t cons_size = gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
+    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMP_CONS,size*cons_size);
+
+    return result;
   }
 };
 

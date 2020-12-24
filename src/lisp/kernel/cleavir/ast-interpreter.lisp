@@ -291,10 +291,11 @@
 (defcan cleavir-ast:typeq-ast)
 (defmethod interpret-boolean-ast ((condition cleavir-ast:typeq-ast) env)
   (typep (interpret-ast (cleavir-ast:form-ast condition) env)
-         (cleavir-ast:type-specifier condition)))
+         (cleavir-ast:ctype condition)))
 
 (defcan cleavir-ast:load-time-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:load-time-value-ast) env)
+  (declare (ignore env))
   (eval (cleavir-ast:form ast)))
 
 ;; Turns out the AST interpreter is much slower once we start
@@ -332,6 +333,7 @@
 
 (defcan cleavir-ast:unreachable-ast)
 (defmethod interpret-ast ((ast cleavir-ast:unreachable-ast) env)
+  (declare (ignore env))
   (error "BUG: Unreachable"))
 
 (defcan cleavir-ast:eq-ast)
@@ -468,10 +470,6 @@
     (interpret-ast (cc-ast:result-ast ast) env)))
 
 ;; The array access ASTs, like vector-length, are annoying to do non-metacircularly, so we don't.
-
-(defcan cc-ast:vaslist-pop-ast)
-(defmethod interpret-ast ((ast cc-ast:vaslist-pop-ast) env)
-  (core:vaslist-pop (interpret-ast (cleavir-ast:arg-ast ast) env)))
 
 #-cst (defcan cc-ast:bind-va-list-ast)
 #-cst ; bind-va-list doesn't inline right - FIXME

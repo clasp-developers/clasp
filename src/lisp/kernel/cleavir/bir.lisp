@@ -19,15 +19,31 @@
       (let ((rv (cleavir-ast-to-bir:compile-ast (cleavir-ast:body-ast ast)
                                                 inserter system)))
         (cond ((eq rv :no-return) :no-return)
-              (t
-               (let ((next (cleavir-ast-to-bir:make-iblock
-                            inserter :dynamic-environment ode)))
+              ((listp rv)
+               (let* ((next (cleavir-ast-to-bir:make-iblock
+                             inserter :dynamic-environment ode)))
                  (cleavir-ast-to-bir:terminate
                   inserter
                   (make-instance 'cleavir-bir:jump
-                    :inputs () :outputs () :unwindp t :next (list next)))
+                    :inputs () :outputs () :next (list next)))
                  (cleavir-ast-to-bir:begin inserter next))
-               rv))))))
+               rv)
+              (t
+               ;; We need to pass the values through a phi so that
+               ;; unwind-dynenv can deal with them. KLUDGEy?
+               (let* ((next (cleavir-ast-to-bir:make-iblock
+                             inserter :dynamic-environment ode))
+                      (phi (make-instance 'cleavir-bir:phi
+                             :iblock next :rtype :multiple-values)))
+                 (setf (cleavir-bir:inputs next) (list phi))
+                 (cleavir-ast-to-bir:terminate
+                  inserter
+                  (make-instance 'cleavir-bir:jump
+                    :inputs (cleavir-ast-to-bir:adapt
+                             inserter rv :multiple-values)
+                    :outputs (list phi) :next (list next)))
+                 (cleavir-ast-to-bir:begin inserter next)
+                 phi)))))))
 
 (defclass bind (cleavir-bir:dynamic-environment cleavir-bir:terminator1
                 cleavir-bir::no-output cleavir-bir:operation)
@@ -54,7 +70,7 @@
                  (cleavir-ast-to-bir:terminate
                   inserter
                   (make-instance 'cleavir-bir:jump
-                    :inputs () :outputs () :unwindp t :next (list next)))
+                    :inputs () :outputs () :next (list next)))
                  (cleavir-ast-to-bir:begin inserter next))
                rv))))))
 
@@ -148,6 +164,26 @@
 
 ;;;
 
+(macrolet ((defprimop (name (&rest in) (&rest out))
+             `(progn
+                (cleavir-primop-info:defprimop ,name (,@in) (,@out))
+                (cleavir-cst-to-ast:defprimop ,name))))
+  (defprimop core::vector-length (:object) (:object))
+  (defprimop core::%displacement (:object) (:object))
+  (defprimop core::%displaced-index-offset (:object) (:object))
+  (defprimop core::%array-total-size (:object) (:object))
+  (defprimop core::%array-rank (:object) (:object))
+  (defprimop core::%array-dimension (:object :object) (:object))
+
+  (defprimop core:instance-rack (:object) (:object))
+  (defprimop core:instance-rack-set (:object :object) ())
+
+  (defprimop core:rack-ref (:object :object) (:object))
+  (defprimop core:rack-set (:object :object :object) ())
+
+  (defprimop core:vaslist-pop (:object) (:object))
+  (defprimop core:vaslist-length (:object) (:object)))
+
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn
                 (cleavir-primop-info:defprimop ,name (,@in) (,@out))
@@ -155,54 +191,10 @@
   (defprimop setf-fdefinition (:object) (:object)
     cc-ast:setf-fdefinition-ast cleavir-ast:name-ast)
   
-  (defprimop core::vector-length (:object) (:object)
-    cc-ast:vector-length-ast cleavir-ast:arg-ast)
-  (defprimop core::%displacement (:object) (:object)
-    cc-ast:displacement-ast cleavir-ast:arg-ast)
-  (defprimop core::%displaced-index-offset (:object) (:object)
-    cc-ast:displaced-index-offset-ast cleavir-ast:arg-ast)
-  (defprimop core::%array-total-size (:object) (:object)
-    cc-ast:array-total-size-ast cleavir-ast:arg-ast)
-  (defprimop core::%array-rank (:object) (:object)
-    cc-ast:array-rank-ast cleavir-ast:arg-ast)
-  (defprimop core::%array-dimension (:object :object) (:object)
-    cc-ast:array-dimension-ast cleavir-ast:arg1-ast cleavir-ast:arg2-ast)
-
-  (defprimop clos:standard-instance-access (:object :object) (:object)
-    cleavir-ast:slot-read-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop (setf clos:standard-instance-access) (:object :object :object) ()
-    cleavir-ast:slot-write-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
-  
-  (defprimop clos:funcallable-standard-instance-access
-      (:object :object) (:object)
-    cleavir-ast:funcallable-slot-read-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop (setf clos:funcallable-standard-instance-access)
-      (:object :object :object) ()
-    cleavir-ast:funcallable-slot-write-ast
-    cleavir-ast:object-ast cleavir-ast:slot-number-ast cleavir-ast:value-ast)
   (defprimop core::instance-cas (:object :object :object :object) (:object)
     cc-ast:slot-cas-ast
     cc-ast:cmp-ast cleavir-ast:value-ast cleavir-ast:object-ast
     cleavir-ast:slot-number-ast)
-
-  (defprimop core:instance-rack (:object) (:object)
-    cc-ast:instance-rack-ast cleavir-ast:object-ast)
-  (defprimop core:instance-rack-set (:object :object) ()
-    cc-ast:instance-rack-set-ast cleavir-ast:object-ast cleavir-ast:value-ast)
-
-  (defprimop core:rack-ref (:object :object) (:object)
-    cc-ast:rack-read-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast)
-  (defprimop core:rack-set (:object :object :object) ()
-    cc-ast:rack-write-ast cleavir-ast:object-ast cleavir-ast:slot-number-ast
-    cleavir-ast:value-ast)
-
-  (defprimop core:vaslist-pop (:object) (:object)
-    cc-ast:vaslist-pop-ast cleavir-ast:arg-ast)
-  (defprimop core:vaslist-length (:object) (:object)
-    cc-ast:vaslist-length-ast cleavir-ast:arg-ast)
 
   (defprimop core::header-stamp (:object) (:object)
     cc-ast:header-stamp-ast cleavir-ast:arg-ast)

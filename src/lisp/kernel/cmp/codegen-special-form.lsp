@@ -75,17 +75,17 @@
 
 ;;; FUNCTION
 
-(defun codegen-closure (result lambda-or-lambda-block env &key (linkage 'llvm-sys:internal-linkage))
+(defun codegen-closure (result lambda-or-lambda-block env)
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (compiled-fn lambda-name lambda-list)
       (compile-lambda-function lambda-or-lambda-block env)
+    (declare (ignore lambda-list))
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let* ((lambda-list (irc-load (literal:compile-reference-to-literal lambda-list)))
-               (llvm-function-name (llvm-sys:get-name compiled-fn))
-               (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
+        (let ((llvm-function-name (llvm-sys:get-name compiled-fn))
+              (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
           (unless function-description
             (error "Could not find function-description for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
@@ -219,7 +219,7 @@
               (irc-tmv-result register-ret result)))
           (codegen result
                    `(core:multiple-value-funcall
-                     ,function-form
+                     (core:coerce-fdesignator ,function-form)
                      ,@(mapcar (lambda (x)
                                  `#'(lambda ()
                                       (declare (core:lambda-name core::mvc-argument-lambda))
@@ -327,6 +327,7 @@
                                      exps parent-env evaluate-env)
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env."
+  (declare (ignore parent-env))
   ;;
   ;; Generate allocas for all of the temporary values
   ;;
@@ -345,17 +346,15 @@ and put the values into the activation frame for new-env."
           (classified-target (car cur-req) (car cur-req))
           (tempidx 0 (1+ tempidx)))
          ((endp cur-req) nil)
-      (let* ((target-head (car classified-target))
-             (target-idx (cdr classified-target)))
-        (cond
-          ((eq (car classified-target) 'ext:special-var)
-           (let ((symbol-t* (irc-global-symbol (cdr classified-target) new-env))
-                 (val (irc-load (elt temps tempidx))))
-             (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
-          ((eq (car classified-target) 'ext:lexical-var) 
-           (with-target-reference-do (target-ref classified-target new-env)
-             (irc-t*-result (irc-load (elt temps tempidx)) target-ref)))
-          (t (error "Illegal target ~s" classified-target)))))))
+      (cond
+        ((eq (car classified-target) 'ext:special-var)
+         (let ((symbol-t* (irc-global-symbol (cdr classified-target) new-env))
+               (val (irc-load (elt temps tempidx))))
+           (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
+        ((eq (car classified-target) 'ext:lexical-var)
+         (with-target-reference-do (target-ref classified-target new-env)
+           (irc-t*-result (irc-load (elt temps tempidx)) target-ref)))
+        (t (error "Illegal target ~s" classified-target))))))
 
 (defun codegen-fill-let*-environment (new-env reqvars
                                       exps parent-env evaluate-env)
@@ -373,19 +372,17 @@ and put the values into the activation frame for new-env."
           (cur-exp exps (cdr cur-exp))
           (exp (car cur-exp) (car cur-exp)))
          ((endp cur-req) nil)
-      (let* ((target-head (car classified-target))
-             (target-idx (cdr classified-target)))
-        (cond
-          ((eq (car classified-target) 'ext:special-var)
-           (codegen temp-var exp evaluate-env)
-           (let* ((symbol-name (cdr classified-target))
-                  (symbol-t* (irc-global-symbol symbol-name new-env))
-                  (val (irc-load temp-var)))
-             (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
-          ((eq (car classified-target) 'ext:lexical-var)
-           (with-target-reference-do (target-ref classified-target new-env)
-             (codegen target-ref exp evaluate-env)))
-          (t (error "Illegal target ~s" classified-target)))))))
+      (cond
+        ((eq (car classified-target) 'ext:special-var)
+         (codegen temp-var exp evaluate-env)
+         (let* ((symbol-name (cdr classified-target))
+                (symbol-t* (irc-global-symbol symbol-name new-env))
+                (val (irc-load temp-var)))
+           (irc-intrinsic "cc_setTLSymbolValue" symbol-t* val)))
+        ((eq (car classified-target) 'ext:lexical-var)
+         (with-target-reference-do (target-ref classified-target new-env)
+           (codegen target-ref exp evaluate-env)))
+        (t (error "Illegal target ~s" classified-target))))))
 
 (defun codegen-let/let* (operator-symbol result parts env)
   (with-dbg-lexical-block ()
@@ -393,7 +390,7 @@ and put the values into the activation frame for new-env."
           (body (cdr parts)))
       (multiple-value-bind (variables expressions)
           (separate-pair-list assignments)
-        (multiple-value-bind (declares code docstring specials )
+        (multiple-value-bind (declares code)
             (process-declarations body t)
           (cmp-log "About to create lambda-list-handler%N")
           (let* ((lambda-list-handler (make-lambda-list-handler variables declares 'core::function))
@@ -404,8 +401,7 @@ and put the values into the activation frame for new-env."
                  (evaluate-env (cond
                                  ((eq operator-symbol 'let) env) ;;; This is a problem right here
                                  ((eq operator-symbol 'let*) new-env)
-                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol))))
-                 traceid)
+                                 (t (error "let/let* doesn't understand operator symbol[~a]" operator-symbol)))))
             (multiple-value-bind (reqvars)
                 (process-lambda-list-handler lambda-list-handler)
               (let ((number-of-lexical-vars (number-of-lexical-variables lambda-list-handler))
@@ -586,7 +582,6 @@ jump to blocks within this tagbody."
               (let ((go-blocks nil))
                 (mapl #'(lambda (cur)
                           (let* ((tag-begin (car cur))
-                                 (tag-end (cadr cur))
                                  (section-block (cadr tag-begin)))
                             (push section-block go-blocks)))
                       enumerated-tag-blocks)
@@ -644,7 +639,6 @@ jump to blocks within this tagbody."
           (let ((go-blocks nil))
             (mapl #'(lambda (cur)
                       (let* ((tag-begin (car cur))
-                             (tag-end (cadr cur))
                              (section-block (cadr tag-begin)))
                         (push section-block go-blocks)))
                   enumerated-tag-blocks)
@@ -664,6 +658,7 @@ jump to blocks within this tagbody."
           (codegen-literal result nil env))))))
 
 (defun codegen-go (result rest env)
+  (declare (ignore result))
   (let* ((tag (car rest))
 	 (classified-tag (classify-tag env tag)))
     (cond
@@ -691,8 +686,7 @@ jump to blocks within this tagbody."
                  *throw-dynamic-go-instructions*)
            instruction)))
       ((and classified-tag (eq (car classified-tag) 'local-go))
-       (let ((depth (cadr classified-tag))
-	     (index (caddr classified-tag))
+       (let ((index (caddr classified-tag))
 	     (tagbody-env (cadddr classified-tag)))
 	 (cmp-log "Target tagbody environment: %s  tag: %s%N" tagbody-env tag)
 	 (let* ((go-vec (core:local-blocks tagbody-env))
@@ -755,7 +749,7 @@ jump to blocks within this tagbody."
          (body (cdr rest)))
     (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block ()
-      (multiple-value-bind (block-env dummy-make-block-frame-instruction dummy-make-block-frame-instruction-arguments)
+      (multiple-value-bind (block-env)
           (irc-make-local-block-environment-set-parent block-symbol env)
 	(let ((block-start (irc-basic-block-create
 			    (bformat nil "block-%s-start" (symbol-name block-symbol))))
@@ -772,6 +766,7 @@ jump to blocks within this tagbody."
           (irc-begin-block after-return-block))))))
 
 (defun codegen-return-from (result rest env)
+  (declare (ignore result))
   (let* ((temp-mv-result (alloca-tmv "temp-mv-result"))
 	 (block-symbol (car rest))
 	 (return-form (cadr rest)))
@@ -830,6 +825,7 @@ jump to blocks within this tagbody."
 
 (defun codegen-fill-function-frame (operator-symbol function-env functions parent-env closure-env)
   "Create a closure for each of the function bodies in the flet/labels and put the closures into the activation frame in (result-af). (env) is the parent environment of the (result-af) value frame"
+  (declare (ignore operator-symbol))
   (let ((result-af (irc-renv function-env)))
     (let* ((parent-renv (irc-load (irc-renv parent-env)))
            (val (irc-intrinsic "makeFunctionFrame"
@@ -857,7 +853,7 @@ jump to blocks within this tagbody."
     (let* ((functions (car rest))
 	   (body (cdr rest))
 	   (function-env (irc-new-function-value-environment env :functions functions)))
-      (multiple-value-bind (declares code docstring specials)
+      (multiple-value-bind (declares code)
 	  (process-declarations body nil) ;; don't expect docstring
 	(let ((evaluate-env (cond
 			      ((eq operator-symbol 'flet) env)
@@ -901,7 +897,7 @@ jump to blocks within this tagbody."
 ;;;		(core:set-kind macro-fn :macro)
 		(add-macro macro-env name macro-fn)))
 	  macros )
-    (multiple-value-bind (declares code docstring specials )
+    (multiple-value-bind (declares code)
 	(process-declarations body t)
       (augment-environment-with-declares macro-env declares)
       (let ((*notinlines* (new-notinlines declares)))
@@ -941,6 +937,7 @@ jump to blocks within this tagbody."
   (with-dbg-lexical-block ()
     (multiple-value-bind (declarations code doc-string specials)
 	(process-declarations rest nil)
+      (declare (ignore doc-string))
       (let ((new-env (irc-new-unbound-value-environment-of-size
 		      env
 		      :number-of-arguments (length specials)
@@ -962,6 +959,7 @@ jump to blocks within this tagbody."
 ;;; LOAD-TIME-VALUE
 
 (defun codegen-load-time-value (result rest env)
+  (declare (ignore env))
   (cmp-log "Starting codegen-load-time-value rest: %s%N" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
@@ -1317,6 +1315,7 @@ jump to blocks within this tagbody."
 
 (defparameter *nexti* 10000)
 (defun codegen-dbg-i32 (result rest env)
+  (declare (ignore result env))
   (let ((giveni (car rest)))
     (if (null giveni)
 	(progn
@@ -1327,10 +1326,12 @@ jump to blocks within this tagbody."
 ;;; DEBUG-MESSAGE
 
 (defun codegen-debug-message (result rest env)
+  (declare (ignore result env))
   (let ((message (jit-constant-unique-string-ptr (car rest))))
     (irc-intrinsic "debugMessage" message)))
 
 (defun codegen-debug-break (result rest env)
+  (declare (ignore result rest env))
   (irc-intrinsic "debugBreak"))
 
 ;;; LLVM-INLINE
@@ -1345,7 +1346,9 @@ jump to blocks within this tagbody."
 #+(or)
 (defmacro blog (fmt &rest fargs)
   `(core:bformat *error-output* ,fmt ,@fargs))
-(defmacro blog (fmt &rest fargs) nil)
+(defmacro blog (fmt &rest fargs)
+  (declare (ignore fmt fargs))
+  nil)
 
 ;;; core:bind-va-list
 (defun codegen-bind-va-list (result form evaluate-env)
@@ -1353,14 +1356,13 @@ jump to blocks within this tagbody."
         (vaslist     (second form))
         (body        (cddr form)))
     (blog "evaluate-env -> %s%N" evaluate-env)
-    (multiple-value-bind (declares code docstring specials)
+    (multiple-value-bind (declares code)
         (process-declarations body t)
       (let ((canonical-declares (core:canonicalize-declarations declares)))
         (multiple-value-bind (cleavir-lambda-list new-body rest-alloc)
             (transform-lambda-parts lambda-list canonical-declares code)
           (blog "got cleavir-lambda-list -> %s%N" cleavir-lambda-list)
-          (let ((debug-on nil)
-                (eval-vaslist (alloca-t* "bind-vaslist")))
+          (let ((eval-vaslist (alloca-t* "bind-vaslist")))
             (codegen eval-vaslist vaslist evaluate-env)
             (let* ((lvaslist (irc-load eval-vaslist "lvaslist"))
                    (src-remaining-nargs* (irc-vaslist-remaining-nargs-address lvaslist))
@@ -1372,6 +1374,7 @@ jump to blocks within this tagbody."
                                                            :va-list* local-va_list*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))
+              (declare (ignore _))
               ;; See comment in cleavir bind-va-list w/r/t safep.
               (let ((new-env (bclasp-compile-lambda-list-code evaluate-env callconv :safep nil))
                     (*notinlines* (new-notinlines canonical-declares)))
@@ -1386,7 +1389,6 @@ jump to blocks within this tagbody."
   (assert-result-isa-llvm-value result)
   ;;(bformat t "In codegen-multiple-value-foreign-call codegen form: %s%N" form)
   (let* ((intrinsic-name (car form))
-         (nargs (length (cdr form)))
          args
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
@@ -1442,7 +1444,6 @@ jump to blocks within this tagbody."
   (let* ((foreign-types (first form))
          (intrinsic-name (second form))
          (fargs (cddr form))
-         (nargs (length fargs))
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     ;;  used to be done by --->    (codegen-evaluate-arguments (cddr form) evaluate-env)
@@ -1470,7 +1471,6 @@ jump to blocks within this tagbody."
   (let* ((foreign-types (first form))
          (func-pointer (second form))
          (fargs (cddr form))
-         (nargs (length fargs))
          (temp-result (alloca-t*)))
     ;; evaluate the arguments into the array
     (let ((args (evaluate-foreign-arguments fargs foreign-types temp-result evaluate-env))

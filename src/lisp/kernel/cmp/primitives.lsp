@@ -179,7 +179,9 @@
           :does-not-return t)
 
          (primitive         "va_lexicalFunction" %t*% (list %size_t% %size_t% %t*%))
-    
+
+         (primitive         "cc_list" %t*% (list %size_t%) :varargs t)
+         (primitive         "cc_mvcGatherRest" %t*% (list %size_t% %t*% %size_t%))
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
          (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
          (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))
@@ -220,6 +222,8 @@
 
          (primitive         "llvm.stacksave" %i8*% nil)
          (primitive         "llvm.stackrestore" %void% (list %i8*%))
+
+         (primitive         "llvm.memcpy.p0i8.p0i8.i64" %void% (list %i8*% %i8*% %i64% %i1%))
 
          (primitive         "saveToMultipleValue0" %void% (list %tmv*%))
          (primitive         "restoreFromMultipleValue0" %return-type% nil)

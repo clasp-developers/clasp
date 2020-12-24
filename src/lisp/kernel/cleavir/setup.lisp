@@ -6,10 +6,15 @@
 
 (defun global-ftype (name)
   (multiple-value-bind (value presentp) (gethash name *ftypes*)
-    (if presentp value 'function)))
+    (if presentp
+        value
+        (load-time-value (cleavir-ctype:function-top *clasp-system*)))))
 
 (defun (setf global-ftype) (type name)
-  (setf (gethash name *ftypes*) type))
+  (setf (gethash name *ftypes*)
+        (cleavir-env:parse-type-specifier type
+                                          *clasp-env*
+                                          *clasp-system*)))
 
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
@@ -220,6 +225,7 @@
     ((cmp:known-function-p function-name)
      (make-instance 'cleavir-env:global-function-info
                     :name function-name
+                    :type (global-ftype function-name)
                     :compiler-macro (compiler-macro-function function-name)
                     :inline (core:global-inline-status function-name)
                     :ast (inline-ast function-name)))
@@ -340,21 +346,35 @@
           (values type-specifier nil)))))
 
 (defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)
-  (loop with ever-expanded = nil
-        do (multiple-value-bind (expansion expanded)
-               (type-expand-1 type-specifier environment)
-             (if expanded
-                 (setf ever-expanded t type-specifier expansion)
-                 (return (values type-specifier ever-expanded))))))
+  ;; BEWARE: bclasp is really bad at unwinding, and mvb creates a
+  ;; lambda, so we write this loop in a way that avoids RETURN. cclasp
+  ;; will contify this and produce more efficient code anyway.
+  (labels ((expand (type-specifier ever-expanded)
+             (multiple-value-bind (expansion expanded)
+                 (type-expand-1 type-specifier environment)
+               (if expanded
+                   (expand expansion t)
+                   (values type-specifier ever-expanded)))))
+    (expand type-specifier nil)))
+
 (defmethod cleavir-env:type-expand ((environment null) type-specifier)
   (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:find-class (name environment (system clasp) &optional errorp)
+  (declare (ignore environment errorp))
+  name)
+
 (defmethod cleavir-env:parse-expanded-type-specifier
     ((type-specifier symbol) environment (system clasp))
   (declare (ignore environment))
   type-specifier)
+
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier (eql 'cl:function)) environment (system clasp))
+  (declare (ignore environment))
+  (cleavir-ctype:function-top system))
 
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
@@ -447,17 +467,3 @@
   ;; FIXME: ignore-errors is a bit paranoid
   (let ((origin (cleavir-conditions:origin condition)))
     (ignore-errors (if (consp origin) (car origin) origin))))
-
-(defun build-and-draw-ast (filename cst)
-  (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)
-    ast))
-
-(defun draw-ast (&optional (ast *ast*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
-  (let* ((filename (merge-pathnames filename))
-         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ast-graphviz:draw-ast ast dot-pathname))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))

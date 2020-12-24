@@ -1,12 +1,34 @@
 (in-package #:cc-bir-to-bmir)
 
 (defun replace-typeq (typeq)
-  (let* ((ts (cleavir-bir:type-specifier typeq))
+  (let* ((ts (cleavir-bir:test-ctype typeq))
          (ifi (cleavir-bir:use typeq))
          (inputs (cleavir-bir:inputs typeq)))
     (setf (cleavir-bir:inputs ifi) '())
     (cleavir-bir:delete-computation typeq)
     (setf (cleavir-bir:inputs ifi) inputs)
+    ;; Undo some parsing. KLUDGE.
+    (cond
+      ;; FIXNUM
+      ((equal ts '(integer #.most-negative-fixnum #.most-positive-fixnum))
+       (setf ts 'fixnum))
+      ;; bignum
+      ((equal ts '(or (integer * (#.most-negative-fixnum))
+                   (integer (#.most-positive-fixnum) *)))
+       (setf ts 'bignum))
+      ;; simple-bit-array becomes (simple-array bit (*)), etc.
+      ((and (consp ts) (eq (car ts) 'simple-array))
+       (setf ts (core::simple-vector-type (second ts))))
+      ;; simple-string
+      ((or (equal ts '(or (simple-array base-char (*))
+                       (simple-array character (*))))
+           (equal ts '(or (simple-array character (*))
+                       (simple-array base-char (*)))))
+       (setf ts 'simple-string))
+      ((and (consp ts) (eq (car ts) 'function))
+       ;; We should check that this does not specialize, because
+       ;; obviously we can't check that.
+       (setf ts 'function)))
     (case ts
       ((fixnum) (change-class ifi 'cc-bmir:fixnump))
       ((cons) (change-class ifi 'cc-bmir:consp))

@@ -36,9 +36,11 @@
     (handler-bind
         ((cleavir-env:no-variable-info
            (lambda (condition)
+             (declare (ignore condition))
              (invoke-restart 'cleavir-cst-to-ast:consider-special)))
          (cleavir-env:no-function-info
            (lambda (condition)
+             (declare (ignore condition))
              (invoke-restart 'cleavir-cst-to-ast:consider-global)))
          ;; No point printing warnings twice (now, and when the method body
          ;; is actually compiled)
@@ -98,6 +100,7 @@
 
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
 (defun defun-inline-hook (name function-form env)
+  (declare (ignore env))
   (when (core:declared-global-inline-p name)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)

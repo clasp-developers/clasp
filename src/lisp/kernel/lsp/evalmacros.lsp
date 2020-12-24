@@ -288,9 +288,9 @@ to NIL) sequentially, and executes STATEMENTs.  Returns NIL."
 
 (defmacro prog1 (first &rest body &aux (sym (gensym)))
   "Syntax: (prog1 first-form {form}*)
-Evaluates FIRST-FORM and FORMs in order.  Returns the value of FIRST-FORM."
+Evaluates FIRST-FORM and FORMs in order.  Returns the primary value of FIRST-FORM."
   (if (null body)
-      first
+      `(values ,first)
       `(LET ((,sym ,first))
          ,@body ,sym)))
 

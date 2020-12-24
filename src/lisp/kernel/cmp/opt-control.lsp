@@ -25,7 +25,7 @@
                    ,@(mapcar #'list syms fixed))
                (,op ,fsym ,last ,@syms))))))
 
-(define-compiler-macro not (&whole form objectf)
+(define-compiler-macro not (objectf)
   ;; Take care of (not (not x)), which code generates sometimes.
   (if (and (consp objectf)
            (eq (car objectf) 'not)
@@ -59,8 +59,15 @@
         `(eq ',xv ,y))))
 
 (define-compiler-macro identity (object)
-  ;; preserve non-top-level-ness
-  `(the t ,object))
+  ;; ensure only the primary value is returned.
+  `(prog1 ,object))
+
+(define-compiler-macro constantly (object)
+  (let ((s (gensym "CONSTANTLY-OBJECT")))
+    `(let ((,s ,object))
+       (lambda (&rest args)
+         (declare (ignore args))
+         ,s))))
 
 (define-compiler-macro case (&whole form keyform &rest clauses)
   ;;; Check degenerate case

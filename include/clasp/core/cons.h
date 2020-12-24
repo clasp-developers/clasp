@@ -198,11 +198,10 @@ namespace core {
 #else
     inline
 #endif
-    static Cons_sp create(T_sp car, T_sp cdr) {
-      gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
-      MAYBE_VERIFY_ALIGNMENT((void*)(ll.unsafe_cons()));
-      return ll;
-    };
+  static Cons_sp create(T_sp car, T_sp cdr) {
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    return ll;
+  };
   public:
     inline static size_t car_offset() {
       return offsetof(Cons_O, _Car);

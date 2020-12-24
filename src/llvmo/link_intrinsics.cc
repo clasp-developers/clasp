@@ -596,6 +596,19 @@ ALWAYS_INLINE T_O *va_lexicalFunction(size_t depth, size_t index, core::T_O* eva
   NO_UNWIND_END();
 }
 
+/* Used in cclasp local calls. */
+T_O* cc_list(size_t nargs, ...) {
+  va_list args;
+  va_start(args, nargs);
+  ql::list result;
+  for (int i = 0; i < nargs; ++i) {
+    T_O* tagged_obj = ENSURE_VALID_OBJECT(va_arg(args, T_O*));
+    result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
+  }
+  va_end(args);
+  return result.result().raw_();
+}
+
 /* Conses up a &rest argument from the passed valist.
  * Used in cmp/arguments.lsp for the general case of functions with a &rest in their lambda list. */
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(va_list vargs, std::size_t nargs)
@@ -1181,6 +1194,24 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O *tfunc, gct
 #endif
   core::Function_sp func((gctools::Tagged)tfunc);
   return core::funcall_frame(func,mvargs);
+}
+
+T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
+  MultipleValues &mv = core::lisp_multipleValues();
+  ql::list result;
+  if (nret == 0)
+    return _Nil<T_O>().raw_();
+  else {
+    if (nstart == 0) {
+      result << gc::smart_ptr<T_O>((gc::Tagged)ret0);
+      nstart = 1;
+    }
+    for (size_t i = nstart; i < nret; ++i) {
+      T_O* tagged_obj = ENSURE_VALID_OBJECT(mv[i]);
+      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
+    }
+    return result.result().raw_();
+  }
 }
 
 void cc_oddKeywordException(core::FunctionDescription* functionDescription) {

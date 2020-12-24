@@ -45,23 +45,14 @@
 ;;;
 ;;; Converting MULTIPLE-VALUE-CALL.
 ;;;
-;;; In the case where there is one multiple-value form this gets converted
-;;; into a multiple-value-call-ast.  In the general case with multiple forms
-;;; it gets converted into a function call to CORE:MULTIPLE-VALUE-FUNCALL.
-;;;
 
 (def-convert-macro multiple-value-call (function-form &rest forms)
-  ;;; Technically we could convert the 0-forms case to FUNCALL, but it's
-  ;;; probably not a big deal.
-  (if (eql (length forms) 1)
-      `(cleavir-primop:multiple-value-call (core:coerce-fdesignator ,function-form) ,@forms)
-      `(core:multiple-value-funcall
-        (core:coerce-fdesignator ,function-form)
-        ,@(mapcar (lambda (x)
-                    `#'(lambda ()
-                         (declare (core:lambda-name core::mvc-argument-lambda))
-                         (progn ,x)))
-                  forms))))
+  (let ((cf `(core:coerce-fdesignator ,function-form)))
+    (case (length forms)
+      (0
+       `(cleavir-primop:funcall ,cf))
+      (t
+       `(cleavir-primop:multiple-value-call ,cf ,@forms)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -81,6 +72,26 @@
           ,@(mapcar #'discrimination-type (rest ctype))))
        (t ctype)))))
 
+(defun make-type-check-form (required system)
+  (let ((vars (loop repeat (length required)
+                    collect (gensym "CHECKED"))))
+    `(lambda (,@vars &rest ignore)
+       (declare (ignore ignore))
+       ;; We don't want to insert type checks for typep and error, or
+       ;; else we risk getting trapped in an infinite recursion.
+       (declare (optimize (safety 0)))
+       ,@(loop for var in vars
+               for ty in required
+               unless (cleavir-ctype:top-p ty system)
+                 collect `(if (typep ,var
+                                     ',(discrimination-type
+                                        ty))
+                              ,var
+                              (error 'type-error
+                                     :datum ,var
+                                     :expected-type ',ty)))
+       (values ,@vars))))
+
 (defmethod cleavir-cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
@@ -95,34 +106,45 @@
     (cond
       ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
            (null required))
-        ;; We don't even generate an m-v-extract, because while semantically
-        ;; meaningless, saving and loading values constantly slows things down
-        ;; very hard.
        ast)
       (insert-type-checks
        (let ((check
                (cleavir-cst-to-ast:convert
                 (cst:cst-from-expression
-                 (let ((vars (loop repeat (length required)
-                                   collect (gensym "CHECKED"))))
-                   `(let (,@vars)
-                      (cleavir-primop:multiple-value-extract (,@vars)
-                          (cleavir-primop:ast ,ast)
-                        ,@(loop for var in vars
-                                for ty in required
-                                unless (cleavir-ctype:top-p ty system)
-                                  collect `(if (cleavir-primop:typew
-                                                ,var ,ty
-                                                (typep ,var
-                                                       ',(discrimination-type
-                                                          ty)))
-                                               nil
-                                               (error 'type-error
-                                                      :datum ,var
-                                                      :expected-type ',ty)))))))
+                 (make-type-check-form required system))
                 env system)))
-         (cleavir-ast:make-the-ast check ctype :origin origin)))
-      (t (cleavir-ast:make-the-ast ast ctype :origin origin)))))
+         (cleavir-ast:make-the-ast ast ctype check :origin origin)))
+      (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
+
+(defmethod cleavir-cst-to-ast:type-wrap-argument
+    (ast ctype origin env (system clasp-cleavir:clasp))
+  ;; Insert an externally checked THE and insert type checks as well
+  ;; on high safety, unless the type is top in which case we do
+  ;; nothing.
+  ;; NOTE that the type check doesn't check &optional and &rest. FIXME?
+  (let ((insert-type-checks
+          (cleavir-policy:policy-value
+           (cleavir-env:policy (cleavir-env:optimize-info env))
+           'type-check-ftype-arguments))
+        (required (cleavir-ctype:values-required ctype system)))
+    (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
+           (null required))
+           ast)
+          #+(or) ;; FIXME: doesn't work yet for some reason.
+          (insert-type-checks
+           (let ((check
+                   (cleavir-cst-to-ast:convert
+                    (cst:cst-from-expression
+                     (make-type-check-form ctype system))
+                    env system)))
+             (cleavir-ast:make-the-ast ast ctype check :origin origin)))
+          (t (cleavir-ast:make-the-ast ast ctype :external :origin origin)))))
+
+(defmethod cleavir-cst-to-ast:type-wrap-return-values
+    (ast ctype origin env (system clasp-cleavir:clasp))
+  ;; FIXME: same semantics as TYPE-WRAP but should probably use the
+  ;; different policy value. didn't want to copy and paste though.
+  (cleavir-cst-to-ast:type-wrap ast ctype origin env system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -223,25 +245,6 @@
 ;;; See their AST classes for more info probably
 ;;;
 
-(define-functionlike-special-form core::vector-length cc-ast:vector-length-ast
-  (:vector))
-(define-functionlike-special-form core::%displacement cc-ast:displacement-ast
-  (:mdarray))
-(define-functionlike-special-form core::%displaced-index-offset
-  cc-ast:displaced-index-offset-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-total-size
-  cc-ast:array-total-size-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-rank cc-ast:array-rank-ast
-  (:mdarray))
-(define-functionlike-special-form core::%array-dimension cc-ast:array-dimension-ast
-  (:mdarray :axis))
-(define-functionlike-special-form core:vaslist-pop cc-ast:vaslist-pop-ast
-  (:vaslist))
-(define-functionlike-special-form core:vaslist-length cc-ast:vaslist-length-ast
-  (:vaslist))
-
 (define-functionlike-special-form core::header-stamp cc-ast:header-stamp-ast (:arg))
 (define-functionlike-special-form core::rack-stamp cc-ast:rack-stamp-ast (:arg))
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
@@ -253,14 +256,6 @@
   (:cmp-ast :value-ast :cons-ast))
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
-(define-functionlike-special-form core:instance-rack cc-ast:instance-rack-ast
-  (:object-ast))
-(define-functionlike-special-form core:instance-rack-set cc-ast:instance-rack-set-ast
-  (:object-ast :value-ast))
-(define-functionlike-special-form core:rack-ref cc-ast:rack-read-ast
-  (:object-ast :slot-number-ast))
-(define-functionlike-special-form core:rack-set cc-ast:rack-write-ast
-  (:object-ast :slot-number-ast :value-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

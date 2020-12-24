@@ -78,8 +78,6 @@ Set this to other IRBuilders to make code go where you want")
 names to offsets."
   (let ((layout (gensym))
         (gs-field (gensym))
-        (type-name (gensym "type-name"))
-        (context (gensym "context"))
         (field-index (gensym)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
                                     (llvm-sys:struct-type-get
@@ -141,8 +139,7 @@ names to offsets."
   (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info))))
   
 (defun c++-field-ptr (struct-info tagged-object field-name)
-  (let* ((tag (c++-struct-tag struct-info))
-         (tagged-object-i8* tagged-object)
+  (let* ((tagged-object-i8* tagged-object)
          (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter))))
@@ -265,8 +262,9 @@ names to offsets."
 ;;
 ;; Setup smart-ptr constants
 ;;
-(multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
+(multiple-value-bind (pointer-type pointer-px-offset)
     (smart-pointer-details)
+  (declare (ignore pointer-type))
   #+(or)(defvar +using-intrusive-reference-count+
           (eq pointer-type 'core::intrusive-reference-counted-pointer))
   (defvar +smart-ptr-px-offset+ pointer-px-offset))

@@ -46,7 +46,7 @@
 ;;; An alternate strategy would be to test whether it's an unwind, and if not, cleanup and/or resume
 ;;; and if so, extract the go-index and jump table and so on in a catch block.
 ;;; Saves a landing pad and my comprehension.
-(defun generate-match-unwind (return-value frame landing-pad-for-unwind-rethrow exn.slot)
+(defun generate-match-unwind (frame landing-pad-for-unwind-rethrow exn.slot)
   (cmp:with-begin-end-catch ((cmp:irc-load exn.slot "exn") exception-ptr nil)
     ;; Check if frame is correct against tagbody and jump to jumpid
     (cmp:with-landing-pad landing-pad-for-unwind-rethrow
@@ -84,7 +84,7 @@
       (cmp:irc-br next)
       bb)))
 
-(defun lp-generate-protect (u-p-instruction next return-value)
+(defun lp-generate-protect (u-p-instruction next)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
     (let ((bb (cmp:irc-basic-block-create "execute-protection")))
       (cmp:irc-begin-block bb)
@@ -113,17 +113,17 @@
           (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
           ;; FIXME: Should this be never-entry?
           (cmp:with-landing-pad (maybe-entry-landing-pad
-                                 protection-dynenv return-value *tags*)
-            (closure-call-or-invoke thunk return-value nil))
+                                 protection-dynenv *tags*)
+            (closure-call-or-invoke thunk nil))
           (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))))
       (cmp:irc-br next)
       bb)))
 
 ;;; maybe-entry landing pads, for when we may be nonlocally entering this function.
 
-(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p return-value frame)
+(defun generate-maybe-entry-landing-pad (next cleanup-block cleanup-p frame)
   (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
-    (let ((lp-block (cmp:irc-basic-block-create "never-entry-landing-pad"))
+    (let ((lp-block (cmp:irc-basic-block-create "maybe-entry-landing-pad"))
           (is-unwind-block (cmp:irc-basic-block-create "is-unwind")))
       (cmp:irc-begin-block lp-block)
       (let* ((lpad (cmp:irc-create-landing-pad 1 "lp"))
@@ -143,7 +143,7 @@
       ;; and get the go index.
       (cmp:irc-begin-block is-unwind-block)
       (let ((go-index (generate-match-unwind
-                       return-value frame (generate-end-catch-landing-pad cleanup-block)
+                       frame (generate-end-catch-landing-pad cleanup-block)
                        *exn.slot*)))
         (cmp:irc-store go-index *go-index.slot*)
         (cmp:irc-br next))
@@ -165,22 +165,27 @@
         (cmp:irc-br cleanup-block))
       lp-block)))
 
-(defun maybe-entry-processor (dynenv return-value tags)
+(defun maybe-entry-processor (dynenv tags)
   (or (gethash dynenv *maybe-entry-processors*)
       (setf (gethash dynenv *maybe-entry-processors*)
-            (compute-maybe-entry-processor dynenv return-value tags))))
+            (compute-maybe-entry-processor dynenv tags))))
 
-(defgeneric compute-maybe-entry-processor (dynenv return-value tags))
+(defgeneric compute-maybe-entry-processor (dynenv tags))
 
 ;; Does this iblock have nonlocal entrances?
 (defun has-entrances-p (iblock)
   (not (cleavir-set:empty-set-p (cleavir-bir:entrances iblock))))
 
-(defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch)
-                                          return-value tags)
+;; Is this iblock a place unknown values are nonlocally returned to?
+(defun nonlocal-valued-p (iblock)
+  (let ((inputs (cleavir-bir:inputs iblock)))
+    (and (= (length inputs) 1)
+         (eq (cleavir-bir:rtype (first inputs)) :multiple-values))))
+
+(defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch) tags)
   (if (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
       ;; Nothing unwinds here, so generate nothing
-      (maybe-entry-processor (cleavir-bir:parent dynenv) return-value tags)
+      (maybe-entry-processor (cleavir-bir:parent dynenv) tags)
       ;; Jump into this function based on the go index.
       ;; If the index doesn't match anything in this catch,
       ;; go onto the next block.
@@ -188,15 +193,14 @@
                             (cmp:thread-local-llvm-context)))
         (let* ((destinations (rest (cleavir-bir:next dynenv)))
                (ndestinations (count-if #'has-entrances-p destinations))
-               (next (maybe-entry-processor
-                      (cleavir-bir:parent dynenv)
-                      return-value tags))
+               (next (maybe-entry-processor (cleavir-bir:parent dynenv) tags))
                (bb (cmp:irc-basic-block-create "catch"))
                (_ (cmp:irc-begin-block bb))
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
-               (_ (restore-multiple-value-0 return-value))
+               (tmv (when (some #'nonlocal-valued-p destinations)
+                      (restore-multiple-value-0)))
                (go-index (cmp:irc-load *go-index.slot*))
                (sw (cmp:irc-switch go-index next ndestinations)))
           (declare (ignore _))
@@ -222,46 +226,56 @@
                                               tag-block)
                            (unless (eq tag-block (cdr existing))
                              (error "BUG: Duplicated ID in landing-pad.lisp"))))
+                  and do (when tmv
+                           (phi-out
+                            tmv (first (cleavir-bir:inputs dest)) bb))
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 
-(defmethod compute-maybe-entry-processor ((instruction cc-bir:bind) return-value tags)
+(defmethod compute-maybe-entry-processor ((instruction cc-bir:bind) tags)
   (destructuring-bind (symbol old-value) (dynenv-storage instruction)
     (generate-unbind symbol old-value
                      (maybe-entry-processor
-                      (cleavir-bir:parent instruction)
-                      return-value tags))))
+                      (cleavir-bir:parent instruction) tags))))
 
 (defmethod compute-maybe-entry-processor ((instruction cc-bir:unwind-protect)
-                                          return-value tags)
+                                          tags)
   (lp-generate-protect instruction (maybe-entry-processor
-                                    (cleavir-bir:parent instruction)
-                                    return-value tags)
-                       return-value))
+                                    (cleavir-bir:parent instruction) tags)))
 
-(defmethod compute-maybe-entry-processor
-    ((instruction cleavir-bir:alloca) return-value tags)
-  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+(defmethod compute-maybe-entry-processor ((instruction cleavir-bir:values-save)
+                                          tags)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder
+                        (cmp:thread-local-llvm-context)))
     (destructuring-bind (stackpos storage1 storage2)
         (dynenv-storage instruction)
+      (declare (ignore storage1 storage2))
       (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
         (cmp:irc-begin-block bb)
         ;; Lose the saved values alloca.
         (%intrinsic-call "llvm.stackrestore" (list stackpos))
         ;; Continue
         (cmp:irc-br
-         (maybe-entry-processor (cleavir-bir:parent instruction)
-                                return-value tags))
+         (maybe-entry-processor (cleavir-bir:parent instruction) tags))
         bb))))
 
 (defmethod compute-maybe-entry-processor
-    ((instruction cleavir-bir:leti) return-value tags)
-  ;; In the future we might want to unwind cell bindings here or something.
-  (maybe-entry-processor (cleavir-bir:parent instruction) return-value tags))
+    ((instruction cleavir-bir:alloca) tags)
+  (cmp:with-irbuilder ((llvm-sys:make-irbuilder (cmp:thread-local-llvm-context)))
+    (destructuring-bind (stackpos storage1 storage2)
+        (dynenv-storage instruction)
+      (declare (ignore storage1 storage2))
+      (let ((bb (cmp:irc-basic-block-create "escape-m-v-prog1")))
+        (cmp:irc-begin-block bb)
+        ;; Lose the saved values alloca.
+        (%intrinsic-call "llvm.stackrestore" (list stackpos))
+        ;; Continue
+        (cmp:irc-br
+         (maybe-entry-processor (cleavir-bir:parent instruction) tags))
+        bb))))
 
 (defmethod compute-maybe-entry-processor ((instruction cleavir-bir:function)
-                                          return-value tags)
-  (declare (ignore return-value))
+                                          tags)
   ;; We found in the landing pad that we were supposed to jump into this frame.
   ;; However, no relevant catch has transferred control.
   ;; This is a bug in the compiler.
@@ -279,7 +293,8 @@
 (defun dynenv-may-enter-p (dynenv)
   (etypecase dynenv
     (cleavir-bir:function nil)
-    ((or cleavir-bir:leti cleavir-bir:alloca cc-bir:unwind-protect cc-bir:bind)
+    ((or cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca
+         cc-bir:unwind-protect cc-bir:bind)
      (dynenv-may-enter-p (cleavir-bir:parent dynenv)))
     (cleavir-bir:catch
      (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
@@ -288,7 +303,7 @@
          (dynenv-may-enter-p (cleavir-bir:parent dynenv))
          t))))
 
-(defun compute-maybe-entry-landing-pad (dynenv return-value tags)
+(defun compute-maybe-entry-landing-pad (dynenv tags)
   ;; KLUDGE: If there are no catches we just use the never-entry pad.
   ;; This is bad in that, if there's some weird generation bug or coincidental
   ;; out of extent return, we could hypothetically end up unwinding to a frame
@@ -300,25 +315,23 @@
          (if (or (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))
                  (cleavir-bir-transformations:simple-unwinding-p dynenv))
              ;; SJLJ is orthogonal to landing pads
-             (maybe-entry-landing-pad (cleavir-bir:parent dynenv)
-                                      return-value tags)
+             (maybe-entry-landing-pad (cleavir-bir:parent dynenv) tags)
              (generate-maybe-entry-landing-pad
-              (maybe-entry-processor dynenv return-value tags)
-              (never-entry-processor dynenv return-value)
+              (maybe-entry-processor dynenv tags)
+              (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
-              return-value
               (%intrinsic-call
                "llvm.frameaddress" (list (%i32 0)) "frame"))))
-        ((or cc-bir:bind cleavir-bir:alloca cleavir-bir:leti cc-bir:unwind-protect
+        ((or cc-bir:bind cleavir-bir:values-save cleavir-bir:alloca
+             cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
          (generate-maybe-entry-landing-pad
-          (maybe-entry-processor dynenv return-value tags)
-          (never-entry-processor dynenv return-value)
+          (maybe-entry-processor dynenv tags)
+          (never-entry-processor dynenv)
           (dynenv-needs-cleanup-p dynenv)
-          return-value
           (%intrinsic-call
            "llvm.frameaddress" (list (%i32 0)) "frame"))))
-      (never-entry-landing-pad dynenv return-value)))
+      (never-entry-landing-pad dynenv)))
 
 ;;; never-entry landing pads, for when we always end with a resume.
 
@@ -335,41 +348,39 @@
         (cmp:irc-br next))
       lp-block)))
 
-(defun never-entry-processor (instruction return-value)
+(defun never-entry-processor (instruction)
   (or (gethash instruction *never-entry-processors*)
       (setf (gethash instruction *never-entry-processors*)
-            (compute-never-entry-processor instruction return-value))))
+            (compute-never-entry-processor instruction))))
 
-(defgeneric compute-never-entry-processor (dynenv return-value))
+(defgeneric compute-never-entry-processor (dynenv))
 
-(defmethod compute-never-entry-processor
-    ((dynenv cleavir-bir:function) return-value)
-  (declare (ignore return-value))
+(defmethod compute-never-entry-processor ((dynenv cleavir-bir:function))
   (generate-resume-block *exn.slot* *ehselector.slot*))
 
-(defmethod compute-never-entry-processor
-    ((dynenv cleavir-bir:alloca) return-value)
-  ;; This whole frame is being discarded, so no smaller stack unwinding is necessary.
-  (never-entry-processor (cleavir-bir:parent dynenv) return-value))
+(defmethod compute-never-entry-processor ((dynenv cleavir-bir:values-save))
+  (never-entry-processor (cleavir-bir:parent dynenv)))
+(defmethod compute-never-entry-processor ((dynenv cleavir-bir:alloca))
+  ;; This whole frame is being discarded,
+  ;; so no smaller stack unwinding is necessary.
+  (never-entry-processor (cleavir-bir:parent dynenv)))
 
-(defmethod compute-never-entry-processor
-    ((dynenv cleavir-bir:catch) return-value)
-  (never-entry-processor (cleavir-bir:parent dynenv) return-value))
+(defmethod compute-never-entry-processor ((dynenv cleavir-bir:catch))
+  (never-entry-processor (cleavir-bir:parent dynenv)))
 
-(defmethod compute-never-entry-processor
-    ((dynenv cleavir-bir:leti) return-value)
-  (never-entry-processor (cleavir-bir:parent dynenv) return-value))
+(defmethod compute-never-entry-processor ((dynenv cleavir-bir:leti))
+  (never-entry-processor (cleavir-bir:parent dynenv)))
 
-(defmethod compute-never-entry-processor ((instruction cc-bir:bind) return-value)
+(defmethod compute-never-entry-processor ((instruction cc-bir:bind))
   (destructuring-bind (symbol old-value) (dynenv-storage instruction)
     (generate-unbind symbol old-value
-                     (compute-never-entry-processor (cleavir-bir:parent instruction)
-                                                    return-value))))
+                     (compute-never-entry-processor
+                      (cleavir-bir:parent instruction)))))
 
-(defmethod compute-never-entry-processor ((instruction cc-bir:unwind-protect) return-value)
+(defmethod compute-never-entry-processor ((instruction cc-bir:unwind-protect))
   (lp-generate-protect instruction
-                       (never-entry-processor (cleavir-bir:parent instruction) return-value)
-                       return-value))
+                       (never-entry-processor
+                        (cleavir-bir:parent instruction))))
 
 ;;; Used above. Should match compute-never-entry-landing-pad
 (defun dynenv-needs-cleanup-p (dynenv)
@@ -377,21 +388,21 @@
     ;; Next might need a cleanup
     ((or cleavir-bir:catch
          ;; Cleanup only required for local exit.
-         cleavir-bir:leti cleavir-bir:alloca)
+         cleavir-bir:leti cleavir-bir:values-save cleavir-bir:alloca)
      (dynenv-needs-cleanup-p (cleavir-bir:parent dynenv)))
     ;; Definitive answers
     (cleavir-bir:function nil)
     ((or cc-bir:bind cc-bir:unwind-protect)
      t)))
 
-(defun compute-never-entry-landing-pad (dynenv return-value)
+(defun compute-never-entry-landing-pad (dynenv)
   (etypecase dynenv
-    ((or cleavir-bir:catch cleavir-bir:leti cleavir-bir:alloca)
+    ((or cleavir-bir:catch cleavir-bir:leti
+         cleavir-bir:values-save cleavir-bir:alloca)
      ;; We never catch, so just keep going up.
-     (never-entry-landing-pad (cleavir-bir:parent dynenv) return-value))
+     (never-entry-landing-pad (cleavir-bir:parent dynenv)))
     ((or cc-bir:bind cc-bir:unwind-protect)
-     (generate-never-entry-landing-pad
-      (never-entry-processor dynenv return-value)))
+     (generate-never-entry-landing-pad (never-entry-processor dynenv)))
     (cleavir-bir:function
      ;; Nothing to do
      nil)))
@@ -408,13 +419,12 @@
          (*go-index.slot* (alloca-go-index.slot)))
      ,@body))
 
-(defun maybe-entry-landing-pad (location return-value tags)
+(defun maybe-entry-landing-pad (location tags)
   (or (gethash location *maybe-entry-landing-pads*)
       (setf (gethash location *maybe-entry-landing-pads*)
-            (compute-maybe-entry-landing-pad
-             location return-value tags))))
+            (compute-maybe-entry-landing-pad location tags))))
 
-(defun never-entry-landing-pad (location return-value)
+(defun never-entry-landing-pad (location)
   (or (gethash location *never-entry-landing-pads*)
       (setf (gethash location *never-entry-landing-pads*)
-            (compute-never-entry-landing-pad location return-value))))
+            (compute-never-entry-landing-pad location))))
