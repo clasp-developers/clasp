@@ -455,7 +455,7 @@ Each bitcode filename will contain the form-index.")
                      nil)
                     ;; Usual result
                     (t (output-cfp-result ast-jobs output-path output-type)
-                       output-path)))))))))
+                       (truename output-path))))))))))
 
 (defun cl:compile-file (input-file &rest args &key (output-type (default-library-type) output-type-p)
                                                 output-file (verbose *compile-verbose*) &allow-other-keys)
