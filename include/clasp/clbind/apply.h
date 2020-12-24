@@ -25,19 +25,65 @@ namespace clbind {
 /*! The prototype for apply_and_return  - this should handle the most general case required by clbind
     It should write outValue(s) and pureOutValue(s) into the multiple value return vector.
  */
+template <typename RT, typename Policies, typename Func, typename Tuple>
+struct apply_and_return {};
 
-template <typename RT, typename Pols, typename Func, typename Tuple>
-struct apply_and_return {
-  static gctools::return_type go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
-    RT retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple));
-    core::T_sp rv = translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval);
-    return Values(rv);
+template <typename RT, typename Policies, typename Func, typename...Args>
+struct apply_and_return<RT,Policies,Func,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gctools::return_type go(core::MultipleValues& returnValues, Func&& fn, tuple_type&& tuple) {
+    RT ret0 = clbind::apply(std::forward<Func>(fn),std::forward<tuple_type>(tuple));
+    core::T_sp tret0 = translate::to_object<RT,typename AdoptPointer<Policies,result>::type >::convert(ret0);
+    size_t num_returns = 1 + clbind::return_multiple_values<0,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+    printf("%s:%d  RT apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    gc::return_type result (tret0.raw_(),num_returns);
+    return result;
+  }
+};
+
+template <typename Policies, typename Func, typename...Args>
+struct apply_and_return<void,Policies,Func,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gctools::return_type go(core::MultipleValues& returnValues, Func&& fn, tuple_type&& tuple) {
+    clbind::apply(std::forward<Func>(fn),std::forward<tuple_type>(tuple));
+    size_t num_returns = clbind::return_multiple_values<-1,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+    printf("%s:%d  void apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    core::T_mv result;
+    result.readFromMultipleValue0();
+    result.set_number_of_values(num_returns);
+    return result.as_return_type();
+  }
+};
+
+// ============================================================
+//
+//
+template <typename Wrapper,typename Policies, typename Func, typename Tuple>
+struct constructor_apply_and_return {};
+
+template <typename WrapperType, typename Policies, typename ConstructType, typename...Args>
+struct constructor_apply_and_return<WrapperType,Policies,ConstructType,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gctools::return_type go(core::MultipleValues& returnValues, tuple_type&& tuple) {
+    ConstructType* naked_ptr = clbind::constructor_apply<ConstructType>(std::forward<tuple_type>(tuple));
+    gctools::smart_ptr<WrapperType> ret = WrapperType::make_wrapper(naked_ptr,reg::registered_class<ConstructType>::id);   
+    size_t num_returns = 1 + clbind::return_multiple_values<0,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+    printf("%s:%d  void constructor_apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    gc::return_type result(ret.raw_(),num_returns);
+    return result;
   }
 };
 
 
+// ============================================================
+
+
+template <typename RT, typename Policies, typename Func, typename Tuple>
+struct clasp_apply_and_return {};
+
+
 template <typename RT, typename Func, typename Tuple>
-struct apply_and_return<RT,core::policy::clasp,Func,Tuple> {
+struct clasp_apply_and_return<RT,core::policy::clasp,Func,Tuple> {
   static gc::return_type go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
     RT retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple)); // why forward?
     core::T_sp tretval = translate::to_object<RT>::convert(retval);
@@ -47,7 +93,7 @@ struct apply_and_return<RT,core::policy::clasp,Func,Tuple> {
 };
 
 template <typename RT, typename Func, typename Tuple>
-struct apply_and_return<gctools::multiple_values<RT>,core::policy::clasp,Func,Tuple> {
+struct clasp_apply_and_return<gctools::multiple_values<RT>,core::policy::clasp,Func,Tuple> {
   static gc::return_type go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
     gctools::multiple_values<RT> retval = clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple));
 //    printf("%s:%d Returning from apply_and_return gctools::multiple_values<RT> - first value -> %s\n", __FILE__, __LINE__, _rep_(retval).c_str() );
@@ -57,7 +103,7 @@ struct apply_and_return<gctools::multiple_values<RT>,core::policy::clasp,Func,Tu
 
 
  template < typename Func, typename Tuple>
-   struct apply_and_return<void,core::policy::clasp,Func,Tuple> {
+ struct clasp_apply_and_return<void,core::policy::clasp,Func,Tuple> {
   static LCC_RETURN go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
     clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple));
     return Values0<core::T_O>();
@@ -65,8 +111,8 @@ struct apply_and_return<gctools::multiple_values<RT>,core::policy::clasp,Func,Tu
 };
 
 
-template <typename Pols, typename Func, typename Tuple>
-struct apply_and_return<void,Pols,Func,Tuple> {
+template <typename Policies, typename Func, typename Tuple>
+struct apply_and_return<void,Policies,Func,Tuple> {
   static LCC_RETURN go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
     clbind::apply(std::forward<Func>(fn),std::forward<Tuple>(tuple));
     return Values0<core::T_O>();
@@ -74,8 +120,8 @@ struct apply_and_return<void,Pols,Func,Tuple> {
 };
 
 // clbind apply_and_return - this needs to handle multiple-values
-template <typename RT, typename Pols, typename Func, typename Tuple>
-struct apply_and_return<std::unique_ptr<RT>,Pols,Func,Tuple> {
+template <typename RT, typename Policies, typename Func, typename Tuple>
+struct apply_and_return<std::unique_ptr<RT>,Policies,Func,Tuple> {
   static gc::return_type go(core::MultipleValues& returnValues, Func&& fn, Tuple&& tuple) {
     std::unique_ptr<RT> retval = clbind::apply(std::move(fn),std::move(tuple));
     returnValues.setSize(0);
@@ -91,14 +137,14 @@ struct apply_and_return<std::unique_ptr<RT>,Pols,Func,Tuple> {
 
 
 namespace clbind {
-template <typename RT, typename Pols, typename MethodType, typename OT, typename Tuple>
+template <typename RT, typename Policies, typename MethodType, typename OT, typename Tuple>
 struct method_apply_and_return {
   static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OT&& object, Tuple&& tuple) {
     RT retval = clbind::method_apply(std::forward<MethodType>(mptr), std::forward<OT>(object), std::forward<Tuple>(tuple) );
-    core::T_sp rv = translate::to_object<RT,typename AdoptPointer<Pols,result>::type >::convert(retval); 
+    core::T_sp rv = translate::to_object<RT,typename AdoptPointer<Policies,result>::type >::convert(retval); 
     returnValues.emplace_back(rv);
     printf("%s:%d Write the multiple values in tuple here\n", __FILE__, __LINE__ );
-//    tuple.write_multiple_values<Pols>(returnValues);
+//    tuple.write_multiple_values<Policies>(returnValues);
     return LCC_RETURN(rv.raw_(),returnValues.getSize());
   }
 };
@@ -133,14 +179,18 @@ struct method_apply_and_return<gctools::multiple_values<RT>,core::policy::clasp,
 
 };
 
+// ============================================================
+//
+// clasp external_method_apply_and_return
+//
 namespace clbind {
 template <typename Policies, typename RT, typename MethodType, typename OTExternal, typename Tuple>
 struct external_method_apply_and_return {};
 
-template <typename Policies, typename MethodType, typename OT, typename...Args>
-struct external_method_apply_and_return<Policies,void,MethodType,OT,std::tuple<Args...>> {
+template <typename Policies, typename MethodType, typename OTExternal, typename...Args>
+struct external_method_apply_and_return<Policies,void,MethodType,OTExternal,std::tuple<Args...>> {
   using tuple_type = std::tuple<Args...>;
-  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OT* objectP, tuple_type&& tuple) {
+  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OTExternal* objectP, tuple_type&& tuple) {
     clbind::external_method_apply(std::forward<MethodType>(mptr), objectP, std::forward<tuple_type>(tuple) );
     // Pass -1 as first template argument - it means that first out value will write to multiple value return vector at position 0
     size_t num_returns = clbind::return_multiple_values<-1,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
@@ -152,16 +202,56 @@ struct external_method_apply_and_return<Policies,void,MethodType,OT,std::tuple<A
   }
 };
 
-template <typename Policies, typename RT, typename MethodType, typename OT, typename...Args>
-struct external_method_apply_and_return<Policies,RT,MethodType,OT,std::tuple<Args...>> {
+template <typename Policies, typename RT, typename MethodType, typename OTExternal, typename...Args>
+struct external_method_apply_and_return<Policies,RT,MethodType,OTExternal,std::tuple<Args...>> {
   using tuple_type = std::tuple<Args...>;
-  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OT* objectP, tuple_type&& tuple) {
+  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OTExternal* objectP, tuple_type&& tuple) {
     RT ret0 = clbind::external_method_apply(std::forward<MethodType>(mptr),objectP, std::forward<tuple_type>(tuple) );
     core::T_sp tret0 = translate::to_object<RT,typename clbind::AdoptPointer<Policies,result>::type>::convert(ret0);
 //    printf("%s:%d Returning first return value: %p\n", __FILE__, __LINE__, tret0.raw_()) ;
     // Pass 0 as first template argument - it means that first out value will write to multiple value return vector at position 1
     size_t num_returns = 1 + clbind::return_multiple_values<0,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
 //    printf("%s:%d  RT external_method_apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    gc::return_type result (tret0.raw_(),num_returns);
+    return result;
+  }
+};
+
+};
+
+// ============================================================
+//
+// clbind external_method_apply_and_return
+//
+namespace clbind {
+template <typename Policies, typename RT, typename MethodType, typename OT, typename Tuple>
+struct clbind_external_method_apply_and_return {};
+
+template <typename Policies, typename MethodType, typename OT, typename...Args>
+struct clbind_external_method_apply_and_return<Policies,void,MethodType,OT,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OT objectP, tuple_type&& tuple) {
+    clbind::clbind_external_method_apply(std::forward<MethodType>(mptr), objectP, std::forward<tuple_type>(tuple) );
+    // Pass -1 as first template argument - it means that first out value will write to multiple value return vector at position 0
+    size_t num_returns = clbind::return_multiple_values<-1,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+//    printf("%s:%d  void clbind_external_method_apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
+    core::T_mv result;
+    result.readFromMultipleValue0();
+    result.set_number_of_values(num_returns);
+    return result.as_return_type();
+  }
+};
+
+template <typename Policies, typename RT, typename MethodType, typename OT, typename...Args>
+struct clbind_external_method_apply_and_return<Policies,RT,MethodType,OT,std::tuple<Args...>> {
+  using tuple_type = std::tuple<Args...>;
+  static gc::return_type go(core::MultipleValues& returnValues, MethodType&& mptr, OT objectP, tuple_type&& tuple) {
+    RT ret0 = clbind::clbind_external_method_apply(std::forward<MethodType>(mptr),objectP, std::forward<tuple_type>(tuple) );
+    core::T_sp tret0 = translate::to_object<RT,typename clbind::AdoptPointer<Policies,result>::type>::convert(ret0);
+//    printf("%s:%d Returning first return value: %p\n", __FILE__, __LINE__, tret0.raw_()) ;
+    // Pass 0 as first template argument - it means that first out value will write to multiple value return vector at position 1
+    size_t num_returns = 1 + clbind::return_multiple_values<0,Policies,decltype(tuple),std::index_sequence_for<Args...>,Args...>::go(std::forward<tuple_type>(tuple),returnValues.returnValues(0));
+//    printf("%s:%d  RT clbind_external_method_apply_and_return  returning %lu multiple values\n", __FILE__, __LINE__, num_returns );
     gc::return_type result (tret0.raw_(),num_returns);
     return result;
   }

@@ -1454,7 +1454,7 @@ def build(bld):
         bld.add_to_group(task)
 
     make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
-    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
+#    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
 
     task = generate_extension_headers_h(env=bld.env)
     task.set_inputs(bld.extensions_gcinterface_include_files)
