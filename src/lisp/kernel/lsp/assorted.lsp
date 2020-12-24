@@ -11,12 +11,15 @@
 (defun list-length (list)
   "Return the length of the given list, or NIL if the list is circular."
   ;; from sbcl (public domain)
+  (check-type list list) 
   (do ((n 0 (+ n 2))
        (y list (cddr y))
        (z list (cdr z)))
       (nil)
     (declare (type fixnum n) ; fix if list lengths can be more than fixnums
-	     (type list y z))
+             ;;; both cdr and cddr of a list might not return a list,
+             ;;; e.g.  (car '(A B . C))
+	     #+(or)(type list y z))
     (when (endp y) (return n))
     (when (endp (cdr y)) (return (1+ n)))
     (when (and (eq y z) (plusp n)) (return nil))))

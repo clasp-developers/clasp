@@ -124,3 +124,6 @@
 (test-expect-error  ASSOC-IF-NOT.ERROR.12 (ASSOC-IF-NOT #'IDENTITY '((A . B) :BAD (C . D))) :type type-error)
 
 (test remf-failure-cl-http (let ((place (list 9000 23)))(remf place 9000)))
+
+(test-expect-error LIST-LENGTH-SYMBOL (LIST-LENGTH 'A) :type type-error)
+(test-expect-error LIST-LENGTH.ERROR.1 (list-length '(1 . 2)) :type type-error)
