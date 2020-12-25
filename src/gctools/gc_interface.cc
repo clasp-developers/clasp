@@ -1115,7 +1115,7 @@ void dumpBoehmLayoutTables(FILE* fout) {
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
   fprintf(fout, "Init__fixed_field( stamp=%lu, index=%d, data_type=%d,field_name=\"%s\",field_offset=%lu);\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
-  fprintf(fout,"Init__variable_array0( stamp=%lu, name=\"%s\", offset=24 );\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_data_field_,offsetof(_class_,_data_field_));
+  fprintf(fout,"Init__variable_array0( stamp=%lu, name=\"%s\", offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
   fprintf(fout,"Init__variable_capacity( stamp=%lu, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
