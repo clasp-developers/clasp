@@ -462,6 +462,7 @@ Compile a lisp source file into an LLVM module."
          (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
        (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
                        :output-type :object)
+       (setf core::*debug-eval* t)
        (when *compile-verbose*
          (bformat t "Writing faso file to: %s%N" output-file)
          (finish-output))

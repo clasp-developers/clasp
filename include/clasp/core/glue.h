@@ -129,7 +129,29 @@ struct from_object<gctools::smart_ptr<T>, std::true_type> {
   typedef gctools::smart_ptr<T> ExpectedType;
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<T>>(o)){};
+  from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<T>>(o)){
+    ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o));
+  };
+};
+
+ template <typename T>
+struct from_object<gctools::smart_ptr<T>&, std::true_type> {
+  typedef gctools::smart_ptr<T> ExpectedType;
+  typedef gctools::smart_ptr<T> DeclareType;
+  DeclareType _v;
+  from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<T>>(o)){
+    ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o));
+  };
+};
+
+ template <>
+   struct from_object<gctools::smart_ptr<core::Character_I>&, std::true_type> {
+   typedef gctools::smart_ptr<core::Character_I> ExpectedType;
+   typedef gctools::smart_ptr<core::Character_I> DeclareType;
+  DeclareType _v;
+ from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<core::Character_I>>(o)){
+    ASSERT(o.characterp());
+  };
 };
 
 template <>
@@ -139,6 +161,16 @@ struct from_object<core::T_sp, std::true_type> {
   DeclareType _v;
   from_object(const core::T_sp &o) : _v(o){};
 };
+
+ template <>
+   struct from_object<gctools::smart_ptr<core::List_V>&, std::true_type> {
+   typedef core::List_sp ExpectedType;
+   typedef core::List_sp DeclareType;
+   DeclareType _v;
+ from_object(const core::T_sp &o) : _v(gc::As<core::List_sp>(o)){
+     ASSERT(gc::IsA<core::List_sp>(o));
+   };
+ };
 
 template <typename T>
 struct from_object<gc::Nilable<gc::smart_ptr<T>>, std::true_type> {

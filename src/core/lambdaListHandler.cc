@@ -185,18 +185,44 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+#ifdef DEBUG_EVALUATE
+        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          printf("%s:%d:%s 4arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
+          printf("%s:%d:%s 4arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
+          printf("%s:%d:%s 4arg optimization arg2 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg2)).c_str());
+          printf("%s:%d:%s 4arg optimization arg3 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg3)).c_str());
+        }
+#endif
         return;
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+#ifdef DEBUG_EVALUATE
+        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          printf("%s:%d:%s 3arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
+          printf("%s:%d:%s 3arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
+          printf("%s:%d:%s 3arg optimization arg2 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg2)).c_str());
+        }
+#endif
         return;
       case 2:
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+#ifdef DEBUG_EVALUATE
+        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          printf("%s:%d:%s 2arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
+          printf("%s:%d:%s 2arg optimization arg1 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg1)).c_str());
+        }
+#endif
         return;
       case 1:
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+#ifdef DEBUG_EVALUATE
+        if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          printf("%s:%d:%s 1arg optimization arg0 -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(T_sp((gc::Tagged)lcc_fixed_arg0)).c_str());
+        }
+#endif
         return;
       }
       return;

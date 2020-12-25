@@ -72,8 +72,12 @@ public:
   int  multiplier;
   std::vector<int> numbers;
 
+  void setMultiplier(int m) {
+    this->multiplier = m;
+  }
   void set2(int n0, int n1) {
     this->numbers.clear();
+    printf("%s:%d In set2 n0-> %d n1-> %d\n", __FILE__, __LINE__, n0, n1);
     this->numbers.push_back(n0);
     this->numbers.push_back(n1);
   }
@@ -133,8 +137,10 @@ CLBIND_API void initialize_clbind() {
   clbind::package_ pkg("CLBIND-TEST",{"CLBIND-TEST"}, {"CL"});
   clbind::scope_& m = pkg.scope();
   class_<Test>(m,"Test")
-    .def_readwrite("multiplier",&Test::multiplier)
-    .def("set2",&Test::set2)
+      .def_constructor("MAKE-TEST",constructor<>())
+//    .def_readwrite("multiplier",&Test::multiplier)
+      .def("SET-MULTIPLIER",&Test::setMultiplier)
+      .def("set2",&Test::set2)
     .def("set3",&Test::set3)
     .def("set4",&Test::set4)
     .def("set5",&Test::set5)

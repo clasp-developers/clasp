@@ -39,7 +39,6 @@ static const size_t IdxValuesArray = IdxRegisterArgumentsStart;                 
 This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
-
 struct Frame {
   typedef core::T_O *ElementType;
   ElementType _register_save_area[LCC_ABI_ARGS_IN_REGISTERS];
@@ -52,6 +51,8 @@ struct Frame {
   static inline size_t FrameBytes_(size_t elements) {
     return FrameElements_(elements) * sizeof(ElementType);
   }
+  ElementType* data() {return (ElementType*)reg_save_area_ptr();}
+  ElementType* arguments(size_t start=0) {return ((ElementType*)reg_save_area_ptr())+LCC_ARG0_REGISTER+start;}
   void* reg_save_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_register_save_area[0])); };
   void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
   Frame(core::T_O* closure, size_t numArguments) {

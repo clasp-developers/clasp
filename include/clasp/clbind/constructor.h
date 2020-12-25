@@ -171,7 +171,38 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
+#if 1
+template <typename Policies, typename Pointer, typename ConstructType ,typename... ARGS >
+class VariadicConstructorFunction_O < Policies, Pointer, ConstructType, constructor<ARGS...> > : public core::BuiltinClosure_O {
+public:
+  typedef VariadicConstructorFunction_O< Policies, Pointer, ConstructType, constructor<ARGS...> > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  typedef Wrapper<ConstructType,Pointer>  WrapperType;
+public:
+  virtual const char* describe() const { return "VariadicConstructorFunctor"; };
+  enum { NumParams = sizeof...(ARGS) };
+  VariadicConstructorFunction_O(core::FunctionDescription* fdesc) : core::BuiltinClosure_O(entry_point,fdesc) {};
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    INITIALIZE_VA_LIST();
+    INVOCATION_HISTORY_FRAME();
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
+                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    core::MultipleValues& returnValues = core::lisp_multipleValues();
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<-1,policies<>,ARGS...>::go(frame->arguments());
+    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
+  }
+};
+#else
 #include <clasp/clbind/clbind_constructor_functoids.h>
+#endif
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>

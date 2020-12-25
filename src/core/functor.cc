@@ -303,6 +303,9 @@ string Function_O::__repr__() const {
   T_sp name = this->functionName();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
+#if 1
+    ss << " " << _rep_(name);
+#else
 #ifdef USE_BOEHM
   ss << "@" << (void*)this << " ";
 #endif
@@ -311,7 +314,7 @@ string Function_O::__repr__() const {
   if ( this->entry != NULL ) {
     ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
   }
-  
+#endif
   ss << ">";
   return ss.str();
 }

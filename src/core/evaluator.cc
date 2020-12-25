@@ -964,9 +964,6 @@ namespace core {
     }
 
 
-#define ARGS_af_interpreter_lookup_variable "(symbol env)"
-#define DECL_af_interpreter_lookup_variable ""
-#define DOCS_af_interpreter_lookup_variable "environment_lookup_variable"
     T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
         if (env.notnilp()) {
             int depth, index;
@@ -2013,23 +2010,52 @@ namespace core {
             T_mv result;
             LOG(BF("Evaluating atom: %s") % exp->__repr__());
             if (exp.fixnump() || exp.characterp() || exp.single_floatp()) {
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+              }
+#endif
                 return Values(exp);
             } else if (Symbol_sp sym = exp.asOrNull<Symbol_O>()) {
                 _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
-                if (sym->isKeywordSymbol())
+                if (sym->isKeywordSymbol()) {
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+              }
+#endif
                     return Values(sym);
+                }
                 if (ext__symbol_macro(sym, environment).notnilp()) {
                     T_sp texpr;
                     {
                         texpr = cl__macroexpand(sym, environment);
                     }
                     result = eval::evaluate(texpr, environment);
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(result).c_str());
+              }
+#endif
                     return (result);
                 }
                 result = af_interpreter_lookup_variable(sym, environment);
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate variable %s -> %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(result).c_str());
+          }
+#endif                
                 return (result);
             }
             LOG(BF(" Its the self returning object: %s") % exp->__repr__());
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate return  %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+          }
+#endif                
             return (Values(exp));
         }
 
@@ -2150,14 +2176,19 @@ namespace core {
             return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
         }
 
-        //#define DEBUG_EVALUATE 1
     
         DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
         T_mv evaluate(T_sp exp, T_sp environment) {
 #ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
             printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
-            //    	    Environment_sp localEnvironment = environment;
-            //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
+            T_sp localEnv = environment;
+            while (localEnv.notnilp()) {
+              printf("    in environment@%p -> %s\n", environment.raw_(), Environment_O::clasp_summaryOfContents(localEnv).c_str());
+              localEnv = gc::As<Environment_sp>(localEnv)->getParentEnvironment();
+            }
+          }
 #endif
             //            printf("    environment: %s\n", _rep_(environment).c_str() );
             ASSERT(environment.generalp());
@@ -2170,7 +2201,14 @@ namespace core {
                 printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
             }
             if (!exp.consp()) {
-                return evaluate_atom(exp, environment);
+              T_sp result = evaluate_atom(exp, environment);
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+            printf("%s:%d evaluate_atom returned  %s\n", __FILE__, __LINE__, _rep_(result).c_str());
+          }
+#endif              
+              return Values(result);
             }
             //
             // If it reached here then exp is a cons
@@ -2246,7 +2284,9 @@ namespace core {
                 T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
                 if (theadFunc.notnilp()) {
 #ifdef DEBUG_EVALUATE
-                    printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          }
 #endif
                     T_sp expanded;
                     /* macros are expanded again and again and again */
@@ -2271,7 +2311,9 @@ namespace core {
                 //
                 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
 #ifdef DEBUG_EVALUATE
-                printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          }
 #endif
                 size_t nargs = cl__length(oCdr(form));
                 T_sp headFunc = theadFunc;
@@ -2281,6 +2323,18 @@ namespace core {
                     (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
                     ++argIdx;
                 }
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+            for (size_t ia=0; ia<argIdx; ++ia) {
+              T_sp obj((gctools::Tagged)(*callArgs)[ia]);
+              printf("    arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+            }
+            if (_rep_(headSym)=="REPLACE-ALL-USES-WITH") {
+              printf("%s:%d About to hit error\n", __FILE__, __LINE__ );
+            }
+          }
+#endif
                 Vaslist valist_struct(callArgs);
                 VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
                 try {

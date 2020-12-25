@@ -202,17 +202,21 @@
                    ;;rewrite the allocation to be the optimized size
                    (multiple-value-bind (the-function primitive-info)
                        (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
-                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                            (parent-renv (car (last args))))
-                       (llvm-sys:replace-call the-function
-                                              instr                                      
-                                              (list (jit-constant-i64 closure-size) parent-renv))))
+                     (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                       (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                       (let ((parent-renv (car (last args))))
+                         (if (null parent-renv) (error "The parent-renv cannot be NIL"))
+                         (llvm-sys:replace-call the-function
+                                                instr                                      
+                                                (list (jit-constant-i64 closure-size) parent-renv)))))
                    (progn
                      (core:set-invisible new-env t)
-                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                            (parent-renv (car (last args))))
-                       (llvm-sys:replace-all-uses-with instr parent-renv)
-                       (llvm-sys:instruction-erase-from-parent instr))))))
+                     (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                       (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                       (let ((parent-renv (car (last args))))
+                         (if (null args) (error "The parent-renvs returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                         (llvm-sys:replace-all-uses-with instr parent-renv)
+                         (llvm-sys:instruction-erase-from-parent instr)))))))
            new-value-environment-instructions))
 
 (defun rewrite-lexical-variable-references-for-new-depth (variable-map instructions)

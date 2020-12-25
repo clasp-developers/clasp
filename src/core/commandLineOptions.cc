@@ -56,7 +56,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
-             "-d/--describe file   - Describe the clasp data structures for lldb Python API\n"
+             "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
+             "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "--noinform           - Don't print startup banner text\n"
@@ -184,6 +185,9 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_HasImageFile = true;
       options->_ImageFile = options->_RawArguments[iarg + 1];
       iarg++;
+    } else if (arg == "-g" || arg == "--debug") {
+      options->_HasDescribeFile = true;
+      options->_DescribeFile = "/tmp/clasp-layout.py";
     } else if (arg == "-d" || arg == "--describe") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --describe,-d"));
       options->_HasDescribeFile = true;

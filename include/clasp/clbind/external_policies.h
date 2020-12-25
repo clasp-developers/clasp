@@ -1,5 +1,5 @@
 /*
-    File: gc_interface.fwd.h
+    File: external_policies.h
 */
 
 /*
@@ -24,13 +24,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef main_gc_interface_fwd_H
-#define main_gc_interface_fwd_H
-extern "C" {
-extern void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr);
-};
+//----------------------------------------------------------------------
+//
+// Policies
+//
+#ifndef clasp_policy_H
+#define clasp_policy_H
+namespace core {
 
-void dumpBoehmLayoutTables(FILE* fout);
+  namespace policy {
 
+/* A policy for clasp functions */
+    struct clasp {
+      constexpr clasp() {};
+    };
 
+  }
+}
+ 
 #endif
+

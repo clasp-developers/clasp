@@ -2086,6 +2086,51 @@ CL_DEFUN void core__tak(int x, int y, int z, bool allocate,int times)
 
 
 
+namespace core {
+
+CL_DEFUN core::Test_sp core__makeTest() {
+  auto tt = new Test();
+  GC_ALLOCATE(Test_O,t);
+  t->set_wrapped(tt);
+  return t;
+}
+
+void Test::setMultiplier(int m) {
+  this->multiplier = m;
+}
+
+void Test::set2(int n0, int n1) {
+  this->numbers.clear();
+  printf("%s:%d In set2 n0-> %d n1-> %d\n", __FILE__, __LINE__, n0, n1);
+  this->numbers.push_back(n0);
+  this->numbers.push_back(n1);
+}
+
+void Test::set3(int n0, int n1, int n2) {
+  this->numbers.clear();
+  this->numbers.push_back(n0);
+  this->numbers.push_back(n1);
+  this->numbers.push_back(n2);
+}
+
+
+void Test::print_numbers() {
+  int idx=0;
+  for (auto n : this->numbers) {
+    printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n*this->multiplier);
+    ++idx;
+  }
+}
+
+CL_EXTERN_DEFMETHOD(Test_O,&Test::setMultiplier);
+CL_EXTERN_DEFMETHOD(Test_O,&Test::set2);
+CL_EXTERN_DEFMETHOD(Test_O,&Test::set3);
+CL_EXTERN_DEFMETHOD(Test_O,&Test::print_numbers);
+
+};
+
+
+
 
 namespace core {
 void initialize_primitives() {

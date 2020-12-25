@@ -47,14 +47,27 @@ struct from_object<llvm::StringRef, std::true_type> {
     _v(llvm::StringRef(this->_Storage)) {};
 };
 
+#if 0
 template <>
 struct from_object<const llvm::Twine &> {
   typedef llvm::Twine DeclareType;
   string _Storage; // Store the string here so it won't get wiped out before its used by the callee
   DeclareType _v;
-  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()),
-    _v(llvm::Twine(this->_Storage)) {};
+  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()) {
+    this->_v = this->_Storage;
+    printf("%s:%d  from_object Twine set: %s\n", __FILE__, __LINE__, this->_Storage.c_str());
+  };
 };
+#else
+template <>
+struct from_object<const llvm::Twine &> {
+  typedef std::string DeclareType;
+  DeclareType _v;
+  from_object(T_P o) : _v(gc::As<core::String_sp>(o)->get_std_string()) {
+//    printf("%s:%d  from_object Twine set: %s\n", __FILE__, __LINE__, this->_v.c_str());
+  };
+};
+#endif
 
 template <>
 struct to_object<const llvm::StringRef &> {
@@ -207,7 +220,7 @@ struct from_object<llvm::ArrayRef<int>> {
   from_object(core::T_sp o) {
     if ( core::Function_sp func = gc::As<core::Function_sp>(o) ) {
         printf("%s:%d  translate::from_object<std::function<bool (const llvm::Function&)> passing dummy for now \n", __FILE__, __LINE__ );
-        _v = std::function<bool (const llvm::Function&)> ([&func] (const llvm::Function& f)->bool {
+        this->_v = std::function<bool (const llvm::Function&)> ([&func] (const llvm::Function& f)->bool {
           return true;
       }
         );

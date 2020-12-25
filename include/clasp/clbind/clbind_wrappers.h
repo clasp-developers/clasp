@@ -302,7 +302,7 @@ public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   typedef WrapperType GivenType;
-  static core::T_sp convert(std::unique_ptr<T> ptr) {
+  static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }
@@ -320,7 +320,7 @@ public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
   typedef WrapperType GivenType;
-  static core::T_sp convert(std::unique_ptr<T> ptr) {
+  static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
     }

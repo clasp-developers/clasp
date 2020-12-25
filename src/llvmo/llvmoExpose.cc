@@ -1304,7 +1304,7 @@ CL_DEFMETHOD LLVMContext_sp Module_O::getContext() const {
 std::string Module_O::__repr__() const {
   stringstream ss;
   ss << "#<MODULE ";
-  ss << (void*)this->wrappedPtr() << ">";
+//  ss << (void*)this->wrappedPtr() << ">";
   return ss.str();
 }
 
@@ -2017,7 +2017,13 @@ core::List_sp CallBase_O::getArgumentList() const {
 };  
 
 CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(CallBase_sp callOrInvoke) {
-  return callOrInvoke->getArgumentList();
+  core::List_sp result = callOrInvoke->getArgumentList();
+#ifdef DEBUG_EVALUATE
+  if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s on %s result = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(callOrInvoke).c_str(), _rep_(result).c_str());
+  }
+#endif
+  return result;
 }
 
 CL_DEFMETHOD void CallBase_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
@@ -4588,10 +4594,11 @@ void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_t
   fprintf(fout, "[ \"%s\", %d, %lu ]\n", name, dt, offset );
 }
 
-void dump_objects_for_lldb(FILE* fout)
+void dump_objects_for_lldb(FILE* fout,std::string indent)
 {
-  fprintf(fout,"Init_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", sizeof(gctools::Header_s));
+  fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
   python_dump_field(fout,"_stamp_wtag_mtag",false,gctools::ctype_size_t,offsetof(gctools::Header_s,_stamp_wtag_mtag));
+  python_dump_field(fout,"_header_badge",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_header_badge));
 #ifdef DEBUG_GUARD
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
@@ -4602,7 +4609,7 @@ void dump_objects_for_lldb(FILE* fout)
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
 #endif
   fprintf(fout,"] )\n");
-  fprintf(fout,"Init_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", sizeof(llvmo::ObjectFileInfo));
+  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
   python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));

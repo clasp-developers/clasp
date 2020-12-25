@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/externalObject.h>
 
 namespace core {
 
@@ -150,6 +151,47 @@ T_sp core__valid_function_name_p(T_sp arg);
   List_sp core__list_from_va_list(VaList_sp valist);
 
 T_sp core__next_number();
+};
+
+
+namespace core {
+FORWARD(Test);
+class Test {
+public:
+  Test() : multiplier(1234) {};
+public:
+  int  multiplier;
+  std::vector<int> numbers;
+  void setMultiplier(int m);
+  void set2(int n0, int n1);
+  void set3(int n0, int n1, int n2);
+  void print_numbers();
+};
+
+
+
+FORWARD(Test);
+class Test_O : public core::ExternalObject_O {
+  LISP_EXTERNAL_CLASS(core, CorePkg, Test, Test_O, "Test", core::ExternalObject_O);
+  typedef Test ExternalType;
+  typedef Test *PointerToExternalType;
+
+protected:
+  PointerToExternalType _ptr;
+
+public:
+  PointerToExternalType wrappedPtr() const { return static_cast<ExternalType*>(this->_ptr); };
+  void set_wrapped(PointerToExternalType ptr) {
+    /* delete this->_ptr; */
+    this->_ptr = ptr;
+  }
+  Test_O() : Base(){};
+  ~Test_O() {}
+
+};
+
+
+
 };
 
 #endif /* _core_primitives_H */

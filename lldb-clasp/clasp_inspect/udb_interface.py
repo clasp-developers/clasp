@@ -53,6 +53,7 @@ def arg_to_tptr(debugger,args):
         tptr = int(arg,10)
     else:
         debugger.print_("Handle arg: %s" % arg)
+        return
     return tptr
     
 def inspect(args):

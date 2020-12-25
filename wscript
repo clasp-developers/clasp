@@ -1140,7 +1140,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
-    cfg.env.append_value('CXXFLAGS', [ '-std=c++14'])
+    cfg.env.append_value('CXXFLAGS', [ '-std=c++17'])
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
@@ -1456,7 +1456,7 @@ def build(bld):
         bld.add_to_group(task)
 
     make_pump_tasks(bld, 'src/core/header-templates/', 'clasp/core/')
-    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
+#    make_pump_tasks(bld, 'src/clbind/header-templates/', 'clasp/clbind/')
 
     task = generate_extension_headers_h(env=bld.env)
     task.set_inputs(bld.extensions_gcinterface_include_files)

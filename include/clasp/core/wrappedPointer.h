@@ -37,10 +37,9 @@ SMART(WrappedPointer);
 class WrappedPointer_O : public core::General_O {
   FRIEND_GC_SCANNER(core::WrappedPointer_O);
   LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer",core::General_O);
-GCPROTECTED:
+public:
   gctools::ShiftedStamp ShiftedStamp_;
   core::Instance_sp Class_;
-
 public:
   virtual core::Instance_sp _instanceClass() const override { return this->Class_; };
   virtual T_sp _instanceClassSet(Instance_sp mc);

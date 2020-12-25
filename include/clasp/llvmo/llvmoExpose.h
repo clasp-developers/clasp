@@ -1,4 +1,3 @@
-//#define DEBUG_DTORS
 /*
     File: llvmoExpose.h
 */
@@ -487,9 +486,10 @@ public:
   ~Triple_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -579,9 +579,10 @@ public:
   ~TargetOptions_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -895,9 +896,10 @@ public:
   ~TargetMachine_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1074,9 +1076,10 @@ public:
   ~TargetPassConfig_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1239,9 +1242,10 @@ public:
   virtual ~PassManagerBase_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1328,24 +1332,28 @@ struct from_object<llvm::Value *, std::true_type> {
 };
 template <>
 struct from_object<llvm::ArrayRef<llvm::Value *>> {
-  typedef std::vector<llvm::Value *> DeclareType;
+  typedef llvm::ArrayRef<llvm::Value*> DeclareType;
+  std::vector<llvm::Value*> _backing;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      _v.clear();
+      _backing.clear();
+      this->_v = _backing;
       return;
     } else if (core::List_sp lcvals = o.asOrNull<core::Cons_O>()) {
       for (auto cvals : lcvals) {
         llvm::Value *vP = gc::As<llvmo::Value_sp>(core::oCar(cvals))->wrappedPtr();
-        _v.push_back(vP);
+        _backing.push_back(vP);
       }
+      this->_v = _backing;
       return;
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
-      _v.resize(vvals->length());
+      _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
+        _backing[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
         printf("%s:%d   Entry[%d] <-- %s\n", __FILE__, __LINE__, i, _rep_(vvals->rowMajorAref(i)).c_str());
       }
+      this->_v = _backing;
       return;
     }
     SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Value*>", core::_rep_(o).c_str());
@@ -1606,9 +1614,10 @@ public:
   ~DataLayout_O() {
     if (this->_DataLayout) {
       auto ptr = this->_DataLayout;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1764,23 +1773,27 @@ struct from_object<llvm::Constant *, std::true_type> {
 
 template <>
 struct from_object<llvm::ArrayRef<llvm::Constant *>> {
-  typedef std::vector<llvm::Constant *> DeclareType;
+  typedef llvm::ArrayRef<llvm::Constant *> DeclareType;
+  std::vector<llvm::Constant *> _backing;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      _v.clear();
+      _backing.clear();
+      this->_v = this->_backing;
       return;
     } else if (core::List_sp lcvals = o.asOrNull<core::Cons_O>()) {
       for (auto cvals : lcvals) {
         llvm::Constant *vP = gc::As<llvmo::Constant_sp>(core::oCar(cvals))->wrappedPtr();
-        _v.push_back(vP);
+        _backing.push_back(vP);
       }
+      this->_v = this->_backing;
       return;
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
-      _v.resize(vvals->length());
+      _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
+        _backing[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
       }
+      this->_v = this->_backing;
       return;
     }
     SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>", core::_rep_(o).c_str());
@@ -2246,9 +2259,10 @@ public:
   ~FunctionPassManager_O() {
     if ( this->_ptr!=NULL ) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2315,9 +2329,10 @@ public:
   virtual ~PassManager_O() {
     if (this->_ptr) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2466,9 +2481,10 @@ public:
 #endif
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2620,9 +2636,10 @@ public:
   ~IRBuilderBase_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -4835,7 +4852,7 @@ struct from_object<llvm::Optional<T>> {
 }
 
 namespace llvmo {
-void dump_objects_for_lldb(FILE* fout);
+void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
 };

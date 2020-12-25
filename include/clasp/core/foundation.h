@@ -26,6 +26,22 @@ THE SOFTWARE.
 /* -^- */
 
 
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+//
+// Set system wide debug flags here
+//
+//#define DEBUG_FRAME 1
+//#define DEBUG_EVALUATE 1
+//#define DEBUG_DTORS 1
+// If ANY flags above are set - then set this one to print a message at startup
+//#define DEBUG_FLAGS_SET 1
+
+
 #ifndef FOUNDATION_H //[
 #define FOUNDATION_H
 
