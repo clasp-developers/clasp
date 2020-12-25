@@ -129,7 +129,7 @@ struct from_object<gctools::smart_ptr<T>, std::true_type> {
   typedef gctools::smart_ptr<T> ExpectedType;
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp &o) : _v(gc::As_unsafe<gctools::smart_ptr<T>>(o)){
+  from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<T>>(o)){ // SLOWER gc::As_unsafe
     ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o));
   };
 };
@@ -139,7 +139,7 @@ struct from_object<gctools::smart_ptr<T>&, std::true_type> {
   typedef gctools::smart_ptr<T> ExpectedType;
   typedef gctools::smart_ptr<T> DeclareType;
   DeclareType _v;
-  from_object(const core::T_sp &o) : _v(gc::As_unsafe<gctools::smart_ptr<T>>(o)){
+  from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<T>>(o)){
     ASSERT(gctools::IsA<gctools::smart_ptr<T>>(o));
   };
 };
@@ -149,7 +149,7 @@ struct from_object<gctools::smart_ptr<T>&, std::true_type> {
    typedef gctools::smart_ptr<core::Character_I> ExpectedType;
    typedef gctools::smart_ptr<core::Character_I> DeclareType;
   DeclareType _v;
- from_object(const core::T_sp &o) : _v(gc::As_unsafe<gctools::smart_ptr<core::Character_I>>(o)){
+ from_object(const core::T_sp &o) : _v(gc::As<gctools::smart_ptr<core::Character_I>>(o)){
     ASSERT(o.characterp());
   };
 };
