@@ -102,7 +102,7 @@ public:
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<0,clbind::policies<>,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::go(frame->arguments(0));
     return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
 };
@@ -135,7 +135,7 @@ public:
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT& oto = *gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<0,clbind::policies<>,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,clbind::policies<>,ARGS...>::go(frame->arguments(0));
     return clbind::method_apply_and_return<RT,core::policy::clasp,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),std::move(oto),std::move(all_args));
   }
 };

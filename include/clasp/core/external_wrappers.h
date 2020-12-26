@@ -80,7 +80,7 @@ public:
     DEBUG_DUMP_FRAME(frame);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep  = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<0,Policies,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::go(frame->arguments(0));
     return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep,std::move(all_args));
   }
 };
@@ -112,7 +112,7 @@ public:
     DEBUG_DUMP_FRAME(frame);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
     OT* otep = &*gc::As<gctools::smart_ptr<OT>>(frame->arg(0));
-    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<0,Policies,ARGS...>::go(frame->arguments(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::go(frame->arguments(0));
     return clbind::external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep,std::move(all_args));
   }
 };
