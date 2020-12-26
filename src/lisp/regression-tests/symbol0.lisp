@@ -77,6 +77,7 @@
 (test 978-symbols-common-lisp-exported
       (let ((sum 0))
         (do-external-symbols (sym (find-package :cl))
+          (declare (ignore sym))
           (incf sum))
         (= 978 sum)))
 

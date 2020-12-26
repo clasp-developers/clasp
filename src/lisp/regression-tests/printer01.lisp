@@ -456,3 +456,43 @@ BBBBCCCC**DDDD"))
                  (LET ((*PRINT-BASE* 7))
                    (WITH-OUTPUT-TO-STRING (*STANDARD-OUTPUT*)
                      (PRIN1 0))))))
+
+#|
+wrong
+(THIS ..)(THIS ..)
+|#
+
+(test pprint-failure-2a
+      ;; should only find  ".." once in the output, not twice
+      (= 2 (count #\.
+                  (let ((*package* (find-package :cl-user)))
+                    (with-output-to-string (stream)
+                      (with-standard-io-syntax
+                        (write `(this prints wrongly)
+                               :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream)))))))
+
+(test pprint-failure-2
+      ;; should only find  ".." once in the output, not twice
+      (= 2 (count #\.
+                  (with-output-to-string (stream)
+                    (with-standard-io-syntax
+                      (write `(1234 12345 1234567)
+                             :pretty t  :circle t :lines 1 :right-margin 15 :readably nil :stream stream))))))
+(test pprint-failure-3a
+      (>
+       (length
+        (let ((*package* (find-package :cl-user)))
+          (with-output-to-string (stream)
+            (with-standard-io-syntax
+              (write #(PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV PROGV)
+                     :ESCAPE T :PRETTY T :CIRCLE T :LINES 0 :RIGHT-MARGIN 28 :readably nil :stream stream)))))
+       0))
+
+(test pprint-failure-3b
+      (>
+       (length
+        (with-output-to-string (stream)
+          (with-standard-io-syntax
+            (write #(12345 12345 12345 12345 12345 12345 12345 12345 12345 12345 12345)
+                   :ESCAPE T :PRETTY T :CIRCLE T :LINES 1 :RIGHT-MARGIN 28 :readably nil :stream stream))))
+       0))

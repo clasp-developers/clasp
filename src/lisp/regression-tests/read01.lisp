@@ -571,5 +571,10 @@
         (and (floatp $%e)
              (not (ext:float-nan-p $%e)))))
 
+(test issue-case-sensitivity-mode
+      (locally (declare (optimize (safety 3)))
+        (let ()
+          (readtable-case *readtable*))))
+
 
 
