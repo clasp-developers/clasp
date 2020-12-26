@@ -17,4 +17,7 @@
         READ-PRINT-CONSISTENCY-ARRAYS
         SBCL-CROSS-COMPILE-4 ;;;not important
         INCLUDE-LEVEL-2A INCLUDE-LEVEL-2B INCLUDE-LEVEL-3 ;;; a problem for sbcl x-compiling
-        ))
+        ;;; more printer tests
+        PPRINT-FAILURE-2A
+        PPRINT-FAILURE-3A
+        PPRINT-FAILURE-3B))
