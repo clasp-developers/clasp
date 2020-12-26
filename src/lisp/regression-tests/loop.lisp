@@ -85,3 +85,11 @@
  (equalp
   (loop with (a b) = '(1 nil) for (c d) = '(2 nil) do (return (list a b c d)))
   '(1 nil 2 nil)))
+
+;;; https://github.com/clasp-developers/clasp/issues/1109
+(test loop.13.29
+      (eq :good (loop named foo for i = 1 then (return-from foo :good))))
+
+(test loop.13.69
+      (eq :good
+          (block nil (loop named foo for i on '(a b c) by (return :good) return :bad) :bad)))

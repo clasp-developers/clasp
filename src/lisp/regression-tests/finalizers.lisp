@@ -42,7 +42,7 @@
 ;;;
 ;;; Test finalizing general objects
 (defun bar (n)
-  (setq *a* (bformat nil "Hi there %s" n)))
+  (setq *a* (core:bformat nil "Hi there %s" n)))
 (bar 5)
 (format t "*a* -> ~a~%" *a*)
 (setq *count* 0)
