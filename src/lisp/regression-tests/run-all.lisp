@@ -30,6 +30,8 @@
 (load-if-compiled-correctly "sys:regression-tests;bit-array0.lisp")
 (load-if-compiled-correctly "sys:regression-tests;bit-array1.lisp")
 (load-if-compiled-correctly "sys:regression-tests;character0.lisp")
+#+unicode
+(load-if-compiled-correctly "sys:regression-tests;unicode.lisp")
 (load-if-compiled-correctly "sys:regression-tests;hash-tables0.lisp")
 (load-if-compiled-correctly "sys:regression-tests;misc.lisp")
 (load-if-compiled-correctly "sys:regression-tests;read01.lisp")

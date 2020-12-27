@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/character.fwd.h>
+#include <cwctype>
+#include <locale>
 
 #define NULL_CHAR 0
 #define BELL_CHAR 7
@@ -119,20 +121,25 @@ namespace translate {
 namespace core {
 //claspCharacter clasp_charCode(T_sp elt); // like ecl__char_code
 
-inline bool clasp_invalid_base_char_p(int c) {
+inline bool clasp_invalid_base_char_p(claspCharacter c) {
   return (c <= 32) || (c == 127);
 }
 
+
 inline claspCharacter claspCharacter_upcase(claspCharacter code) {
-  // Should probably be towupper, but doesn't work. not even in Xcode
-  claspCharacter uc = toupper(code);
-  return uc;
+  // https://en.cppreference.com/w/cpp/locale/toupper
+  if (code <= 255)
+    return toupper(code);
+  else
+    return static_cast<claspCharacter>(std::toupper(static_cast<wchar_t>(code), std::locale("en_US.UTF-8")));
 }
 
 inline claspCharacter claspCharacter_downcase(claspCharacter code) {
-  // Should probably be towlower, but doesn't work. not even in Xcode
-  claspCharacter uc = tolower(code);
-  return uc;
+  // see https://en.cppreference.com/w/cpp/locale/tolower
+  if (code <= 255)
+    return tolower(code);
+  else
+    return static_cast<claspCharacter>(std::tolower(static_cast<wchar_t>(code), std::locale("en_US.UTF-8")));
 }
 
 inline bool clasp_alphanumericp(claspCharacter i) {
