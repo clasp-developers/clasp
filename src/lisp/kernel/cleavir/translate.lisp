@@ -21,10 +21,8 @@
     (declare (ignore reqargs optargs rest-var keyargs aok aux))
     (or key-flag varest-p)))
 
-;; Assume that functions with no encloses and no local calls are
-;; toplevel and need a XEP.
 (defun xep-needed-p (function)
-  (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
+  (or (cleavir-bir:enclose function)
       ;; We need a XEP for more involved lambda lists.
       (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
       ;; or for mv-calls that might need to signal an error.
@@ -35,8 +33,9 @@
                 (cleavir-bir:lambda-list function))
              (declare (ignore opt))
              (or (plusp (car req)) (not rest))))
-      ;; Else it would have been removed or deleted as it is
-      ;; unreferenced otherwise.
+      ;; Assume that a function with no enclose and no local calls is
+      ;; toplevel and needs an XEP. Else it would have been removed or
+      ;; deleted as it is unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
 
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
