@@ -1147,7 +1147,7 @@ __attribute__((optnone)) void cc_error_case_failure(T_O* datum, T_O* expected_ty
 }
 
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
-                      void* functionDescription,
+                      FunctionDescription* functionDescription,
                       std::size_t numCells)
 {
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
