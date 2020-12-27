@@ -194,6 +194,7 @@ SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
 SYMBOL_EXPORT_SC_(CorePkg,cxx_class);
+SYMBOL_EXPORT_SC_(CorePkg,STARnumber_of_entry_pointsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
 SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
@@ -1201,6 +1202,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebug_valuesSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_hash_tableSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(_Nil<core::T_O>());
   comp::_sym_STARdefault_object_typeSTAR->defparameter(kw::_sym_faso);
   comp::_sym_STARforce_startup_external_linkageSTAR->defparameter(_Nil<core::T_O>());

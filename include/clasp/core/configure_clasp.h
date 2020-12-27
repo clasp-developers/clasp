@@ -251,4 +251,7 @@ typedef int  claspCharacter;
 #define HAVE_MKSTEMP
 #define HAVE_MKDTEMP
 
+
+#define NUMBER_OF_ENTRY_POINTS 6
+
 #endif // __CORE_CONFIG_H__

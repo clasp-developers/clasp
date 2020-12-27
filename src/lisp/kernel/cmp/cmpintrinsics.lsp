@@ -749,9 +749,10 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;;
 ;;; source-info/function-name are stored in a CONS cell CAR/CDR
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
+(define-symbol-macro %entry-points-vector% (llvm-sys:array-type-get %i8*% core:*number-of-entry-points*))
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
-                              (list %fn-prototype*%
+                              (list %entry-points-vector%
                                     %gcroots-in-module*%
                                     %size_t% ; source-info.function-name index
                                     %size_t% ; lambda-list./docstring literal index

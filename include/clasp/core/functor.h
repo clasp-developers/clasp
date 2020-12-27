@@ -64,7 +64,7 @@ struct FunctionDescription {
 // There are six slots below that end with Index
     // They need space opened up in the GCRoots vector
   static const size_t Roots = 2;
-  void* functionPrototype;
+  void* functionPrototype[NUMBER_OF_ENTRY_POINTS];
   gctools::GCRootsInModule* gcrootsInModule;
   size_t sourcePathname_functionName_Index;
   size_t lambdaList_docstring_Index;
