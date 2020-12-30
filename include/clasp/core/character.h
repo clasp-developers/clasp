@@ -125,13 +125,14 @@ inline bool clasp_invalid_base_char_p(claspCharacter c) {
   return (c <= 32) || (c == 127);
 }
 
-
+const std::locale locale_us = std::locale("en_US.UTF-8");
+ 
 inline claspCharacter claspCharacter_upcase(claspCharacter code) {
   // https://en.cppreference.com/w/cpp/locale/toupper
   if (code <= 255)
     return toupper(code);
   else
-    return static_cast<claspCharacter>(std::toupper(static_cast<wchar_t>(code), std::locale("en_US.UTF-8")));
+    return static_cast<claspCharacter>(std::toupper(static_cast<wchar_t>(code), locale_us));
 }
 
 inline claspCharacter claspCharacter_downcase(claspCharacter code) {
@@ -139,7 +140,7 @@ inline claspCharacter claspCharacter_downcase(claspCharacter code) {
   if (code <= 255)
     return tolower(code);
   else
-    return static_cast<claspCharacter>(std::tolower(static_cast<wchar_t>(code), std::locale("en_US.UTF-8")));
+    return static_cast<claspCharacter>(std::tolower(static_cast<wchar_t>(code), locale_us));
 }
 
 inline bool clasp_alphanumericp(claspCharacter i) {
