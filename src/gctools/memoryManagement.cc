@@ -568,10 +568,6 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
-  if (transientAlloca) {
-    // transient_entries = num_roots;
-//    printf("%s:%d:%s transients is %lu and num_roots is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_entries, num_roots);
-  }
   new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
   size_t i = 0;
   if (initial_data != 0 ) {
