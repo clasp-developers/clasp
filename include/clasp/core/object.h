@@ -448,10 +448,6 @@ namespace core {
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
-    size_t _badge_remove;
-  public:
-  General_O() : _badge_remove(0) {};
-  public:
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equal(HashGenerator &hg) const;
     virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};

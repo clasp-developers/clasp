@@ -55,7 +55,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::FunctionDescription* fdesc, MethodType ptr) : core::BuiltinClosure_O(&MyType::method_entry_point,fdesc), mptr(ptr) {};
+  IndirectVariadicMethoid(core::FunctionDescription_sp fdesc, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
@@ -86,7 +86,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::FunctionDescription* fdesc, MethodType ptr) : core::BuiltinClosure_O(&MyType::method_entry_point,fdesc), mptr(ptr) {};
+  IndirectVariadicMethoid(core::FunctionDescription_sp fdesc, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {

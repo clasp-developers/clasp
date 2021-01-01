@@ -183,6 +183,8 @@ class Lisp_O {
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
+    FunctionDescription_sp _UnboundSymbolFunctionFunctionDescription;
+    FunctionDescription_sp _UnboundSetfSymbolFunctionFunctionDescription;
     T_sp _TerminalIO;
     //! Threads
 #ifdef CLASP_THREADS

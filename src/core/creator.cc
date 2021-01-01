@@ -59,7 +59,7 @@ T_sp InstanceCreator_O::creator_allocate() {
 namespace core {
 T_sp FuncallableInstanceCreator_O::creator_allocate() {
   size_t size = gctools::sizeof_with_header<FuncallableInstance_O>();
-  FunctionDescription* fdesc = makeFunctionDescription(cl::_sym_lambda);
+  FunctionDescription_sp fdesc = makeFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
   FuncallableInstance_sp instance = gctools::GC<FuncallableInstance_O>::allocate_instance(gctools::Header_s::StampWtagMtag::make_funcallable_instance(), size,fdesc);
   return instance;
 };

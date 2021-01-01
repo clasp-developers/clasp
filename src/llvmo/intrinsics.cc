@@ -254,27 +254,26 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           fnLispCallingConvention llvm_func,
-                                          core::FunctionDescription* functionDescription,
+                                          core::T_O* functionDescriptionInfo,
                                           std::size_t numCells)
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::Header_s::StampWtagMtag closure_header = gctools::Header_s::StampWtagMtag::make<core::ClosureWithSlots_O>();
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
-
 //  gctools::global_stack_closure_bytes_allocated += size;
-
 #ifdef DEBUG_GUARD
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header,size,0,size);
 #else
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
 #endif
+  core::Cons_sp fi((gctools::Tagged)functionDescriptionInfo);
+  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(fi,llvm_func);
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
                                                                            functionDescription,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
-
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());
   return functoid.raw_();

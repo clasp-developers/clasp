@@ -164,32 +164,30 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 
 namespace core {
 
-core::FunctionDescription* global_unboundSymbolFunctionFunctionDescription = NULL;
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
-  if (global_unboundSymbolFunctionFunctionDescription == NULL) {
-    global_unboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,_Nil<T_O>());
+  if (_lisp->_Roots._UnboundSymbolFunctionFunctionDescription.unboundp()) {
+    _lisp->_Roots._UnboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,unboundFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
                                                               unboundFunctionEntryPoint,
-                                                              global_unboundSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
 
-core::FunctionDescription* global_unboundSetfSymbolFunctionFunctionDescription = NULL;
 ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
-  if (global_unboundSetfSymbolFunctionFunctionDescription == NULL) {
+  if (_lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    global_unboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,_Nil<T_O>());
+    _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,unboundSetfFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
                                                               unboundSetfFunctionEntryPoint,
-                                                              global_unboundSetfSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
@@ -276,7 +274,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry.load() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry() != unboundFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound()
@@ -285,7 +283,7 @@ void Symbol_O::fmakunbound()
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry.load() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry() != unboundSetfFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound_setf()

@@ -54,69 +54,103 @@ namespace core {
 std::atomic<uint64_t> global_interpreted_closure_calls;
 
 
-FunctionDescription* makeFunctionDescription(T_sp functionName,
-                                             T_sp lambda_list,
-                                             T_sp docstring,
-                                             T_sp sourcePathname,
-                                             int lineno,
-                                             int column,
-                                             int filePos) {
-  // There is space for 5 roots needed - make sure that matches the number pushed below
-  if (my_thread->_GCRoots->remainingCapacity()<FunctionDescription::Roots) {
-    my_thread->_GCRoots = new gctools::GCRootsInModule();
+FunctionDescription_sp ensureEntryPoint(FunctionDescription_sp fdesc, claspFunction entry_point ) {
+  if (entry_point!=(claspFunction)fdesc->_EntryPoints[0]) {
+    printf("%s:%d The entry_point %p does not match the one in fdesc %p\n", __FILE__, __LINE__, (void*)entry_point, (void*)fdesc->_EntryPoints[0]);
+    SIMPLE_ERROR(BF("The entry_point %p does not match the one in fdesc %p") % (void*)entry_point % (void*)fdesc->_EntryPoints[0]);
   }
-  FunctionDescription* fdesc = new FunctionDescription();
-  gctools::GCRootsInModule* roots = my_thread->_GCRoots;
-  fdesc->gcrootsInModule = roots;
-  // There are 6 roots needed
-  Cons_sp sourcePathname_functionName = Cons_O::create(sourcePathname,functionName);
-  fdesc->sourcePathname_functionName_Index =  roots->push_back(sourcePathname_functionName.tagged_());
-  Cons_sp lambda_list_docstring = Cons_O::create(lambda_list,docstring);
-  fdesc->lambdaList_docstring_Index = roots->push_back(lambda_list_docstring.tagged_());
+  return fdesc;
+}
+
+
+FunctionDescription_sp makeFunctionDescription(T_sp functionName,
+                                               claspFunction entry_point,
+                                               T_sp lambda_list,
+                                               T_sp docstring,
+                                               T_sp sourcePathname,
+                                               int lineno,
+                                               int column,
+                                               int filePos) {
+  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point);
+  fdesc->_sourcePathname = sourcePathname;
+  fdesc->_functionName = functionName;
+  fdesc->_lambdaList = lambda_list;
+  fdesc->_docstring = docstring;
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
   return fdesc;
 }
 
-T_sp FunctionDescription::sourcePathname() const {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
-  return CONS_CAR(cell);
+
+FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point) {
+  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point);
+  fdesc->_sourcePathname = original->_sourcePathname;
+  fdesc->_functionName = original->_functionName;
+  fdesc->_lambdaList = original->_lambdaList;
+  fdesc->_docstring = original->_docstring;
+  fdesc->lineno = original->lineno;
+  fdesc->column = original->column;
+  fdesc->filepos = original->filepos;
+  return fdesc;
 }
 
-void FunctionDescription::setf_sourcePathname(T_sp sourceFileName) {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
-  cell->rplaca(sourceFileName);
+FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
+                                                       claspFunction entry_point)
+{
+#define POP(rrr,lll) T_sp rrr = oCar(lll); lll = oCdr(lll);
+  // THE order of entries MUST match cmpir.lsp function-info
+  POP(function_info_name, information);
+  POP(functionName, information);
+  POP(lambdaList, information);
+  POP(docstring, information);
+  POP(declares, information);
+  POP(sourcePathname,information);
+  POP(tlineno,information);
+  POP(tcolumn,information);
+  POP(tfilepos,information);
+  POP(form,information);
+  int lineno = clasp_to_fixnum(tlineno);
+  int column = clasp_to_fixnum(tcolumn);
+  int filepos = clasp_to_fixnum(tfilepos);
+  return makeFunctionDescription(functionName, entry_point,
+                                 lambdaList, docstring,
+                                 sourcePathname,
+                                 lineno,
+                                 column,
+                                 filepos);
 }
 
-T_sp FunctionDescription::functionName() const {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
-  return CONS_CDR(cell);
+T_sp FunctionDescription_O::sourcePathname() const {
+  return this->_sourcePathname;
 }
 
-void FunctionDescription::setf_functionName(T_sp name) {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,sourcePathname_functionName_Index));
-  cell->rplacd(name);
+void FunctionDescription_O::setf_sourcePathname(T_sp sourceFileName) {
+  this->_sourcePathname = sourceFileName;
 }
 
-T_sp FunctionDescription::lambdaList() const {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
-  return CONS_CAR(cell);
+T_sp FunctionDescription_O::functionName() const {
+  return this->_functionName;
 }
 
-void FunctionDescription::setf_lambdaList(T_sp lambda_list) {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
-  cell->rplaca(lambda_list);
+void FunctionDescription_O::setf_functionName(T_sp name) {
+  this->_functionName = name;
 }
 
-T_sp FunctionDescription::docstring() const {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
-  return CONS_CDR(cell);
+T_sp FunctionDescription_O::lambdaList() const {
+  return this->_lambdaList;
 }
 
-void FunctionDescription::setf_docstring(T_sp x) {
-  Cons_sp cell((gctools::Tagged)gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,lambdaList_docstring_Index));
-  cell->rplacd(x);
+void FunctionDescription_O::setf_lambdaList(T_sp lambda_list) {
+  this->_lambdaList = lambda_list;
+}
+
+T_sp FunctionDescription_O::docstring() const {
+  return this->_docstring;
+}
+
+void FunctionDescription_O::setf_docstring(T_sp x) {
+  this->_docstring = x;
 }
 
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp func) {
@@ -140,8 +174,12 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 }
 };
 
-extern "C" void dumpFunctionDescription(void* vfdesc)
+extern "C" void dumpFunctionDescription(core::FunctionDescription_sp vfdesc)
 {
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+  SIMPLE_ERROR(BF("Handle vfdesc"));
+#else
   core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
   core::write_bf_stream(BF("FunctionDescription @%p\n") % (void*)fdesc);
   core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
@@ -153,13 +191,14 @@ extern "C" void dumpFunctionDescription(void* vfdesc)
   core::write_bf_stream(BF("lineno = %d\n") % fdesc->lineno);
   core::write_bf_stream(BF("column = %d\n") % fdesc->column);
   core::write_bf_stream(BF("filepos = %d\n") % fdesc->filepos);
+#endif
 };
 
 namespace core {
 
 CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
 {
-  FunctionDescription* fdesc = func->fdesc();
+  FunctionDescription_sp fdesc = func->fdesc();
   dumpFunctionDescription(fdesc);
 }
 
@@ -181,7 +220,7 @@ CL_DEFUN_SETF T_sp setf_function_docstring(T_sp doc, Function_sp func) {
 
 SYMBOL_SC_(CompPkg,vtable);
 SYMBOL_SC_(CompPkg,entry);
-SYMBOL_SC_(CompPkg,function_description);
+SYMBOL_EXPORT_SC_(CorePkg,function_description);
 SYMBOL_EXPORT_SC_(CorePkg,object_file);
 SYMBOL_SC_(CompPkg,closure_type);
 SYMBOL_SC_(CompPkg,data_length);
@@ -190,8 +229,7 @@ SYMBOL_SC_(CompPkg,data0);
 
 CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
 {
-  expect_offset(comp::_sym_entry,alist,offsetof(ClosureWithSlots_O,entry)-gctools::general_tag);
-  expect_offset(comp::_sym_function_description,alist,offsetof(ClosureWithSlots_O,_FunctionDescription)-gctools::general_tag);
+  expect_offset(core::_sym_function_description,alist,offsetof(ClosureWithSlots_O,_FunctionDescription)-gctools::general_tag);
   expect_offset(comp::_sym_closure_type,alist,offsetof(ClosureWithSlots_O,closureType)-gctools::general_tag);
   expect_offset(comp::_sym_data_length,alist,offsetof(ClosureWithSlots_O,_Slots._MaybeSignedLength)-gctools::general_tag);
   expect_offset(comp::_sym_data0,alist,offsetof(ClosureWithSlots_O,_Slots._Data)-gctools::general_tag);
@@ -200,7 +238,7 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
     
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  FunctionDescription* interpretedFunctionDescription = makeFunctionDescription(name,lambda_list,docstring,sfi,lineno,column,filePos);
+  FunctionDescription_sp interpretedFunctionDescription = makeFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               INTERPRETED_CLOSURE_SLOTS,
@@ -220,12 +258,12 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp
   return closure;
 }
 ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, T_sp environment) {
-  core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
+  core::FunctionDescription_sp fdesc = makeFunctionDescription(name,ptr,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               BCLASP_CLOSURE_SLOTS,
                                                               ptr,
-                                                              (core::FunctionDescription*)fdesc,
+                                                              fdesc,
                                                               ClosureWithSlots_O::bclaspClosure);
   (*closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = environment;
   closure->setf_sourcePathname(_Nil<T_O>());
@@ -236,12 +274,12 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
 }
 
 ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
-  core::FunctionDescription* fdesc = makeFunctionDescription(name,lambda_list);
+  core::FunctionDescription_sp fdesc = makeFunctionDescription(name,ptr,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               0,
                                                               ptr,
-                                                              (core::FunctionDescription*)fdesc,
+                                                              fdesc,
                                                               ClosureWithSlots_O::cclaspClosure);
   closure->setf_lambdaList(lambda_list);
   closure->setf_docstring(_Nil<T_O>());
@@ -296,7 +334,11 @@ CL_DEFMETHOD T_sp Function_O::setSourcePosInfo(T_sp sourceFile,
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_pointer() const {
-  return Pointer_O::create((void*)this->entry.load());
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+#else
+  return Pointer_O::create((void*)this->entry());
+#endif
 };
 
 string Function_O::__repr__() const {
@@ -312,7 +354,7 @@ string Function_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " lambda-list: " << _rep_(this->lambdaList());
   if ( this->entry != NULL ) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
   }
 #endif
   ss << ">";
@@ -320,22 +362,30 @@ string Function_O::__repr__() const {
 }
 
 CL_DEFMETHOD Pointer_sp Function_O::function_description_address() const {
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+#else
   return Pointer_O::create(this->fdesc());
+#endif
 }
 
 CL_DEFUN void core__set_function_description_address(Function_sp func, Pointer_sp address) {
-  func->set_fdesc((FunctionDescription*)(address->ptr()));
+  SIMPLE_ERROR(BF("Implement me properly"));
+  // func->set_fdesc((FunctionDescription*)(address->ptr()));
 }
-
 };
 
 
 namespace core {
 char* global_dump_functions = NULL;
 void Closure_O::describeFunction() const {
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+#else
   if (global_dump_functions) {
-    printf("%s:%d  Closure_O %s entry@%p fdesc@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry.load(),(void*)this->fdesc());
+    printf("%s:%d  Closure_O %s entry@%p fdesc@%p\n", __FILE__, __LINE__, _rep_(this->functionName()).c_str(), (void*)this->entry(),(void*)this->fdesc());
   }
+#endif
 }
 
 CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
@@ -386,8 +436,8 @@ string ClosureWithSlots_O::__repr__() const {
       break;
   }
   ss << " lambda-list: " << _rep_(this->lambdaList());
-  if ( this->entry != NULL ) {
-    ss << " :fptr " << reinterpret_cast<void*>(this->entry.load());
+  if ( !this->_FunctionDescription.load().unboundp() ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->entry());
   }
   
   ss << ">";

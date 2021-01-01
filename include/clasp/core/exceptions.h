@@ -66,6 +66,7 @@ extern core::Symbol_sp& _sym_name;
     lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
+#define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR(BF("Do something about function-description"));
 #define SIMPLE_WARN(_boost_fmt_) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()))
 #define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
 #define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)

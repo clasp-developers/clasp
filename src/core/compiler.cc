@@ -1099,7 +1099,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         _Nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   //  return eval::funcall(thunk);
 };
 
@@ -1184,7 +1184,7 @@ CL_DECLARE();
 CL_DOCSTRING("Call THUNK with the given SYMBOL bound to to the given VALUE.");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 }
 
 }
@@ -1196,7 +1196,7 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
   core::T_sp val((gctools::Tagged)tval);
   core::Function_sp func((gctools::Tagged)tthunk);
   core::DynamicScopeManager scope(sym, val);
-  return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
 
 };
@@ -1209,7 +1209,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   try {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
-    result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
   catch (...)
   {
@@ -1220,7 +1220,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     multipleValuesSaveToTemp(nvals, mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+      closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
     }
     multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;  // __cxa_rethrow
@@ -1232,7 +1232,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
   return returnTypeLoadFromTemp(nvals, mv_temp);
 }
@@ -1247,7 +1247,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MultipleValues& mv = lisp_multipleValues();
   for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
+    T_mv result = (tfunc->entry())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     if (result.number_of_values() > 0  ) {
         (*frame)[idx] = result.raw_();
@@ -1271,7 +1271,7 @@ CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   CLASP_BEGIN_CATCH(tag) {
-    result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+    result = thunk->entry()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   } CLASP_END_CATCH(tag, result);
   return result;
 }
@@ -1283,7 +1283,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+  result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   result.saveToMultipleValue0();
   clasp_throw(tag);
 }
@@ -1301,7 +1301,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
     }
   } else {
-    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+    T_mv result = (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // T_mv result = eval::funcall(func);
     return result;
   }

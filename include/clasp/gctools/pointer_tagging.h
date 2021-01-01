@@ -243,6 +243,7 @@ ABI's  */
   static const char * tagged_vaslist_str = "VALIST";
   static const char * tagged_nil_str = "NIL";
   static const char * tagged_general_str = "GENERAL";
+  static const char * tagged_function_description_str = "FUNCTION_DESCRIPTION";
 
   template <class T>
     T ptag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & ptag_mask); };
@@ -341,6 +342,7 @@ template <class T>
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == general_tag);
     return reinterpret_cast<T>(&reinterpret_cast<char*>(ptr)[-general_tag]);
   }
+
   template <class T>
     inline core::Vaslist* untag_vaslist(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
@@ -406,6 +408,7 @@ template <class T>
     inline bool tagged_generalp(T ptr) {
     return ((uintptr_t)(ptr) & ptag_mask) == general_tag;
   }
+
   template <class T>
     inline bool tagged_vaslistp(T ptr) {
     return ((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
@@ -475,6 +478,11 @@ template <class T>
     if( tagged_generalp( tagged_obj )  )
     {
       return std::string( tagged_general_str );
+    }
+
+    if( tagged_function_descriptionp( tagged_obj )  )
+    {
+      return std::string( tagged_function_description_str );
     }
 
     if( tagged_objectp( tagged_obj )  )

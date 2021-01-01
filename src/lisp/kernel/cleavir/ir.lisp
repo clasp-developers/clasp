@@ -179,7 +179,7 @@ And convert everything to JIT constants."
 ;;;
 
 (defun closure-call-or-invoke (closure arguments &key (label ""))
-  (let* ((entry-point (cmp:irc-calculate-entry closure))
+  (let* ((entry-point (cmp:irc-calculate-entry closure arguments))
          (real-args (cmp:irc-calculate-real-args arguments))
          (args (list* closure
                       (%size_t (length arguments))

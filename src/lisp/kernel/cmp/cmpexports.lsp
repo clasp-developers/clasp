@@ -38,7 +38,6 @@
             *compile-duration-ns*
             *current-function*
             *current-function-name*
-            *current-function-description*
             *debug-compile-file*
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
@@ -104,6 +103,7 @@
             %gcroots-in-module*%
             %function-description%
             %function-description*%
+            function-info-reference-index
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             jit-remove-module

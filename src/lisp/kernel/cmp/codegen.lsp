@@ -39,48 +39,49 @@ Could return more functions that provide lambda-list for swank for example"
       (cmp-log "new-body -> %s%N" new-body)
 ;;;    (bformat *error-output* "old  -> %s %s %s %s%N" lambda-list-handler declares docstring code)
 ;;;    (bformat *error-output* "new-body -> %s%N" new-body)
-      (let* ((name (core:extract-lambda-name-from-declares
-                    declares (or given-name
-                                 `(cl:lambda ,(lambda-list-for-name lambda-list)))))
-             (fn (with-new-function (fn fn-env result
-                                        :function-name name
-                                        :parent-env env-around-lambda
-                                        :linkage linkage
-                                        :function-info (make-function-info
-                                                        :function-name name
-                                                        :lambda-list lambda-list
-                                                        :docstring docstring
-                                                        :declares declares
-                                                        :form code
-                                                        :spi core:*current-source-pos-info*))
-                   (cmp-log "Starting new function name: %s%N" name)
-                   ;; The following injects a debugInspectT_sp at the start of the body
-                   ;; it will print the address of the literal which must correspond to an entry in the
-                   ;; load time values table
-                   #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
-                   (let* ((arguments      (llvm-sys:get-argument-list fn))
-                          (callconv       (setup-calling-convention
-                                           arguments
-                                           :debug-on core::*debug-bclasp*
-                                           :cleavir-lambda-list cleavir-lambda-list
-                                           :rest-alloc rest-alloc)))
-                     (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
-                       (cmp-log "Created new register environment -> %s%N" new-env)
-                       ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
-                       ;; in which case the (with-try ...) can be removed
-                       ;; Christian Schafmeister June 2019
-                       (if (irc-environment-has-cleanup new-env)
-                           (with-try "TRY.func"
-                               (codegen-progn result (list new-body) new-env)
-                             ((cleanup)
-                              (irc-unwind-environment new-env)))
-                           (codegen-progn result (list new-body) new-env)))))))
-        (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
-        (cmp-log-dump-function fn)
-        (unless *suppress-llvm-output* (irc-verify-function fn))
-        ;; Return the llvm Function and the symbol/setf name
-        (if (null name) (error "The lambda name is nil"))
-        (values fn name lambda-list)))))
+      (let ((name (core:extract-lambda-name-from-declares
+                   declares (or given-name
+                                `(cl:lambda ,(lambda-list-for-name lambda-list))))))
+        (multiple-value-bind (fn function-info-reference)
+            (with-new-function (fn fn-env result
+                                   :function-name name
+                                   :parent-env env-around-lambda
+                                   :linkage linkage
+                                   :function-info (make-function-info
+                                                   :function-name name
+                                                   :lambda-list lambda-list
+                                                   :docstring docstring
+                                                   :declares declares
+                                                   :form code
+                                                   :spi core:*current-source-pos-info*))
+              (cmp-log "Starting new function name: %s%N" name)
+              ;; The following injects a debugInspectT_sp at the start of the body
+              ;; it will print the address of the literal which must correspond to an entry in the
+              ;; load time values table
+              #+(or)(irc-intrinsic-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
+              (let* ((arguments      (llvm-sys:get-argument-list fn))
+                     (callconv       (setup-calling-convention
+                                      arguments
+                                      :debug-on core::*debug-bclasp*
+                                      :cleavir-lambda-list cleavir-lambda-list
+                                      :rest-alloc rest-alloc)))
+                (let ((new-env (bclasp-compile-lambda-list-code fn-env callconv)))
+                  (cmp-log "Created new register environment -> %s%N" new-env)
+                  ;; I am not certain - but I suspect that (irc-environment-has-cleanup new-env) is always FALSE
+                  ;; in which case the (with-try ...) can be removed
+                  ;; Christian Schafmeister June 2019
+                  (if (irc-environment-has-cleanup new-env)
+                      (with-try "TRY.func"
+                        (codegen-progn result (list new-body) new-env)
+                        ((cleanup)
+                         (irc-unwind-environment new-env)))
+                      (codegen-progn result (list new-body) new-env)))))
+          (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
+          (cmp-log-dump-function fn)
+          (unless *suppress-llvm-output* (irc-verify-function fn))
+          ;; Return the llvm Function and the symbol/setf name
+          (if (null name) (error "The lambda name is nil"))
+          (values fn name lambda-list function-info-reference))))))
 
 ;;; Given a lambda list, return a lambda list suitable for display purposes.
 ;;; This means only the external interface is required.
@@ -158,19 +159,19 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
-      (multiple-value-bind (fn function-kind wrapped-env lambda-name)
-          (with-debug-info-generator (:module *the-module* :pathname pathname)
-            (multiple-value-bind (llvm-function-from-lambda lambda-name)
-                (compile-lambda-function definition env :linkage linkage)
-              (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
-              (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
-              (values llvm-function-from-lambda :function env lambda-name)))
-        (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
-        (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
-        (potentially-save-module)
-        (cmp-log "fn --> %s%N" fn)
-        (cmp-log-dump-module *the-module*)
-        (values fn function-kind wrapped-env lambda-name))))
+    (multiple-value-bind (fn function-kind wrapped-env lambda-name function-info-reference)
+        (with-debug-info-generator (:module *the-module* :pathname pathname)
+          (multiple-value-bind (llvm-function-from-lambda lambda-name function-info-reference)
+              (compile-lambda-function definition env :linkage linkage)
+            (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
+            (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
+            (values llvm-function-from-lambda :function env lambda-name)))
+      (or lambda-name (error "lambda-name is nil - this shouldn't happen"))
+      (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
+      (potentially-save-module)
+      (cmp-log "fn --> %s%N" fn)
+      (cmp-log-dump-module *the-module*)
+      (values fn function-kind wrapped-env lambda-name function-info-reference))))
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)

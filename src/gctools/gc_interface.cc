@@ -888,7 +888,7 @@ NOINLINE void set_one_static_class_Header() {
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(UnshiftedStamp theStamp, core::Symbol_sp classSymbol, core::Instance_sp metaClass)
 {
-  core::FunctionDescription* fdesc = core::makeFunctionDescription(kw::_sym_create);
+  core::FunctionDescription_sp fdesc = core::makeFunctionDescription(kw::_sym_create,TheClass::entry_point);
   auto cb = gctools::GC<TheClass>::allocate(fdesc);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(theStamp,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,classSymbol);

@@ -35,12 +35,8 @@ namespace core {
   class Creator_O : public Function_O {
     LISP_CLASS(core,CorePkg,Creator_O,"Creator",Function_O);
   public:
-    FunctionDescription* _FunctionDescription;
-  public:
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators
-    virtual FunctionDescription* fdesc() const override { return this->_FunctionDescription; }
-    virtual void set_fdesc(FunctionDescription* address) override { this->_FunctionDescription = address; };
     virtual bool allocates() const { return true; };
   /*! If this is the allocator for a primary CxxAdapter class then return true, */
     T_sp functionName() const override { return _Nil<T_O>(); };
@@ -60,8 +56,8 @@ namespace core {
     // use this when we inherit from Function_O
     static LCC_RETURN LISP_CALLING_CONVENTION();
     // entry_point is LISP_CALLING_CONVENTION() macro
-  Creator_O(FunctionDescription* fdesc) : Base(entry_point), _FunctionDescription(fdesc) {};
-  Creator_O() : Base(entry_point) {};
+    Creator_O(FunctionDescription_sp fdesc) : Base(fdesc) {};
+    Creator_O() : Function_O(makeFunctionDescription(_Nil<T_O>(),entry_point)) {};
     virtual ~Creator_O() {};
   };
 
@@ -101,7 +97,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-  InstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+    InstanceCreator_O(FunctionDescription_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(InstanceCreator_O); };
   };
@@ -113,7 +109,7 @@ namespace core {
   public:
     Instance_sp _class;
   public:
-  FuncallableInstanceCreator_O(FunctionDescription* fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
+  FuncallableInstanceCreator_O(FunctionDescription_sp fdesc, Instance_sp class_) : Base(fdesc), _class(class_){};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(FuncallableInstanceCreator_O); };
   };
@@ -123,7 +119,7 @@ namespace core {
   class StandardClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,StandardClassCreator_O,"StandardClassCreator",Creator_O);
   public:
-  StandardClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
+  StandardClassCreator_O(FunctionDescription_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(StandardClassCreator_O); };
   };
@@ -133,7 +129,7 @@ namespace core {
   class DerivableCxxClassCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,DerivableCxxClassCreator_O,"DerivableCxxClassCreator",Creator_O);
   public:
-  DerivableCxxClassCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
+  DerivableCxxClassCreator_O(FunctionDescription_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(DerivableCxxClassCreator_O); };
   };
@@ -143,7 +139,7 @@ namespace core {
   class ClassRepCreator_O : public Creator_O {
     LISP_CLASS(core,CorePkg,ClassRepCreator_O,"ClassRepCreator",Creator_O);
   public:
-  ClassRepCreator_O(FunctionDescription* fdesc) : Base(fdesc) {};
+  ClassRepCreator_O(FunctionDescription_sp fdesc) : Base(fdesc) {};
     T_sp creator_allocate() override;
     virtual size_t templatedSizeof() const override { return sizeof(ClassRepCreator_O); };
   };

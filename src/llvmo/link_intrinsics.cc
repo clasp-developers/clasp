@@ -84,13 +84,12 @@ extern "C" {
 using namespace core;
 namespace llvmo {
 
-core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription)
+core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription)
 {
-  if (functionDescription==NULL) {
+  if (functionDescription.unsafe_fixnum()==0) {
     return _Nil<core::T_O>();
   }
-  core::Cons_sp sourcePosition_functionName((gctools::Tagged)functionDescription->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,functionDescription->sourcePathname_functionName_Index));
-  return CONS_CDR(sourcePosition_functionName);
+  return functionDescription->_functionName;
 }
   
 
@@ -147,10 +146,9 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      SimpleVector_O** transientAlloca,
                                      size_t transient_entries,
                                      size_t function_pointer_count,
-                                     fnLispCallingConvention* fptrs,
-                                     void** fdescs )
+                                     fnLispCallingConvention* fptrs )
 {NO_UNWIND_BEGIN();
-  initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs, fdescs );
+  initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
     printf("%s:%d:%s holder@%p  root_address@%p  num_roots %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots );
   }
@@ -174,30 +172,42 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index)
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t function_info_index)
 {NO_UNWIND_BEGIN();
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
-  void* functionDescription = holder->lookup_function_description(function_index);
+  gc::Tagged tfunctionInfo = holder->getLiteral(function_info_index);
+  core::Cons_sp functionInfo(tfunctionInfo);
+  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(functionInfo,llvm_func);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               llvm_func,
-                                                              (core::FunctionDescription*)functionDescription,
+                                                              functionDescription,
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
 }
 
-void ltvc_make_runtime_closurette(gctools::GCRootsInModule* holder, size_t index, void* function, void* functionDescription) {
-//  core::write_bf_stream(BF("%s:%d ltvc_make_runtime_closurette\n") % __FILE__ % __LINE__ );
+#if 0
+LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index)
+{NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
+  printf("%s:%d:%s  NO functionInfo\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+  SIMPLE_ERROR(BF("The functionDescription %p will be incorrect") % (void*)functionDescription );
+#else
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
-                                                              (core::claspFunction)function,
-                                                              (core::FunctionDescription*)functionDescription,
+                                                              llvm_func,
+                                                              functionDescription,
                                                               core::ClosureWithSlots_O::cclaspClosure);
-  holder->setTaggedIndex( LITERAL_TAG_CHAR, index, functoid.tagged_());
+  LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
+#endif
+  NO_UNWIND_END();
 }
+#endif
 
-  
+
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index)
 {
   NO_UNWIND_BEGIN();
@@ -441,20 +451,6 @@ gctools::Tagged ltvc_lookup_literal( gctools::GCRootsInModule* holder, size_t in
   return holder->getTaggedIndex(LITERAL_TAG_CHAR,index);
 }
 
-LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName, size_t function_index)
-{NO_UNWIND_BEGIN();
-//  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
-  void* functionDescription = holder->lookup_function_description(function_index);
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
-    gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
-                                                              llvm_func,
-                                                              (core::FunctionDescription*)functionDescription,
-                                                              core::ClosureWithSlots_O::cclaspClosure);
-  LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
-  NO_UNWIND_END();
-}
-
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) {
   fnLispCallingConvention fptr = (fnLispCallingConvention)holder->lookup_function(fptr_index);
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
@@ -650,17 +646,19 @@ __attribute__((visibility("default"))) core::T_O *cc_gatherDynamicExtentRestArgu
   NO_UNWIND_END();
 }
 
-void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription* functionDescription)
+void badKeywordArgumentError(core::T_sp keyword, core::FunctionDescription_sp functionDescription)
 {
   core::T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
   if (functionName.nilp()) {
     SIMPLE_ERROR(BF("When calling an unnamed function the bad keyword argument %s was passed") % _rep_(keyword) );
   }
-  SIMPLE_ERROR(BF("When calling %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(keyword) );
+  SIMPLE_ERROR(BF("When calling %s with the lambda-list %s the bad keyword argument %s was passed") % _rep_(functionName) % _rep_(functionDescription->_lambdaList) % _rep_(keyword)  );
 }
 
 void cc_ifBadKeywordArgumentException(core::T_O *allowOtherKeys, core::T_O *kw,
-                                      core::FunctionDescription* functionDescription) {
+                                      core::T_O* tclosure) {
+  core::Function_sp closure((gc::Tagged)tclosure);
+  core::FunctionDescription_sp functionDescription = closure->fdesc();
   if (gctools::tagged_nilp(allowOtherKeys))
     badKeywordArgumentError(core::T_sp((gc::Tagged)kw), functionDescription);
 }
@@ -671,16 +669,19 @@ extern "C" {
 
 
 core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
-                                                                 void* functionDescription,
-                                                                 core::T_O* frameP
-                                                                 )
+                                core::T_O* functionDescriptionInfo,
+                                core::T_O* frameP
+                                )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
+  core::Cons_sp fi((gctools::Tagged)functionDescriptionInfo);
+//  printf("%s:%d:%s  functionDescriptionInfo list -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str());
+  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(fi,funcPtr);
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
-                                                              (core::FunctionDescription*)functionDescription,
+                                                              functionDescription,
                                                               core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
@@ -1147,13 +1148,15 @@ __attribute__((optnone)) void cc_error_case_failure(T_O* datum, T_O* expected_ty
 }
 
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
-                      void* functionDescription,
+                      core::T_O* functionDescriptionInfo,
                       std::size_t numCells)
 {
+  core::Cons_sp fi((gctools::Tagged)functionDescriptionInfo);
+  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(fi,llvm_func);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
-                                                              , llvm_func
-                                                               , (core::FunctionDescription*)functionDescription,
+                                                               , llvm_func
+                                                               , functionDescription,
                                                                core::ClosureWithSlots_O::cclaspClosure);
   return functoid.raw_();
 }
@@ -1214,12 +1217,14 @@ T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
   }
 }
 
-void cc_oddKeywordException(core::FunctionDescription* functionDescription) {
+void cc_oddKeywordException(core::T_O* tclosure) {
+  core::Function_sp closure((gc::Tagged)tclosure);
+  core::FunctionDescription_sp functionDescription = closure->fdesc();
   T_sp functionName = llvmo::functionNameOrNilFromFunctionDescription(functionDescription);
   if (functionName.nilp())
     SIMPLE_ERROR(BF("Odd number of keyword arguments"));
   else
-    SIMPLE_ERROR(BF("In call to %s got odd number of keyword arguments") % _rep_(functionName));
+    SIMPLE_ERROR(BF("In call to %s with lambda-list %s - got odd number of keyword arguments") % _rep_(functionName) % _rep_(functionDescription->_lambdaList));
 }
 
 T_O **cc_multipleValuesArrayAddress()

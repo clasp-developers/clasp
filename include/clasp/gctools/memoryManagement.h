@@ -936,9 +936,8 @@ namespace gctools {
     size_t _num_entries;
     size_t _capacity;
     /*fnLispCallingConvention* */ void** _function_pointers;
-    void** _function_descriptions;
     size_t _function_pointer_count;
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs);
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs);
     GCRootsInModule(size_t capacity = DefaultCapacity);
     void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
     
@@ -951,7 +950,6 @@ namespace gctools {
     Tagged setTaggedIndex(char tag, size_t index, Tagged val);
     Tagged getTaggedIndex(char tag, size_t index);
     /*fnLispCallingConvention*/ void* lookup_function(size_t index);
-    void* lookup_function_description(size_t index);
     void* address(size_t index) {
       return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }
@@ -960,7 +958,7 @@ namespace gctools {
   extern std::atomic<uint64_t> global_NumberOfRootTables;
   extern std::atomic<uint64_t> global_TotalRootTableSize;
   
-void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs, void** fdescs);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 

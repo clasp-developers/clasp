@@ -340,7 +340,8 @@ namespace gctools {
 #define SETUP_CLOSURE(Type,var) SETUP_CLOSURE_(Type,var)
 #endif                
 #ifdef LCC_PROTOTYPES
-typedef LCC_RETURN_RAW (*claspFunction)(LCC_ARGS_ELLIPSIS);
+
+typedef LCC_RETURN_RAW(*claspFunction)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_ELLIPSIS);
 typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_ELLIPSIS);

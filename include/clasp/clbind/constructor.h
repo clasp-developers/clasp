@@ -146,7 +146,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
- DerivableDefaultConstructorFunctor(core::FunctionDescription* fdesc) : core::Closure_O(entry_point,fdesc){};
+  DerivableDefaultConstructorFunctor(core::FunctionDescription_sp fdesc) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -182,7 +182,7 @@ public:
 public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::FunctionDescription* fdesc) : core::BuiltinClosure_O(entry_point,fdesc) {};
+  VariadicConstructorFunction_O(core::FunctionDescription_sp fdesc) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
