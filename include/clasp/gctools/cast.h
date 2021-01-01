@@ -29,7 +29,7 @@ namespace gctools {
     class GCArraySignedLength_moveable;
   template <class T>
     class GCVector_moveable;
-  template <size_t N, bool s>
+  template <size_t N, int SignedP>
     class GCBitUnitArray_moveable;
   template <class K>
     class SmallOrderedSet;

@@ -111,7 +111,6 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
-    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
@@ -171,7 +170,7 @@ public:
     }
 #endif
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<-1,policies<>,ARGS...>::go(frame->arguments());
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
     return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
   }
 };

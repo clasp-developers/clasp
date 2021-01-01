@@ -1,5 +1,5 @@
 (defpackage #:clasp-tests
-    (:use :cl :core)
+    (:use :cl)
   (:export #:test #:test-expect-error))
 
 (in-package #:clasp-tests)

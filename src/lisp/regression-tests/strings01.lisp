@@ -9,9 +9,9 @@
                                               (write-char #\Nul str) (princ "123" str)))))
 (test concatenate-with-nul0 (concatenate 'string (make-string 3 :initial-element #\Nul) "abc"))
 (test concatenate-with-nul1 (string= (concatenate 'string (make-string 3 :initial-element #\Nul) "abc")
-                                     (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
+                                     (core:bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test copy-seq-with-nul0 (string= (copy-seq (concatenate 'string (make-string 3 :initial-element #\Nul) "abc"))
-                                  (bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
+                                  (core:bformat nil "%c%c%cabc" #\nul #\nul #\nul)))
 (test string=-with-nul0
       (string= (substitute #\X #\Nul
                            (subseq (concatenate 'string "a" (make-string 3 :initial-element #\Nul) "bcd") 0))

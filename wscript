@@ -810,20 +810,22 @@ def configure(cfg):
                 log.info("On darwin looking for %s" % llvm_config_binary)
                 print("On darwin looking for %s" % llvm_config_binary)
             else:
-                try:
-                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%LLVM_VERSION)
-                except cfg.errors.ConfigurationError:
-                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%LLVM_VERSION)
+                llvm_config_binary = None
+                for candidate in [
+                        'llvm-config-%s.0',
+                        'llvm-config-%s',
+                        'llvm-config%s0',
+                        'llvm-config-%s.0-64',
+                        'llvm-config-%s.0-32',]:
                     try:
-                        llvm_config_binary = cfg.find_program('llvm-config-%s'%LLVM_VERSION)
+                        llvm_config_binary = cfg.find_program(candidate % LLVM_VERSION)
+                        break
                     except cfg.errors.ConfigurationError:
-                        cfg.to_log('llvm-config-%s was not found (ignoring)'%LLVM_VERSION)
-                        try:
-                            llvm_config_binary = cfg.find_program('llvm-config%s0'%LLVM_VERSION)
-                        except cfg.errors.ConfigurationError:
-                            cfg.to_log('llvm-config%s0 was not found (ignoring)'%LLVM_VERSION)
-                            # Let's fail if no llvm-config binary has been found
-                            llvm_config_binary = cfg.find_program('llvm-config')
+                        cfg.to_log(candidate % LLVM_VERSION + ' was not found (ignoring)')
+                if llvm_config_binary is None:
+                    # Let's fail if no llvm-config binary has been found
+                    llvm_config_binary = cfg.find_program('llvm-config')
+                                
                 llvm_config_binary = llvm_config_binary[0]
                 log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
@@ -1064,7 +1066,7 @@ def configure(cfg):
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--link-static", "--libs").split()] # drop the '-l' prefixes
+    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )
