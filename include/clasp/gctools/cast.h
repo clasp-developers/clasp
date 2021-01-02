@@ -67,7 +67,7 @@ namespace cast {
 #endif // #ifdef USE_BOEHM
 
 
-#ifdef USE_MPS
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
 //----------------------------------------------------------------------
  #if !defined(RUNNING_MPSPREP) && !defined(SCRAPING)
   #define GC_DECLARE_FORWARDS
@@ -114,18 +114,7 @@ namespace gctools {
 
 
 
-#ifdef USE_MPS
-// #ifdef RUNNING_MPSPREP
-// namespace gctools {
-//     template <typename TOPTR>
-//     struct FromGeneralCast {
-//     typedef TOPTR ToType;
-//     inline static bool isA(core::General_O* client) {
-//       return (dynamic_cast<ToType>(client) != NULL);
-//     }
-//   };
-// };
-// #else
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -136,8 +125,7 @@ namespace gctools {
     };
 
 };
-//#endif // RUNNING_MPSPREP
-#endif // USE_MPS
+#endif // USE_MPS || USE_ANALYSIS
 
 
 

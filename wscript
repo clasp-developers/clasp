@@ -93,6 +93,7 @@ STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # thin LTO  -flto=thin
 LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
+              'boehmsl',
               'mpsprep',
               'mps' ]
 
@@ -570,10 +571,27 @@ class boehm_d(boehm_base):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
+class boehmsl(boehm_base):
+    gc_name = 'boehmsl'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("boehmsl", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
+        super(boehmsl,self).configure_variant(cfg,env_copy)
+
+class boehmsl_d(boehm_base):
+    gc_name = 'boehmsl'
+    build_with_debug_info = True
+
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("boehmsl_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
+        super(boehmsl_d,self).configure_variant(cfg,env_copy)
+        
 class mps_base(variant):
     enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
+        cfg.define("USE_ANALYSIS",1)
         setup_clang_compiler(cfg,self)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             if (cfg.env.LTO_FLAG):
@@ -590,7 +608,6 @@ class mpsprep(mps_base):
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
     build_with_debug_info = True
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
         cfg.define("RUNNING_MPSPREP",1)
@@ -628,6 +645,24 @@ class bboehm_d(boehm_d):
 class cboehm_d(boehm_d):
     stage_char = 'c'
 
+class iboehmsl(boehmsl):
+    stage_char = 'i'
+class aboehmsl(boehmsl):
+    stage_char = 'a'
+class bboehmsl(boehmsl):
+    stage_char = 'b'
+class cboehmsl(boehmsl):
+    stage_char = 'c'
+
+class iboehmsl_d(boehmsl_d):
+    stage_char = 'i'
+class aboehmsl_d(boehmsl_d):
+    stage_char = 'a'
+class bboehmsl_d(boehmsl_d):
+    stage_char = 'b'
+class cboehmsl_d(boehmsl_d):
+    stage_char = 'c'
+    
 class imps(mps):
     stage_char = 'i'
 class amps(mps):

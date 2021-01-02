@@ -531,7 +531,7 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
   this->_function_pointers = NULL;
   this->_num_entries = 0;
   this->_capacity = capacity;
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(this->_capacity));
   core::T_O** module_mem = shadow_mem;
 #endif

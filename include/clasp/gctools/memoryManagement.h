@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #ifdef CLASP_THREADS
   #define GC_THREADS
 #endif
@@ -95,25 +95,11 @@ extern size_t _global_stack_max_size;
 
 namespace gctools {
 
-#ifdef USE_BOEHM
 class Header_s;
-#endif
-#ifdef USE_MPS
-class Header_s;
-#endif
 
 template <typename T>
 struct GCHeader {
-#ifdef USE_BOEHM
   typedef Header_s HeaderType;
-#endif
-#ifdef USE_MPS
-#ifdef RUNNING_MPSPREP
-  typedef Header_s HeaderType;
-#else
-  typedef Header_s HeaderType;
-#endif
-#endif
 };
 
 template <typename T>
@@ -181,7 +167,7 @@ namespace gctools {
   #undef GC_ENUM
  #endif
 #endif        
-#ifdef USE_MPS
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
  #ifndef RUNNING_MPSPREP
   #define GC_STAMP
    #include CLASP_GC_FILENAME
@@ -636,7 +622,7 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
 
 
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
 
@@ -772,7 +758,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-#ifdef USE_MPS
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
 #ifdef RUNNING_MPSPREP
       static GCStampEnum const Stamp = STAMP_null;
 #else
@@ -782,7 +768,7 @@ namespace gctools {
       static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
 #endif // RUNNING_MPSPREP
 #endif // USE_MPS
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #ifdef USE_CXX_DYNAMIC_CAST
       static GCStampEnum const Stamp = STAMP_null; // minimally define STAMP_null
 #else

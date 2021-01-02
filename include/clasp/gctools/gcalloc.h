@@ -103,7 +103,7 @@ inline void* verify_alignment(void* ptr) {
 #define MAYBE_VERIFY_ALIGNMENT(ptr) (void*)ptr
 #endif
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #define ALIGNED_GC_MALLOC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz+Alignment())))
@@ -411,7 +411,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       }
 
       static void deallocate(gctools::tagged_pointer<T> memory) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         GC_FREE(&*memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
@@ -421,7 +421,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       };
 
       static void untagged_deallocate(void *memory) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         GC_FREE(memory);
 #endif
 #ifdef USE_MPS

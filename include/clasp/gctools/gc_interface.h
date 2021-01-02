@@ -97,7 +97,7 @@ namespace asttooling {
   #undef DECLARE_FORWARDS
 #endif
 #endif
-#ifdef USE_MPS
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
  #ifndef RUNNING_MPSPREP
   #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
@@ -117,7 +117,7 @@ namespace gctools {
  #undef GC_STAMP_SELECTORS
 #endif
 #endif
-#ifdef USE_MPS
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
  #ifndef RUNNING_MPSPREP
   #define GC_STAMP_SELECTORS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"

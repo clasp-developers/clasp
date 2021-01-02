@@ -140,7 +140,14 @@ void process_clasp_arguments(CommandLineOptions* options)
       std::cout << "-mps-";
 #endif
 #ifdef USE_BOEHM
+      #ifdef USE_ANALYSIS 
+      std::cout << "-boehmsl-";
+      #else
       std::cout << "-boehm-";
+      #endif
+#endif
+#ifdef USE_BOEHMSL
+      std::cout << "-boehmsl-";
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);

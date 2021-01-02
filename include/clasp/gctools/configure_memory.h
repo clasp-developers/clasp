@@ -12,7 +12,7 @@
 
 //#define USE_BOEHM_MEMORY_MARKER
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
  #ifdef USE_CXX_DYNAMIC_CAST
   #define BIG_BOEHM_HEADER
  #endif
