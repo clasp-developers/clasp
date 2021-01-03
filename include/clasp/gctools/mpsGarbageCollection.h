@@ -99,6 +99,7 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
+#define GC_POINTER mps_addr_t
 };
 
 extern "C" {

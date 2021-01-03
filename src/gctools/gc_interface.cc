@@ -845,11 +845,12 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
 
 void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 {
-#define SET_CLASS_SYMBOLS
 #ifndef SCRAPING
+  // Another place where we include INIT_CLASSES_INC_H when USE_ANALYSIS
+#define SET_CLASS_SYMBOLS
 #include INIT_CLASSES_INC_H
-#endif
 #undef SET_CLASS_SYMBOLS
+#endif
 }
 
 #define ALLOCATE_ALL_SYMBOLS_HELPERS
@@ -950,10 +951,9 @@ void register_stamp_name(const std::string& stamp_name, UnshiftedStamp unshifted
 void define_builtin_cxx_classes() {
 #ifndef SCRAPING
  #define GC_ENUM_NAMES
-  #ifdef USE_BOEHM
+  #if !defined(USE_ANALYSIS)
    #include INIT_CLASSES_INC_H
-  #endif
-  #ifdef USE_MPS
+  #else
    #include CLASP_GC_FILENAME
   #endif
  #undef GC_ENUM_NAMES
@@ -1037,12 +1037,11 @@ void initialize_typeq_map() {
                                                    core::make_fixnum(gctools::Header_s::StampWtagMtag::GenerateHeaderValue<type_high>()))); \
   }
 #ifndef SCRAPING
- #ifdef USE_BOEHM
+ #if !defined(USE_ANALYSIS)
   #define GC_TYPEQ
-    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_TYPEQ
- #endif
- #if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
+ #else
   #define GC_TYPEQ
    #include CLASP_GC_FILENAME
   #undef GC_TYPEQ
@@ -1063,12 +1062,14 @@ void initialize_typeq_map() {
 #include <clasp/core/external_wrappers.h>
 
 #ifndef SCRAPING
+// include INIT_CLASSES_INC_H despite USE_ANALYSIS
  #define EXPOSE_STATIC_CLASS_VARIABLES
   #include INIT_CLASSES_INC_H
  #undef EXPOSE_STATIC_CLASS_VARIABLES
 #endif
 
 #ifndef SCRAPING
+// include INIT_CLASSES_INC_H despite USE_ANALYSIS
  #define EXPOSE_METHODS
   #include INIT_CLASSES_INC_H
  #undef EXPOSE_METHODS
@@ -1076,19 +1077,21 @@ void initialize_typeq_map() {
 
 void initialize_enums()
 {
-  #define ALL_ENUMS
-  #ifndef SCRAPING
-    #include <generated/enum_inc.h>
-  #endif
-  #undef ALL_ENUMS
+// include INIT_CLASSES_INC_H despite USE_ANALYSIS
+#ifndef SCRAPING
+ #define ALL_ENUMS
+ #include <generated/enum_inc.h>
+ #undef ALL_ENUMS
+#endif
 };
 
 
 void initialize_classes_and_methods()
 {
 #ifndef SCRAPING
+// include INIT_CLASSES_INC_H despite USE_ANALYSIS
  #define EXPOSE_CLASSES_AND_METHODS
-  #include INIT_CLASSES_INC_H
+ #include INIT_CLASSES_INC_H
  #undef EXPOSE_CLASSES_AND_METHODS
 #endif
 }
@@ -1101,11 +1104,12 @@ void initialize_classes_and_methods()
 
 void initialize_clasp_Kinds()
 {
-  #ifndef SCRAPING
-   #define SET_CLASS_KINDS
-    #include INIT_CLASSES_INC_H
-   #undef SET_CLASS_KINDS
-  #endif
+#ifndef SCRAPING
+// include INIT_CLASSES_INC_H despite USE_ANALYSIS
+ #define SET_CLASS_KINDS
+ #include INIT_CLASSES_INC_H
+ #undef SET_CLASS_KINDS
+#endif
 }
 
 void dumpBoehmLayoutTables(FILE* fout) {
@@ -1588,6 +1592,7 @@ void initialize_clasp()
   _lisp->_Roots._TheClbindCxxClass->_Class = _lisp->_Roots._TheStandardClass;
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #ifndef SCRAPING
+  // include despite USE_ANALYSIS
    #define ALLOCATE_ALL_CLASSES
     #include INIT_CLASSES_INC_H
    #undef ALLOCATE_ALL_CLASSES
@@ -1606,6 +1611,7 @@ void initialize_clasp()
 
   // Define base classes
   #ifndef SCRAPING
+   // import despite USE_ANALYSIS
    #define SET_BASES_ALL_CLASSES
     #include INIT_CLASSES_INC_H
    #undef SET_BASES_ALL_CLASSES
@@ -1613,6 +1619,7 @@ void initialize_clasp()
 
     // Define base classes
   #ifndef SCRAPING
+   // import despite USE_ANALYSIS
    #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
     #include INIT_CLASSES_INC_H
    #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES

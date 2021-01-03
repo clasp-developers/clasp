@@ -272,6 +272,7 @@
     class Iterator_O;
     class StrWNs_O;
     class ComplexVector_double_O;
+    class FunctionDescription_O;
     class MDArray_byte4_t_O;
     class Array_O;
     class Symbol_O;
@@ -565,24 +566,24 @@ STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_c
 STAMP_core__SimpleVector_byte16_t_O = ADJUST_STAMP(747), // Stamp(186)  wtag(3)
 STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_ = ADJUST_STAMP(751), // Stamp(187)  wtag(3)
 STAMP_core__SimpleBitVector_O = ADJUST_STAMP(755), // Stamp(188)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(759), // Stamp(189)  wtag(3)
-STAMP_core__SimpleVector_byte32_t_O = ADJUST_STAMP(763), // Stamp(190)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(767), // Stamp(191)  wtag(3)
-STAMP_core__SimpleVector_size_t_O = ADJUST_STAMP(771), // Stamp(192)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_ = ADJUST_STAMP(775), // Stamp(193)  wtag(3)
-STAMP_core__SimpleVector_double_O = ADJUST_STAMP(779), // Stamp(194)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(783), // Stamp(195)  wtag(3)
-STAMP_core__SimpleVector_byte64_t_O = ADJUST_STAMP(787), // Stamp(196)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_ = ADJUST_STAMP(791), // Stamp(197)  wtag(3)
-STAMP_core__SimpleVector_int4_t_O = ADJUST_STAMP(795), // Stamp(198)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(799), // Stamp(199)  wtag(3)
-STAMP_core__SimpleVector_int64_t_O = ADJUST_STAMP(803), // Stamp(200)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
-STAMP_core__SimpleVector_fixnum_O = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
-STAMP_core__SimpleVector_int8_t_O = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_ = ADJUST_STAMP(823), // Stamp(205)  wtag(3)
-STAMP_core__SimpleVector_int2_t_O = ADJUST_STAMP(827), // Stamp(206)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_ = ADJUST_STAMP(759), // Stamp(189)  wtag(3)
+STAMP_core__SimpleVector_int4_t_O = ADJUST_STAMP(763), // Stamp(190)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(767), // Stamp(191)  wtag(3)
+STAMP_core__SimpleVector_byte32_t_O = ADJUST_STAMP(771), // Stamp(192)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(775), // Stamp(193)  wtag(3)
+STAMP_core__SimpleVector_size_t_O = ADJUST_STAMP(779), // Stamp(194)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_ = ADJUST_STAMP(783), // Stamp(195)  wtag(3)
+STAMP_core__SimpleVector_double_O = ADJUST_STAMP(787), // Stamp(196)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(791), // Stamp(197)  wtag(3)
+STAMP_core__SimpleVector_byte64_t_O = ADJUST_STAMP(795), // Stamp(198)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_ = ADJUST_STAMP(799), // Stamp(199)  wtag(3)
+STAMP_core__SimpleVector_int2_t_O = ADJUST_STAMP(803), // Stamp(200)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
+STAMP_core__SimpleVector_int64_t_O = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
+STAMP_core__SimpleVector_fixnum_O = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(823), // Stamp(205)  wtag(3)
+STAMP_core__SimpleVector_int8_t_O = ADJUST_STAMP(827), // Stamp(206)  wtag(3)
 STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_ = ADJUST_STAMP(831), // Stamp(207)  wtag(3)
 STAMP_core__SimpleVector_float_O = ADJUST_STAMP(835), // Stamp(208)  wtag(3)
 STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = ADJUST_STAMP(839), // Stamp(209)  wtag(3)
@@ -749,63 +750,63 @@ STAMP_core__HashTableEqualp_O = ADJUST_STAMP(1479), // Stamp(369)  wtag(3)
 STAMP_core__HashTableEq_O = ADJUST_STAMP(1483), // Stamp(370)  wtag(3)
 STAMP_core__HashTableEql_O = ADJUST_STAMP(1487), // Stamp(371)  wtag(3)
 STAMP_core__HashTableEqual_O = ADJUST_STAMP(1491), // Stamp(372)  wtag(3)
-STAMP_llvmo__InsertPoint_O = ADJUST_STAMP(1495), // Stamp(373)  wtag(3)
-STAMP_core__Scope_O = ADJUST_STAMP(1499), // Stamp(374)  wtag(3)
-STAMP_core__FileScope_O = ADJUST_STAMP(1503), // Stamp(375)  wtag(3)
-STAMP_core__Path_O = ADJUST_STAMP(1507), // Stamp(376)  wtag(3)
-STAMP_core__Pathname_O = ADJUST_STAMP(1511), // Stamp(377)  wtag(3)
-STAMP_core__LogicalPathname_O = ADJUST_STAMP(1515), // Stamp(378)  wtag(3)
-STAMP_core__Number_O = ADJUST_STAMP(1519), // Stamp(379)  wtag(3)
-STAMP_core__Real_O = ADJUST_STAMP(1523), // Stamp(380)  wtag(3)
-STAMP_core__Rational_O = ADJUST_STAMP(1527), // Stamp(381)  wtag(3)
-STAMP_core__Ratio_O = ADJUST_STAMP(1531), // Stamp(382)  wtag(3)
-STAMP_core__Integer_O = ADJUST_STAMP(1535), // Stamp(383)  wtag(3)
-STAMP_core__Bignum_O = ADJUST_STAMP(1539), // Stamp(384)  wtag(3)
-STAMP_core__Fixnum_dummy_O = ADJUST_STAMP(1543), // Stamp(385)  wtag(3)
-STAMP_core__Float_O = ADJUST_STAMP(1547), // Stamp(386)  wtag(3)
-STAMP_core__DoubleFloat_O = ADJUST_STAMP(1551), // Stamp(387)  wtag(3)
-STAMP_core__SingleFloat_dummy_O = ADJUST_STAMP(1555), // Stamp(388)  wtag(3)
-STAMP_core__LongFloat_O = ADJUST_STAMP(1559), // Stamp(389)  wtag(3)
-STAMP_core__ShortFloat_O = ADJUST_STAMP(1563), // Stamp(390)  wtag(3)
-STAMP_core__Complex_O = ADJUST_STAMP(1567), // Stamp(391)  wtag(3)
-STAMP_core__Stream_O = ADJUST_STAMP(1571), // Stamp(392)  wtag(3)
-STAMP_core__AnsiStream_O = ADJUST_STAMP(1575), // Stamp(393)  wtag(3)
-STAMP_core__TwoWayStream_O = ADJUST_STAMP(1579), // Stamp(394)  wtag(3)
-STAMP_core__SynonymStream_O = ADJUST_STAMP(1583), // Stamp(395)  wtag(3)
-STAMP_core__ConcatenatedStream_O = ADJUST_STAMP(1587), // Stamp(396)  wtag(3)
-STAMP_core__FileStream_O = ADJUST_STAMP(1591), // Stamp(397)  wtag(3)
-STAMP_core__IOFileStream_O = ADJUST_STAMP(1595), // Stamp(398)  wtag(3)
-STAMP_core__IOStreamStream_O = ADJUST_STAMP(1599), // Stamp(399)  wtag(3)
-STAMP_core__BroadcastStream_O = ADJUST_STAMP(1603), // Stamp(400)  wtag(3)
-STAMP_core__StringStream_O = ADJUST_STAMP(1607), // Stamp(401)  wtag(3)
-STAMP_core__StringOutputStream_O = ADJUST_STAMP(1611), // Stamp(402)  wtag(3)
-STAMP_core__StringInputStream_O = ADJUST_STAMP(1615), // Stamp(403)  wtag(3)
-STAMP_core__EchoStream_O = ADJUST_STAMP(1619), // Stamp(404)  wtag(3)
-STAMP_core__Package_O = ADJUST_STAMP(1623), // Stamp(405)  wtag(3)
-STAMP_core__FileStatus_O = ADJUST_STAMP(1627), // Stamp(406)  wtag(3)
-STAMP_core__InvocationHistoryFrameIterator_O = ADJUST_STAMP(1631), // Stamp(407)  wtag(3)
-STAMP_core__SourcePosInfo_O = ADJUST_STAMP(1635), // Stamp(408)  wtag(3)
-STAMP_core__IntArray_O = ADJUST_STAMP(1639), // Stamp(409)  wtag(3)
-STAMP_core__DirectoryEntry_O = ADJUST_STAMP(1643), // Stamp(410)  wtag(3)
-STAMP_core__LightUserData_O = ADJUST_STAMP(1647), // Stamp(411)  wtag(3)
-STAMP_core__UserData_O = ADJUST_STAMP(1651), // Stamp(412)  wtag(3)
-STAMP_core__Record_O = ADJUST_STAMP(1655), // Stamp(413)  wtag(3)
-STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1659), // Stamp(414)  wtag(3)
-STAMP_core__Frame_O = ADJUST_STAMP(1663), // Stamp(415)  wtag(3)
-STAMP_core__MultiStringBuffer_O = ADJUST_STAMP(1667), // Stamp(416)  wtag(3)
-STAMP_core__Cons_O = ADJUST_STAMP(1671), // Stamp(417)  wtag(3)
-STAMP_core__Lisp_O = ADJUST_STAMP(1675), // Stamp(418)  wtag(3)
-STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1679), // Stamp(419)  wtag(3)
-STAMP_asttooling__AstVisitor_O = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
-STAMP_clang__tooling__ToolAction = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
-STAMP_clang__tooling__FrontendActionFactory = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
-STAMP_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
-STAMP_gctools__GCContainer = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
-STAMP_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
-STAMP_gctools__GCVector_moveable_double_ = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
-STAMP_gctools__GCArray_moveable_short_ = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
-STAMP_gctools__GCBitUnitArray_moveable_2__1_ = ADJUST_STAMP(1719), // Stamp(429)  wtag(3)
+STAMP_core__FunctionDescription_O = ADJUST_STAMP(1495), // Stamp(373)  wtag(3)
+STAMP_llvmo__InsertPoint_O = ADJUST_STAMP(1499), // Stamp(374)  wtag(3)
+STAMP_core__Scope_O = ADJUST_STAMP(1503), // Stamp(375)  wtag(3)
+STAMP_core__FileScope_O = ADJUST_STAMP(1507), // Stamp(376)  wtag(3)
+STAMP_core__Path_O = ADJUST_STAMP(1511), // Stamp(377)  wtag(3)
+STAMP_core__Pathname_O = ADJUST_STAMP(1515), // Stamp(378)  wtag(3)
+STAMP_core__LogicalPathname_O = ADJUST_STAMP(1519), // Stamp(379)  wtag(3)
+STAMP_core__Number_O = ADJUST_STAMP(1523), // Stamp(380)  wtag(3)
+STAMP_core__Real_O = ADJUST_STAMP(1527), // Stamp(381)  wtag(3)
+STAMP_core__Rational_O = ADJUST_STAMP(1531), // Stamp(382)  wtag(3)
+STAMP_core__Ratio_O = ADJUST_STAMP(1535), // Stamp(383)  wtag(3)
+STAMP_core__Integer_O = ADJUST_STAMP(1539), // Stamp(384)  wtag(3)
+STAMP_core__Bignum_O = ADJUST_STAMP(1543), // Stamp(385)  wtag(3)
+STAMP_core__Fixnum_dummy_O = ADJUST_STAMP(1547), // Stamp(386)  wtag(3)
+STAMP_core__Float_O = ADJUST_STAMP(1551), // Stamp(387)  wtag(3)
+STAMP_core__DoubleFloat_O = ADJUST_STAMP(1555), // Stamp(388)  wtag(3)
+STAMP_core__SingleFloat_dummy_O = ADJUST_STAMP(1559), // Stamp(389)  wtag(3)
+STAMP_core__LongFloat_O = ADJUST_STAMP(1563), // Stamp(390)  wtag(3)
+STAMP_core__ShortFloat_O = ADJUST_STAMP(1567), // Stamp(391)  wtag(3)
+STAMP_core__Complex_O = ADJUST_STAMP(1571), // Stamp(392)  wtag(3)
+STAMP_core__Stream_O = ADJUST_STAMP(1575), // Stamp(393)  wtag(3)
+STAMP_core__AnsiStream_O = ADJUST_STAMP(1579), // Stamp(394)  wtag(3)
+STAMP_core__TwoWayStream_O = ADJUST_STAMP(1583), // Stamp(395)  wtag(3)
+STAMP_core__SynonymStream_O = ADJUST_STAMP(1587), // Stamp(396)  wtag(3)
+STAMP_core__ConcatenatedStream_O = ADJUST_STAMP(1591), // Stamp(397)  wtag(3)
+STAMP_core__FileStream_O = ADJUST_STAMP(1595), // Stamp(398)  wtag(3)
+STAMP_core__IOFileStream_O = ADJUST_STAMP(1599), // Stamp(399)  wtag(3)
+STAMP_core__IOStreamStream_O = ADJUST_STAMP(1603), // Stamp(400)  wtag(3)
+STAMP_core__BroadcastStream_O = ADJUST_STAMP(1607), // Stamp(401)  wtag(3)
+STAMP_core__StringStream_O = ADJUST_STAMP(1611), // Stamp(402)  wtag(3)
+STAMP_core__StringOutputStream_O = ADJUST_STAMP(1615), // Stamp(403)  wtag(3)
+STAMP_core__StringInputStream_O = ADJUST_STAMP(1619), // Stamp(404)  wtag(3)
+STAMP_core__EchoStream_O = ADJUST_STAMP(1623), // Stamp(405)  wtag(3)
+STAMP_core__Package_O = ADJUST_STAMP(1627), // Stamp(406)  wtag(3)
+STAMP_core__FileStatus_O = ADJUST_STAMP(1631), // Stamp(407)  wtag(3)
+STAMP_core__InvocationHistoryFrameIterator_O = ADJUST_STAMP(1635), // Stamp(408)  wtag(3)
+STAMP_core__SourcePosInfo_O = ADJUST_STAMP(1639), // Stamp(409)  wtag(3)
+STAMP_core__IntArray_O = ADJUST_STAMP(1643), // Stamp(410)  wtag(3)
+STAMP_core__DirectoryEntry_O = ADJUST_STAMP(1647), // Stamp(411)  wtag(3)
+STAMP_core__LightUserData_O = ADJUST_STAMP(1651), // Stamp(412)  wtag(3)
+STAMP_core__UserData_O = ADJUST_STAMP(1655), // Stamp(413)  wtag(3)
+STAMP_core__Record_O = ADJUST_STAMP(1659), // Stamp(414)  wtag(3)
+STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1663), // Stamp(415)  wtag(3)
+STAMP_core__Frame_O = ADJUST_STAMP(1667), // Stamp(416)  wtag(3)
+STAMP_core__MultiStringBuffer_O = ADJUST_STAMP(1671), // Stamp(417)  wtag(3)
+STAMP_core__Cons_O = ADJUST_STAMP(1675), // Stamp(418)  wtag(3)
+STAMP_core__Lisp_O = ADJUST_STAMP(1679), // Stamp(419)  wtag(3)
+STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
+STAMP_asttooling__AstVisitor_O = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
+STAMP_clang__tooling__ToolAction = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
+STAMP_clang__tooling__FrontendActionFactory = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
+STAMP_clang__ast_matchers__MatchFinder__MatchCallback = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
+STAMP_gctools__GCContainer = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
+STAMP_gctools__GCArray_moveable_unsigned_int_ = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
+STAMP_gctools__GCVector_moveable_double_ = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
+STAMP_gctools__GCArray_moveable_short_ = ADJUST_STAMP(1719), // Stamp(429)  wtag(3)
 STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = ADJUST_STAMP(1723), // Stamp(430)  wtag(3)
 STAMP_gctools__GCBitUnitArray_moveable_4_0_ = ADJUST_STAMP(1727), // Stamp(431)  wtag(3)
 STAMP_gctools__GCVector_moveable_core__SymbolClassHolderPair_ = ADJUST_STAMP(1731), // Stamp(432)  wtag(3)
@@ -821,7 +822,7 @@ STAMP_gctools__GCVector_moveable_core__OptionalArgument_ = ADJUST_STAMP(1767), /
 STAMP_gctools__GCVector_moveable_core__KeywordArgument_ = ADJUST_STAMP(1771), // Stamp(442)  wtag(3)
 STAMP_gctools__GCVector_moveable_core__RequiredArgument_ = ADJUST_STAMP(1775), // Stamp(443)  wtag(3)
 STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ = ADJUST_STAMP(1779), // Stamp(444)  wtag(3)
-STAMP_gctools__GCBitUnitArray_moveable_4__1_ = ADJUST_STAMP(1783), // Stamp(445)  wtag(3)
+STAMP_gctools__GCBitUnitArray_moveable_4_1_ = ADJUST_STAMP(1783), // Stamp(445)  wtag(3)
 STAMP_gctools__GCVector_moveable_core__SymbolStorage_ = ADJUST_STAMP(1787), // Stamp(446)  wtag(3)
 STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ = ADJUST_STAMP(1791), // Stamp(447)  wtag(3)
 STAMP_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1795), // Stamp(448)  wtag(3)
@@ -833,838 +834,839 @@ STAMP_gctools__GCArray_moveable_int_ = ADJUST_STAMP(1815), // Stamp(453)  wtag(3
 STAMP_gctools__GCBitUnitArray_moveable_1_0_ = ADJUST_STAMP(1819), // Stamp(454)  wtag(3)
 STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = ADJUST_STAMP(1823), // Stamp(455)  wtag(3)
 STAMP_gctools__GCVector_moveable_core__AuxArgument_ = ADJUST_STAMP(1827), // Stamp(456)  wtag(3)
-STAMP_gctools__GCArray_moveable_long_ = ADJUST_STAMP(1831), // Stamp(457)  wtag(3)
-STAMP_gctools__GCVector_moveable_int_ = ADJUST_STAMP(1835), // Stamp(458)  wtag(3)
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(1839), // Stamp(459)  wtag(3)
-STAMP_gctools__GCArray_moveable_float_ = ADJUST_STAMP(1843), // Stamp(460)  wtag(3)
-STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(1847), // Stamp(461)  wtag(3)
-STAMP_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(1851), // Stamp(462)  wtag(3)
-STAMP_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(1855), // Stamp(463)  wtag(3)
-STAMP_gctools__GCVector_moveable_float_ = ADJUST_STAMP(1859), // Stamp(464)  wtag(3)
-STAMP_clang__FrontendAction = ADJUST_STAMP(1863), // Stamp(465)  wtag(3)
-STAMP_clang__ASTFrontendAction = ADJUST_STAMP(1867), // Stamp(466)  wtag(3)
-STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1871), // Stamp(467)  wtag(3)
-// Unused CORE::FORMAT-WARNING-TOO-FEW-ARGUMENTS = 809, 
-// Unused CLEAVIR-BIR::CASE = 1156, 
-// Unused CLEAVIR-ENVIRONMENT::NO-FUNCTION-INFO = 1286, 
-// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER-GROUP = 911, 
-// Unused CORE::INDENTATION = 833, 
-// Unused CLASP-CLEAVIR-AST::DEBUG-MESSAGE-AST = 1385, 
-// Unused ECLECTOR.READER::INVALID-RADIX = 1040, 
-// Unused CLEAVIR-BIR::TYPEQ-TEST = 1153, 
-// Unused CLOS::%METHOD-FUNCTION = 743, 
-// Unused CLEAVIR-BIR::FUNCTION = 1118, 
-// Unused ECLECTOR.READER::UNQUOTE-CONDITION = 1010, 
-// Unused CLEAVIR-AST::FIXNUM-NOT-GREATER-AST = 1216, 
-// Unused CLASP-CLEAVIR-AST::THROW-AST = 1384, 
-// Unused CONCRETE-SYNTAX-TREE::NULL-CST-REQUIRED = 890, 
-// Unused CLEAVIR-BIR::MODULE = 1119, 
-// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-POINTER-AST = 1390, 
-// Unused CONCRETE-SYNTAX-TREE::MACRO-LAMBDA-LIST = 950, 
-// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 1083, 
-// Unused CLEAVIR-CODE-UTILITIES::REQUIRED-MUST-BE-VARIABLE = 1279, 
-// Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-CAN-APPEAR-AT-MOST-ONCE = 1268, 
-// Unused CLEAVIR-AST::FIXNUM-LESS-AST = 1215, 
-// Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 1408, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 951, 
-// Unused CORE::PPRINT-DISPATCH-ENTRY = 837, 
-// Unused ECLECTOR.READER::COMPLEX-PART-EXPECTED = 1055, 
-// Unused GRAY::FUNDAMENTAL-STREAM = 818, 
-// Unused CLEAVIR-AST::FLOAT-ADD-AST = 1220, 
-// Unused CLEAVIR-AST::FIXNUM-EQUAL-AST = 1219, 
-// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 1473, 
-// Unused CLEAVIR-METER::METER = 1166, 
-// Unused CLASP-CLEAVIR-BIR::FOREIGN-CALL-POINTER = 1411, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED = 1257, 
-// Unused CLEAVIR-BIR::LEXICAL = 1098, 
-// Unused ECLECTOR.READER::SLOT-VALUE-CONDITION = 1065, 
-// Unused CLANG-TOOL::MULTITOOL = 1437, 
-// Unused ECLECTOR.READER::READ-OBJECT-TYPE-ERROR = 981, 
-// Unused CLANG-TOOL::COMPILATION-TOOL-DATABASE = 1428, 
-// Unused CLASP-ANALYZER::ENUM-CTYPE = 1474, 
-// Unused CLEAVIR-AST::SET-CONSTANT-SYMBOL-VALUE-AST = 1181, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-ERROR = 1368, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ALLOW-OTHER-KEYS = 942, 
-// Unused CLEAVIR-CODE-UTILITIES::ODD-NUMBER-OF-KEYWORD-ARGUMENTS = 1253, 
-// Unused CLEAVIR-CST-TO-AST::SITUATIONS-MUST-BE-PROPER-LIST = 1338, 
-// Unused CLASP-CLEAVIR-AST::SETF-FDEFINITION-AST = 1383, 
-// Unused CLASP-CLEAVIR-AST::CAS-AST = 1397, 
-// Unused CLEAVIR-AST::NEQ-AST = 1211, 
-// Unused CLEAVIR-METER::BASIC-METER = 1167, 
-// Unused ACCLIMATION::TIENG-VIET = 879, 
-// Unused CLEAVIR-BIR::OUTPUT = 1107, 
-// Unused CLEAVIR-AST::FIXNUM-ADD-AST = 1213, 
-// Unused CLASP-ANALYZER::POINTER-CTYPE = 1484, 
-// Unused CLEAVIR-ENVIRONMENT::LOCAL-MACRO-INFO = 1295, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS = 1326, 
-// Unused CLEAVIR-AST::SLOT-READ-AST = 1237, 
-// Unused COMMON-LISP::METHOD = 734, 
-// Unused ECLECTOR.READER::UNTERMINATED-LIST = 1019, 
-// Unused COMMON-LISP::FLOATING-POINT-OVERFLOW = 796, 
-// Unused COMMON-LISP::TYPE-ERROR = 766, 
-// Unused CLEAVIR-AST::FLOAT-GREATER-AST = 1226, 
-// Unused COMMON-LISP::SIMPLE-CONDITION = 754, 
-// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-MULTI-PARAMETER-GROUP = 904, 
-// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-AST = 1393, 
-// Unused CONCRETE-SYNTAX-TREE::DEFINE-MODIFY-MACRO-LAMBDA-LIST = 955, 
-// Unused CORE::SIMPLE-STREAM-ERROR = 782, 
-// Unused CORE::UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR = 802, 
-// Unused ECLECTOR.READER::INVALID-DEFAULT-FLOAT-FORMAT = 1041, 
-// Unused EXT::STACK-OVERFLOW = 761, 
-// Unused COMMON-LISP::PACKAGE-ERROR = 787, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST = 1283, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION = 1327, 
-// Unused CLEAVIR-BIR::UNWIND = 1148, 
-// Unused ECLECTOR.READER::READ-TIME-EVALUATION-INHIBITED = 1030, 
-// Unused CONCRETE-SYNTAX-TREE::PARAMETER-GROUP = 899, 
-// Unused CLEAVIR-CST-TO-AST::READ-ONLY-P-MUST-BE-BOOLEAN = 1350, 
-// Unused CONCRETE-SYNTAX-TREE::DEFSETF-LAMBDA-LIST = 953, 
-// Unused CLASP-ANALYZER::STAMP = 1454, 
-// Unused SB-BSD-SOCKETS::OUT-OF-MEMORY-ERROR = 862, 
-// Unused COMMON-LISP::UNBOUND-VARIABLE = 790, 
-// Unused SB-BSD-SOCKETS::NETWORK-UNREACHABLE-ERROR = 867, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-CALL-AST = 1204, 
-// Unused COMMON-LISP::ERROR = 753, 
-// Unused CONCRETE-SYNTAX-TREE::IMPLICIT-PARAMETER-GROUP = 902, 
-// Unused COMMON-LISP::STANDARD-METHOD = 736, 
-// Unused MP::PROCESS-ERROR = 779, 
-// Unused CLEAVIR-AST::AST = 1169, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-A = 1043, 
-// Unused CLEAVIR-BIR::RETURNI = 1138, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-CONSING-DOT = 1022, 
-// Unused CLASP-ANALYZER::CCLASS = 1443, 
-// Unused CLASP-CLEAVIR-AST::UNWIND-PROTECT-AST = 1403, 
-// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-PARAMETER-GROUP = 903, 
-// Unused SB-BSD-SOCKETS::NO-BUFFERS-ERROR = 861, 
-// Unused CLEAVIR-BIR::DYNAMIC-ENVIRONMENT = 1096, 
-// Unused CLEAVIR-AST::RETURN-FROM-AST = 1190, 
-// Unused CLASP-ANALYZER::ROOTCLASSALLOC = 1451, 
-// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-MUST-BE-A-SYMBOL = 1336, 
-// Unused CLASP-CLEAVIR::CLASP-ORDINARY-LAMBDA-LIST = 1381, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE = 982, 
-// Unused SB-BSD-SOCKETS::HOST-NOT-FOUND-ERROR = 871, 
-// Unused CLEAVIR-ENVIRONMENT::INLINE-EXPANSION = 1317, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-MUST-HAVE-EVEN-NUMBER-OF-ARGUMENTS = 1352, 
-// Unused CLEAVIR-BIR::NO-INPUT = 1108, 
-// Unused CLEAVIR-BIR::NOP = 1122, 
-// Unused CLEAVIR-AST::AREF-AST = 1241, 
-// Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 874, 
-// Unused CLASP-ANALYZER::MANAGER = 1510, 
-// Unused CLEAVIR-BIR::CAST = 1159, 
-// Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1416, 
-// Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 1445, 
-// Unused COMMON-LISP::VARIABLE = 1457, 
-// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED/READER = 1077, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER = 935, 
-// Unused COMMON-LISP::CONDITION = 750, 
-// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST = 995, 
-// Unused COMPILER::UNDEFINED-WARNING = 841, 
-// Unused CORE::FORMAT-ERROR = 808, 
-// Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 922, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 1091, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-SPECIALIZED-REQUIRED = 1269, 
-// Unused ECLECTOR.READER::REFERENCE-ERROR = 1082, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR = 1074, 
-// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-S = 1059, 
-// Unused CORE::ROW-MAJOR-OUT-OF-BOUNDS = 768, 
-// Unused CLEAVIR-BIR::TERMINATOR0 = 1112, 
-// Unused COMPILER::COMPILER-MACRO-EXPANSION-ERROR-WARNING = 847, 
-// Unused CLEAVIR-AST::FDEFINITION-AST = 1182, 
-// Unused CLEAVIR-ENVIRONMENT::NO-TAG-INFO = 1288, 
-// Unused COMPILER::SIMPLE-COMPILER-WARNING = 848, 
-// Unused CLOS::FORWARD-REFERENCED-CLASS = 716, 
-// Unused CLEAVIR-ENVIRONMENT::BLOCK-INFO = 1298, 
-// Unused CLEAVIR-BIR::PRIMOP = 1128, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-UNQUOTE = 1015, 
-// Unused CLASP-ANALYZER::CLASS-LAYOUT = 1453, 
-// Unused ECLECTOR.READER::BACKQUOTE-ERROR = 1005, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-FEATURE-EXPRESSION = 1079, 
-// Unused CLEAVIR-AST::ONE-VALUE-AST-MIXIN = 1173, 
-// Unused CLEAVIR-BIR::ACCESSVAR = 1123, 
-// Unused CORE::TAB = 836, 
-// Unused SB-BSD-SOCKETS::PROTOCOL-NOT-SUPPORTED-ERROR = 865, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-OPTIONAL = 1271, 
-// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED = 1076, 
-// Unused CONCRETE-SYNTAX-TREE::MULTI-PARAMETER-GROUP-MIXIN = 901, 
-// Unused COMMON-LISP::UNDEFINED-FUNCTION = 792, 
-// Unused CLOS::METAOBJECT = 708, 
-// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP-MIXIN = 900, 
-// Unused ECLECTOR.READER::BACKQUOTE-CONTEXT-ERROR = 1006, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-UNKNOWN = 1357, 
-// Unused STAMP_gctools__GCVector_moveable_core__BacktraceEntry_ = 364, 
-// Unused CLASP-CLEAVIR-AST::BIND-AST = 1402, 
-// Unused COMMON-LISP::RESTART = 749, 
-// Unused COMMON-LISP::CELL-ERROR = 789, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-QUOTE = 1002, 
-// Unused CORE::PRETTY-STREAM = 828, 
-// Unused CLEAVIR-AST::BLOCK-AST = 1189, 
-// Unused CLANG-TOOL::GOOD-DUMP-MATCH-CALLBACK = 1430, 
-// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-READ-AST = 1239, 
-// Unused CLEAVIR-BIR::TERMINATOR1 = 1113, 
-// Unused CORE::FOREIGN-DATA = 728, 
-// Unused CLASP-CLEAVIR-AST::DEFCALLBACK-AST = 1391, 
-// Unused COMMON-LISP::FLOATING-POINT-INEXACT = 798, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-WARNING = 1330, 
-// Unused EXT::CHARACTER-CODING-ERROR = 813, 
-// Unused CLOS::INITARGS-UPDATER = 745, 
-// Unused CONCRETE-SYNTAX-TREE::CCL = 897, 
-// Unused COMMON-LISP::SIMPLE-ERROR = 758, 
-// Unused COMMON-LISP::PARSE-ERROR = 804, 
-// Unused CLEAVIR-AST::TAGBODY-AST = 1195, 
-// Unused ECLECTOR.READER::TOO-MANY-ELEMENTS = 1047, 
-// Unused EXT::CHARACTER-DECODING-ERROR = 815, 
-// Unused CONCRETE-SYNTAX-TREE::RULE = 958, 
-// Unused CLASP-CLEAVIR::KEYWORD-VA-REST = 1380, 
-// Unused SB-BSD-SOCKETS::SOCKET-TYPE-NOT-SUPPORTED-ERROR = 866, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-CONDITION = 1090, 
-// Unused CLASP-ANALYZER::CTYPE = 1466, 
-// Unused CLEAVIR-COMPILATION-POLICY::UNKNOWN-OPTIMIZE-QUALITY = 1319, 
-// Unused ECLECTOR.READER::UNQUOTE-SPLICING-AT-TOP = 1018, 
-// Unused CLEAVIR-BIR::THEI = 1160, 
-// Unused CLEAVIR-AST::CONSTANT-FDEFINITION-AST = 1183, 
-// Unused CLOS::STANDARD-DIRECT-SLOT-DEFINITION = 706, 
-// Unused CLEAVIR-ENVIRONMENT::BLOCK = 1307, 
-// Unused CLASP-ANALYZER::SIMPLE-CTYPE = 1468, 
-// Unused CLEAVIR-ENVIRONMENT::NO-BLOCK-INFO = 1287, 
-// Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-BE-FOLLOWED-BY-VARIABLE = 1266, 
-// Unused ACCLIMATION::VIETNAMESE = 883, 
-// Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 1340, 
-// Unused CLASP-ANALYZER::POD-OFFSET = 1501, 
-// Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 855, 
-// Unused CLASP-CLEAVIR-BMIR::STORE = 1424, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 940, 
-// Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1404, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1057, 
-// Unused STAMP_gctools__GCBitUnitArray_moveable_4__false_ = 353, 
-// Unused COMMON-LISP::UNBOUND-SLOT = 791, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1314, 
-// Unused CORE::SIMPLE-PARSE-ERROR = 805, 
-// Unused ECLECTOR.READER::NO-SLOT-VALUE-FOUND = 1067, 
-// Unused CLASP-ANALYZER::ALLOC = 1447, 
-// Unused ECLECTOR.READER::END-OF-LIST = 980, 
-// Unused COMMON-LISP::SIMPLE-WARNING = 755, 
-// Unused CONCRETE-SYNTAX-TREE::BOA-LAMBDA-LIST = 952, 
-// Unused CLEAVIR-AST::THE-TYPEW-AST = 1200, 
-// Unused COMMON-LISP::FLOATING-POINT-UNDERFLOW = 797, 
-// Unused CLEAVIR-BIR::IBLOCK = 1117, 
-// Unused CONCRETE-SYNTAX-TREE::CLIENT = 892, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-EQUALS = 1080, 
-// Unused CLEAVIR-CST-TO-AST::ENCAPSULATED-CONDITION = 1325, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-PLUS-MINUS = 1072, 
-// Unused CLASP-CLEAVIR-BIR::MV-FOREIGN-CALL = 1410, 
-// Unused CLEAVIR-AST::BIND-AST = 1209, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-TYPE = 1309, 
-// Unused STATIC-GFS::CONSTRUCTOR-CELL = 746, 
-// Unused CLEAVIR-BIR::READTEMP = 1143, 
-// Unused ECLECTOR.CONCRETE-SYNTAX-TREE::CST-CLIENT = 1087, 
-// Unused COMMON-LISP::FLOATING-POINT-INVALID-OPERATION = 799, 
-// Unused CLANG-TOOL::DUMP-MATCH-CALLBACK = 1431, 
-// Unused COMPILER::REDEFINED-FUNCTION-WARNING = 845, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-TYPE = 1310, 
-// Unused CLEAVIR-CODE-UTILITIES::MULTIPLE-OCCURRENCES-OF-LAMBDA-LIST-KEYWORD = 1260, 
-// Unused CLASP-ANALYZER::PROJECT = 1461, 
-// Unused ACCLIMATION::SWEDISH = 882, 
-// Unused CLEAVIR-CST-TO-AST::FORM-MUST-BE-PROPER-LIST = 1337, 
-// Unused COMMON-LISP::STORAGE-CONDITION = 759, 
-// Unused CLASP-ANALYZER::INSTANCE-FIELD = 1444, 
-// Unused ECLECTOR.READER::UNQUOTE-ERROR = 1011, 
-// Unused SB-BSD-SOCKETS::INVALID-ARGUMENT-ERROR = 860, 
-// Unused CLEAVIR-AST::LEXICAL-BIND-AST = 1192, 
-// Unused CLASP-ANALYZER::INSTANCE-ARRAY-ELEMENT = 1446, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-VALUE = 1066, 
-// Unused CLEAVIR-BIR::VARIABLE = 1116, 
-// Unused COMMON-LISP::READER-ERROR = 806, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-SINGLE-QUOTE = 1027, 
-// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-WRITE-AST = 1240, 
-// Unused CLEAVIR-AST::FLOAT-COS-AST = 1230, 
-// Unused ECLECTOR.BASE::INCOMPLETE-CONSTRUCT = 972, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-CONSTANT-VARIABLE = 1354, 
-// Unused COMMON-LISP::PROGRAM-ERROR = 774, 
-// Unused ECLECTOR.BASE::MISSING-DELIMITER = 973, 
-// Unused CLEAVIR-IO::UNKNOWN-FILE-VERSION = 1165, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION = 1305, 
-// Unused COMMON-LISP::VECTOR = 722, 
-// Unused CLEAVIR-AST::EQ-AST = 1210, 
-// Unused CLASP-ANALYZER::RECORD-CTYPE = 1481, 
-// Unused CLEAVIR-BIR::ARGUMENT = 1114, 
-// Unused CLANG-TOOL::CODE-MATCH-TIMER = 1429, 
-// Unused CONCRETE-SYNTAX-TREE::TARGET = 957, 
-// Unused EXT::SEGMENTATION-VIOLATION = 760, 
-// Unused CORE::LOGICAL-BLOCK = 829, 
-// Unused CONCRETE-SYNTAX-TREE::CST = 886, 
-// Unused CLEAVIR-AST::SETQ-AST = 1191, 
-// Unused SB-BSD-SOCKETS::NO-RECOVERY-ERROR = 873, 
-// Unused CLEAVIR-CST-TO-AST::BINDINGS-MUST-BE-PROPER-LIST = 1346, 
-// Unused STATIC-GFS::CELL-UPDATER = 747, 
-// Unused STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 370, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKQUOTE = 1009, 
-// Unused CLASP-ANALYZER::SIMPLE-STAMP = 1455, 
-// Unused STAMP_gctools__GCBitUnitArray_moveable_1__false_ = 351, 
-// Unused CLEAVIR-BIR::LETI = 1146, 
-// Unused ACCLIMATION::LANGUAGE = 876, 
-// Unused CLEAVIR-AST::PROGN-AST = 1188, 
-// Unused COMPILER::WRONG-ARGCOUNT-WARNING = 846, 
-// Unused CLOS::STANDARD-EFFECTIVE-SLOT-DEFINITION = 705, 
-// Unused EXT::STORAGE-EXHAUSTED = 762, 
-// Unused CLOS::EFFECTIVE-READER-METHOD = 740, 
-// Unused CLEAVIR-AST::SET-SYMBOL-VALUE-AST = 1180, 
-// Unused CONCRETE-SYNTAX-TREE::CST-ERROR = 889, 
-// Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 826, 
-// Unused CLEAVIR-CODE-UTILITIES::SUSPECT-LAMBDA-LIST-KEYWORD = 1280, 
-// Unused CLEAVIR-SET::SET = 1089, 
-// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1514, 
-// Unused CLEAVIR-AST::CALL-AST = 1184, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-AUX = 1276, 
-// Unused CORE::FORMAT-WARNING-TOO-MANY-ARGUMENTS = 810, 
-// Unused ECLECTOR.READER::READER-CONDITIONAL-CONDITION = 1071, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-COMPLEX-PART = 1054, 
-// Unused ECLECTOR.PARSE-RESULT::PARSE-RESULT-CLIENT = 1086, 
-// Unused CORE::CXX-CLASS = 717, 
-// Unused CONCRETE-SYNTAX-TREE::KEY-PARAMETER-GROUP = 908, 
-// Unused CLASP-CLEAVIR-BIR::BIND = 1409, 
-// Unused CLEAVIR-BIR::LOAD-TIME-VALUE = 1127, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER = 936, 
-// Unused SB-BSD-SOCKETS::SOCKET-ERROR = 854, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-SINGLE-QUOTE = 1026, 
-// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-TYPE = 946, 
-// Unused CLEAVIR-AST::CASE-AST = 1212, 
-// Unused CONCRETE-SYNTAX-TREE::SUPPLIED-P-MIXIN = 925, 
-// Unused SB-BSD-SOCKETS::SOCKET = 851, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-UNQUOTE = 1016, 
-// Unused STAMP_gctools__GCVector_moveable_core__CacheRecord_ = 356, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-REST = 939, 
-// Unused CLEAVIR-AST::SYMBOL-VALUE-AST = 1178, 
-// Unused ECLECTOR.READER::UNTERMINATED-STRING = 1003, 
-// Unused CORE::NEWLINE = 832, 
-// Unused CORE::PPRINT-DISPATCH-TABLE = 838, 
-// Unused ECLECTOR.READER::SHARPSIGN-INVALID = 998, 
-// Unused CLEAVIR-ENVIRONMENT::TAG-INFO = 1299, 
-// Unused CLEAVIR-AST::RPLACD-AST = 1236, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR/READER = 1075, 
-// Unused CLEAVIR-BIR::VALUES-COLLECT = 1140, 
-// Unused CLASP-CLEAVIR-BMIR::CONSP = 1417, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER = 928, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER-GROUP = 912, 
-// Unused CLEAVIR-BIR::CATCH = 1145, 
-// Unused CLEAVIR-CST-TO-AST::VARIABLE-NAME-UNKNOWN = 1356, 
-// Unused CLEAVIR-BIR::UNUSED-VARIABLE = 1161, 
-// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1504, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-KEY = 1273, 
-// Unused CLASP-ANALYZER::GLOBAL-VARIABLE = 1458, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 916, 
-// Unused CLASP-CLEAVIR-BMIR::GENERALP = 1420, 
-// Unused STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ = 358, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1001, 
-// Unused CORE::SIMPLE-FILE-ERROR = 786, 
-// Unused COMMON-LISP::STYLE-WARNING = 756, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-LAMBDA-LIST = 948, 
-// Unused CLEAVIR-CST-TO-AST::INVALID-EVAL-WHEN-SITUATION = 1341, 
-// Unused ECLECTOR.READER::UNQUOTE-SPLICING-IN-DOTTED-LIST = 1017, 
-// Unused COMMON-LISP::STANDARD-OBJECT = 707, 
-// Unused CLEAVIR-CST-TO-AST::LAMBDA-MUST-BE-PROPER-LIST = 1343, 
-// Unused EXT::UNIX-SIGNAL-RECEIVED = 765, 
-// Unused CLEAVIR-CST-TO-AST::VARIABLE-MUST-BE-A-SYMBOL = 1349, 
-// Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 960, 
-// Unused CLEAVIR-AST::TAG-AST = 1194, 
-// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1502, 
-// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1507, 
-// Unused CLEAVIR-CODE-UTILITIES::FUNCTION-BODY-MUST-BE-PROPER-LIST = 1282, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 915, 
-// Unused EXT::STREAM-DECODING-ERROR = 817, 
-// Unused CLEAVIR-CODE-UTILITIES::FORM-MUST-BE-PROPER-LIST = 1249, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER-GROUP = 907, 
-// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 1469, 
-// Unused CLEAVIR-BIR::CONSTANT-REFERENCE = 1126, 
-// Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 1432, 
-// Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 924, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 932, 
-// Unused STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 375, 
-// Unused COMMON-LISP::SERIOUS-CONDITION = 752, 
-// Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 1355, 
-// Unused CORE::CODE-BLOCK = 727, 
-// Unused ACCLIMATION::JAPANESE = 884, 
-// Unused CLASP-CLEAVIR-BMIR::TYPE-BRANCH = 1415, 
-// Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 1049, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE-INFO = 1290, 
-// Unused CLEAVIR-AST::LEXICAL-AST = 1177, 
-// Unused CLASP-ANALYZER::POINTER-OFFSET = 1500, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 909, 
-// Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 1228, 
-// Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 801, 
-// Unused CLEAVIR-BIR::NO-OUTPUT = 1110, 
-// Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 1294, 
-// Unused CLOS::EFFECTIVE-SLOT-DEFINITION = 712, 
-// Unused CLEAVIR-AST::COERCE-AST = 1232, 
-// Unused CLASP-ANALYZER::CLASSALLOC = 1450, 
-// Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 1412, 
-// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 1488, 
-// Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 978, 
-// Unused ECLECTOR.READER::SLOT-NAME-IS-NOT-A-STRING-DESIGNATOR = 1064, 
-// Unused CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT = 1465, 
-// Unused SB-BSD-SOCKETS::TRY-AGAIN-ERROR = 872, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-CST-REQUIRED = 891, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-C = 1050, 
-// Unused CLASP-CLEAVIR-AST::DERIVABLE-STAMP-AST = 1396, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REQUIRED-PARAMETER-GROUP = 914, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-SETQ-AST = 1193, 
-// Unused CLEAVIR-BIR::CONSTANT = 1103, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-P = 1068, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-OPERATOR-INFO = 1297, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-PARAMETER = 934, 
-// Unused CORE::QUEUE = 1427, 
-// Unused CLEAVIR-AST::BRANCH-AST = 1203, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 1371, 
-// Unused ECLECTOR.READER::DIGIT-CONDITION = 1036, 
-// Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 1459, 
-// Unused ACCLIMATION::CONDITION = 885, 
-// Unused CLEAVIR-AST::IMMEDIATE-AST = 1175, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-PARSE-ERROR = 965, 
-// Unused CLOS::DIRECT-SLOT-DEFINITION = 711, 
-// Unused COMPILER::COMPILED-PROGRAM-ERROR = 839, 
-// Unused MP::LOCK = 729, 
-// Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 853, 
-// Unused CLEAVIR-AST::TYPEW-AST = 1199, 
-// Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 1207, 
-// Unused CLANG-TOOL::WRONG-MATCHER = 1439, 
-// Unused CLEAVIR-BIR::ALLOCA = 1141, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKSLASH = 1032, 
-// Unused COMMON-LISP::WARNING = 751, 
-// Unused CLEAVIR-BIR::NVPRIMOP = 1129, 
-// Unused CLEAVIR-AST::FLOAT-SUB-AST = 1221, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1503, 
-// Unused CLANG-TOOL::MATCH-INFO = 1433, 
-// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 993, 
-// Unused CLEAVIR-BIR::TERMINATOR = 1111, 
-// Unused CLASP-CLEAVIR-BMIR::HEADERQ = 1421, 
-// Unused CLASP-CLEAVIR-AST::ACAS-AST = 1401, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REQUIRED-PARAMETER-GROUP = 905, 
-// Unused CONCRETE-SYNTAX-TREE::SIMPLE-VARIABLE = 927, 
-// Unused SB-BSD-SOCKETS::INTERRUPTED-ERROR = 856, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-RIGHT-PARENTHESIS = 1025, 
-// Unused MP::RWLOCK = 730, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-INPUT-STREAM = 823, 
-// Unused COMMON-LISP::DIVISION-BY-ZERO = 795, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-NOT-BE-CIRCULAR = 1255, 
-// Unused CLEAVIR-BIR::FIXED-TO-MULTIPLE = 1157, 
-// Unused CONCRETE-SYNTAX-TREE::STRUCTURE-MISMATCH-ERROR = 1245, 
-// Unused COMPILER::COMPILER-CONDITION = 840, 
-// Unused COMMON-LISP::STANDARD-GENERIC-FUNCTION = 733, 
-// Unused CLEAVIR-ENVIRONMENT::INLINE = 1316, 
-// Unused SB-BSD-SOCKETS::NAME-SERVICE-ERROR = 868, 
-// Unused CLEAVIR-BIR::LOCAL-CALL = 1136, 
-// Unused CLASP-CLEAVIR-AST::MULTIPLE-VALUE-FOREIGN-CALL-AST = 1388, 
-// Unused CLEAVIR-BIR::UNREACHABLE = 1121, 
-// Unused ECLECTOR.READER::MULTIPLE-OBJECTS-FOLLOWING-CONSING-DOT = 1024, 
-// Unused SB-BSD-SOCKETS::INET-SOCKET = 852, 
-// Unused CLOSER-MOP::STANDARD-GENERIC-FUNCTION = 967, 
-// Unused CORE::ARRAY-OUT-OF-BOUNDS = 769, 
-// Unused CLEAVIR-AST::RPLACA-AST = 1235, 
-// Unused ECLECTOR.READER::UNINTERNED-SYMBOL-MUST-NOT-CONTAIN-PACKAGE-MARKER = 997, 
-// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 1472, 
-// Unused CLEAVIR-BIR::ONE-INPUT = 1109, 
-// Unused ACCLIMATION::LOCALE = 875, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 1485, 
-// Unused CLASP-CLEAVIR-AST::RACK-STAMP-AST = 1394, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-CST = 888, 
-// Unused CLEAVIR-ENVIRONMENT::NO-INFO = 1284, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED-IN-DOTTED-LAMBDA-LIST = 1258, 
-// Unused CLEAVIR-BIR::JUMP = 1149, 
-// Unused ECLECTOR.READER::SYMBOL-DOES-NOT-EXIST = 986, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 1311, 
-// Unused CLASP-CLEAVIR::CLASP-CST-CLIENT = 1407, 
-// Unused CLEAVIR-CODE-UTILITIES::REST/BODY-MUST-BE-FOLLOWED-BY-VARIABLE = 1263, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1480, 
-// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1492, 
-// Unused CLASP-ANALYZER::BITUNIT-CTYPE = 1467, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-LIST = 1254, 
-// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 1052, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-AUX = 943, 
-// Unused CLEAVIR-BIR::WRITEVAR = 1124, 
-// Unused CLEAVIR-CODE-UTILITIES::TOO-MANY-ARGUMENTS = 1252, 
-// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 1478, 
-// Unused GRAY::FUNDAMENTAL-INPUT-STREAM = 819, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-DOT = 1029, 
-// Unused CLOS::EFFECTIVE-WRITER-METHOD = 741, 
-// Unused CLEAVIR-AST::THE-AST = 1197, 
-// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO-INFO = 1292, 
-// Unused CLEAVIR-ENVIRONMENT::CONSTANT-VARIABLE-INFO = 1291, 
-// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 1471, 
-// Unused GRAY::FUNDAMENTAL-BINARY-STREAM = 822, 
-// Unused COMPILER::UNDEFINED-FUNCTION-WARNING = 843, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-OUTPUT-STREAM = 824, 
-// Unused CLEAVIR-AST::LOAD-TIME-VALUE-AST = 1201, 
-// Unused CLEAVIR-AST::FLOAT-DIV-AST = 1223, 
-// Unused CLANG-TOOL::SOURCE-LOC-MATCH-CALLBACK = 1435, 
-// Unused CLOSER-MOP::DEFMETHOD-WITHOUT-GENERIC-FUNCTION = 968, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-STYLE-WARNING = 1370, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER = 929, 
-// Unused CLOS::FUNCALLABLE-STANDARD-CLASS = 719, 
-// Unused CLEAVIR-CST-TO-AST::RUN-TIME-PROGRAM-ERROR = 1328, 
-// Unused EXT::STREAM-ENCODING-ERROR = 816, 
-// Unused CLASP-ANALYZER::UNSUPPORTED-TYPE = 1441, 
-// Unused ECLECTOR.READER::NUMERIC-PARAMETER-SUPPLIED-BUT-IGNORED = 999, 
-// Unused CLEAVIR-COMPILATION-POLICY::BAD-OPTIMIZE-VALUE = 1318, 
-// Unused CLEAVIR-BIR::COMPUTATION = 1105, 
-// Unused CLEAVIR-AST::CAR-AST = 1233, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-PROGRAM-ERROR = 1322, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 1033, 
-// Unused CONCRETE-SYNTAX-TREE::PARSER = 962, 
-// Unused CONCRETE-SYNTAX-TREE::PARAMETER = 923, 
-// Unused CLASP-ANALYZER::PARALLEL-JOB = 1513, 
-// Unused CLEAVIR-BIR::PHI = 1115, 
-// Unused SB-BSD-SOCKETS::HOST-ENT = 850, 
-// Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 820, 
-// Unused CLEAVIR-CODE-UTILITIES::ORDINARY-BODY-MUST-BE-PROPER-LIST = 1281, 
-// Unused ECLECTOR.READER::SYMBOL-SYNTAX-ERROR = 988, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-DOT = 1028, 
-// Unused EXT::BUS-ERROR = 764, 
-// Unused CLEAVIR-BIR::DATUM = 1097, 
-// Unused CLOS::SLOT-DEFINITION = 709, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-WARNING = 1323, 
-// Unused CLEAVIR-CST-TO-AST::IGNORED-VARIABLE-REFERENCED = 1335, 
-// Unused SEQUENCE::PROTOCOL-UNIMPLEMENTED = 827, 
-// Unused ECLECTOR.READER::SYMBOL-IS-NOT-EXTERNAL = 987, 
-// Unused ECLECTOR.READER::SYMBOL-CAN-HAVE-AT-MOST-TWO-PACKAGE-MARKERS = 996, 
-// Unused CLOS::STANDARD-ACCESSOR-METHOD = 737, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 1092, 
-// Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 1422, 
-// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1479, 
-// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1508, 
-// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1475, 
-// Unused CLEAVIR-AST::FUNCTION-AST = 1185, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 1008, 
-// Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-APPEAR-FIRST = 1265, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-LAMBDA-LIST-PATTERN = 1278, 
-// Unused CLEAVIR-CODE-UTILITIES::CODE-CONDITION = 1248, 
-// Unused CLEAVIR-AST::FIXNUM-SUB-AST = 1214, 
-// Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 1377, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1499, 
-// Unused ACCLIMATION::SVENSKA = 877, 
-// Unused CLASP-ANALYZER::LOCAL-VARIABLE = 1460, 
-// Unused COMMON-LISP::STRUCTURE-OBJECT = 742, 
-// Unused CLASP-ANALYZER::NAMESPACE = 1512, 
-// Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 979, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 1360, 
-// Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 1247, 
-// Unused CLEAVIR-AST::FLOAT-NOT-GREATER-AST = 1225, 
-// Unused ECLECTOR.READER::INVALID-CONSTITUENT-CHARACTER = 989, 
-// Unused ECLECTOR.READER::PACKAGE-DOES-NOT-EXIST = 984, 
-// Unused ECLECTOR.READER::ZERO-DENOMINATOR = 1039, 
-// Unused COMMON-LISP::METHOD-COMBINATION = 713, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-STYLE-WARNING = 1333, 
-// Unused CLEAVIR-AST::FLOAT-SIN-AST = 1229, 
-// Unused ECLECTOR.READTABLE::CHAR-MUST-BE-A-DISPATCHING-CHARACTER = 977, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-LOCAL-MACRO = 1359, 
-// Unused CLASP-ANALYZER::CONTAINERALLOC = 1452, 
-// Unused CLEAVIR-ENVIRONMENT::FUNCTION-IGNORE = 1312, 
-// Unused ECLECTOR.READER::NUMERIC-PARAMETER-NOT-SUPPLIED-BUT-REQUIRED = 1000, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-LAMBDA-LIST = 947, 
-// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 1486, 
-// Unused CLEAVIR-BIR::MULTIPLE-TO-FIXED = 1158, 
-// Unused ECLECTOR.READTABLE::CLASP-NON-CST-ELECTOR-CLIENT = 1426, 
-// Unused CORE::CLOSED-STREAM = 783, 
-// Unused CLEAVIR-AST::PRIMOP-AST = 1187, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-NOTE = 1095, 
-// Unused ACCLIMATION::FRENCH = 881, 
-// Unused ECLECTOR.READER::STRUCTURE-TYPE-NAME-IS-NOT-A-SYMBOL = 1062, 
-// Unused ECLECTOR.READER::NAMESTRING-MUST-FOLLOW-SHARPSIGN-P = 1069, 
-// Unused CLEAVIR-ENVIRONMENT::GLOBAL-MACRO-INFO = 1296, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-STYLE-WARNING = 1367, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER = 933, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 1345, 
-// Unused INTERPRET-AST::CANNOT-INTERPRET = 1405, 
-// Unused CLEAVIR-AST::ASET-AST = 1242, 
-// Unused STAMP_gctools__GCBitUnitArray_moveable_2__false_ = 352, 
-// Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1137, 
-// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1505, 
-// Unused COMMON-LISP::CONTROL-ERROR = 776, 
-// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1487, 
-// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1493, 
-// Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 1361, 
-// Unused CONCRETE-SYNTAX-TREE::ECL = 896, 
-// Unused CORE::SEQUENCE-OUT-OF-BOUNDS = 770, 
-// Unused CLEAVIR-AST::UNREACHABLE-AST = 1208, 
-// Unused COMMON-LISP::PRINT-NOT-READABLE = 803, 
-// Unused CONCRETE-SYNTAX-TREE::NULL-STRUCTURE-MISMATCH-ERROR = 1246, 
-// Unused CLASP-CLEAVIR::ABI-X86-64 = 1378, 
-// Unused CLOS::SPECIALIZER = 714, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-MIXIN = 926, 
-// Unused COMMON-LISP::SIMPLE-TYPE-ERROR = 771, 
-// Unused CLEAVIR-IO::FILE-DOES-NOT-EXIST = 1164, 
-// Unused SB-BSD-SOCKETS::OPERATION-TIMEOUT-ERROR = 859, 
-// Unused SB-BSD-SOCKETS::OPERATION-NOT-PERMITTED-ERROR = 864, 
-// Unused CLASP-CLEAVIR-BIR::HEADER-STAMP-CASE = 1413, 
-// Unused CLOS::STANDARD-WRITER-METHOD = 739, 
-// Unused CLANG-TOOL::NO-NODE-FOR-TAG-ERROR = 1436, 
-// Unused ECLECTOR.READER::TOO-MANY-DOTS = 1020, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-OPTIONAL = 938, 
-// Unused CLEAVIR-AST-TO-BIR::INSERTER = 1244, 
-// Unused ECLECTOR.READER::NON-STRING-FOLLOWING-SHARPSIGN-P = 1070, 
-// Unused CLASP-CLEAVIR-BIR::ACAS = 1414, 
-// Unused COMMON-LISP::STREAM-ERROR = 781, 
-// Unused EXT::ASSERT-ERROR = 812, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-EQUALS = 1081, 
-// Unused SB-BSD-SOCKETS::CONNECTION-REFUSED-ERROR = 858, 
-// Unused CLEAVIR-PRIMOP-INFO::INFO = 1088, 
-// Unused CONCRETE-SYNTAX-TREE::DEFTYPE-LAMBDA-LIST = 954, 
-// Unused CLASP-CLEAVIR::CLASP = 1375, 
-// Unused CLASP-CLEAVIR::LLVM-FUNCTION-INFO = 1425, 
-// Unused CORE::CASE-FAILURE = 772, 
-// Unused CORE::SECTION-START = 831, 
-// Unused CONCRETE-SYNTAX-TREE::GRAMMAR = 959, 
-// Unused CLEAVIR-CODE-UTILITIES::BOTH-REST-AND-BODY-OCCUR-IN-LAMBDA-LIST = 1262, 
-// Unused CLEAVIR-BIR::SSA = 1099, 
-// Unused CLEAVIR-BIR::ACCESSTEMP = 1142, 
-// Unused CORE::SIMPLE-READER-ERROR = 807, 
-// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-BE-ADJACENT = 994, 
-// Unused COMMON-LISP::FILE-ERROR = 785, 
-// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE = 1302, 
-// Unused CLEAVIR-CST-TO-AST::VALUES-&REST-SYNTAX = 1334, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-CHARACTER-NAME = 1034, 
-// Unused CLEAVIR-CODE-UTILITIES::ATOMIC-LAMBDA-LIST-TAIL-MUST-BE-VARIABLE = 1264, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER = 930, 
-// Unused CONCRETE-SYNTAX-TREE::CLASP = 895, 
-// Unused CLEAVIR-AST::IF-AST = 1202, 
-// Unused CORE::SIMPLE-PROGRAM-ERROR = 775, 
-// Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 1313, 
-// Unused CLASP-ANALYZER::OFFSET = 1496, 
-// Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 1051, 
-// Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 1171, 
-// Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 1061, 
-// Unused COMMON-LISP::END-OF-FILE = 784, 
-// Unused CLANG-TOOL::SINGLE-TOOL = 1438, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-KEY = 941, 
-// Unused COMPILER::UNDEFINED-TYPE-WARNING = 844, 
-// Unused CLEAVIR-CST-TO-AST::BODY = 1374, 
-// Unused CLEAVIR-BIR::INSTRUCTION = 1104, 
-// Unused CORE::BLOCK-START = 834, 
-// Unused CLEAVIR-ENVIRONMENT::TAG = 1308, 
-// Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 863, 
-// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1498, 
-// Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 849, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 1004, 
-// Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 1056, 
-// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 1289, 
-// Unused CLASP-CLEAVIR::CLASP-64BIT = 1376, 
-// Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 1386, 
-// Unused CLOS::STANDARD-SLOT-DEFINITION = 710, 
-// Unused STAMP_gctools__GCVector_moveable_core__DynamicBinding_ = 357, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-KEY = 1274, 
-// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1482, 
-// Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 961, 
-// Unused CLEAVIR-AST::FLOAT-NOT-LESS-AST = 1227, 
-// Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 1031, 
-// Unused CLASP-CLEAVIR-AST::CAS-CDR-AST = 1399, 
-// Unused CLEAVIR-AST::SLOT-WRITE-AST = 1238, 
-// Unused CLASP-CLEAVIR-AST::BASE-FOREIGN-CALL-AST = 1387, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-OPTIONAL = 1270, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 1483, 
-// Unused CLEAVIR-COMPILATION-POLICY::NO-POLICY-COMPUTER = 1320, 
-// Unused SB-BSD-SOCKETS::BAD-FILE-DESCRIPTOR-ERROR = 857, 
-// Unused CLEAVIR-ENVIRONMENT::MACRO = 1306, 
-// Unused CLEAVIR-CODE-UTILITIES::INVALID-NUMBER-OF-ARGUMENTS = 1250, 
-// Unused CLEAVIR-BIR::TYPEW = 1154, 
-// Unused CLASP-ANALYZER::STAMP-VALUE-GENERATOR = 1462, 
-// Unused CLASP-ANALYZER::HNODE = 1464, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-CONSING-DOT = 1023, 
-// Unused CLOS::%NO-NEXT-METHOD-CONTINUATION = 744, 
-// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE-INFO = 1300, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-STYLE-WARNING = 1331, 
-// Unused COMMON-LISP::LIST = 721, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-STYLE-WARNING = 1324, 
-// Unused CLEAVIR-BIR::MV-CALL = 1134, 
-// Unused CLASP-CLEAVIR::CLASP-ECLECTOR-CLIENT-MIXIN = 1406, 
-// Unused CLASP-CLEAVIR::CLASP-ORDINARY-REST-PARAMETER-GROUP = 1382, 
-// Unused CORE::DO-NOT-FUNCALL-SPECIAL-OPERATOR = 800, 
-// Unused CLEAVIR-AST::FIXNUM-GREATER-AST = 1217, 
-// Unused CLASP-ANALYZER::TEMPLATED-STAMP = 1456, 
-// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 1470, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-ARGUMENT-MUST-BE-FUNCTION-NAME-OR-LAMBDA-EXPRESSION = 1344, 
-// Unused CLEAVIR-AST::GO-AST = 1196, 
-// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 1489, 
-// Unused CLASP-ANALYZER::ABSTRACTALLOC = 1448, 
-// Unused CLASP-CLEAVIR-AST::SLOT-CAS-AST = 1400, 
-// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-BE-SYMBOL-OR-LIST = 1347, 
-// Unused CORE::SIMPLE-STYLE-WARNING = 757, 
-// Unused CLEAVIR-BIR::ABSTRACT-CALL = 1132, 
-// Unused CORE::SIMPLE-CONTROL-ERROR = 777, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ENVIRONMENT = 944, 
-// Unused CLEAVIR-AST::BOOLEAN-AST-MIXIN = 1170, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-READER-ERROR = 964, 
-// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP = 917, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-KEY = 1275, 
-// Unused CLEAVIR-BIR::TPRIMOP = 1131, 
-// Unused SB-BSD-SOCKETS::NETDB-INTERNAL-ERROR = 869, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-PROPER-LIST = 1256, 
-// Unused CLEAVIR-AST::SIDE-EFFECT-FREE-AST-MIXIN = 1174, 
-// Unused CLEAVIR-CODE-UTILITIES::INCORRECT-KEYWORD-ORDER = 1261, 
-// Unused ECLECTOR.READER::UNTERMINATED-VECTOR = 1045, 
-// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO = 1304, 
-// Unused COMMON-LISP::SEQUENCE = 720, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-WARNING = 1366, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-UNQUOTE = 1012, 
-// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-ERROR = 1329, 
-// Unused CLEAVIR-ENVIRONMENT::ENTRY = 1301, 
-// Unused CONCRETE-SYNTAX-TREE::SICL = 894, 
-// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 1392, 
-// Unused ACCLIMATION::ENGLISH = 880, 
-// Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 921, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1506, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 913, 
-// Unused CORE::STD-CLASS = 718, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 1037, 
-// Unused CLASP-ANALYZER::ANALYSIS = 1463, 
-// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER = 931, 
-// Unused CLOS::STANDARD-READER-METHOD = 738, 
-// Unused CLEAVIR-AST::FIXNUM-NOT-LESS-AST = 1218, 
-// Unused EXT::SOURCE-LOCATION = 748, 
-// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER-GROUP = 910, 
-// Unused COMMON-LISP::BIT-VECTOR = 725, 
-// Unused CLEAVIR-BIR::WRITETEMP = 1144, 
-// Unused ECLECTOR.READER::UNKNOWN-CHARACTER-NAME = 1035, 
-// Unused ECLECTOR.READTABLE::SUB-CHAR-MUST-NOT-BE-A-DECIMAL-DIGIT = 976, 
-// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-UNKNOWN = 1351, 
-// Unused ECLECTOR.READER::COMPLEX-PART-CONDITION = 1053, 
-// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-WARNING = 1332, 
-// Unused CLEAVIR-CONDITIONS::ORIGIN = 1094, 
-// Unused ECLECTOR.READER::DIGIT-EXPECTED = 1038, 
-// Unused CLEAVIR-BIR::TYPE-CONFLICT = 1162, 
-// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1477, 
-// Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1093, 
-// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1497, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 983, 
-// Unused CLASP-ANALYZER::DEBUG-INFO = 1442, 
-// Unused CLEAVIR-AST::NO-VALUE-AST-MIXIN = 1172, 
-// Unused CLASP-CLEAVIR-AST::WRAPPED-STAMP-AST = 1395, 
-// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-BE-ONLY-PACKAGE-MARKERS = 992, 
-// Unused ECLECTOR.READER::UNQUOTE-IN-INVALID-CONTEXT = 1014, 
-// Unused CLEAVIR-BIR::EQ-TEST = 1152, 
-// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 1365, 
-// Unused CLEAVIR-BIR::READVAR = 1125, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 1372, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1494, 
-// Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 1206, 
-// Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 1363, 
-// Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 970, 
-// Unused CLEAVIR-BIR::TRANSFER = 1101, 
-// Unused CLOS::EQL-SPECIALIZER = 715, 
-// Unused CLEAVIR-BIR::CHOKE = 1155, 
-// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1495, 
-// Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 1339, 
-// Unused CLEAVIR-BIR::VALUES-SAVE = 1139, 
-// Unused CLASP-ANALYZER::DESTINATION = 1511, 
-// Unused CLEAVIR-METER::SIZE-METER = 1168, 
-// Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 945, 
-// Unused CLASP-ANALYZER::CONTAINER = 1491, 
-// Unused CLEAVIR-BIR::LINEAR-DATUM = 1100, 
-// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 1315, 
-// Unused CLEAVIR-CST-TO-AST::COMPILATION-CONDITION = 1321, 
-// Unused CLEAVIR-AST::SCOPE-AST = 1243, 
-// Unused CLASP-CLEAVIR-BMIR::CHARACTERP = 1418, 
-// Unused CLANG-TOOL::CODE-MATCH-CALLBACK = 1434, 
-// Unused ECLECTOR.READER::SYMBOL-ACCESS-ERROR = 985, 
-// Unused CONCRETE-SYNTAX-TREE::ATOM-CST = 887, 
-// Unused GRAY::FUNDAMENTAL-CHARACTER-STREAM = 821, 
-// Unused CONCRETE-SYNTAX-TREE::OPTIONAL-PARAMETER-GROUP = 906, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-PROGRAM-ERROR = 966, 
-// Unused ECLECTOR.READER::UNQUOTE-NOT-INSIDE-BACKQUOTE = 1013, 
-// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REST-PARAMETER-GROUP = 920, 
-// Unused COMPILER::UNDEFINED-VARIABLE-WARNING = 842, 
-// Unused CLEAVIR-BIR::ENCLOSE = 1120, 
-// Unused ECLECTOR.READER::ARRAY-INITIALIZATION-ERROR = 1046, 
-// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-SYMBOL = 990, 
-// Unused COMMON-LISP::STRING = 723, 
-// Unused CLEAVIR-AST::FLOAT-LESS-AST = 1224, 
-// Unused CONCRETE-SYNTAX-TREE::SBCL = 893, 
-// Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-MUST-BE-FOLLOWED-BY-VARIABLE = 1267, 
-// Unused EXT::SEQUENCE-STREAM = 726, 
-// Unused SB-BSD-SOCKETS::NETDB-SUCCESS-ERROR = 870, 
-// Unused CORE::SIMPLE-PACKAGE-ERROR = 788, 
-// Unused CLEAVIR-ENVIRONMENT::NO-VARIABLE-INFO = 1285, 
-// Unused ECLECTOR.READTABLE::DISPATCH-MACRO-CHARACTER-ERROR = 974, 
-// Unused CLEAVIR-CST-TO-AST::EVAL-STYLE-WARNING = 1373, 
-// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-TOO-MANY-PARAMETERS = 1259, 
-// Unused CLASP-ANALYZER::LISPALLOC = 1449, 
-// Unused CLEAVIR-CST-TO-AST::DEFAULT-CASE-MISSING = 1364, 
-// Unused CLANG-TOOL::NODE-MATCHER-AMBIGUOUS-ERROR = 1440, 
-// Unused CLEAVIR-AST::FLOAT-MUL-AST = 1222, 
-// Unused CLOS::FUNCALLABLE-STANDARD-OBJECT = 731, 
-// Unused EXT::CHARACTER-ENCODING-ERROR = 814, 
-// Unused ECLECTOR.READER::FEATURE-EXPRESSION-MUST-FOLLOW-SHARPSIGN-PLUS-MINUS = 1073, 
-// Unused COMMON-LISP::ARITHMETIC-ERROR = 794, 
-// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-WARNING = 1369, 
-// Unused CLEAVIR-BIR::DYNAMIC-LETI = 1147, 
-// Unused CLOS::STD-METHOD = 735, 
-// Unused CLASP-ANALYZER::SPECIES = 1509, 
-// Unused CLEAVIR-BIR::CALL = 1133, 
-// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 991, 
-// Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 1293, 
-// Unused ACCLIMATION::DEUTSCH = 878, 
-// Unused CLEAVIR-CST-TO-AST::SETQ-VAR-MUST-BE-SYMBOL = 1353, 
-// Unused COMMON-LISP::BASE-STRING = 724, 
-// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 1490, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-OPTIONAL = 1272, 
-// Unused CORE::QUEUED-OP = 830, 
-// Unused CLEAVIR-CODE-UTILITIES::TOO-FEW-ARGUMENTS = 1251, 
-// Unused ECLECTOR.READER::BACKQUOTE-IN-INVALID-CONTEXT = 1007, 
-// Unused CLEAVIR-CST-TO-AST::LOCAL-FUNCTION-DEFINITION-MUST-BE-PROPER-LIST = 1342, 
-// Unused EXT::UNDEFINED-CLASS = 793, 
-// Unused CLEAVIR-AST::TOP-LEVEL-FUNCTION-AST = 1186, 
-// Unused CLEAVIR-AST::CDR-AST = 1234, 
-// Unused CORE::BLOCK-END = 835, 
-// Unused ECLECTOR.READER::SHARPSIGN-SHARPSIGN-UNDEFINED-LABEL = 1085, 
-// Unused ECLECTOR.READER::STRUCTURE-CONSTRUCTOR-MUST-FOLLOW-SHARPSIGN-S = 1058, 
-// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-LAMBDA-LIST = 949, 
-// Unused CLASP-CLEAVIR-BMIR::LOAD = 1423, 
-// Unused CLASP-CLEAVIR-AST::CAS-CAR-AST = 1398, 
-// Unused CLEAVIR-BIR::OPERATION = 1106, 
-// Unused ALEXANDRIA.0.DEV::SIMPLE-STYLE-WARNING = 963, 
-// Unused EXT::INTERACTIVE-INTERRUPT = 811, 
-// Unused ECLECTOR.READER::NO-ELEMENTS-FOUND = 1048, 
-// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-KEYWORD = 937, 
-// Unused CORE::OUT-OF-BOUNDS = 767, 
-// Unused CONCRETE-SYNTAX-TREE::DEFINE-METHOD-COMBINATION-LAMBDA-LIST = 956, 
-// Unused CLEAVIR-BIR::VPRIMOP = 1130, 
-// Unused CLOS::NO-APPLICABLE-METHOD-ERROR = 773, 
-// Unused CLASP-CLEAVIR-BMIR::SINGLE-FLOAT-P = 1419, 
-// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-HAVE-LENGTH-ONE-OR-TWO = 1348, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-STRUCTURE-TYPE-NAME = 1060, 
-// Unused CLEAVIR-AST::CONSTANT-AST = 1176, 
-// Unused CLEAVIR-AST::FLOAT-SQRT-AST = 1231, 
-// Unused EXT::ILLEGAL-INSTRUCTION = 763, 
-// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-A = 1044, 
-// Unused CLEAVIR-BIR::VALUE = 1102, 
-// Unused CORE::OUT-OF-EXTENT-UNWIND = 778, 
-// Unused CONCRETE-SYNTAX-TREE::GRAMMAR-SYMBOL = 898, 
-// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-NAME = 1063, 
-// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-AST = 1389, 
-// Unused CLEAVIR-AST::CONSTANT-SYMBOL-VALUE-AST = 1179, 
-// Unused CLEAVIR-BIR::IFI = 1150, 
-// Unused CLASP-CLEAVIR::ABI-X86-32 = 1379, 
-// Unused COMMON-LISP::GENERIC-FUNCTION = 732, 
-// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REST-PARAMETER-GROUP = 919, 
-// Unused CLEAVIR-BIR::CONDITIONAL-TEST = 1151, 
-// Unused CONCRETE-SYNTAX-TREE::REST-PARAMETER-GROUP = 918, 
-// Unused ECLECTOR.BASE::END-OF-FILE = 971, 
-// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE = 1303, 
-// Unused CLEAVIR-AST::VALUES-AST = 1205, 
-// Unused MP::PROCESS-JOIN-ERROR = 780, 
-// Unused CLEAVIR-AST::TYPEQ-AST = 1198, 
-// Unused CLASP-ANALYZER::JOB-GROUP = 1515, 
-// Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 1042, 
-// Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 1135, 
-// Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 825, 
-// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-TREE = 1277, 
-// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-GLOBAL-MACRO = 1358, 
-// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-ONLY-REFERS-TO-SELF = 1084, 
-// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-FEATURE-EXPRESSION = 1078, 
-// Unused CLEAVIR-IO::MODEL-CONDITION = 1163, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 1476, 
-// Unused ECLECTOR.READTABLE::UNTERMINATED-DISPATCH-MACRO = 975, 
-// Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 1362, 
-// Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 969, 
-// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-CONSING-DOT = 1021, 
-  STAMP_max = 1871,
+STAMP_gctools__GCBitUnitArray_moveable_2_1_ = ADJUST_STAMP(1831), // Stamp(457)  wtag(3)
+STAMP_gctools__GCArray_moveable_long_ = ADJUST_STAMP(1835), // Stamp(458)  wtag(3)
+STAMP_gctools__GCVector_moveable_int_ = ADJUST_STAMP(1839), // Stamp(459)  wtag(3)
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = ADJUST_STAMP(1843), // Stamp(460)  wtag(3)
+STAMP_gctools__GCArray_moveable_float_ = ADJUST_STAMP(1847), // Stamp(461)  wtag(3)
+STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ = ADJUST_STAMP(1851), // Stamp(462)  wtag(3)
+STAMP_gctools__GCVector_moveable_core__T_O___ = ADJUST_STAMP(1855), // Stamp(463)  wtag(3)
+STAMP_gctools__GCArray_moveable_unsigned_short_ = ADJUST_STAMP(1859), // Stamp(464)  wtag(3)
+STAMP_gctools__GCVector_moveable_float_ = ADJUST_STAMP(1863), // Stamp(465)  wtag(3)
+STAMP_clang__FrontendAction = ADJUST_STAMP(1867), // Stamp(466)  wtag(3)
+STAMP_clang__ASTFrontendAction = ADJUST_STAMP(1871), // Stamp(467)  wtag(3)
+STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1875), // Stamp(468)  wtag(3)
+// Unused CORE::FORMAT-WARNING-TOO-FEW-ARGUMENTS = 810, 
+// Unused CLEAVIR-BIR::CASE = 1157, 
+// Unused CLEAVIR-ENVIRONMENT::NO-FUNCTION-INFO = 1287, 
+// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER-GROUP = 912, 
+// Unused CORE::INDENTATION = 834, 
+// Unused CLASP-CLEAVIR-AST::DEBUG-MESSAGE-AST = 1386, 
+// Unused ECLECTOR.READER::INVALID-RADIX = 1041, 
+// Unused CLEAVIR-BIR::TYPEQ-TEST = 1154, 
+// Unused CLOS::%METHOD-FUNCTION = 744, 
+// Unused CLEAVIR-BIR::FUNCTION = 1119, 
+// Unused ECLECTOR.READER::UNQUOTE-CONDITION = 1011, 
+// Unused CLEAVIR-AST::FIXNUM-NOT-GREATER-AST = 1217, 
+// Unused CLASP-CLEAVIR-AST::THROW-AST = 1385, 
+// Unused CONCRETE-SYNTAX-TREE::NULL-CST-REQUIRED = 891, 
+// Unused CLEAVIR-BIR::MODULE = 1120, 
+// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-POINTER-AST = 1391, 
+// Unused CONCRETE-SYNTAX-TREE::MACRO-LAMBDA-LIST = 951, 
+// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 1084, 
+// Unused CLEAVIR-CODE-UTILITIES::REQUIRED-MUST-BE-VARIABLE = 1280, 
+// Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-CAN-APPEAR-AT-MOST-ONCE = 1269, 
+// Unused CLEAVIR-AST::FIXNUM-LESS-AST = 1216, 
+// Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 1409, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 952, 
+// Unused CORE::PPRINT-DISPATCH-ENTRY = 838, 
+// Unused ECLECTOR.READER::COMPLEX-PART-EXPECTED = 1056, 
+// Unused GRAY::FUNDAMENTAL-STREAM = 819, 
+// Unused CLEAVIR-AST::FLOAT-ADD-AST = 1221, 
+// Unused CLEAVIR-AST::FIXNUM-EQUAL-AST = 1220, 
+// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 1474, 
+// Unused CLEAVIR-METER::METER = 1167, 
+// Unused CLASP-CLEAVIR-BIR::FOREIGN-CALL-POINTER = 1412, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED = 1258, 
+// Unused CLEAVIR-BIR::LEXICAL = 1099, 
+// Unused ECLECTOR.READER::SLOT-VALUE-CONDITION = 1066, 
+// Unused CLANG-TOOL::MULTITOOL = 1438, 
+// Unused ECLECTOR.READER::READ-OBJECT-TYPE-ERROR = 982, 
+// Unused CLANG-TOOL::COMPILATION-TOOL-DATABASE = 1429, 
+// Unused CLASP-ANALYZER::ENUM-CTYPE = 1475, 
+// Unused CLEAVIR-AST::SET-CONSTANT-SYMBOL-VALUE-AST = 1182, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-ERROR = 1369, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ALLOW-OTHER-KEYS = 943, 
+// Unused CLEAVIR-CODE-UTILITIES::ODD-NUMBER-OF-KEYWORD-ARGUMENTS = 1254, 
+// Unused CLEAVIR-CST-TO-AST::SITUATIONS-MUST-BE-PROPER-LIST = 1339, 
+// Unused CLASP-CLEAVIR-AST::SETF-FDEFINITION-AST = 1384, 
+// Unused CLASP-CLEAVIR-AST::CAS-AST = 1398, 
+// Unused CLEAVIR-AST::NEQ-AST = 1212, 
+// Unused CLEAVIR-METER::BASIC-METER = 1168, 
+// Unused ACCLIMATION::TIENG-VIET = 880, 
+// Unused CLEAVIR-BIR::OUTPUT = 1108, 
+// Unused CLEAVIR-AST::FIXNUM-ADD-AST = 1214, 
+// Unused CLASP-ANALYZER::POINTER-CTYPE = 1485, 
+// Unused CLEAVIR-ENVIRONMENT::LOCAL-MACRO-INFO = 1296, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS = 1327, 
+// Unused CLEAVIR-AST::SLOT-READ-AST = 1238, 
+// Unused COMMON-LISP::METHOD = 735, 
+// Unused ECLECTOR.READER::UNTERMINATED-LIST = 1020, 
+// Unused COMMON-LISP::FLOATING-POINT-OVERFLOW = 797, 
+// Unused COMMON-LISP::TYPE-ERROR = 767, 
+// Unused CLEAVIR-AST::FLOAT-GREATER-AST = 1227, 
+// Unused COMMON-LISP::SIMPLE-CONDITION = 755, 
+// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-MULTI-PARAMETER-GROUP = 905, 
+// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-AST = 1394, 
+// Unused CONCRETE-SYNTAX-TREE::DEFINE-MODIFY-MACRO-LAMBDA-LIST = 956, 
+// Unused CORE::SIMPLE-STREAM-ERROR = 783, 
+// Unused CORE::UNRECOGNIZED-KEYWORD-ARGUMENT-ERROR = 803, 
+// Unused ECLECTOR.READER::INVALID-DEFAULT-FLOAT-FORMAT = 1042, 
+// Unused EXT::STACK-OVERFLOW = 762, 
+// Unused COMMON-LISP::PACKAGE-ERROR = 788, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST = 1284, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION = 1328, 
+// Unused CLEAVIR-BIR::UNWIND = 1149, 
+// Unused ECLECTOR.READER::READ-TIME-EVALUATION-INHIBITED = 1031, 
+// Unused CONCRETE-SYNTAX-TREE::PARAMETER-GROUP = 900, 
+// Unused CLEAVIR-CST-TO-AST::READ-ONLY-P-MUST-BE-BOOLEAN = 1351, 
+// Unused CONCRETE-SYNTAX-TREE::DEFSETF-LAMBDA-LIST = 954, 
+// Unused CLASP-ANALYZER::STAMP = 1455, 
+// Unused SB-BSD-SOCKETS::OUT-OF-MEMORY-ERROR = 863, 
+// Unused COMMON-LISP::UNBOUND-VARIABLE = 791, 
+// Unused SB-BSD-SOCKETS::NETWORK-UNREACHABLE-ERROR = 868, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-CALL-AST = 1205, 
+// Unused COMMON-LISP::ERROR = 754, 
+// Unused CONCRETE-SYNTAX-TREE::IMPLICIT-PARAMETER-GROUP = 903, 
+// Unused COMMON-LISP::STANDARD-METHOD = 737, 
+// Unused MP::PROCESS-ERROR = 780, 
+// Unused CLEAVIR-AST::AST = 1170, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-A = 1044, 
+// Unused CLEAVIR-BIR::RETURNI = 1139, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-CONSING-DOT = 1023, 
+// Unused CLASP-ANALYZER::CCLASS = 1444, 
+// Unused CLASP-CLEAVIR-AST::UNWIND-PROTECT-AST = 1404, 
+// Unused CONCRETE-SYNTAX-TREE::EXPLICIT-PARAMETER-GROUP = 904, 
+// Unused SB-BSD-SOCKETS::NO-BUFFERS-ERROR = 862, 
+// Unused CLEAVIR-BIR::DYNAMIC-ENVIRONMENT = 1097, 
+// Unused CLEAVIR-AST::RETURN-FROM-AST = 1191, 
+// Unused CLASP-ANALYZER::ROOTCLASSALLOC = 1452, 
+// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-MUST-BE-A-SYMBOL = 1337, 
+// Unused CLASP-CLEAVIR::CLASP-ORDINARY-LAMBDA-LIST = 1382, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE = 983, 
+// Unused SB-BSD-SOCKETS::HOST-NOT-FOUND-ERROR = 872, 
+// Unused CLEAVIR-ENVIRONMENT::INLINE-EXPANSION = 1318, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-MUST-HAVE-EVEN-NUMBER-OF-ARGUMENTS = 1353, 
+// Unused CLEAVIR-BIR::NO-INPUT = 1109, 
+// Unused CLEAVIR-BIR::NOP = 1123, 
+// Unused CLEAVIR-AST::AREF-AST = 1242, 
+// Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 875, 
+// Unused CLASP-ANALYZER::MANAGER = 1511, 
+// Unused CLEAVIR-BIR::CAST = 1160, 
+// Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1417, 
+// Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 1446, 
+// Unused COMMON-LISP::VARIABLE = 1458, 
+// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED/READER = 1078, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER = 936, 
+// Unused COMMON-LISP::CONDITION = 751, 
+// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-NOT-BE-FIRST = 996, 
+// Unused COMPILER::UNDEFINED-WARNING = 842, 
+// Unused CORE::FORMAT-ERROR = 809, 
+// Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 923, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 1092, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-SPECIALIZED-REQUIRED = 1270, 
+// Unused ECLECTOR.READER::REFERENCE-ERROR = 1083, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR = 1075, 
+// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-S = 1060, 
+// Unused CORE::ROW-MAJOR-OUT-OF-BOUNDS = 769, 
+// Unused CLEAVIR-BIR::TERMINATOR0 = 1113, 
+// Unused COMPILER::COMPILER-MACRO-EXPANSION-ERROR-WARNING = 848, 
+// Unused CLEAVIR-AST::FDEFINITION-AST = 1183, 
+// Unused CLEAVIR-ENVIRONMENT::NO-TAG-INFO = 1289, 
+// Unused COMPILER::SIMPLE-COMPILER-WARNING = 849, 
+// Unused CLOS::FORWARD-REFERENCED-CLASS = 717, 
+// Unused CLEAVIR-ENVIRONMENT::BLOCK-INFO = 1299, 
+// Unused CLEAVIR-BIR::PRIMOP = 1129, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-UNQUOTE = 1016, 
+// Unused CLASP-ANALYZER::CLASS-LAYOUT = 1454, 
+// Unused ECLECTOR.READER::BACKQUOTE-ERROR = 1006, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-FEATURE-EXPRESSION = 1080, 
+// Unused CLEAVIR-AST::ONE-VALUE-AST-MIXIN = 1174, 
+// Unused CLEAVIR-BIR::ACCESSVAR = 1124, 
+// Unused CORE::TAB = 837, 
+// Unused SB-BSD-SOCKETS::PROTOCOL-NOT-SUPPORTED-ERROR = 866, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-OPTIONAL = 1272, 
+// Unused ECLECTOR.READER::SINGLE-FEATURE-EXPECTED = 1077, 
+// Unused CONCRETE-SYNTAX-TREE::MULTI-PARAMETER-GROUP-MIXIN = 902, 
+// Unused COMMON-LISP::UNDEFINED-FUNCTION = 793, 
+// Unused CLOS::METAOBJECT = 709, 
+// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP-MIXIN = 901, 
+// Unused ECLECTOR.READER::BACKQUOTE-CONTEXT-ERROR = 1007, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-UNKNOWN = 1358, 
+// Unused STAMP_gctools__GCVector_moveable_core__BacktraceEntry_ = 365, 
+// Unused CLASP-CLEAVIR-AST::BIND-AST = 1403, 
+// Unused COMMON-LISP::RESTART = 750, 
+// Unused COMMON-LISP::CELL-ERROR = 790, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-QUOTE = 1003, 
+// Unused CORE::PRETTY-STREAM = 829, 
+// Unused CLEAVIR-AST::BLOCK-AST = 1190, 
+// Unused CLANG-TOOL::GOOD-DUMP-MATCH-CALLBACK = 1431, 
+// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-READ-AST = 1240, 
+// Unused CLEAVIR-BIR::TERMINATOR1 = 1114, 
+// Unused CORE::FOREIGN-DATA = 729, 
+// Unused CLASP-CLEAVIR-AST::DEFCALLBACK-AST = 1392, 
+// Unused COMMON-LISP::FLOATING-POINT-INEXACT = 799, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-WARNING = 1331, 
+// Unused EXT::CHARACTER-CODING-ERROR = 814, 
+// Unused CLOS::INITARGS-UPDATER = 746, 
+// Unused CONCRETE-SYNTAX-TREE::CCL = 898, 
+// Unused COMMON-LISP::SIMPLE-ERROR = 759, 
+// Unused COMMON-LISP::PARSE-ERROR = 805, 
+// Unused CLEAVIR-AST::TAGBODY-AST = 1196, 
+// Unused ECLECTOR.READER::TOO-MANY-ELEMENTS = 1048, 
+// Unused EXT::CHARACTER-DECODING-ERROR = 816, 
+// Unused CONCRETE-SYNTAX-TREE::RULE = 959, 
+// Unused CLASP-CLEAVIR::KEYWORD-VA-REST = 1381, 
+// Unused SB-BSD-SOCKETS::SOCKET-TYPE-NOT-SUPPORTED-ERROR = 867, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-CONDITION = 1091, 
+// Unused CLASP-ANALYZER::CTYPE = 1467, 
+// Unused CLEAVIR-COMPILATION-POLICY::UNKNOWN-OPTIMIZE-QUALITY = 1320, 
+// Unused ECLECTOR.READER::UNQUOTE-SPLICING-AT-TOP = 1019, 
+// Unused CLEAVIR-BIR::THEI = 1161, 
+// Unused CLEAVIR-AST::CONSTANT-FDEFINITION-AST = 1184, 
+// Unused CLOS::STANDARD-DIRECT-SLOT-DEFINITION = 707, 
+// Unused CLEAVIR-ENVIRONMENT::BLOCK = 1308, 
+// Unused CLASP-ANALYZER::SIMPLE-CTYPE = 1469, 
+// Unused CLEAVIR-ENVIRONMENT::NO-BLOCK-INFO = 1288, 
+// Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-BE-FOLLOWED-BY-VARIABLE = 1267, 
+// Unused ACCLIMATION::VIETNAMESE = 884, 
+// Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 1341, 
+// Unused CLASP-ANALYZER::POD-OFFSET = 1502, 
+// Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 856, 
+// Unused CLASP-CLEAVIR-BMIR::STORE = 1425, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 941, 
+// Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1405, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1058, 
+// Unused STAMP_gctools__GCBitUnitArray_moveable_4__false_ = 354, 
+// Unused COMMON-LISP::UNBOUND-SLOT = 792, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1315, 
+// Unused CORE::SIMPLE-PARSE-ERROR = 806, 
+// Unused ECLECTOR.READER::NO-SLOT-VALUE-FOUND = 1068, 
+// Unused CLASP-ANALYZER::ALLOC = 1448, 
+// Unused ECLECTOR.READER::END-OF-LIST = 981, 
+// Unused COMMON-LISP::SIMPLE-WARNING = 756, 
+// Unused CONCRETE-SYNTAX-TREE::BOA-LAMBDA-LIST = 953, 
+// Unused CLEAVIR-AST::THE-TYPEW-AST = 1201, 
+// Unused COMMON-LISP::FLOATING-POINT-UNDERFLOW = 798, 
+// Unused CLEAVIR-BIR::IBLOCK = 1118, 
+// Unused CONCRETE-SYNTAX-TREE::CLIENT = 893, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-EQUALS = 1081, 
+// Unused CLEAVIR-CST-TO-AST::ENCAPSULATED-CONDITION = 1326, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-PLUS-MINUS = 1073, 
+// Unused CLASP-CLEAVIR-BIR::MV-FOREIGN-CALL = 1411, 
+// Unused CLEAVIR-AST::BIND-AST = 1210, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-TYPE = 1310, 
+// Unused STATIC-GFS::CONSTRUCTOR-CELL = 747, 
+// Unused CLEAVIR-BIR::READTEMP = 1144, 
+// Unused ECLECTOR.CONCRETE-SYNTAX-TREE::CST-CLIENT = 1088, 
+// Unused COMMON-LISP::FLOATING-POINT-INVALID-OPERATION = 800, 
+// Unused CLANG-TOOL::DUMP-MATCH-CALLBACK = 1432, 
+// Unused COMPILER::REDEFINED-FUNCTION-WARNING = 846, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-TYPE = 1311, 
+// Unused CLEAVIR-CODE-UTILITIES::MULTIPLE-OCCURRENCES-OF-LAMBDA-LIST-KEYWORD = 1261, 
+// Unused CLASP-ANALYZER::PROJECT = 1462, 
+// Unused ACCLIMATION::SWEDISH = 883, 
+// Unused CLEAVIR-CST-TO-AST::FORM-MUST-BE-PROPER-LIST = 1338, 
+// Unused COMMON-LISP::STORAGE-CONDITION = 760, 
+// Unused CLASP-ANALYZER::INSTANCE-FIELD = 1445, 
+// Unused ECLECTOR.READER::UNQUOTE-ERROR = 1012, 
+// Unused SB-BSD-SOCKETS::INVALID-ARGUMENT-ERROR = 861, 
+// Unused CLEAVIR-AST::LEXICAL-BIND-AST = 1193, 
+// Unused CLASP-ANALYZER::INSTANCE-ARRAY-ELEMENT = 1447, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-VALUE = 1067, 
+// Unused CLEAVIR-BIR::VARIABLE = 1117, 
+// Unused COMMON-LISP::READER-ERROR = 807, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-SINGLE-QUOTE = 1028, 
+// Unused CLEAVIR-AST::FUNCALLABLE-SLOT-WRITE-AST = 1241, 
+// Unused CLEAVIR-AST::FLOAT-COS-AST = 1231, 
+// Unused ECLECTOR.BASE::INCOMPLETE-CONSTRUCT = 973, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-CONSTANT-VARIABLE = 1355, 
+// Unused COMMON-LISP::PROGRAM-ERROR = 775, 
+// Unused ECLECTOR.BASE::MISSING-DELIMITER = 974, 
+// Unused CLEAVIR-IO::UNKNOWN-FILE-VERSION = 1166, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION = 1306, 
+// Unused COMMON-LISP::VECTOR = 723, 
+// Unused CLEAVIR-AST::EQ-AST = 1211, 
+// Unused CLASP-ANALYZER::RECORD-CTYPE = 1482, 
+// Unused CLEAVIR-BIR::ARGUMENT = 1115, 
+// Unused CLANG-TOOL::CODE-MATCH-TIMER = 1430, 
+// Unused CONCRETE-SYNTAX-TREE::TARGET = 958, 
+// Unused EXT::SEGMENTATION-VIOLATION = 761, 
+// Unused CORE::LOGICAL-BLOCK = 830, 
+// Unused CONCRETE-SYNTAX-TREE::CST = 887, 
+// Unused CLEAVIR-AST::SETQ-AST = 1192, 
+// Unused SB-BSD-SOCKETS::NO-RECOVERY-ERROR = 874, 
+// Unused CLEAVIR-CST-TO-AST::BINDINGS-MUST-BE-PROPER-LIST = 1347, 
+// Unused STATIC-GFS::CELL-UPDATER = 748, 
+// Unused STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 371, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKQUOTE = 1010, 
+// Unused CLASP-ANALYZER::SIMPLE-STAMP = 1456, 
+// Unused STAMP_gctools__GCBitUnitArray_moveable_1__false_ = 352, 
+// Unused CLEAVIR-BIR::LETI = 1147, 
+// Unused ACCLIMATION::LANGUAGE = 877, 
+// Unused CLEAVIR-AST::PROGN-AST = 1189, 
+// Unused COMPILER::WRONG-ARGCOUNT-WARNING = 847, 
+// Unused CLOS::STANDARD-EFFECTIVE-SLOT-DEFINITION = 706, 
+// Unused EXT::STORAGE-EXHAUSTED = 763, 
+// Unused CLOS::EFFECTIVE-READER-METHOD = 741, 
+// Unused CLEAVIR-AST::SET-SYMBOL-VALUE-AST = 1181, 
+// Unused CONCRETE-SYNTAX-TREE::CST-ERROR = 890, 
+// Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 827, 
+// Unused CLEAVIR-CODE-UTILITIES::SUSPECT-LAMBDA-LIST-KEYWORD = 1281, 
+// Unused CLEAVIR-SET::SET = 1090, 
+// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1515, 
+// Unused CLEAVIR-AST::CALL-AST = 1185, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-AUX = 1277, 
+// Unused CORE::FORMAT-WARNING-TOO-MANY-ARGUMENTS = 811, 
+// Unused ECLECTOR.READER::READER-CONDITIONAL-CONDITION = 1072, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-COMPLEX-PART = 1055, 
+// Unused ECLECTOR.PARSE-RESULT::PARSE-RESULT-CLIENT = 1087, 
+// Unused CORE::CXX-CLASS = 718, 
+// Unused CONCRETE-SYNTAX-TREE::KEY-PARAMETER-GROUP = 909, 
+// Unused CLASP-CLEAVIR-BIR::BIND = 1410, 
+// Unused CLEAVIR-BIR::LOAD-TIME-VALUE = 1128, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER = 937, 
+// Unused SB-BSD-SOCKETS::SOCKET-ERROR = 855, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-SINGLE-QUOTE = 1027, 
+// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-TYPE = 947, 
+// Unused CLEAVIR-AST::CASE-AST = 1213, 
+// Unused CONCRETE-SYNTAX-TREE::SUPPLIED-P-MIXIN = 926, 
+// Unused SB-BSD-SOCKETS::SOCKET = 852, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-UNQUOTE = 1017, 
+// Unused STAMP_gctools__GCVector_moveable_core__CacheRecord_ = 357, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-REST = 940, 
+// Unused CLEAVIR-AST::SYMBOL-VALUE-AST = 1179, 
+// Unused ECLECTOR.READER::UNTERMINATED-STRING = 1004, 
+// Unused CORE::NEWLINE = 833, 
+// Unused CORE::PPRINT-DISPATCH-TABLE = 839, 
+// Unused ECLECTOR.READER::SHARPSIGN-INVALID = 999, 
+// Unused CLEAVIR-ENVIRONMENT::TAG-INFO = 1300, 
+// Unused CLEAVIR-AST::RPLACD-AST = 1237, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-TYPE-ERROR/READER = 1076, 
+// Unused CLEAVIR-BIR::VALUES-COLLECT = 1141, 
+// Unused CLASP-CLEAVIR-BMIR::CONSP = 1418, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER = 929, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER-GROUP = 913, 
+// Unused CLEAVIR-BIR::CATCH = 1146, 
+// Unused CLEAVIR-CST-TO-AST::VARIABLE-NAME-UNKNOWN = 1357, 
+// Unused CLEAVIR-BIR::UNUSED-VARIABLE = 1162, 
+// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1505, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-KEY = 1274, 
+// Unused CLASP-ANALYZER::GLOBAL-VARIABLE = 1459, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 917, 
+// Unused CLASP-CLEAVIR-BMIR::GENERALP = 1421, 
+// Unused STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ = 359, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1002, 
+// Unused CORE::SIMPLE-FILE-ERROR = 787, 
+// Unused COMMON-LISP::STYLE-WARNING = 757, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-LAMBDA-LIST = 949, 
+// Unused CLEAVIR-CST-TO-AST::INVALID-EVAL-WHEN-SITUATION = 1342, 
+// Unused ECLECTOR.READER::UNQUOTE-SPLICING-IN-DOTTED-LIST = 1018, 
+// Unused COMMON-LISP::STANDARD-OBJECT = 708, 
+// Unused CLEAVIR-CST-TO-AST::LAMBDA-MUST-BE-PROPER-LIST = 1344, 
+// Unused EXT::UNIX-SIGNAL-RECEIVED = 766, 
+// Unused CLEAVIR-CST-TO-AST::VARIABLE-MUST-BE-A-SYMBOL = 1350, 
+// Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 961, 
+// Unused CLEAVIR-AST::TAG-AST = 1195, 
+// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1503, 
+// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1508, 
+// Unused CLEAVIR-CODE-UTILITIES::FUNCTION-BODY-MUST-BE-PROPER-LIST = 1283, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 916, 
+// Unused EXT::STREAM-DECODING-ERROR = 818, 
+// Unused CLEAVIR-CODE-UTILITIES::FORM-MUST-BE-PROPER-LIST = 1250, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER-GROUP = 908, 
+// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 1470, 
+// Unused CLEAVIR-BIR::CONSTANT-REFERENCE = 1127, 
+// Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 1433, 
+// Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 925, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 933, 
+// Unused STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 376, 
+// Unused COMMON-LISP::SERIOUS-CONDITION = 753, 
+// Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 1356, 
+// Unused CORE::CODE-BLOCK = 728, 
+// Unused ACCLIMATION::JAPANESE = 885, 
+// Unused CLASP-CLEAVIR-BMIR::TYPE-BRANCH = 1416, 
+// Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 1050, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE-INFO = 1291, 
+// Unused CLEAVIR-AST::LEXICAL-AST = 1178, 
+// Unused CLASP-ANALYZER::POINTER-OFFSET = 1501, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 910, 
+// Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 1229, 
+// Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 802, 
+// Unused CLEAVIR-BIR::NO-OUTPUT = 1111, 
+// Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 1295, 
+// Unused CLOS::EFFECTIVE-SLOT-DEFINITION = 713, 
+// Unused CLEAVIR-AST::COERCE-AST = 1233, 
+// Unused CLASP-ANALYZER::CLASSALLOC = 1451, 
+// Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 1413, 
+// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 1489, 
+// Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 979, 
+// Unused ECLECTOR.READER::SLOT-NAME-IS-NOT-A-STRING-DESIGNATOR = 1065, 
+// Unused CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT = 1466, 
+// Unused SB-BSD-SOCKETS::TRY-AGAIN-ERROR = 873, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-CST-REQUIRED = 892, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-C = 1051, 
+// Unused CLASP-CLEAVIR-AST::DERIVABLE-STAMP-AST = 1397, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REQUIRED-PARAMETER-GROUP = 915, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-SETQ-AST = 1194, 
+// Unused CLEAVIR-BIR::CONSTANT = 1104, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-P = 1069, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-OPERATOR-INFO = 1298, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-PARAMETER = 935, 
+// Unused CORE::QUEUE = 1428, 
+// Unused CLEAVIR-AST::BRANCH-AST = 1204, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 1372, 
+// Unused ECLECTOR.READER::DIGIT-CONDITION = 1037, 
+// Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 1460, 
+// Unused ACCLIMATION::CONDITION = 886, 
+// Unused CLEAVIR-AST::IMMEDIATE-AST = 1176, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-PARSE-ERROR = 966, 
+// Unused CLOS::DIRECT-SLOT-DEFINITION = 712, 
+// Unused COMPILER::COMPILED-PROGRAM-ERROR = 840, 
+// Unused MP::LOCK = 730, 
+// Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 854, 
+// Unused CLEAVIR-AST::TYPEW-AST = 1200, 
+// Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 1208, 
+// Unused CLANG-TOOL::WRONG-MATCHER = 1440, 
+// Unused CLEAVIR-BIR::ALLOCA = 1142, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKSLASH = 1033, 
+// Unused COMMON-LISP::WARNING = 752, 
+// Unused CLEAVIR-BIR::NVPRIMOP = 1130, 
+// Unused CLEAVIR-AST::FLOAT-SUB-AST = 1222, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1504, 
+// Unused CLANG-TOOL::MATCH-INFO = 1434, 
+// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 994, 
+// Unused CLEAVIR-BIR::TERMINATOR = 1112, 
+// Unused CLASP-CLEAVIR-BMIR::HEADERQ = 1422, 
+// Unused CLASP-CLEAVIR-AST::ACAS-AST = 1402, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REQUIRED-PARAMETER-GROUP = 906, 
+// Unused CONCRETE-SYNTAX-TREE::SIMPLE-VARIABLE = 928, 
+// Unused SB-BSD-SOCKETS::INTERRUPTED-ERROR = 857, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-RIGHT-PARENTHESIS = 1026, 
+// Unused MP::RWLOCK = 731, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-INPUT-STREAM = 824, 
+// Unused COMMON-LISP::DIVISION-BY-ZERO = 796, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-NOT-BE-CIRCULAR = 1256, 
+// Unused CLEAVIR-BIR::FIXED-TO-MULTIPLE = 1158, 
+// Unused CONCRETE-SYNTAX-TREE::STRUCTURE-MISMATCH-ERROR = 1246, 
+// Unused COMPILER::COMPILER-CONDITION = 841, 
+// Unused COMMON-LISP::STANDARD-GENERIC-FUNCTION = 734, 
+// Unused CLEAVIR-ENVIRONMENT::INLINE = 1317, 
+// Unused SB-BSD-SOCKETS::NAME-SERVICE-ERROR = 869, 
+// Unused CLEAVIR-BIR::LOCAL-CALL = 1137, 
+// Unused CLASP-CLEAVIR-AST::MULTIPLE-VALUE-FOREIGN-CALL-AST = 1389, 
+// Unused CLEAVIR-BIR::UNREACHABLE = 1122, 
+// Unused ECLECTOR.READER::MULTIPLE-OBJECTS-FOLLOWING-CONSING-DOT = 1025, 
+// Unused SB-BSD-SOCKETS::INET-SOCKET = 853, 
+// Unused CLOSER-MOP::STANDARD-GENERIC-FUNCTION = 968, 
+// Unused CORE::ARRAY-OUT-OF-BOUNDS = 770, 
+// Unused CLEAVIR-AST::RPLACA-AST = 1236, 
+// Unused ECLECTOR.READER::UNINTERNED-SYMBOL-MUST-NOT-CONTAIN-PACKAGE-MARKER = 998, 
+// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 1473, 
+// Unused CLEAVIR-BIR::ONE-INPUT = 1110, 
+// Unused ACCLIMATION::LOCALE = 876, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 1486, 
+// Unused CLASP-CLEAVIR-AST::RACK-STAMP-AST = 1395, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-CST = 889, 
+// Unused CLEAVIR-ENVIRONMENT::NO-INFO = 1285, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED-IN-DOTTED-LAMBDA-LIST = 1259, 
+// Unused CLEAVIR-BIR::JUMP = 1150, 
+// Unused ECLECTOR.READER::SYMBOL-DOES-NOT-EXIST = 987, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 1312, 
+// Unused CLASP-CLEAVIR::CLASP-CST-CLIENT = 1408, 
+// Unused CLEAVIR-CODE-UTILITIES::REST/BODY-MUST-BE-FOLLOWED-BY-VARIABLE = 1264, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1481, 
+// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1493, 
+// Unused CLASP-ANALYZER::BITUNIT-CTYPE = 1468, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-LIST = 1255, 
+// Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 1053, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-AUX = 944, 
+// Unused CLEAVIR-BIR::WRITEVAR = 1125, 
+// Unused CLEAVIR-CODE-UTILITIES::TOO-MANY-ARGUMENTS = 1253, 
+// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 1479, 
+// Unused GRAY::FUNDAMENTAL-INPUT-STREAM = 820, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-DOT = 1030, 
+// Unused CLOS::EFFECTIVE-WRITER-METHOD = 742, 
+// Unused CLEAVIR-AST::THE-AST = 1198, 
+// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO-INFO = 1293, 
+// Unused CLEAVIR-ENVIRONMENT::CONSTANT-VARIABLE-INFO = 1292, 
+// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 1472, 
+// Unused GRAY::FUNDAMENTAL-BINARY-STREAM = 823, 
+// Unused COMPILER::UNDEFINED-FUNCTION-WARNING = 844, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-OUTPUT-STREAM = 825, 
+// Unused CLEAVIR-AST::LOAD-TIME-VALUE-AST = 1202, 
+// Unused CLEAVIR-AST::FLOAT-DIV-AST = 1224, 
+// Unused CLANG-TOOL::SOURCE-LOC-MATCH-CALLBACK = 1436, 
+// Unused CLOSER-MOP::DEFMETHOD-WITHOUT-GENERIC-FUNCTION = 969, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-STYLE-WARNING = 1371, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER = 930, 
+// Unused CLOS::FUNCALLABLE-STANDARD-CLASS = 720, 
+// Unused CLEAVIR-CST-TO-AST::RUN-TIME-PROGRAM-ERROR = 1329, 
+// Unused EXT::STREAM-ENCODING-ERROR = 817, 
+// Unused CLASP-ANALYZER::UNSUPPORTED-TYPE = 1442, 
+// Unused ECLECTOR.READER::NUMERIC-PARAMETER-SUPPLIED-BUT-IGNORED = 1000, 
+// Unused CLEAVIR-COMPILATION-POLICY::BAD-OPTIMIZE-VALUE = 1319, 
+// Unused CLEAVIR-BIR::COMPUTATION = 1106, 
+// Unused CLEAVIR-AST::CAR-AST = 1234, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-PROGRAM-ERROR = 1323, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 1034, 
+// Unused CONCRETE-SYNTAX-TREE::PARSER = 963, 
+// Unused CONCRETE-SYNTAX-TREE::PARAMETER = 924, 
+// Unused CLASP-ANALYZER::PARALLEL-JOB = 1514, 
+// Unused CLEAVIR-BIR::PHI = 1116, 
+// Unused SB-BSD-SOCKETS::HOST-ENT = 851, 
+// Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 821, 
+// Unused CLEAVIR-CODE-UTILITIES::ORDINARY-BODY-MUST-BE-PROPER-LIST = 1282, 
+// Unused ECLECTOR.READER::SYMBOL-SYNTAX-ERROR = 989, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-DOT = 1029, 
+// Unused EXT::BUS-ERROR = 765, 
+// Unused CLEAVIR-BIR::DATUM = 1098, 
+// Unused CLOS::SLOT-DEFINITION = 710, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-WARNING = 1324, 
+// Unused CLEAVIR-CST-TO-AST::IGNORED-VARIABLE-REFERENCED = 1336, 
+// Unused SEQUENCE::PROTOCOL-UNIMPLEMENTED = 828, 
+// Unused ECLECTOR.READER::SYMBOL-IS-NOT-EXTERNAL = 988, 
+// Unused ECLECTOR.READER::SYMBOL-CAN-HAVE-AT-MOST-TWO-PACKAGE-MARKERS = 997, 
+// Unused CLOS::STANDARD-ACCESSOR-METHOD = 738, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 1093, 
+// Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 1423, 
+// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1480, 
+// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1509, 
+// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1476, 
+// Unused CLEAVIR-AST::FUNCTION-AST = 1186, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 1009, 
+// Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-APPEAR-FIRST = 1266, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-LAMBDA-LIST-PATTERN = 1279, 
+// Unused CLEAVIR-CODE-UTILITIES::CODE-CONDITION = 1249, 
+// Unused CLEAVIR-AST::FIXNUM-SUB-AST = 1215, 
+// Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 1378, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1500, 
+// Unused ACCLIMATION::SVENSKA = 878, 
+// Unused CLASP-ANALYZER::LOCAL-VARIABLE = 1461, 
+// Unused COMMON-LISP::STRUCTURE-OBJECT = 743, 
+// Unused CLASP-ANALYZER::NAMESPACE = 1513, 
+// Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 980, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 1361, 
+// Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 1248, 
+// Unused CLEAVIR-AST::FLOAT-NOT-GREATER-AST = 1226, 
+// Unused ECLECTOR.READER::INVALID-CONSTITUENT-CHARACTER = 990, 
+// Unused ECLECTOR.READER::PACKAGE-DOES-NOT-EXIST = 985, 
+// Unused ECLECTOR.READER::ZERO-DENOMINATOR = 1040, 
+// Unused COMMON-LISP::METHOD-COMBINATION = 714, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-STYLE-WARNING = 1334, 
+// Unused CLEAVIR-AST::FLOAT-SIN-AST = 1230, 
+// Unused ECLECTOR.READTABLE::CHAR-MUST-BE-A-DISPATCHING-CHARACTER = 978, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-LOCAL-MACRO = 1360, 
+// Unused CLASP-ANALYZER::CONTAINERALLOC = 1453, 
+// Unused CLEAVIR-ENVIRONMENT::FUNCTION-IGNORE = 1313, 
+// Unused ECLECTOR.READER::NUMERIC-PARAMETER-NOT-SUPPLIED-BUT-REQUIRED = 1001, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-LAMBDA-LIST = 948, 
+// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 1487, 
+// Unused CLEAVIR-BIR::MULTIPLE-TO-FIXED = 1159, 
+// Unused ECLECTOR.READTABLE::CLASP-NON-CST-ELECTOR-CLIENT = 1427, 
+// Unused CORE::CLOSED-STREAM = 784, 
+// Unused CLEAVIR-AST::PRIMOP-AST = 1188, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-NOTE = 1096, 
+// Unused ACCLIMATION::FRENCH = 882, 
+// Unused ECLECTOR.READER::STRUCTURE-TYPE-NAME-IS-NOT-A-SYMBOL = 1063, 
+// Unused ECLECTOR.READER::NAMESTRING-MUST-FOLLOW-SHARPSIGN-P = 1070, 
+// Unused CLEAVIR-ENVIRONMENT::GLOBAL-MACRO-INFO = 1297, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-STYLE-WARNING = 1368, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER = 934, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 1346, 
+// Unused INTERPRET-AST::CANNOT-INTERPRET = 1406, 
+// Unused CLEAVIR-AST::ASET-AST = 1243, 
+// Unused STAMP_gctools__GCBitUnitArray_moveable_2__false_ = 353, 
+// Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1138, 
+// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1506, 
+// Unused COMMON-LISP::CONTROL-ERROR = 777, 
+// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1488, 
+// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1494, 
+// Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 1362, 
+// Unused CONCRETE-SYNTAX-TREE::ECL = 897, 
+// Unused CORE::SEQUENCE-OUT-OF-BOUNDS = 771, 
+// Unused CLEAVIR-AST::UNREACHABLE-AST = 1209, 
+// Unused COMMON-LISP::PRINT-NOT-READABLE = 804, 
+// Unused CONCRETE-SYNTAX-TREE::NULL-STRUCTURE-MISMATCH-ERROR = 1247, 
+// Unused CLASP-CLEAVIR::ABI-X86-64 = 1379, 
+// Unused CLOS::SPECIALIZER = 715, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-MIXIN = 927, 
+// Unused COMMON-LISP::SIMPLE-TYPE-ERROR = 772, 
+// Unused CLEAVIR-IO::FILE-DOES-NOT-EXIST = 1165, 
+// Unused SB-BSD-SOCKETS::OPERATION-TIMEOUT-ERROR = 860, 
+// Unused SB-BSD-SOCKETS::OPERATION-NOT-PERMITTED-ERROR = 865, 
+// Unused CLASP-CLEAVIR-BIR::HEADER-STAMP-CASE = 1414, 
+// Unused CLOS::STANDARD-WRITER-METHOD = 740, 
+// Unused CLANG-TOOL::NO-NODE-FOR-TAG-ERROR = 1437, 
+// Unused ECLECTOR.READER::TOO-MANY-DOTS = 1021, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-OPTIONAL = 939, 
+// Unused CLEAVIR-AST-TO-BIR::INSERTER = 1245, 
+// Unused ECLECTOR.READER::NON-STRING-FOLLOWING-SHARPSIGN-P = 1071, 
+// Unused CLASP-CLEAVIR-BIR::ACAS = 1415, 
+// Unused COMMON-LISP::STREAM-ERROR = 782, 
+// Unused EXT::ASSERT-ERROR = 813, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-EQUALS = 1082, 
+// Unused SB-BSD-SOCKETS::CONNECTION-REFUSED-ERROR = 859, 
+// Unused CLEAVIR-PRIMOP-INFO::INFO = 1089, 
+// Unused CONCRETE-SYNTAX-TREE::DEFTYPE-LAMBDA-LIST = 955, 
+// Unused CLASP-CLEAVIR::CLASP = 1376, 
+// Unused CLASP-CLEAVIR::LLVM-FUNCTION-INFO = 1426, 
+// Unused CORE::CASE-FAILURE = 773, 
+// Unused CORE::SECTION-START = 832, 
+// Unused CONCRETE-SYNTAX-TREE::GRAMMAR = 960, 
+// Unused CLEAVIR-CODE-UTILITIES::BOTH-REST-AND-BODY-OCCUR-IN-LAMBDA-LIST = 1263, 
+// Unused CLEAVIR-BIR::SSA = 1100, 
+// Unused CLEAVIR-BIR::ACCESSTEMP = 1143, 
+// Unused CORE::SIMPLE-READER-ERROR = 808, 
+// Unused ECLECTOR.READER::TWO-PACKAGE-MARKERS-MUST-BE-ADJACENT = 995, 
+// Unused COMMON-LISP::FILE-ERROR = 786, 
+// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE = 1303, 
+// Unused CLEAVIR-CST-TO-AST::VALUES-&REST-SYNTAX = 1335, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-CHARACTER-NAME = 1035, 
+// Unused CLEAVIR-CODE-UTILITIES::ATOMIC-LAMBDA-LIST-TAIL-MUST-BE-VARIABLE = 1265, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER = 931, 
+// Unused CONCRETE-SYNTAX-TREE::CLASP = 896, 
+// Unused CLEAVIR-AST::IF-AST = 1203, 
+// Unused CORE::SIMPLE-PROGRAM-ERROR = 776, 
+// Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 1314, 
+// Unused CLASP-ANALYZER::OFFSET = 1497, 
+// Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 1052, 
+// Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 1172, 
+// Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 1062, 
+// Unused COMMON-LISP::END-OF-FILE = 785, 
+// Unused CLANG-TOOL::SINGLE-TOOL = 1439, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-KEY = 942, 
+// Unused COMPILER::UNDEFINED-TYPE-WARNING = 845, 
+// Unused CLEAVIR-CST-TO-AST::BODY = 1375, 
+// Unused CLEAVIR-BIR::INSTRUCTION = 1105, 
+// Unused CORE::BLOCK-START = 835, 
+// Unused CLEAVIR-ENVIRONMENT::TAG = 1309, 
+// Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 864, 
+// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1499, 
+// Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 850, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 1005, 
+// Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 1057, 
+// Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 1290, 
+// Unused CLASP-CLEAVIR::CLASP-64BIT = 1377, 
+// Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 1387, 
+// Unused CLOS::STANDARD-SLOT-DEFINITION = 711, 
+// Unused STAMP_gctools__GCVector_moveable_core__DynamicBinding_ = 358, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-KEY = 1275, 
+// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1483, 
+// Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 962, 
+// Unused CLEAVIR-AST::FLOAT-NOT-LESS-AST = 1228, 
+// Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 1032, 
+// Unused CLASP-CLEAVIR-AST::CAS-CDR-AST = 1400, 
+// Unused CLEAVIR-AST::SLOT-WRITE-AST = 1239, 
+// Unused CLASP-CLEAVIR-AST::BASE-FOREIGN-CALL-AST = 1388, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-OPTIONAL = 1271, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 1484, 
+// Unused CLEAVIR-COMPILATION-POLICY::NO-POLICY-COMPUTER = 1321, 
+// Unused SB-BSD-SOCKETS::BAD-FILE-DESCRIPTOR-ERROR = 858, 
+// Unused CLEAVIR-ENVIRONMENT::MACRO = 1307, 
+// Unused CLEAVIR-CODE-UTILITIES::INVALID-NUMBER-OF-ARGUMENTS = 1251, 
+// Unused CLEAVIR-BIR::TYPEW = 1155, 
+// Unused CLASP-ANALYZER::STAMP-VALUE-GENERATOR = 1463, 
+// Unused CLASP-ANALYZER::HNODE = 1465, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-CONSING-DOT = 1024, 
+// Unused CLOS::%NO-NEXT-METHOD-CONTINUATION = 745, 
+// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE-INFO = 1301, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-STYLE-WARNING = 1332, 
+// Unused COMMON-LISP::LIST = 722, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-STYLE-WARNING = 1325, 
+// Unused CLEAVIR-BIR::MV-CALL = 1135, 
+// Unused CLASP-CLEAVIR::CLASP-ECLECTOR-CLIENT-MIXIN = 1407, 
+// Unused CLASP-CLEAVIR::CLASP-ORDINARY-REST-PARAMETER-GROUP = 1383, 
+// Unused CORE::DO-NOT-FUNCALL-SPECIAL-OPERATOR = 801, 
+// Unused CLEAVIR-AST::FIXNUM-GREATER-AST = 1218, 
+// Unused CLASP-ANALYZER::TEMPLATED-STAMP = 1457, 
+// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 1471, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-ARGUMENT-MUST-BE-FUNCTION-NAME-OR-LAMBDA-EXPRESSION = 1345, 
+// Unused CLEAVIR-AST::GO-AST = 1197, 
+// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 1490, 
+// Unused CLASP-ANALYZER::ABSTRACTALLOC = 1449, 
+// Unused CLASP-CLEAVIR-AST::SLOT-CAS-AST = 1401, 
+// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-BE-SYMBOL-OR-LIST = 1348, 
+// Unused CORE::SIMPLE-STYLE-WARNING = 758, 
+// Unused CLEAVIR-BIR::ABSTRACT-CALL = 1133, 
+// Unused CORE::SIMPLE-CONTROL-ERROR = 778, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-ENVIRONMENT = 945, 
+// Unused CLEAVIR-AST::BOOLEAN-AST-MIXIN = 1171, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-READER-ERROR = 965, 
+// Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP = 918, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-KEY = 1276, 
+// Unused CLEAVIR-BIR::TPRIMOP = 1132, 
+// Unused SB-BSD-SOCKETS::NETDB-INTERNAL-ERROR = 870, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-PROPER-LIST = 1257, 
+// Unused CLEAVIR-AST::SIDE-EFFECT-FREE-AST-MIXIN = 1175, 
+// Unused CLEAVIR-CODE-UTILITIES::INCORRECT-KEYWORD-ORDER = 1262, 
+// Unused ECLECTOR.READER::UNTERMINATED-VECTOR = 1046, 
+// Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO = 1305, 
+// Unused COMMON-LISP::SEQUENCE = 721, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-WARNING = 1367, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-UNQUOTE = 1013, 
+// Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-ERROR = 1330, 
+// Unused CLEAVIR-ENVIRONMENT::ENTRY = 1302, 
+// Unused CONCRETE-SYNTAX-TREE::SICL = 895, 
+// Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 1393, 
+// Unused ACCLIMATION::ENGLISH = 881, 
+// Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 922, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1507, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 914, 
+// Unused CORE::STD-CLASS = 719, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 1038, 
+// Unused CLASP-ANALYZER::ANALYSIS = 1464, 
+// Unused CONCRETE-SYNTAX-TREE::AUX-PARAMETER = 932, 
+// Unused CLOS::STANDARD-READER-METHOD = 739, 
+// Unused CLEAVIR-AST::FIXNUM-NOT-LESS-AST = 1219, 
+// Unused EXT::SOURCE-LOCATION = 749, 
+// Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-KEY-PARAMETER-GROUP = 911, 
+// Unused COMMON-LISP::BIT-VECTOR = 726, 
+// Unused CLEAVIR-BIR::WRITETEMP = 1145, 
+// Unused ECLECTOR.READER::UNKNOWN-CHARACTER-NAME = 1036, 
+// Unused ECLECTOR.READTABLE::SUB-CHAR-MUST-NOT-BE-A-DECIMAL-DIGIT = 977, 
+// Unused CLEAVIR-CST-TO-AST::BLOCK-NAME-UNKNOWN = 1352, 
+// Unused ECLECTOR.READER::COMPLEX-PART-CONDITION = 1054, 
+// Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-WARNING = 1333, 
+// Unused CLEAVIR-CONDITIONS::ORIGIN = 1095, 
+// Unused ECLECTOR.READER::DIGIT-EXPECTED = 1039, 
+// Unused CLEAVIR-BIR::TYPE-CONFLICT = 1163, 
+// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1478, 
+// Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1094, 
+// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1498, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 984, 
+// Unused CLASP-ANALYZER::DEBUG-INFO = 1443, 
+// Unused CLEAVIR-AST::NO-VALUE-AST-MIXIN = 1173, 
+// Unused CLASP-CLEAVIR-AST::WRAPPED-STAMP-AST = 1396, 
+// Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-BE-ONLY-PACKAGE-MARKERS = 993, 
+// Unused ECLECTOR.READER::UNQUOTE-IN-INVALID-CONTEXT = 1015, 
+// Unused CLEAVIR-BIR::EQ-TEST = 1153, 
+// Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 1366, 
+// Unused CLEAVIR-BIR::READVAR = 1126, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 1373, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1495, 
+// Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 1207, 
+// Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 1364, 
+// Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 971, 
+// Unused CLEAVIR-BIR::TRANSFER = 1102, 
+// Unused CLOS::EQL-SPECIALIZER = 716, 
+// Unused CLEAVIR-BIR::CHOKE = 1156, 
+// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1496, 
+// Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 1340, 
+// Unused CLEAVIR-BIR::VALUES-SAVE = 1140, 
+// Unused CLASP-ANALYZER::DESTINATION = 1512, 
+// Unused CLEAVIR-METER::SIZE-METER = 1169, 
+// Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 946, 
+// Unused CLASP-ANALYZER::CONTAINER = 1492, 
+// Unused CLEAVIR-BIR::LINEAR-DATUM = 1101, 
+// Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 1316, 
+// Unused CLEAVIR-CST-TO-AST::COMPILATION-CONDITION = 1322, 
+// Unused CLEAVIR-AST::SCOPE-AST = 1244, 
+// Unused CLASP-CLEAVIR-BMIR::CHARACTERP = 1419, 
+// Unused CLANG-TOOL::CODE-MATCH-CALLBACK = 1435, 
+// Unused ECLECTOR.READER::SYMBOL-ACCESS-ERROR = 986, 
+// Unused CONCRETE-SYNTAX-TREE::ATOM-CST = 888, 
+// Unused GRAY::FUNDAMENTAL-CHARACTER-STREAM = 822, 
+// Unused CONCRETE-SYNTAX-TREE::OPTIONAL-PARAMETER-GROUP = 907, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-PROGRAM-ERROR = 967, 
+// Unused ECLECTOR.READER::UNQUOTE-NOT-INSIDE-BACKQUOTE = 1014, 
+// Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-REST-PARAMETER-GROUP = 921, 
+// Unused COMPILER::UNDEFINED-VARIABLE-WARNING = 843, 
+// Unused CLEAVIR-BIR::ENCLOSE = 1121, 
+// Unused ECLECTOR.READER::ARRAY-INITIALIZATION-ERROR = 1047, 
+// Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-SYMBOL = 991, 
+// Unused COMMON-LISP::STRING = 724, 
+// Unused CLEAVIR-AST::FLOAT-LESS-AST = 1225, 
+// Unused CONCRETE-SYNTAX-TREE::SBCL = 894, 
+// Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-MUST-BE-FOLLOWED-BY-VARIABLE = 1268, 
+// Unused EXT::SEQUENCE-STREAM = 727, 
+// Unused SB-BSD-SOCKETS::NETDB-SUCCESS-ERROR = 871, 
+// Unused CORE::SIMPLE-PACKAGE-ERROR = 789, 
+// Unused CLEAVIR-ENVIRONMENT::NO-VARIABLE-INFO = 1286, 
+// Unused ECLECTOR.READTABLE::DISPATCH-MACRO-CHARACTER-ERROR = 975, 
+// Unused CLEAVIR-CST-TO-AST::EVAL-STYLE-WARNING = 1374, 
+// Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-TOO-MANY-PARAMETERS = 1260, 
+// Unused CLASP-ANALYZER::LISPALLOC = 1450, 
+// Unused CLEAVIR-CST-TO-AST::DEFAULT-CASE-MISSING = 1365, 
+// Unused CLANG-TOOL::NODE-MATCHER-AMBIGUOUS-ERROR = 1441, 
+// Unused CLEAVIR-AST::FLOAT-MUL-AST = 1223, 
+// Unused CLOS::FUNCALLABLE-STANDARD-OBJECT = 732, 
+// Unused EXT::CHARACTER-ENCODING-ERROR = 815, 
+// Unused ECLECTOR.READER::FEATURE-EXPRESSION-MUST-FOLLOW-SHARPSIGN-PLUS-MINUS = 1074, 
+// Unused COMMON-LISP::ARITHMETIC-ERROR = 795, 
+// Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-WARNING = 1370, 
+// Unused CLEAVIR-BIR::DYNAMIC-LETI = 1148, 
+// Unused CLOS::STD-METHOD = 736, 
+// Unused CLASP-ANALYZER::SPECIES = 1510, 
+// Unused CLEAVIR-BIR::CALL = 1134, 
+// Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 992, 
+// Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 1294, 
+// Unused ACCLIMATION::DEUTSCH = 879, 
+// Unused CLEAVIR-CST-TO-AST::SETQ-VAR-MUST-BE-SYMBOL = 1354, 
+// Unused COMMON-LISP::BASE-STRING = 725, 
+// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 1491, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-OPTIONAL = 1273, 
+// Unused CORE::QUEUED-OP = 831, 
+// Unused CLEAVIR-CODE-UTILITIES::TOO-FEW-ARGUMENTS = 1252, 
+// Unused ECLECTOR.READER::BACKQUOTE-IN-INVALID-CONTEXT = 1008, 
+// Unused CLEAVIR-CST-TO-AST::LOCAL-FUNCTION-DEFINITION-MUST-BE-PROPER-LIST = 1343, 
+// Unused EXT::UNDEFINED-CLASS = 794, 
+// Unused CLEAVIR-AST::TOP-LEVEL-FUNCTION-AST = 1187, 
+// Unused CLEAVIR-AST::CDR-AST = 1235, 
+// Unused CORE::BLOCK-END = 836, 
+// Unused ECLECTOR.READER::SHARPSIGN-SHARPSIGN-UNDEFINED-LABEL = 1086, 
+// Unused ECLECTOR.READER::STRUCTURE-CONSTRUCTOR-MUST-FOLLOW-SHARPSIGN-S = 1059, 
+// Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-LAMBDA-LIST = 950, 
+// Unused CLASP-CLEAVIR-BMIR::LOAD = 1424, 
+// Unused CLASP-CLEAVIR-AST::CAS-CAR-AST = 1399, 
+// Unused CLEAVIR-BIR::OPERATION = 1107, 
+// Unused ALEXANDRIA.0.DEV::SIMPLE-STYLE-WARNING = 964, 
+// Unused EXT::INTERACTIVE-INTERRUPT = 812, 
+// Unused ECLECTOR.READER::NO-ELEMENTS-FOUND = 1049, 
+// Unused CONCRETE-SYNTAX-TREE::LAMBDA-LIST-KEYWORD = 938, 
+// Unused CORE::OUT-OF-BOUNDS = 768, 
+// Unused CONCRETE-SYNTAX-TREE::DEFINE-METHOD-COMBINATION-LAMBDA-LIST = 957, 
+// Unused CLEAVIR-BIR::VPRIMOP = 1131, 
+// Unused CLOS::NO-APPLICABLE-METHOD-ERROR = 774, 
+// Unused CLASP-CLEAVIR-BMIR::SINGLE-FLOAT-P = 1420, 
+// Unused CLEAVIR-CST-TO-AST::BINDING-MUST-HAVE-LENGTH-ONE-OR-TWO = 1349, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-STRUCTURE-TYPE-NAME = 1061, 
+// Unused CLEAVIR-AST::CONSTANT-AST = 1177, 
+// Unused CLEAVIR-AST::FLOAT-SQRT-AST = 1232, 
+// Unused EXT::ILLEGAL-INSTRUCTION = 764, 
+// Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-A = 1045, 
+// Unused CLEAVIR-BIR::VALUE = 1103, 
+// Unused CORE::OUT-OF-EXTENT-UNWIND = 779, 
+// Unused CONCRETE-SYNTAX-TREE::GRAMMAR-SYMBOL = 899, 
+// Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-SLOT-NAME = 1064, 
+// Unused CLASP-CLEAVIR-AST::FOREIGN-CALL-AST = 1390, 
+// Unused CLEAVIR-AST::CONSTANT-SYMBOL-VALUE-AST = 1180, 
+// Unused CLEAVIR-BIR::IFI = 1151, 
+// Unused CLASP-CLEAVIR::ABI-X86-32 = 1380, 
+// Unused COMMON-LISP::GENERIC-FUNCTION = 733, 
+// Unused CONCRETE-SYNTAX-TREE::ORDINARY-REST-PARAMETER-GROUP = 920, 
+// Unused CLEAVIR-BIR::CONDITIONAL-TEST = 1152, 
+// Unused CONCRETE-SYNTAX-TREE::REST-PARAMETER-GROUP = 919, 
+// Unused ECLECTOR.BASE::END-OF-FILE = 972, 
+// Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE = 1304, 
+// Unused CLEAVIR-AST::VALUES-AST = 1206, 
+// Unused MP::PROCESS-JOIN-ERROR = 781, 
+// Unused CLEAVIR-AST::TYPEQ-AST = 1199, 
+// Unused CLASP-ANALYZER::JOB-GROUP = 1516, 
+// Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 1043, 
+// Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 1136, 
+// Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 826, 
+// Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-TREE = 1278, 
+// Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-GLOBAL-MACRO = 1359, 
+// Unused ECLECTOR.READER::SHARPSIGN-EQUALS-ONLY-REFERS-TO-SELF = 1085, 
+// Unused ECLECTOR.READER::END-OF-INPUT-AFTER-FEATURE-EXPRESSION = 1079, 
+// Unused CLEAVIR-IO::MODEL-CONDITION = 1164, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 1477, 
+// Unused ECLECTOR.READTABLE::UNTERMINATED-DISPATCH-MACRO = 976, 
+// Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 1363, 
+// Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 970, 
+// Unused ECLECTOR.READER::INVALID-CONTEXT-FOR-CONSING-DOT = 1022, 
+  STAMP_max = 1875,
 
 #endif // defined(GC_STAMP)
 #if defined(GC_ENUM_NAMES)
@@ -1857,24 +1859,24 @@ register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte16
 register_stamp_name("STAMP_core__SimpleVector_byte16_t_O", ADJUST_STAMP(747));
 register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_", ADJUST_STAMP(751));
 register_stamp_name("STAMP_core__SimpleBitVector_O", ADJUST_STAMP(755));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(759));
-register_stamp_name("STAMP_core__SimpleVector_byte32_t_O", ADJUST_STAMP(763));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(767));
-register_stamp_name("STAMP_core__SimpleVector_size_t_O", ADJUST_STAMP(771));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_", ADJUST_STAMP(775));
-register_stamp_name("STAMP_core__SimpleVector_double_O", ADJUST_STAMP(779));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(783));
-register_stamp_name("STAMP_core__SimpleVector_byte64_t_O", ADJUST_STAMP(787));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_", ADJUST_STAMP(791));
-register_stamp_name("STAMP_core__SimpleVector_int4_t_O", ADJUST_STAMP(795));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(799));
-register_stamp_name("STAMP_core__SimpleVector_int64_t_O", ADJUST_STAMP(803));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(807));
-register_stamp_name("STAMP_core__SimpleVector_fixnum_O", ADJUST_STAMP(811));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(815));
-register_stamp_name("STAMP_core__SimpleVector_int8_t_O", ADJUST_STAMP(819));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_", ADJUST_STAMP(823));
-register_stamp_name("STAMP_core__SimpleVector_int2_t_O", ADJUST_STAMP(827));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_", ADJUST_STAMP(759));
+register_stamp_name("STAMP_core__SimpleVector_int4_t_O", ADJUST_STAMP(763));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(767));
+register_stamp_name("STAMP_core__SimpleVector_byte32_t_O", ADJUST_STAMP(771));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(775));
+register_stamp_name("STAMP_core__SimpleVector_size_t_O", ADJUST_STAMP(779));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_", ADJUST_STAMP(783));
+register_stamp_name("STAMP_core__SimpleVector_double_O", ADJUST_STAMP(787));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(791));
+register_stamp_name("STAMP_core__SimpleVector_byte64_t_O", ADJUST_STAMP(795));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_", ADJUST_STAMP(799));
+register_stamp_name("STAMP_core__SimpleVector_int2_t_O", ADJUST_STAMP(803));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(807));
+register_stamp_name("STAMP_core__SimpleVector_int64_t_O", ADJUST_STAMP(811));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(815));
+register_stamp_name("STAMP_core__SimpleVector_fixnum_O", ADJUST_STAMP(819));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(823));
+register_stamp_name("STAMP_core__SimpleVector_int8_t_O", ADJUST_STAMP(827));
 register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_", ADJUST_STAMP(831));
 register_stamp_name("STAMP_core__SimpleVector_float_O", ADJUST_STAMP(835));
 register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_", ADJUST_STAMP(839));
@@ -2041,63 +2043,63 @@ register_stamp_name("STAMP_core__HashTableEqualp_O", ADJUST_STAMP(1479));
 register_stamp_name("STAMP_core__HashTableEq_O", ADJUST_STAMP(1483));
 register_stamp_name("STAMP_core__HashTableEql_O", ADJUST_STAMP(1487));
 register_stamp_name("STAMP_core__HashTableEqual_O", ADJUST_STAMP(1491));
-register_stamp_name("STAMP_llvmo__InsertPoint_O", ADJUST_STAMP(1495));
-register_stamp_name("STAMP_core__Scope_O", ADJUST_STAMP(1499));
-register_stamp_name("STAMP_core__FileScope_O", ADJUST_STAMP(1503));
-register_stamp_name("STAMP_core__Path_O", ADJUST_STAMP(1507));
-register_stamp_name("STAMP_core__Pathname_O", ADJUST_STAMP(1511));
-register_stamp_name("STAMP_core__LogicalPathname_O", ADJUST_STAMP(1515));
-register_stamp_name("STAMP_core__Number_O", ADJUST_STAMP(1519));
-register_stamp_name("STAMP_core__Real_O", ADJUST_STAMP(1523));
-register_stamp_name("STAMP_core__Rational_O", ADJUST_STAMP(1527));
-register_stamp_name("STAMP_core__Ratio_O", ADJUST_STAMP(1531));
-register_stamp_name("STAMP_core__Integer_O", ADJUST_STAMP(1535));
-register_stamp_name("STAMP_core__Bignum_O", ADJUST_STAMP(1539));
-register_stamp_name("STAMP_core__Fixnum_dummy_O", ADJUST_STAMP(1543));
-register_stamp_name("STAMP_core__Float_O", ADJUST_STAMP(1547));
-register_stamp_name("STAMP_core__DoubleFloat_O", ADJUST_STAMP(1551));
-register_stamp_name("STAMP_core__SingleFloat_dummy_O", ADJUST_STAMP(1555));
-register_stamp_name("STAMP_core__LongFloat_O", ADJUST_STAMP(1559));
-register_stamp_name("STAMP_core__ShortFloat_O", ADJUST_STAMP(1563));
-register_stamp_name("STAMP_core__Complex_O", ADJUST_STAMP(1567));
-register_stamp_name("STAMP_core__Stream_O", ADJUST_STAMP(1571));
-register_stamp_name("STAMP_core__AnsiStream_O", ADJUST_STAMP(1575));
-register_stamp_name("STAMP_core__TwoWayStream_O", ADJUST_STAMP(1579));
-register_stamp_name("STAMP_core__SynonymStream_O", ADJUST_STAMP(1583));
-register_stamp_name("STAMP_core__ConcatenatedStream_O", ADJUST_STAMP(1587));
-register_stamp_name("STAMP_core__FileStream_O", ADJUST_STAMP(1591));
-register_stamp_name("STAMP_core__IOFileStream_O", ADJUST_STAMP(1595));
-register_stamp_name("STAMP_core__IOStreamStream_O", ADJUST_STAMP(1599));
-register_stamp_name("STAMP_core__BroadcastStream_O", ADJUST_STAMP(1603));
-register_stamp_name("STAMP_core__StringStream_O", ADJUST_STAMP(1607));
-register_stamp_name("STAMP_core__StringOutputStream_O", ADJUST_STAMP(1611));
-register_stamp_name("STAMP_core__StringInputStream_O", ADJUST_STAMP(1615));
-register_stamp_name("STAMP_core__EchoStream_O", ADJUST_STAMP(1619));
-register_stamp_name("STAMP_core__Package_O", ADJUST_STAMP(1623));
-register_stamp_name("STAMP_core__FileStatus_O", ADJUST_STAMP(1627));
-register_stamp_name("STAMP_core__InvocationHistoryFrameIterator_O", ADJUST_STAMP(1631));
-register_stamp_name("STAMP_core__SourcePosInfo_O", ADJUST_STAMP(1635));
-register_stamp_name("STAMP_core__IntArray_O", ADJUST_STAMP(1639));
-register_stamp_name("STAMP_core__DirectoryEntry_O", ADJUST_STAMP(1643));
-register_stamp_name("STAMP_core__LightUserData_O", ADJUST_STAMP(1647));
-register_stamp_name("STAMP_core__UserData_O", ADJUST_STAMP(1651));
-register_stamp_name("STAMP_core__Record_O", ADJUST_STAMP(1655));
-register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1659));
-register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1663));
-register_stamp_name("STAMP_core__MultiStringBuffer_O", ADJUST_STAMP(1667));
-register_stamp_name("STAMP_core__Cons_O", ADJUST_STAMP(1671));
-register_stamp_name("STAMP_core__Lisp_O", ADJUST_STAMP(1675));
-register_stamp_name("STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1679));
-register_stamp_name("STAMP_asttooling__AstVisitor_O", ADJUST_STAMP(1683));
-register_stamp_name("STAMP_clang__tooling__ToolAction", ADJUST_STAMP(1687));
-register_stamp_name("STAMP_clang__tooling__FrontendActionFactory", ADJUST_STAMP(1691));
-register_stamp_name("STAMP_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(1695));
-register_stamp_name("STAMP_gctools__GCContainer", ADJUST_STAMP(1699));
-register_stamp_name("STAMP_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(1703));
-register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(1707));
-register_stamp_name("STAMP_gctools__GCVector_moveable_double_", ADJUST_STAMP(1711));
-register_stamp_name("STAMP_gctools__GCArray_moveable_short_", ADJUST_STAMP(1715));
-register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_2__1_", ADJUST_STAMP(1719));
+register_stamp_name("STAMP_core__FunctionDescription_O", ADJUST_STAMP(1495));
+register_stamp_name("STAMP_llvmo__InsertPoint_O", ADJUST_STAMP(1499));
+register_stamp_name("STAMP_core__Scope_O", ADJUST_STAMP(1503));
+register_stamp_name("STAMP_core__FileScope_O", ADJUST_STAMP(1507));
+register_stamp_name("STAMP_core__Path_O", ADJUST_STAMP(1511));
+register_stamp_name("STAMP_core__Pathname_O", ADJUST_STAMP(1515));
+register_stamp_name("STAMP_core__LogicalPathname_O", ADJUST_STAMP(1519));
+register_stamp_name("STAMP_core__Number_O", ADJUST_STAMP(1523));
+register_stamp_name("STAMP_core__Real_O", ADJUST_STAMP(1527));
+register_stamp_name("STAMP_core__Rational_O", ADJUST_STAMP(1531));
+register_stamp_name("STAMP_core__Ratio_O", ADJUST_STAMP(1535));
+register_stamp_name("STAMP_core__Integer_O", ADJUST_STAMP(1539));
+register_stamp_name("STAMP_core__Bignum_O", ADJUST_STAMP(1543));
+register_stamp_name("STAMP_core__Fixnum_dummy_O", ADJUST_STAMP(1547));
+register_stamp_name("STAMP_core__Float_O", ADJUST_STAMP(1551));
+register_stamp_name("STAMP_core__DoubleFloat_O", ADJUST_STAMP(1555));
+register_stamp_name("STAMP_core__SingleFloat_dummy_O", ADJUST_STAMP(1559));
+register_stamp_name("STAMP_core__LongFloat_O", ADJUST_STAMP(1563));
+register_stamp_name("STAMP_core__ShortFloat_O", ADJUST_STAMP(1567));
+register_stamp_name("STAMP_core__Complex_O", ADJUST_STAMP(1571));
+register_stamp_name("STAMP_core__Stream_O", ADJUST_STAMP(1575));
+register_stamp_name("STAMP_core__AnsiStream_O", ADJUST_STAMP(1579));
+register_stamp_name("STAMP_core__TwoWayStream_O", ADJUST_STAMP(1583));
+register_stamp_name("STAMP_core__SynonymStream_O", ADJUST_STAMP(1587));
+register_stamp_name("STAMP_core__ConcatenatedStream_O", ADJUST_STAMP(1591));
+register_stamp_name("STAMP_core__FileStream_O", ADJUST_STAMP(1595));
+register_stamp_name("STAMP_core__IOFileStream_O", ADJUST_STAMP(1599));
+register_stamp_name("STAMP_core__IOStreamStream_O", ADJUST_STAMP(1603));
+register_stamp_name("STAMP_core__BroadcastStream_O", ADJUST_STAMP(1607));
+register_stamp_name("STAMP_core__StringStream_O", ADJUST_STAMP(1611));
+register_stamp_name("STAMP_core__StringOutputStream_O", ADJUST_STAMP(1615));
+register_stamp_name("STAMP_core__StringInputStream_O", ADJUST_STAMP(1619));
+register_stamp_name("STAMP_core__EchoStream_O", ADJUST_STAMP(1623));
+register_stamp_name("STAMP_core__Package_O", ADJUST_STAMP(1627));
+register_stamp_name("STAMP_core__FileStatus_O", ADJUST_STAMP(1631));
+register_stamp_name("STAMP_core__InvocationHistoryFrameIterator_O", ADJUST_STAMP(1635));
+register_stamp_name("STAMP_core__SourcePosInfo_O", ADJUST_STAMP(1639));
+register_stamp_name("STAMP_core__IntArray_O", ADJUST_STAMP(1643));
+register_stamp_name("STAMP_core__DirectoryEntry_O", ADJUST_STAMP(1647));
+register_stamp_name("STAMP_core__LightUserData_O", ADJUST_STAMP(1651));
+register_stamp_name("STAMP_core__UserData_O", ADJUST_STAMP(1655));
+register_stamp_name("STAMP_core__Record_O", ADJUST_STAMP(1659));
+register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1663));
+register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1667));
+register_stamp_name("STAMP_core__MultiStringBuffer_O", ADJUST_STAMP(1671));
+register_stamp_name("STAMP_core__Cons_O", ADJUST_STAMP(1675));
+register_stamp_name("STAMP_core__Lisp_O", ADJUST_STAMP(1679));
+register_stamp_name("STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1683));
+register_stamp_name("STAMP_asttooling__AstVisitor_O", ADJUST_STAMP(1687));
+register_stamp_name("STAMP_clang__tooling__ToolAction", ADJUST_STAMP(1691));
+register_stamp_name("STAMP_clang__tooling__FrontendActionFactory", ADJUST_STAMP(1695));
+register_stamp_name("STAMP_clang__ast_matchers__MatchFinder__MatchCallback", ADJUST_STAMP(1699));
+register_stamp_name("STAMP_gctools__GCContainer", ADJUST_STAMP(1703));
+register_stamp_name("STAMP_gctools__GCArray_moveable_unsigned_int_", ADJUST_STAMP(1707));
+register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__", ADJUST_STAMP(1711));
+register_stamp_name("STAMP_gctools__GCVector_moveable_double_", ADJUST_STAMP(1715));
+register_stamp_name("STAMP_gctools__GCArray_moveable_short_", ADJUST_STAMP(1719));
 register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__", ADJUST_STAMP(1723));
 register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_4_0_", ADJUST_STAMP(1727));
 register_stamp_name("STAMP_gctools__GCVector_moveable_core__SymbolClassHolderPair_", ADJUST_STAMP(1731));
@@ -2113,7 +2115,7 @@ register_stamp_name("STAMP_gctools__GCVector_moveable_core__OptionalArgument_", 
 register_stamp_name("STAMP_gctools__GCVector_moveable_core__KeywordArgument_", ADJUST_STAMP(1771));
 register_stamp_name("STAMP_gctools__GCVector_moveable_core__RequiredArgument_", ADJUST_STAMP(1775));
 register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__", ADJUST_STAMP(1779));
-register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_4__1_", ADJUST_STAMP(1783));
+register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_4_1_", ADJUST_STAMP(1783));
 register_stamp_name("STAMP_gctools__GCVector_moveable_core__SymbolStorage_", ADJUST_STAMP(1787));
 register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__", ADJUST_STAMP(1791));
 register_stamp_name("STAMP_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1795));
@@ -2125,17 +2127,18 @@ register_stamp_name("STAMP_gctools__GCArray_moveable_int_", ADJUST_STAMP(1815));
 register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_1_0_", ADJUST_STAMP(1819));
 register_stamp_name("STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__", ADJUST_STAMP(1823));
 register_stamp_name("STAMP_gctools__GCVector_moveable_core__AuxArgument_", ADJUST_STAMP(1827));
-register_stamp_name("STAMP_gctools__GCArray_moveable_long_", ADJUST_STAMP(1831));
-register_stamp_name("STAMP_gctools__GCVector_moveable_int_", ADJUST_STAMP(1835));
-register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(1839));
-register_stamp_name("STAMP_gctools__GCArray_moveable_float_", ADJUST_STAMP(1843));
-register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(1847));
-register_stamp_name("STAMP_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(1851));
-register_stamp_name("STAMP_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(1855));
-register_stamp_name("STAMP_gctools__GCVector_moveable_float_", ADJUST_STAMP(1859));
-register_stamp_name("STAMP_clang__FrontendAction", ADJUST_STAMP(1863));
-register_stamp_name("STAMP_clang__ASTFrontendAction", ADJUST_STAMP(1867));
-register_stamp_name("STAMP_clang__SyntaxOnlyAction", ADJUST_STAMP(1871));
+register_stamp_name("STAMP_gctools__GCBitUnitArray_moveable_2_1_", ADJUST_STAMP(1831));
+register_stamp_name("STAMP_gctools__GCArray_moveable_long_", ADJUST_STAMP(1835));
+register_stamp_name("STAMP_gctools__GCVector_moveable_int_", ADJUST_STAMP(1839));
+register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__", ADJUST_STAMP(1843));
+register_stamp_name("STAMP_gctools__GCArray_moveable_float_", ADJUST_STAMP(1847));
+register_stamp_name("STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__", ADJUST_STAMP(1851));
+register_stamp_name("STAMP_gctools__GCVector_moveable_core__T_O___", ADJUST_STAMP(1855));
+register_stamp_name("STAMP_gctools__GCArray_moveable_unsigned_short_", ADJUST_STAMP(1859));
+register_stamp_name("STAMP_gctools__GCVector_moveable_float_", ADJUST_STAMP(1863));
+register_stamp_name("STAMP_clang__FrontendAction", ADJUST_STAMP(1867));
+register_stamp_name("STAMP_clang__ASTFrontendAction", ADJUST_STAMP(1871));
+register_stamp_name("STAMP_clang__SyntaxOnlyAction", ADJUST_STAMP(1875));
 
 #endif // defined(GC_ENUM_NAMES)
 #if defined(GC_DYNAMIC_CAST)
@@ -2144,8 +2147,8 @@ template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MultiStringBuffer_O val -> 1667
-      return (kindVal == ISA_ADJUST_STAMP(1667));
+    // IsA-stamp-range core::MultiStringBuffer_O val -> 1671
+      return (kindVal == ISA_ADJUST_STAMP(1671));
   };
 };
 // STAMP_core__MDArray_size_t_O
@@ -2171,8 +2174,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 1859
-      return (kindVal == ISA_ADJUST_STAMP(1859));
+    // IsA-stamp-range gctools::GCVector_moveable<float> val -> 1863
+      return (kindVal == ISA_ADJUST_STAMP(1863));
   };
 };
 // STAMP_core__SimpleMDArray_fixnum_O
@@ -2189,8 +2192,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned short>*,FP
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 1855
-      return (kindVal == ISA_ADJUST_STAMP(1855));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned short> val -> 1859
+      return (kindVal == ISA_ADJUST_STAMP(1859));
   };
 };
 // STAMP_core__ComplexVector_O
@@ -2216,8 +2219,8 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Integer_O low high --> 1535 1543 
-      return ((ISA_ADJUST_STAMP(1535) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1543)));
+    // IsA-stamp-range core::Integer_O low high --> 1539 1547 
+      return ((ISA_ADJUST_STAMP(1539) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1547)));
   };
 };
 // STAMP_core__Frame_O
@@ -2225,8 +2228,8 @@ template <typename FP> struct Cast<core::Frame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Frame_O val -> 1663
-      return (kindVal == ISA_ADJUST_STAMP(1663));
+    // IsA-stamp-range core::Frame_O val -> 1667
+      return (kindVal == ISA_ADJUST_STAMP(1667));
   };
 };
 // STAMP_clbind__ClassRegistry_O
@@ -2234,8 +2237,8 @@ template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRegistry_O val -> 1659
-      return (kindVal == ISA_ADJUST_STAMP(1659));
+    // IsA-stamp-range clbind::ClassRegistry_O val -> 1663
+      return (kindVal == ISA_ADJUST_STAMP(1663));
   };
 };
 // STAMP_asttooling__AstVisitor_O
@@ -2243,8 +2246,8 @@ template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range asttooling::AstVisitor_O val -> 1683
-      return (kindVal == ISA_ADJUST_STAMP(1683));
+    // IsA-stamp-range asttooling::AstVisitor_O val -> 1687
+      return (kindVal == ISA_ADJUST_STAMP(1687));
   };
 };
 // STAMP_mp__Process_O
@@ -2261,8 +2264,8 @@ template <typename FP> struct Cast<core::Record_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Record_O val -> 1655
-      return (kindVal == ISA_ADJUST_STAMP(1655));
+    // IsA-stamp-range core::Record_O val -> 1659
+      return (kindVal == ISA_ADJUST_STAMP(1659));
   };
 };
 // STAMP_core__LightUserData_O
@@ -2270,8 +2273,8 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LightUserData_O low high --> 1647 1651 
-      return ((ISA_ADJUST_STAMP(1647) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1651)));
+    // IsA-stamp-range core::LightUserData_O low high --> 1651 1655 
+      return ((ISA_ADJUST_STAMP(1651) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1655)));
   };
 };
 // STAMP_core__MDArrayT_O
@@ -2288,8 +2291,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<core::T_O *>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 1851
-      return (kindVal == ISA_ADJUST_STAMP(1851));
+    // IsA-stamp-range gctools::GCVector_moveable<core::T_O *> val -> 1855
+      return (kindVal == ISA_ADJUST_STAMP(1855));
   };
 };
 // STAMP_core__DirectoryEntry_O
@@ -2297,8 +2300,8 @@ template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DirectoryEntry_O val -> 1643
-      return (kindVal == ISA_ADJUST_STAMP(1643));
+    // IsA-stamp-range core::DirectoryEntry_O val -> 1647
+      return (kindVal == ISA_ADJUST_STAMP(1647));
   };
 };
 // STAMP_llvmo__Linker_O
@@ -2315,8 +2318,8 @@ template <typename FP> struct Cast<core::IntArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::IntArray_O val -> 1639
-      return (kindVal == ISA_ADJUST_STAMP(1639));
+    // IsA-stamp-range core::IntArray_O val -> 1643
+      return (kindVal == ISA_ADJUST_STAMP(1643));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__
@@ -2324,8 +2327,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 1847
-      return (kindVal == ISA_ADJUST_STAMP(1847));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>> val -> 1851
+      return (kindVal == ISA_ADJUST_STAMP(1851));
   };
 };
 // STAMP_core__MDArray_float_O
@@ -2342,8 +2345,8 @@ template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SourcePosInfo_O val -> 1635
-      return (kindVal == ISA_ADJUST_STAMP(1635));
+    // IsA-stamp-range core::SourcePosInfo_O val -> 1639
+      return (kindVal == ISA_ADJUST_STAMP(1639));
   };
 };
 // STAMP_llvmo__BranchInst_O
@@ -2405,8 +2408,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<float>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 1843
-      return (kindVal == ISA_ADJUST_STAMP(1843));
+    // IsA-stamp-range gctools::GCArray_moveable<float> val -> 1847
+      return (kindVal == ISA_ADJUST_STAMP(1847));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__
@@ -2414,8 +2417,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 1839
-      return (kindVal == ISA_ADJUST_STAMP(1839));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>> val -> 1843
+      return (kindVal == ISA_ADJUST_STAMP(1843));
   };
 };
 // STAMP_core__InvocationHistoryFrameIterator_O
@@ -2423,8 +2426,8 @@ template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::InvocationHistoryFrameIterator_O val -> 1631
-      return (kindVal == ISA_ADJUST_STAMP(1631));
+    // IsA-stamp-range core::InvocationHistoryFrameIterator_O val -> 1635
+      return (kindVal == ISA_ADJUST_STAMP(1635));
   };
 };
 // STAMP_core__SimpleVector_size_t_O
@@ -2432,8 +2435,8 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_size_t_O val -> 771
-      return (kindVal == ISA_ADJUST_STAMP(771));
+    // IsA-stamp-range core::SimpleVector_size_t_O val -> 779
+      return (kindVal == ISA_ADJUST_STAMP(779));
   };
 };
 // STAMP_llvmo__DIScope_O
@@ -2450,8 +2453,8 @@ template <typename FP> struct Cast<core::FileStatus_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileStatus_O val -> 1627
-      return (kindVal == ISA_ADJUST_STAMP(1627));
+    // IsA-stamp-range core::FileStatus_O val -> 1631
+      return (kindVal == ISA_ADJUST_STAMP(1631));
   };
 };
 // STAMP_llvmo__IndirectBrInst_O
@@ -2486,8 +2489,8 @@ template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Package_O val -> 1623
-      return (kindVal == ISA_ADJUST_STAMP(1623));
+    // IsA-stamp-range core::Package_O val -> 1627
+      return (kindVal == ISA_ADJUST_STAMP(1627));
   };
 };
 // STAMP_core__SimpleMDArrayBaseChar_O
@@ -2522,8 +2525,8 @@ template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Stream_O low high --> 1571 1619 
-      return ((ISA_ADJUST_STAMP(1571) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1619)));
+    // IsA-stamp-range core::Stream_O low high --> 1575 1623 
+      return ((ISA_ADJUST_STAMP(1575) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1623)));
   };
 };
 // STAMP_gctools__GCVector_moveable_int_
@@ -2531,8 +2534,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<int>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 1835
-      return (kindVal == ISA_ADJUST_STAMP(1835));
+    // IsA-stamp-range gctools::GCVector_moveable<int> val -> 1839
+      return (kindVal == ISA_ADJUST_STAMP(1839));
   };
 };
 // STAMP_gctools__GCArray_moveable_long_
@@ -2540,8 +2543,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<long>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 1831
-      return (kindVal == ISA_ADJUST_STAMP(1831));
+    // IsA-stamp-range gctools::GCArray_moveable<long> val -> 1835
+      return (kindVal == ISA_ADJUST_STAMP(1835));
   };
 };
 // STAMP_llvmo__MDString_O
@@ -2558,8 +2561,8 @@ template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ShortFloat_O val -> 1563
-      return (kindVal == ISA_ADJUST_STAMP(1563));
+    // IsA-stamp-range core::ShortFloat_O val -> 1567
+      return (kindVal == ISA_ADJUST_STAMP(1567));
   };
 };
 // STAMP_core__Number_O
@@ -2567,8 +2570,8 @@ template <typename FP> struct Cast<core::Number_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Number_O low high --> 1519 1567 
-      return ((ISA_ADJUST_STAMP(1519) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1567)));
+    // IsA-stamp-range core::Number_O low high --> 1523 1571 
+      return ((ISA_ADJUST_STAMP(1523) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1571)));
   };
 };
 // STAMP_core__T_O
@@ -2576,8 +2579,8 @@ template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::T_O low high --> 7 1671 
-      return ((ISA_ADJUST_STAMP(7) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1671)));
+    // IsA-stamp-range core::T_O low high --> 7 1675 
+      return ((ISA_ADJUST_STAMP(7) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1675)));
   };
 };
 // STAMP_llvmo__DICompileUnit_O
@@ -2612,8 +2615,8 @@ template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Pathname_O low high --> 1511 1515 
-      return ((ISA_ADJUST_STAMP(1511) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1515)));
+    // IsA-stamp-range core::Pathname_O low high --> 1515 1519 
+      return ((ISA_ADJUST_STAMP(1515) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1519)));
   };
 };
 // STAMP_core__Str8Ns_O
@@ -2650,6 +2653,15 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
       int kindVal = header->shifted_stamp();
     // IsA-stamp-range llvmo::UndefValue_O val -> 1319
       return (kindVal == ISA_ADJUST_STAMP(1319));
+  };
+};
+// STAMP_gctools__GCBitUnitArray_moveable_2_1_
+template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,1>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,1> val -> 1831
+      return (kindVal == ISA_ADJUST_STAMP(1831));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__AuxArgument_
@@ -2693,8 +2705,8 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Path_O val -> 1507
-      return (kindVal == ISA_ADJUST_STAMP(1507));
+    // IsA-stamp-range core::Path_O val -> 1511
+      return (kindVal == ISA_ADJUST_STAMP(1511));
   };
 };
 // STAMP_mp__SharedMutex_O
@@ -2738,8 +2750,8 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::IOStreamStream_O val -> 1599
-      return (kindVal == ISA_ADJUST_STAMP(1599));
+    // IsA-stamp-range core::IOStreamStream_O val -> 1603
+      return (kindVal == ISA_ADJUST_STAMP(1603));
   };
 };
 // STAMP_core__Scope_O
@@ -2747,8 +2759,8 @@ template <typename FP> struct Cast<core::Scope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Scope_O low high --> 1499 1503 
-      return ((ISA_ADJUST_STAMP(1499) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1503)));
+    // IsA-stamp-range core::Scope_O low high --> 1503 1507 
+      return ((ISA_ADJUST_STAMP(1503) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1507)));
   };
 };
 // STAMP_llvmo__InsertPoint_O
@@ -2756,7 +2768,16 @@ template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::InsertPoint_O val -> 1495
+    // IsA-stamp-range llvmo::InsertPoint_O val -> 1499
+      return (kindVal == ISA_ADJUST_STAMP(1499));
+  };
+};
+// STAMP_core__FunctionDescription_O
+template <typename FP> struct Cast<core::FunctionDescription_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range core::FunctionDescription_O val -> 1495
       return (kindVal == ISA_ADJUST_STAMP(1495));
   };
 };
@@ -2783,8 +2804,8 @@ template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::EchoStream_O val -> 1619
-      return (kindVal == ISA_ADJUST_STAMP(1619));
+    // IsA-stamp-range core::EchoStream_O val -> 1623
+      return (kindVal == ISA_ADJUST_STAMP(1623));
   };
 };
 // STAMP_core__HashTableBase_O
@@ -2909,8 +2930,8 @@ template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringInputStream_O val -> 1615
-      return (kindVal == ISA_ADJUST_STAMP(1615));
+    // IsA-stamp-range core::StringInputStream_O val -> 1619
+      return (kindVal == ISA_ADJUST_STAMP(1619));
   };
 };
 // STAMP_llvmo__ModulePass_O
@@ -2945,8 +2966,8 @@ template <typename FP> struct Cast<core::LongFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LongFloat_O val -> 1559
-      return (kindVal == ISA_ADJUST_STAMP(1559));
+    // IsA-stamp-range core::LongFloat_O val -> 1563
+      return (kindVal == ISA_ADJUST_STAMP(1563));
   };
 };
 // STAMP_core__ComplexVector_int4_t_O
@@ -3071,8 +3092,8 @@ template <typename FP> struct Cast<core::Complex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Complex_O val -> 1567
-      return (kindVal == ISA_ADJUST_STAMP(1567));
+    // IsA-stamp-range core::Complex_O val -> 1571
+      return (kindVal == ISA_ADJUST_STAMP(1571));
   };
 };
 // STAMP_llvmo__ConstantPointerNull_O
@@ -3161,8 +3182,8 @@ template <typename FP> struct Cast<core::SimpleVector_int2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int2_t_O val -> 827
-      return (kindVal == ISA_ADJUST_STAMP(827));
+    // IsA-stamp-range core::SimpleVector_int2_t_O val -> 803
+      return (kindVal == ISA_ADJUST_STAMP(803));
   };
 };
 // STAMP_core__MDArray_byte64_t_O
@@ -3179,8 +3200,8 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 811
-      return (kindVal == ISA_ADJUST_STAMP(811));
+    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 819
+      return (kindVal == ISA_ADJUST_STAMP(819));
   };
 };
 // STAMP_core__SimpleVector_byte32_t_O
@@ -3188,8 +3209,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 763
-      return (kindVal == ISA_ADJUST_STAMP(763));
+    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 771
+      return (kindVal == ISA_ADJUST_STAMP(771));
   };
 };
 // STAMP_core__SingleDispatchGenericFunctionClosure_O
@@ -3206,8 +3227,8 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::AnsiStream_O low high --> 1575 1619 
-      return ((ISA_ADJUST_STAMP(1575) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1619)));
+    // IsA-stamp-range core::AnsiStream_O low high --> 1579 1623 
+      return ((ISA_ADJUST_STAMP(1579) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1623)));
   };
 };
 // STAMP_core__BuiltinClosure_O
@@ -3224,8 +3245,8 @@ template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SingleFloat_dummy_O val -> 1555
-      return (kindVal == ISA_ADJUST_STAMP(1555));
+    // IsA-stamp-range core::SingleFloat_dummy_O val -> 1559
+      return (kindVal == ISA_ADJUST_STAMP(1559));
   };
 };
 // STAMP_llvmo__DIExpression_O
@@ -3323,8 +3344,8 @@ template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DoubleFloat_O val -> 1551
-      return (kindVal == ISA_ADJUST_STAMP(1551));
+    // IsA-stamp-range core::DoubleFloat_O val -> 1555
+      return (kindVal == ISA_ADJUST_STAMP(1555));
   };
 };
 // STAMP_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__
@@ -3350,8 +3371,8 @@ template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringStream_O low high --> 1607 1615 
-      return ((ISA_ADJUST_STAMP(1607) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1615)));
+    // IsA-stamp-range core::StringStream_O low high --> 1611 1619 
+      return ((ISA_ADJUST_STAMP(1611) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1619)));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__SymbolStorage_
@@ -3440,8 +3461,8 @@ template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Fixnum_dummy_O val -> 1543
-      return (kindVal == ISA_ADJUST_STAMP(1543));
+    // IsA-stamp-range core::Fixnum_dummy_O val -> 1547
+      return (kindVal == ISA_ADJUST_STAMP(1547));
   };
 };
 // STAMP_core__MDArray_int8_t_O
@@ -3462,22 +3483,22 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
       return (kindVal == ISA_ADJUST_STAMP(1307));
   };
 };
-// STAMP_gctools__GCBitUnitArray_moveable_4__1_
-template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<4,-1>*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,-1> val -> 1783
-      return (kindVal == ISA_ADJUST_STAMP(1783));
-  };
-};
 // STAMP_core__Cons_O
 template <typename FP> struct Cast<core::Cons_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Cons_O val -> 1671
-      return (kindVal == ISA_ADJUST_STAMP(1671));
+    // IsA-stamp-range core::Cons_O val -> 1675
+      return (kindVal == ISA_ADJUST_STAMP(1675));
+  };
+};
+// STAMP_gctools__GCBitUnitArray_moveable_4_1_
+template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<4,1>*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range gctools::GCBitUnitArray_moveable<4,1> val -> 1783
+      return (kindVal == ISA_ADJUST_STAMP(1783));
   };
 };
 // STAMP_llvmo__LLVMContext_O
@@ -3530,8 +3551,8 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::UserData_O val -> 1651
-      return (kindVal == ISA_ADJUST_STAMP(1651));
+    // IsA-stamp-range core::UserData_O val -> 1655
+      return (kindVal == ISA_ADJUST_STAMP(1655));
   };
 };
 // STAMP_core__ExternalObject_O
@@ -3566,8 +3587,8 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::BroadcastStream_O val -> 1603
-      return (kindVal == ISA_ADJUST_STAMP(1603));
+    // IsA-stamp-range core::BroadcastStream_O val -> 1607
+      return (kindVal == ISA_ADJUST_STAMP(1607));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__
@@ -3584,8 +3605,8 @@ template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::General_O low high --> 19 1667 
-      return ((ISA_ADJUST_STAMP(19) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1667)));
+    // IsA-stamp-range core::General_O low high --> 19 1671 
+      return ((ISA_ADJUST_STAMP(19) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1671)));
   };
 };
 // STAMP_llvmo__ObjectFile_O
@@ -3828,8 +3849,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 787
-      return (kindVal == ISA_ADJUST_STAMP(787));
+    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 795
+      return (kindVal == ISA_ADJUST_STAMP(795));
   };
 };
 // STAMP_llvmo__Value_O
@@ -4080,8 +4101,8 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 819
-      return (kindVal == ISA_ADJUST_STAMP(819));
+    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 827
+      return (kindVal == ISA_ADJUST_STAMP(827));
   };
 };
 // STAMP_llvmo__ResumeInst_O
@@ -4224,8 +4245,8 @@ template <typename FP> struct Cast<core::SimpleVector_int4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int4_t_O val -> 795
-      return (kindVal == ISA_ADJUST_STAMP(795));
+    // IsA-stamp-range core::SimpleVector_int4_t_O val -> 763
+      return (kindVal == ISA_ADJUST_STAMP(763));
   };
 };
 // STAMP_core__MDArray_fixnum_O
@@ -4701,8 +4722,8 @@ template <typename FP> struct Cast<core::FileScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileScope_O val -> 1503
-      return (kindVal == ISA_ADJUST_STAMP(1503));
+    // IsA-stamp-range core::FileScope_O val -> 1507
+      return (kindVal == ISA_ADJUST_STAMP(1507));
   };
 };
 // STAMP_core__Float_O
@@ -4710,8 +4731,8 @@ template <typename FP> struct Cast<core::Float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Float_O low high --> 1547 1563 
-      return ((ISA_ADJUST_STAMP(1547) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1563)));
+    // IsA-stamp-range core::Float_O low high --> 1551 1567 
+      return ((ISA_ADJUST_STAMP(1551) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1567)));
   };
 };
 // STAMP_core__SimpleMDArray_byte4_t_O
@@ -4746,8 +4767,8 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 803
-      return (kindVal == ISA_ADJUST_STAMP(803));
+    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 811
+      return (kindVal == ISA_ADJUST_STAMP(811));
   };
 };
 // STAMP_llvmo__ConstantDataSequential_O
@@ -4809,8 +4830,8 @@ template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::IOFileStream_O val -> 1595
-      return (kindVal == ISA_ADJUST_STAMP(1595));
+    // IsA-stamp-range core::IOFileStream_O val -> 1599
+      return (kindVal == ISA_ADJUST_STAMP(1599));
   };
 };
 // STAMP_core__RuntimeVisibleEnvironment_O
@@ -4845,8 +4866,8 @@ template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::FileStream_O low high --> 1591 1599 
-      return ((ISA_ADJUST_STAMP(1591) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1599)));
+    // IsA-stamp-range core::FileStream_O low high --> 1595 1603 
+      return ((ISA_ADJUST_STAMP(1595) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1603)));
   };
 };
 // STAMP_core__Rational_O
@@ -4854,8 +4875,8 @@ template <typename FP> struct Cast<core::Rational_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Rational_O low high --> 1527 1543 
-      return ((ISA_ADJUST_STAMP(1527) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1543)));
+    // IsA-stamp-range core::Rational_O low high --> 1531 1547 
+      return ((ISA_ADJUST_STAMP(1531) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1547)));
   };
 };
 // STAMP_core__MDArrayCharacter_O
@@ -4944,8 +4965,8 @@ template <typename FP> struct Cast<core::Real_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Real_O low high --> 1523 1563 
-      return ((ISA_ADJUST_STAMP(1523) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1563)));
+    // IsA-stamp-range core::Real_O low high --> 1527 1567 
+      return ((ISA_ADJUST_STAMP(1527) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1567)));
   };
 };
 // STAMP_core__MDArray_byte8_t_O
@@ -4971,8 +4992,8 @@ template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StringOutputStream_O val -> 1611
-      return (kindVal == ISA_ADJUST_STAMP(1611));
+    // IsA-stamp-range core::StringOutputStream_O val -> 1615
+      return (kindVal == ISA_ADJUST_STAMP(1615));
   };
 };
 // STAMP_llvmo__AttributeSet_O
@@ -5009,15 +5030,6 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
       int kindVal = header->shifted_stamp();
     // IsA-stamp-range llvmo::PassManager_O val -> 1075
       return (kindVal == ISA_ADJUST_STAMP(1075));
-  };
-};
-// STAMP_gctools__GCBitUnitArray_moveable_2__1_
-template <typename FP> struct Cast<gctools::GCBitUnitArray_moveable<2,-1>*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCBitUnitArray_moveable<2,-1> val -> 1719
-      return (kindVal == ISA_ADJUST_STAMP(1719));
   };
 };
 // STAMP_core__SimpleVector_O
@@ -5133,8 +5145,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<short>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 1715
-      return (kindVal == ISA_ADJUST_STAMP(1715));
+    // IsA-stamp-range gctools::GCArray_moveable<short> val -> 1719
+      return (kindVal == ISA_ADJUST_STAMP(1719));
   };
 };
 // STAMP_core__DerivableCxxClassCreator_O
@@ -5178,8 +5190,8 @@ template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ConcatenatedStream_O val -> 1587
-      return (kindVal == ISA_ADJUST_STAMP(1587));
+    // IsA-stamp-range core::ConcatenatedStream_O val -> 1591
+      return (kindVal == ISA_ADJUST_STAMP(1591));
   };
 };
 // STAMP_gctools__GCVector_moveable_double_
@@ -5187,8 +5199,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<double>*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 1711
-      return (kindVal == ISA_ADJUST_STAMP(1711));
+    // IsA-stamp-range gctools::GCVector_moveable<double> val -> 1715
+      return (kindVal == ISA_ADJUST_STAMP(1715));
   };
 };
 // STAMP_core__SymbolMacroletEnvironment_O
@@ -5232,8 +5244,8 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SynonymStream_O val -> 1583
-      return (kindVal == ISA_ADJUST_STAMP(1583));
+    // IsA-stamp-range core::SynonymStream_O val -> 1587
+      return (kindVal == ISA_ADJUST_STAMP(1587));
   };
 };
 // STAMP_core__Ratio_O
@@ -5241,8 +5253,8 @@ template <typename FP> struct Cast<core::Ratio_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Ratio_O val -> 1531
-      return (kindVal == ISA_ADJUST_STAMP(1531));
+    // IsA-stamp-range core::Ratio_O val -> 1535
+      return (kindVal == ISA_ADJUST_STAMP(1535));
   };
 };
 // STAMP_core__MDArray_int2_t_O
@@ -5304,8 +5316,8 @@ template <typename FP> struct Cast<gctools::GCVector_moveable<gctools::smart_ptr
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 1707
-      return (kindVal == ISA_ADJUST_STAMP(1707));
+    // IsA-stamp-range gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>> val -> 1711
+      return (kindVal == ISA_ADJUST_STAMP(1711));
   };
 };
 // STAMP_llvmo__Attribute_O
@@ -5376,8 +5388,8 @@ template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Lisp_O val -> 1675
-      return (kindVal == ISA_ADJUST_STAMP(1675));
+    // IsA-stamp-range core::Lisp_O val -> 1679
+      return (kindVal == ISA_ADJUST_STAMP(1679));
   };
 };
 // STAMP_core__VaList_dummy_O
@@ -5421,8 +5433,8 @@ template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LogicalPathname_O val -> 1515
-      return (kindVal == ISA_ADJUST_STAMP(1515));
+    // IsA-stamp-range core::LogicalPathname_O val -> 1519
+      return (kindVal == ISA_ADJUST_STAMP(1519));
   };
 };
 // STAMP_llvmo__TargetSubtargetInfo_O
@@ -5448,8 +5460,8 @@ template <typename FP> struct Cast<core::SimpleVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_double_O val -> 779
-      return (kindVal == ISA_ADJUST_STAMP(779));
+    // IsA-stamp-range core::SimpleVector_double_O val -> 787
+      return (kindVal == ISA_ADJUST_STAMP(787));
   };
 };
 // STAMP_core__SimpleMDArray_byte32_t_O
@@ -5466,8 +5478,8 @@ template <typename FP> struct Cast<core::Bignum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Bignum_O val -> 1539
-      return (kindVal == ISA_ADJUST_STAMP(1539));
+    // IsA-stamp-range core::Bignum_O val -> 1543
+      return (kindVal == ISA_ADJUST_STAMP(1543));
   };
 };
 // STAMP_llvmo__LLVMTargetMachine_O
@@ -5538,8 +5550,8 @@ template <typename FP> struct Cast<gctools::GCArray_moveable<unsigned int>*,FP> 
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 1703
-      return (kindVal == ISA_ADJUST_STAMP(1703));
+    // IsA-stamp-range gctools::GCArray_moveable<unsigned int> val -> 1707
+      return (kindVal == ISA_ADJUST_STAMP(1707));
   };
 };
 // STAMP_core__TwoWayStream_O
@@ -5547,72 +5559,73 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::TwoWayStream_O val -> 1579
-      return (kindVal == ISA_ADJUST_STAMP(1579));
+    // IsA-stamp-range core::TwoWayStream_O val -> 1583
+      return (kindVal == ISA_ADJUST_STAMP(1583));
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
 #if defined(GC_TYPEQ)
-      ADD_SINGLE_TYPEQ_TEST(core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(1667));
+      ADD_SINGLE_TYPEQ_TEST(core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(1671));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_size_t_O,TYPEQ_ADJUST_STAMP(263));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte2_t_O,TYPEQ_ADJUST_STAMP(859));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,TYPEQ_ADJUST_STAMP(475));
       ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(543),TYPEQ_ADJUST_STAMP(707));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(419));
-      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1535),TYPEQ_ADJUST_STAMP(1543));
-      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1663));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1659));
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1683));
+      ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1539),TYPEQ_ADJUST_STAMP(1547));
+      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1667));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1663));
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1687));
       ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(191));
-      ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1655));
-      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,TYPEQ_ADJUST_STAMP(1647),TYPEQ_ADJUST_STAMP(1651));
+      ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1659));
+      ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,TYPEQ_ADJUST_STAMP(1651),TYPEQ_ADJUST_STAMP(1655));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,TYPEQ_ADJUST_STAMP(343));
-      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,TYPEQ_ADJUST_STAMP(1643));
+      ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,TYPEQ_ADJUST_STAMP(1647));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,TYPEQ_ADJUST_STAMP(1375));
-      ADD_SINGLE_TYPEQ_TEST(core::IntArray_O,TYPEQ_ADJUST_STAMP(1639));
+      ADD_SINGLE_TYPEQ_TEST(core::IntArray_O,TYPEQ_ADJUST_STAMP(1643));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_float_O,TYPEQ_ADJUST_STAMP(255));
-      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,TYPEQ_ADJUST_STAMP(1635));
+      ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,TYPEQ_ADJUST_STAMP(1639));
       ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1267));
       ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1207));
       ADD_SINGLE_TYPEQ_TEST(core::StandardClassCreator_O,TYPEQ_ADJUST_STAMP(91));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_float_O,TYPEQ_ADJUST_STAMP(607));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte8_t_O,TYPEQ_ADJUST_STAMP(647));
       ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1475),TYPEQ_ADJUST_STAMP(1491));
-      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,TYPEQ_ADJUST_STAMP(1631));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(771));
+      ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,TYPEQ_ADJUST_STAMP(1635));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(779));
       ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1103),TYPEQ_ADJUST_STAMP(1147));
-      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,TYPEQ_ADJUST_STAMP(1627));
+      ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,TYPEQ_ADJUST_STAMP(1631));
       ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,TYPEQ_ADJUST_STAMP(1263));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1323));
       ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,TYPEQ_ADJUST_STAMP(1259));
-      ADD_SINGLE_TYPEQ_TEST(core::Package_O,TYPEQ_ADJUST_STAMP(1623));
+      ADD_SINGLE_TYPEQ_TEST(core::Package_O,TYPEQ_ADJUST_STAMP(1627));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(491));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1155));
       ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(363),TYPEQ_ADJUST_STAMP(523));
-      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1571),TYPEQ_ADJUST_STAMP(1619));
+      ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1575),TYPEQ_ADJUST_STAMP(1623));
       ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1163));
-      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1563));
-      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1519),TYPEQ_ADJUST_STAMP(1567));
-      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(1671));
+      ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1567));
+      ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1523),TYPEQ_ADJUST_STAMP(1571));
+      ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(1675));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1147));
       ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(711),TYPEQ_ADJUST_STAMP(875));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(483));
-      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1511),TYPEQ_ADJUST_STAMP(1515));
+      ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1515),TYPEQ_ADJUST_STAMP(1519));
       ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,TYPEQ_ADJUST_STAMP(675));
       ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(979));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(875));
       ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,TYPEQ_ADJUST_STAMP(1319));
       ADD_RANGE_TYPEQ_TEST(llvmo::CallBase_O,llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1247),TYPEQ_ADJUST_STAMP(1255));
       ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1423),TYPEQ_ADJUST_STAMP(1443));
-      ADD_SINGLE_TYPEQ_TEST(core::Path_O,TYPEQ_ADJUST_STAMP(1507));
+      ADD_SINGLE_TYPEQ_TEST(core::Path_O,TYPEQ_ADJUST_STAMP(1511));
       ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,TYPEQ_ADJUST_STAMP(187));
       ADD_SINGLE_TYPEQ_TEST(core::InstanceCreator_O,TYPEQ_ADJUST_STAMP(87));
-      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1599));
-      ADD_RANGE_TYPEQ_TEST(core::Scope_O,core::FileScope_O,TYPEQ_ADJUST_STAMP(1499),TYPEQ_ADJUST_STAMP(1503));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,TYPEQ_ADJUST_STAMP(1495));
+      ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1603));
+      ADD_RANGE_TYPEQ_TEST(core::Scope_O,core::FileScope_O,TYPEQ_ADJUST_STAMP(1503),TYPEQ_ADJUST_STAMP(1507));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,TYPEQ_ADJUST_STAMP(1499));
+      ADD_SINGLE_TYPEQ_TEST(core::FunctionDescription_O,TYPEQ_ADJUST_STAMP(1495));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_double_O,TYPEQ_ADJUST_STAMP(551));
       ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,TYPEQ_ADJUST_STAMP(683));
-      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,TYPEQ_ADJUST_STAMP(1619));
+      ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,TYPEQ_ADJUST_STAMP(1623));
       ADD_RANGE_TYPEQ_TEST(core::HashTableBase_O,core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1467),TYPEQ_ADJUST_STAMP(1491));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,TYPEQ_ADJUST_STAMP(507));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,TYPEQ_ADJUST_STAMP(351));
@@ -5624,11 +5637,11 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,TYPEQ_ADJUST_STAMP(183));
       ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(175),TYPEQ_ADJUST_STAMP(179));
       ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(207));
-      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1615));
+      ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1619));
       ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(967),TYPEQ_ADJUST_STAMP(975));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1455));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1099));
-      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,TYPEQ_ADJUST_STAMP(1559));
+      ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,TYPEQ_ADJUST_STAMP(1563));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int4_t_O,TYPEQ_ADJUST_STAMP(623));
       ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(975));
       ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1187),TYPEQ_ADJUST_STAMP(1323));
@@ -5641,7 +5654,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int4_t_O,TYPEQ_ADJUST_STAMP(451));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,TYPEQ_ADJUST_STAMP(867));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_double_O,TYPEQ_ADJUST_STAMP(379));
-      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,TYPEQ_ADJUST_STAMP(1567));
+      ADD_SINGLE_TYPEQ_TEST(core::Complex_O,TYPEQ_ADJUST_STAMP(1571));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,TYPEQ_ADJUST_STAMP(1315));
       ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1019));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,TYPEQ_ADJUST_STAMP(1159));
@@ -5651,14 +5664,14 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int16_t_O,TYPEQ_ADJUST_STAMP(615));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_float_O,TYPEQ_ADJUST_STAMP(427));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,TYPEQ_ADJUST_STAMP(1371));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int2_t_O,TYPEQ_ADJUST_STAMP(827));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int2_t_O,TYPEQ_ADJUST_STAMP(803));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(327));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,TYPEQ_ADJUST_STAMP(811));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(763));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,TYPEQ_ADJUST_STAMP(819));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(771));
       ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(115));
-      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1575),TYPEQ_ADJUST_STAMP(1619));
+      ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1579),TYPEQ_ADJUST_STAMP(1623));
       ADD_RANGE_TYPEQ_TEST(core::BuiltinClosure_O,core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(107),TYPEQ_ADJUST_STAMP(111));
-      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1555));
+      ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1559));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(1151));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,TYPEQ_ADJUST_STAMP(1367));
       ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1391),TYPEQ_ADJUST_STAMP(1455));
@@ -5669,8 +5682,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(135));
       ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,TYPEQ_ADJUST_STAMP(1251));
       ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1079));
-      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,TYPEQ_ADJUST_STAMP(1551));
-      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1607),TYPEQ_ADJUST_STAMP(1615));
+      ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,TYPEQ_ADJUST_STAMP(1555));
+      ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1611),TYPEQ_ADJUST_STAMP(1619));
       ADD_SINGLE_TYPEQ_TEST(core::Sigset_O,TYPEQ_ADJUST_STAMP(1387));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,TYPEQ_ADJUST_STAMP(239));
       ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(923));
@@ -5679,21 +5692,21 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,TYPEQ_ADJUST_STAMP(443));
       ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,TYPEQ_ADJUST_STAMP(1383));
       ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,TYPEQ_ADJUST_STAMP(1363));
-      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1543));
+      ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1547));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,TYPEQ_ADJUST_STAMP(231));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,TYPEQ_ADJUST_STAMP(1307));
-      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,TYPEQ_ADJUST_STAMP(1671));
+      ADD_SINGLE_TYPEQ_TEST(core::Cons_O,TYPEQ_ADJUST_STAMP(1675));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,TYPEQ_ADJUST_STAMP(1359));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int4_t_O,TYPEQ_ADJUST_STAMP(531));
       ADD_SINGLE_TYPEQ_TEST(core::WeakKeyHashTable_O,TYPEQ_ADJUST_STAMP(1471));
       ADD_SINGLE_TYPEQ_TEST(core::Rack_O,TYPEQ_ADJUST_STAMP(1379));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(319));
-      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,TYPEQ_ADJUST_STAMP(1651));
+      ADD_SINGLE_TYPEQ_TEST(core::UserData_O,TYPEQ_ADJUST_STAMP(1655));
       ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::Linker_O,TYPEQ_ADJUST_STAMP(959),TYPEQ_ADJUST_STAMP(1375));
       ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1091),TYPEQ_ADJUST_STAMP(1147));
       ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1283));
-      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1603));
-      ADD_RANGE_TYPEQ_TEST(core::General_O,core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1667));
+      ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1607));
+      ADD_RANGE_TYPEQ_TEST(core::General_O,core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1671));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(1355));
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(99),TYPEQ_ADJUST_STAMP(115));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_size_t_O,TYPEQ_ADJUST_STAMP(631));
@@ -5717,7 +5730,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,TYPEQ_ADJUST_STAMP(747));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ThreadSafeContext_O,TYPEQ_ADJUST_STAMP(1335));
       ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1327),TYPEQ_ADJUST_STAMP(1331));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,TYPEQ_ADJUST_STAMP(787));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,TYPEQ_ADJUST_STAMP(795));
       ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1171),TYPEQ_ADJUST_STAMP(1323));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(731));
       ADD_SINGLE_TYPEQ_TEST(core::Test_O,TYPEQ_ADJUST_STAMP(1167));
@@ -5743,7 +5756,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::MetadataAsValue_O,TYPEQ_ADJUST_STAMP(1183));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,TYPEQ_ADJUST_STAMP(755));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,TYPEQ_ADJUST_STAMP(1439));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(819));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(827));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,TYPEQ_ADJUST_STAMP(1235));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,TYPEQ_ADJUST_STAMP(1279));
       ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1127));
@@ -5757,7 +5770,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(179));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_float_O,TYPEQ_ADJUST_STAMP(835));
       ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,TYPEQ_ADJUST_STAMP(1199));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int4_t_O,TYPEQ_ADJUST_STAMP(795));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int4_t_O,TYPEQ_ADJUST_STAMP(763));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,TYPEQ_ADJUST_STAMP(311));
       ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,TYPEQ_ADJUST_STAMP(899));
       ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,TYPEQ_ADJUST_STAMP(895));
@@ -5803,24 +5816,24 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(core::Pointer_O,clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(131),TYPEQ_ADJUST_STAMP(135));
       ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,TYPEQ_ADJUST_STAMP(1227));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(707));
-      ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(1503));
-      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1547),TYPEQ_ADJUST_STAMP(1563));
+      ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(1507));
+      ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1551),TYPEQ_ADJUST_STAMP(1567));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(411));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(1119));
       ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,TYPEQ_ADJUST_STAMP(79));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(803));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(811));
       ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1291),TYPEQ_ADJUST_STAMP(1295));
       ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(111));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_double_O,TYPEQ_ADJUST_STAMP(539));
       ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,TYPEQ_ADJUST_STAMP(1223));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,TYPEQ_ADJUST_STAMP(127));
       ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,TYPEQ_ADJUST_STAMP(123));
-      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(1595));
+      ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(1599));
       ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1403),TYPEQ_ADJUST_STAMP(1419));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(515));
       ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1191),TYPEQ_ADJUST_STAMP(1267));
-      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1591),TYPEQ_ADJUST_STAMP(1599));
-      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1527),TYPEQ_ADJUST_STAMP(1543));
+      ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1595),TYPEQ_ADJUST_STAMP(1603));
+      ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1531),TYPEQ_ADJUST_STAMP(1547));
       ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,TYPEQ_ADJUST_STAMP(335));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(1219));
       ADD_SINGLE_TYPEQ_TEST(core::ImmobileObject_O,TYPEQ_ADJUST_STAMP(119));
@@ -5829,10 +5842,10 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::AtomicT_Holder_O,TYPEQ_ADJUST_STAMP(51));
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,TYPEQ_ADJUST_STAMP(1487));
       ADD_SINGLE_TYPEQ_TEST(mp::ConditionVariable_O,TYPEQ_ADJUST_STAMP(151));
-      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1523),TYPEQ_ADJUST_STAMP(1563));
+      ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1527),TYPEQ_ADJUST_STAMP(1567));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(271));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstanceCreator_O,TYPEQ_ADJUST_STAMP(75));
-      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,TYPEQ_ADJUST_STAMP(1611));
+      ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,TYPEQ_ADJUST_STAMP(1615));
       ADD_SINGLE_TYPEQ_TEST(llvmo::AttributeSet_O,TYPEQ_ADJUST_STAMP(47));
       ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,TYPEQ_ADJUST_STAMP(1215));
       ADD_SINGLE_TYPEQ_TEST(llvmo::MDBuilder_O,TYPEQ_ADJUST_STAMP(147));
@@ -5853,13 +5866,13 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,TYPEQ_ADJUST_STAMP(1483));
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEqualp_O,TYPEQ_ADJUST_STAMP(1479));
       ADD_SINGLE_TYPEQ_TEST(core::LambdaListHandler_O,TYPEQ_ADJUST_STAMP(43));
-      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,TYPEQ_ADJUST_STAMP(1587));
+      ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,TYPEQ_ADJUST_STAMP(1591));
       ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1435));
       ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1431));
       ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(971),TYPEQ_ADJUST_STAMP(975));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstance_O,TYPEQ_ADJUST_STAMP(57));
-      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,TYPEQ_ADJUST_STAMP(1583));
-      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,TYPEQ_ADJUST_STAMP(1531));
+      ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,TYPEQ_ADJUST_STAMP(1587));
+      ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,TYPEQ_ADJUST_STAMP(1535));
       ADD_SINGLE_TYPEQ_TEST(core::MDArray_int2_t_O,TYPEQ_ADJUST_STAMP(303));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte2_t_O,TYPEQ_ADJUST_STAMP(639));
       ADD_SINGLE_TYPEQ_TEST(core::ClosureWithSlots_O,TYPEQ_ADJUST_STAMP(103));
@@ -5877,12 +5890,12 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::FdSet_O,TYPEQ_ADJUST_STAMP(31));
       ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte4_t_O,TYPEQ_ADJUST_STAMP(691));
       ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,TYPEQ_ADJUST_STAMP(1427));
-      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1515));
+      ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1519));
       ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(991));
       ADD_SINGLE_TYPEQ_TEST(core::WrappedPointer_O,TYPEQ_ADJUST_STAMP(26));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_double_O,TYPEQ_ADJUST_STAMP(779));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_double_O,TYPEQ_ADJUST_STAMP(787));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(387));
-      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,TYPEQ_ADJUST_STAMP(1539));
+      ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,TYPEQ_ADJUST_STAMP(1543));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1331));
       ADD_SINGLE_TYPEQ_TEST(core::ClassHolder_O,TYPEQ_ADJUST_STAMP(23));
       ADD_RANGE_TYPEQ_TEST(llvmo::SequentialType_O,llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1007),TYPEQ_ADJUST_STAMP(1019));
@@ -5890,7 +5903,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1195),TYPEQ_ADJUST_STAMP(1207));
       ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1275),TYPEQ_ADJUST_STAMP(1283));
       ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1011));
-      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1579));
+      ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1583));
 #endif // defined(GC_TYPEQ)
 #if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<core::MultiStringBuffer_O> {
@@ -6121,6 +6134,10 @@ template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__UndefValue_O ;
 };
+template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<2,1>> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_2_1_ ;
+};
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCVector_moveable_core__AuxArgument_ ;
@@ -6168,6 +6185,10 @@ public:
 template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__InsertPoint_O ;
+};
+template <> class gctools::GCStamp<core::FunctionDescription_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__FunctionDescription_O ;
 };
 template <> class gctools::GCStamp<core::ComplexVector_double_O> {
 public:
@@ -6481,13 +6502,13 @@ template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__ConstantFP_O ;
 };
-template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<4,-1>> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_4__1_ ;
-};
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Cons_O ;
+};
+template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<4,1>> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_4_1_ ;
 };
 template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
@@ -7169,10 +7190,6 @@ template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_llvmo__PassManager_O ;
 };
-template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<2,-1>> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_gctools__GCBitUnitArray_moveable_2__1_ ;
-};
 template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__SimpleVector_O ;
@@ -7421,14 +7438,8 @@ public:
 { class_kind, STAMP_core__Unused_dummy_O, sizeof(core::Unused_dummy_O), 0, "core::Unused_dummy_O" },
 // Stamp = core::General_O/19
 { class_kind, STAMP_core__General_O, sizeof(core::General_O), 0, "core::General_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::General_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::ClassHolder_O/23
 { class_kind, STAMP_core__ClassHolder_O, sizeof(core::ClassHolder_O), 0, "core::ClassHolder_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClassHolder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: T  name: "atomic"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::Instance_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -7437,18 +7448,12 @@ public:
 { templated_kind, STAMP_core__WrappedPointer_O, sizeof(core::WrappedPointer_O), 0, "core::WrappedPointer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),ShiftedStamp_), "ShiftedStamp_" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),Class_), "Class_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::FdSet_O/31
 { class_kind, STAMP_core__FdSet_O, sizeof(core::FdSet_O), 0, "core::FdSet_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FdSet_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
@@ -7460,9 +7465,6 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FdSet_O),_fd_set.__value.__wch), "_fd_set.__value.__wch" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
 // Stamp = core::SymbolToEnumConverter_O/35
 { class_kind, STAMP_core__SymbolToEnumConverter_O, sizeof(core::SymbolToEnumConverter_O), 0, "core::SymbolToEnumConverter_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_WhatTheEnumsRepresent), "_WhatTheEnumsRepresent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7480,14 +7482,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_SymbolToEnum), "_SymbolToEnum" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Attribute_O/39
 { class_kind, STAMP_llvmo__Attribute_O, sizeof(llvmo::Attribute_O), 0, "llvmo::Attribute_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Attribute_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::LambdaListHandler_O/43
 { class_kind, STAMP_core__LambdaListHandler_O, sizeof(core::LambdaListHandler_O), 0, "core::LambdaListHandler_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_NumberOfSpecialVariables), "_NumberOfSpecialVariables" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -7556,28 +7552,24 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), "_LexicalVariableNamesForDebugging" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::AttributeSet_O/47
 { class_kind, STAMP_llvmo__AttributeSet_O, sizeof(llvmo::AttributeSet_O), 0, "llvmo::AttributeSet_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AttributeSet_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::AtomicT_Holder_O/51
 { class_kind, STAMP_core__AtomicT_Holder_O, sizeof(core::AtomicT_Holder_O), 0, "core::AtomicT_Holder_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicT_Holder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: T  name: "atomic"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicT_Holder_O),_Object), "_Object" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Function_O/55
 { class_kind, STAMP_core__Function_O, sizeof(core::Function_O), 0, "core::Function_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Function_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Function_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::FuncallableInstance_O/57
 { class_kind, STAMP_core__FuncallableInstance_O, sizeof(core::FuncallableInstance_O), 0, "core::FuncallableInstance_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_Rack), "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7594,40 +7586,46 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CompiledDispatchFunction), "_CompiledDispatchFunction" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Creator_O/63
 { templated_kind, STAMP_core__Creator_O, sizeof(core::Creator_O), 0, "core::Creator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Creator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Creator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::ClassRepCreator_O/67
 { class_kind, STAMP_core__ClassRepCreator_O, sizeof(core::ClassRepCreator_O), 0, "core::ClassRepCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClassRepCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClassRepCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::DerivableCxxClassCreator_O/71
 { class_kind, STAMP_core__DerivableCxxClassCreator_O, sizeof(core::DerivableCxxClassCreator_O), 0, "core::DerivableCxxClassCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxClassCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxClassCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::FuncallableInstanceCreator_O/75
 { class_kind, STAMP_core__FuncallableInstanceCreator_O, sizeof(core::FuncallableInstanceCreator_O), 0, "core::FuncallableInstanceCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),_class), "_class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = clbind::ConstructorCreator_O/79
 { templated_kind, STAMP_clbind__ConstructorCreator_O, sizeof(clbind::ConstructorCreator_O), 0, "clbind::ConstructorCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_mostDerivedClassSymbol), "_mostDerivedClassSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = clbind::DummyCreator_O/83
 { class_kind, STAMP_clbind__DummyCreator_O, sizeof(clbind::DummyCreator_O), 0, "clbind::DummyCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: "basic_string"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::char_traits<char>" :NAME "char_traits" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::allocator<char>" :NAME "allocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -7639,32 +7637,37 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_name.NO-NAME._M_allocated_capacity), "_name.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (T NIL T) fixable: NIL good-name: T
 // Stamp = core::InstanceCreator_O/87
 { class_kind, STAMP_core__InstanceCreator_O, sizeof(core::InstanceCreator_O), 0, "core::InstanceCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_class), "_class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::StandardClassCreator_O/91
 { class_kind, STAMP_core__StandardClassCreator_O, sizeof(core::StandardClassCreator_O), 0, "core::StandardClassCreator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StandardClassCreator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::StandardClassCreator_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::SpecialForm_O/95
 { class_kind, STAMP_core__SpecialForm_O, sizeof(core::SpecialForm_O), 0, "core::SpecialForm_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Closure_O/99
 { templated_kind, STAMP_core__Closure_O, sizeof(core::Closure_O), 0, "core::Closure_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Closure_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Closure_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::ClosureWithSlots_O/103
 { class_kind, STAMP_core__ClosureWithSlots_O, sizeof(core::ClosureWithSlots_O), 0, "core::ClosureWithSlots_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._Data), "_Slots._Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_Slots._MaybeSignedLength), NULL },
 /* (base one) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -7676,30 +7679,30 @@ public:
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 // Stamp = core::BuiltinClosure_O/107
 { templated_kind, STAMP_core__BuiltinClosure_O, sizeof(core::BuiltinClosure_O), 0, "core::BuiltinClosure_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LambdaListHandler_O>" :SPECIALIZER "class core::LambdaListHandler_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_lambdaListHandler), "_lambdaListHandler" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::TranslationFunctor_O/111
 { class_kind, STAMP_core__TranslationFunctor_O, sizeof(core::TranslationFunctor_O), 0, "core::TranslationFunctor_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LambdaListHandler_O>" :SPECIALIZER "class core::LambdaListHandler_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),_lambdaListHandler), "_lambdaListHandler" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::SingleDispatchGenericFunctionClosure_O/115
 { class_kind, STAMP_core__SingleDispatchGenericFunctionClosure_O, sizeof(core::SingleDispatchGenericFunctionClosure_O), 0, "core::SingleDispatchGenericFunctionClosure_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::FunctionDescription_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_FunctionDescription), "_FunctionDescription" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::ImmobileObject_O/119
 { class_kind, STAMP_core__ImmobileObject_O, sizeof(core::ImmobileObject_O), 0, "core::ImmobileObject_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ImmobileObject_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ImmobileObject_O),_Head), "_Head" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7709,27 +7712,15 @@ public:
 // Stamp = core::WeakPointer_O/123
 { class_kind, STAMP_core__WeakPointer_O, sizeof(core::WeakPointer_O), 0, "core::WeakPointer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakPointerManager" :NAME "WeakPointerManager")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::WeakPointer>" :SPECIALIZER "struct gctools::WeakPointer")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::WeakPointer>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_WeakObject.pointer), "_WeakObject.pointer" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = llvmo::DebugLoc_O/127
 { class_kind, STAMP_llvmo__DebugLoc_O, sizeof(llvmo::DebugLoc_O), 0, "llvmo::DebugLoc_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DebugLoc_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::Pointer_O/131
 { class_kind, STAMP_core__Pointer_O, sizeof(core::Pointer_O), 0, "core::Pointer_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pointer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = clasp_ffi::ForeignData_O/135
 { class_kind, STAMP_clasp_ffi__ForeignData_O, sizeof(clasp_ffi::ForeignData_O), 0, "clasp_ffi::ForeignData_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),m_kind), "m_kind" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -7738,14 +7729,8 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),m_size), "m_size" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // Stamp = core::CxxObject_O/139
 { class_kind, STAMP_core__CxxObject_O, sizeof(core::CxxObject_O), 0, "core::CxxObject_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::CxxObject_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::NativeVector_float_O/143
 { class_kind, STAMP_core__NativeVector_float_O, sizeof(core::NativeVector_float_O), 0, "core::NativeVector_float_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "GCVector"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<float>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<float,gctools::GCContainerAllocator<gctools::GCVector_moveable<float>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<float>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<float>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -7753,14 +7738,8 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<float>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_float_O),_Vector._Vector._Contents), "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = llvmo::MDBuilder_O/147
 { class_kind, STAMP_llvmo__MDBuilder_O, sizeof(llvmo::MDBuilder_O), 0, "llvmo::MDBuilder_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDBuilder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = mp::ConditionVariable_O/151
 { class_kind, STAMP_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, "mp::ConditionVariable_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "(anonymous)" :NAME "")
@@ -7777,9 +7756,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::NativeVector_double_O/155
 { class_kind, STAMP_core__NativeVector_double_O, sizeof(core::NativeVector_double_O), 0, "core::NativeVector_double_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_double_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "GCVector"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<double>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<double,gctools::GCContainerAllocator<gctools::GCVector_moveable<double>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<double>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<double>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -7787,9 +7763,6 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<double>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_double_O),_Vector._Vector._Contents), "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = core::NativeVector_int_O/159
 { class_kind, STAMP_core__NativeVector_int_O, sizeof(core::NativeVector_int_O), 0, "core::NativeVector_int_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_int_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "GCVector"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<int>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<int,gctools::GCContainerAllocator<gctools::GCVector_moveable<int>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<int>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<int>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -7797,14 +7770,8 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<int>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_int_O),_Vector._Vector._Contents), "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = llvmo::FunctionCallee_O/163
 { class_kind, STAMP_llvmo__FunctionCallee_O, sizeof(llvmo::FunctionCallee_O), 0, "llvmo::FunctionCallee_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionCallee_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::Serializer_O/167
 { class_kind, STAMP_core__Serializer_O, sizeof(core::Serializer_O), 0, "core::Serializer_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Serializer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "basic_string"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::char_traits<char>" :NAME "char_traits" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::allocator<char>" :NAME "allocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -7816,14 +7783,8 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Serializer_O),_Data.NO-NAME._M_allocated_capacity), "_Data.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (T NIL T) fixable: NIL good-name: T
 // Stamp = llvmo::DINodeArray_O/171
 { class_kind, STAMP_llvmo__DINodeArray_O, sizeof(llvmo::DINodeArray_O), 0, "llvmo::DINodeArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINodeArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = mp::Mutex_O/175
 { class_kind, STAMP_mp__Mutex_O, sizeof(mp::Mutex_O), 0, "mp::Mutex_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7856,9 +7817,6 @@ public:
 // Stamp = mp::RecursiveMutex_O/179
 { class_kind, STAMP_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, "mp::RecursiveMutex_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -7889,14 +7847,8 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 // Stamp = llvmo::DITypeRefArray_O/183
 { class_kind, STAMP_llvmo__DITypeRefArray_O, sizeof(llvmo::DITypeRefArray_O), 0, "llvmo::DITypeRefArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DITypeRefArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = mp::SharedMutex_O/187
 { class_kind, STAMP_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, "mp::SharedMutex_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -7975,9 +7927,6 @@ public:
 { class_kind, STAMP_mp__Process_O, sizeof(mp::Process_O), 0, "mp::Process_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_UniqueID), "_UniqueID" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -8043,9 +7992,6 @@ public:
 // Stamp = core::SingleDispatchMethod_O/195
 { class_kind, STAMP_core__SingleDispatchMethod_O, sizeof(core::SingleDispatchMethod_O), 0, "core::SingleDispatchMethod_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_name), "_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8065,22 +8011,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_function), "_function" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Iterator_O/199
 { class_kind, STAMP_core__Iterator_O, sizeof(core::Iterator_O), 0, "core::Iterator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Iterator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::DirectoryIterator_O/203
 { class_kind, STAMP_core__DirectoryIterator_O, sizeof(core::DirectoryIterator_O), 0, "core::DirectoryIterator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_Path), "_Path" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::RecursiveDirectoryIterator_O/207
 { class_kind, STAMP_core__RecursiveDirectoryIterator_O, sizeof(core::RecursiveDirectoryIterator_O), 0, "core::RecursiveDirectoryIterator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_Path), "_Path" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8090,16 +8027,10 @@ public:
 // Stamp = core::Array_O/211
 { class_kind, STAMP_core__Array_O, sizeof(core::Array_O), 0, "core::Array_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Array_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Array_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::MDArray_O/215
 { class_kind, STAMP_core__MDArray_O, sizeof(core::MDArray_O), 0, "core::MDArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8132,9 +8063,6 @@ public:
 // Stamp = core::MDArray_int16_t_O/223
 { class_kind, STAMP_core__MDArray_int16_t_O, sizeof(core::MDArray_int16_t_O), 0, "core::MDArray_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8165,9 +8093,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>/227
 // Stamp = core::MDArray_int8_t_O/231
 { class_kind, STAMP_core__MDArray_int8_t_O, sizeof(core::MDArray_int8_t_O), 0, "core::MDArray_int8_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8200,9 +8125,6 @@ public:
 // Stamp = core::MDArray_int32_t_O/239
 { class_kind, STAMP_core__MDArray_int32_t_O, sizeof(core::MDArray_int32_t_O), 0, "core::MDArray_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8233,9 +8155,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>/243
 // Stamp = core::MDArray_byte4_t_O/247
 { class_kind, STAMP_core__MDArray_byte4_t_O, sizeof(core::MDArray_byte4_t_O), 0, "core::MDArray_byte4_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8268,9 +8187,6 @@ public:
 // Stamp = core::MDArray_float_O/255
 { class_kind, STAMP_core__MDArray_float_O, sizeof(core::MDArray_float_O), 0, "core::MDArray_float_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_float_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8301,9 +8217,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>/259
 // Stamp = core::MDArray_size_t_O/263
 { class_kind, STAMP_core__MDArray_size_t_O, sizeof(core::MDArray_size_t_O), 0, "core::MDArray_size_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8336,9 +8249,6 @@ public:
 // Stamp = core::MDArray_byte8_t_O/271
 { class_kind, STAMP_core__MDArray_byte8_t_O, sizeof(core::MDArray_byte8_t_O), 0, "core::MDArray_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8369,9 +8279,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>/275
 // Stamp = core::MDArray_int64_t_O/279
 { class_kind, STAMP_core__MDArray_int64_t_O, sizeof(core::MDArray_int64_t_O), 0, "core::MDArray_int64_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8404,9 +8311,6 @@ public:
 // Stamp = core::MDArray_byte32_t_O/287
 { class_kind, STAMP_core__MDArray_byte32_t_O, sizeof(core::MDArray_byte32_t_O), 0, "core::MDArray_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8437,9 +8341,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>/291
 // Stamp = core::MDArray_byte2_t_O/295
 { class_kind, STAMP_core__MDArray_byte2_t_O, sizeof(core::MDArray_byte2_t_O), 0, "core::MDArray_byte2_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8472,9 +8373,6 @@ public:
 // Stamp = core::MDArray_int2_t_O/303
 { class_kind, STAMP_core__MDArray_int2_t_O, sizeof(core::MDArray_int2_t_O), 0, "core::MDArray_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8505,9 +8403,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>/307
 // Stamp = core::MDArray_fixnum_O/311
 { class_kind, STAMP_core__MDArray_fixnum_O, sizeof(core::MDArray_fixnum_O), 0, "core::MDArray_fixnum_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8540,9 +8435,6 @@ public:
 // Stamp = core::MDArrayBaseChar_O/319
 { class_kind, STAMP_core__MDArrayBaseChar_O, sizeof(core::MDArrayBaseChar_O), 0, "core::MDArrayBaseChar_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8573,9 +8465,6 @@ public:
 // Stamp = core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>/323
 // Stamp = core::MDArray_byte64_t_O/327
 { class_kind, STAMP_core__MDArray_byte64_t_O, sizeof(core::MDArray_byte64_t_O), 0, "core::MDArray_byte64_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8608,9 +8497,6 @@ public:
 // Stamp = core::MDArrayCharacter_O/335
 { class_kind, STAMP_core__MDArrayCharacter_O, sizeof(core::MDArrayCharacter_O), 0, "core::MDArrayCharacter_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8641,9 +8527,6 @@ public:
 // Stamp = core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>/339
 // Stamp = core::MDArrayT_O/343
 { class_kind, STAMP_core__MDArrayT_O, sizeof(core::MDArrayT_O), 0, "core::MDArrayT_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8676,9 +8559,6 @@ public:
 // Stamp = core::MDArrayBit_O/351
 { class_kind, STAMP_core__MDArrayBit_O, sizeof(core::MDArrayBit_O), 0, "core::MDArrayBit_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8710,9 +8590,6 @@ public:
 // Stamp = core::MDArray_byte16_t_O/359
 { class_kind, STAMP_core__MDArray_byte16_t_O, sizeof(core::MDArray_byte16_t_O), 0, "core::MDArray_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8742,9 +8619,6 @@ public:
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 // Stamp = core::SimpleMDArray_O/363
 { class_kind, STAMP_core__SimpleMDArray_O, sizeof(core::SimpleMDArray_O), 0, "core::SimpleMDArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8777,9 +8651,6 @@ public:
 // Stamp = core::SimpleMDArray_int8_t_O/371
 { class_kind, STAMP_core__SimpleMDArray_int8_t_O, sizeof(core::SimpleMDArray_int8_t_O), 0, "core::SimpleMDArray_int8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8810,9 +8681,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>/375
 // Stamp = core::SimpleMDArray_double_O/379
 { class_kind, STAMP_core__SimpleMDArray_double_O, sizeof(core::SimpleMDArray_double_O), 0, "core::SimpleMDArray_double_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_double_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_double_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8845,9 +8713,6 @@ public:
 // Stamp = core::SimpleMDArray_byte32_t_O/387
 { class_kind, STAMP_core__SimpleMDArray_byte32_t_O, sizeof(core::SimpleMDArray_byte32_t_O), 0, "core::SimpleMDArray_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8878,9 +8743,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>/391
 // Stamp = core::SimpleMDArrayT_O/395
 { class_kind, STAMP_core__SimpleMDArrayT_O, sizeof(core::SimpleMDArrayT_O), 0, "core::SimpleMDArrayT_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8913,9 +8775,6 @@ public:
 // Stamp = core::SimpleMDArray_int2_t_O/403
 { class_kind, STAMP_core__SimpleMDArray_int2_t_O, sizeof(core::SimpleMDArray_int2_t_O), 0, "core::SimpleMDArray_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -8946,9 +8805,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>/407
 // Stamp = core::SimpleMDArray_byte4_t_O/411
 { class_kind, STAMP_core__SimpleMDArray_byte4_t_O, sizeof(core::SimpleMDArray_byte4_t_O), 0, "core::SimpleMDArray_byte4_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8981,9 +8837,6 @@ public:
 // Stamp = core::SimpleMDArray_int32_t_O/419
 { class_kind, STAMP_core__SimpleMDArray_int32_t_O, sizeof(core::SimpleMDArray_int32_t_O), 0, "core::SimpleMDArray_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9014,9 +8867,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>/423
 // Stamp = core::SimpleMDArray_float_O/427
 { class_kind, STAMP_core__SimpleMDArray_float_O, sizeof(core::SimpleMDArray_float_O), 0, "core::SimpleMDArray_float_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_float_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9049,9 +8899,6 @@ public:
 // Stamp = core::SimpleMDArray_int16_t_O/435
 { class_kind, STAMP_core__SimpleMDArray_int16_t_O, sizeof(core::SimpleMDArray_int16_t_O), 0, "core::SimpleMDArray_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9082,9 +8929,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>/439
 // Stamp = core::SimpleMDArray_size_t_O/443
 { class_kind, STAMP_core__SimpleMDArray_size_t_O, sizeof(core::SimpleMDArray_size_t_O), 0, "core::SimpleMDArray_size_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9117,9 +8961,6 @@ public:
 // Stamp = core::SimpleMDArray_int4_t_O/451
 { class_kind, STAMP_core__SimpleMDArray_int4_t_O, sizeof(core::SimpleMDArray_int4_t_O), 0, "core::SimpleMDArray_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9150,9 +8991,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>/455
 // Stamp = core::SimpleMDArrayCharacter_O/459
 { class_kind, STAMP_core__SimpleMDArrayCharacter_O, sizeof(core::SimpleMDArrayCharacter_O), 0, "core::SimpleMDArrayCharacter_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9185,9 +9023,6 @@ public:
 // Stamp = core::SimpleMDArray_byte2_t_O/467
 { class_kind, STAMP_core__SimpleMDArray_byte2_t_O, sizeof(core::SimpleMDArray_byte2_t_O), 0, "core::SimpleMDArray_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9218,9 +9053,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>/471
 // Stamp = core::SimpleMDArray_fixnum_O/475
 { class_kind, STAMP_core__SimpleMDArray_fixnum_O, sizeof(core::SimpleMDArray_fixnum_O), 0, "core::SimpleMDArray_fixnum_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9253,9 +9085,6 @@ public:
 // Stamp = core::SimpleMDArray_byte16_t_O/483
 { class_kind, STAMP_core__SimpleMDArray_byte16_t_O, sizeof(core::SimpleMDArray_byte16_t_O), 0, "core::SimpleMDArray_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9286,9 +9115,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>/487
 // Stamp = core::SimpleMDArrayBaseChar_O/491
 { class_kind, STAMP_core__SimpleMDArrayBaseChar_O, sizeof(core::SimpleMDArrayBaseChar_O), 0, "core::SimpleMDArrayBaseChar_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9321,9 +9147,6 @@ public:
 // Stamp = core::SimpleMDArray_byte64_t_O/499
 { class_kind, STAMP_core__SimpleMDArray_byte64_t_O, sizeof(core::SimpleMDArray_byte64_t_O), 0, "core::SimpleMDArray_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9354,9 +9177,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>/503
 // Stamp = core::SimpleMDArrayBit_O/507
 { class_kind, STAMP_core__SimpleMDArrayBit_O, sizeof(core::SimpleMDArrayBit_O), 0, "core::SimpleMDArrayBit_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9389,9 +9209,6 @@ public:
 // Stamp = core::SimpleMDArray_byte8_t_O/515
 { class_kind, STAMP_core__SimpleMDArray_byte8_t_O, sizeof(core::SimpleMDArray_byte8_t_O), 0, "core::SimpleMDArray_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9422,9 +9239,6 @@ public:
 // Stamp = core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>/519
 // Stamp = core::SimpleMDArray_int64_t_O/523
 { class_kind, STAMP_core__SimpleMDArray_int64_t_O, sizeof(core::SimpleMDArray_int64_t_O), 0, "core::SimpleMDArray_int64_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9457,9 +9271,6 @@ public:
 // Stamp = core::MDArray_int4_t_O/531
 { class_kind, STAMP_core__MDArray_int4_t_O, sizeof(core::MDArray_int4_t_O), 0, "core::MDArray_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9491,9 +9302,6 @@ public:
 // Stamp = core::MDArray_double_O/539
 { class_kind, STAMP_core__MDArray_double_O, sizeof(core::MDArray_double_O), 0, "core::MDArray_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_double_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_double_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9523,9 +9331,6 @@ public:
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 // Stamp = core::ComplexVector_O/543
 { class_kind, STAMP_core__ComplexVector_O, sizeof(core::ComplexVector_O), 0, "core::ComplexVector_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9558,9 +9363,6 @@ public:
 // Stamp = core::ComplexVector_double_O/551
 { class_kind, STAMP_core__ComplexVector_double_O, sizeof(core::ComplexVector_double_O), 0, "core::ComplexVector_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_double_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_double_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9591,9 +9393,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>/555
 // Stamp = core::ComplexVector_int8_t_O/559
 { class_kind, STAMP_core__ComplexVector_int8_t_O, sizeof(core::ComplexVector_int8_t_O), 0, "core::ComplexVector_int8_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9626,9 +9425,6 @@ public:
 // Stamp = core::ComplexVector_byte64_t_O/567
 { class_kind, STAMP_core__ComplexVector_byte64_t_O, sizeof(core::ComplexVector_byte64_t_O), 0, "core::ComplexVector_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9659,9 +9455,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>/571
 // Stamp = core::ComplexVector_T_O/575
 { class_kind, STAMP_core__ComplexVector_T_O, sizeof(core::ComplexVector_T_O), 0, "core::ComplexVector_T_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_T_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_T_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9694,9 +9487,6 @@ public:
 // Stamp = core::ComplexVector_int2_t_O/583
 { class_kind, STAMP_core__ComplexVector_int2_t_O, sizeof(core::ComplexVector_int2_t_O), 0, "core::ComplexVector_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9727,9 +9517,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>/587
 // Stamp = core::ComplexVector_int32_t_O/591
 { class_kind, STAMP_core__ComplexVector_int32_t_O, sizeof(core::ComplexVector_int32_t_O), 0, "core::ComplexVector_int32_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9762,9 +9549,6 @@ public:
 // Stamp = core::ComplexVector_byte16_t_O/599
 { class_kind, STAMP_core__ComplexVector_byte16_t_O, sizeof(core::ComplexVector_byte16_t_O), 0, "core::ComplexVector_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9795,9 +9579,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>/603
 // Stamp = core::ComplexVector_float_O/607
 { class_kind, STAMP_core__ComplexVector_float_O, sizeof(core::ComplexVector_float_O), 0, "core::ComplexVector_float_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_float_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9830,9 +9611,6 @@ public:
 // Stamp = core::ComplexVector_int16_t_O/615
 { class_kind, STAMP_core__ComplexVector_int16_t_O, sizeof(core::ComplexVector_int16_t_O), 0, "core::ComplexVector_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9863,9 +9641,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>/619
 // Stamp = core::ComplexVector_int4_t_O/623
 { class_kind, STAMP_core__ComplexVector_int4_t_O, sizeof(core::ComplexVector_int4_t_O), 0, "core::ComplexVector_int4_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9898,9 +9673,6 @@ public:
 // Stamp = core::ComplexVector_size_t_O/631
 { class_kind, STAMP_core__ComplexVector_size_t_O, sizeof(core::ComplexVector_size_t_O), 0, "core::ComplexVector_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_size_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_size_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9931,9 +9703,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>/635
 // Stamp = core::ComplexVector_byte2_t_O/639
 { class_kind, STAMP_core__ComplexVector_byte2_t_O, sizeof(core::ComplexVector_byte2_t_O), 0, "core::ComplexVector_byte2_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9966,9 +9735,6 @@ public:
 // Stamp = core::ComplexVector_byte8_t_O/647
 { class_kind, STAMP_core__ComplexVector_byte8_t_O, sizeof(core::ComplexVector_byte8_t_O), 0, "core::ComplexVector_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -9999,9 +9765,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>/651
 // Stamp = core::ComplexVector_byte32_t_O/655
 { class_kind, STAMP_core__ComplexVector_byte32_t_O, sizeof(core::ComplexVector_byte32_t_O), 0, "core::ComplexVector_byte32_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10034,9 +9797,6 @@ public:
 // Stamp = core::BitVectorNs_O/663
 { class_kind, STAMP_core__BitVectorNs_O, sizeof(core::BitVectorNs_O), 0, "core::BitVectorNs_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10066,9 +9826,6 @@ public:
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 // Stamp = core::StrNs_O/667
 { class_kind, STAMP_core__StrNs_O, sizeof(core::StrNs_O), 0, "core::StrNs_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10101,9 +9858,6 @@ public:
 // Stamp = core::Str8Ns_O/675
 { class_kind, STAMP_core__Str8Ns_O, sizeof(core::Str8Ns_O), 0, "core::Str8Ns_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10134,9 +9888,6 @@ public:
 // Stamp = core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>/679
 // Stamp = core::StrWNs_O/683
 { class_kind, STAMP_core__StrWNs_O, sizeof(core::StrWNs_O), 0, "core::StrWNs_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10169,9 +9920,6 @@ public:
 // Stamp = core::ComplexVector_byte4_t_O/691
 { class_kind, STAMP_core__ComplexVector_byte4_t_O, sizeof(core::ComplexVector_byte4_t_O), 0, "core::ComplexVector_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10202,9 +9950,6 @@ public:
 // Stamp = core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>/695
 // Stamp = core::ComplexVector_fixnum_O/699
 { class_kind, STAMP_core__ComplexVector_fixnum_O, sizeof(core::ComplexVector_fixnum_O), 0, "core::ComplexVector_fixnum_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_fixnum_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_fixnum_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10237,9 +9982,6 @@ public:
 // Stamp = core::ComplexVector_int64_t_O/707
 { class_kind, STAMP_core__ComplexVector_int64_t_O, sizeof(core::ComplexVector_int64_t_O), 0, "core::ComplexVector_int64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10270,25 +10012,16 @@ public:
 // Stamp = core::AbstractSimpleVector_O/711
 { class_kind, STAMP_core__AbstractSimpleVector_O, sizeof(core::AbstractSimpleVector_O), 0, "core::AbstractSimpleVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::SimpleString_O/715
 { class_kind, STAMP_core__SimpleString_O, sizeof(core::SimpleString_O), 0, "core::SimpleString_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleString_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleString_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>/719
 // Stamp = core::SimpleCharacterString_O/723
 { class_kind, STAMP_core__SimpleCharacterString_O, sizeof(core::SimpleCharacterString_O), 0, "core::SimpleCharacterString_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10305,9 +10038,6 @@ public:
 // Stamp = core::SimpleBaseString_O/731
 { class_kind, STAMP_core__SimpleBaseString_O, sizeof(core::SimpleBaseString_O), 0, "core::SimpleBaseString_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Data._Data), "_Data._Data" },
@@ -10322,9 +10052,6 @@ public:
 // Stamp = core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>/735
 // Stamp = core::SimpleVector_int16_t_O/739
 { class_kind, STAMP_core__SimpleVector_int16_t_O, sizeof(core::SimpleVector_int16_t_O), 0, "core::SimpleVector_int16_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10341,9 +10068,6 @@ public:
 // Stamp = core::SimpleVector_byte16_t_O/747
 { class_kind, STAMP_core__SimpleVector_byte16_t_O, sizeof(core::SimpleVector_byte16_t_O), 0, "core::SimpleVector_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Data._Data), "_Data._Data" },
@@ -10359,9 +10083,6 @@ public:
 // Stamp = core::SimpleBitVector_O/755
 { class_kind, STAMP_core__SimpleBitVector_O, sizeof(core::SimpleBitVector_O), 0, "core::SimpleBitVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_bit_array0, 1, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Data._Data), "_Data._Data" },
@@ -10373,84 +10094,9 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/759
-// Stamp = core::SimpleVector_byte32_t_O/763
-{ class_kind, STAMP_core__SimpleVector_byte32_t_O, sizeof(core::SimpleVector_byte32_t_O), 0, "core::SimpleVector_byte32_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
-*/
-/* (ctype-key (base one)) -> "unsigned int"
-*/
-// atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
-{    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/767
-// Stamp = core::SimpleVector_size_t_O/771
-{ class_kind, STAMP_core__SimpleVector_size_t_O, sizeof(core::SimpleVector_size_t_O), 0, "core::SimpleVector_size_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-*/
-/* (ctype-key (base one)) -> "unsigned long"
-*/
-// atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
-{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/775
-// Stamp = core::SimpleVector_double_O/779
-{ class_kind, STAMP_core__SimpleVector_double_O, sizeof(core::SimpleVector_double_O), 0, "core::SimpleVector_double_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
-*/
-/* (ctype-key (base one)) -> "double"
-*/
-// atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
-{    variable_field, ctype_double, sizeof(double), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>/783
-// Stamp = core::SimpleVector_byte64_t_O/787
-{ class_kind, STAMP_core__SimpleVector_byte64_t_O, sizeof(core::SimpleVector_byte64_t_O), 0, "core::SimpleVector_byte64_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-*/
-/* (ctype-key (base one)) -> "unsigned long"
-*/
-// atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
-{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,-1>/791
-// Stamp = core::SimpleVector_int4_t_O/795
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>/759
+// Stamp = core::SimpleVector_int4_t_O/763
 { class_kind, STAMP_core__SimpleVector_int4_t_O, sizeof(core::SimpleVector_int4_t_O), 0, "core::SimpleVector_int4_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10463,66 +10109,69 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>/799
-// Stamp = core::SimpleVector_int64_t_O/803
-{ class_kind, STAMP_core__SimpleVector_int64_t_O, sizeof(core::SimpleVector_int64_t_O), 0, "core::SimpleVector_int64_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/767
+// Stamp = core::SimpleVector_byte32_t_O/771
+{ class_kind, STAMP_core__SimpleVector_byte32_t_O, sizeof(core::SimpleVector_byte32_t_O), 0, "core::SimpleVector_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 */
-/* (ctype-key (base one)) -> "long"
+/* (ctype-key (base one)) -> "unsigned int"
 */
 // atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
-{    variable_field, ctype_long, sizeof(long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>/807
-// Stamp = core::SimpleVector_fixnum_O/811
-{ class_kind, STAMP_core__SimpleVector_fixnum_O, sizeof(core::SimpleVector_fixnum_O), 0, "core::SimpleVector_fixnum_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
+{    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/775
+// Stamp = core::SimpleVector_size_t_O/779
+{ class_kind, STAMP_core__SimpleVector_size_t_O, sizeof(core::SimpleVector_size_t_O), 0, "core::SimpleVector_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 */
-/* (ctype-key (base one)) -> "long"
+/* (ctype-key (base one)) -> "unsigned long"
 */
 // atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
-{    variable_field, ctype_long, sizeof(long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/815
-// Stamp = core::SimpleVector_int8_t_O/819
-{ class_kind, STAMP_core__SimpleVector_int8_t_O, sizeof(core::SimpleVector_int8_t_O), 0, "core::SimpleVector_int8_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
+{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/783
+// Stamp = core::SimpleVector_double_O/787
+{ class_kind, STAMP_core__SimpleVector_double_O, sizeof(core::SimpleVector_double_O), 0, "core::SimpleVector_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
-// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Data), "_Data._Data" },
- {  variable_capacity, sizeof(signed char), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._MaybeSignedLength), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
 */
-/* (ctype-key (base one)) -> "signed char"
+/* (ctype-key (base one)) -> "double"
 */
 // atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
-{    variable_field, ctype_signed_char, sizeof(signed char), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,-1>/823
-// Stamp = core::SimpleVector_int2_t_O/827
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
+{    variable_field, ctype_double, sizeof(double), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>/791
+// Stamp = core::SimpleVector_byte64_t_O/795
+{ class_kind, STAMP_core__SimpleVector_byte64_t_O, sizeof(core::SimpleVector_byte64_t_O), 0, "core::SimpleVector_byte64_t_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+*/
+/* (ctype-key (base one)) -> "unsigned long"
+*/
+// atomic-smart-ptr-p -> NIL
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
+{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>/799
+// Stamp = core::SimpleVector_int2_t_O/803
 { class_kind, STAMP_core__SimpleVector_int2_t_O, sizeof(core::SimpleVector_int2_t_O), 0, "core::SimpleVector_int2_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10535,12 +10184,54 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>/807
+// Stamp = core::SimpleVector_int64_t_O/811
+{ class_kind, STAMP_core__SimpleVector_int64_t_O, sizeof(core::SimpleVector_int64_t_O), 0, "core::SimpleVector_int64_t_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
+*/
+/* (ctype-key (base one)) -> "long"
+*/
+// atomic-smart-ptr-p -> NIL
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
+{    variable_field, ctype_long, sizeof(long), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>/815
+// Stamp = core::SimpleVector_fixnum_O/819
+{ class_kind, STAMP_core__SimpleVector_fixnum_O, sizeof(core::SimpleVector_fixnum_O), 0, "core::SimpleVector_fixnum_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
+*/
+/* (ctype-key (base one)) -> "long"
+*/
+// atomic-smart-ptr-p -> NIL
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
+{    variable_field, ctype_long, sizeof(long), 0, "only" },
+// Stamp = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/823
+// Stamp = core::SimpleVector_int8_t_O/827
+{ class_kind, STAMP_core__SimpleVector_int8_t_O, sizeof(core::SimpleVector_int8_t_O), 0, "core::SimpleVector_int8_t_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
+// not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._Data), "_Data._Data" },
+ {  variable_capacity, sizeof(signed char), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Data._MaybeSignedLength), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")
+*/
+/* (ctype-key (base one)) -> "signed char"
+*/
+// atomic-smart-ptr-p -> NIL
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
+{    variable_field, ctype_signed_char, sizeof(signed char), 0, "only" },
 // Stamp = core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>/831
 // Stamp = core::SimpleVector_float_O/835
 { class_kind, STAMP_core__SimpleVector_float_O, sizeof(core::SimpleVector_float_O), 0, "core::SimpleVector_float_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_float_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10557,9 +10248,6 @@ public:
 // Stamp = core::SimpleVector_O/843
 { class_kind, STAMP_core__SimpleVector_O, sizeof(core::SimpleVector_O), 0, "core::SimpleVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Data._Data), "_Data._Data" },
@@ -10574,9 +10262,6 @@ public:
 // Stamp = core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>/847
 // Stamp = core::SimpleVector_byte8_t_O/851
 { class_kind, STAMP_core__SimpleVector_byte8_t_O, sizeof(core::SimpleVector_byte8_t_O), 0, "core::SimpleVector_byte8_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10593,9 +10278,6 @@ public:
 // Stamp = core::SimpleVector_byte2_t_O/859
 { class_kind, STAMP_core__SimpleVector_byte2_t_O, sizeof(core::SimpleVector_byte2_t_O), 0, "core::SimpleVector_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte2_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte2_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_bit_array0, 2, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte2_t_O),_Data._Data), "_Data._Data" },
@@ -10610,9 +10292,6 @@ public:
 // Stamp = core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>/863
 // Stamp = core::SimpleVector_int32_t_O/867
 { class_kind, STAMP_core__SimpleVector_int32_t_O, sizeof(core::SimpleVector_int32_t_O), 0, "core::SimpleVector_int32_t_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10629,9 +10308,6 @@ public:
 // Stamp = core::SimpleVector_byte4_t_O/875
 { class_kind, STAMP_core__SimpleVector_byte4_t_O, sizeof(core::SimpleVector_byte4_t_O), 0, "core::SimpleVector_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte4_t_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte4_t_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_bit_array0, 4, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte4_t_O),_Data._Data), "_Data._Data" },
@@ -10645,9 +10321,6 @@ public:
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 // Stamp = core::Symbol_O/879
 { class_kind, STAMP_core__Symbol_O, sizeof(core::Symbol_O), 0, "core::Symbol_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10682,9 +10355,6 @@ public:
 // Stamp = core::Null_O/883
 { class_kind, STAMP_core__Null_O, sizeof(core::Null_O), 0, "core::Null_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: T  name: "atomic"
@@ -10717,19 +10387,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_PropertyList), "_PropertyList" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Character_dummy_O/887
 { class_kind, STAMP_core__Character_dummy_O, sizeof(core::Character_dummy_O), 0, "core::Character_dummy_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Character_dummy_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = llvmo::DataLayout_O/891
 { class_kind, STAMP_llvmo__DataLayout_O, sizeof(llvmo::DataLayout_O), 0, "llvmo::DataLayout_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DataLayout_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::LoadTimeValues_O/895
 { class_kind, STAMP_core__LoadTimeValues_O, sizeof(core::LoadTimeValues_O), 0, "core::LoadTimeValues_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LoadTimeValues_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "GCVector"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<core::T_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<core::T_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -10738,9 +10399,6 @@ public:
 // Stamp = core::SharpEqualWrapper_O/899
 { class_kind, STAMP_core__SharpEqualWrapper_O, sizeof(core::SharpEqualWrapper_O), 0, "core::SharpEqualWrapper_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Value), "_Value" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10748,14 +10406,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Label), "_Label" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ClaspJIT_O/903
 { class_kind, STAMP_llvmo__ClaspJIT_O, sizeof(llvmo::ClaspJIT_O), 0, "llvmo::ClaspJIT_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ClaspJIT_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::Readtable_O/907
 { class_kind, STAMP_core__Readtable_O, sizeof(core::Readtable_O), 0, "core::Readtable_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),Case_), "Case_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10770,9 +10422,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),DispatchMacroCharacters_), "DispatchMacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::PosixTime_O/911
 { class_kind, STAMP_core__PosixTime_O, sizeof(core::PosixTime_O), 0, "core::PosixTime_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "int_adapter"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::ptime" :NAME "ptime")
 // (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "boost::date_time::counted_time_rep<boost::posix_time::millisec_posix_time_system_config>" :NAME "counted_time_rep" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::millisec_posix_time_system_config" :NAME "millisec_posix_time_system_config") :INTEGRAL-VALUE NIL)))
@@ -10781,9 +10430,6 @@ public:
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time.time_.time_count_.value_), "_Time.time_.time_count_.value_" }, // atomic: NIL public: (NIL NIL NIL NIL) fixable: NIL good-name: T
 // Stamp = core::Exposer_O/915
 { class_kind, STAMP_core__Exposer_O, sizeof(core::Exposer_O), 0, "core::Exposer_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_Package), "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10799,9 +10445,6 @@ public:
 // Stamp = core::CoreExposer_O/919
 { class_kind, STAMP_core__CoreExposer_O, sizeof(core::CoreExposer_O), 0, "core::CoreExposer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_Package), "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: "basic_string"
@@ -10816,9 +10459,6 @@ public:
 // Stamp = asttooling::AsttoolingExposer_O/923
 { class_kind, STAMP_asttooling__AsttoolingExposer_O, sizeof(asttooling::AsttoolingExposer_O), 0, "asttooling::AsttoolingExposer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_Package), "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: "basic_string"
@@ -10832,14 +10472,8 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL T) fixable: NIL good-name: T
 // Stamp = llvmo::StructLayout_O/927
 { class_kind, STAMP_llvmo__StructLayout_O, sizeof(llvmo::StructLayout_O), 0, "llvmo::StructLayout_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructLayout_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::PosixTimeDuration_O/931
 { class_kind, STAMP_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, "core::PosixTimeDuration_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "int_adapter"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::time_duration" :NAME "time_duration")
 // (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "boost::date_time::int_adapter<long>" :NAME "int_adapter" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :INTEGRAL-VALUE NIL)))
@@ -10847,9 +10481,6 @@ public:
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_Duration.ticks_.value_), "_Duration.ticks_.value_" }, // atomic: NIL public: (NIL NIL NIL) fixable: NIL good-name: T
 // Stamp = clasp_ffi::ForeignTypeSpec_O/935
 { class_kind, STAMP_clasp_ffi__ForeignTypeSpec_O, sizeof(clasp_ffi::ForeignTypeSpec_O), 0, "clasp_ffi::ForeignTypeSpec_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_lisp_symbol), "m_lisp_symbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10883,9 +10514,6 @@ public:
 // Stamp = core::Instance_O/937
 { class_kind, STAMP_core__Instance_O, sizeof(core::Instance_O), 0, "core::Instance_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Class), "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10894,9 +10522,6 @@ public:
 // Stamp = core::DerivableCxxObject_O/940
 { class_kind, STAMP_core__DerivableCxxObject_O, sizeof(core::DerivableCxxObject_O), 0, "core::DerivableCxxObject_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Class), "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -10904,9 +10529,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = clbind::ClassRep_O/945
 { class_kind, STAMP_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Class), "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10932,18 +10554,12 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), "m_derivable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::SmallMap_O/951
 { class_kind, STAMP_core__SmallMap_O, sizeof(core::SmallMap_O), 0, "core::SmallMap_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "SmallMap"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMap<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>" :NAME "SmallMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::T_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // atomic: NIL public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = mpip::Mpi_O/955
 { class_kind, STAMP_mpip__Mpi_O, sizeof(mpip::Mpi_O), 0, "mpip::Mpi_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_LastReturnCode), "_LastReturnCode" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
@@ -10956,56 +10572,35 @@ public:
 // Stamp = core::ExternalObject_O/959
 { class_kind, STAMP_core__ExternalObject_O, sizeof(core::ExternalObject_O), 0, "core::ExternalObject_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ExternalObject_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ExternalObject_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Pass_O/963
 { class_kind, STAMP_llvmo__Pass_O, sizeof(llvmo::Pass_O), 0, "llvmo::Pass_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ModulePass_O/967
 { class_kind, STAMP_llvmo__ModulePass_O, sizeof(llvmo::ModulePass_O), 0, "llvmo::ModulePass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ImmutablePass_O/971
 { class_kind, STAMP_llvmo__ImmutablePass_O, sizeof(llvmo::ImmutablePass_O), 0, "llvmo::ImmutablePass_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::TargetLibraryInfoWrapperPass_O/975
 { class_kind, STAMP_llvmo__TargetLibraryInfoWrapperPass_O, sizeof(llvmo::TargetLibraryInfoWrapperPass_O), 0, "llvmo::TargetLibraryInfoWrapperPass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::FunctionPass_O/979
 { class_kind, STAMP_llvmo__FunctionPass_O, sizeof(llvmo::FunctionPass_O), 0, "llvmo::FunctionPass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ExecutionEngine_O/983
 { class_kind, STAMP_llvmo__ExecutionEngine_O, sizeof(llvmo::ExecutionEngine_O), 0, "llvmo::ExecutionEngine_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11015,120 +10610,75 @@ public:
 // Stamp = llvmo::MCSubtargetInfo_O/987
 { class_kind, STAMP_llvmo__MCSubtargetInfo_O, sizeof(llvmo::MCSubtargetInfo_O), 0, "llvmo::MCSubtargetInfo_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::TargetSubtargetInfo_O/991
 { class_kind, STAMP_llvmo__TargetSubtargetInfo_O, sizeof(llvmo::TargetSubtargetInfo_O), 0, "llvmo::TargetSubtargetInfo_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Type_O/995
 { class_kind, STAMP_llvmo__Type_O, sizeof(llvmo::Type_O), 0, "llvmo::Type_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::FunctionType_O/999
 { class_kind, STAMP_llvmo__FunctionType_O, sizeof(llvmo::FunctionType_O), 0, "llvmo::FunctionType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::CompositeType_O/1003
 { class_kind, STAMP_llvmo__CompositeType_O, sizeof(llvmo::CompositeType_O), 0, "llvmo::CompositeType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CompositeType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CompositeType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::SequentialType_O/1007
 { class_kind, STAMP_llvmo__SequentialType_O, sizeof(llvmo::SequentialType_O), 0, "llvmo::SequentialType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SequentialType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SequentialType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::PointerType_O/1011
 { class_kind, STAMP_llvmo__PointerType_O, sizeof(llvmo::PointerType_O), 0, "llvmo::PointerType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ArrayType_O/1015
 { class_kind, STAMP_llvmo__ArrayType_O, sizeof(llvmo::ArrayType_O), 0, "llvmo::ArrayType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::VectorType_O/1019
 { class_kind, STAMP_llvmo__VectorType_O, sizeof(llvmo::VectorType_O), 0, "llvmo::VectorType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::StructType_O/1023
 { class_kind, STAMP_llvmo__StructType_O, sizeof(llvmo::StructType_O), 0, "llvmo::StructType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::IntegerType_O/1027
 { class_kind, STAMP_llvmo__IntegerType_O, sizeof(llvmo::IntegerType_O), 0, "llvmo::IntegerType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::JITDylib_O/1031
 { class_kind, STAMP_llvmo__JITDylib_O, sizeof(llvmo::JITDylib_O), 0, "llvmo::JITDylib_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIContext_O/1035
 { class_kind, STAMP_llvmo__DIContext_O, sizeof(llvmo::DIContext_O), 0, "llvmo::DIContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::TargetPassConfig_O/1039
 { class_kind, STAMP_llvmo__TargetPassConfig_O, sizeof(llvmo::TargetPassConfig_O), 0, "llvmo::TargetPassConfig_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::IRBuilderBase_O/1043
 { class_kind, STAMP_llvmo__IRBuilderBase_O, sizeof(llvmo::IRBuilderBase_O), 0, "llvmo::IRBuilderBase_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11138,9 +10688,6 @@ public:
 // Stamp = llvmo::IRBuilder_O/1047
 { class_kind, STAMP_llvmo__IRBuilder_O, sizeof(llvmo::IRBuilder_O), 0, "llvmo::IRBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -11148,9 +10695,6 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_CurrentDebugLocationSet), "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // Stamp = llvmo::APFloat_O/1051
 { class_kind, STAMP_llvmo__APFloat_O, sizeof(llvmo::APFloat_O), 0, "llvmo::APFloat_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11176,9 +10720,6 @@ public:
 // Stamp = llvmo::APInt_O/1055
 { class_kind, STAMP_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, "llvmo::APInt_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -11193,16 +10734,10 @@ public:
 // Stamp = llvmo::DIBuilder_O/1059
 { class_kind, STAMP_llvmo__DIBuilder_O, sizeof(llvmo::DIBuilder_O), 0, "llvmo::DIBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::SectionedAddress_O/1063
 { class_kind, STAMP_llvmo__SectionedAddress_O, sizeof(llvmo::SectionedAddress_O), 0, "llvmo::SectionedAddress_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11216,9 +10751,6 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_value.SectionIndex), "_value.SectionIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 // Stamp = llvmo::EngineBuilder_O/1067
 { class_kind, STAMP_llvmo__EngineBuilder_O, sizeof(llvmo::EngineBuilder_O), 0, "llvmo::EngineBuilder_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11234,416 +10766,260 @@ public:
 // Stamp = llvmo::PassManagerBase_O/1071
 { class_kind, STAMP_llvmo__PassManagerBase_O, sizeof(llvmo::PassManagerBase_O), 0, "llvmo::PassManagerBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::PassManager_O/1075
 { class_kind, STAMP_llvmo__PassManager_O, sizeof(llvmo::PassManager_O), 0, "llvmo::PassManager_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::FunctionPassManager_O/1079
 { class_kind, STAMP_llvmo__FunctionPassManager_O, sizeof(llvmo::FunctionPassManager_O), 0, "llvmo::FunctionPassManager_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Metadata_O/1083
 { class_kind, STAMP_llvmo__Metadata_O, sizeof(llvmo::Metadata_O), 0, "llvmo::Metadata_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::MDNode_O/1087
 { class_kind, STAMP_llvmo__MDNode_O, sizeof(llvmo::MDNode_O), 0, "llvmo::MDNode_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DINode_O/1091
 { class_kind, STAMP_llvmo__DINode_O, sizeof(llvmo::DINode_O), 0, "llvmo::DINode_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIVariable_O/1095
 { class_kind, STAMP_llvmo__DIVariable_O, sizeof(llvmo::DIVariable_O), 0, "llvmo::DIVariable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DILocalVariable_O/1099
 { class_kind, STAMP_llvmo__DILocalVariable_O, sizeof(llvmo::DILocalVariable_O), 0, "llvmo::DILocalVariable_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIScope_O/1103
 { class_kind, STAMP_llvmo__DIScope_O, sizeof(llvmo::DIScope_O), 0, "llvmo::DIScope_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIFile_O/1107
 { class_kind, STAMP_llvmo__DIFile_O, sizeof(llvmo::DIFile_O), 0, "llvmo::DIFile_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIType_O/1111
 { class_kind, STAMP_llvmo__DIType_O, sizeof(llvmo::DIType_O), 0, "llvmo::DIType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DICompositeType_O/1115
 { class_kind, STAMP_llvmo__DICompositeType_O, sizeof(llvmo::DICompositeType_O), 0, "llvmo::DICompositeType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIDerivedType_O/1119
 { class_kind, STAMP_llvmo__DIDerivedType_O, sizeof(llvmo::DIDerivedType_O), 0, "llvmo::DIDerivedType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIBasicType_O/1123
 { class_kind, STAMP_llvmo__DIBasicType_O, sizeof(llvmo::DIBasicType_O), 0, "llvmo::DIBasicType_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DISubroutineType_O/1127
 { class_kind, STAMP_llvmo__DISubroutineType_O, sizeof(llvmo::DISubroutineType_O), 0, "llvmo::DISubroutineType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DILocalScope_O/1131
 { class_kind, STAMP_llvmo__DILocalScope_O, sizeof(llvmo::DILocalScope_O), 0, "llvmo::DILocalScope_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DISubprogram_O/1135
 { class_kind, STAMP_llvmo__DISubprogram_O, sizeof(llvmo::DISubprogram_O), 0, "llvmo::DISubprogram_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DILexicalBlockBase_O/1139
 { class_kind, STAMP_llvmo__DILexicalBlockBase_O, sizeof(llvmo::DILexicalBlockBase_O), 0, "llvmo::DILexicalBlockBase_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DILexicalBlock_O/1143
 { class_kind, STAMP_llvmo__DILexicalBlock_O, sizeof(llvmo::DILexicalBlock_O), 0, "llvmo::DILexicalBlock_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DICompileUnit_O/1147
 { class_kind, STAMP_llvmo__DICompileUnit_O, sizeof(llvmo::DICompileUnit_O), 0, "llvmo::DICompileUnit_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DIExpression_O/1151
 { class_kind, STAMP_llvmo__DIExpression_O, sizeof(llvmo::DIExpression_O), 0, "llvmo::DIExpression_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DILocation_O/1155
 { class_kind, STAMP_llvmo__DILocation_O, sizeof(llvmo::DILocation_O), 0, "llvmo::DILocation_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ValueAsMetadata_O/1159
 { class_kind, STAMP_llvmo__ValueAsMetadata_O, sizeof(llvmo::ValueAsMetadata_O), 0, "llvmo::ValueAsMetadata_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::MDString_O/1163
 { class_kind, STAMP_llvmo__MDString_O, sizeof(llvmo::MDString_O), 0, "llvmo::MDString_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Test_O/1167
 { class_kind, STAMP_core__Test_O, sizeof(core::Test_O), 0, "core::Test_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Value_O/1171
 { class_kind, STAMP_llvmo__Value_O, sizeof(llvmo::Value_O), 0, "llvmo::Value_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Argument_O/1175
 { class_kind, STAMP_llvmo__Argument_O, sizeof(llvmo::Argument_O), 0, "llvmo::Argument_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::BasicBlock_O/1179
 { class_kind, STAMP_llvmo__BasicBlock_O, sizeof(llvmo::BasicBlock_O), 0, "llvmo::BasicBlock_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::MetadataAsValue_O/1183
 { class_kind, STAMP_llvmo__MetadataAsValue_O, sizeof(llvmo::MetadataAsValue_O), 0, "llvmo::MetadataAsValue_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::User_O/1187
 { class_kind, STAMP_llvmo__User_O, sizeof(llvmo::User_O), 0, "llvmo::User_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Instruction_O/1191
 { class_kind, STAMP_llvmo__Instruction_O, sizeof(llvmo::Instruction_O), 0, "llvmo::Instruction_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::UnaryInstruction_O/1195
 { class_kind, STAMP_llvmo__UnaryInstruction_O, sizeof(llvmo::UnaryInstruction_O), 0, "llvmo::UnaryInstruction_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::VAArgInst_O/1199
 { class_kind, STAMP_llvmo__VAArgInst_O, sizeof(llvmo::VAArgInst_O), 0, "llvmo::VAArgInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::LoadInst_O/1203
 { class_kind, STAMP_llvmo__LoadInst_O, sizeof(llvmo::LoadInst_O), 0, "llvmo::LoadInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::AllocaInst_O/1207
 { class_kind, STAMP_llvmo__AllocaInst_O, sizeof(llvmo::AllocaInst_O), 0, "llvmo::AllocaInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::SwitchInst_O/1211
 { class_kind, STAMP_llvmo__SwitchInst_O, sizeof(llvmo::SwitchInst_O), 0, "llvmo::SwitchInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::AtomicRMWInst_O/1215
 { class_kind, STAMP_llvmo__AtomicRMWInst_O, sizeof(llvmo::AtomicRMWInst_O), 0, "llvmo::AtomicRMWInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::LandingPadInst_O/1219
 { class_kind, STAMP_llvmo__LandingPadInst_O, sizeof(llvmo::LandingPadInst_O), 0, "llvmo::LandingPadInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::StoreInst_O/1223
 { class_kind, STAMP_llvmo__StoreInst_O, sizeof(llvmo::StoreInst_O), 0, "llvmo::StoreInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::UnreachableInst_O/1227
 { class_kind, STAMP_llvmo__UnreachableInst_O, sizeof(llvmo::UnreachableInst_O), 0, "llvmo::UnreachableInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ReturnInst_O/1231
 { class_kind, STAMP_llvmo__ReturnInst_O, sizeof(llvmo::ReturnInst_O), 0, "llvmo::ReturnInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ResumeInst_O/1235
 { class_kind, STAMP_llvmo__ResumeInst_O, sizeof(llvmo::ResumeInst_O), 0, "llvmo::ResumeInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::AtomicCmpXchgInst_O/1239
 { class_kind, STAMP_llvmo__AtomicCmpXchgInst_O, sizeof(llvmo::AtomicCmpXchgInst_O), 0, "llvmo::AtomicCmpXchgInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::FenceInst_O/1243
 { class_kind, STAMP_llvmo__FenceInst_O, sizeof(llvmo::FenceInst_O), 0, "llvmo::FenceInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::CallBase_O/1247
 { class_kind, STAMP_llvmo__CallBase_O, sizeof(llvmo::CallBase_O), 0, "llvmo::CallBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::CallInst_O/1251
 { class_kind, STAMP_llvmo__CallInst_O, sizeof(llvmo::CallInst_O), 0, "llvmo::CallInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::InvokeInst_O/1255
 { class_kind, STAMP_llvmo__InvokeInst_O, sizeof(llvmo::InvokeInst_O), 0, "llvmo::InvokeInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::PHINode_O/1259
 { class_kind, STAMP_llvmo__PHINode_O, sizeof(llvmo::PHINode_O), 0, "llvmo::PHINode_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::IndirectBrInst_O/1263
 { class_kind, STAMP_llvmo__IndirectBrInst_O, sizeof(llvmo::IndirectBrInst_O), 0, "llvmo::IndirectBrInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::BranchInst_O/1267
 { class_kind, STAMP_llvmo__BranchInst_O, sizeof(llvmo::BranchInst_O), 0, "llvmo::BranchInst_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Constant_O/1271
 { class_kind, STAMP_llvmo__Constant_O, sizeof(llvmo::Constant_O), 0, "llvmo::Constant_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::GlobalValue_O/1275
 { class_kind, STAMP_llvmo__GlobalValue_O, sizeof(llvmo::GlobalValue_O), 0, "llvmo::GlobalValue_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11652,9 +11028,6 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_PtrIsOwned), "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // Stamp = llvmo::Function_O/1279
 { class_kind, STAMP_llvmo__Function_O, sizeof(llvmo::Function_O), 0, "llvmo::Function_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11667,9 +11040,6 @@ public:
 // Stamp = llvmo::GlobalVariable_O/1283
 { class_kind, STAMP_llvmo__GlobalVariable_O, sizeof(llvmo::GlobalVariable_O), 0, "llvmo::GlobalVariable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -11678,168 +11048,105 @@ public:
 // Stamp = llvmo::BlockAddress_O/1287
 { class_kind, STAMP_llvmo__BlockAddress_O, sizeof(llvmo::BlockAddress_O), 0, "llvmo::BlockAddress_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantDataSequential_O/1291
 { class_kind, STAMP_llvmo__ConstantDataSequential_O, sizeof(llvmo::ConstantDataSequential_O), 0, "llvmo::ConstantDataSequential_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantDataArray_O/1295
 { class_kind, STAMP_llvmo__ConstantDataArray_O, sizeof(llvmo::ConstantDataArray_O), 0, "llvmo::ConstantDataArray_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantStruct_O/1299
 { class_kind, STAMP_llvmo__ConstantStruct_O, sizeof(llvmo::ConstantStruct_O), 0, "llvmo::ConstantStruct_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantInt_O/1303
 { class_kind, STAMP_llvmo__ConstantInt_O, sizeof(llvmo::ConstantInt_O), 0, "llvmo::ConstantInt_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantFP_O/1307
 { class_kind, STAMP_llvmo__ConstantFP_O, sizeof(llvmo::ConstantFP_O), 0, "llvmo::ConstantFP_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantExpr_O/1311
 { class_kind, STAMP_llvmo__ConstantExpr_O, sizeof(llvmo::ConstantExpr_O), 0, "llvmo::ConstantExpr_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantPointerNull_O/1315
 { class_kind, STAMP_llvmo__ConstantPointerNull_O, sizeof(llvmo::ConstantPointerNull_O), 0, "llvmo::ConstantPointerNull_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::UndefValue_O/1319
 { class_kind, STAMP_llvmo__UndefValue_O, sizeof(llvmo::UndefValue_O), 0, "llvmo::UndefValue_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ConstantArray_O/1323
 { class_kind, STAMP_llvmo__ConstantArray_O, sizeof(llvmo::ConstantArray_O), 0, "llvmo::ConstantArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::TargetMachine_O/1327
 { class_kind, STAMP_llvmo__TargetMachine_O, sizeof(llvmo::TargetMachine_O), 0, "llvmo::TargetMachine_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::LLVMTargetMachine_O/1331
 { class_kind, STAMP_llvmo__LLVMTargetMachine_O, sizeof(llvmo::LLVMTargetMachine_O), 0, "llvmo::LLVMTargetMachine_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ThreadSafeContext_O/1335
 { class_kind, STAMP_llvmo__ThreadSafeContext_O, sizeof(llvmo::ThreadSafeContext_O), 0, "llvmo::ThreadSafeContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::NamedMDNode_O/1339
 { class_kind, STAMP_llvmo__NamedMDNode_O, sizeof(llvmo::NamedMDNode_O), 0, "llvmo::NamedMDNode_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Triple_O/1343
 { class_kind, STAMP_llvmo__Triple_O, sizeof(llvmo::Triple_O), 0, "llvmo::Triple_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::DWARFContext_O/1347
 { class_kind, STAMP_llvmo__DWARFContext_O, sizeof(llvmo::DWARFContext_O), 0, "llvmo::DWARFContext_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::TargetOptions_O/1351
 { class_kind, STAMP_llvmo__TargetOptions_O, sizeof(llvmo::TargetOptions_O), 0, "llvmo::TargetOptions_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::ObjectFile_O/1355
 { class_kind, STAMP_llvmo__ObjectFile_O, sizeof(llvmo::ObjectFile_O), 0, "llvmo::ObjectFile_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::LLVMContext_O/1359
 { class_kind, STAMP_llvmo__LLVMContext_O, sizeof(llvmo::LLVMContext_O), 0, "llvmo::LLVMContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::PassManagerBuilder_O/1363
 { class_kind, STAMP_llvmo__PassManagerBuilder_O, sizeof(llvmo::PassManagerBuilder_O), 0, "llvmo::PassManagerBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Module_O/1367
 { class_kind, STAMP_llvmo__Module_O, sizeof(llvmo::Module_O), 0, "llvmo::Module_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11852,24 +11159,15 @@ public:
 // Stamp = llvmo::Target_O/1371
 { class_kind, STAMP_llvmo__Target_O, sizeof(llvmo::Target_O), 0, "llvmo::Target_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Linker_O/1375
 { class_kind, STAMP_llvmo__Linker_O, sizeof(llvmo::Linker_O), 0, "llvmo::Linker_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Rack_O/1379
 { class_kind, STAMP_core__Rack_O, sizeof(core::Rack_O), 0, "core::Rack_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Rack_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Rack_O),_ShiftedStamp), "_ShiftedStamp" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -11887,18 +11185,12 @@ public:
 {    variable_field, SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, "only" },
 // Stamp = core::SmallMultimap_O/1383
 { class_kind, STAMP_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, "core::SmallMultimap_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "SmallMultimap"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMultimap<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>,core::SymbolComparer>" :NAME "SmallMultimap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolComparer" :NAME "SymbolComparer") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::Symbol_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), "map._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 // Stamp = core::Sigset_O/1387
 { class_kind, STAMP_core__Sigset_O, sizeof(core::Sigset_O), 0, "core::Sigset_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
@@ -11910,14 +11202,8 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset.__value.__wch), "_sigset.__value.__wch" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
 // Stamp = core::Environment_O/1391
 { class_kind, STAMP_core__Environment_O, sizeof(core::Environment_O), 0, "core::Environment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Environment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::GlueEnvironment_O/1395
 { class_kind, STAMP_core__GlueEnvironment_O, sizeof(core::GlueEnvironment_O), 0, "core::GlueEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_Map), "_Map" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11927,9 +11213,6 @@ public:
 // Stamp = core::LexicalEnvironment_O/1399
 { class_kind, STAMP_core__LexicalEnvironment_O, sizeof(core::LexicalEnvironment_O), 0, "core::LexicalEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -11937,9 +11220,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_Metadata), "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::RuntimeVisibleEnvironment_O/1403
 { class_kind, STAMP_core__RuntimeVisibleEnvironment_O, sizeof(core::RuntimeVisibleEnvironment_O), 0, "core::RuntimeVisibleEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11954,9 +11234,6 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Invisible), "_Invisible" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::FunctionValueEnvironment_O/1407
 { class_kind, STAMP_core__FunctionValueEnvironment_O, sizeof(core::FunctionValueEnvironment_O), 0, "core::FunctionValueEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11977,9 +11254,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionFrame), "_FunctionFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::TagbodyEnvironment_O/1411
 { class_kind, STAMP_core__TagbodyEnvironment_O, sizeof(core::TagbodyEnvironment_O), 0, "core::TagbodyEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12009,9 +11283,6 @@ public:
 // Stamp = core::BlockEnvironment_O/1415
 { class_kind, STAMP_core__BlockEnvironment_O, sizeof(core::BlockEnvironment_O), 0, "core::BlockEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12038,9 +11309,6 @@ public:
 // Stamp = core::ValueEnvironment_O/1419
 { class_kind, STAMP_core__ValueEnvironment_O, sizeof(core::ValueEnvironment_O), 0, "core::ValueEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12061,9 +11329,6 @@ public:
 // Stamp = core::CompileTimeEnvironment_O/1423
 { class_kind, STAMP_core__CompileTimeEnvironment_O, sizeof(core::CompileTimeEnvironment_O), 0, "core::CompileTimeEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12072,9 +11337,6 @@ public:
 // Stamp = core::CatchEnvironment_O/1427
 { class_kind, STAMP_core__CatchEnvironment_O, sizeof(core::CatchEnvironment_O), 0, "core::CatchEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12082,9 +11344,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_Metadata), "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::MacroletEnvironment_O/1431
 { class_kind, STAMP_core__MacroletEnvironment_O, sizeof(core::MacroletEnvironment_O), 0, "core::MacroletEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12097,9 +11356,6 @@ public:
 // Stamp = core::SymbolMacroletEnvironment_O/1435
 { class_kind, STAMP_core__SymbolMacroletEnvironment_O, sizeof(core::SymbolMacroletEnvironment_O), 0, "core::SymbolMacroletEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12110,9 +11366,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_Macros), "_Macros" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::FunctionContainerEnvironment_O/1439
 { class_kind, STAMP_core__FunctionContainerEnvironment_O, sizeof(core::FunctionContainerEnvironment_O), 0, "core::FunctionContainerEnvironment_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12128,9 +11381,6 @@ public:
 // Stamp = core::UnwindProtectEnvironment_O/1443
 { class_kind, STAMP_core__UnwindProtectEnvironment_O, sizeof(core::UnwindProtectEnvironment_O), 0, "core::UnwindProtectEnvironment_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_ParentEnvironment), "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12142,16 +11392,10 @@ public:
 // Stamp = core::ActivationFrame_O/1447
 { class_kind, STAMP_core__ActivationFrame_O, sizeof(core::ActivationFrame_O), 0, "core::ActivationFrame_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ActivationFrame_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ActivationFrame_O),_Parent), "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::ValueFrame_O/1451
 { class_kind, STAMP_core__ValueFrame_O, sizeof(core::ValueFrame_O), 0, "core::ValueFrame_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Parent), "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12167,9 +11411,6 @@ public:
 // Stamp = core::FunctionFrame_O/1455
 { class_kind, STAMP_core__FunctionFrame_O, sizeof(core::FunctionFrame_O), 0, "core::FunctionFrame_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Parent), "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Objects._Data), "_Objects._Data" },
@@ -12183,32 +11424,20 @@ public:
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
 // Stamp = core::RandomState_O/1459
 { class_kind, STAMP_core__RandomState_O, sizeof(core::RandomState_O), 0, "core::RandomState_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::RandomState_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "mersenne_twister_engine"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::mersenne_twister_engine<unsigned long,32,624,397,31,2567483615,11,4294967295,7,2636928640,15,4022730752,18,1812433253>" :NAME "mersenne_twister_engine" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE NIL :INTEGRAL-VALUE "32") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE NIL :INTEGRAL-VALUE "624") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 3 :CTYPE NIL :INTEGRAL-VALUE "397") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 4 :CTYPE NIL :INTEGRAL-VALUE "31") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 5 :CTYPE NIL :INTEGRAL-VALUE "2567483615") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 6 :CTYPE NIL :INTEGRAL-VALUE "11") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 7 :CTYPE NIL :INTEGRAL-VALUE "4294967295") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 8 :CTYPE NIL :INTEGRAL-VALUE "7") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 9 :CTYPE NIL :INTEGRAL-VALUE "2636928640") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 10 :CTYPE NIL :INTEGRAL-VALUE "15") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 11 :CTYPE NIL :INTEGRAL-VALUE "4022730752") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 12 :CTYPE NIL :INTEGRAL-VALUE "18") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 13 :CTYPE NIL :INTEGRAL-VALUE "1812433253")))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::RandomState_O),_Producer._M_p), "_Producer._M_p" }, // atomic: NIL public: (T NIL) fixable: NIL good-name: T
 // Stamp = core::AtomicFixnumHolder_O/1463
 { class_kind, STAMP_core__AtomicFixnumHolder_O, sizeof(core::AtomicFixnumHolder_O), 0, "core::AtomicFixnumHolder_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicFixnumHolder_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: T  name: "atomic"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<long>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicFixnumHolder_O),_Object), "_Object" }, // atomic: T public: (T NIL) fixable: NIL good-name: T
 // Stamp = core::HashTableBase_O/1467
 { class_kind, STAMP_core__HashTableBase_O, sizeof(core::HashTableBase_O), 0, "core::HashTableBase_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableBase_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::WeakKeyHashTable_O/1471
 { class_kind, STAMP_core__WeakKeyHashTable_O, sizeof(core::WeakKeyHashTable_O), 0, "core::WeakKeyHashTable_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakKeyHashTable" :NAME "WeakKeyHashTable")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
@@ -12235,9 +11464,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Mutex), "_HashTable._Mutex" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::HashTable_O/1475
 { class_kind, STAMP_core__HashTable_O, sizeof(core::HashTable_O), 0, "core::HashTable_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashSize), "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12266,9 +11492,6 @@ public:
 // Stamp = core::HashTableEqualp_O/1479
 { class_kind, STAMP_core__HashTableEqualp_O, sizeof(core::HashTableEqualp_O), 0, "core::HashTableEqualp_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashSize), "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12295,9 +11518,6 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_LocationDependency._rs), "_LocationDependency._rs" }, // atomic: NIL public: (T T) fixable: NIL good-name: NIL
 // Stamp = core::HashTableEq_O/1483
 { class_kind, STAMP_core__HashTableEq_O, sizeof(core::HashTableEq_O), 0, "core::HashTableEq_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashSize), "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12326,9 +11546,6 @@ public:
 // Stamp = core::HashTableEql_O/1487
 { class_kind, STAMP_core__HashTableEql_O, sizeof(core::HashTableEql_O), 0, "core::HashTableEql_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashSize), "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12356,9 +11573,6 @@ public:
 // Stamp = core::HashTableEqual_O/1491
 { class_kind, STAMP_core__HashTableEqual_O, sizeof(core::HashTableEqual_O), 0, "core::HashTableEqual_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashSize), "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -12383,32 +11597,43 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_ld_s" :NAME "mps_ld_s")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_LocationDependency._rs), "_LocationDependency._rs" }, // atomic: NIL public: (T T) fixable: NIL good-name: NIL
-// Stamp = llvmo::InsertPoint_O/1495
+// Stamp = core::FunctionDescription_O/1495
+{ class_kind, STAMP_core__FunctionDescription_O, sizeof(core::FunctionDescription_O), 0, "core::FunctionDescription_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_sourcePathname), "_sourcePathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_functionName), "_functionName" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_lambdaList), "_lambdaList" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_docstring), "_docstring" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
+// not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),lineno), "lineno" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
+// not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),column), "column" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
+// not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),filepos), "filepos" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// Stamp = llvmo::InsertPoint_O/1499
 { class_kind, STAMP_llvmo__InsertPoint_O, sizeof(llvmo::InsertPoint_O), 0, "llvmo::InsertPoint_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InsertPoint_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Scope_O/1499
+// Stamp = core::Scope_O/1503
 { class_kind, STAMP_core__Scope_O, sizeof(core::Scope_O), 0, "core::Scope_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Scope_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FileScope_O/1503
+// Stamp = core::FileScope_O/1507
 { class_kind, STAMP_core__FileScope_O, sizeof(core::FileScope_O), 0, "core::FileScope_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Pathname_O>" :SPECIALIZER "class core::Pathname_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Pathname_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_pathname), "_pathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_FileHandle), "_FileHandle" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Path_O/1507
+// Stamp = core::Path_O/1511
 { class_kind, STAMP_core__Path_O, sizeof(core::Path_O), 0, "core::Path_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Path_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: "basic_string"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::path" :NAME "path")
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::char_traits<char>" :NAME "char_traits" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::allocator<char>" :NAME "allocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
@@ -12420,11 +11645,8 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Path_O),_Path.m_pathname.NO-NAME._M_allocated_capacity), "_Path.m_pathname.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL NIL T) fixable: NIL good-name: T
-// Stamp = core::Pathname_O/1511
+// Stamp = core::Pathname_O/1515
 { class_kind, STAMP_core__Pathname_O, sizeof(core::Pathname_O), 0, "core::Pathname_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Host), "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12443,11 +11665,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Version), "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::LogicalPathname_O/1515
+// Stamp = core::LogicalPathname_O/1519
 { class_kind, STAMP_core__LogicalPathname_O, sizeof(core::LogicalPathname_O), 0, "core::LogicalPathname_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Host), "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12466,42 +11685,24 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Version), "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Number_O/1519
+// Stamp = core::Number_O/1523
 { class_kind, STAMP_core__Number_O, sizeof(core::Number_O), 0, "core::Number_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Number_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Real_O/1523
+// Stamp = core::Real_O/1527
 { class_kind, STAMP_core__Real_O, sizeof(core::Real_O), 0, "core::Real_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Real_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Rational_O/1527
+// Stamp = core::Rational_O/1531
 { class_kind, STAMP_core__Rational_O, sizeof(core::Rational_O), 0, "core::Rational_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Rational_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Ratio_O/1531
+// Stamp = core::Ratio_O/1535
 { class_kind, STAMP_core__Ratio_O, sizeof(core::Ratio_O), 0, "core::Ratio_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_numerator), "_numerator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_denominator), "_denominator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Integer_O/1535
+// Stamp = core::Integer_O/1539
 { class_kind, STAMP_core__Integer_O, sizeof(core::Integer_O), 0, "core::Integer_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Integer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Bignum_O/1539
+// Stamp = core::Bignum_O/1543
 { class_kind, STAMP_core__Bignum_O, sizeof(core::Bignum_O), 0, "core::Bignum_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._Data), "_limbs._Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -12511,58 +11712,34 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::Fixnum_dummy_O/1543
+// Stamp = core::Fixnum_dummy_O/1547
 { class_kind, STAMP_core__Fixnum_dummy_O, sizeof(core::Fixnum_dummy_O), 0, "core::Fixnum_dummy_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Fixnum_dummy_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Float_O/1547
+// Stamp = core::Float_O/1551
 { class_kind, STAMP_core__Float_O, sizeof(core::Float_O), 0, "core::Float_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Float_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::DoubleFloat_O/1551
+// Stamp = core::DoubleFloat_O/1555
 { class_kind, STAMP_core__DoubleFloat_O, sizeof(core::DoubleFloat_O), 0, "core::DoubleFloat_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::DoubleFloat_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
 // not-exposing {  fixed_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(core::DoubleFloat_O),_Value), "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::SingleFloat_dummy_O/1555
+// Stamp = core::SingleFloat_dummy_O/1559
 { class_kind, STAMP_core__SingleFloat_dummy_O, sizeof(core::SingleFloat_dummy_O), 0, "core::SingleFloat_dummy_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleFloat_dummy_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::LongFloat_O/1559
+// Stamp = core::LongFloat_O/1563
 { class_kind, STAMP_core__LongFloat_O, sizeof(core::LongFloat_O), 0, "core::LongFloat_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LongFloat_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::ShortFloat_O/1563
+// Stamp = core::ShortFloat_O/1567
 { class_kind, STAMP_core__ShortFloat_O, sizeof(core::ShortFloat_O), 0, "core::ShortFloat_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ShortFloat_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")
 // not-exposing {  fixed_field, ctype_float, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(core::ShortFloat_O),_Value), "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Complex_O/1567
+// Stamp = core::Complex_O/1571
 { class_kind, STAMP_core__Complex_O, sizeof(core::Complex_O), 0, "core::Complex_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_real), "_real" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_imaginary), "_imaginary" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Stream_O/1571
+// Stamp = core::Stream_O/1575
 { class_kind, STAMP_core__Stream_O, sizeof(core::Stream_O), 0, "core::Stream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Stream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Stream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12616,11 +11793,8 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::AnsiStream_O/1575
+// Stamp = core::AnsiStream_O/1579
 { class_kind, STAMP_core__AnsiStream_O, sizeof(core::AnsiStream_O), 0, "core::AnsiStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12674,11 +11848,8 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::TwoWayStream_O/1579
+// Stamp = core::TwoWayStream_O/1583
 { class_kind, STAMP_core__TwoWayStream_O, sizeof(core::TwoWayStream_O), 0, "core::TwoWayStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12738,11 +11909,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Out), "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::SynonymStream_O/1583
+// Stamp = core::SynonymStream_O/1587
 { class_kind, STAMP_core__SynonymStream_O, sizeof(core::SynonymStream_O), 0, "core::SynonymStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12799,11 +11967,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_SynonymSymbol), "_SynonymSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::ConcatenatedStream_O/1587
+// Stamp = core::ConcatenatedStream_O/1591
 { class_kind, STAMP_core__ConcatenatedStream_O, sizeof(core::ConcatenatedStream_O), 0, "core::ConcatenatedStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12860,11 +12025,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_List), "_List" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::FileStream_O/1591
+// Stamp = core::FileStream_O/1595
 { class_kind, STAMP_core__FileStream_O, sizeof(core::FileStream_O), 0, "core::FileStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12924,11 +12086,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ElementType), "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::IOFileStream_O/1595
+// Stamp = core::IOFileStream_O/1599
 { class_kind, STAMP_core__IOFileStream_O, sizeof(core::IOFileStream_O), 0, "core::IOFileStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12991,11 +12150,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_FileDescriptor), "_FileDescriptor" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::IOStreamStream_O/1599
+// Stamp = core::IOStreamStream_O/1603
 { class_kind, STAMP_core__IOStreamStream_O, sizeof(core::IOStreamStream_O), 0, "core::IOStreamStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13055,11 +12211,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ElementType), "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::BroadcastStream_O/1603
+// Stamp = core::BroadcastStream_O/1607
 { class_kind, STAMP_core__BroadcastStream_O, sizeof(core::BroadcastStream_O), 0, "core::BroadcastStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13116,11 +12269,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Streams), "_Streams" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::StringStream_O/1607
+// Stamp = core::StringStream_O/1611
 { class_kind, STAMP_core__StringStream_O, sizeof(core::StringStream_O), 0, "core::StringStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13174,11 +12324,8 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevColumn), "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::StringOutputStream_O/1611
+// Stamp = core::StringOutputStream_O/1615
 { class_kind, STAMP_core__StringOutputStream_O, sizeof(core::StringOutputStream_O), 0, "core::StringOutputStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13235,11 +12382,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Array_O>" :SPECIALIZER "class core::Array_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Contents), "_Contents" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::StringInputStream_O/1615
+// Stamp = core::StringInputStream_O/1619
 { class_kind, STAMP_core__StringInputStream_O, sizeof(core::StringInputStream_O), 0, "core::StringInputStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13302,11 +12446,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputLimit), "_InputLimit" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::EchoStream_O/1619
+// Stamp = core::EchoStream_O/1623
 { class_kind, STAMP_core__EchoStream_O, sizeof(core::EchoStream_O), 0, "core::EchoStream_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Closed), "_Closed" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13366,11 +12507,8 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Out), "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Package_O/1623
+// Stamp = core::Package_O/1627
 { class_kind, STAMP_core__Package_O, sizeof(core::Package_O), 0, "core::Package_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),_InternalSymbols), "_InternalSymbols" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13446,24 +12584,15 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),zombieP), "zombieP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FileStatus_O/1627
+// Stamp = core::FileStatus_O/1631
 { class_kind, STAMP_core__FileStatus_O, sizeof(core::FileStatus_O), 0, "core::FileStatus_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStatus_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::InvocationHistoryFrameIterator_O/1631
+// Stamp = core::InvocationHistoryFrameIterator_O/1635
 { class_kind, STAMP_core__InvocationHistoryFrameIterator_O, sizeof(core::InvocationHistoryFrameIterator_O), 0, "core::InvocationHistoryFrameIterator_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Index), "_Index" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::SourcePosInfo_O/1635
+// Stamp = core::SourcePosInfo_O/1639
 { class_kind, STAMP_core__SourcePosInfo_O, sizeof(core::SourcePosInfo_O), 0, "core::SourcePosInfo_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FileId), "_FileId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13482,31 +12611,16 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_InlinedAt), "_InlinedAt" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::IntArray_O/1639
+// Stamp = core::IntArray_O/1643
 { class_kind, STAMP_core__IntArray_O, sizeof(core::IntArray_O), 0, "core::IntArray_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::IntArray_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::DirectoryEntry_O/1643
+// Stamp = core::DirectoryEntry_O/1647
 { class_kind, STAMP_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, "core::DirectoryEntry_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryEntry_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::LightUserData_O/1647
+// Stamp = core::LightUserData_O/1651
 { class_kind, STAMP_core__LightUserData_O, sizeof(core::LightUserData_O), 0, "core::LightUserData_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LightUserData_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::UserData_O/1651
+// Stamp = core::UserData_O/1655
 { class_kind, STAMP_core__UserData_O, sizeof(core::UserData_O), 0, "core::UserData_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::UserData_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Record_O/1655
+// Stamp = core::Record_O/1659
 { class_kind, STAMP_core__Record_O, sizeof(core::Record_O), 0, "core::Record_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_alist), "_alist" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13516,19 +12630,13 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), "_Seen" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRegistry_O/1659
+// Stamp = clbind::ClassRegistry_O/1663
 { class_kind, STAMP_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Frame_O/1663
+// Stamp = core::Frame_O/1667
 { class_kind, STAMP_core__Frame_O, sizeof(core::Frame_O), 0, "core::Frame_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13571,12 +12679,9 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::MultiStringBuffer_O/1667
+// Stamp = core::MultiStringBuffer_O/1671
 { class_kind, STAMP_core__MultiStringBuffer_O, sizeof(core::MultiStringBuffer_O), 0, "core::MultiStringBuffer_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::MultiStringBuffer_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Cons_O/1671
+// Stamp = core::Cons_O/1675
 { class_kind, STAMP_core__Cons_O, sizeof(core::Cons_O), 0, "core::Cons_O" },
 // second-last-field is-atomic atomic: T  name: "atomic"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
@@ -13592,8 +12697,16 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_guard), "_guard" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Lisp_O/1675
+// Stamp = core::Lisp_O/1679
 { class_kind, STAMP_core__Lisp_O, sizeof(core::Lisp_O), 0, "core::Lisp_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._UnboundSymbolFunctionFunctionDescription), "_Roots._UnboundSymbolFunctionFunctionDescription" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._UnboundSetfSymbolFunctionFunctionDescription), "_Roots._UnboundSetfSymbolFunctionFunctionDescription" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -14447,20 +13560,17 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), "_LineNumber" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1679
-// Stamp = asttooling::AstVisitor_O/1683
+// Stamp = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1683
+// Stamp = asttooling::AstVisitor_O/1687
 { class_kind, STAMP_asttooling__AstVisitor_O, sizeof(asttooling::AstVisitor_O), 0, "asttooling::AstVisitor_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),_badge_remove), "_badge_remove" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),_Target), "_Target" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clang::tooling::ToolAction/1687
-// Stamp = clang::tooling::FrontendActionFactory/1691
-// Stamp = clang::ast_matchers::MatchFinder::MatchCallback/1695
-// Stamp = gctools::GCContainer/1699
-// Stamp = gctools::GCArray_moveable<unsigned int>/1703
+// Stamp = clang::tooling::ToolAction/1691
+// Stamp = clang::tooling::FrontendActionFactory/1695
+// Stamp = clang::ast_matchers::MatchFinder::MatchCallback/1699
+// Stamp = gctools::GCContainer/1703
+// Stamp = gctools::GCArray_moveable<unsigned int>/1707
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_int_, sizeof(gctools::GCArray_moveable<unsigned int>), 0, "gctools::GCArray_moveable<unsigned int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), "_Data" },
  {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), NULL },
@@ -14471,7 +13581,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1707
+// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1711
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), NULL },
@@ -14482,7 +13592,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), 0, "only" },
-// Stamp = gctools::GCVector_moveable<double>/1711
+// Stamp = gctools::GCVector_moveable<double>/1715
 { container_kind, STAMP_gctools__GCVector_moveable_double_, sizeof(gctools::GCVector_moveable<double>), 0, "gctools::GCVector_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Data), "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Capacity), NULL },
@@ -14493,7 +13603,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
-// Stamp = gctools::GCArray_moveable<short>/1715
+// Stamp = gctools::GCArray_moveable<short>/1719
 { container_kind, STAMP_gctools__GCArray_moveable_short_, sizeof(gctools::GCArray_moveable<short>), 0, "gctools::GCArray_moveable<short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Data), "_Data" },
  {  variable_capacity, sizeof(short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), NULL },
@@ -14504,17 +13614,6 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, "only" },
-// Stamp = gctools::GCBitUnitArray_moveable<2,-1>/1719
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2__1_, sizeof(gctools::GCBitUnitArray_moveable<2,-1>), 2, "gctools::GCBitUnitArray_moveable<2,-1>" },
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,-1>),_Data), "_Data" },
- {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,-1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,-1>),_Length), NULL },
-/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
-*/
-/* (ctype-key (base one)) -> "unsigned long"
-*/
-// atomic-smart-ptr-p -> NIL
-// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
-{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
 // Stamp = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/1723
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), "_Data" },
@@ -14794,10 +13893,10 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FileScope_O>), 0, "only" },
-// Stamp = gctools::GCBitUnitArray_moveable<4,-1>/1783
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4__1_, sizeof(gctools::GCBitUnitArray_moveable<4,-1>), 4, "gctools::GCBitUnitArray_moveable<4,-1>" },
- {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,-1>),_Data), "_Data" },
- {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,-1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,-1>),_Length), NULL },
+// Stamp = gctools::GCBitUnitArray_moveable<4,1>/1783
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, "gctools::GCBitUnitArray_moveable<4,1>" },
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 */
 /* (ctype-key (base one)) -> "unsigned long"
@@ -15007,7 +14106,18 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), "_Expression" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCArray_moveable<long>/1831
+// Stamp = gctools::GCBitUnitArray_moveable<2,1>/1831
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, "gctools::GCBitUnitArray_moveable<2,1>" },
+ {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Data), "_Data" },
+ {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), NULL },
+/* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+*/
+/* (ctype-key (base one)) -> "unsigned long"
+*/
+// atomic-smart-ptr-p -> NIL
+// one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
+{    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
+// Stamp = gctools::GCArray_moveable<long>/1835
 { container_kind, STAMP_gctools__GCArray_moveable_long_, sizeof(gctools::GCArray_moveable<long>), 0, "gctools::GCArray_moveable<long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_Data), "_Data" },
  {  variable_capacity, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long>),_MaybeSignedLength), NULL },
@@ -15018,7 +14128,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
-// Stamp = gctools::GCVector_moveable<int>/1835
+// Stamp = gctools::GCVector_moveable<int>/1839
 { container_kind, STAMP_gctools__GCVector_moveable_int_, sizeof(gctools::GCVector_moveable<int>), 0, "gctools::GCVector_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), NULL },
@@ -15029,7 +14139,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1839
+// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1843
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), NULL },
@@ -15040,7 +14150,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), 0, "only" },
-// Stamp = gctools::GCArray_moveable<float>/1843
+// Stamp = gctools::GCArray_moveable<float>/1847
 { container_kind, STAMP_gctools__GCArray_moveable_float_, sizeof(gctools::GCArray_moveable<float>), 0, "gctools::GCArray_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), NULL },
@@ -15051,7 +14161,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1847
+// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1851
 { container_kind, STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Data), "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Creator_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Capacity), NULL },
@@ -15062,7 +14172,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::T_O *>/1851
+// Stamp = gctools::GCVector_moveable<core::T_O *>/1855
 { container_kind, STAMP_gctools__GCVector_moveable_core__T_O___, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, "gctools::GCVector_moveable<core::T_O *>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
  {  variable_capacity, sizeof(core::T_O*), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
@@ -15073,7 +14183,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POINTER-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O")) :base #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O"))>
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, "only" },
-// Stamp = gctools::GCArray_moveable<unsigned short>/1855
+// Stamp = gctools::GCArray_moveable<unsigned short>/1859
 { container_kind, STAMP_gctools__GCArray_moveable_unsigned_short_, sizeof(gctools::GCArray_moveable<unsigned short>), 0, "gctools::GCArray_moveable<unsigned short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), "_Data" },
  {  variable_capacity, sizeof(unsigned short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), NULL },
@@ -15084,7 +14194,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, "only" },
-// Stamp = gctools::GCVector_moveable<float>/1859
+// Stamp = gctools::GCVector_moveable<float>/1863
 { container_kind, STAMP_gctools__GCVector_moveable_float_, sizeof(gctools::GCVector_moveable<float>), 0, "gctools::GCVector_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Data), "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Capacity), NULL },
@@ -15095,9 +14205,9 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
-// Stamp = clang::FrontendAction/1863
-// Stamp = clang::ASTFrontendAction/1867
-// Stamp = clang::SyntaxOnlyAction/1871
+// Stamp = clang::FrontendAction/1867
+// Stamp = clang::ASTFrontendAction/1871
+// Stamp = clang::SyntaxOnlyAction/1875
 
 #endif // defined(GC_OBJ_SCAN_HELPERS)
 #if defined(GC_OBJ_SCAN_TABLE)
@@ -16642,14 +15752,29 @@ obj_finalize_STAMP_core__SimpleBitVector_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
      // do nothing stamp value 759
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
+}
+obj_finalize_STAMP_core__SimpleVector_int4_t_O:
+{
+     // stamp value 763
+    core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~SimpleVector_int4_t_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 767
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte32_t_O:
 {
-     // stamp value 763
+     // stamp value 771
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16659,12 +15784,12 @@ obj_finalize_STAMP_core__SimpleVector_byte32_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 767
+     // do nothing stamp value 775
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_size_t_O:
 {
-     // stamp value 771
+     // stamp value 779
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16674,12 +15799,12 @@ obj_finalize_STAMP_core__SimpleVector_size_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 775
+     // do nothing stamp value 783
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_double_O:
 {
-     // stamp value 779
+     // stamp value 787
     core::SimpleVector_double_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_double_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16689,12 +15814,12 @@ obj_finalize_STAMP_core__SimpleVector_double_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 783
+     // do nothing stamp value 791
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte64_t_O:
 {
-     // stamp value 787
+     // stamp value 795
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16702,29 +15827,29 @@ obj_finalize_STAMP_core__SimpleVector_byte64_t_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_:
+obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
-     // do nothing stamp value 791
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,-1>"));
+     // do nothing stamp value 799
+    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
 }
-obj_finalize_STAMP_core__SimpleVector_int4_t_O:
+obj_finalize_STAMP_core__SimpleVector_int2_t_O:
 {
-     // stamp value 795
-    core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
+     // stamp value 803
+    core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~SimpleVector_int4_t_O();
+    obj_gc_safe->~SimpleVector_int2_t_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 799
+     // do nothing stamp value 807
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int64_t_O:
 {
-     // stamp value 803
+     // stamp value 811
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16734,12 +15859,12 @@ obj_finalize_STAMP_core__SimpleVector_int64_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 807
+     // do nothing stamp value 815
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_fixnum_O:
 {
-     // stamp value 811
+     // stamp value 819
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16749,31 +15874,16 @@ obj_finalize_STAMP_core__SimpleVector_fixnum_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 815
+     // do nothing stamp value 823
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int8_t_O:
 {
-     // stamp value 819
+     // stamp value 827
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~SimpleVector_int8_t_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
-obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_:
-{
-     // do nothing stamp value 823
-    THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,-1>"));
-}
-obj_finalize_STAMP_core__SimpleVector_int2_t_O:
-{
-     // stamp value 827
-    core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~SimpleVector_int2_t_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -18407,9 +17517,19 @@ obj_finalize_STAMP_core__HashTableEqual_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_llvmo__InsertPoint_O:
+obj_finalize_STAMP_core__FunctionDescription_O:
 {
      // stamp value 1495
+    core::FunctionDescription_O* obj_gc_safe = reinterpret_cast<core::FunctionDescription_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~FunctionDescription_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMP_llvmo__InsertPoint_O:
+{
+     // stamp value 1499
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18419,7 +17539,7 @@ obj_finalize_STAMP_llvmo__InsertPoint_O:
 }
 obj_finalize_STAMP_core__Scope_O:
 {
-     // stamp value 1499
+     // stamp value 1503
     core::Scope_O* obj_gc_safe = reinterpret_cast<core::Scope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18429,7 +17549,7 @@ obj_finalize_STAMP_core__Scope_O:
 }
 obj_finalize_STAMP_core__FileScope_O:
 {
-     // stamp value 1503
+     // stamp value 1507
     core::FileScope_O* obj_gc_safe = reinterpret_cast<core::FileScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18439,7 +17559,7 @@ obj_finalize_STAMP_core__FileScope_O:
 }
 obj_finalize_STAMP_core__Path_O:
 {
-     // stamp value 1507
+     // stamp value 1511
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18449,7 +17569,7 @@ obj_finalize_STAMP_core__Path_O:
 }
 obj_finalize_STAMP_core__Pathname_O:
 {
-     // stamp value 1511
+     // stamp value 1515
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18459,7 +17579,7 @@ obj_finalize_STAMP_core__Pathname_O:
 }
 obj_finalize_STAMP_core__LogicalPathname_O:
 {
-     // stamp value 1515
+     // stamp value 1519
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18469,7 +17589,7 @@ obj_finalize_STAMP_core__LogicalPathname_O:
 }
 obj_finalize_STAMP_core__Number_O:
 {
-     // stamp value 1519
+     // stamp value 1523
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18479,7 +17599,7 @@ obj_finalize_STAMP_core__Number_O:
 }
 obj_finalize_STAMP_core__Real_O:
 {
-     // stamp value 1523
+     // stamp value 1527
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18489,7 +17609,7 @@ obj_finalize_STAMP_core__Real_O:
 }
 obj_finalize_STAMP_core__Rational_O:
 {
-     // stamp value 1527
+     // stamp value 1531
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18499,7 +17619,7 @@ obj_finalize_STAMP_core__Rational_O:
 }
 obj_finalize_STAMP_core__Ratio_O:
 {
-     // stamp value 1531
+     // stamp value 1535
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18509,7 +17629,7 @@ obj_finalize_STAMP_core__Ratio_O:
 }
 obj_finalize_STAMP_core__Integer_O:
 {
-     // stamp value 1535
+     // stamp value 1539
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18519,7 +17639,7 @@ obj_finalize_STAMP_core__Integer_O:
 }
 obj_finalize_STAMP_core__Bignum_O:
 {
-     // stamp value 1539
+     // stamp value 1543
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18529,7 +17649,7 @@ obj_finalize_STAMP_core__Bignum_O:
 }
 obj_finalize_STAMP_core__Fixnum_dummy_O:
 {
-     // stamp value 1543
+     // stamp value 1547
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18539,7 +17659,7 @@ obj_finalize_STAMP_core__Fixnum_dummy_O:
 }
 obj_finalize_STAMP_core__Float_O:
 {
-     // stamp value 1547
+     // stamp value 1551
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18549,7 +17669,7 @@ obj_finalize_STAMP_core__Float_O:
 }
 obj_finalize_STAMP_core__DoubleFloat_O:
 {
-     // stamp value 1551
+     // stamp value 1555
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18559,7 +17679,7 @@ obj_finalize_STAMP_core__DoubleFloat_O:
 }
 obj_finalize_STAMP_core__SingleFloat_dummy_O:
 {
-     // stamp value 1555
+     // stamp value 1559
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18569,7 +17689,7 @@ obj_finalize_STAMP_core__SingleFloat_dummy_O:
 }
 obj_finalize_STAMP_core__LongFloat_O:
 {
-     // stamp value 1559
+     // stamp value 1563
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18579,7 +17699,7 @@ obj_finalize_STAMP_core__LongFloat_O:
 }
 obj_finalize_STAMP_core__ShortFloat_O:
 {
-     // stamp value 1563
+     // stamp value 1567
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18589,7 +17709,7 @@ obj_finalize_STAMP_core__ShortFloat_O:
 }
 obj_finalize_STAMP_core__Complex_O:
 {
-     // stamp value 1567
+     // stamp value 1571
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18599,7 +17719,7 @@ obj_finalize_STAMP_core__Complex_O:
 }
 obj_finalize_STAMP_core__Stream_O:
 {
-     // stamp value 1571
+     // stamp value 1575
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18609,7 +17729,7 @@ obj_finalize_STAMP_core__Stream_O:
 }
 obj_finalize_STAMP_core__AnsiStream_O:
 {
-     // stamp value 1575
+     // stamp value 1579
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18619,7 +17739,7 @@ obj_finalize_STAMP_core__AnsiStream_O:
 }
 obj_finalize_STAMP_core__TwoWayStream_O:
 {
-     // stamp value 1579
+     // stamp value 1583
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18629,7 +17749,7 @@ obj_finalize_STAMP_core__TwoWayStream_O:
 }
 obj_finalize_STAMP_core__SynonymStream_O:
 {
-     // stamp value 1583
+     // stamp value 1587
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18639,7 +17759,7 @@ obj_finalize_STAMP_core__SynonymStream_O:
 }
 obj_finalize_STAMP_core__ConcatenatedStream_O:
 {
-     // stamp value 1587
+     // stamp value 1591
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18649,7 +17769,7 @@ obj_finalize_STAMP_core__ConcatenatedStream_O:
 }
 obj_finalize_STAMP_core__FileStream_O:
 {
-     // stamp value 1591
+     // stamp value 1595
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18659,7 +17779,7 @@ obj_finalize_STAMP_core__FileStream_O:
 }
 obj_finalize_STAMP_core__IOFileStream_O:
 {
-     // stamp value 1595
+     // stamp value 1599
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18669,7 +17789,7 @@ obj_finalize_STAMP_core__IOFileStream_O:
 }
 obj_finalize_STAMP_core__IOStreamStream_O:
 {
-     // stamp value 1599
+     // stamp value 1603
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18679,7 +17799,7 @@ obj_finalize_STAMP_core__IOStreamStream_O:
 }
 obj_finalize_STAMP_core__BroadcastStream_O:
 {
-     // stamp value 1603
+     // stamp value 1607
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18689,7 +17809,7 @@ obj_finalize_STAMP_core__BroadcastStream_O:
 }
 obj_finalize_STAMP_core__StringStream_O:
 {
-     // stamp value 1607
+     // stamp value 1611
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18699,7 +17819,7 @@ obj_finalize_STAMP_core__StringStream_O:
 }
 obj_finalize_STAMP_core__StringOutputStream_O:
 {
-     // stamp value 1611
+     // stamp value 1615
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18709,7 +17829,7 @@ obj_finalize_STAMP_core__StringOutputStream_O:
 }
 obj_finalize_STAMP_core__StringInputStream_O:
 {
-     // stamp value 1615
+     // stamp value 1619
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18719,7 +17839,7 @@ obj_finalize_STAMP_core__StringInputStream_O:
 }
 obj_finalize_STAMP_core__EchoStream_O:
 {
-     // stamp value 1619
+     // stamp value 1623
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18729,7 +17849,7 @@ obj_finalize_STAMP_core__EchoStream_O:
 }
 obj_finalize_STAMP_core__Package_O:
 {
-     // stamp value 1623
+     // stamp value 1627
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18739,7 +17859,7 @@ obj_finalize_STAMP_core__Package_O:
 }
 obj_finalize_STAMP_core__FileStatus_O:
 {
-     // stamp value 1627
+     // stamp value 1631
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18749,7 +17869,7 @@ obj_finalize_STAMP_core__FileStatus_O:
 }
 obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O:
 {
-     // stamp value 1631
+     // stamp value 1635
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18759,7 +17879,7 @@ obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O:
 }
 obj_finalize_STAMP_core__SourcePosInfo_O:
 {
-     // stamp value 1635
+     // stamp value 1639
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18769,7 +17889,7 @@ obj_finalize_STAMP_core__SourcePosInfo_O:
 }
 obj_finalize_STAMP_core__IntArray_O:
 {
-     // stamp value 1639
+     // stamp value 1643
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18779,7 +17899,7 @@ obj_finalize_STAMP_core__IntArray_O:
 }
 obj_finalize_STAMP_core__DirectoryEntry_O:
 {
-     // stamp value 1643
+     // stamp value 1647
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18789,7 +17909,7 @@ obj_finalize_STAMP_core__DirectoryEntry_O:
 }
 obj_finalize_STAMP_core__LightUserData_O:
 {
-     // stamp value 1647
+     // stamp value 1651
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18799,7 +17919,7 @@ obj_finalize_STAMP_core__LightUserData_O:
 }
 obj_finalize_STAMP_core__UserData_O:
 {
-     // stamp value 1651
+     // stamp value 1655
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18809,7 +17929,7 @@ obj_finalize_STAMP_core__UserData_O:
 }
 obj_finalize_STAMP_core__Record_O:
 {
-     // stamp value 1655
+     // stamp value 1659
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18819,7 +17939,7 @@ obj_finalize_STAMP_core__Record_O:
 }
 obj_finalize_STAMP_clbind__ClassRegistry_O:
 {
-     // stamp value 1659
+     // stamp value 1663
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18829,7 +17949,7 @@ obj_finalize_STAMP_clbind__ClassRegistry_O:
 }
 obj_finalize_STAMP_core__Frame_O:
 {
-     // stamp value 1663
+     // stamp value 1667
     core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18839,7 +17959,7 @@ obj_finalize_STAMP_core__Frame_O:
 }
 obj_finalize_STAMP_core__MultiStringBuffer_O:
 {
-     // stamp value 1667
+     // stamp value 1671
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18849,7 +17969,7 @@ obj_finalize_STAMP_core__MultiStringBuffer_O:
 }
 obj_finalize_STAMP_core__Cons_O:
 {
-     // stamp value 1671
+     // stamp value 1675
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18859,7 +17979,7 @@ obj_finalize_STAMP_core__Cons_O:
 }
 obj_finalize_STAMP_core__Lisp_O:
 {
-     // stamp value 1675
+     // stamp value 1679
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18869,12 +17989,12 @@ obj_finalize_STAMP_core__Lisp_O:
 }
 obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
 {
-     // do nothing stamp value 1679
+     // do nothing stamp value 1683
     THROW_HARD_ERROR(BF("Should never finalize object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
 }
 obj_finalize_STAMP_asttooling__AstVisitor_O:
 {
-     // stamp value 1683
+     // stamp value 1687
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -18884,45 +18004,40 @@ obj_finalize_STAMP_asttooling__AstVisitor_O:
 }
 obj_finalize_STAMP_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 1687
+     // do nothing stamp value 1691
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::ToolAction"));
 }
 obj_finalize_STAMP_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 1691
+     // do nothing stamp value 1695
     THROW_HARD_ERROR(BF("Should never finalize object clang::tooling::FrontendActionFactory"));
 }
 obj_finalize_STAMP_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 1695
+     // do nothing stamp value 1699
     THROW_HARD_ERROR(BF("Should never finalize object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 obj_finalize_STAMP_gctools__GCContainer:
 {
-     // do nothing stamp value 1699
+     // do nothing stamp value 1703
     THROW_HARD_ERROR(BF("Should never finalize object gctools::GCContainer"));
 }
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 1703
+     // stamp value 1707
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned int>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 1707
+     // stamp value 1711
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_double_:
 {
-     // stamp value 1711
+     // stamp value 1715
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<double>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_short_:
 {
-     // stamp value 1715
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
-obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_2__1_:
-{
      // stamp value 1719
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,-1>"));
-}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<short>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
      // stamp value 1723
@@ -18984,10 +18099,10 @@ obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope
 {
      // stamp value 1779
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
-obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_4__1_:
+obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_4_1_:
 {
      // stamp value 1783
-    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,-1>"));
+    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<4,1>"));
 }
 obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolStorage_:
 {
@@ -19035,51 +18150,56 @@ obj_finalize_STAMP_gctools__GCVector_moveable_core__AuxArgument_:
 {
      // stamp value 1827
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
-obj_finalize_STAMP_gctools__GCArray_moveable_long_:
+obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_2_1_:
 {
      // stamp value 1831
+    THROW_HARD_ERROR(BF("Should never finalize gctools::GCBitUnitArray_moveable<2,1>"));
+}
+obj_finalize_STAMP_gctools__GCArray_moveable_long_:
+{
+     // stamp value 1835
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<long>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_int_:
 {
-     // stamp value 1835
+     // stamp value 1839
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<int>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 1839
+     // stamp value 1843
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_float_:
 {
-     // stamp value 1843
+     // stamp value 1847
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<float>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 1847
+     // stamp value 1851
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 1851
+     // stamp value 1855
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 1855
+     // stamp value 1859
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<unsigned short>"));}
 obj_finalize_STAMP_gctools__GCVector_moveable_float_:
 {
-     // stamp value 1859
+     // stamp value 1863
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<float>"));}
 obj_finalize_STAMP_clang__FrontendAction:
 {
-     // do nothing stamp value 1863
+     // do nothing stamp value 1867
     THROW_HARD_ERROR(BF("Should never finalize object clang::FrontendAction"));
 }
 obj_finalize_STAMP_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 1867
+     // do nothing stamp value 1871
     THROW_HARD_ERROR(BF("Should never finalize object clang::ASTFrontendAction"));
 }
 obj_finalize_STAMP_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 1871
+     // do nothing stamp value 1875
     THROW_HARD_ERROR(BF("Should never finalize object clang::SyntaxOnlyAction"));
 }
 #endif // defined(GC_OBJ_FINALIZE)
@@ -19277,24 +18397,24 @@ static void* OBJ_FINALIZE_table[] = {
   /* 747 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
   /* 751 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
   /* 755 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
-  /* 759 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
-  /* 763 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
-  /* 767 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 771 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
-  /* 775 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
-  /* 779 */ &&obj_finalize_STAMP_core__SimpleVector_double_O,
-  /* 783 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 787 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
-  /* 791 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_,
-  /* 795 */ &&obj_finalize_STAMP_core__SimpleVector_int4_t_O,
-  /* 799 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
-  /* 803 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
-  /* 807 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
-  /* 811 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
-  /* 815 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
-  /* 819 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
-  /* 823 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_,
-  /* 827 */ &&obj_finalize_STAMP_core__SimpleVector_int2_t_O,
+  /* 759 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
+  /* 763 */ &&obj_finalize_STAMP_core__SimpleVector_int4_t_O,
+  /* 767 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
+  /* 771 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
+  /* 775 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 779 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
+  /* 783 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
+  /* 787 */ &&obj_finalize_STAMP_core__SimpleVector_double_O,
+  /* 791 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 795 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
+  /* 799 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
+  /* 803 */ &&obj_finalize_STAMP_core__SimpleVector_int2_t_O,
+  /* 807 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
+  /* 811 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
+  /* 815 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
+  /* 819 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
+  /* 823 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
+  /* 827 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
   /* 831 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
   /* 835 */ &&obj_finalize_STAMP_core__SimpleVector_float_O,
   /* 839 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
@@ -19461,63 +18581,63 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1483 */ &&obj_finalize_STAMP_core__HashTableEq_O,
   /* 1487 */ &&obj_finalize_STAMP_core__HashTableEql_O,
   /* 1491 */ &&obj_finalize_STAMP_core__HashTableEqual_O,
-  /* 1495 */ &&obj_finalize_STAMP_llvmo__InsertPoint_O,
-  /* 1499 */ &&obj_finalize_STAMP_core__Scope_O,
-  /* 1503 */ &&obj_finalize_STAMP_core__FileScope_O,
-  /* 1507 */ &&obj_finalize_STAMP_core__Path_O,
-  /* 1511 */ &&obj_finalize_STAMP_core__Pathname_O,
-  /* 1515 */ &&obj_finalize_STAMP_core__LogicalPathname_O,
-  /* 1519 */ &&obj_finalize_STAMP_core__Number_O,
-  /* 1523 */ &&obj_finalize_STAMP_core__Real_O,
-  /* 1527 */ &&obj_finalize_STAMP_core__Rational_O,
-  /* 1531 */ &&obj_finalize_STAMP_core__Ratio_O,
-  /* 1535 */ &&obj_finalize_STAMP_core__Integer_O,
-  /* 1539 */ &&obj_finalize_STAMP_core__Bignum_O,
-  /* 1543 */ &&obj_finalize_STAMP_core__Fixnum_dummy_O,
-  /* 1547 */ &&obj_finalize_STAMP_core__Float_O,
-  /* 1551 */ &&obj_finalize_STAMP_core__DoubleFloat_O,
-  /* 1555 */ &&obj_finalize_STAMP_core__SingleFloat_dummy_O,
-  /* 1559 */ &&obj_finalize_STAMP_core__LongFloat_O,
-  /* 1563 */ &&obj_finalize_STAMP_core__ShortFloat_O,
-  /* 1567 */ &&obj_finalize_STAMP_core__Complex_O,
-  /* 1571 */ &&obj_finalize_STAMP_core__Stream_O,
-  /* 1575 */ &&obj_finalize_STAMP_core__AnsiStream_O,
-  /* 1579 */ &&obj_finalize_STAMP_core__TwoWayStream_O,
-  /* 1583 */ &&obj_finalize_STAMP_core__SynonymStream_O,
-  /* 1587 */ &&obj_finalize_STAMP_core__ConcatenatedStream_O,
-  /* 1591 */ &&obj_finalize_STAMP_core__FileStream_O,
-  /* 1595 */ &&obj_finalize_STAMP_core__IOFileStream_O,
-  /* 1599 */ &&obj_finalize_STAMP_core__IOStreamStream_O,
-  /* 1603 */ &&obj_finalize_STAMP_core__BroadcastStream_O,
-  /* 1607 */ &&obj_finalize_STAMP_core__StringStream_O,
-  /* 1611 */ &&obj_finalize_STAMP_core__StringOutputStream_O,
-  /* 1615 */ &&obj_finalize_STAMP_core__StringInputStream_O,
-  /* 1619 */ &&obj_finalize_STAMP_core__EchoStream_O,
-  /* 1623 */ &&obj_finalize_STAMP_core__Package_O,
-  /* 1627 */ &&obj_finalize_STAMP_core__FileStatus_O,
-  /* 1631 */ &&obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O,
-  /* 1635 */ &&obj_finalize_STAMP_core__SourcePosInfo_O,
-  /* 1639 */ &&obj_finalize_STAMP_core__IntArray_O,
-  /* 1643 */ &&obj_finalize_STAMP_core__DirectoryEntry_O,
-  /* 1647 */ &&obj_finalize_STAMP_core__LightUserData_O,
-  /* 1651 */ &&obj_finalize_STAMP_core__UserData_O,
-  /* 1655 */ &&obj_finalize_STAMP_core__Record_O,
-  /* 1659 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
-  /* 1663 */ &&obj_finalize_STAMP_core__Frame_O,
-  /* 1667 */ &&obj_finalize_STAMP_core__MultiStringBuffer_O,
-  /* 1671 */ &&obj_finalize_STAMP_core__Cons_O,
-  /* 1675 */ &&obj_finalize_STAMP_core__Lisp_O,
-  /* 1679 */ &&obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
-  /* 1683 */ &&obj_finalize_STAMP_asttooling__AstVisitor_O,
-  /* 1687 */ &&obj_finalize_STAMP_clang__tooling__ToolAction,
-  /* 1691 */ &&obj_finalize_STAMP_clang__tooling__FrontendActionFactory,
-  /* 1695 */ &&obj_finalize_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
-  /* 1699 */ &&obj_finalize_STAMP_gctools__GCContainer,
-  /* 1703 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_,
-  /* 1707 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 1711 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_double_,
-  /* 1715 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_short_,
-  /* 1719 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_2__1_,
+  /* 1495 */ &&obj_finalize_STAMP_core__FunctionDescription_O,
+  /* 1499 */ &&obj_finalize_STAMP_llvmo__InsertPoint_O,
+  /* 1503 */ &&obj_finalize_STAMP_core__Scope_O,
+  /* 1507 */ &&obj_finalize_STAMP_core__FileScope_O,
+  /* 1511 */ &&obj_finalize_STAMP_core__Path_O,
+  /* 1515 */ &&obj_finalize_STAMP_core__Pathname_O,
+  /* 1519 */ &&obj_finalize_STAMP_core__LogicalPathname_O,
+  /* 1523 */ &&obj_finalize_STAMP_core__Number_O,
+  /* 1527 */ &&obj_finalize_STAMP_core__Real_O,
+  /* 1531 */ &&obj_finalize_STAMP_core__Rational_O,
+  /* 1535 */ &&obj_finalize_STAMP_core__Ratio_O,
+  /* 1539 */ &&obj_finalize_STAMP_core__Integer_O,
+  /* 1543 */ &&obj_finalize_STAMP_core__Bignum_O,
+  /* 1547 */ &&obj_finalize_STAMP_core__Fixnum_dummy_O,
+  /* 1551 */ &&obj_finalize_STAMP_core__Float_O,
+  /* 1555 */ &&obj_finalize_STAMP_core__DoubleFloat_O,
+  /* 1559 */ &&obj_finalize_STAMP_core__SingleFloat_dummy_O,
+  /* 1563 */ &&obj_finalize_STAMP_core__LongFloat_O,
+  /* 1567 */ &&obj_finalize_STAMP_core__ShortFloat_O,
+  /* 1571 */ &&obj_finalize_STAMP_core__Complex_O,
+  /* 1575 */ &&obj_finalize_STAMP_core__Stream_O,
+  /* 1579 */ &&obj_finalize_STAMP_core__AnsiStream_O,
+  /* 1583 */ &&obj_finalize_STAMP_core__TwoWayStream_O,
+  /* 1587 */ &&obj_finalize_STAMP_core__SynonymStream_O,
+  /* 1591 */ &&obj_finalize_STAMP_core__ConcatenatedStream_O,
+  /* 1595 */ &&obj_finalize_STAMP_core__FileStream_O,
+  /* 1599 */ &&obj_finalize_STAMP_core__IOFileStream_O,
+  /* 1603 */ &&obj_finalize_STAMP_core__IOStreamStream_O,
+  /* 1607 */ &&obj_finalize_STAMP_core__BroadcastStream_O,
+  /* 1611 */ &&obj_finalize_STAMP_core__StringStream_O,
+  /* 1615 */ &&obj_finalize_STAMP_core__StringOutputStream_O,
+  /* 1619 */ &&obj_finalize_STAMP_core__StringInputStream_O,
+  /* 1623 */ &&obj_finalize_STAMP_core__EchoStream_O,
+  /* 1627 */ &&obj_finalize_STAMP_core__Package_O,
+  /* 1631 */ &&obj_finalize_STAMP_core__FileStatus_O,
+  /* 1635 */ &&obj_finalize_STAMP_core__InvocationHistoryFrameIterator_O,
+  /* 1639 */ &&obj_finalize_STAMP_core__SourcePosInfo_O,
+  /* 1643 */ &&obj_finalize_STAMP_core__IntArray_O,
+  /* 1647 */ &&obj_finalize_STAMP_core__DirectoryEntry_O,
+  /* 1651 */ &&obj_finalize_STAMP_core__LightUserData_O,
+  /* 1655 */ &&obj_finalize_STAMP_core__UserData_O,
+  /* 1659 */ &&obj_finalize_STAMP_core__Record_O,
+  /* 1663 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
+  /* 1667 */ &&obj_finalize_STAMP_core__Frame_O,
+  /* 1671 */ &&obj_finalize_STAMP_core__MultiStringBuffer_O,
+  /* 1675 */ &&obj_finalize_STAMP_core__Cons_O,
+  /* 1679 */ &&obj_finalize_STAMP_core__Lisp_O,
+  /* 1683 */ &&obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
+  /* 1687 */ &&obj_finalize_STAMP_asttooling__AstVisitor_O,
+  /* 1691 */ &&obj_finalize_STAMP_clang__tooling__ToolAction,
+  /* 1695 */ &&obj_finalize_STAMP_clang__tooling__FrontendActionFactory,
+  /* 1699 */ &&obj_finalize_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 1703 */ &&obj_finalize_STAMP_gctools__GCContainer,
+  /* 1707 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_int_,
+  /* 1711 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 1715 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_double_,
+  /* 1719 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_short_,
   /* 1723 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
   /* 1727 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_4_0_,
   /* 1731 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
@@ -19533,7 +18653,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1771 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
   /* 1775 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
   /* 1779 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 1783 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_4__1_,
+  /* 1783 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_4_1_,
   /* 1787 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
   /* 1791 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
   /* 1795 */ &&obj_finalize_STAMP_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
@@ -19545,17 +18665,18 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1819 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_1_0_,
   /* 1823 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
   /* 1827 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 1831 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_long_,
-  /* 1835 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_int_,
-  /* 1839 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 1843 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_float_,
-  /* 1847 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 1851 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___,
-  /* 1855 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_,
-  /* 1859 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_float_,
-  /* 1863 */ &&obj_finalize_STAMP_clang__FrontendAction,
-  /* 1867 */ &&obj_finalize_STAMP_clang__ASTFrontendAction,
-  /* 1871 */ &&obj_finalize_STAMP_clang__SyntaxOnlyAction,
+  /* 1831 */ &&obj_finalize_STAMP_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 1835 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_long_,
+  /* 1839 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_int_,
+  /* 1843 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 1847 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_float_,
+  /* 1851 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 1855 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_core__T_O___,
+  /* 1859 */ &&obj_finalize_STAMP_gctools__GCArray_moveable_unsigned_short_,
+  /* 1863 */ &&obj_finalize_STAMP_gctools__GCVector_moveable_float_,
+  /* 1867 */ &&obj_finalize_STAMP_clang__FrontendAction,
+  /* 1871 */ &&obj_finalize_STAMP_clang__ASTFrontendAction,
+  /* 1875 */ &&obj_finalize_STAMP_clang__SyntaxOnlyAction,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -20741,112 +19862,112 @@ obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O:
     GC<core::SimpleBitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
      // do nothing stamp value 759
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
+}
+obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O:
+{
+     // stamp value 763
+    core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
+    GC<core::SimpleVector_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
+{
+     // do nothing stamp value 767
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O:
 {
-     // stamp value 763
+     // stamp value 771
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
     GC<core::SimpleVector_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 767
+     // do nothing stamp value 775
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O:
 {
-     // stamp value 771
+     // stamp value 779
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
     GC<core::SimpleVector_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 775
+     // do nothing stamp value 783
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O:
 {
-     // stamp value 779
+     // stamp value 787
     core::SimpleVector_double_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_double_O*>(client);
     GC<core::SimpleVector_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 783
+     // do nothing stamp value 791
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O:
 {
-     // stamp value 787
+     // stamp value 795
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
     GC<core::SimpleVector_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_:
+obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
-     // do nothing stamp value 791
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,-1>"));
+     // do nothing stamp value 799
+    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
 }
-obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O:
+obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O:
 {
-     // stamp value 795
-    core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
-    GC<core::SimpleVector_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
+     // stamp value 803
+    core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
+    GC<core::SimpleVector_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 799
+     // do nothing stamp value 807
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O:
 {
-     // stamp value 803
+     // stamp value 811
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
     GC<core::SimpleVector_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 807
+     // do nothing stamp value 815
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O:
 {
-     // stamp value 811
+     // stamp value 819
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
     GC<core::SimpleVector_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 815
+     // do nothing stamp value 823
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O:
 {
-     // stamp value 819
+     // stamp value 827
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
     GC<core::SimpleVector_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_:
-{
-     // do nothing stamp value 823
-    THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,-1>"));
-}
-obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O:
-{
-     // stamp value 827
-    core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
-    GC<core::SimpleVector_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_:
@@ -21999,380 +21120,383 @@ obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqual_O:
     GC<core::HashTableEqual_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O:
+obj_deallocate_unmanaged_instance_STAMP_core__FunctionDescription_O:
 {
      // stamp value 1495
+    core::FunctionDescription_O* obj_gc_safe = reinterpret_cast<core::FunctionDescription_O*>(client);
+    GC<core::FunctionDescription_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O:
+{
+     // stamp value 1499
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
     GC<llvmo::InsertPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Scope_O:
 {
-     // stamp value 1499
+     // stamp value 1503
     core::Scope_O* obj_gc_safe = reinterpret_cast<core::Scope_O*>(client);
     GC<core::Scope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FileScope_O:
 {
-     // stamp value 1503
+     // stamp value 1507
     core::FileScope_O* obj_gc_safe = reinterpret_cast<core::FileScope_O*>(client);
     GC<core::FileScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Path_O:
 {
-     // stamp value 1507
+     // stamp value 1511
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
     GC<core::Path_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O:
 {
-     // stamp value 1511
+     // stamp value 1515
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     GC<core::Pathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O:
 {
-     // stamp value 1515
+     // stamp value 1519
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     GC<core::LogicalPathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Number_O:
 {
-     // stamp value 1519
+     // stamp value 1523
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
     GC<core::Number_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Real_O:
 {
-     // stamp value 1523
+     // stamp value 1527
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
     GC<core::Real_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Rational_O:
 {
-     // stamp value 1527
+     // stamp value 1531
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
     GC<core::Rational_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O:
 {
-     // stamp value 1531
+     // stamp value 1535
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     GC<core::Ratio_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Integer_O:
 {
-     // stamp value 1535
+     // stamp value 1539
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
     GC<core::Integer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O:
 {
-     // stamp value 1539
+     // stamp value 1543
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
     GC<core::Bignum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O:
 {
-     // stamp value 1543
+     // stamp value 1547
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
     GC<core::Fixnum_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Float_O:
 {
-     // stamp value 1547
+     // stamp value 1551
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
     GC<core::Float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O:
 {
-     // stamp value 1551
+     // stamp value 1555
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
     GC<core::DoubleFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O:
 {
-     // stamp value 1555
+     // stamp value 1559
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
     GC<core::SingleFloat_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O:
 {
-     // stamp value 1559
+     // stamp value 1563
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
     GC<core::LongFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O:
 {
-     // stamp value 1563
+     // stamp value 1567
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
     GC<core::ShortFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Complex_O:
 {
-     // stamp value 1567
+     // stamp value 1571
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     GC<core::Complex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Stream_O:
 {
-     // stamp value 1571
+     // stamp value 1575
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     GC<core::Stream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O:
 {
-     // stamp value 1575
+     // stamp value 1579
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     GC<core::AnsiStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O:
 {
-     // stamp value 1579
+     // stamp value 1583
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     GC<core::TwoWayStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O:
 {
-     // stamp value 1583
+     // stamp value 1587
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     GC<core::SynonymStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O:
 {
-     // stamp value 1587
+     // stamp value 1591
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     GC<core::ConcatenatedStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O:
 {
-     // stamp value 1591
+     // stamp value 1595
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     GC<core::FileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O:
 {
-     // stamp value 1595
+     // stamp value 1599
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     GC<core::IOFileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O:
 {
-     // stamp value 1599
+     // stamp value 1603
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     GC<core::IOStreamStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O:
 {
-     // stamp value 1603
+     // stamp value 1607
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     GC<core::BroadcastStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O:
 {
-     // stamp value 1607
+     // stamp value 1611
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     GC<core::StringStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O:
 {
-     // stamp value 1611
+     // stamp value 1615
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     GC<core::StringOutputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O:
 {
-     // stamp value 1615
+     // stamp value 1619
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     GC<core::StringInputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O:
 {
-     // stamp value 1619
+     // stamp value 1623
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     GC<core::EchoStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Package_O:
 {
-     // stamp value 1623
+     // stamp value 1627
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     GC<core::Package_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O:
 {
-     // stamp value 1627
+     // stamp value 1631
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
     GC<core::FileStatus_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O:
 {
-     // stamp value 1631
+     // stamp value 1635
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
     GC<core::InvocationHistoryFrameIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O:
 {
-     // stamp value 1635
+     // stamp value 1639
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
     GC<core::SourcePosInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O:
 {
-     // stamp value 1639
+     // stamp value 1643
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
     GC<core::IntArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O:
 {
-     // stamp value 1643
+     // stamp value 1647
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
     GC<core::DirectoryEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O:
 {
-     // stamp value 1647
+     // stamp value 1651
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
     GC<core::LightUserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__UserData_O:
 {
-     // stamp value 1651
+     // stamp value 1655
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
     GC<core::UserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Record_O:
 {
-     // stamp value 1655
+     // stamp value 1659
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O:
 {
-     // stamp value 1659
+     // stamp value 1663
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Frame_O:
 {
-     // stamp value 1663
+     // stamp value 1667
     core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
     GC<core::Frame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MultiStringBuffer_O:
 {
-     // stamp value 1667
+     // stamp value 1671
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
     GC<core::MultiStringBuffer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Cons_O:
 {
-     // stamp value 1671
+     // stamp value 1675
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     GC<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O:
 {
-     // stamp value 1675
+     // stamp value 1679
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     GC<core::Lisp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_:
 {
-     // do nothing stamp value 1679
+     // do nothing stamp value 1683
     THROW_HARD_ERROR(BF("Should never deallocate object clang::RecursiveASTVisitor<asttooling::AstVisitor_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O:
 {
-     // stamp value 1683
+     // stamp value 1687
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     GC<asttooling::AstVisitor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__tooling__ToolAction:
 {
-     // do nothing stamp value 1687
+     // do nothing stamp value 1691
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::ToolAction"));
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__tooling__FrontendActionFactory:
 {
-     // do nothing stamp value 1691
+     // do nothing stamp value 1695
     THROW_HARD_ERROR(BF("Should never deallocate object clang::tooling::FrontendActionFactory"));
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__ast_matchers__MatchFinder__MatchCallback:
 {
-     // do nothing stamp value 1695
+     // do nothing stamp value 1699
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ast_matchers::MatchFinder::MatchCallback"));
 }
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCContainer:
 {
-     // do nothing stamp value 1699
+     // do nothing stamp value 1703
     THROW_HARD_ERROR(BF("Should never deallocate object gctools::GCContainer"));
 }
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_:
 {
-     // stamp value 1703
+     // stamp value 1707
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
 {
-     // stamp value 1707
+     // stamp value 1711
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_:
 {
-     // stamp value 1711
+     // stamp value 1715
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<double>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_:
 {
-     // stamp value 1715
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
-obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_2__1_:
-{
      // stamp value 1719
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,-1>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<short>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
 {
      // stamp value 1723
@@ -22433,10 +21557,10 @@ obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smar
 {
      // stamp value 1779
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>"));}
-obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_4__1_:
+obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_4_1_:
 {
      // stamp value 1783
-    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,-1>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<4,1>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolStorage_:
 {
      // stamp value 1787
@@ -22481,51 +21605,55 @@ obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__AuxArgu
 {
      // stamp value 1827
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
-obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_:
+obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_2_1_:
 {
      // stamp value 1831
+    THROW_HARD_ERROR(BF("Should never deallocate gcbitunits gctools::GCBitUnitArray_moveable<2,1>"));}
+obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_:
+{
+     // stamp value 1835
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<long>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_:
 {
-     // stamp value 1835
+     // stamp value 1839
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<int>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
-     // stamp value 1839
+     // stamp value 1843
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_:
 {
-     // stamp value 1843
+     // stamp value 1847
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<float>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__:
 {
-     // stamp value 1847
+     // stamp value 1851
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___:
 {
-     // stamp value 1851
+     // stamp value 1855
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_:
 {
-     // stamp value 1855
+     // stamp value 1859
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<unsigned short>"));}
 obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_:
 {
-     // stamp value 1859
+     // stamp value 1863
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<float>"));}
 obj_deallocate_unmanaged_instance_STAMP_clang__FrontendAction:
 {
-     // do nothing stamp value 1863
+     // do nothing stamp value 1867
     THROW_HARD_ERROR(BF("Should never deallocate object clang::FrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__ASTFrontendAction:
 {
-     // do nothing stamp value 1867
+     // do nothing stamp value 1871
     THROW_HARD_ERROR(BF("Should never deallocate object clang::ASTFrontendAction"));
 }
 obj_deallocate_unmanaged_instance_STAMP_clang__SyntaxOnlyAction:
 {
-     // do nothing stamp value 1871
+     // do nothing stamp value 1875
     THROW_HARD_ERROR(BF("Should never deallocate object clang::SyntaxOnlyAction"));
 }
 #endif // defined(GC_OBJ_DEALLOCATOR)
@@ -22723,24 +21851,24 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 747 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
   /* 751 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
   /* 755 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
-  /* 759 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
-  /* 763 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
-  /* 767 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 771 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
-  /* 775 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
-  /* 779 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O,
-  /* 783 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 787 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
-  /* 791 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4__1_,
-  /* 795 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O,
-  /* 799 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
-  /* 803 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
-  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
-  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
-  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
-  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
-  /* 823 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2__1_,
-  /* 827 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O,
+  /* 759 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
+  /* 763 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O,
+  /* 767 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
+  /* 771 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
+  /* 775 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 779 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
+  /* 783 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
+  /* 787 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O,
+  /* 791 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 795 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
+  /* 799 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
+  /* 803 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O,
+  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
+  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
+  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
+  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
+  /* 823 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
+  /* 827 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
   /* 831 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
   /* 835 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_float_O,
   /* 839 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
@@ -22907,63 +22035,63 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1483 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEq_O,
   /* 1487 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEql_O,
   /* 1491 */ &&obj_deallocate_unmanaged_instance_STAMP_core__HashTableEqual_O,
-  /* 1495 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O,
-  /* 1499 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Scope_O,
-  /* 1503 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileScope_O,
-  /* 1507 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Path_O,
-  /* 1511 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O,
-  /* 1515 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O,
-  /* 1519 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Number_O,
-  /* 1523 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Real_O,
-  /* 1527 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Rational_O,
-  /* 1531 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O,
-  /* 1535 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Integer_O,
-  /* 1539 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O,
-  /* 1543 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O,
-  /* 1547 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Float_O,
-  /* 1551 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O,
-  /* 1555 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O,
-  /* 1559 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O,
-  /* 1563 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O,
-  /* 1567 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Complex_O,
-  /* 1571 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Stream_O,
-  /* 1575 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O,
-  /* 1579 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O,
-  /* 1583 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O,
-  /* 1587 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O,
-  /* 1591 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O,
-  /* 1595 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O,
-  /* 1599 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O,
-  /* 1603 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O,
-  /* 1607 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O,
-  /* 1611 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O,
-  /* 1615 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O,
-  /* 1619 */ &&obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O,
-  /* 1623 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Package_O,
-  /* 1627 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O,
-  /* 1631 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O,
-  /* 1635 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O,
-  /* 1639 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O,
-  /* 1643 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O,
-  /* 1647 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
-  /* 1651 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
-  /* 1655 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
-  /* 1659 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
-  /* 1663 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
-  /* 1667 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MultiStringBuffer_O,
-  /* 1671 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
-  /* 1675 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
-  /* 1679 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
-  /* 1683 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O,
-  /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__ToolAction,
-  /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__FrontendActionFactory,
-  /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
-  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCContainer,
-  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_,
-  /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_,
-  /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_,
-  /* 1719 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_2__1_,
+  /* 1495 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FunctionDescription_O,
+  /* 1499 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InsertPoint_O,
+  /* 1503 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Scope_O,
+  /* 1507 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileScope_O,
+  /* 1511 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Path_O,
+  /* 1515 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Pathname_O,
+  /* 1519 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LogicalPathname_O,
+  /* 1523 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Number_O,
+  /* 1527 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Real_O,
+  /* 1531 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Rational_O,
+  /* 1535 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Ratio_O,
+  /* 1539 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Integer_O,
+  /* 1543 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Bignum_O,
+  /* 1547 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Fixnum_dummy_O,
+  /* 1551 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Float_O,
+  /* 1555 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DoubleFloat_O,
+  /* 1559 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleFloat_dummy_O,
+  /* 1563 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LongFloat_O,
+  /* 1567 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ShortFloat_O,
+  /* 1571 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Complex_O,
+  /* 1575 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Stream_O,
+  /* 1579 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AnsiStream_O,
+  /* 1583 */ &&obj_deallocate_unmanaged_instance_STAMP_core__TwoWayStream_O,
+  /* 1587 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SynonymStream_O,
+  /* 1591 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ConcatenatedStream_O,
+  /* 1595 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStream_O,
+  /* 1599 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOFileStream_O,
+  /* 1603 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IOStreamStream_O,
+  /* 1607 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BroadcastStream_O,
+  /* 1611 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringStream_O,
+  /* 1615 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringOutputStream_O,
+  /* 1619 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StringInputStream_O,
+  /* 1623 */ &&obj_deallocate_unmanaged_instance_STAMP_core__EchoStream_O,
+  /* 1627 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Package_O,
+  /* 1631 */ &&obj_deallocate_unmanaged_instance_STAMP_core__FileStatus_O,
+  /* 1635 */ &&obj_deallocate_unmanaged_instance_STAMP_core__InvocationHistoryFrameIterator_O,
+  /* 1639 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SourcePosInfo_O,
+  /* 1643 */ &&obj_deallocate_unmanaged_instance_STAMP_core__IntArray_O,
+  /* 1647 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryEntry_O,
+  /* 1651 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
+  /* 1655 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
+  /* 1659 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
+  /* 1663 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
+  /* 1667 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
+  /* 1671 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MultiStringBuffer_O,
+  /* 1675 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
+  /* 1679 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
+  /* 1683 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
+  /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AstVisitor_O,
+  /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__ToolAction,
+  /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__tooling__FrontendActionFactory,
+  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ast_matchers__MatchFinder__MatchCallback,
+  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCContainer,
+  /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_int_,
+  /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_double_,
+  /* 1719 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_short_,
   /* 1723 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
   /* 1727 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_4_0_,
   /* 1731 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolClassHolderPair_,
@@ -22979,7 +22107,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1771 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__KeywordArgument_,
   /* 1775 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__RequiredArgument_,
   /* 1779 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__,
-  /* 1783 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_4__1_,
+  /* 1783 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_4_1_,
   /* 1787 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__SymbolStorage_,
   /* 1791 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__,
   /* 1795 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__,
@@ -22991,17 +22119,18 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1819 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_1_0_,
   /* 1823 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
   /* 1827 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 1831 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_,
-  /* 1835 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_,
-  /* 1839 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 1843 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_,
-  /* 1847 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
-  /* 1851 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___,
-  /* 1855 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_,
-  /* 1859 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_,
-  /* 1863 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__FrontendAction,
-  /* 1867 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ASTFrontendAction,
-  /* 1871 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__SyntaxOnlyAction,
+  /* 1831 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCBitUnitArray_moveable_2_1_,
+  /* 1835 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_long_,
+  /* 1839 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_int_,
+  /* 1843 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 1847 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_float_,
+  /* 1851 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__,
+  /* 1855 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_core__T_O___,
+  /* 1859 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCArray_moveable_unsigned_short_,
+  /* 1863 */ &&obj_deallocate_unmanaged_instance_STAMP_gctools__GCVector_moveable_float_,
+  /* 1867 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__FrontendAction,
+  /* 1871 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__ASTFrontendAction,
+  /* 1875 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__SyntaxOnlyAction,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)

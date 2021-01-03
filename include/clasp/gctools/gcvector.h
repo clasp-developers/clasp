@@ -158,9 +158,6 @@ namespace gctools {
 
 template <class T, typename Allocator>
 class GCVector {
-#ifdef USE_MPS
-//        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-#endif
 public:
   typedef Allocator allocator_type;
   typedef T value_type;
