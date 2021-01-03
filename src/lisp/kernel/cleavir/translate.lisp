@@ -1278,20 +1278,19 @@
              (compile-form form *clasp-env*))))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
-  (let ((functions (cleavir-bir:functions module)))
-    ;; Create llvm IR functions for each BIR function.
-    (cleavir-set:doset (function functions)
-      ;; Assign IDs to unwind destinations.
-      (let ((i 0))
-        (cleavir-set:doset (entrance (cleavir-bir:entrances function))
-          (setf (gethash entrance *unwind-ids*) i)
-          (incf i)))
-      (setf (gethash function *function-info*)
-            (allocate-llvm-function-info function :linkage linkage)))
-    (allocate-module-constants module)
-    (cleavir-set:doset (function functions)
-      (layout-procedure function (get-or-create-lambda-name function)
-                        abi :linkage linkage))))
+  ;; Create llvm IR functions for each BIR function.
+  (cleavir-bir:do-functions (function module)
+    ;; Assign IDs to unwind destinations.
+    (let ((i 0))
+      (cleavir-set:doset (entrance (cleavir-bir:entrances function))
+                         (setf (gethash entrance *unwind-ids*) i)
+                         (incf i)))
+    (setf (gethash function *function-info*)
+          (allocate-llvm-function-info function :linkage linkage)))
+  (allocate-module-constants module)
+  (cleavir-bir:do-functions (function module)
+    (layout-procedure function (get-or-create-lambda-name function)
+                      abi :linkage linkage)))
 
 (defun translate (bir &key abi linkage)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
