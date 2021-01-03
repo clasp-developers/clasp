@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #ifdef CLASP_THREADS
   #define GC_THREADS
 #endif
@@ -95,25 +95,11 @@ extern size_t _global_stack_max_size;
 
 namespace gctools {
 
-#ifdef USE_BOEHM
 class Header_s;
-#endif
-#ifdef USE_MPS
-class Header_s;
-#endif
 
 template <typename T>
 struct GCHeader {
-#ifdef USE_BOEHM
   typedef Header_s HeaderType;
-#endif
-#ifdef USE_MPS
-#ifdef RUNNING_MPSPREP
-  typedef Header_s HeaderType;
-#else
-  typedef Header_s HeaderType;
-#endif
-#endif
 };
 
 template <typename T>
@@ -174,15 +160,12 @@ namespace gctools {
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
- #if defined(USE_BOEHM) || defined(RUNNING_MPSPREP)
+ #if !defined(USE_ANALYSIS)
   #define GC_ENUM
         STAMP_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
- #endif
-#endif        
-#ifdef USE_MPS
- #ifndef RUNNING_MPSPREP
+ #else
   #define GC_STAMP
    #include CLASP_GC_FILENAME
   #undef GC_STAMP
@@ -636,7 +619,7 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
 
 
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
 
@@ -772,24 +755,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-#ifdef USE_MPS
-#ifdef RUNNING_MPSPREP
       static GCStampEnum const Stamp = STAMP_null;
-#else
-  // We need a default Kind when running the gc-builder.lsp static analyzer
-  // but we don't want a default Kind when compiling the mps version of the code
-  // to force compiler errors when the Kind for an object hasn't been declared
-      static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
-#endif // RUNNING_MPSPREP
-#endif // USE_MPS
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-      static GCStampEnum const Stamp = STAMP_null; // minimally define STAMP_null
-#else
-                                            // We don't want a default Kind when compiling the boehm version of the code
-                                            // to force compiler errors when the Kind for an object hasn't been declared
-#endif // USE_CXX_DYNAMIC_CAST
-#endif
     };
 };
 
@@ -936,9 +902,8 @@ namespace gctools {
     size_t _num_entries;
     size_t _capacity;
     /*fnLispCallingConvention* */ void** _function_pointers;
-    void** _function_descriptions;
     size_t _function_pointer_count;
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs);
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs);
     GCRootsInModule(size_t capacity = DefaultCapacity);
     void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
     
@@ -951,7 +916,6 @@ namespace gctools {
     Tagged setTaggedIndex(char tag, size_t index, Tagged val);
     Tagged getTaggedIndex(char tag, size_t index);
     /*fnLispCallingConvention*/ void* lookup_function(size_t index);
-    void* lookup_function_description(size_t index);
     void* address(size_t index) {
       return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }
@@ -960,7 +924,7 @@ namespace gctools {
   extern std::atomic<uint64_t> global_NumberOfRootTables;
   extern std::atomic<uint64_t> global_TotalRootTableSize;
   
-void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs, void** fdescs);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 

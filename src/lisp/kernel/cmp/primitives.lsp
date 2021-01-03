@@ -105,8 +105,7 @@
     (primitive         "ltvc_make_random_state" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*%) :ltvc t)
     (primitive         "ltvc_make_float" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %float%) :ltvc t)
     (primitive         "ltvc_make_double" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %double%) :ltvc t)
-    (primitive         "ltvc_enclose" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %t*% %size_t% #|%fn-prototype*%|# #| %i32*% %size_t% %size_t% %size_t%|#) :ltvc t)
-    (primitive         "ltvc_make_closurette" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t%) :ltvc t)
+    (primitive         "ltvc_make_closurette" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% %size_t%) :ltvc t)
     (primitive-unwinds "ltvc_set_mlf_creator_funcall" %ltvc-return% (list %gcroots-in-module*% %i8% %size_t% %size_t% #|fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_funcall" %ltvc-return% (list %gcroots-in-module*% %size_t% #|%fn-prototype*%|# %i8*%) :ltvc t)
     (primitive-unwinds "ltvc_mlf_init_basic_call" %ltvc-return% (list %gcroots-in-module*% %t*% %size_t%) :varargs t :ltvc t)
@@ -121,8 +120,6 @@
      ,@*startup-primitives-as-list*
      ,@'((primitive         "ltvc_lookup_literal" %t*% (list %gcroots-in-module*% %size_t%))
          (primitive         "ltvc_lookup_transient" %t*% (list %gcroots-in-module*% %i8% %size_t%))
-;;;         (primitive         "ltvc_make_runtime_closurette" %void% (list %gcroots-in-module*% %size_t% %i8*% %i8*%))
-    
          (primitive         "makeCompiledFunction" %t*% (list %fn-prototype*% ; funcPtr
                                                          %i8*% ; function-description
                                                          %t*% ; environment
@@ -185,7 +182,7 @@
          (primitive         "cc_gatherRestArguments" %t*% (list %va_list*% %size_t%))
          (primitive         "cc_gatherDynamicExtentRestArguments" %t*% (list %va_list*% %size_t% %t**%))
          (primitive         "cc_gatherVaRestArguments" %t*% (list %va_list*% %size_t% %vaslist*%))
-         (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %function-description*%))
+         (primitive-unwinds "cc_ifBadKeywordArgumentException" %void% (list %t*% %t*% %t*%))
 
          (primitive         "initializeBlockClosure" %t*% (list %t**%))
          (primitive         "initializeTagbodyClosure" %t*% (list %t**%))
@@ -254,7 +251,6 @@
                                                                       %size_t% ; transient_entries
                                                                       %size_t% ; function_pointer_count
                                                                       %i8**% ; fptrs
-                                                                      %i8**% ; fdescs
                                                                       )) 
          (primitive         "cc_finish_gcroots_in_module" %void% (list %gcroots-in-module*%))
          (primitive         "cc_remove_gcroots_in_module" %void% (list %gcroots-in-module*% ))
@@ -262,11 +258,11 @@
          (primitive-unwinds "cc_invoke_byte_code_interpreter" %void% (list %gcroots-in-module*% %i8*% %size_t%))
 
          (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
-                                               %i8*%
+                                               %t*%
                                                %size_t%))
          (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
-                                                     %i8*%
+                                                     %t*%
                                                      %size_t% ))
          (primitive-unwinds "cc_initialize_closure" %void% (list %t*%
                                                             %size_t% ) :varargs t)
@@ -278,7 +274,7 @@
 
          (primitive         "cc_rewind_va_list" %void% (list %va_list*% %register-save-area*%))
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" %return-type% (list %t*% %return-type%))
-         (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
+         (primitive-unwinds "cc_oddKeywordException" %void% (list %t*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
          (primitive         "_setjmp" %i32% (list %jmp-buf-tag*%))
          (primitive-unwinds "longjmp" %void% (list %jmp-buf-tag*% %i32%))

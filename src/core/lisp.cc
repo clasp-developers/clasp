@@ -197,6 +197,8 @@ public:
 //
 Lisp_O::GCRoots::GCRoots() :
 #ifdef CLASP_THREADS
+    _UnboundSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
+    _UnboundSetfSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
   _ActiveThreads(_Nil<T_O>()),
   _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
   _DefaultSpecialBindings(_Nil<T_O>()),
@@ -465,8 +467,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
-    if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
-      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
+    if (offsetof(Function_O,_FunctionDescription)!=offsetof(FuncallableInstance_O,_FunctionDescription)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_FunctionDescription),offsetof(FuncallableInstance_O,_FunctionDescription) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }
@@ -1257,6 +1259,10 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   // Informs CL that MPS is being used
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #endif
+#ifdef USE_ANALYSIS
+  // Informs CL that BOEHMSL is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-ANALYSIS"), features);
+#endif
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif
@@ -1309,7 +1315,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     seedRandomNumberGenerators(this->mpiRank());
   }
   if (options._HasDescribeFile) {
-#ifdef USE_MPS 
+#if defined(USE_MPS) || defined(USE_ANALYSIS)
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
     llvmo::dump_objects_for_lldb(fout,"  ");

@@ -3,8 +3,8 @@
   (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lisp" :print t)
   (format t "Done compile~%"))
 (progn
-  (load #P"sys:modules;clang-tool;clang-tool.fasl")
-  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasl")
+  (load #P"sys:modules;clang-tool;clang-tool.fasp")
+  (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasp")
   (format t "Done Loading clasp-analyzer~%"))
 (in-package :clasp-analyzer)
 ;;; ------------------------------------------------------------

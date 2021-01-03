@@ -151,22 +151,22 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
   int nargs = lenRest + 0;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a0,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_VASLIST(a0,var);
     GET_AND_ADVANCE_VASLIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 3: {
     GET_AND_ADVANCE_VASLIST(a0,var);
     GET_AND_ADVANCE_VASLIST(a1,var);
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=4
     // if lenRest == 4 the alloca will be zero sized, which should be fine.
@@ -179,7 +179,7 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -192,16 +192,16 @@ T_mv apply1_inner_valist(Function_sp func, VaList_sp v, T_O *a0) {
   int nargs = lenRest + 1;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_VASLIST(a1,var);
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=3
     GET_AND_ADVANCE_VASLIST(a1,var);
@@ -211,7 +211,7 @@ T_mv apply1_inner_valist(Function_sp func, VaList_sp v, T_O *a0) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -224,11 +224,11 @@ T_mv apply2_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1) {
   int nargs = lenRest + 2;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=2
     GET_AND_ADVANCE_VASLIST(a2,var);
@@ -237,7 +237,7 @@ T_mv apply2_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -250,7 +250,7 @@ T_mv apply3_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1, T_O *a
   int nargs = lenRest + 3;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=1
     GET_AND_ADVANCE_VASLIST(a3,var);
@@ -258,7 +258,7 @@ T_mv apply3_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1, T_O *a
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -278,7 +278,7 @@ T_mv apply4_inner_valist(Function_sp func, VaList_sp v,
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], fixed);
   for (; variadic_idx < (nargs - REG_ARGS); ++variadic_idx)
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], var);
-  return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+  return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
 
 // These substantially recapitulate the above, but with GET_AND_ADVANCE_LIST.
@@ -297,22 +297,22 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
   int nargs = lenRest + 0;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a0,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_LIST(a0,var);
     GET_AND_ADVANCE_LIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 3: {
     GET_AND_ADVANCE_LIST(a0,var);
     GET_AND_ADVANCE_LIST(a1,var);
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=4
     GET_AND_ADVANCE_LIST(a0,var);
@@ -323,7 +323,7 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -342,16 +342,16 @@ T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
   int nargs = lenRest + 1;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_LIST(a1,var);
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=3
     GET_AND_ADVANCE_LIST(a1,var);
@@ -361,7 +361,7 @@ T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -380,11 +380,11 @@ T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
   int nargs = lenRest + 2;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=2
     GET_AND_ADVANCE_LIST(a2,var);
@@ -393,7 +393,7 @@ T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -412,7 +412,7 @@ T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
   int nargs = lenRest + 3;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=1
     GET_AND_ADVANCE_LIST(a3,var);
@@ -420,7 +420,7 @@ T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -445,7 +445,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], fixed);
   for (; variadic_idx < (nargs - REG_ARGS); ++variadic_idx)
     GET_AND_ADVANCE_LIST(variadic[variadic_idx], var);
-  return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+  return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
@@ -2474,65 +2474,65 @@ namespace core {
 namespace core {
 
 
-    CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
-    CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
-        ql::list l;
-        l << cl::_sym_progn;
-        l << cl::_sym_block;
-        l << cl::_sym_catch;
-        l << cl::_sym_eval_when;
-        l << cl::_sym_flet;
-        l << cl::_sym_function;
-        l << cl::_sym_the;
-        l << cl::_sym_go;
-        l << cl::_sym_if;
-        l << cl::_sym_labels;
-        l << cl::_sym_let;
-        l << cl::_sym_letSTAR;
-        l << cl::_sym_locally;
-        l << cl::_sym_macrolet;
-        l << cl::_sym_multiple_value_prog1;
-        l << cl::_sym_multiple_value_call;
-        l << core::_sym_debug_message;
-        l << core::_sym_multiple_value_foreign_call;
-        l << core::_sym_foreign_call;
-        l << core::_sym_foreign_call_pointer;
-        l << cl::_sym_progv;
-        l << cl::_sym_quote;
-        l << cl::_sym_return_from;
-        l << cl::_sym_setq;
-        l << cl::_sym_tagbody;
-        l << cl::_sym_throw;
-        l << cl::_sym_unwind_protect;
-        l << cl::_sym_symbol_macrolet;
-        l << cl::_sym_load_time_value;
-        l << ext::_sym_specialVar;
-        l << ext::_sym_lexicalVar;
-        return l.cons();
-    }
+CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
+CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
+  ql::list l;
+  l << cl::_sym_progn;
+  l << cl::_sym_block;
+  l << cl::_sym_catch;
+  l << cl::_sym_eval_when;
+  l << cl::_sym_flet;
+  l << cl::_sym_function;
+  l << cl::_sym_the;
+  l << cl::_sym_go;
+  l << cl::_sym_if;
+  l << cl::_sym_labels;
+  l << cl::_sym_let;
+  l << cl::_sym_letSTAR;
+  l << cl::_sym_locally;
+  l << cl::_sym_macrolet;
+  l << cl::_sym_multiple_value_prog1;
+  l << cl::_sym_multiple_value_call;
+  l << core::_sym_debug_message;
+  l << core::_sym_multiple_value_foreign_call;
+  l << core::_sym_foreign_call;
+  l << core::_sym_foreign_call_pointer;
+  l << cl::_sym_progv;
+  l << cl::_sym_quote;
+  l << cl::_sym_return_from;
+  l << cl::_sym_setq;
+  l << cl::_sym_tagbody;
+  l << cl::_sym_throw;
+  l << cl::_sym_unwind_protect;
+  l << cl::_sym_symbol_macrolet;
+  l << cl::_sym_load_time_value;
+  l << ext::_sym_specialVar;
+  l << ext::_sym_lexicalVar;
+  return l.cons();
+}
 
-    SYMBOL_SC_(CorePkg, processDeclarations);
-    SYMBOL_EXPORT_SC_(ClPkg, eval);
+SYMBOL_SC_(CorePkg, processDeclarations);
+SYMBOL_EXPORT_SC_(ClPkg, eval);
     //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
     //	    Defun(extractDeclaresDocstringCode);
-    SYMBOL_SC_(CorePkg, evaluateVerbosity);
-    SYMBOL_SC_(CorePkg, evaluateDepth);
-    SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
-    SYMBOL_EXPORT_SC_(ClPkg, apply);
-    SYMBOL_EXPORT_SC_(ClPkg, funcall);
-    SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
-    SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
+SYMBOL_SC_(CorePkg, evaluateVerbosity);
+SYMBOL_SC_(CorePkg, evaluateDepth);
+SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
+SYMBOL_EXPORT_SC_(ClPkg, apply);
+SYMBOL_EXPORT_SC_(ClPkg, funcall);
+SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
 
-    gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
-    {
-        switch ((*frame).number_of_arguments()) {
+gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
+{
+  switch ((*frame).number_of_arguments()) {
 #define APPLY_TO_FRAME
 #include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_FRAME
-        default:
-            SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
-        };
-    }
+  default:
+      SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
+  };
+}
 
 };

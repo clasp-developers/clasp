@@ -279,7 +279,7 @@
 
 (defun fast-subtypep (spec1 spec2)
   ;; Specialized version of subtypep which uses the fact that spec1
-  ;; and spec2 are either classes or of the form (EQL x)
+  ;; and spec2 are either classes or eql specializers (basically member types)
   (with-early-accessors (+eql-specializer-slots+ +standard-class-slots+)
     (if (eql-specializer-p spec1)
 	(if (eql-specializer-p spec2)
@@ -292,9 +292,13 @@
 		 (eq (class-name spec1) 'null))
 	    (si::subclassp spec1 spec2)))))
 
-(defun compare-specializers (spec-1 spec-2 arg-class)
-  (with-early-accessors (+standard-class-slots+ +standard-class-slots+)
-    (let* ((cpl (class-precedence-list arg-class)))
+(defun compare-specializers (spec-1 spec-2 arg-spec)
+  (with-early-accessors (+standard-class-slots+ +standard-class-slots+
+                                                +eql-specializer-slots+)
+    (let ((cpl (class-precedence-list (if (eql-specializer-p arg-spec)
+                                          (class-of (eql-specializer-object
+                                                     arg-spec))
+                                          arg-spec))))
       (cond ((eq spec-1 spec-2) '=)
             ((fast-subtypep spec-1 spec-2) '1)
             ((fast-subtypep spec-2 spec-1) '2)

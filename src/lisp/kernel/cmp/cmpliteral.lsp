@@ -55,7 +55,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-description)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-info-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -154,7 +154,6 @@
   (run-all-objects (make-array 64 :fill-pointer 0 :adjustable t))
   (table-index 0)
   (function-vector (make-array 16 :fill-pointer 0 :adjustable t))
-  (function-description-vector (make-array 16 :fill-pointer 0 :adjustable t))
   (constant-data '())
   (identity-coalesce (make-similarity-table #'eq))
   (ratio-coalesce (make-similarity-table #'eql))
@@ -249,12 +248,10 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function (llvm-func &optional (func-desc (llvm-sys:constant-pointer-null-get cmp:%function-description*%)))
-  "Add a function to the (literal-machine-function-vector *literal-machine*) and a function description
-to (literal-machine-function-description-vector *literal-machine*) and return their index - the index will be the same for both."
+(defun register-function (llvm-func)
+  "Add a function to the (literal-machine-function-vector *literal-machine*)"
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
     (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
-    (vector-push-extend func-desc (literal-machine-function-description-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
 ;;; Helper function: we write a few things out as base strings.
@@ -526,35 +523,6 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
   "Convert the args from Lisp form into llvm::Value*'s"
   (mapcar #'fix-arg args))
 
-#+(or)
-(defun generate-run-all-from-literal-nodes (nodes)
-  (cmp::with-make-new-run-all (foo)
-    (dolist (node nodes)
-      (cond
-        ((literal-node-creator-p node)
-         (ensure-creator-llvm-value node))
-        ((literal-node-side-effect-p node)
-         (let* ((fn-name (literal-node-side-effect-name node))
-                (args (literal-node-side-effect-arguments node))
-                (fix-args (fix-args args)))
-           (cmp:irc-intrinsic-call fn-name (list* *gcroots-in-module* fix-args))))
-        ((literal-node-toplevel-funcall-p node)
-         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall"
-                                 (fix-args (literal-node-toplevel-funcall-arguments node))))
-        ((literal-node-closure-p node)
-         (let ((lambda-name (cmp:irc-intrinsic-call
-                             "ltvc_lookup_literal"
-                             (list *gcroots-in-module*
-                                   (fix-arg (literal-node-closure-lambda-name-index node))))))
-           (cmp:irc-intrinsic-call "ltvc_enclose"
-                                   (list *gcroots-in-module*
-                                         (cmp:jit-constant-size_t (literal-node-index node))
-                                         lambda-name
-                                         (fix-arg
-                                          (register-function (literal-node-closure-function node)))))))
-           (t (error "Unknown run-all node ~a" node))))
-    foo))
-
 (defun write-argument-byte-code (arg stream byte-index)
   (llog "    write-argument-byte-code arg: ~s byte-index ~d~%" arg byte-index)
   (cond
@@ -607,21 +575,8 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
        (setf byte-index (write-arguments-byte-code arguments fout byte-index))))
     ((literal-node-closure-p node)
      (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_enclose") fout byte-index))
-     (warn "What do I do with the arguments for ~s" node)
+     (error "What do I do with the arguments for ~s" node)
      (core:exit 1)
-     #|         (write-arguments-byte-code (list (literal-node-closure-lambda-name-index node)
-     (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal" ; ; ; ; ; ; ; ;
-     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
-     (fix-arg (literal-node-closure-lambda-name-index node)))))) ; ; ; ; ; ; ; ;
-     (cmp:irc-intrinsic-call "ltvc_enclose" ; ; ; ; ; ; ; ;
-     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
-     (cmp:jit-constant-size_t (literal-node-index node)) ; ; ; ; ; ; ; ;
-     lambda-name                    ; ; ; ; ; ; ; ;
-     (fix-arg (register-function (literal-node-closure-function node))) ; ; ; ; ; ; ; ;
-     #|(literal-node-closure-source-info-handle node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-filepos node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-lineno node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-column node)|#)))) |#
      )
     (t (warn "Add support for node ~s" node)))
   byte-index)
@@ -639,17 +594,19 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 
 
 (defun generate-run-time-code-for-closurette (node)
-  ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
+  ;; Generate calls to ltvc_make_closurette for closurettes that are created at JIT startup time
   (let* ((closurette-object (literal-node-creator-object node))
          (function-datum (literal-node-closure-function-index closurette-object))
          (function-index (function-datum-index function-datum))
          (datum (literal-dnode-datum closurette-object))
-         (index (datum-index datum)))
+         (index (datum-index datum))
+         (function-info-ref (literal-node-closure-function-info-ref closurette-object)))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t function-index)))))
+                                  (cmp:jit-constant-size_t function-index)
+                                  (cmp:jit-constant-size_t (cmp:function-info-reference-index function-info-ref))))))
 
 (defparameter *ltv-trap* nil)
 
@@ -677,24 +634,8 @@ Return the index of the load-time-value"
                            'llvm-sys:internal-linkage
                            (llvm-sys:constant-array-get function-vector-type
                                                         (coerce (literal-machine-function-vector *literal-machine*) 'list))
-                           (core:bformat nil "function-vector-%s" id)))
-         (function-descs-type (llvm-sys:array-type-get
-                               cmp:%function-description*%
-                               (length (literal-machine-function-description-vector *literal-machine*))))
-         (function-descs (llvm-sys:make-global-variable
-                          the-module
-                          function-descs-type
-                          nil
-                          'llvm-sys:internal-linkage
-                          (llvm-sys:constant-array-get
-                           function-descs-type
-                           (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
-                          (core:bformat nil "function-descs-%s" id))))
-    (values (length (literal-machine-function-vector *literal-machine*)) function-vector function-descs)))
-
-
-
-
+                           (core:bformat nil "function-vector-%s" id))))
+    (values (length (literal-machine-function-vector *literal-machine*)) function-vector)))
 
 (defun do-literal-table (id body-fn)
   (llog "do-literal-table~%")
@@ -751,7 +692,7 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (multiple-value-bind (function-vector-length function-vector function-descs)
+            (multiple-value-bind (function-vector-length function-vector)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
@@ -769,11 +710,7 @@ Return the index of the load-time-value"
                                                                 (list (cmp:jit-constant-size_t 0)
                                                                       (cmp:jit-constant-size_t 0)))
                                                    cmp:%i8**%)
-                                                  (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-descs
-                                                                (list (cmp:jit-constant-size_t 0)
-                                                                      (cmp:jit-constant-size_t 0)))
-                                                   cmp:%i8**%))))))
+                                                  )))))
             ;; Erase the dummy holder
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 
@@ -982,11 +919,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function function-description)
+(defun reference-closure (function function-info-ref)
   (let* ((datum (new-datum t))
-         (function-index (register-function function function-description))
-         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-description function-description)))
-    (add-creator "ltvc_make_closurette" datum creator function-index)
+         (function-index (register-function function))
+         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-info-ref function-info-ref)))
+    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:function-info-reference-index function-info-ref))
     (datum-index datum)))
 
 #|  (register-function function function-description))

@@ -81,11 +81,10 @@ struct GCObjectInitializer<tagged_pointer<OT>, false> {
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
 
-#if defined USE_BOEHM
+#if defined(USE_BOEHM)
 namespace gctools {
     template <class T>
     class root_allocator {};
-    
 };
 #endif
 
@@ -103,7 +102,7 @@ inline void* verify_alignment(void* ptr) {
 #define MAYBE_VERIFY_ALIGNMENT(ptr) (void*)ptr
 #endif
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #define ALIGNED_GC_MALLOC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz+Alignment())))
@@ -129,6 +128,9 @@ namespace gctools {
 #endif
     return header;
   };
+#endif
+
+#ifdef USE_BOEHM
   inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
@@ -147,6 +149,8 @@ namespace gctools {
 #endif
     return header;
   };
+#endif
+#ifdef USE_BOEHM
   inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
@@ -170,8 +174,6 @@ namespace gctools {
 
 
 namespace gctools {
-
-
 
 class DontRegister {};
 class DoRegister {};
@@ -206,28 +208,28 @@ struct ConsSizeCalculator<Cons,DontRegister> {
 #ifdef USE_MPS
   extern void bad_cons_mps_reserve_error();
 
-template <typename Register, typename... ARGS>
+template <typename ConsType, typename Register, typename... ARGS>
 #ifdef ALWAYS_INLINE_MPS_ALLOCATIONS
   __attribute__((always_inline))
 #else
     inline
 #endif
-    smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
+smart_ptr<ConsType> cons_mps_allocation(mps_ap_t& allocation_point,
                                                const char* ap_name,
                                                ARGS &&... args) {
-    gc::smart_ptr<Cons_O> tagged_obj;
+  gc::smart_ptr<ConsType> tagged_obj;
     { RAII_DISABLE_INTERRUPTS();
       RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
       // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
       mps_addr_t addr;
-      Cons_O* cons;
-      size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
+      ConsType* cons;
+      size_t cons_size = ConsSizeCalculator<ConsType,Register>::value();
       do {
         mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
         if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
-        cons = reinterpret_cast<Cons_O*>(addr);
-        new (cons) Cons_O(std::forward<ARGS>(args)...);
-        tagged_obj = smart_ptr<Cons_O>((Tagged)tag_cons(cons));
+        cons = reinterpret_cast<ConsType*>(addr);
+        new (cons) ConsType(std::forward<ARGS>(args)...);
+        tagged_obj = smart_ptr<ConsType>((Tagged)tag_cons(cons));
       } while (!mps_commit(allocation_point, addr, cons_size));
       MAYBE_VERIFY_ALIGNMENT((void*)addr);
       //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
@@ -411,7 +413,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       }
 
       static void deallocate(gctools::tagged_pointer<T> memory) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         GC_FREE(&*memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_MPSPREP)
@@ -421,7 +423,7 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       };
 
       static void untagged_deallocate(void *memory) {
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
         GC_FREE(memory);
 #endif
 #ifdef USE_MPS
@@ -454,7 +456,7 @@ template <class Cons, class Register>
         mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
         //        globalMpsMetrics.consAllocations++;
         smart_ptr<Cons> obj =
-            cons_mps_allocation<Register>(obj_ap,"CONS",
+            cons_mps_allocation<Cons,Register>(obj_ap,"CONS",
                               std::forward<ARGS>(args)...);
         return obj;
 #endif

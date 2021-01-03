@@ -31,6 +31,15 @@ THE SOFTWARE.
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) (dynamic_cast<void *>(_smartptr_.px_ref()))
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
+#ifdef USE_ANALYSIS
+namespace gctools {
+struct GcScanStateType {
+};
+#define GC_RESULT void*
+#define GC_SCAN_STATE_TYPE GcScanStateType
+#define GC_SCAN_STATE ss
+};
+#endif
 
 namespace gctools {
   void* boehm_create_shadow_table(size_t nargs);

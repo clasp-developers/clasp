@@ -189,6 +189,7 @@
                 '(lambda()
                   (LOAD-TIME-VALUE
                    (FLET ((%F4 (&OPTIONAL &KEY (KEY1 9911946289546) (KEY2 -19296971321001))
+                            (declare (ignore key1 key2))
                             3904101166444))
                      -128503000536183044))))))
 

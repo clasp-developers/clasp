@@ -57,7 +57,7 @@
                         (push (third item) arglist)))
                      (push item arglist))))
              (nreverse arglist))))
-    (multiple-value-bind (the-function function-description)
+    (multiple-value-bind (the-function function-info-ref)
         (cmp:irc-cclasp-function-create
          (llvm-sys:function-type-get
           cmp::%tmv%
@@ -68,7 +68,7 @@
          llvm-function-name
          cmp:*the-module*
          function-info)
-      (multiple-value-bind (xep-function xep-function-description)
+      (multiple-value-bind (xep-function xep-function-info-ref)
           (if (xep-needed-p function)
               (cmp:irc-cclasp-function-create
                cmp:%fn-prototype%
@@ -80,9 +80,9 @@
         (make-instance 'llvm-function-info
           :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
           :main-function the-function
-          :main-function-description function-description
+          :main-function-description function-info-ref
           :xep-function xep-function
-          :xep-function-description xep-function-description
+          :xep-function-description xep-function-info-ref
           :arguments arguments)))))
 
 ;;; For a computation, return its llvm value (for the :around method).
@@ -509,7 +509,7 @@
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
          (enclosed-function (xep-function code-info))
-         (function-description (xep-function-description code-info)))
+         (function-info-ref (xep-function-description code-info)))
     (when (eq enclosed-function :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (if environment
@@ -524,13 +524,13 @@
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            enclosed-function
-                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           (literal:constants-table-value (cmp:function-info-reference-index function-info-ref))
                            sninputs)))
                    (:indefinite
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list enclosed-function
-                           (cmp:irc-bit-cast function-description cmp:%i8*%)
+                           (literal:constants-table-value (cmp:function-info-reference-index function-info-ref))
                            sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
@@ -549,7 +549,7 @@
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
-        (%closurette-value enclosed-function function-description))))
+        (%closurette-value enclosed-function function-info-ref))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          abi)
@@ -1164,7 +1164,6 @@
          (xep-function (xep-function function-info))
          (xep-function-description (xep-function-description function-info))
          (cmp:*current-function* xep-function)
-         (cmp:*current-function-description* xep-function-description)
          (entry-block (cmp:irc-basic-block-create "entry" xep-function))
          (*function-current-multiple-value-array-address*
            nil)
@@ -1208,7 +1207,6 @@
          (the-function (main-function function-info))
          (function-description (main-function-description function-info))
          (cmp:*current-function* the-function)
-         (cmp:*current-function-description* function-description)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
          (*function-current-multiple-value-array-address*
            nil)

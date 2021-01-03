@@ -582,7 +582,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
-              ((member :use-boehm *features*) "boehm")
+              ((member :use-boehm *features*)
+               (if (member :use-analysis *features*)
+                   "boehmsl"
+                   "boehm"))
               (t (error "Unknown clasp configuration"))))
         (mpi (if (member :use-mpi *features*) "-mpi" "")))
     (bformat nil "%s-%s%s" (lisp-implementation-type) gc mpi)))

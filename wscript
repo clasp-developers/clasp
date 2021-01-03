@@ -93,6 +93,7 @@ STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # thin LTO  -flto=thin
 LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
+              'boehmsl',
               'mpsprep',
               'mps' ]
 
@@ -478,6 +479,7 @@ class variant(object):
             use_stage = self.stage_char
         else:
             use_stage = stage
+        print(" fasl_dir ---> gc_name -> %s" % self.gc_name )
         return 'fasl/%s%s-%s%s-bitcode' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension())
 
     def common_lisp_output_name_list(self,build,input_files,stage=None,variant=None):
@@ -541,7 +543,6 @@ class variant(object):
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
-    gc_name = 'boehm'
     enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
@@ -559,17 +560,33 @@ class boehm_base(variant):
         self.common_setup(cfg)
 
 class boehm(boehm_base):
+    gc_name = 'boehm'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
         super(boehm,self).configure_variant(cfg,env_copy)
 
 class boehm_d(boehm_base):
+    gc_name = 'boehm'
     build_with_debug_info = True
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
+class boehmsl(boehm_base):
+    gc_name = 'boehmsl'
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("boehmsl", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
+        super(boehmsl,self).configure_variant(cfg,env_copy)
+
+class boehmsl_d(boehm_base):
+    gc_name = 'boehmsl'
+    build_with_debug_info = True
+    def configure_variant(self,cfg,env_copy):
+        cfg.setenv("boehmsl_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
+        super(boehmsl_d,self).configure_variant(cfg,env_copy)
+        
 class mps_base(variant):
     enable_mpi = False
     def configure_variant(self,cfg,env_copy):
@@ -590,7 +607,6 @@ class mpsprep(mps_base):
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
     build_with_debug_info = True
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mpsprep_d", env=env_copy.derive())
         cfg.define("RUNNING_MPSPREP",1)
@@ -600,6 +616,7 @@ class mps(mps_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
@@ -608,6 +625,7 @@ class mps_d(mps_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_d,self).configure_variant(cfg,env_copy)
 
 class iboehm(boehm):
@@ -628,6 +646,24 @@ class bboehm_d(boehm_d):
 class cboehm_d(boehm_d):
     stage_char = 'c'
 
+class iboehmsl(boehmsl):
+    stage_char = 'i'
+class aboehmsl(boehmsl):
+    stage_char = 'a'
+class bboehmsl(boehmsl):
+    stage_char = 'b'
+class cboehmsl(boehmsl):
+    stage_char = 'c'
+
+class iboehmsl_d(boehmsl_d):
+    stage_char = 'i'
+class aboehmsl_d(boehmsl_d):
+    stage_char = 'a'
+class bboehmsl_d(boehmsl_d):
+    stage_char = 'b'
+class cboehmsl_d(boehmsl_d):
+    stage_char = 'c'
+    
 class imps(mps):
     stage_char = 'i'
 class amps(mps):
@@ -728,6 +764,7 @@ class mps_mpi(mps_mpi_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_mpi,self).configure_variant(cfg,env_copy)
 
 class mps_mpi_d(mps_mpi_base):
@@ -736,6 +773,7 @@ class mps_mpi_d(mps_mpi_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_mpi_d,self).configure_variant(cfg,env_copy)
 
 class iboehm_mpi(boehm_mpi):
@@ -810,20 +848,22 @@ def configure(cfg):
                 log.info("On darwin looking for %s" % llvm_config_binary)
                 print("On darwin looking for %s" % llvm_config_binary)
             else:
-                try:
-                    llvm_config_binary = cfg.find_program('llvm-config-%s.0'%LLVM_VERSION)
-                except cfg.errors.ConfigurationError:
-                    cfg.to_log('llvm-config-%s.0 was not found (ignoring)'%LLVM_VERSION)
+                llvm_config_binary = None
+                for candidate in [
+                        'llvm-config-%s.0',
+                        'llvm-config-%s',
+                        'llvm-config%s0',
+                        'llvm-config-%s.0-64',
+                        'llvm-config-%s.0-32',]:
                     try:
-                        llvm_config_binary = cfg.find_program('llvm-config-%s'%LLVM_VERSION)
+                        llvm_config_binary = cfg.find_program(candidate % LLVM_VERSION)
+                        break
                     except cfg.errors.ConfigurationError:
-                        cfg.to_log('llvm-config-%s was not found (ignoring)'%LLVM_VERSION)
-                        try:
-                            llvm_config_binary = cfg.find_program('llvm-config%s0'%LLVM_VERSION)
-                        except cfg.errors.ConfigurationError:
-                            cfg.to_log('llvm-config%s0 was not found (ignoring)'%LLVM_VERSION)
-                            # Let's fail if no llvm-config binary has been found
-                            llvm_config_binary = cfg.find_program('llvm-config')
+                        cfg.to_log(candidate % LLVM_VERSION + ' was not found (ignoring)')
+                if llvm_config_binary is None:
+                    # Let's fail if no llvm-config binary has been found
+                    llvm_config_binary = cfg.find_program('llvm-config')
+                                
                 llvm_config_binary = llvm_config_binary[0]
                 log.info("On %s looking for %s" % (cfg.env['DEST_OS'],llvm_config_binary))
             cfg.env["LLVM_CONFIG_BINARY"] = llvm_config_binary
@@ -1064,7 +1104,7 @@ def configure(cfg):
     llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     log.debug("llvm_lib_dir = %s", llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--link-static", "--libs").split()] # drop the '-l' prefixes
+    llvm_libraries = [ x[2:] for x in run_llvm_config_for_libs(cfg, "--libs").split()] # drop the '-l' prefixes
 #dynamic llvm/clang
     cfg.check_cxx(lib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', libpath = llvm_lib_dir )
     cfg.check_cxx(lib=llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', libpath = llvm_lib_dir )

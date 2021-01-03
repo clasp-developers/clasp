@@ -218,7 +218,14 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "mps-";
 #endif
 #ifdef USE_BOEHM
+  #ifdef USE_ANALYSIS
+  ss << "boehmsl-";
+  #else
   ss << "boehm-";
+  #endif
+#endif
+#ifdef USE_MPSPREP
+  ss << "mpsprep-";
 #endif
   ss << CLASP_VERSION;
   if (cst.notnilp())

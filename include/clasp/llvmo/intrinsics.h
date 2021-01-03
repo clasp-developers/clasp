@@ -47,7 +47,8 @@ extern "C" {
 
 typedef void LtvcReturn;
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index);
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t function_info_index);
+LtvcReturn ltvc_make_closurette_no_function_info(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index);
 LtvcReturn ltvc_make_nil(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_t(gctools::GCRootsInModule* holder, char tag, size_t index);
 LtvcReturn ltvc_make_ratio(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* num, core::T_O* denom );
@@ -74,7 +75,7 @@ LtvcReturn ltvc_make_random_state(gctools::GCRootsInModule* holder, char tag, si
 LtvcReturn ltvc_find_class(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* class_name_t );
 LtvcReturn ltvc_make_float(gctools::GCRootsInModule* holder, char tag, size_t index, float f);
 LtvcReturn ltvc_make_double(gctools::GCRootsInModule* holder, char tag, size_t index, double f);
-LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName,size_t function_index);
+LtvcReturn ltvc_enclose(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* lambdaName,size_t function_index, size_t function_info_index);
 LtvcReturn ltvc_allocate_instance(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* klass) ;
 LtvcReturn ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* holder, char tag, size_t index, size_t fptr_index, const char* name) ;
 LtvcReturn ltvc_mlf_init_funcall(gctools::GCRootsInModule* holder, size_t fptr_index, const char* name) ;
@@ -236,7 +237,7 @@ namespace llvmo {
                  dummyErrorCode
   } ErrorCode;
 
-  core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription* functionDescription);
+  core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription);
 
   [[noreturn]]extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
 

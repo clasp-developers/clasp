@@ -710,7 +710,6 @@ public:
     GCTOOLS_ASSERT(this->generalp());
     return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
   };
-
   template <class U>
   inline bool operator==(smart_ptr<U> const other) const {
     return this->theObject == other.theObject;

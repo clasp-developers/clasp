@@ -79,21 +79,20 @@
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (compiled-fn lambda-name lambda-list)
+  (multiple-value-bind (compiled-fn lambda-name lambda-list function-info-ref)
       (compile-lambda-function lambda-or-lambda-block env)
     (declare (ignore lambda-list))
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
-        (let ((llvm-function-name (llvm-sys:get-name compiled-fn))
-              (function-description (llvm-sys:get-named-global *the-module* (function-description-name compiled-fn))))
-          (unless function-description
-            (error "Could not find function-description for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
+        (let ((llvm-function-name (llvm-sys:get-name compiled-fn)))
+          (unless function-info-ref
+            (error "Could not find function-info-ref for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
-                                       (cmp:irc-bit-cast function-description %i8*%)
+                                       (literal:constants-table-value (cmp:function-info-reference-index function-info-ref)) #+(or)(cmp:irc-bit-cast function-description %i8*%) ; pass info for FunctionDescription
                                        runtime-environment)))
             (irc-t*-result fnptr result))
           (values compiled-fn lambda-name)))))
@@ -1370,7 +1369,8 @@ jump to blocks within this tagbody."
                    (local-va_list* (alloca-va_list "local-va_list"))
                    (_             (irc-intrinsic-call "llvm.va_copy" (list (irc-pointer-cast local-va_list* %i8*%)
                                                                            (irc-pointer-cast src-va_list* %i8*%))))
-                   (callconv (make-calling-convention-impl :nargs (irc-load src-remaining-nargs*)
+                   (callconv (make-calling-convention-impl :closure (llvm-sys:constant-pointer-null-get %i8*%)
+                                                           :nargs (irc-load src-remaining-nargs*)
                                                            :va-list* local-va_list*
                                                            :rest-alloc rest-alloc
                                                            :cleavir-lambda-list cleavir-lambda-list)))

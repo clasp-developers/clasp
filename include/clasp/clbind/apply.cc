@@ -465,7 +465,7 @@ struct arg_tuple_impl<MupleIndices,std::integer_sequence<size_t,Is...>,Types...>
 template <int Start, typename Policies, typename...ARGS>
 struct arg_tuple {
   using maskMuple = typename inValueMaskMuple<sizeof...(ARGS),Policies>::type;
-  using indexMuple = typename inValueIndexMuple<Start,maskMuple>::type;
+  using indexMuple = typename inValueIndexMuple<Start-1,maskMuple>::type;
   using type = typename detail::arg_tuple_impl<indexMuple,
                                                std::index_sequence_for<ARGS...>,
                                                ARGS...>::type;
@@ -509,7 +509,7 @@ struct return_multiple_values {};
 template <int Start, typename Policies, typename ArgTuple,size_t...Is,typename...Types>
 struct return_multiple_values<Start,Policies,ArgTuple,std::integer_sequence<size_t,Is...>,Types...> {
   using OutValueMaskMuple = typename outValueMaskMuple<sizeof...(Types),Policies>::type;
-  using OutValueIndexMuple = typename outValueIndexMuple<Start,OutValueMaskMuple>::type;
+  using OutValueIndexMuple = typename outValueIndexMuple<Start-1,OutValueMaskMuple>::type;
   static size_t go(ArgTuple&& args, core::T_O** outputs) {
     (do_return<typename muple_element<Is,OutValueIndexMuple>::type,Policies,Is,ArgTuple,Types>::go(outputs,std::forward<ArgTuple>(args)) , ...);
     return SumMuple<OutValueMaskMuple>::value;

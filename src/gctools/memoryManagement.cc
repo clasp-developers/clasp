@@ -515,10 +515,9 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
   }
 }
 
-GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** func_descs) {
+GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
-  this->_function_descriptions = func_descs;
   this->_num_entries = num_entries;
   this->_capacity = num_entries;
   this->_boehm_shadow_memory = shadow_mem;
@@ -530,10 +529,9 @@ GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_
 GCRootsInModule::GCRootsInModule(size_t capacity) {
   this->_function_pointer_count = 0;
   this->_function_pointers = NULL;
-  this->_function_descriptions = NULL;
   this->_num_entries = 0;
   this->_capacity = capacity;
-#ifdef USE_BOEHM
+#if defined(USE_BOEHM)
   core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(this->_capacity));
   core::T_O** module_mem = shadow_mem;
 #endif
@@ -554,7 +552,7 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
 
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
 */
-void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs) {
+void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   global_TotalRootTableSize += num_roots;
   global_NumberOfRootTables++;
   core::T_O** shadow_mem = NULL;
@@ -570,11 +568,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
-  if (transientAlloca) {
-    // transient_entries = num_roots;
-//    printf("%s:%d:%s transients is %lu and num_roots is %lu\n", __FILE__, __LINE__, __FUNCTION__, transient_entries, num_roots);
-  }
-  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs, fdescs );
+  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
   size_t i = 0;
   if (initial_data != 0 ) {
     core::List_sp args((gctools::Tagged)initial_data);
@@ -622,7 +616,7 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
-  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL,NULL);
+  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL);
   size_t i = 0;
   for ( auto c : args ) {
     core::T_sp arg = oCar(c);
@@ -779,14 +773,6 @@ Tagged GCRootsInModule::getTaggedIndex(char tag, size_t index) {
 void* GCRootsInModule::lookup_function(size_t index) {
   if (index<this->_function_pointer_count) {
     return (void*)this->_function_pointers[index];
-  }
-  printf("%s:%d Illegal function pointer index %lu must be less than %lu\n", __FILE__, __LINE__, index, this->_function_pointer_count);
-  abort();
-}
-
-void* GCRootsInModule::lookup_function_description(size_t index) {
-  if (index<this->_function_pointer_count) {
-    return (void*)this->_function_descriptions[index];
   }
   printf("%s:%d Illegal function pointer index %lu must be less than %lu\n", __FILE__, __LINE__, index, this->_function_pointer_count);
   abort();

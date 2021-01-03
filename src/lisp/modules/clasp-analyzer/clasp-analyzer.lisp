@@ -908,6 +908,7 @@ to expose to C++.
            )
       (unless (member arg0-integral-value '("1" "2" "4") :test #'string=)
         (error "The argument ~s, which describes the bit width of a bitunit, must be a positive integer 1,2, or 4 - it is not" arg0-integral-value))
+      (format t "bitunit arg0-integral-value -> ~s arg1-ctype -> ~s~%" arg0-integral-value arg1-ctype)
       (list (make-instance 'gcbitunitarray-offset
                            :base base
                            :fixed-fields nodes

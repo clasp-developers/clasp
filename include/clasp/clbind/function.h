@@ -107,11 +107,10 @@ public:
   
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-  VariadicFunctor(core::FunctionDescription* fdesc, FuncType ptr) : core::BuiltinClosure_O(entry_point,fdesc), fptr(ptr) {};
+  VariadicFunctor(core::FunctionDescription_sp fdesc, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), fptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
-    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
@@ -147,7 +146,7 @@ public:
 public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-  VariadicFunctor(core::FunctionDescription* fdesc, FuncType ptr) : core::BuiltinClosure_O(entry_point,fdesc), fptr(ptr) {};
+    VariadicFunctor(core::FunctionDescription_sp fdesc, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), fptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
@@ -171,7 +170,7 @@ public:
     }
 #endif
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<-1,policies<>,ARGS...>::go(frame->arguments());
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
     return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
   }
 };
@@ -216,8 +215,9 @@ struct function_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
-    core::FunctionDescription* fdesc = makeFunctionDescription(symbol);
-    core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr));
+    using VariadicType = VariadicFunctor<FunctionPointerType, Policies>;
+    core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicType::entry_point);
+    core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);
   }

@@ -39,6 +39,20 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
 #else
 #define INCREMENT_FUNCTION_CALL_COUNTER(x)
 #endif
+
+template <>
+struct gctools::GCInfo<core::FunctionDescription_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+FORWARD(FunctionDescription);
+FunctionDescription_sp ensureEntryPoint(FunctionDescription_sp fdesc, claspFunction entry_point);
+};
+#define ENSURE_ENTRY_POINT(_fdesc_,_entry_point_) core::ensureEntryPoint(_fdesc_,_entry_point_)
+
 namespace core {
 
   /*! Set to something other than NIL to dump functions as they are defined at startup */
@@ -59,15 +73,19 @@ recover the pointer to the FunctionDescription object for the Function_O.
 I used a virtual function because different subclasses store the FunctionDescription*
 pointer at different offsets so that FuncallableInstance_O can have its _Class and _Rack
 fields at the same offset as Instance_O.
-   */ 
-struct FunctionDescription {
+   */
+FORWARD(FunctionDescription);
+class FunctionDescription_O : public General_O {
+  LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
+public:
 // There are six slots below that end with Index
     // They need space opened up in the GCRoots vector
   static const size_t Roots = 2;
-  void* functionPrototype;
-  gctools::GCRootsInModule* gcrootsInModule;
-  size_t sourcePathname_functionName_Index;
-  size_t lambdaList_docstring_Index;
+  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+  T_sp _sourcePathname;
+  T_sp _functionName;
+  T_sp _lambdaList;
+  T_sp _docstring;
   int lineno;
   int column;
   int filepos;
@@ -80,13 +98,21 @@ struct FunctionDescription {
   void setf_lambdaList(T_sp);
   T_sp docstring() const;
   void setf_docstring(T_sp);
+  FunctionDescription_O(claspFunction entry_point) : _EntryPoints{(void*)entry_point} {};
+  FunctionDescription_O() {};
 };
 
-FunctionDescription* makeFunctionDescription(T_sp functionName, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
+FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
+
+
+FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point=NULL);
+
+FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information, claspFunction entry_point=NULL);
 
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
 };
+
 
 namespace core {
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
@@ -94,25 +120,27 @@ namespace core {
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
-    std::atomic<claspFunction>    entry;
+    std::atomic<FunctionDescription_sp>    _FunctionDescription;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  Function_O(claspFunction ptr)
-    : entry(ptr)
+  Function_O(FunctionDescription_sp ptr)
+      : _FunctionDescription(ptr)
     {
 #ifdef _DEBUG_BUILD
-      if (((uintptr_t)ptr)&0x7 || !ptr) {
-        printf("%s:%d Something other than a function pointer was passed to initialize Function_O::entry -> %p\n", __FILE__, __LINE__, ptr );
+      if (!ptr.generalp()) {
+        printf("%s:%d Something other than a function-description pointer was passed to initialize Function_O::_FunctionDescription -> %p\n", __FILE__, __LINE__, ptr.raw_() );
         abort();
       }
 #endif
     };
-    virtual FunctionDescription* fdesc() const = 0;
+    claspFunction entry() const { return (claspFunction)(this->_FunctionDescription.load()->_EntryPoints[0]); }
+    virtual FunctionDescription_sp fdesc() const { return this->_FunctionDescription.load(); };
     // Rewrite the function-description pointer - used in direct-calls.lsp
     
-    virtual void set_fdesc(FunctionDescription* address) = 0;
+    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
+
 
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
@@ -199,14 +227,8 @@ namespace core {
 class Closure_O : public Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
   public:
-    FunctionDescription* _FunctionDescription;
+  Closure_O(FunctionDescription_sp fdesc ) : Base(fdesc) {};
   public:
-  Closure_O(claspFunction fptr, FunctionDescription* fdesc ) : Base(fptr), _FunctionDescription(fdesc) {
-      describeFunction();
-    };
-  public:
-    virtual FunctionDescription* fdesc() const override { return this->_FunctionDescription; };
-    virtual void set_fdesc(FunctionDescription* fdesc) override { this->_FunctionDescription = fdesc; };
     virtual const char *describe() const override { return "Closure"; };
     void describeFunction() const;
   };
@@ -222,10 +244,10 @@ namespace core {
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:
-  BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc)
-    : Closure_O(fptr, fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
-  BuiltinClosure_O(claspFunction fptr, FunctionDescription* fdesc, LambdaListHandler_sp llh)
-    : Closure_O(fptr, fdesc), _lambdaListHandler(llh)  {};
+  BuiltinClosure_O(FunctionDescription_sp fdesc)
+    : Closure_O(fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
+  BuiltinClosure_O(FunctionDescription_sp fdesc, LambdaListHandler_sp llh)
+    : Closure_O(fdesc), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
@@ -273,12 +295,12 @@ namespace core {
     static ClosureWithSlots_sp make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO);
   public:
   ClosureWithSlots_O(size_t capacity,
-                     claspFunction ptr,
-                     FunctionDescription* functionDescription,
+                     claspFunction functionPtr,
+                     FunctionDescription_sp functionDescription,
                      ClosureType nclosureType)
-    : Base(ptr, functionDescription),
-      closureType(nclosureType),
-      _Slots(capacity,_Unbound<T_O>(),true) {};
+      : Base(ENSURE_ENTRY_POINT(functionDescription,functionPtr)),
+        closureType(nclosureType),
+        _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const override;
     core::T_sp lambdaListHandler() const override {
       switch (this->closureType) {

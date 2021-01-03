@@ -188,19 +188,6 @@ class Hash1Generator : public HashGeneratorBase {
 #endif
     return ((uintptr_t)hash) % bound;
   }
-#if 0 // def USE_MPS
-  void addAddressesToLocationDependency(mps_ld_t ld) {
-    if (this->_PartIsPointer) {
-      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Part);
-    }
-  };
-  bool isstale(mps_ld_t ld) {
-    if (this->_PartIsPointer) {
-      return mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Part);
-    }
-    return false;
-  }
-#endif
 };
  
 //#define DEBUG_HASH_GENERATOR
@@ -306,20 +293,6 @@ public:
   }
 
   void hashObject(T_sp obj);
-
-#if 0 // def USE_MPS
-  void addAddressesToLocationDependency(mps_ld_t ld) {
-    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
-      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Parts[ia]);
-    }
-  };
-  bool isstale(mps_ld_t ld) {
-    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
-      if (mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Parts[ia])) return true;
-    }
-    return false;
-  }
-#endif
 
 };
 };
@@ -447,10 +420,6 @@ namespace core {
 #define OVERRIDE
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
-  public:
-    size_t _badge_remove;
-  public:
-  General_O() : _badge_remove(0) {};
   public:
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equal(HashGenerator &hg) const;
