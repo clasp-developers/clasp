@@ -188,19 +188,6 @@ class Hash1Generator : public HashGeneratorBase {
 #endif
     return ((uintptr_t)hash) % bound;
   }
-#if 0 // def USE_MPS
-  void addAddressesToLocationDependency(mps_ld_t ld) {
-    if (this->_PartIsPointer) {
-      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Part);
-    }
-  };
-  bool isstale(mps_ld_t ld) {
-    if (this->_PartIsPointer) {
-      return mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Part);
-    }
-    return false;
-  }
-#endif
 };
  
 //#define DEBUG_HASH_GENERATOR
@@ -306,20 +293,6 @@ public:
   }
 
   void hashObject(T_sp obj);
-
-#if 0 // def USE_MPS
-  void addAddressesToLocationDependency(mps_ld_t ld) {
-    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
-      mps_ld_add(ld,global_arena,(mps_addr_t)this->_Parts[ia]);
-    }
-  };
-  bool isstale(mps_ld_t ld) {
-    for (int ia = this->_NextAddressIndex+1; ia < MaxParts; ia++) {
-      if (mps_ld_isstale(ld,global_arena,(mps_addr_t)this->_Parts[ia])) return true;
-    }
-    return false;
-  }
-#endif
 
 };
 };

@@ -479,6 +479,7 @@ class variant(object):
             use_stage = self.stage_char
         else:
             use_stage = stage
+        print(" fasl_dir ---> gc_name -> %s" % self.gc_name )
         return 'fasl/%s%s-%s%s-bitcode' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension())
 
     def common_lisp_output_name_list(self,build,input_files,stage=None,variant=None):
@@ -542,7 +543,6 @@ class variant(object):
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
 class boehm_base(variant):
-    gc_name = 'boehm'
     enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
@@ -560,13 +560,14 @@ class boehm_base(variant):
         self.common_setup(cfg)
 
 class boehm(boehm_base):
+    gc_name = 'boehm'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
         super(boehm,self).configure_variant(cfg,env_copy)
 
 class boehm_d(boehm_base):
+    gc_name = 'boehm'
     build_with_debug_info = True
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
@@ -581,7 +582,6 @@ class boehmsl(boehm_base):
 class boehmsl_d(boehm_base):
     gc_name = 'boehmsl'
     build_with_debug_info = True
-
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehmsl_d", env=env_copy.derive())
         cfg.define("USE_ANALYSIS",1)
@@ -591,7 +591,6 @@ class mps_base(variant):
     enable_mpi = False
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
-        cfg.define("USE_ANALYSIS",1)
         setup_clang_compiler(cfg,self)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             if (cfg.env.LTO_FLAG):
@@ -617,6 +616,7 @@ class mps(mps_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
@@ -625,6 +625,7 @@ class mps_d(mps_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_d,self).configure_variant(cfg,env_copy)
 
 class iboehm(boehm):
@@ -763,6 +764,7 @@ class mps_mpi(mps_mpi_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_mpi,self).configure_variant(cfg,env_copy)
 
 class mps_mpi_d(mps_mpi_base):
@@ -771,6 +773,7 @@ class mps_mpi_d(mps_mpi_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi_d", env=env_copy.derive())
+        cfg.define("USE_ANALYSIS",1)
         super(mps_mpi_d,self).configure_variant(cfg,env_copy)
 
 class iboehm_mpi(boehm_mpi):

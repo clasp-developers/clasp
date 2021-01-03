@@ -81,11 +81,10 @@ struct GCObjectInitializer<tagged_pointer<OT>, false> {
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
 
-#if defined USE_BOEHM
+#if defined(USE_BOEHM)
 namespace gctools {
     template <class T>
     class root_allocator {};
-    
 };
 #endif
 
@@ -129,6 +128,9 @@ namespace gctools {
 #endif
     return header;
   };
+#endif
+
+#ifdef USE_BOEHM
   inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
@@ -147,6 +149,8 @@ namespace gctools {
 #endif
     return header;
   };
+#endif
+#ifdef USE_BOEHM
   inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
   {
     RAII_DISABLE_INTERRUPTS();
@@ -170,8 +174,6 @@ namespace gctools {
 
 
 namespace gctools {
-
-
 
 class DontRegister {};
 class DoRegister {};

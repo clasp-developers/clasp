@@ -49,7 +49,7 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#if defined(USE_BOEHM) || defined(RUNNING_MPSPREP)
+#if (defined(USE_BOEHM) && !defined(USE_ANALYSIS)) || defined(RUNNING_MPSPREP)
 //----------------------------------------------------------------------
 #ifndef SCRAPING
  #define DECLARE_FORWARDS
@@ -66,27 +66,24 @@ namespace cast {
 //----------------------------------------------------------------------
 #endif // #ifdef USE_BOEHM
 
-
-#if defined(USE_MPS) || defined(USE_ANALYSIS)
+#if !defined(SCRAPING)
+ #if defined(USE_ANALYSIS)
 //----------------------------------------------------------------------
- #if !defined(RUNNING_MPSPREP) && !defined(SCRAPING)
   #define GC_DECLARE_FORWARDS
    #include CLASP_GC_FILENAME
   #undef GC_DECLARE_FORWARDS
- #endif
 namespace cast {
- #if !defined(RUNNING_MPSPREP) && !defined(SCRAPING)
   #define GC_DYNAMIC_CAST
    #include CLASP_GC_FILENAME
   #undef GC_DYNAMIC_CAST
- #endif
 };
-#endif // #ifdef USE_MPS
+ #endif // #if defined(USE_ANALYSIS)
+#endif // #if !defined(SCRAPING)
 
 
 
 // Cast assumes that the client pointer is untagged already
-#if defined(USE_BOEHM)
+#if !defined(USE_ANALYSIS)
 #ifdef USE_CXX_DYNAMIC_CAST
 namespace gctools {
     template <typename TOPTR>
@@ -109,12 +106,12 @@ namespace gctools {
   };
 };
 #endif // USE_CXX_DYNAMIC_CAST
-#endif // USE_BOEHM
+#endif // !USE_ANALYSIS
 
 
 
 
-#if defined(USE_MPS) || defined(USE_ANALYSIS)
+#if defined(USE_ANALYSIS)
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -125,7 +122,7 @@ namespace gctools {
     };
 
 };
-#endif // USE_MPS || USE_ANALYSIS
+#endif // USE_ANALYSIS
 
 
 
