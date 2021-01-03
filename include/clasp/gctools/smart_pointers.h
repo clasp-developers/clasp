@@ -409,18 +409,15 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 
 #ifndef SCRAPING
-#ifdef USE_MPS
-#undef USE_MPS // temporary!!!!!
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#define USE_MPS
-#endif
-#ifdef USE_BOEHM
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#endif
+ #ifdef USE_ANALYSIS
+  #define GC_DECLARE_FORWARDS
+   #include CLASP_GC_FILENAME
+  #undef GC_DECLARE_FORWARDS
+ #else
+  #define DECLARE_FORWARDS
+   #include INIT_CLASSES_INC_H
+  #undef DECLARE_FORWARDS
+ #endif
 #endif
 
 namespace gctools {
