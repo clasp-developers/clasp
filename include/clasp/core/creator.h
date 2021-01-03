@@ -57,7 +57,7 @@ namespace core {
     static LCC_RETURN LISP_CALLING_CONVENTION();
     // entry_point is LISP_CALLING_CONVENTION() macro
     Creator_O(FunctionDescription_sp fdesc) : Base(fdesc) {};
-    Creator_O() : Function_O(makeFunctionDescription(_Nil<T_O>(),entry_point)) {};
+//    Creator_O() : Function_O(makeFunctionDescription(_Nil<T_O>(),entry_point)) {};
     virtual ~Creator_O() {};
   };
 
@@ -73,6 +73,7 @@ namespace core {
       return obj;
     }
     virtual void searcher(){};
+    BuiltInObjectCreator(core::FunctionDescription_sp fdesc) : core::Creator_O(fdesc) {};
   };
 
 

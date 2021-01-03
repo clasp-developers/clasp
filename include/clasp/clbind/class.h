@@ -166,7 +166,7 @@ class DummyCreator_O : public core::Creator_O {
   string _name;
 
 public:
-  DummyCreator_O(const string &name) : _name(name){};
+  DummyCreator_O(core::FunctionDescription_sp fdesc, const string &name) : core::Creator_O(fdesc), _name(name){};
 
 public:
   virtual size_t templatedSizeof() const  override{ return sizeof(*this); };
@@ -175,7 +175,8 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", this->_name.c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));
+    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
+    return gc::GC<DummyCreator_O>::allocate(fdesc,core::lisp_symbolNameAsString(className));
   }
 };
 
@@ -520,7 +521,8 @@ template <class Class, class Pointer, class Policies>
   struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate());
+    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, Pointer>::entry_point);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate(fdesc));
     return allocator;
   }
 };
