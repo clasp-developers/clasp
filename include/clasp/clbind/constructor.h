@@ -66,17 +66,11 @@ public:
 public:
 #if 0
   DefaultConstructorCreator_O() : ConstructorCreator_O(core::makeFunctionDescription(_Nil<core::T_O>(),entry_point),reg::lisp_classSymbol<T>()) 
-#ifndef USE_CXX_DYNAMIC_CAST
-    , _HeaderValue(gctools::Header_s::StampWtagMtag::make<WrapperType>())
-#endif
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
 #endif
   DefaultConstructorCreator_O(core::FunctionDescription_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
-#ifndef USE_CXX_DYNAMIC_CAST
-    , _HeaderValue(gctools::Header_s::StampWtagMtag::make<WrapperType>())
-#endif
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
@@ -123,9 +117,6 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
   DerivableDefaultConstructorCreator_O(core::FunctionDescription_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
-#ifdef USE_CXX_DYNAMIC_CAST
-    , _Header(gctools::Header_s::StampWtagMtag::make<T>())
-#endif
     , _duplicationLevel(0){};
   DerivableDefaultConstructorCreator_O(core::FunctionDescription_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
       : ConstructorCreator_O(fdesc,cn), _Header(header), _duplicationLevel(dupnum){};

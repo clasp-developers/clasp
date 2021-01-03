@@ -748,11 +748,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
   OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-#if USE_CXX_DYNAMIC_CAST
-  OutputStream << "Total live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-#else
   OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-#endif
   OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
   OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
   OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';

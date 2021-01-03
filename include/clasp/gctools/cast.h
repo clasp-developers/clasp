@@ -84,18 +84,6 @@ namespace cast {
 
 // Cast assumes that the client pointer is untagged already
 #if !defined(USE_ANALYSIS)
-#ifdef USE_CXX_DYNAMIC_CAST
-namespace gctools {
-    template <typename TOPTR>
-    struct FromGeneralCast {
-    typedef TOPTR ToType;
-    inline static bool isA(core::General_O* client) {
-      return (dynamic_cast<ToType>(client) != NULL);
-    }
-  };
-};
-
-#else
 namespace gctools {
     template <typename TOPTR>
     struct FromGeneralCast {
@@ -105,7 +93,6 @@ namespace gctools {
     }
   };
 };
-#endif // USE_CXX_DYNAMIC_CAST
 #endif // !USE_ANALYSIS
 
 

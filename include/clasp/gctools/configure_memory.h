@@ -12,12 +12,6 @@
 
 //#define USE_BOEHM_MEMORY_MARKER
 
-#if  defined(USE_BOEHM)
- #ifdef USE_CXX_DYNAMIC_CAST
-  #define BIG_BOEHM_HEADER
- #endif
-#endif
-
 //// MPS_CONS_AWL_POOL puts cons cells into the AWL pool and reduces them to 16 bytes
 //// in size.  Since they don't move we can use their addresses as hash keys.
 //// If this is not defined then CONS cells become 32 bytes and they are stored

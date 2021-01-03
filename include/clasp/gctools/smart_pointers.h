@@ -409,18 +409,15 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 
 #ifndef SCRAPING
-#ifdef USE_MPS
-#undef USE_MPS // temporary!!!!!
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#define USE_MPS
-#endif
-#ifdef USE_BOEHM
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#endif
+ #ifdef USE_ANALYSIS
+  #define GC_DECLARE_FORWARDS
+  #include CLASP_GC_FILENAME
+  #undef GC_DECLARE_FORWARDS
+ #else
+  #define DECLARE_FORWARDS
+  #include INIT_CLASSES_INC_H
+  #undef DECLARE_FORWARDS
+ #endif
 #endif
 
 namespace gctools {
@@ -428,9 +425,12 @@ namespace gctools {
 #if (defined(DEBUG_ASSERT_TYPE_CAST) && !defined(SCRAPING))
 template <typename T1, typename T2>
 struct Inherits : std::false_type {};
-#define DECLARE_INHERITANCE
-#include INIT_CLASSES_INC_H
-#undef DECLARE_INHERITANCE
+// This is the only place that we include INIT_CLASSES_INC_H into a build
+// that uses USE_ANALYSIS - the static analyzer doesn't generate the inheritance
+// relationship - so we use the one from INIT_CLASSES_INC_H
+ #define DECLARE_INHERITANCE
+ #include INIT_CLASSES_INC_H
+ #undef DECLARE_INHERITANCE
 /// Add special Inheritance info here
  template <> struct Inherits<core::Number_O,::core::SingleFloat_I> : public std::true_type  {};
  template <> struct Inherits<core::Real_O,::core::SingleFloat_I> : public std::true_type  {};
