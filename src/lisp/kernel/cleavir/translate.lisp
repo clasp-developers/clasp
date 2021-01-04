@@ -1143,10 +1143,8 @@
           ;; Branch to the start block.
           (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
           ;; Lay out blocks.
-          (cleavir-bir::map-reachable-iblocks
-           (lambda (ib)
-             (layout-iblock ib abi))
-           (cleavir-bir:start ir))))))
+          (cleavir-bir:do-iblocks (ib ir)
+            (layout-iblock ib abi))))))
   ;; Finish up by jumping from the entry block to the body block
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:irc-br body-block))
