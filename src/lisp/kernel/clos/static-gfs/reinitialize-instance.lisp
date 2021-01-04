@@ -169,7 +169,11 @@
   (multiple-value-bind (keys syms bindings validp)
       (extract initargs env)
     (if validp
-        `(let (,@bindings)
-           (funcall (load-time-value (ensure-reinitializer ',keys))
-                    ,instance ,@syms))
+        (let ((isym (gensym "INSTANCE")))
+          `(let (;; To preserve evaluation order, the instance must be
+                 ;; evaluated before any of the initargs.
+                 (,isym ,instance)
+                 ,@bindings)
+             (funcall (load-time-value (ensure-reinitializer ',keys))
+                      ,isym ,@syms)))
         form)))
