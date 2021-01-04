@@ -4480,30 +4480,27 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, T
 }
 
 
-void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
-                               const char* faso_filename, size_t faso_index,
-                               bool print)
+void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
-  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
-  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
+  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)of->_Start % of->_Size );
+  llvm::StringRef sbuffer((const char*)of->_Start, of->_Size);
   llvm::StringRef name("buffer-name");
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
-  auto erro = this->_LinkLayer->add(dylib,std::move(mbuffer),this->_ES->allocateVModule());
+  auto erro = this->_LinkLayer->add(*of->_JITDylib->wrappedPtr(),std::move(mbuffer),this->_ES->allocateVModule());
   if (erro) {
     printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
   }
-  core::T_mv startup_name_and_linkage = core::core__startup_function_name_and_linkage(startupID);
+  core::T_mv startup_name_and_linkage = core::core__startup_function_name_and_linkage(of->_StartupID);
   std::string startup_name = gc::As<core::String_sp>(startup_name_and_linkage)->get_std_string();
   if (print) core::write_bf_stream(BF("%s:%d startup_name is %s\n") % __FILE__ % __LINE__ % startup_name);
-  core::Pointer_sp startup = this->lookup(dylib,startup_name);
+  core::Pointer_sp startup = this->lookup(*of->_JITDylib->wrappedPtr(),startup_name);
   if (print) core::write_bf_stream(BF("%s:%d startup address %p\n") % __FILE__ % __LINE__ % _rep_(startup));
   // Now the my_thread thread local data structure will contain information about the new linked object file.
-  save_object_file_info(rbuffer,bytes,faso_filename,faso_index,startupID);
-  
-  // Lookup the address of the ObjectFileStartUp function and invoke it
+  save_object_file_info(of);
+    // Lookup the address of the ObjectFileStartUp function and invoke it
   void* thread_local_startup = startup->ptr();
   my_thread->_ObjectFileStartUp = NULL;
   if (thread_local_startup) {
@@ -4574,8 +4571,10 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 
 namespace llvmo { // ObjectFile_O
 
-ObjectFile_sp ObjectFile_O::create(llvm::object::ObjectFile *ptr) {
-  return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
+ObjectFile_sp ObjectFile_O::create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
+{
+  GC_ALLOCATE_VARIADIC(ObjectFile_O,of,start,size,startupID,jitdylib,fasoName,fasoIndex);
+  return of;
 }
 
 }; // namespace llvmo, ObjectFile_O
@@ -4609,7 +4608,8 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
 #endif
   fprintf(fout,"] )\n");
-  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
+#if 0
+//  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
   python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
@@ -4622,6 +4622,7 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
   fprintf(fout,"] )\n");
+#endif
 };
   
 }; // namespace llvmo, SectionedAddress_O

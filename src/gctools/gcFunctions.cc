@@ -401,6 +401,58 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   }
 #endif
 }
+
+struct FindStamp {
+  gctools::GCStampEnum _stamp;
+  std::vector<void*> _addresses;
+  FindStamp(gctools::GCStampEnum stamp) : _stamp(stamp) {};
+};
+
+void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
+  FindStamp* findStamp = (FindStamp*)client_data;
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  if (stamp == findStamp->_stamp) {
+    findStamp->_addresses.push_back(ptr);
+  }
+}
+
+
+struct FindOwner {
+  void*  _pointer;
+  std::vector<void*> _addresses;
+  FindOwner(void* pointer) : _pointer(pointer) {};
+};
+
+void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data) {
+  FindOwner* findOwner = (FindOwner*)client_data;
+  for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
+    void* tp = *cur;
+    uintptr_t tag = (uintptr_t)tp&0xf;
+    void* obj = gctools::untag_object(tp);
+    uintptr_t addr = (uintptr_t)obj;
+    void* base = gctools::ClientPtrToBasePtr(obj);
+    if (addr>1024 && (tag==GENERAL_TAG || tag==CONS_TAG)) {
+      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
+      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
+      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
+      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
+    }
+    if (base == findOwner->_pointer ) {
+      findOwner->_addresses.push_back(ptr);
+    }
+  }
+}
+
+
 };
 
 template <typename T>
@@ -765,6 +817,64 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   return Values(_Nil<core::T_O>());
 };
 };
+
+namespace gctools {
+
+CL_LAMBDA(stamp);
+CL_DECLARE();
+CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
+CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
+#ifdef USE_MPS
+  SIMPLE_ERROR(BF("Add support for MPS"));
+#endif
+#ifdef USE_BOEHM
+  if (stamp.fixnump()) {
+    FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
+#else
+    SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+#endif
+    core::List_sp result = _Nil<core::T_O>();
+    for ( size_t ii=0; ii<findStamp._addresses.size(); ii++ ) {
+      core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
+      result = core::Cons_O::create(ptr,result);
+    }
+    return result;
+#endif // USE_BOEHM
+  }
+  SIMPLE_ERROR(BF("You must pass a stamp value"));
+}
+
+
+CL_LAMBDA(address);
+CL_DECLARE();
+CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
+CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
+#ifdef USE_MPS
+  SIMPLE_ERROR(BF("Add support for MPS"));
+#endif
+#ifdef USE_BOEHM
+  if (obj.fixnump()) {
+    FindOwner findOwner((void*)obj.unsafe_fixnum());
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
+#else
+    SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+#endif
+    core::List_sp result = _Nil<core::T_O>();
+    for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
+      core::Pointer_sp ptr = core::Pointer_O::create((void*)findOwner._addresses[ii]);
+      result = core::Cons_O::create(ptr,result);
+    }
+    return result;
+#endif // USE_BOEHM
+  }
+  SIMPLE_ERROR(BF("You must pass a pointer"));
+}
+
+};
+
 
 namespace gctools {
 #ifdef USE_MPS

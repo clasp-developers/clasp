@@ -284,11 +284,8 @@ class JITDylib_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
   typedef llvm::orc::JITDylib ExternalType;
   typedef llvm::orc::JITDylib *PointerToExternalType;
-
 protected:
   PointerToExternalType _ptr;
-
-public:
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -4661,24 +4658,10 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 
 namespace llvmo {
 
-struct ObjectFileInfo {
-  const char* _faso_filename;
-  size_t    _faso_index;
-  size_t    _objectID;
-  void*     _object_file_start;
-  size_t    _object_file_size;
-  void*     _text_segment_start;
-  size_t    _text_segment_size;
-  size_t    _text_segment_SectionID;
-  void*     _stackmap_start;
-  size_t    _stackmap_size;
-  ObjectFileInfo* _next;
-};
-
+FORWARD(ObjectFile);
 FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-public:
 public:
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
@@ -4686,9 +4669,7 @@ public:
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
-                     const char* faso_filename, size_t faso_index,
-                     bool print=false);
+  void addObjectFile(ObjectFile_sp of, bool print=false);
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
@@ -4751,33 +4732,30 @@ public:
 // ObjectFile_O
 namespace llvmo {
 FORWARD(ObjectFile);
-class ObjectFile_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::object::ObjectFile, ObjectFile_O, "ObjectFile", core::ExternalObject_O);
-  typedef llvm::object::ObjectFile ExternalType;
-  typedef llvm::object::ObjectFile *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
+class ObjectFile_O : public core::CxxObject_O {
+  LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", core::CxxObject_O);
 public:
-  virtual void *externalObject() const { return this->_ptr; };
-  PointerToExternalType wrappedPtr() const { return this->_ptr; }
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
- public:
-  static ObjectFile_sp create(PointerToExternalType);
- ObjectFile_O(PointerToExternalType ptr) : Base(), _ptr(ptr){};
- ObjectFile_O() : Base(), _ptr(NULL){};
+  void*         _Start;
+  size_t        _Size;
+  size_t        _StartupID;
+  JITDylib_sp   _JITDylib;
+  std::string   _FasoName;
+  size_t        _FasoIndex;
+  void*         _text_segment_start;
+  size_t        _text_segment_size;
+  size_t        _text_segment_SectionID;
+  void*         _stackmap_start;
+  size_t        _stackmap_size;
+public:
+  static ObjectFile_sp create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+  ObjectFile_O(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _Start(start), _Size(size), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex) {};
   ~ObjectFile_O() {
-    /* delete _ptr;*/
-    _ptr = NULL;
   }
 }; // ObjectFile_O class def
 }; // llvmo
 /* from_object translators */
 
+#if 0
 namespace translate {
 template <>
 struct from_object<llvm::object::ObjectFile *, std::true_type> {
@@ -4798,6 +4776,8 @@ struct to_object<llvm::object::ObjectFile *> {
   }
 };
 }; // namespace llvmo - ObjectFile_O done
+#endif
+
 
 // SectionedAddress_O
 namespace llvmo {

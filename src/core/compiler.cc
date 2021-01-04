@@ -715,11 +715,12 @@ CL_DEFUN llvmo::ClaspJIT_sp compiler__jit_engine()
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
-  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
-  char* name_buffer = (char*)malloc(filename->get_std_string().size()+1);
-  strncpy(name_buffer,filename->get_std_string().c_str(),filename->get_std_string().size());
-  name_buffer[filename->get_std_string().size()] = '\0';
-  int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+  String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
+  std::string filename = sfilename->get_std_string(); 
+  char* name_buffer = (char*)malloc(filename.size()+1);
+  strncpy(name_buffer,filename.c_str(),filename.size());
+  name_buffer[filename.size()] = '\0';
+  int fd = open(filename.c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
@@ -733,17 +734,13 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
     if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
-      jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
+      jitDylib = jit->createAndRegisterJITDylib(filename);
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % _rep_(filename) % ofi);
-    jit->addObjectFile((const char*)of_start,of_length,
-                       header->_ObjectFiles[ofi]._ObjectID,
-                       *jitDylib->wrappedPtr(),
-                       name_buffer,
-                       ofi,
-                       print.notnilp() );
+    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
+    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(of_start,of_length,header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
+    jit->addObjectFile(of,print.notnilp());
   }
   return _lisp->_true();
 }

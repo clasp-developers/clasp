@@ -983,10 +983,7 @@ ENUM_FROM_OBJECT_TRANSLATOR(llvm::DICompileUnit::DebugNameTableKind,llvmo::_sym_
 
 
 namespace llvmo {
-void save_object_file_info(const char* objectFileStart, size_t objectFileSize,
-                           const char* faso_filename,
-                           size_t faso_index,
-                           size_t objectID );
+void save_object_file_info( ObjectFile_sp of );
 core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruction_pointer, bool verbose);
 
 size_t number_of_object_files();
