@@ -150,8 +150,8 @@
                   `((next-method-p ()
                       '(typep ,contsym '(not %no-next-method-continuation))))))
      (flet (,@(when (eq cnm-p 'function)
-                `((call-next-method (&rest cnm-args)
-                    (if cnm-args
+                `((call-next-method (core:&va-rest cnm-args)
+                    (if (> (vaslist-length cnm-args) 0)
                         (apply ,contsym cnm-args)
                         ,default-cnm-form))))
             ,@(when (eq nnmp-p 'function)
