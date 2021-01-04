@@ -74,5 +74,6 @@ In the future, this may be customizable with a generic function.")
   (error 'unbound-slot :instance object :name slot-name))
 
 (defmethod (setf class-name) (new-value (class class))
+  (declare (notinline reinitialize-instance)) ; bootstrapping
   (reinitialize-instance class :name new-value)
   new-value)

@@ -288,6 +288,7 @@
 (defun add-method (gf method)
   ;; during boot it's a structure accessor
   (declare (notinline method-qualifiers remove-method))
+  (declare (notinline reinitialize-instance)) ; bootstrap stuff
   ;;
   ;; 1) The method must not be already installed in another generic function.
   ;;

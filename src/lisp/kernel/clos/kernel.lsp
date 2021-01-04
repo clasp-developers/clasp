@@ -113,6 +113,7 @@
   (core:function-name generic-function))
 
 (defun (setf generic-function-name) (new-name gf)
+  (declare (notinline reinitialize-instance)) ; bootstrapping
   (if *clos-booted*
       (reinitialize-instance gf :name new-name)
       (setf-function-name gf new-name))
