@@ -4729,6 +4729,15 @@ public:
 
     ;
 
+
+template <>
+struct gctools::GCInfo<llvmo::ObjectFile_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+
 // ObjectFile_O
 namespace llvmo {
 FORWARD(ObjectFile);
@@ -4746,11 +4755,11 @@ public:
   size_t        _text_segment_SectionID;
   void*         _stackmap_start;
   size_t        _stackmap_size;
+  gctools::GCRootsInModule* _GCRootsInModule;
 public:
   static ObjectFile_sp create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
   ObjectFile_O(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _Start(start), _Size(size), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex) {};
-  ~ObjectFile_O() {
-  }
+  ~ObjectFile_O();
 }; // ObjectFile_O class def
 }; // llvmo
 /* from_object translators */

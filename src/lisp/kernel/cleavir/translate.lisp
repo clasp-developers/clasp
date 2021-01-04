@@ -523,6 +523,9 @@
                      (list (cmp:alloca-i8 (core:closure-with-slots-size ninputs)
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
+                           (cmp:alloca-i8 (llvm-sys:data-layout-get-type-alloc-size data-layout %function-description%)
+                                          :alignment cmp:+alignment+
+                                          :label "stack-allocated-function-description")
                            enclosed-function
                            (literal:constants-table-value (cmp:function-info-reference-index function-info-ref))
                            sninputs)))

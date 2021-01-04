@@ -71,7 +71,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                int lineno,
                                                int column,
                                                int filePos) {
-  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point);
+  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point );
   fdesc->_sourcePathname = sourcePathname;
   fdesc->_functionName = functionName;
   fdesc->_lambdaList = lambda_list;

@@ -76,6 +76,7 @@ namespace core {
     size_t            _text_segment_SectionID;   // store text segment SectionID
     uintptr_t         _stackmap;
     size_t            _stackmap_size;
+    gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     void*             _ObjectFileStartUp;
 #ifdef DEBUG_IHS

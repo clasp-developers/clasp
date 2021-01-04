@@ -412,6 +412,7 @@ void save_object_file_info(ObjectFile_sp ofi)
   ofi->_text_segment_SectionID = my_thread->_text_segment_SectionID;
   ofi->_stackmap_start = (void*)my_thread->_stackmap;
   ofi->_stackmap_size = my_thread->_stackmap_size;
+  ofi->_GCRootsInModule = my_thread->_GCRootsInModule;
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {

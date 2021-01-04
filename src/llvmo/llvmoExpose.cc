@@ -4577,6 +4577,12 @@ ObjectFile_sp ObjectFile_O::create(void* start, size_t size, size_t startupID, J
   return of;
 }
 
+
+ObjectFile_O::~ObjectFile_O() {
+  printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
+  printf("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule );
+}
+
 }; // namespace llvmo, ObjectFile_O
 
 namespace llvmo { // SectionedAddress_O

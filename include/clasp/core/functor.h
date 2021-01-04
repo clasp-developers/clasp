@@ -21,6 +21,10 @@ namespace core {
   FORWARD(ClosureWithSlots);
 };
 
+namespace llvmo {
+FORWARD(ObjectFile);
+};
+
 template <>
 struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsInitialization = false;
@@ -86,6 +90,7 @@ public:
   T_sp _functionName;
   T_sp _lambdaList;
   T_sp _docstring;
+  llvmo::ObjectFile_sp _ObjectFile;
   int lineno;
   int column;
   int filepos;
@@ -99,7 +104,7 @@ public:
   T_sp docstring() const;
   void setf_docstring(T_sp);
   FunctionDescription_O(claspFunction entry_point) : _EntryPoints{(void*)entry_point} {};
-  FunctionDescription_O() {};
+//  FunctionDescription_O() {};
 };
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
