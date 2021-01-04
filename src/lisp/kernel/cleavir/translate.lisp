@@ -1331,17 +1331,17 @@ Does not hoist.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (handler-bind
-      ((cleavir-env:no-variable-info
+      ((cleavir-cst-to-ast:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-env:origin condition))
-            (cleavir-environment:name condition))
+            (origin-spi (cleavir-conditions:origin condition))
+            (cleavir-cst-to-ast:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
-       (cleavir-env:no-function-info
+       (cleavir-cst-to-ast:no-function-info
          (lambda (condition)
            (cmp:register-global-function-ref
-            (cleavir-environment:name condition)
-            (origin-spi (cleavir-env:origin condition)))
+            (cleavir-cst-to-ast:name condition)
+            (origin-spi (cleavir-conditions:origin condition)))
            (invoke-restart 'cleavir-cst-to-ast:consider-global)))
        (cleavir-cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)

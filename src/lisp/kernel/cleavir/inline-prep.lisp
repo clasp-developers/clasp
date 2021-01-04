@@ -34,11 +34,11 @@
          (core:*use-cleavir-compiler* t)
          (*code-walker* code-walker-function))
     (handler-bind
-        ((cleavir-env:no-variable-info
+        ((cleavir-cst-to-ast:no-variable-info
            (lambda (condition)
              (declare (ignore condition))
              (invoke-restart 'cleavir-cst-to-ast:consider-special)))
-         (cleavir-env:no-function-info
+         (cleavir-cst-to-ast:no-function-info
            (lambda (condition)
              (declare (ignore condition))
              (invoke-restart 'cleavir-cst-to-ast:consider-global)))
