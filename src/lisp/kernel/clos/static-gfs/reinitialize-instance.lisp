@@ -79,11 +79,15 @@
     (update-reinitializer-function r)
     r))
 
+(defun reinitializer-name (keys)
+  (make-symbol (format nil "REINITIALIZER~{-~a~}" keys)))
+
 (defun generate-reinitializer-function (reinitializer)
   (let* ((call-history (reinitializer-call-history reinitializer))
          (kp (reinitializer-keys-params reinitializer))
-         (params (cdr kp)))
+         (keys (car kp)) (params (cdr kp)))
     `(lambda (instance ,@params)
+       (declare (core:lambda-name ,(reinitializer-name keys)))
        (clos::discriminate (instance)
            (reinitializer-miss ,reinitializer instance ,@params)
          ,@(loop for (class . form) in call-history
@@ -95,6 +99,10 @@
    (cmp:bclasp-compile nil (generate-reinitializer-function reinitializer))))
 
 (defun reinitializer-miss (reinitializer instance &rest args)
+  (when (clos::maybe-update-instance instance)
+    ;; Instance has been updated - go around again.
+    (return-from reinitializer-miss
+      (apply reinitializer instance args)))
   (let* ((class (class-of instance))
          (kp (reinitializer-keys-params reinitializer))
          (keys (car kp)) (params (cdr kp))
