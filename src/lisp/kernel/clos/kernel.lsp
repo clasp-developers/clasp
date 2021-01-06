@@ -61,7 +61,9 @@
       ((or (classp new-value) (null new-value))
        (core:setf-find-class new-value name)
        #+static-gfs
-       (static-gfs:invalidate-designated-constructors name))
+       (static-gfs:invalidate-designated-constructors name)
+       #+static-gfs
+       (static-gfs:invalidate-designated-changers name))
       (t (error 'simple-type-error :datum new-value :expected-type '(or class null)
                                    :format-control "~A is not a valid class for (setf find-class)"
                                    :format-arguments (list new-value)))))

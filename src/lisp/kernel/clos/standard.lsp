@@ -387,6 +387,8 @@ because it contains a reference to the undefined class~%  ~A"
   #+static-gfs
   (static-gfs:invalidate-class-constructors class)
   #+static-gfs
+  (static-gfs:invalidate-class-changers class)
+  #+static-gfs
   (static-gfs:invalidate-class-reinitializers* class)
   (std-class-generate-accessors class))
 
