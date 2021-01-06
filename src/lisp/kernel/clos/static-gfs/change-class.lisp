@@ -311,4 +311,4 @@
                         (ensure-class-changer ,class-designatorf ',keys))
                       (,instanceg ,instancef)
                       ,@bindings)
-                  (funcall ,cellg ,@syms))))))))
+                  (funcall ,cellg ,instanceg ,@syms))))))))
