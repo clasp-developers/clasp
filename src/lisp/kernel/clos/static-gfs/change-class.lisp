@@ -93,6 +93,8 @@
   `(locally (declare (notinline change-class))
      (change-class ,iform ,to-class ,@(reconstruct-arguments keys params))))
 
+;; Collect slotnames that are instance-allocated in the TO class that do not
+;; name slots in the FROM class.
 (defun added-instance-slotnames (from to)
   (loop for old-slotds = (clos:class-slots from)
         for new-slotd in (clos:class-slots to)
@@ -104,6 +106,9 @@
                                :test #'eq)))
           collect new-slotd-name))
 
+;; Collect slotnames that are instance-allocated in the TO class that also name
+;; slots in the FROM class. Per 7.2.1, their values must be transferred even
+;; if the source slots are not instance allocated.
 (defun shared-instance-slotnames (from to)
   (loop for old-slotds = (clos:class-slots from)
         for new-slotd in (clos:class-slots to)
@@ -131,15 +136,27 @@
                for old-slotd = (find slotn old-slotds
                                      :key #'clos:slot-definition-name
                                      :test #'eq)
-               for old-slotd-location
-                 = (clos:slot-definition-location old-slotd)
+               for old-slot-value-form
+                 = (ecase (clos:slot-definition-allocation old-slotd)
+                     ((:instance)
+                      `(si:rack-ref old-rack
+                                    ,(clos:slot-definition-location old-slotd)))
+                     ((:class)
+                      `(car (load-time-value
+                             (clos:slot-definition-location
+                              ,(slotd-form from-class old-slotd))))))
                for new-slotd = (find slotn new-slotds
                                      :key #'clos:slot-definition-name
                                      :test #'eq)
                for new-slotd-location
                  = (clos:slot-definition-location new-slotd)
-               collect `(setf (si:rack-ref new-rack ,new-slotd-location)
-                              (si:rack-ref old-rack ,old-slotd-location)))
+               ;; Old slot locations may be for class slots, so we need
+               ;; to do some quotation.
+               ;; Note that if we want to actually dump forms, rather than
+               ;; compile/load them on the spot, we'll need to do fancier things
+               ;; like those done in shared-initialize.
+               collect `(setf (si:rack-ref new-rack ',new-slotd-location)
+                              ,old-slot-value-form))
        (setf (core:instance-rack ,iform) new-rack
              (core:instance-class ,iform) ,to-class)
        ,(uifdc-form from-class to-class 'copy iform
