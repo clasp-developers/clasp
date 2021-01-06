@@ -320,8 +320,7 @@
               (maybe-entry-processor dynenv tags)
               (never-entry-processor dynenv)
               (dynenv-needs-cleanup-p dynenv)
-              (%intrinsic-call
-               "llvm.frameaddress" (list (%i32 0)) "frame"))))
+              (in dynenv))))
         ((or cc-bir:bind cleavir-bir:values-save cleavir-bir:alloca
              cleavir-bir:leti cc-bir:unwind-protect
              cleavir-bir:function)
