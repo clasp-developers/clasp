@@ -120,6 +120,37 @@
                           :test #'eq))
           collect new-slotd-name))
 
+(defun new-rack-initializer (old-rack-form new-rack-form from-class to-class
+                             shared-slotnames)
+  `(setf
+    ,@(loop with old-slotds = (clos:class-slots from-class)
+            with new-slotds = (clos:class-slots to-class)
+            for slotn in shared-slotnames
+            for old-slotd = (find slotn old-slotds
+                                  :key #'clos:slot-definition-name
+                                  :test #'eq)
+            for old-slot-value-form
+              = (ecase (clos:slot-definition-allocation old-slotd)
+                  ((:instance)
+                   `(si:rack-ref ,old-rack-form
+                                 ,(clos:slot-definition-location old-slotd)))
+                  ((:class)
+                   `(car (load-time-value
+                          (clos:slot-definition-location
+                           ,(slotd-form from-class old-slotd))))))
+            for new-slotd = (find slotn new-slotds
+                                  :key #'clos:slot-definition-name
+                                  :test #'eq)
+            for new-slotd-location
+              = (clos:slot-definition-location new-slotd)
+            ;; Old slot locations may be for class slots, so we need
+            ;; to do some quotation.
+            ;; Note that if we want to actually dump forms, rather than
+            ;; compile/load them on the spot, we'll need to do fancier things
+            ;; like those done in shared-initialize.
+            collect `(si:rack-ref ,new-rack-form ',new-slotd-location)
+            collect old-slot-value-form)))
+
 (defun standard-change-class-form (from-class to-class iform keys params)
   (let ((added-slotnames (added-instance-slotnames from-class to-class))
         (shared-slotnames (shared-instance-slotnames from-class to-class)))
@@ -130,33 +161,8 @@
                        ',(core:class-stamp-for-instances to-class)
                        (core:unbound)))
             (copy (core:allocate-raw-instance ,from-class old-rack)))
-       ,@(loop with old-slotds = (clos:class-slots from-class)
-               with new-slotds = (clos:class-slots to-class)
-               for slotn in shared-slotnames
-               for old-slotd = (find slotn old-slotds
-                                     :key #'clos:slot-definition-name
-                                     :test #'eq)
-               for old-slot-value-form
-                 = (ecase (clos:slot-definition-allocation old-slotd)
-                     ((:instance)
-                      `(si:rack-ref old-rack
-                                    ,(clos:slot-definition-location old-slotd)))
-                     ((:class)
-                      `(car (load-time-value
-                             (clos:slot-definition-location
-                              ,(slotd-form from-class old-slotd))))))
-               for new-slotd = (find slotn new-slotds
-                                     :key #'clos:slot-definition-name
-                                     :test #'eq)
-               for new-slotd-location
-                 = (clos:slot-definition-location new-slotd)
-               ;; Old slot locations may be for class slots, so we need
-               ;; to do some quotation.
-               ;; Note that if we want to actually dump forms, rather than
-               ;; compile/load them on the spot, we'll need to do fancier things
-               ;; like those done in shared-initialize.
-               collect `(setf (si:rack-ref new-rack ',new-slotd-location)
-                              ,old-slot-value-form))
+       ,(new-rack-initializer 'old-rack 'new-rack from-class to-class
+                              shared-slotnames)
        (setf (core:instance-rack ,iform) new-rack
              (core:instance-class ,iform) ,to-class)
        ,(uifdc-form from-class to-class 'copy iform
