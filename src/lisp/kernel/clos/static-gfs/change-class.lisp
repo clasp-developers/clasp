@@ -95,9 +95,8 @@
 
 ;; Collect slotnames that are instance-allocated in the TO class that do not
 ;; name slots in the FROM class.
-(defun added-instance-slotnames (from to)
-  (loop for old-slotds = (clos:class-slots from)
-        for new-slotd in (clos:class-slots to)
+(defun added-instance-slotnames (old-slotds new-slotds)
+  (loop for new-slotd in new-slotds
         for new-slotd-name = (clos:slot-definition-name new-slotd)
         when (and (eq (clos:slot-definition-allocation new-slotd)
                       :instance)
@@ -109,9 +108,8 @@
 ;; Collect slotnames that are instance-allocated in the TO class that also name
 ;; slots in the FROM class. Per 7.2.1, their values must be transferred even
 ;; if the source slots are not instance allocated.
-(defun shared-instance-slotnames (from to)
-  (loop for old-slotds = (clos:class-slots from)
-        for new-slotd in (clos:class-slots to)
+(defun shared-instance-slotnames (old-slotds new-slotds)
+  (loop for new-slotd in new-slotds
         for new-slotd-name = (clos:slot-definition-name new-slotd)
         when (and (eq (clos:slot-definition-allocation new-slotd)
                       :instance)
@@ -120,12 +118,10 @@
                           :test #'eq))
           collect new-slotd-name))
 
-(defun new-rack-initializer (old-rack-form new-rack-form from-class to-class
-                             shared-slotnames)
+(defun new-rack-initializer (old-rack-form new-rack-form old-slotds new-slotds
+                             from-class shared-slotnames)
   `(setf
-    ,@(loop with old-slotds = (clos:class-slots from-class)
-            with new-slotds = (clos:class-slots to-class)
-            for slotn in shared-slotnames
+    ,@(loop for slotn in shared-slotnames
             for old-slotd = (find slotn old-slotds
                                   :key #'clos:slot-definition-name
                                   :test #'eq)
@@ -152,8 +148,10 @@
             collect old-slot-value-form)))
 
 (defun standard-change-class-form (from-class to-class iform keys params)
-  (let ((added-slotnames (added-instance-slotnames from-class to-class))
-        (shared-slotnames (shared-instance-slotnames from-class to-class)))
+  (let* ((from-slotds (clos:class-slots from-class))
+         (to-slotds (clos:class-slots to-class))
+         (added-slotnames (added-instance-slotnames from-slotds to-slotds))
+         (shared-slotnames (shared-instance-slotnames from-slotds to-slotds)))
     `(let* ((old-rack (core:instance-rack ,iform))
             (new-rack (core:make-rack
                        ',(clos::class-size to-class)
@@ -161,8 +159,8 @@
                        ',(core:class-stamp-for-instances to-class)
                        (core:unbound)))
             (copy (core:allocate-raw-instance ,from-class old-rack)))
-       ,(new-rack-initializer 'old-rack 'new-rack from-class to-class
-                              shared-slotnames)
+       ,(new-rack-initializer 'old-rack 'new-rack from-slotds to-slotds
+                              from-class shared-slotnames)
        (setf (core:instance-rack ,iform) new-rack
              (core:instance-class ,iform) ,to-class)
        ,(uifdc-form from-class to-class 'copy iform
