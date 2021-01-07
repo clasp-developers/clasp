@@ -46,8 +46,6 @@
                    (error "BUG: initfunction disappeared"))))))))
 
 (defun standard-shared-initialize-form (class slot-names iform keys params)
-  ;; NOTE: CLHS 7.1.4 is really tricky. I'm not sure I'm doing it right.
-  ;; I'm also not sure we're doing it right at runtime...
   (let ((slotds (clos:class-slots class)))
     `(progn
        ,@(loop for slotd in slotds
