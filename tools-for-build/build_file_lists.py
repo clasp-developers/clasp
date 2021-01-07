@@ -344,6 +344,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/static-gfs/dependents",
         "src/lisp/kernel/clos/static-gfs/compiler-macros",
         "src/lisp/kernel/clos/static-gfs/reinitialize-instance",
+        "src/lisp/kernel/clos/static-gfs/update-instance-for-different-class",
         "src/lisp/kernel/clos/static-gfs/change-class",
         "src/lisp/kernel/lsp/source-location",
         "src/lisp/kernel/lsp/defvirtual",
