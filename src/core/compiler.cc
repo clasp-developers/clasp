@@ -678,7 +678,10 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     for ( size_t pi=0; pi<padding; ++pi ) {
       fwrite(&pad,1,1,fout);
     }
-    int res = munmap(mmaps[mmi]._Memory,mmaps[mmi]._ObjectFileAreaSize);
+    size_t mmap_size
+      = mmaps[mmi]._ObjectFileAreaStart
+      + mmaps[mmi]._ObjectFileAreaSize;
+    int res = munmap(mmaps[mmi]._Memory,mmap_size);
     if (res!=0) {
       SIMPLE_ERROR(BF("Could not munmap memory"));
     }
