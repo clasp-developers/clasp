@@ -253,7 +253,6 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
-                                          void* function_description_address,
                                           fnLispCallingConvention llvm_func,
                                           core::T_O* functionDescriptionInfo,
                                           std::size_t numCells)

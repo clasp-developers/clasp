@@ -260,7 +260,7 @@
          (primitive-unwinds "cc_enclose" %t*% (list %fn-prototype*%
                                                %t*%
                                                %size_t%))
-         (primitive         "cc_stack_enclose" %t*% (list %i8*% %i8*%
+         (primitive         "cc_stack_enclose" %t*% (list %i8*%
                                                      %fn-prototype*%
                                                      %t*%
                                                      %size_t% ))
