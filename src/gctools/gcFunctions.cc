@@ -841,8 +841,8 @@ CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
       result = core::Cons_O::create(ptr,result);
     }
     return result;
-#endif // USE_BOEHM
   }
+#endif // USE_BOEHM
   SIMPLE_ERROR(BF("You must pass a stamp value"));
 }
 
@@ -868,8 +868,8 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
       result = core::Cons_O::create(ptr,result);
     }
     return result;
-#endif // USE_BOEHM
   }
+#endif // USE_BOEHM
   SIMPLE_ERROR(BF("You must pass a pointer"));
 }
 
