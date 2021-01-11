@@ -420,302 +420,302 @@ STAMP_core__NativeVector_int_O = ADJUST_STAMP(159), // Stamp(39)  wtag(3)
 STAMP_llvmo__FunctionCallee_O = ADJUST_STAMP(163), // Stamp(40)  wtag(3)
 STAMP_core__Serializer_O = ADJUST_STAMP(167), // Stamp(41)  wtag(3)
 STAMP_llvmo__DINodeArray_O = ADJUST_STAMP(171), // Stamp(42)  wtag(3)
-STAMP_mp__Mutex_O = ADJUST_STAMP(175), // Stamp(43)  wtag(3)
-STAMP_mp__RecursiveMutex_O = ADJUST_STAMP(179), // Stamp(44)  wtag(3)
-STAMP_llvmo__DITypeRefArray_O = ADJUST_STAMP(183), // Stamp(45)  wtag(3)
-STAMP_mp__SharedMutex_O = ADJUST_STAMP(187), // Stamp(46)  wtag(3)
-STAMP_mp__Process_O = ADJUST_STAMP(191), // Stamp(47)  wtag(3)
-STAMP_core__SingleDispatchMethod_O = ADJUST_STAMP(195), // Stamp(48)  wtag(3)
-STAMP_core__Iterator_O = ADJUST_STAMP(199), // Stamp(49)  wtag(3)
-STAMP_core__DirectoryIterator_O = ADJUST_STAMP(203), // Stamp(50)  wtag(3)
-STAMP_core__RecursiveDirectoryIterator_O = ADJUST_STAMP(207), // Stamp(51)  wtag(3)
-STAMP_core__Array_O = ADJUST_STAMP(211), // Stamp(52)  wtag(3)
-STAMP_core__MDArray_O = ADJUST_STAMP(215), // Stamp(53)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = ADJUST_STAMP(219), // Stamp(54)  wtag(3)
-STAMP_core__MDArray_int16_t_O = ADJUST_STAMP(223), // Stamp(55)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = ADJUST_STAMP(227), // Stamp(56)  wtag(3)
-STAMP_core__MDArray_int8_t_O = ADJUST_STAMP(231), // Stamp(57)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = ADJUST_STAMP(235), // Stamp(58)  wtag(3)
-STAMP_core__MDArray_int32_t_O = ADJUST_STAMP(239), // Stamp(59)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_ = ADJUST_STAMP(243), // Stamp(60)  wtag(3)
-STAMP_core__MDArray_byte4_t_O = ADJUST_STAMP(247), // Stamp(61)  wtag(3)
-STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_ = ADJUST_STAMP(251), // Stamp(62)  wtag(3)
-STAMP_core__MDArray_float_O = ADJUST_STAMP(255), // Stamp(63)  wtag(3)
-STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = ADJUST_STAMP(259), // Stamp(64)  wtag(3)
-STAMP_core__MDArray_size_t_O = ADJUST_STAMP(263), // Stamp(65)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = ADJUST_STAMP(267), // Stamp(66)  wtag(3)
-STAMP_core__MDArray_byte8_t_O = ADJUST_STAMP(271), // Stamp(67)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = ADJUST_STAMP(275), // Stamp(68)  wtag(3)
-STAMP_core__MDArray_int64_t_O = ADJUST_STAMP(279), // Stamp(69)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = ADJUST_STAMP(283), // Stamp(70)  wtag(3)
-STAMP_core__MDArray_byte32_t_O = ADJUST_STAMP(287), // Stamp(71)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_ = ADJUST_STAMP(291), // Stamp(72)  wtag(3)
-STAMP_core__MDArray_byte2_t_O = ADJUST_STAMP(295), // Stamp(73)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_ = ADJUST_STAMP(299), // Stamp(74)  wtag(3)
-STAMP_core__MDArray_int2_t_O = ADJUST_STAMP(303), // Stamp(75)  wtag(3)
-STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = ADJUST_STAMP(307), // Stamp(76)  wtag(3)
-STAMP_core__MDArray_fixnum_O = ADJUST_STAMP(311), // Stamp(77)  wtag(3)
-STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = ADJUST_STAMP(315), // Stamp(78)  wtag(3)
-STAMP_core__MDArrayBaseChar_O = ADJUST_STAMP(319), // Stamp(79)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = ADJUST_STAMP(323), // Stamp(80)  wtag(3)
-STAMP_core__MDArray_byte64_t_O = ADJUST_STAMP(327), // Stamp(81)  wtag(3)
-STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = ADJUST_STAMP(331), // Stamp(82)  wtag(3)
-STAMP_core__MDArrayCharacter_O = ADJUST_STAMP(335), // Stamp(83)  wtag(3)
-STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = ADJUST_STAMP(339), // Stamp(84)  wtag(3)
-STAMP_core__MDArrayT_O = ADJUST_STAMP(343), // Stamp(85)  wtag(3)
-STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_ = ADJUST_STAMP(347), // Stamp(86)  wtag(3)
-STAMP_core__MDArrayBit_O = ADJUST_STAMP(351), // Stamp(87)  wtag(3)
-STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = ADJUST_STAMP(355), // Stamp(88)  wtag(3)
-STAMP_core__MDArray_byte16_t_O = ADJUST_STAMP(359), // Stamp(89)  wtag(3)
-STAMP_core__SimpleMDArray_O = ADJUST_STAMP(363), // Stamp(90)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(367), // Stamp(91)  wtag(3)
-STAMP_core__SimpleMDArray_int8_t_O = ADJUST_STAMP(371), // Stamp(92)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_ = ADJUST_STAMP(375), // Stamp(93)  wtag(3)
-STAMP_core__SimpleMDArray_double_O = ADJUST_STAMP(379), // Stamp(94)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(383), // Stamp(95)  wtag(3)
-STAMP_core__SimpleMDArray_byte32_t_O = ADJUST_STAMP(387), // Stamp(96)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = ADJUST_STAMP(391), // Stamp(97)  wtag(3)
-STAMP_core__SimpleMDArrayT_O = ADJUST_STAMP(395), // Stamp(98)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(399), // Stamp(99)  wtag(3)
-STAMP_core__SimpleMDArray_int2_t_O = ADJUST_STAMP(403), // Stamp(100)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(407), // Stamp(101)  wtag(3)
-STAMP_core__SimpleMDArray_byte4_t_O = ADJUST_STAMP(411), // Stamp(102)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(415), // Stamp(103)  wtag(3)
-STAMP_core__SimpleMDArray_int32_t_O = ADJUST_STAMP(419), // Stamp(104)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_ = ADJUST_STAMP(423), // Stamp(105)  wtag(3)
-STAMP_core__SimpleMDArray_float_O = ADJUST_STAMP(427), // Stamp(106)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(431), // Stamp(107)  wtag(3)
-STAMP_core__SimpleMDArray_int16_t_O = ADJUST_STAMP(435), // Stamp(108)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(439), // Stamp(109)  wtag(3)
-STAMP_core__SimpleMDArray_size_t_O = ADJUST_STAMP(443), // Stamp(110)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(447), // Stamp(111)  wtag(3)
-STAMP_core__SimpleMDArray_int4_t_O = ADJUST_STAMP(451), // Stamp(112)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = ADJUST_STAMP(455), // Stamp(113)  wtag(3)
-STAMP_core__SimpleMDArrayCharacter_O = ADJUST_STAMP(459), // Stamp(114)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(463), // Stamp(115)  wtag(3)
-STAMP_core__SimpleMDArray_byte2_t_O = ADJUST_STAMP(467), // Stamp(116)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = ADJUST_STAMP(471), // Stamp(117)  wtag(3)
-STAMP_core__SimpleMDArray_fixnum_O = ADJUST_STAMP(475), // Stamp(118)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(479), // Stamp(119)  wtag(3)
-STAMP_core__SimpleMDArray_byte16_t_O = ADJUST_STAMP(483), // Stamp(120)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = ADJUST_STAMP(487), // Stamp(121)  wtag(3)
-STAMP_core__SimpleMDArrayBaseChar_O = ADJUST_STAMP(491), // Stamp(122)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(495), // Stamp(123)  wtag(3)
-STAMP_core__SimpleMDArray_byte64_t_O = ADJUST_STAMP(499), // Stamp(124)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_ = ADJUST_STAMP(503), // Stamp(125)  wtag(3)
-STAMP_core__SimpleMDArrayBit_O = ADJUST_STAMP(507), // Stamp(126)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(511), // Stamp(127)  wtag(3)
-STAMP_core__SimpleMDArray_byte8_t_O = ADJUST_STAMP(515), // Stamp(128)  wtag(3)
-STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(519), // Stamp(129)  wtag(3)
-STAMP_core__SimpleMDArray_int64_t_O = ADJUST_STAMP(523), // Stamp(130)  wtag(3)
-STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_ = ADJUST_STAMP(527), // Stamp(131)  wtag(3)
-STAMP_core__MDArray_int4_t_O = ADJUST_STAMP(531), // Stamp(132)  wtag(3)
-STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_ = ADJUST_STAMP(535), // Stamp(133)  wtag(3)
-STAMP_core__MDArray_double_O = ADJUST_STAMP(539), // Stamp(134)  wtag(3)
-STAMP_core__ComplexVector_O = ADJUST_STAMP(543), // Stamp(135)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_ = ADJUST_STAMP(547), // Stamp(136)  wtag(3)
-STAMP_core__ComplexVector_double_O = ADJUST_STAMP(551), // Stamp(137)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_ = ADJUST_STAMP(555), // Stamp(138)  wtag(3)
-STAMP_core__ComplexVector_int8_t_O = ADJUST_STAMP(559), // Stamp(139)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_ = ADJUST_STAMP(563), // Stamp(140)  wtag(3)
-STAMP_core__ComplexVector_byte64_t_O = ADJUST_STAMP(567), // Stamp(141)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_ = ADJUST_STAMP(571), // Stamp(142)  wtag(3)
-STAMP_core__ComplexVector_T_O = ADJUST_STAMP(575), // Stamp(143)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_ = ADJUST_STAMP(579), // Stamp(144)  wtag(3)
-STAMP_core__ComplexVector_int2_t_O = ADJUST_STAMP(583), // Stamp(145)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_ = ADJUST_STAMP(587), // Stamp(146)  wtag(3)
-STAMP_core__ComplexVector_int32_t_O = ADJUST_STAMP(591), // Stamp(147)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_ = ADJUST_STAMP(595), // Stamp(148)  wtag(3)
-STAMP_core__ComplexVector_byte16_t_O = ADJUST_STAMP(599), // Stamp(149)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_ = ADJUST_STAMP(603), // Stamp(150)  wtag(3)
-STAMP_core__ComplexVector_float_O = ADJUST_STAMP(607), // Stamp(151)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_ = ADJUST_STAMP(611), // Stamp(152)  wtag(3)
-STAMP_core__ComplexVector_int16_t_O = ADJUST_STAMP(615), // Stamp(153)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_ = ADJUST_STAMP(619), // Stamp(154)  wtag(3)
-STAMP_core__ComplexVector_int4_t_O = ADJUST_STAMP(623), // Stamp(155)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_ = ADJUST_STAMP(627), // Stamp(156)  wtag(3)
-STAMP_core__ComplexVector_size_t_O = ADJUST_STAMP(631), // Stamp(157)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_ = ADJUST_STAMP(635), // Stamp(158)  wtag(3)
-STAMP_core__ComplexVector_byte2_t_O = ADJUST_STAMP(639), // Stamp(159)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_ = ADJUST_STAMP(643), // Stamp(160)  wtag(3)
-STAMP_core__ComplexVector_byte8_t_O = ADJUST_STAMP(647), // Stamp(161)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_ = ADJUST_STAMP(651), // Stamp(162)  wtag(3)
-STAMP_core__ComplexVector_byte32_t_O = ADJUST_STAMP(655), // Stamp(163)  wtag(3)
-STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_ = ADJUST_STAMP(659), // Stamp(164)  wtag(3)
-STAMP_core__BitVectorNs_O = ADJUST_STAMP(663), // Stamp(165)  wtag(3)
-STAMP_core__StrNs_O = ADJUST_STAMP(667), // Stamp(166)  wtag(3)
-STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = ADJUST_STAMP(671), // Stamp(167)  wtag(3)
-STAMP_core__Str8Ns_O = ADJUST_STAMP(675), // Stamp(168)  wtag(3)
-STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = ADJUST_STAMP(679), // Stamp(169)  wtag(3)
-STAMP_core__StrWNs_O = ADJUST_STAMP(683), // Stamp(170)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_ = ADJUST_STAMP(687), // Stamp(171)  wtag(3)
-STAMP_core__ComplexVector_byte4_t_O = ADJUST_STAMP(691), // Stamp(172)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_ = ADJUST_STAMP(695), // Stamp(173)  wtag(3)
-STAMP_core__ComplexVector_fixnum_O = ADJUST_STAMP(699), // Stamp(174)  wtag(3)
-STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_ = ADJUST_STAMP(703), // Stamp(175)  wtag(3)
-STAMP_core__ComplexVector_int64_t_O = ADJUST_STAMP(707), // Stamp(176)  wtag(3)
-STAMP_core__AbstractSimpleVector_O = ADJUST_STAMP(711), // Stamp(177)  wtag(3)
-STAMP_core__SimpleString_O = ADJUST_STAMP(715), // Stamp(178)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = ADJUST_STAMP(719), // Stamp(179)  wtag(3)
-STAMP_core__SimpleCharacterString_O = ADJUST_STAMP(723), // Stamp(180)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = ADJUST_STAMP(727), // Stamp(181)  wtag(3)
-STAMP_core__SimpleBaseString_O = ADJUST_STAMP(731), // Stamp(182)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = ADJUST_STAMP(735), // Stamp(183)  wtag(3)
-STAMP_core__SimpleVector_int16_t_O = ADJUST_STAMP(739), // Stamp(184)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = ADJUST_STAMP(743), // Stamp(185)  wtag(3)
-STAMP_core__SimpleVector_byte16_t_O = ADJUST_STAMP(747), // Stamp(186)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_ = ADJUST_STAMP(751), // Stamp(187)  wtag(3)
-STAMP_core__SimpleBitVector_O = ADJUST_STAMP(755), // Stamp(188)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_ = ADJUST_STAMP(759), // Stamp(189)  wtag(3)
-STAMP_core__SimpleVector_int4_t_O = ADJUST_STAMP(763), // Stamp(190)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(767), // Stamp(191)  wtag(3)
-STAMP_core__SimpleVector_byte32_t_O = ADJUST_STAMP(771), // Stamp(192)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(775), // Stamp(193)  wtag(3)
-STAMP_core__SimpleVector_size_t_O = ADJUST_STAMP(779), // Stamp(194)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_ = ADJUST_STAMP(783), // Stamp(195)  wtag(3)
-STAMP_core__SimpleVector_double_O = ADJUST_STAMP(787), // Stamp(196)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(791), // Stamp(197)  wtag(3)
-STAMP_core__SimpleVector_byte64_t_O = ADJUST_STAMP(795), // Stamp(198)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_ = ADJUST_STAMP(799), // Stamp(199)  wtag(3)
-STAMP_core__SimpleVector_int2_t_O = ADJUST_STAMP(803), // Stamp(200)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
-STAMP_core__SimpleVector_int64_t_O = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
-STAMP_core__SimpleVector_fixnum_O = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(823), // Stamp(205)  wtag(3)
-STAMP_core__SimpleVector_int8_t_O = ADJUST_STAMP(827), // Stamp(206)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_ = ADJUST_STAMP(831), // Stamp(207)  wtag(3)
-STAMP_core__SimpleVector_float_O = ADJUST_STAMP(835), // Stamp(208)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = ADJUST_STAMP(839), // Stamp(209)  wtag(3)
-STAMP_core__SimpleVector_O = ADJUST_STAMP(843), // Stamp(210)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(847), // Stamp(211)  wtag(3)
-STAMP_core__SimpleVector_byte8_t_O = ADJUST_STAMP(851), // Stamp(212)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_ = ADJUST_STAMP(855), // Stamp(213)  wtag(3)
-STAMP_core__SimpleVector_byte2_t_O = ADJUST_STAMP(859), // Stamp(214)  wtag(3)
-STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(863), // Stamp(215)  wtag(3)
-STAMP_core__SimpleVector_int32_t_O = ADJUST_STAMP(867), // Stamp(216)  wtag(3)
-STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_ = ADJUST_STAMP(871), // Stamp(217)  wtag(3)
-STAMP_core__SimpleVector_byte4_t_O = ADJUST_STAMP(875), // Stamp(218)  wtag(3)
-STAMP_core__Symbol_O = ADJUST_STAMP(879), // Stamp(219)  wtag(3)
-STAMP_core__Null_O = ADJUST_STAMP(883), // Stamp(220)  wtag(3)
-STAMP_core__Character_dummy_O = ADJUST_STAMP(887), // Stamp(221)  wtag(3)
-STAMP_llvmo__DataLayout_O = ADJUST_STAMP(891), // Stamp(222)  wtag(3)
-STAMP_core__LoadTimeValues_O = ADJUST_STAMP(895), // Stamp(223)  wtag(3)
-STAMP_core__SharpEqualWrapper_O = ADJUST_STAMP(899), // Stamp(224)  wtag(3)
-STAMP_llvmo__ClaspJIT_O = ADJUST_STAMP(903), // Stamp(225)  wtag(3)
-STAMP_core__Readtable_O = ADJUST_STAMP(907), // Stamp(226)  wtag(3)
-STAMP_core__PosixTime_O = ADJUST_STAMP(911), // Stamp(227)  wtag(3)
-STAMP_core__Exposer_O = ADJUST_STAMP(915), // Stamp(228)  wtag(3)
-STAMP_core__CoreExposer_O = ADJUST_STAMP(919), // Stamp(229)  wtag(3)
-STAMP_asttooling__AsttoolingExposer_O = ADJUST_STAMP(923), // Stamp(230)  wtag(3)
-STAMP_llvmo__StructLayout_O = ADJUST_STAMP(927), // Stamp(231)  wtag(3)
-STAMP_core__PosixTimeDuration_O = ADJUST_STAMP(931), // Stamp(232)  wtag(3)
-STAMP_clasp_ffi__ForeignTypeSpec_O = ADJUST_STAMP(935), // Stamp(233)  wtag(3)
-STAMP_core__Instance_O = ADJUST_STAMP(937), // Stamp(234)  wtag(1)
-STAMP_core__DerivableCxxObject_O = ADJUST_STAMP(940), // Stamp(235)  wtag(0)
-STAMP_clbind__ClassRep_O = ADJUST_STAMP(945), // Stamp(236)  wtag(1)
-STAMP_core__SmallMap_O = ADJUST_STAMP(951), // Stamp(237)  wtag(3)
-STAMP_mpip__Mpi_O = ADJUST_STAMP(955), // Stamp(238)  wtag(3)
-STAMP_core__ExternalObject_O = ADJUST_STAMP(959), // Stamp(239)  wtag(3)
-STAMP_llvmo__Pass_O = ADJUST_STAMP(963), // Stamp(240)  wtag(3)
-STAMP_llvmo__ModulePass_O = ADJUST_STAMP(967), // Stamp(241)  wtag(3)
-STAMP_llvmo__ImmutablePass_O = ADJUST_STAMP(971), // Stamp(242)  wtag(3)
-STAMP_llvmo__TargetLibraryInfoWrapperPass_O = ADJUST_STAMP(975), // Stamp(243)  wtag(3)
-STAMP_llvmo__FunctionPass_O = ADJUST_STAMP(979), // Stamp(244)  wtag(3)
-STAMP_llvmo__ExecutionEngine_O = ADJUST_STAMP(983), // Stamp(245)  wtag(3)
-STAMP_llvmo__MCSubtargetInfo_O = ADJUST_STAMP(987), // Stamp(246)  wtag(3)
-STAMP_llvmo__TargetSubtargetInfo_O = ADJUST_STAMP(991), // Stamp(247)  wtag(3)
-STAMP_llvmo__Type_O = ADJUST_STAMP(995), // Stamp(248)  wtag(3)
-STAMP_llvmo__FunctionType_O = ADJUST_STAMP(999), // Stamp(249)  wtag(3)
-STAMP_llvmo__CompositeType_O = ADJUST_STAMP(1003), // Stamp(250)  wtag(3)
-STAMP_llvmo__SequentialType_O = ADJUST_STAMP(1007), // Stamp(251)  wtag(3)
-STAMP_llvmo__PointerType_O = ADJUST_STAMP(1011), // Stamp(252)  wtag(3)
-STAMP_llvmo__ArrayType_O = ADJUST_STAMP(1015), // Stamp(253)  wtag(3)
-STAMP_llvmo__VectorType_O = ADJUST_STAMP(1019), // Stamp(254)  wtag(3)
-STAMP_llvmo__StructType_O = ADJUST_STAMP(1023), // Stamp(255)  wtag(3)
-STAMP_llvmo__IntegerType_O = ADJUST_STAMP(1027), // Stamp(256)  wtag(3)
-STAMP_llvmo__JITDylib_O = ADJUST_STAMP(1031), // Stamp(257)  wtag(3)
-STAMP_llvmo__DIContext_O = ADJUST_STAMP(1035), // Stamp(258)  wtag(3)
-STAMP_llvmo__TargetPassConfig_O = ADJUST_STAMP(1039), // Stamp(259)  wtag(3)
-STAMP_llvmo__IRBuilderBase_O = ADJUST_STAMP(1043), // Stamp(260)  wtag(3)
-STAMP_llvmo__IRBuilder_O = ADJUST_STAMP(1047), // Stamp(261)  wtag(3)
-STAMP_llvmo__APFloat_O = ADJUST_STAMP(1051), // Stamp(262)  wtag(3)
-STAMP_llvmo__APInt_O = ADJUST_STAMP(1055), // Stamp(263)  wtag(3)
-STAMP_llvmo__DIBuilder_O = ADJUST_STAMP(1059), // Stamp(264)  wtag(3)
-STAMP_llvmo__SectionedAddress_O = ADJUST_STAMP(1063), // Stamp(265)  wtag(3)
-STAMP_llvmo__EngineBuilder_O = ADJUST_STAMP(1067), // Stamp(266)  wtag(3)
-STAMP_llvmo__PassManagerBase_O = ADJUST_STAMP(1071), // Stamp(267)  wtag(3)
-STAMP_llvmo__PassManager_O = ADJUST_STAMP(1075), // Stamp(268)  wtag(3)
-STAMP_llvmo__FunctionPassManager_O = ADJUST_STAMP(1079), // Stamp(269)  wtag(3)
-STAMP_llvmo__Metadata_O = ADJUST_STAMP(1083), // Stamp(270)  wtag(3)
-STAMP_llvmo__MDNode_O = ADJUST_STAMP(1087), // Stamp(271)  wtag(3)
-STAMP_llvmo__DINode_O = ADJUST_STAMP(1091), // Stamp(272)  wtag(3)
-STAMP_llvmo__DIVariable_O = ADJUST_STAMP(1095), // Stamp(273)  wtag(3)
-STAMP_llvmo__DILocalVariable_O = ADJUST_STAMP(1099), // Stamp(274)  wtag(3)
-STAMP_llvmo__DIScope_O = ADJUST_STAMP(1103), // Stamp(275)  wtag(3)
-STAMP_llvmo__DIFile_O = ADJUST_STAMP(1107), // Stamp(276)  wtag(3)
-STAMP_llvmo__DIType_O = ADJUST_STAMP(1111), // Stamp(277)  wtag(3)
-STAMP_llvmo__DICompositeType_O = ADJUST_STAMP(1115), // Stamp(278)  wtag(3)
-STAMP_llvmo__DIDerivedType_O = ADJUST_STAMP(1119), // Stamp(279)  wtag(3)
-STAMP_llvmo__DIBasicType_O = ADJUST_STAMP(1123), // Stamp(280)  wtag(3)
-STAMP_llvmo__DISubroutineType_O = ADJUST_STAMP(1127), // Stamp(281)  wtag(3)
-STAMP_llvmo__DILocalScope_O = ADJUST_STAMP(1131), // Stamp(282)  wtag(3)
-STAMP_llvmo__DISubprogram_O = ADJUST_STAMP(1135), // Stamp(283)  wtag(3)
-STAMP_llvmo__DILexicalBlockBase_O = ADJUST_STAMP(1139), // Stamp(284)  wtag(3)
-STAMP_llvmo__DILexicalBlock_O = ADJUST_STAMP(1143), // Stamp(285)  wtag(3)
-STAMP_llvmo__DICompileUnit_O = ADJUST_STAMP(1147), // Stamp(286)  wtag(3)
-STAMP_llvmo__DIExpression_O = ADJUST_STAMP(1151), // Stamp(287)  wtag(3)
-STAMP_llvmo__DILocation_O = ADJUST_STAMP(1155), // Stamp(288)  wtag(3)
-STAMP_llvmo__ValueAsMetadata_O = ADJUST_STAMP(1159), // Stamp(289)  wtag(3)
-STAMP_llvmo__MDString_O = ADJUST_STAMP(1163), // Stamp(290)  wtag(3)
-STAMP_core__Test_O = ADJUST_STAMP(1167), // Stamp(291)  wtag(3)
-STAMP_llvmo__Value_O = ADJUST_STAMP(1171), // Stamp(292)  wtag(3)
-STAMP_llvmo__Argument_O = ADJUST_STAMP(1175), // Stamp(293)  wtag(3)
-STAMP_llvmo__BasicBlock_O = ADJUST_STAMP(1179), // Stamp(294)  wtag(3)
-STAMP_llvmo__MetadataAsValue_O = ADJUST_STAMP(1183), // Stamp(295)  wtag(3)
-STAMP_llvmo__User_O = ADJUST_STAMP(1187), // Stamp(296)  wtag(3)
-STAMP_llvmo__Instruction_O = ADJUST_STAMP(1191), // Stamp(297)  wtag(3)
-STAMP_llvmo__UnaryInstruction_O = ADJUST_STAMP(1195), // Stamp(298)  wtag(3)
-STAMP_llvmo__VAArgInst_O = ADJUST_STAMP(1199), // Stamp(299)  wtag(3)
-STAMP_llvmo__LoadInst_O = ADJUST_STAMP(1203), // Stamp(300)  wtag(3)
-STAMP_llvmo__AllocaInst_O = ADJUST_STAMP(1207), // Stamp(301)  wtag(3)
-STAMP_llvmo__SwitchInst_O = ADJUST_STAMP(1211), // Stamp(302)  wtag(3)
-STAMP_llvmo__AtomicRMWInst_O = ADJUST_STAMP(1215), // Stamp(303)  wtag(3)
-STAMP_llvmo__LandingPadInst_O = ADJUST_STAMP(1219), // Stamp(304)  wtag(3)
-STAMP_llvmo__StoreInst_O = ADJUST_STAMP(1223), // Stamp(305)  wtag(3)
-STAMP_llvmo__UnreachableInst_O = ADJUST_STAMP(1227), // Stamp(306)  wtag(3)
-STAMP_llvmo__ReturnInst_O = ADJUST_STAMP(1231), // Stamp(307)  wtag(3)
-STAMP_llvmo__ResumeInst_O = ADJUST_STAMP(1235), // Stamp(308)  wtag(3)
-STAMP_llvmo__AtomicCmpXchgInst_O = ADJUST_STAMP(1239), // Stamp(309)  wtag(3)
-STAMP_llvmo__FenceInst_O = ADJUST_STAMP(1243), // Stamp(310)  wtag(3)
-STAMP_llvmo__CallBase_O = ADJUST_STAMP(1247), // Stamp(311)  wtag(3)
-STAMP_llvmo__CallInst_O = ADJUST_STAMP(1251), // Stamp(312)  wtag(3)
-STAMP_llvmo__InvokeInst_O = ADJUST_STAMP(1255), // Stamp(313)  wtag(3)
-STAMP_llvmo__PHINode_O = ADJUST_STAMP(1259), // Stamp(314)  wtag(3)
-STAMP_llvmo__IndirectBrInst_O = ADJUST_STAMP(1263), // Stamp(315)  wtag(3)
-STAMP_llvmo__BranchInst_O = ADJUST_STAMP(1267), // Stamp(316)  wtag(3)
-STAMP_llvmo__Constant_O = ADJUST_STAMP(1271), // Stamp(317)  wtag(3)
-STAMP_llvmo__GlobalValue_O = ADJUST_STAMP(1275), // Stamp(318)  wtag(3)
-STAMP_llvmo__Function_O = ADJUST_STAMP(1279), // Stamp(319)  wtag(3)
-STAMP_llvmo__GlobalVariable_O = ADJUST_STAMP(1283), // Stamp(320)  wtag(3)
-STAMP_llvmo__BlockAddress_O = ADJUST_STAMP(1287), // Stamp(321)  wtag(3)
-STAMP_llvmo__ConstantDataSequential_O = ADJUST_STAMP(1291), // Stamp(322)  wtag(3)
-STAMP_llvmo__ConstantDataArray_O = ADJUST_STAMP(1295), // Stamp(323)  wtag(3)
-STAMP_llvmo__ConstantStruct_O = ADJUST_STAMP(1299), // Stamp(324)  wtag(3)
-STAMP_llvmo__ConstantInt_O = ADJUST_STAMP(1303), // Stamp(325)  wtag(3)
-STAMP_llvmo__ConstantFP_O = ADJUST_STAMP(1307), // Stamp(326)  wtag(3)
-STAMP_llvmo__ConstantExpr_O = ADJUST_STAMP(1311), // Stamp(327)  wtag(3)
-STAMP_llvmo__ConstantPointerNull_O = ADJUST_STAMP(1315), // Stamp(328)  wtag(3)
-STAMP_llvmo__UndefValue_O = ADJUST_STAMP(1319), // Stamp(329)  wtag(3)
-STAMP_llvmo__ConstantArray_O = ADJUST_STAMP(1323), // Stamp(330)  wtag(3)
-STAMP_llvmo__TargetMachine_O = ADJUST_STAMP(1327), // Stamp(331)  wtag(3)
-STAMP_llvmo__LLVMTargetMachine_O = ADJUST_STAMP(1331), // Stamp(332)  wtag(3)
-STAMP_llvmo__ThreadSafeContext_O = ADJUST_STAMP(1335), // Stamp(333)  wtag(3)
-STAMP_llvmo__NamedMDNode_O = ADJUST_STAMP(1339), // Stamp(334)  wtag(3)
-STAMP_llvmo__Triple_O = ADJUST_STAMP(1343), // Stamp(335)  wtag(3)
-STAMP_llvmo__DWARFContext_O = ADJUST_STAMP(1347), // Stamp(336)  wtag(3)
-STAMP_llvmo__TargetOptions_O = ADJUST_STAMP(1351), // Stamp(337)  wtag(3)
-STAMP_llvmo__ObjectFile_O = ADJUST_STAMP(1355), // Stamp(338)  wtag(3)
+STAMP_llvmo__ObjectFile_O = ADJUST_STAMP(175), // Stamp(43)  wtag(3)
+STAMP_mp__Mutex_O = ADJUST_STAMP(179), // Stamp(44)  wtag(3)
+STAMP_mp__RecursiveMutex_O = ADJUST_STAMP(183), // Stamp(45)  wtag(3)
+STAMP_llvmo__DITypeRefArray_O = ADJUST_STAMP(187), // Stamp(46)  wtag(3)
+STAMP_mp__SharedMutex_O = ADJUST_STAMP(191), // Stamp(47)  wtag(3)
+STAMP_mp__Process_O = ADJUST_STAMP(195), // Stamp(48)  wtag(3)
+STAMP_core__SingleDispatchMethod_O = ADJUST_STAMP(199), // Stamp(49)  wtag(3)
+STAMP_core__Iterator_O = ADJUST_STAMP(203), // Stamp(50)  wtag(3)
+STAMP_core__DirectoryIterator_O = ADJUST_STAMP(207), // Stamp(51)  wtag(3)
+STAMP_core__RecursiveDirectoryIterator_O = ADJUST_STAMP(211), // Stamp(52)  wtag(3)
+STAMP_core__Array_O = ADJUST_STAMP(215), // Stamp(53)  wtag(3)
+STAMP_core__MDArray_O = ADJUST_STAMP(219), // Stamp(54)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_ = ADJUST_STAMP(223), // Stamp(55)  wtag(3)
+STAMP_core__MDArray_int16_t_O = ADJUST_STAMP(227), // Stamp(56)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_ = ADJUST_STAMP(231), // Stamp(57)  wtag(3)
+STAMP_core__MDArray_int8_t_O = ADJUST_STAMP(235), // Stamp(58)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_ = ADJUST_STAMP(239), // Stamp(59)  wtag(3)
+STAMP_core__MDArray_int32_t_O = ADJUST_STAMP(243), // Stamp(60)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_ = ADJUST_STAMP(247), // Stamp(61)  wtag(3)
+STAMP_core__MDArray_byte4_t_O = ADJUST_STAMP(251), // Stamp(62)  wtag(3)
+STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_ = ADJUST_STAMP(255), // Stamp(63)  wtag(3)
+STAMP_core__MDArray_float_O = ADJUST_STAMP(259), // Stamp(64)  wtag(3)
+STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_ = ADJUST_STAMP(263), // Stamp(65)  wtag(3)
+STAMP_core__MDArray_size_t_O = ADJUST_STAMP(267), // Stamp(66)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_ = ADJUST_STAMP(271), // Stamp(67)  wtag(3)
+STAMP_core__MDArray_byte8_t_O = ADJUST_STAMP(275), // Stamp(68)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_ = ADJUST_STAMP(279), // Stamp(69)  wtag(3)
+STAMP_core__MDArray_int64_t_O = ADJUST_STAMP(283), // Stamp(70)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_ = ADJUST_STAMP(287), // Stamp(71)  wtag(3)
+STAMP_core__MDArray_byte32_t_O = ADJUST_STAMP(291), // Stamp(72)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_ = ADJUST_STAMP(295), // Stamp(73)  wtag(3)
+STAMP_core__MDArray_byte2_t_O = ADJUST_STAMP(299), // Stamp(74)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_ = ADJUST_STAMP(303), // Stamp(75)  wtag(3)
+STAMP_core__MDArray_int2_t_O = ADJUST_STAMP(307), // Stamp(76)  wtag(3)
+STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_ = ADJUST_STAMP(311), // Stamp(77)  wtag(3)
+STAMP_core__MDArray_fixnum_O = ADJUST_STAMP(315), // Stamp(78)  wtag(3)
+STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_ = ADJUST_STAMP(319), // Stamp(79)  wtag(3)
+STAMP_core__MDArrayBaseChar_O = ADJUST_STAMP(323), // Stamp(80)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_ = ADJUST_STAMP(327), // Stamp(81)  wtag(3)
+STAMP_core__MDArray_byte64_t_O = ADJUST_STAMP(331), // Stamp(82)  wtag(3)
+STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_ = ADJUST_STAMP(335), // Stamp(83)  wtag(3)
+STAMP_core__MDArrayCharacter_O = ADJUST_STAMP(339), // Stamp(84)  wtag(3)
+STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_ = ADJUST_STAMP(343), // Stamp(85)  wtag(3)
+STAMP_core__MDArrayT_O = ADJUST_STAMP(347), // Stamp(86)  wtag(3)
+STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_ = ADJUST_STAMP(351), // Stamp(87)  wtag(3)
+STAMP_core__MDArrayBit_O = ADJUST_STAMP(355), // Stamp(88)  wtag(3)
+STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_ = ADJUST_STAMP(359), // Stamp(89)  wtag(3)
+STAMP_core__MDArray_byte16_t_O = ADJUST_STAMP(363), // Stamp(90)  wtag(3)
+STAMP_core__SimpleMDArray_O = ADJUST_STAMP(367), // Stamp(91)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(371), // Stamp(92)  wtag(3)
+STAMP_core__SimpleMDArray_int8_t_O = ADJUST_STAMP(375), // Stamp(93)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_ = ADJUST_STAMP(379), // Stamp(94)  wtag(3)
+STAMP_core__SimpleMDArray_double_O = ADJUST_STAMP(383), // Stamp(95)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(387), // Stamp(96)  wtag(3)
+STAMP_core__SimpleMDArray_byte32_t_O = ADJUST_STAMP(391), // Stamp(97)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_ = ADJUST_STAMP(395), // Stamp(98)  wtag(3)
+STAMP_core__SimpleMDArrayT_O = ADJUST_STAMP(399), // Stamp(99)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(403), // Stamp(100)  wtag(3)
+STAMP_core__SimpleMDArray_int2_t_O = ADJUST_STAMP(407), // Stamp(101)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(411), // Stamp(102)  wtag(3)
+STAMP_core__SimpleMDArray_byte4_t_O = ADJUST_STAMP(415), // Stamp(103)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(419), // Stamp(104)  wtag(3)
+STAMP_core__SimpleMDArray_int32_t_O = ADJUST_STAMP(423), // Stamp(105)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_ = ADJUST_STAMP(427), // Stamp(106)  wtag(3)
+STAMP_core__SimpleMDArray_float_O = ADJUST_STAMP(431), // Stamp(107)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(435), // Stamp(108)  wtag(3)
+STAMP_core__SimpleMDArray_int16_t_O = ADJUST_STAMP(439), // Stamp(109)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(443), // Stamp(110)  wtag(3)
+STAMP_core__SimpleMDArray_size_t_O = ADJUST_STAMP(447), // Stamp(111)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(451), // Stamp(112)  wtag(3)
+STAMP_core__SimpleMDArray_int4_t_O = ADJUST_STAMP(455), // Stamp(113)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_ = ADJUST_STAMP(459), // Stamp(114)  wtag(3)
+STAMP_core__SimpleMDArrayCharacter_O = ADJUST_STAMP(463), // Stamp(115)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(467), // Stamp(116)  wtag(3)
+STAMP_core__SimpleMDArray_byte2_t_O = ADJUST_STAMP(471), // Stamp(117)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_ = ADJUST_STAMP(475), // Stamp(118)  wtag(3)
+STAMP_core__SimpleMDArray_fixnum_O = ADJUST_STAMP(479), // Stamp(119)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(483), // Stamp(120)  wtag(3)
+STAMP_core__SimpleMDArray_byte16_t_O = ADJUST_STAMP(487), // Stamp(121)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_ = ADJUST_STAMP(491), // Stamp(122)  wtag(3)
+STAMP_core__SimpleMDArrayBaseChar_O = ADJUST_STAMP(495), // Stamp(123)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(499), // Stamp(124)  wtag(3)
+STAMP_core__SimpleMDArray_byte64_t_O = ADJUST_STAMP(503), // Stamp(125)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_ = ADJUST_STAMP(507), // Stamp(126)  wtag(3)
+STAMP_core__SimpleMDArrayBit_O = ADJUST_STAMP(511), // Stamp(127)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(515), // Stamp(128)  wtag(3)
+STAMP_core__SimpleMDArray_byte8_t_O = ADJUST_STAMP(519), // Stamp(129)  wtag(3)
+STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_ = ADJUST_STAMP(523), // Stamp(130)  wtag(3)
+STAMP_core__SimpleMDArray_int64_t_O = ADJUST_STAMP(527), // Stamp(131)  wtag(3)
+STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_ = ADJUST_STAMP(531), // Stamp(132)  wtag(3)
+STAMP_core__MDArray_int4_t_O = ADJUST_STAMP(535), // Stamp(133)  wtag(3)
+STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_ = ADJUST_STAMP(539), // Stamp(134)  wtag(3)
+STAMP_core__MDArray_double_O = ADJUST_STAMP(543), // Stamp(135)  wtag(3)
+STAMP_core__ComplexVector_O = ADJUST_STAMP(547), // Stamp(136)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_ = ADJUST_STAMP(551), // Stamp(137)  wtag(3)
+STAMP_core__ComplexVector_double_O = ADJUST_STAMP(555), // Stamp(138)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_ = ADJUST_STAMP(559), // Stamp(139)  wtag(3)
+STAMP_core__ComplexVector_int8_t_O = ADJUST_STAMP(563), // Stamp(140)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_ = ADJUST_STAMP(567), // Stamp(141)  wtag(3)
+STAMP_core__ComplexVector_byte64_t_O = ADJUST_STAMP(571), // Stamp(142)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_ = ADJUST_STAMP(575), // Stamp(143)  wtag(3)
+STAMP_core__ComplexVector_T_O = ADJUST_STAMP(579), // Stamp(144)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_ = ADJUST_STAMP(583), // Stamp(145)  wtag(3)
+STAMP_core__ComplexVector_int2_t_O = ADJUST_STAMP(587), // Stamp(146)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_ = ADJUST_STAMP(591), // Stamp(147)  wtag(3)
+STAMP_core__ComplexVector_int32_t_O = ADJUST_STAMP(595), // Stamp(148)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_ = ADJUST_STAMP(599), // Stamp(149)  wtag(3)
+STAMP_core__ComplexVector_byte16_t_O = ADJUST_STAMP(603), // Stamp(150)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_ = ADJUST_STAMP(607), // Stamp(151)  wtag(3)
+STAMP_core__ComplexVector_float_O = ADJUST_STAMP(611), // Stamp(152)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_ = ADJUST_STAMP(615), // Stamp(153)  wtag(3)
+STAMP_core__ComplexVector_int16_t_O = ADJUST_STAMP(619), // Stamp(154)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_ = ADJUST_STAMP(623), // Stamp(155)  wtag(3)
+STAMP_core__ComplexVector_int4_t_O = ADJUST_STAMP(627), // Stamp(156)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_ = ADJUST_STAMP(631), // Stamp(157)  wtag(3)
+STAMP_core__ComplexVector_size_t_O = ADJUST_STAMP(635), // Stamp(158)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_ = ADJUST_STAMP(639), // Stamp(159)  wtag(3)
+STAMP_core__ComplexVector_byte2_t_O = ADJUST_STAMP(643), // Stamp(160)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_ = ADJUST_STAMP(647), // Stamp(161)  wtag(3)
+STAMP_core__ComplexVector_byte8_t_O = ADJUST_STAMP(651), // Stamp(162)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_ = ADJUST_STAMP(655), // Stamp(163)  wtag(3)
+STAMP_core__ComplexVector_byte32_t_O = ADJUST_STAMP(659), // Stamp(164)  wtag(3)
+STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_ = ADJUST_STAMP(663), // Stamp(165)  wtag(3)
+STAMP_core__BitVectorNs_O = ADJUST_STAMP(667), // Stamp(166)  wtag(3)
+STAMP_core__StrNs_O = ADJUST_STAMP(671), // Stamp(167)  wtag(3)
+STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_ = ADJUST_STAMP(675), // Stamp(168)  wtag(3)
+STAMP_core__Str8Ns_O = ADJUST_STAMP(679), // Stamp(169)  wtag(3)
+STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_ = ADJUST_STAMP(683), // Stamp(170)  wtag(3)
+STAMP_core__StrWNs_O = ADJUST_STAMP(687), // Stamp(171)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_ = ADJUST_STAMP(691), // Stamp(172)  wtag(3)
+STAMP_core__ComplexVector_byte4_t_O = ADJUST_STAMP(695), // Stamp(173)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_ = ADJUST_STAMP(699), // Stamp(174)  wtag(3)
+STAMP_core__ComplexVector_fixnum_O = ADJUST_STAMP(703), // Stamp(175)  wtag(3)
+STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_ = ADJUST_STAMP(707), // Stamp(176)  wtag(3)
+STAMP_core__ComplexVector_int64_t_O = ADJUST_STAMP(711), // Stamp(177)  wtag(3)
+STAMP_core__AbstractSimpleVector_O = ADJUST_STAMP(715), // Stamp(178)  wtag(3)
+STAMP_core__SimpleString_O = ADJUST_STAMP(719), // Stamp(179)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_ = ADJUST_STAMP(723), // Stamp(180)  wtag(3)
+STAMP_core__SimpleCharacterString_O = ADJUST_STAMP(727), // Stamp(181)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_ = ADJUST_STAMP(731), // Stamp(182)  wtag(3)
+STAMP_core__SimpleBaseString_O = ADJUST_STAMP(735), // Stamp(183)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_ = ADJUST_STAMP(739), // Stamp(184)  wtag(3)
+STAMP_core__SimpleVector_int16_t_O = ADJUST_STAMP(743), // Stamp(185)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_ = ADJUST_STAMP(747), // Stamp(186)  wtag(3)
+STAMP_core__SimpleVector_byte16_t_O = ADJUST_STAMP(751), // Stamp(187)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_ = ADJUST_STAMP(755), // Stamp(188)  wtag(3)
+STAMP_core__SimpleBitVector_O = ADJUST_STAMP(759), // Stamp(189)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_ = ADJUST_STAMP(763), // Stamp(190)  wtag(3)
+STAMP_core__SimpleVector_int4_t_O = ADJUST_STAMP(767), // Stamp(191)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(771), // Stamp(192)  wtag(3)
+STAMP_core__SimpleVector_byte32_t_O = ADJUST_STAMP(775), // Stamp(193)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(779), // Stamp(194)  wtag(3)
+STAMP_core__SimpleVector_size_t_O = ADJUST_STAMP(783), // Stamp(195)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_ = ADJUST_STAMP(787), // Stamp(196)  wtag(3)
+STAMP_core__SimpleVector_double_O = ADJUST_STAMP(791), // Stamp(197)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(795), // Stamp(198)  wtag(3)
+STAMP_core__SimpleVector_byte64_t_O = ADJUST_STAMP(799), // Stamp(199)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_ = ADJUST_STAMP(803), // Stamp(200)  wtag(3)
+STAMP_core__SimpleVector_int2_t_O = ADJUST_STAMP(807), // Stamp(201)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(811), // Stamp(202)  wtag(3)
+STAMP_core__SimpleVector_int64_t_O = ADJUST_STAMP(815), // Stamp(203)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_ = ADJUST_STAMP(819), // Stamp(204)  wtag(3)
+STAMP_core__SimpleVector_fixnum_O = ADJUST_STAMP(823), // Stamp(205)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(827), // Stamp(206)  wtag(3)
+STAMP_core__SimpleVector_int8_t_O = ADJUST_STAMP(831), // Stamp(207)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_ = ADJUST_STAMP(835), // Stamp(208)  wtag(3)
+STAMP_core__SimpleVector_float_O = ADJUST_STAMP(839), // Stamp(209)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_ = ADJUST_STAMP(843), // Stamp(210)  wtag(3)
+STAMP_core__SimpleVector_O = ADJUST_STAMP(847), // Stamp(211)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_ = ADJUST_STAMP(851), // Stamp(212)  wtag(3)
+STAMP_core__SimpleVector_byte8_t_O = ADJUST_STAMP(855), // Stamp(213)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_ = ADJUST_STAMP(859), // Stamp(214)  wtag(3)
+STAMP_core__SimpleVector_byte2_t_O = ADJUST_STAMP(863), // Stamp(215)  wtag(3)
+STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_ = ADJUST_STAMP(867), // Stamp(216)  wtag(3)
+STAMP_core__SimpleVector_int32_t_O = ADJUST_STAMP(871), // Stamp(217)  wtag(3)
+STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_ = ADJUST_STAMP(875), // Stamp(218)  wtag(3)
+STAMP_core__SimpleVector_byte4_t_O = ADJUST_STAMP(879), // Stamp(219)  wtag(3)
+STAMP_core__Symbol_O = ADJUST_STAMP(883), // Stamp(220)  wtag(3)
+STAMP_core__Null_O = ADJUST_STAMP(887), // Stamp(221)  wtag(3)
+STAMP_core__Character_dummy_O = ADJUST_STAMP(891), // Stamp(222)  wtag(3)
+STAMP_llvmo__DataLayout_O = ADJUST_STAMP(895), // Stamp(223)  wtag(3)
+STAMP_core__LoadTimeValues_O = ADJUST_STAMP(899), // Stamp(224)  wtag(3)
+STAMP_core__SharpEqualWrapper_O = ADJUST_STAMP(903), // Stamp(225)  wtag(3)
+STAMP_llvmo__ClaspJIT_O = ADJUST_STAMP(907), // Stamp(226)  wtag(3)
+STAMP_core__Readtable_O = ADJUST_STAMP(911), // Stamp(227)  wtag(3)
+STAMP_core__PosixTime_O = ADJUST_STAMP(915), // Stamp(228)  wtag(3)
+STAMP_core__Exposer_O = ADJUST_STAMP(919), // Stamp(229)  wtag(3)
+STAMP_core__CoreExposer_O = ADJUST_STAMP(923), // Stamp(230)  wtag(3)
+STAMP_asttooling__AsttoolingExposer_O = ADJUST_STAMP(927), // Stamp(231)  wtag(3)
+STAMP_llvmo__StructLayout_O = ADJUST_STAMP(931), // Stamp(232)  wtag(3)
+STAMP_core__PosixTimeDuration_O = ADJUST_STAMP(935), // Stamp(233)  wtag(3)
+STAMP_clasp_ffi__ForeignTypeSpec_O = ADJUST_STAMP(939), // Stamp(234)  wtag(3)
+STAMP_core__Instance_O = ADJUST_STAMP(941), // Stamp(235)  wtag(1)
+STAMP_core__DerivableCxxObject_O = ADJUST_STAMP(944), // Stamp(236)  wtag(0)
+STAMP_clbind__ClassRep_O = ADJUST_STAMP(949), // Stamp(237)  wtag(1)
+STAMP_core__SmallMap_O = ADJUST_STAMP(955), // Stamp(238)  wtag(3)
+STAMP_mpip__Mpi_O = ADJUST_STAMP(959), // Stamp(239)  wtag(3)
+STAMP_core__ExternalObject_O = ADJUST_STAMP(963), // Stamp(240)  wtag(3)
+STAMP_llvmo__Pass_O = ADJUST_STAMP(967), // Stamp(241)  wtag(3)
+STAMP_llvmo__ModulePass_O = ADJUST_STAMP(971), // Stamp(242)  wtag(3)
+STAMP_llvmo__ImmutablePass_O = ADJUST_STAMP(975), // Stamp(243)  wtag(3)
+STAMP_llvmo__TargetLibraryInfoWrapperPass_O = ADJUST_STAMP(979), // Stamp(244)  wtag(3)
+STAMP_llvmo__FunctionPass_O = ADJUST_STAMP(983), // Stamp(245)  wtag(3)
+STAMP_llvmo__ExecutionEngine_O = ADJUST_STAMP(987), // Stamp(246)  wtag(3)
+STAMP_llvmo__MCSubtargetInfo_O = ADJUST_STAMP(991), // Stamp(247)  wtag(3)
+STAMP_llvmo__TargetSubtargetInfo_O = ADJUST_STAMP(995), // Stamp(248)  wtag(3)
+STAMP_llvmo__Type_O = ADJUST_STAMP(999), // Stamp(249)  wtag(3)
+STAMP_llvmo__FunctionType_O = ADJUST_STAMP(1003), // Stamp(250)  wtag(3)
+STAMP_llvmo__CompositeType_O = ADJUST_STAMP(1007), // Stamp(251)  wtag(3)
+STAMP_llvmo__SequentialType_O = ADJUST_STAMP(1011), // Stamp(252)  wtag(3)
+STAMP_llvmo__PointerType_O = ADJUST_STAMP(1015), // Stamp(253)  wtag(3)
+STAMP_llvmo__ArrayType_O = ADJUST_STAMP(1019), // Stamp(254)  wtag(3)
+STAMP_llvmo__VectorType_O = ADJUST_STAMP(1023), // Stamp(255)  wtag(3)
+STAMP_llvmo__StructType_O = ADJUST_STAMP(1027), // Stamp(256)  wtag(3)
+STAMP_llvmo__IntegerType_O = ADJUST_STAMP(1031), // Stamp(257)  wtag(3)
+STAMP_llvmo__JITDylib_O = ADJUST_STAMP(1035), // Stamp(258)  wtag(3)
+STAMP_llvmo__DIContext_O = ADJUST_STAMP(1039), // Stamp(259)  wtag(3)
+STAMP_llvmo__TargetPassConfig_O = ADJUST_STAMP(1043), // Stamp(260)  wtag(3)
+STAMP_llvmo__IRBuilderBase_O = ADJUST_STAMP(1047), // Stamp(261)  wtag(3)
+STAMP_llvmo__IRBuilder_O = ADJUST_STAMP(1051), // Stamp(262)  wtag(3)
+STAMP_llvmo__APFloat_O = ADJUST_STAMP(1055), // Stamp(263)  wtag(3)
+STAMP_llvmo__APInt_O = ADJUST_STAMP(1059), // Stamp(264)  wtag(3)
+STAMP_llvmo__DIBuilder_O = ADJUST_STAMP(1063), // Stamp(265)  wtag(3)
+STAMP_llvmo__SectionedAddress_O = ADJUST_STAMP(1067), // Stamp(266)  wtag(3)
+STAMP_llvmo__EngineBuilder_O = ADJUST_STAMP(1071), // Stamp(267)  wtag(3)
+STAMP_llvmo__PassManagerBase_O = ADJUST_STAMP(1075), // Stamp(268)  wtag(3)
+STAMP_llvmo__PassManager_O = ADJUST_STAMP(1079), // Stamp(269)  wtag(3)
+STAMP_llvmo__FunctionPassManager_O = ADJUST_STAMP(1083), // Stamp(270)  wtag(3)
+STAMP_llvmo__Metadata_O = ADJUST_STAMP(1087), // Stamp(271)  wtag(3)
+STAMP_llvmo__MDNode_O = ADJUST_STAMP(1091), // Stamp(272)  wtag(3)
+STAMP_llvmo__DINode_O = ADJUST_STAMP(1095), // Stamp(273)  wtag(3)
+STAMP_llvmo__DIVariable_O = ADJUST_STAMP(1099), // Stamp(274)  wtag(3)
+STAMP_llvmo__DILocalVariable_O = ADJUST_STAMP(1103), // Stamp(275)  wtag(3)
+STAMP_llvmo__DIScope_O = ADJUST_STAMP(1107), // Stamp(276)  wtag(3)
+STAMP_llvmo__DIFile_O = ADJUST_STAMP(1111), // Stamp(277)  wtag(3)
+STAMP_llvmo__DIType_O = ADJUST_STAMP(1115), // Stamp(278)  wtag(3)
+STAMP_llvmo__DICompositeType_O = ADJUST_STAMP(1119), // Stamp(279)  wtag(3)
+STAMP_llvmo__DIDerivedType_O = ADJUST_STAMP(1123), // Stamp(280)  wtag(3)
+STAMP_llvmo__DIBasicType_O = ADJUST_STAMP(1127), // Stamp(281)  wtag(3)
+STAMP_llvmo__DISubroutineType_O = ADJUST_STAMP(1131), // Stamp(282)  wtag(3)
+STAMP_llvmo__DILocalScope_O = ADJUST_STAMP(1135), // Stamp(283)  wtag(3)
+STAMP_llvmo__DISubprogram_O = ADJUST_STAMP(1139), // Stamp(284)  wtag(3)
+STAMP_llvmo__DILexicalBlockBase_O = ADJUST_STAMP(1143), // Stamp(285)  wtag(3)
+STAMP_llvmo__DILexicalBlock_O = ADJUST_STAMP(1147), // Stamp(286)  wtag(3)
+STAMP_llvmo__DICompileUnit_O = ADJUST_STAMP(1151), // Stamp(287)  wtag(3)
+STAMP_llvmo__DIExpression_O = ADJUST_STAMP(1155), // Stamp(288)  wtag(3)
+STAMP_llvmo__DILocation_O = ADJUST_STAMP(1159), // Stamp(289)  wtag(3)
+STAMP_llvmo__ValueAsMetadata_O = ADJUST_STAMP(1163), // Stamp(290)  wtag(3)
+STAMP_llvmo__MDString_O = ADJUST_STAMP(1167), // Stamp(291)  wtag(3)
+STAMP_core__Test_O = ADJUST_STAMP(1171), // Stamp(292)  wtag(3)
+STAMP_llvmo__Value_O = ADJUST_STAMP(1175), // Stamp(293)  wtag(3)
+STAMP_llvmo__Argument_O = ADJUST_STAMP(1179), // Stamp(294)  wtag(3)
+STAMP_llvmo__BasicBlock_O = ADJUST_STAMP(1183), // Stamp(295)  wtag(3)
+STAMP_llvmo__MetadataAsValue_O = ADJUST_STAMP(1187), // Stamp(296)  wtag(3)
+STAMP_llvmo__User_O = ADJUST_STAMP(1191), // Stamp(297)  wtag(3)
+STAMP_llvmo__Instruction_O = ADJUST_STAMP(1195), // Stamp(298)  wtag(3)
+STAMP_llvmo__UnaryInstruction_O = ADJUST_STAMP(1199), // Stamp(299)  wtag(3)
+STAMP_llvmo__VAArgInst_O = ADJUST_STAMP(1203), // Stamp(300)  wtag(3)
+STAMP_llvmo__LoadInst_O = ADJUST_STAMP(1207), // Stamp(301)  wtag(3)
+STAMP_llvmo__AllocaInst_O = ADJUST_STAMP(1211), // Stamp(302)  wtag(3)
+STAMP_llvmo__SwitchInst_O = ADJUST_STAMP(1215), // Stamp(303)  wtag(3)
+STAMP_llvmo__AtomicRMWInst_O = ADJUST_STAMP(1219), // Stamp(304)  wtag(3)
+STAMP_llvmo__LandingPadInst_O = ADJUST_STAMP(1223), // Stamp(305)  wtag(3)
+STAMP_llvmo__StoreInst_O = ADJUST_STAMP(1227), // Stamp(306)  wtag(3)
+STAMP_llvmo__UnreachableInst_O = ADJUST_STAMP(1231), // Stamp(307)  wtag(3)
+STAMP_llvmo__ReturnInst_O = ADJUST_STAMP(1235), // Stamp(308)  wtag(3)
+STAMP_llvmo__ResumeInst_O = ADJUST_STAMP(1239), // Stamp(309)  wtag(3)
+STAMP_llvmo__AtomicCmpXchgInst_O = ADJUST_STAMP(1243), // Stamp(310)  wtag(3)
+STAMP_llvmo__FenceInst_O = ADJUST_STAMP(1247), // Stamp(311)  wtag(3)
+STAMP_llvmo__CallBase_O = ADJUST_STAMP(1251), // Stamp(312)  wtag(3)
+STAMP_llvmo__CallInst_O = ADJUST_STAMP(1255), // Stamp(313)  wtag(3)
+STAMP_llvmo__InvokeInst_O = ADJUST_STAMP(1259), // Stamp(314)  wtag(3)
+STAMP_llvmo__PHINode_O = ADJUST_STAMP(1263), // Stamp(315)  wtag(3)
+STAMP_llvmo__IndirectBrInst_O = ADJUST_STAMP(1267), // Stamp(316)  wtag(3)
+STAMP_llvmo__BranchInst_O = ADJUST_STAMP(1271), // Stamp(317)  wtag(3)
+STAMP_llvmo__Constant_O = ADJUST_STAMP(1275), // Stamp(318)  wtag(3)
+STAMP_llvmo__GlobalValue_O = ADJUST_STAMP(1279), // Stamp(319)  wtag(3)
+STAMP_llvmo__Function_O = ADJUST_STAMP(1283), // Stamp(320)  wtag(3)
+STAMP_llvmo__GlobalVariable_O = ADJUST_STAMP(1287), // Stamp(321)  wtag(3)
+STAMP_llvmo__BlockAddress_O = ADJUST_STAMP(1291), // Stamp(322)  wtag(3)
+STAMP_llvmo__ConstantDataSequential_O = ADJUST_STAMP(1295), // Stamp(323)  wtag(3)
+STAMP_llvmo__ConstantDataArray_O = ADJUST_STAMP(1299), // Stamp(324)  wtag(3)
+STAMP_llvmo__ConstantStruct_O = ADJUST_STAMP(1303), // Stamp(325)  wtag(3)
+STAMP_llvmo__ConstantInt_O = ADJUST_STAMP(1307), // Stamp(326)  wtag(3)
+STAMP_llvmo__ConstantFP_O = ADJUST_STAMP(1311), // Stamp(327)  wtag(3)
+STAMP_llvmo__ConstantExpr_O = ADJUST_STAMP(1315), // Stamp(328)  wtag(3)
+STAMP_llvmo__ConstantPointerNull_O = ADJUST_STAMP(1319), // Stamp(329)  wtag(3)
+STAMP_llvmo__UndefValue_O = ADJUST_STAMP(1323), // Stamp(330)  wtag(3)
+STAMP_llvmo__ConstantArray_O = ADJUST_STAMP(1327), // Stamp(331)  wtag(3)
+STAMP_llvmo__TargetMachine_O = ADJUST_STAMP(1331), // Stamp(332)  wtag(3)
+STAMP_llvmo__LLVMTargetMachine_O = ADJUST_STAMP(1335), // Stamp(333)  wtag(3)
+STAMP_llvmo__ThreadSafeContext_O = ADJUST_STAMP(1339), // Stamp(334)  wtag(3)
+STAMP_llvmo__NamedMDNode_O = ADJUST_STAMP(1343), // Stamp(335)  wtag(3)
+STAMP_llvmo__Triple_O = ADJUST_STAMP(1347), // Stamp(336)  wtag(3)
+STAMP_llvmo__DWARFContext_O = ADJUST_STAMP(1351), // Stamp(337)  wtag(3)
+STAMP_llvmo__TargetOptions_O = ADJUST_STAMP(1355), // Stamp(338)  wtag(3)
 STAMP_llvmo__LLVMContext_O = ADJUST_STAMP(1359), // Stamp(339)  wtag(3)
 STAMP_llvmo__PassManagerBuilder_O = ADJUST_STAMP(1363), // Stamp(340)  wtag(3)
 STAMP_llvmo__Module_O = ADJUST_STAMP(1367), // Stamp(341)  wtag(3)
@@ -1713,302 +1713,302 @@ register_stamp_name("STAMP_core__NativeVector_int_O", ADJUST_STAMP(159));
 register_stamp_name("STAMP_llvmo__FunctionCallee_O", ADJUST_STAMP(163));
 register_stamp_name("STAMP_core__Serializer_O", ADJUST_STAMP(167));
 register_stamp_name("STAMP_llvmo__DINodeArray_O", ADJUST_STAMP(171));
-register_stamp_name("STAMP_mp__Mutex_O", ADJUST_STAMP(175));
-register_stamp_name("STAMP_mp__RecursiveMutex_O", ADJUST_STAMP(179));
-register_stamp_name("STAMP_llvmo__DITypeRefArray_O", ADJUST_STAMP(183));
-register_stamp_name("STAMP_mp__SharedMutex_O", ADJUST_STAMP(187));
-register_stamp_name("STAMP_mp__Process_O", ADJUST_STAMP(191));
-register_stamp_name("STAMP_core__SingleDispatchMethod_O", ADJUST_STAMP(195));
-register_stamp_name("STAMP_core__Iterator_O", ADJUST_STAMP(199));
-register_stamp_name("STAMP_core__DirectoryIterator_O", ADJUST_STAMP(203));
-register_stamp_name("STAMP_core__RecursiveDirectoryIterator_O", ADJUST_STAMP(207));
-register_stamp_name("STAMP_core__Array_O", ADJUST_STAMP(211));
-register_stamp_name("STAMP_core__MDArray_O", ADJUST_STAMP(215));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_", ADJUST_STAMP(219));
-register_stamp_name("STAMP_core__MDArray_int16_t_O", ADJUST_STAMP(223));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_", ADJUST_STAMP(227));
-register_stamp_name("STAMP_core__MDArray_int8_t_O", ADJUST_STAMP(231));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_", ADJUST_STAMP(235));
-register_stamp_name("STAMP_core__MDArray_int32_t_O", ADJUST_STAMP(239));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_", ADJUST_STAMP(243));
-register_stamp_name("STAMP_core__MDArray_byte4_t_O", ADJUST_STAMP(247));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_", ADJUST_STAMP(251));
-register_stamp_name("STAMP_core__MDArray_float_O", ADJUST_STAMP(255));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_", ADJUST_STAMP(259));
-register_stamp_name("STAMP_core__MDArray_size_t_O", ADJUST_STAMP(263));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_", ADJUST_STAMP(267));
-register_stamp_name("STAMP_core__MDArray_byte8_t_O", ADJUST_STAMP(271));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_", ADJUST_STAMP(275));
-register_stamp_name("STAMP_core__MDArray_int64_t_O", ADJUST_STAMP(279));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_", ADJUST_STAMP(283));
-register_stamp_name("STAMP_core__MDArray_byte32_t_O", ADJUST_STAMP(287));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_", ADJUST_STAMP(291));
-register_stamp_name("STAMP_core__MDArray_byte2_t_O", ADJUST_STAMP(295));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_", ADJUST_STAMP(299));
-register_stamp_name("STAMP_core__MDArray_int2_t_O", ADJUST_STAMP(303));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_", ADJUST_STAMP(307));
-register_stamp_name("STAMP_core__MDArray_fixnum_O", ADJUST_STAMP(311));
-register_stamp_name("STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_", ADJUST_STAMP(315));
-register_stamp_name("STAMP_core__MDArrayBaseChar_O", ADJUST_STAMP(319));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_", ADJUST_STAMP(323));
-register_stamp_name("STAMP_core__MDArray_byte64_t_O", ADJUST_STAMP(327));
-register_stamp_name("STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_", ADJUST_STAMP(331));
-register_stamp_name("STAMP_core__MDArrayCharacter_O", ADJUST_STAMP(335));
-register_stamp_name("STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_", ADJUST_STAMP(339));
-register_stamp_name("STAMP_core__MDArrayT_O", ADJUST_STAMP(343));
-register_stamp_name("STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_", ADJUST_STAMP(347));
-register_stamp_name("STAMP_core__MDArrayBit_O", ADJUST_STAMP(351));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_", ADJUST_STAMP(355));
-register_stamp_name("STAMP_core__MDArray_byte16_t_O", ADJUST_STAMP(359));
-register_stamp_name("STAMP_core__SimpleMDArray_O", ADJUST_STAMP(363));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(367));
-register_stamp_name("STAMP_core__SimpleMDArray_int8_t_O", ADJUST_STAMP(371));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_", ADJUST_STAMP(375));
-register_stamp_name("STAMP_core__SimpleMDArray_double_O", ADJUST_STAMP(379));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(383));
-register_stamp_name("STAMP_core__SimpleMDArray_byte32_t_O", ADJUST_STAMP(387));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_", ADJUST_STAMP(391));
-register_stamp_name("STAMP_core__SimpleMDArrayT_O", ADJUST_STAMP(395));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(399));
-register_stamp_name("STAMP_core__SimpleMDArray_int2_t_O", ADJUST_STAMP(403));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(407));
-register_stamp_name("STAMP_core__SimpleMDArray_byte4_t_O", ADJUST_STAMP(411));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(415));
-register_stamp_name("STAMP_core__SimpleMDArray_int32_t_O", ADJUST_STAMP(419));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_", ADJUST_STAMP(423));
-register_stamp_name("STAMP_core__SimpleMDArray_float_O", ADJUST_STAMP(427));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(431));
-register_stamp_name("STAMP_core__SimpleMDArray_int16_t_O", ADJUST_STAMP(435));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(439));
-register_stamp_name("STAMP_core__SimpleMDArray_size_t_O", ADJUST_STAMP(443));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(447));
-register_stamp_name("STAMP_core__SimpleMDArray_int4_t_O", ADJUST_STAMP(451));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_", ADJUST_STAMP(455));
-register_stamp_name("STAMP_core__SimpleMDArrayCharacter_O", ADJUST_STAMP(459));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(463));
-register_stamp_name("STAMP_core__SimpleMDArray_byte2_t_O", ADJUST_STAMP(467));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_", ADJUST_STAMP(471));
-register_stamp_name("STAMP_core__SimpleMDArray_fixnum_O", ADJUST_STAMP(475));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(479));
-register_stamp_name("STAMP_core__SimpleMDArray_byte16_t_O", ADJUST_STAMP(483));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_", ADJUST_STAMP(487));
-register_stamp_name("STAMP_core__SimpleMDArrayBaseChar_O", ADJUST_STAMP(491));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(495));
-register_stamp_name("STAMP_core__SimpleMDArray_byte64_t_O", ADJUST_STAMP(499));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_", ADJUST_STAMP(503));
-register_stamp_name("STAMP_core__SimpleMDArrayBit_O", ADJUST_STAMP(507));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(511));
-register_stamp_name("STAMP_core__SimpleMDArray_byte8_t_O", ADJUST_STAMP(515));
-register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(519));
-register_stamp_name("STAMP_core__SimpleMDArray_int64_t_O", ADJUST_STAMP(523));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_", ADJUST_STAMP(527));
-register_stamp_name("STAMP_core__MDArray_int4_t_O", ADJUST_STAMP(531));
-register_stamp_name("STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_", ADJUST_STAMP(535));
-register_stamp_name("STAMP_core__MDArray_double_O", ADJUST_STAMP(539));
-register_stamp_name("STAMP_core__ComplexVector_O", ADJUST_STAMP(543));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_", ADJUST_STAMP(547));
-register_stamp_name("STAMP_core__ComplexVector_double_O", ADJUST_STAMP(551));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_", ADJUST_STAMP(555));
-register_stamp_name("STAMP_core__ComplexVector_int8_t_O", ADJUST_STAMP(559));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_", ADJUST_STAMP(563));
-register_stamp_name("STAMP_core__ComplexVector_byte64_t_O", ADJUST_STAMP(567));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_", ADJUST_STAMP(571));
-register_stamp_name("STAMP_core__ComplexVector_T_O", ADJUST_STAMP(575));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_", ADJUST_STAMP(579));
-register_stamp_name("STAMP_core__ComplexVector_int2_t_O", ADJUST_STAMP(583));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_", ADJUST_STAMP(587));
-register_stamp_name("STAMP_core__ComplexVector_int32_t_O", ADJUST_STAMP(591));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_", ADJUST_STAMP(595));
-register_stamp_name("STAMP_core__ComplexVector_byte16_t_O", ADJUST_STAMP(599));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_", ADJUST_STAMP(603));
-register_stamp_name("STAMP_core__ComplexVector_float_O", ADJUST_STAMP(607));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_", ADJUST_STAMP(611));
-register_stamp_name("STAMP_core__ComplexVector_int16_t_O", ADJUST_STAMP(615));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_", ADJUST_STAMP(619));
-register_stamp_name("STAMP_core__ComplexVector_int4_t_O", ADJUST_STAMP(623));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_", ADJUST_STAMP(627));
-register_stamp_name("STAMP_core__ComplexVector_size_t_O", ADJUST_STAMP(631));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_", ADJUST_STAMP(635));
-register_stamp_name("STAMP_core__ComplexVector_byte2_t_O", ADJUST_STAMP(639));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_", ADJUST_STAMP(643));
-register_stamp_name("STAMP_core__ComplexVector_byte8_t_O", ADJUST_STAMP(647));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_", ADJUST_STAMP(651));
-register_stamp_name("STAMP_core__ComplexVector_byte32_t_O", ADJUST_STAMP(655));
-register_stamp_name("STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_", ADJUST_STAMP(659));
-register_stamp_name("STAMP_core__BitVectorNs_O", ADJUST_STAMP(663));
-register_stamp_name("STAMP_core__StrNs_O", ADJUST_STAMP(667));
-register_stamp_name("STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_", ADJUST_STAMP(671));
-register_stamp_name("STAMP_core__Str8Ns_O", ADJUST_STAMP(675));
-register_stamp_name("STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_", ADJUST_STAMP(679));
-register_stamp_name("STAMP_core__StrWNs_O", ADJUST_STAMP(683));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_", ADJUST_STAMP(687));
-register_stamp_name("STAMP_core__ComplexVector_byte4_t_O", ADJUST_STAMP(691));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_", ADJUST_STAMP(695));
-register_stamp_name("STAMP_core__ComplexVector_fixnum_O", ADJUST_STAMP(699));
-register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_", ADJUST_STAMP(703));
-register_stamp_name("STAMP_core__ComplexVector_int64_t_O", ADJUST_STAMP(707));
-register_stamp_name("STAMP_core__AbstractSimpleVector_O", ADJUST_STAMP(711));
-register_stamp_name("STAMP_core__SimpleString_O", ADJUST_STAMP(715));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_", ADJUST_STAMP(719));
-register_stamp_name("STAMP_core__SimpleCharacterString_O", ADJUST_STAMP(723));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_", ADJUST_STAMP(727));
-register_stamp_name("STAMP_core__SimpleBaseString_O", ADJUST_STAMP(731));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_", ADJUST_STAMP(735));
-register_stamp_name("STAMP_core__SimpleVector_int16_t_O", ADJUST_STAMP(739));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_", ADJUST_STAMP(743));
-register_stamp_name("STAMP_core__SimpleVector_byte16_t_O", ADJUST_STAMP(747));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_", ADJUST_STAMP(751));
-register_stamp_name("STAMP_core__SimpleBitVector_O", ADJUST_STAMP(755));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_", ADJUST_STAMP(759));
-register_stamp_name("STAMP_core__SimpleVector_int4_t_O", ADJUST_STAMP(763));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(767));
-register_stamp_name("STAMP_core__SimpleVector_byte32_t_O", ADJUST_STAMP(771));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(775));
-register_stamp_name("STAMP_core__SimpleVector_size_t_O", ADJUST_STAMP(779));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_", ADJUST_STAMP(783));
-register_stamp_name("STAMP_core__SimpleVector_double_O", ADJUST_STAMP(787));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(791));
-register_stamp_name("STAMP_core__SimpleVector_byte64_t_O", ADJUST_STAMP(795));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_", ADJUST_STAMP(799));
-register_stamp_name("STAMP_core__SimpleVector_int2_t_O", ADJUST_STAMP(803));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(807));
-register_stamp_name("STAMP_core__SimpleVector_int64_t_O", ADJUST_STAMP(811));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(815));
-register_stamp_name("STAMP_core__SimpleVector_fixnum_O", ADJUST_STAMP(819));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(823));
-register_stamp_name("STAMP_core__SimpleVector_int8_t_O", ADJUST_STAMP(827));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_", ADJUST_STAMP(831));
-register_stamp_name("STAMP_core__SimpleVector_float_O", ADJUST_STAMP(835));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_", ADJUST_STAMP(839));
-register_stamp_name("STAMP_core__SimpleVector_O", ADJUST_STAMP(843));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(847));
-register_stamp_name("STAMP_core__SimpleVector_byte8_t_O", ADJUST_STAMP(851));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_", ADJUST_STAMP(855));
-register_stamp_name("STAMP_core__SimpleVector_byte2_t_O", ADJUST_STAMP(859));
-register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(863));
-register_stamp_name("STAMP_core__SimpleVector_int32_t_O", ADJUST_STAMP(867));
-register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_", ADJUST_STAMP(871));
-register_stamp_name("STAMP_core__SimpleVector_byte4_t_O", ADJUST_STAMP(875));
-register_stamp_name("STAMP_core__Symbol_O", ADJUST_STAMP(879));
-register_stamp_name("STAMP_core__Null_O", ADJUST_STAMP(883));
-register_stamp_name("STAMP_core__Character_dummy_O", ADJUST_STAMP(887));
-register_stamp_name("STAMP_llvmo__DataLayout_O", ADJUST_STAMP(891));
-register_stamp_name("STAMP_core__LoadTimeValues_O", ADJUST_STAMP(895));
-register_stamp_name("STAMP_core__SharpEqualWrapper_O", ADJUST_STAMP(899));
-register_stamp_name("STAMP_llvmo__ClaspJIT_O", ADJUST_STAMP(903));
-register_stamp_name("STAMP_core__Readtable_O", ADJUST_STAMP(907));
-register_stamp_name("STAMP_core__PosixTime_O", ADJUST_STAMP(911));
-register_stamp_name("STAMP_core__Exposer_O", ADJUST_STAMP(915));
-register_stamp_name("STAMP_core__CoreExposer_O", ADJUST_STAMP(919));
-register_stamp_name("STAMP_asttooling__AsttoolingExposer_O", ADJUST_STAMP(923));
-register_stamp_name("STAMP_llvmo__StructLayout_O", ADJUST_STAMP(927));
-register_stamp_name("STAMP_core__PosixTimeDuration_O", ADJUST_STAMP(931));
-register_stamp_name("STAMP_clasp_ffi__ForeignTypeSpec_O", ADJUST_STAMP(935));
-register_stamp_name("STAMP_core__Instance_O", ADJUST_STAMP(937));
-register_stamp_name("STAMP_core__DerivableCxxObject_O", ADJUST_STAMP(940));
-register_stamp_name("STAMP_clbind__ClassRep_O", ADJUST_STAMP(945));
-register_stamp_name("STAMP_core__SmallMap_O", ADJUST_STAMP(951));
-register_stamp_name("STAMP_mpip__Mpi_O", ADJUST_STAMP(955));
-register_stamp_name("STAMP_core__ExternalObject_O", ADJUST_STAMP(959));
-register_stamp_name("STAMP_llvmo__Pass_O", ADJUST_STAMP(963));
-register_stamp_name("STAMP_llvmo__ModulePass_O", ADJUST_STAMP(967));
-register_stamp_name("STAMP_llvmo__ImmutablePass_O", ADJUST_STAMP(971));
-register_stamp_name("STAMP_llvmo__TargetLibraryInfoWrapperPass_O", ADJUST_STAMP(975));
-register_stamp_name("STAMP_llvmo__FunctionPass_O", ADJUST_STAMP(979));
-register_stamp_name("STAMP_llvmo__ExecutionEngine_O", ADJUST_STAMP(983));
-register_stamp_name("STAMP_llvmo__MCSubtargetInfo_O", ADJUST_STAMP(987));
-register_stamp_name("STAMP_llvmo__TargetSubtargetInfo_O", ADJUST_STAMP(991));
-register_stamp_name("STAMP_llvmo__Type_O", ADJUST_STAMP(995));
-register_stamp_name("STAMP_llvmo__FunctionType_O", ADJUST_STAMP(999));
-register_stamp_name("STAMP_llvmo__CompositeType_O", ADJUST_STAMP(1003));
-register_stamp_name("STAMP_llvmo__SequentialType_O", ADJUST_STAMP(1007));
-register_stamp_name("STAMP_llvmo__PointerType_O", ADJUST_STAMP(1011));
-register_stamp_name("STAMP_llvmo__ArrayType_O", ADJUST_STAMP(1015));
-register_stamp_name("STAMP_llvmo__VectorType_O", ADJUST_STAMP(1019));
-register_stamp_name("STAMP_llvmo__StructType_O", ADJUST_STAMP(1023));
-register_stamp_name("STAMP_llvmo__IntegerType_O", ADJUST_STAMP(1027));
-register_stamp_name("STAMP_llvmo__JITDylib_O", ADJUST_STAMP(1031));
-register_stamp_name("STAMP_llvmo__DIContext_O", ADJUST_STAMP(1035));
-register_stamp_name("STAMP_llvmo__TargetPassConfig_O", ADJUST_STAMP(1039));
-register_stamp_name("STAMP_llvmo__IRBuilderBase_O", ADJUST_STAMP(1043));
-register_stamp_name("STAMP_llvmo__IRBuilder_O", ADJUST_STAMP(1047));
-register_stamp_name("STAMP_llvmo__APFloat_O", ADJUST_STAMP(1051));
-register_stamp_name("STAMP_llvmo__APInt_O", ADJUST_STAMP(1055));
-register_stamp_name("STAMP_llvmo__DIBuilder_O", ADJUST_STAMP(1059));
-register_stamp_name("STAMP_llvmo__SectionedAddress_O", ADJUST_STAMP(1063));
-register_stamp_name("STAMP_llvmo__EngineBuilder_O", ADJUST_STAMP(1067));
-register_stamp_name("STAMP_llvmo__PassManagerBase_O", ADJUST_STAMP(1071));
-register_stamp_name("STAMP_llvmo__PassManager_O", ADJUST_STAMP(1075));
-register_stamp_name("STAMP_llvmo__FunctionPassManager_O", ADJUST_STAMP(1079));
-register_stamp_name("STAMP_llvmo__Metadata_O", ADJUST_STAMP(1083));
-register_stamp_name("STAMP_llvmo__MDNode_O", ADJUST_STAMP(1087));
-register_stamp_name("STAMP_llvmo__DINode_O", ADJUST_STAMP(1091));
-register_stamp_name("STAMP_llvmo__DIVariable_O", ADJUST_STAMP(1095));
-register_stamp_name("STAMP_llvmo__DILocalVariable_O", ADJUST_STAMP(1099));
-register_stamp_name("STAMP_llvmo__DIScope_O", ADJUST_STAMP(1103));
-register_stamp_name("STAMP_llvmo__DIFile_O", ADJUST_STAMP(1107));
-register_stamp_name("STAMP_llvmo__DIType_O", ADJUST_STAMP(1111));
-register_stamp_name("STAMP_llvmo__DICompositeType_O", ADJUST_STAMP(1115));
-register_stamp_name("STAMP_llvmo__DIDerivedType_O", ADJUST_STAMP(1119));
-register_stamp_name("STAMP_llvmo__DIBasicType_O", ADJUST_STAMP(1123));
-register_stamp_name("STAMP_llvmo__DISubroutineType_O", ADJUST_STAMP(1127));
-register_stamp_name("STAMP_llvmo__DILocalScope_O", ADJUST_STAMP(1131));
-register_stamp_name("STAMP_llvmo__DISubprogram_O", ADJUST_STAMP(1135));
-register_stamp_name("STAMP_llvmo__DILexicalBlockBase_O", ADJUST_STAMP(1139));
-register_stamp_name("STAMP_llvmo__DILexicalBlock_O", ADJUST_STAMP(1143));
-register_stamp_name("STAMP_llvmo__DICompileUnit_O", ADJUST_STAMP(1147));
-register_stamp_name("STAMP_llvmo__DIExpression_O", ADJUST_STAMP(1151));
-register_stamp_name("STAMP_llvmo__DILocation_O", ADJUST_STAMP(1155));
-register_stamp_name("STAMP_llvmo__ValueAsMetadata_O", ADJUST_STAMP(1159));
-register_stamp_name("STAMP_llvmo__MDString_O", ADJUST_STAMP(1163));
-register_stamp_name("STAMP_core__Test_O", ADJUST_STAMP(1167));
-register_stamp_name("STAMP_llvmo__Value_O", ADJUST_STAMP(1171));
-register_stamp_name("STAMP_llvmo__Argument_O", ADJUST_STAMP(1175));
-register_stamp_name("STAMP_llvmo__BasicBlock_O", ADJUST_STAMP(1179));
-register_stamp_name("STAMP_llvmo__MetadataAsValue_O", ADJUST_STAMP(1183));
-register_stamp_name("STAMP_llvmo__User_O", ADJUST_STAMP(1187));
-register_stamp_name("STAMP_llvmo__Instruction_O", ADJUST_STAMP(1191));
-register_stamp_name("STAMP_llvmo__UnaryInstruction_O", ADJUST_STAMP(1195));
-register_stamp_name("STAMP_llvmo__VAArgInst_O", ADJUST_STAMP(1199));
-register_stamp_name("STAMP_llvmo__LoadInst_O", ADJUST_STAMP(1203));
-register_stamp_name("STAMP_llvmo__AllocaInst_O", ADJUST_STAMP(1207));
-register_stamp_name("STAMP_llvmo__SwitchInst_O", ADJUST_STAMP(1211));
-register_stamp_name("STAMP_llvmo__AtomicRMWInst_O", ADJUST_STAMP(1215));
-register_stamp_name("STAMP_llvmo__LandingPadInst_O", ADJUST_STAMP(1219));
-register_stamp_name("STAMP_llvmo__StoreInst_O", ADJUST_STAMP(1223));
-register_stamp_name("STAMP_llvmo__UnreachableInst_O", ADJUST_STAMP(1227));
-register_stamp_name("STAMP_llvmo__ReturnInst_O", ADJUST_STAMP(1231));
-register_stamp_name("STAMP_llvmo__ResumeInst_O", ADJUST_STAMP(1235));
-register_stamp_name("STAMP_llvmo__AtomicCmpXchgInst_O", ADJUST_STAMP(1239));
-register_stamp_name("STAMP_llvmo__FenceInst_O", ADJUST_STAMP(1243));
-register_stamp_name("STAMP_llvmo__CallBase_O", ADJUST_STAMP(1247));
-register_stamp_name("STAMP_llvmo__CallInst_O", ADJUST_STAMP(1251));
-register_stamp_name("STAMP_llvmo__InvokeInst_O", ADJUST_STAMP(1255));
-register_stamp_name("STAMP_llvmo__PHINode_O", ADJUST_STAMP(1259));
-register_stamp_name("STAMP_llvmo__IndirectBrInst_O", ADJUST_STAMP(1263));
-register_stamp_name("STAMP_llvmo__BranchInst_O", ADJUST_STAMP(1267));
-register_stamp_name("STAMP_llvmo__Constant_O", ADJUST_STAMP(1271));
-register_stamp_name("STAMP_llvmo__GlobalValue_O", ADJUST_STAMP(1275));
-register_stamp_name("STAMP_llvmo__Function_O", ADJUST_STAMP(1279));
-register_stamp_name("STAMP_llvmo__GlobalVariable_O", ADJUST_STAMP(1283));
-register_stamp_name("STAMP_llvmo__BlockAddress_O", ADJUST_STAMP(1287));
-register_stamp_name("STAMP_llvmo__ConstantDataSequential_O", ADJUST_STAMP(1291));
-register_stamp_name("STAMP_llvmo__ConstantDataArray_O", ADJUST_STAMP(1295));
-register_stamp_name("STAMP_llvmo__ConstantStruct_O", ADJUST_STAMP(1299));
-register_stamp_name("STAMP_llvmo__ConstantInt_O", ADJUST_STAMP(1303));
-register_stamp_name("STAMP_llvmo__ConstantFP_O", ADJUST_STAMP(1307));
-register_stamp_name("STAMP_llvmo__ConstantExpr_O", ADJUST_STAMP(1311));
-register_stamp_name("STAMP_llvmo__ConstantPointerNull_O", ADJUST_STAMP(1315));
-register_stamp_name("STAMP_llvmo__UndefValue_O", ADJUST_STAMP(1319));
-register_stamp_name("STAMP_llvmo__ConstantArray_O", ADJUST_STAMP(1323));
-register_stamp_name("STAMP_llvmo__TargetMachine_O", ADJUST_STAMP(1327));
-register_stamp_name("STAMP_llvmo__LLVMTargetMachine_O", ADJUST_STAMP(1331));
-register_stamp_name("STAMP_llvmo__ThreadSafeContext_O", ADJUST_STAMP(1335));
-register_stamp_name("STAMP_llvmo__NamedMDNode_O", ADJUST_STAMP(1339));
-register_stamp_name("STAMP_llvmo__Triple_O", ADJUST_STAMP(1343));
-register_stamp_name("STAMP_llvmo__DWARFContext_O", ADJUST_STAMP(1347));
-register_stamp_name("STAMP_llvmo__TargetOptions_O", ADJUST_STAMP(1351));
-register_stamp_name("STAMP_llvmo__ObjectFile_O", ADJUST_STAMP(1355));
+register_stamp_name("STAMP_llvmo__ObjectFile_O", ADJUST_STAMP(175));
+register_stamp_name("STAMP_mp__Mutex_O", ADJUST_STAMP(179));
+register_stamp_name("STAMP_mp__RecursiveMutex_O", ADJUST_STAMP(183));
+register_stamp_name("STAMP_llvmo__DITypeRefArray_O", ADJUST_STAMP(187));
+register_stamp_name("STAMP_mp__SharedMutex_O", ADJUST_STAMP(191));
+register_stamp_name("STAMP_mp__Process_O", ADJUST_STAMP(195));
+register_stamp_name("STAMP_core__SingleDispatchMethod_O", ADJUST_STAMP(199));
+register_stamp_name("STAMP_core__Iterator_O", ADJUST_STAMP(203));
+register_stamp_name("STAMP_core__DirectoryIterator_O", ADJUST_STAMP(207));
+register_stamp_name("STAMP_core__RecursiveDirectoryIterator_O", ADJUST_STAMP(211));
+register_stamp_name("STAMP_core__Array_O", ADJUST_STAMP(215));
+register_stamp_name("STAMP_core__MDArray_O", ADJUST_STAMP(219));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_", ADJUST_STAMP(223));
+register_stamp_name("STAMP_core__MDArray_int16_t_O", ADJUST_STAMP(227));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_", ADJUST_STAMP(231));
+register_stamp_name("STAMP_core__MDArray_int8_t_O", ADJUST_STAMP(235));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_", ADJUST_STAMP(239));
+register_stamp_name("STAMP_core__MDArray_int32_t_O", ADJUST_STAMP(243));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_", ADJUST_STAMP(247));
+register_stamp_name("STAMP_core__MDArray_byte4_t_O", ADJUST_STAMP(251));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_", ADJUST_STAMP(255));
+register_stamp_name("STAMP_core__MDArray_float_O", ADJUST_STAMP(259));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_", ADJUST_STAMP(263));
+register_stamp_name("STAMP_core__MDArray_size_t_O", ADJUST_STAMP(267));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_", ADJUST_STAMP(271));
+register_stamp_name("STAMP_core__MDArray_byte8_t_O", ADJUST_STAMP(275));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_", ADJUST_STAMP(279));
+register_stamp_name("STAMP_core__MDArray_int64_t_O", ADJUST_STAMP(283));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_", ADJUST_STAMP(287));
+register_stamp_name("STAMP_core__MDArray_byte32_t_O", ADJUST_STAMP(291));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_", ADJUST_STAMP(295));
+register_stamp_name("STAMP_core__MDArray_byte2_t_O", ADJUST_STAMP(299));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_", ADJUST_STAMP(303));
+register_stamp_name("STAMP_core__MDArray_int2_t_O", ADJUST_STAMP(307));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_", ADJUST_STAMP(311));
+register_stamp_name("STAMP_core__MDArray_fixnum_O", ADJUST_STAMP(315));
+register_stamp_name("STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_", ADJUST_STAMP(319));
+register_stamp_name("STAMP_core__MDArrayBaseChar_O", ADJUST_STAMP(323));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_", ADJUST_STAMP(327));
+register_stamp_name("STAMP_core__MDArray_byte64_t_O", ADJUST_STAMP(331));
+register_stamp_name("STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_", ADJUST_STAMP(335));
+register_stamp_name("STAMP_core__MDArrayCharacter_O", ADJUST_STAMP(339));
+register_stamp_name("STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_", ADJUST_STAMP(343));
+register_stamp_name("STAMP_core__MDArrayT_O", ADJUST_STAMP(347));
+register_stamp_name("STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_", ADJUST_STAMP(351));
+register_stamp_name("STAMP_core__MDArrayBit_O", ADJUST_STAMP(355));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_", ADJUST_STAMP(359));
+register_stamp_name("STAMP_core__MDArray_byte16_t_O", ADJUST_STAMP(363));
+register_stamp_name("STAMP_core__SimpleMDArray_O", ADJUST_STAMP(367));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(371));
+register_stamp_name("STAMP_core__SimpleMDArray_int8_t_O", ADJUST_STAMP(375));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_", ADJUST_STAMP(379));
+register_stamp_name("STAMP_core__SimpleMDArray_double_O", ADJUST_STAMP(383));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(387));
+register_stamp_name("STAMP_core__SimpleMDArray_byte32_t_O", ADJUST_STAMP(391));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_", ADJUST_STAMP(395));
+register_stamp_name("STAMP_core__SimpleMDArrayT_O", ADJUST_STAMP(399));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(403));
+register_stamp_name("STAMP_core__SimpleMDArray_int2_t_O", ADJUST_STAMP(407));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(411));
+register_stamp_name("STAMP_core__SimpleMDArray_byte4_t_O", ADJUST_STAMP(415));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(419));
+register_stamp_name("STAMP_core__SimpleMDArray_int32_t_O", ADJUST_STAMP(423));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_", ADJUST_STAMP(427));
+register_stamp_name("STAMP_core__SimpleMDArray_float_O", ADJUST_STAMP(431));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(435));
+register_stamp_name("STAMP_core__SimpleMDArray_int16_t_O", ADJUST_STAMP(439));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(443));
+register_stamp_name("STAMP_core__SimpleMDArray_size_t_O", ADJUST_STAMP(447));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(451));
+register_stamp_name("STAMP_core__SimpleMDArray_int4_t_O", ADJUST_STAMP(455));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_", ADJUST_STAMP(459));
+register_stamp_name("STAMP_core__SimpleMDArrayCharacter_O", ADJUST_STAMP(463));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(467));
+register_stamp_name("STAMP_core__SimpleMDArray_byte2_t_O", ADJUST_STAMP(471));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_", ADJUST_STAMP(475));
+register_stamp_name("STAMP_core__SimpleMDArray_fixnum_O", ADJUST_STAMP(479));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(483));
+register_stamp_name("STAMP_core__SimpleMDArray_byte16_t_O", ADJUST_STAMP(487));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_", ADJUST_STAMP(491));
+register_stamp_name("STAMP_core__SimpleMDArrayBaseChar_O", ADJUST_STAMP(495));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(499));
+register_stamp_name("STAMP_core__SimpleMDArray_byte64_t_O", ADJUST_STAMP(503));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_", ADJUST_STAMP(507));
+register_stamp_name("STAMP_core__SimpleMDArrayBit_O", ADJUST_STAMP(511));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(515));
+register_stamp_name("STAMP_core__SimpleMDArray_byte8_t_O", ADJUST_STAMP(519));
+register_stamp_name("STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_", ADJUST_STAMP(523));
+register_stamp_name("STAMP_core__SimpleMDArray_int64_t_O", ADJUST_STAMP(527));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_", ADJUST_STAMP(531));
+register_stamp_name("STAMP_core__MDArray_int4_t_O", ADJUST_STAMP(535));
+register_stamp_name("STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_", ADJUST_STAMP(539));
+register_stamp_name("STAMP_core__MDArray_double_O", ADJUST_STAMP(543));
+register_stamp_name("STAMP_core__ComplexVector_O", ADJUST_STAMP(547));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_", ADJUST_STAMP(551));
+register_stamp_name("STAMP_core__ComplexVector_double_O", ADJUST_STAMP(555));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_", ADJUST_STAMP(559));
+register_stamp_name("STAMP_core__ComplexVector_int8_t_O", ADJUST_STAMP(563));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_", ADJUST_STAMP(567));
+register_stamp_name("STAMP_core__ComplexVector_byte64_t_O", ADJUST_STAMP(571));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_", ADJUST_STAMP(575));
+register_stamp_name("STAMP_core__ComplexVector_T_O", ADJUST_STAMP(579));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_", ADJUST_STAMP(583));
+register_stamp_name("STAMP_core__ComplexVector_int2_t_O", ADJUST_STAMP(587));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_", ADJUST_STAMP(591));
+register_stamp_name("STAMP_core__ComplexVector_int32_t_O", ADJUST_STAMP(595));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_", ADJUST_STAMP(599));
+register_stamp_name("STAMP_core__ComplexVector_byte16_t_O", ADJUST_STAMP(603));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_", ADJUST_STAMP(607));
+register_stamp_name("STAMP_core__ComplexVector_float_O", ADJUST_STAMP(611));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_", ADJUST_STAMP(615));
+register_stamp_name("STAMP_core__ComplexVector_int16_t_O", ADJUST_STAMP(619));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_", ADJUST_STAMP(623));
+register_stamp_name("STAMP_core__ComplexVector_int4_t_O", ADJUST_STAMP(627));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_", ADJUST_STAMP(631));
+register_stamp_name("STAMP_core__ComplexVector_size_t_O", ADJUST_STAMP(635));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_", ADJUST_STAMP(639));
+register_stamp_name("STAMP_core__ComplexVector_byte2_t_O", ADJUST_STAMP(643));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_", ADJUST_STAMP(647));
+register_stamp_name("STAMP_core__ComplexVector_byte8_t_O", ADJUST_STAMP(651));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_", ADJUST_STAMP(655));
+register_stamp_name("STAMP_core__ComplexVector_byte32_t_O", ADJUST_STAMP(659));
+register_stamp_name("STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_", ADJUST_STAMP(663));
+register_stamp_name("STAMP_core__BitVectorNs_O", ADJUST_STAMP(667));
+register_stamp_name("STAMP_core__StrNs_O", ADJUST_STAMP(671));
+register_stamp_name("STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_", ADJUST_STAMP(675));
+register_stamp_name("STAMP_core__Str8Ns_O", ADJUST_STAMP(679));
+register_stamp_name("STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_", ADJUST_STAMP(683));
+register_stamp_name("STAMP_core__StrWNs_O", ADJUST_STAMP(687));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_", ADJUST_STAMP(691));
+register_stamp_name("STAMP_core__ComplexVector_byte4_t_O", ADJUST_STAMP(695));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_", ADJUST_STAMP(699));
+register_stamp_name("STAMP_core__ComplexVector_fixnum_O", ADJUST_STAMP(703));
+register_stamp_name("STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_", ADJUST_STAMP(707));
+register_stamp_name("STAMP_core__ComplexVector_int64_t_O", ADJUST_STAMP(711));
+register_stamp_name("STAMP_core__AbstractSimpleVector_O", ADJUST_STAMP(715));
+register_stamp_name("STAMP_core__SimpleString_O", ADJUST_STAMP(719));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_", ADJUST_STAMP(723));
+register_stamp_name("STAMP_core__SimpleCharacterString_O", ADJUST_STAMP(727));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_", ADJUST_STAMP(731));
+register_stamp_name("STAMP_core__SimpleBaseString_O", ADJUST_STAMP(735));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_", ADJUST_STAMP(739));
+register_stamp_name("STAMP_core__SimpleVector_int16_t_O", ADJUST_STAMP(743));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_", ADJUST_STAMP(747));
+register_stamp_name("STAMP_core__SimpleVector_byte16_t_O", ADJUST_STAMP(751));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_", ADJUST_STAMP(755));
+register_stamp_name("STAMP_core__SimpleBitVector_O", ADJUST_STAMP(759));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_", ADJUST_STAMP(763));
+register_stamp_name("STAMP_core__SimpleVector_int4_t_O", ADJUST_STAMP(767));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(771));
+register_stamp_name("STAMP_core__SimpleVector_byte32_t_O", ADJUST_STAMP(775));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(779));
+register_stamp_name("STAMP_core__SimpleVector_size_t_O", ADJUST_STAMP(783));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_", ADJUST_STAMP(787));
+register_stamp_name("STAMP_core__SimpleVector_double_O", ADJUST_STAMP(791));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(795));
+register_stamp_name("STAMP_core__SimpleVector_byte64_t_O", ADJUST_STAMP(799));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_", ADJUST_STAMP(803));
+register_stamp_name("STAMP_core__SimpleVector_int2_t_O", ADJUST_STAMP(807));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(811));
+register_stamp_name("STAMP_core__SimpleVector_int64_t_O", ADJUST_STAMP(815));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_", ADJUST_STAMP(819));
+register_stamp_name("STAMP_core__SimpleVector_fixnum_O", ADJUST_STAMP(823));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(827));
+register_stamp_name("STAMP_core__SimpleVector_int8_t_O", ADJUST_STAMP(831));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_", ADJUST_STAMP(835));
+register_stamp_name("STAMP_core__SimpleVector_float_O", ADJUST_STAMP(839));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_", ADJUST_STAMP(843));
+register_stamp_name("STAMP_core__SimpleVector_O", ADJUST_STAMP(847));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_", ADJUST_STAMP(851));
+register_stamp_name("STAMP_core__SimpleVector_byte8_t_O", ADJUST_STAMP(855));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_", ADJUST_STAMP(859));
+register_stamp_name("STAMP_core__SimpleVector_byte2_t_O", ADJUST_STAMP(863));
+register_stamp_name("STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_", ADJUST_STAMP(867));
+register_stamp_name("STAMP_core__SimpleVector_int32_t_O", ADJUST_STAMP(871));
+register_stamp_name("STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_", ADJUST_STAMP(875));
+register_stamp_name("STAMP_core__SimpleVector_byte4_t_O", ADJUST_STAMP(879));
+register_stamp_name("STAMP_core__Symbol_O", ADJUST_STAMP(883));
+register_stamp_name("STAMP_core__Null_O", ADJUST_STAMP(887));
+register_stamp_name("STAMP_core__Character_dummy_O", ADJUST_STAMP(891));
+register_stamp_name("STAMP_llvmo__DataLayout_O", ADJUST_STAMP(895));
+register_stamp_name("STAMP_core__LoadTimeValues_O", ADJUST_STAMP(899));
+register_stamp_name("STAMP_core__SharpEqualWrapper_O", ADJUST_STAMP(903));
+register_stamp_name("STAMP_llvmo__ClaspJIT_O", ADJUST_STAMP(907));
+register_stamp_name("STAMP_core__Readtable_O", ADJUST_STAMP(911));
+register_stamp_name("STAMP_core__PosixTime_O", ADJUST_STAMP(915));
+register_stamp_name("STAMP_core__Exposer_O", ADJUST_STAMP(919));
+register_stamp_name("STAMP_core__CoreExposer_O", ADJUST_STAMP(923));
+register_stamp_name("STAMP_asttooling__AsttoolingExposer_O", ADJUST_STAMP(927));
+register_stamp_name("STAMP_llvmo__StructLayout_O", ADJUST_STAMP(931));
+register_stamp_name("STAMP_core__PosixTimeDuration_O", ADJUST_STAMP(935));
+register_stamp_name("STAMP_clasp_ffi__ForeignTypeSpec_O", ADJUST_STAMP(939));
+register_stamp_name("STAMP_core__Instance_O", ADJUST_STAMP(941));
+register_stamp_name("STAMP_core__DerivableCxxObject_O", ADJUST_STAMP(944));
+register_stamp_name("STAMP_clbind__ClassRep_O", ADJUST_STAMP(949));
+register_stamp_name("STAMP_core__SmallMap_O", ADJUST_STAMP(955));
+register_stamp_name("STAMP_mpip__Mpi_O", ADJUST_STAMP(959));
+register_stamp_name("STAMP_core__ExternalObject_O", ADJUST_STAMP(963));
+register_stamp_name("STAMP_llvmo__Pass_O", ADJUST_STAMP(967));
+register_stamp_name("STAMP_llvmo__ModulePass_O", ADJUST_STAMP(971));
+register_stamp_name("STAMP_llvmo__ImmutablePass_O", ADJUST_STAMP(975));
+register_stamp_name("STAMP_llvmo__TargetLibraryInfoWrapperPass_O", ADJUST_STAMP(979));
+register_stamp_name("STAMP_llvmo__FunctionPass_O", ADJUST_STAMP(983));
+register_stamp_name("STAMP_llvmo__ExecutionEngine_O", ADJUST_STAMP(987));
+register_stamp_name("STAMP_llvmo__MCSubtargetInfo_O", ADJUST_STAMP(991));
+register_stamp_name("STAMP_llvmo__TargetSubtargetInfo_O", ADJUST_STAMP(995));
+register_stamp_name("STAMP_llvmo__Type_O", ADJUST_STAMP(999));
+register_stamp_name("STAMP_llvmo__FunctionType_O", ADJUST_STAMP(1003));
+register_stamp_name("STAMP_llvmo__CompositeType_O", ADJUST_STAMP(1007));
+register_stamp_name("STAMP_llvmo__SequentialType_O", ADJUST_STAMP(1011));
+register_stamp_name("STAMP_llvmo__PointerType_O", ADJUST_STAMP(1015));
+register_stamp_name("STAMP_llvmo__ArrayType_O", ADJUST_STAMP(1019));
+register_stamp_name("STAMP_llvmo__VectorType_O", ADJUST_STAMP(1023));
+register_stamp_name("STAMP_llvmo__StructType_O", ADJUST_STAMP(1027));
+register_stamp_name("STAMP_llvmo__IntegerType_O", ADJUST_STAMP(1031));
+register_stamp_name("STAMP_llvmo__JITDylib_O", ADJUST_STAMP(1035));
+register_stamp_name("STAMP_llvmo__DIContext_O", ADJUST_STAMP(1039));
+register_stamp_name("STAMP_llvmo__TargetPassConfig_O", ADJUST_STAMP(1043));
+register_stamp_name("STAMP_llvmo__IRBuilderBase_O", ADJUST_STAMP(1047));
+register_stamp_name("STAMP_llvmo__IRBuilder_O", ADJUST_STAMP(1051));
+register_stamp_name("STAMP_llvmo__APFloat_O", ADJUST_STAMP(1055));
+register_stamp_name("STAMP_llvmo__APInt_O", ADJUST_STAMP(1059));
+register_stamp_name("STAMP_llvmo__DIBuilder_O", ADJUST_STAMP(1063));
+register_stamp_name("STAMP_llvmo__SectionedAddress_O", ADJUST_STAMP(1067));
+register_stamp_name("STAMP_llvmo__EngineBuilder_O", ADJUST_STAMP(1071));
+register_stamp_name("STAMP_llvmo__PassManagerBase_O", ADJUST_STAMP(1075));
+register_stamp_name("STAMP_llvmo__PassManager_O", ADJUST_STAMP(1079));
+register_stamp_name("STAMP_llvmo__FunctionPassManager_O", ADJUST_STAMP(1083));
+register_stamp_name("STAMP_llvmo__Metadata_O", ADJUST_STAMP(1087));
+register_stamp_name("STAMP_llvmo__MDNode_O", ADJUST_STAMP(1091));
+register_stamp_name("STAMP_llvmo__DINode_O", ADJUST_STAMP(1095));
+register_stamp_name("STAMP_llvmo__DIVariable_O", ADJUST_STAMP(1099));
+register_stamp_name("STAMP_llvmo__DILocalVariable_O", ADJUST_STAMP(1103));
+register_stamp_name("STAMP_llvmo__DIScope_O", ADJUST_STAMP(1107));
+register_stamp_name("STAMP_llvmo__DIFile_O", ADJUST_STAMP(1111));
+register_stamp_name("STAMP_llvmo__DIType_O", ADJUST_STAMP(1115));
+register_stamp_name("STAMP_llvmo__DICompositeType_O", ADJUST_STAMP(1119));
+register_stamp_name("STAMP_llvmo__DIDerivedType_O", ADJUST_STAMP(1123));
+register_stamp_name("STAMP_llvmo__DIBasicType_O", ADJUST_STAMP(1127));
+register_stamp_name("STAMP_llvmo__DISubroutineType_O", ADJUST_STAMP(1131));
+register_stamp_name("STAMP_llvmo__DILocalScope_O", ADJUST_STAMP(1135));
+register_stamp_name("STAMP_llvmo__DISubprogram_O", ADJUST_STAMP(1139));
+register_stamp_name("STAMP_llvmo__DILexicalBlockBase_O", ADJUST_STAMP(1143));
+register_stamp_name("STAMP_llvmo__DILexicalBlock_O", ADJUST_STAMP(1147));
+register_stamp_name("STAMP_llvmo__DICompileUnit_O", ADJUST_STAMP(1151));
+register_stamp_name("STAMP_llvmo__DIExpression_O", ADJUST_STAMP(1155));
+register_stamp_name("STAMP_llvmo__DILocation_O", ADJUST_STAMP(1159));
+register_stamp_name("STAMP_llvmo__ValueAsMetadata_O", ADJUST_STAMP(1163));
+register_stamp_name("STAMP_llvmo__MDString_O", ADJUST_STAMP(1167));
+register_stamp_name("STAMP_core__Test_O", ADJUST_STAMP(1171));
+register_stamp_name("STAMP_llvmo__Value_O", ADJUST_STAMP(1175));
+register_stamp_name("STAMP_llvmo__Argument_O", ADJUST_STAMP(1179));
+register_stamp_name("STAMP_llvmo__BasicBlock_O", ADJUST_STAMP(1183));
+register_stamp_name("STAMP_llvmo__MetadataAsValue_O", ADJUST_STAMP(1187));
+register_stamp_name("STAMP_llvmo__User_O", ADJUST_STAMP(1191));
+register_stamp_name("STAMP_llvmo__Instruction_O", ADJUST_STAMP(1195));
+register_stamp_name("STAMP_llvmo__UnaryInstruction_O", ADJUST_STAMP(1199));
+register_stamp_name("STAMP_llvmo__VAArgInst_O", ADJUST_STAMP(1203));
+register_stamp_name("STAMP_llvmo__LoadInst_O", ADJUST_STAMP(1207));
+register_stamp_name("STAMP_llvmo__AllocaInst_O", ADJUST_STAMP(1211));
+register_stamp_name("STAMP_llvmo__SwitchInst_O", ADJUST_STAMP(1215));
+register_stamp_name("STAMP_llvmo__AtomicRMWInst_O", ADJUST_STAMP(1219));
+register_stamp_name("STAMP_llvmo__LandingPadInst_O", ADJUST_STAMP(1223));
+register_stamp_name("STAMP_llvmo__StoreInst_O", ADJUST_STAMP(1227));
+register_stamp_name("STAMP_llvmo__UnreachableInst_O", ADJUST_STAMP(1231));
+register_stamp_name("STAMP_llvmo__ReturnInst_O", ADJUST_STAMP(1235));
+register_stamp_name("STAMP_llvmo__ResumeInst_O", ADJUST_STAMP(1239));
+register_stamp_name("STAMP_llvmo__AtomicCmpXchgInst_O", ADJUST_STAMP(1243));
+register_stamp_name("STAMP_llvmo__FenceInst_O", ADJUST_STAMP(1247));
+register_stamp_name("STAMP_llvmo__CallBase_O", ADJUST_STAMP(1251));
+register_stamp_name("STAMP_llvmo__CallInst_O", ADJUST_STAMP(1255));
+register_stamp_name("STAMP_llvmo__InvokeInst_O", ADJUST_STAMP(1259));
+register_stamp_name("STAMP_llvmo__PHINode_O", ADJUST_STAMP(1263));
+register_stamp_name("STAMP_llvmo__IndirectBrInst_O", ADJUST_STAMP(1267));
+register_stamp_name("STAMP_llvmo__BranchInst_O", ADJUST_STAMP(1271));
+register_stamp_name("STAMP_llvmo__Constant_O", ADJUST_STAMP(1275));
+register_stamp_name("STAMP_llvmo__GlobalValue_O", ADJUST_STAMP(1279));
+register_stamp_name("STAMP_llvmo__Function_O", ADJUST_STAMP(1283));
+register_stamp_name("STAMP_llvmo__GlobalVariable_O", ADJUST_STAMP(1287));
+register_stamp_name("STAMP_llvmo__BlockAddress_O", ADJUST_STAMP(1291));
+register_stamp_name("STAMP_llvmo__ConstantDataSequential_O", ADJUST_STAMP(1295));
+register_stamp_name("STAMP_llvmo__ConstantDataArray_O", ADJUST_STAMP(1299));
+register_stamp_name("STAMP_llvmo__ConstantStruct_O", ADJUST_STAMP(1303));
+register_stamp_name("STAMP_llvmo__ConstantInt_O", ADJUST_STAMP(1307));
+register_stamp_name("STAMP_llvmo__ConstantFP_O", ADJUST_STAMP(1311));
+register_stamp_name("STAMP_llvmo__ConstantExpr_O", ADJUST_STAMP(1315));
+register_stamp_name("STAMP_llvmo__ConstantPointerNull_O", ADJUST_STAMP(1319));
+register_stamp_name("STAMP_llvmo__UndefValue_O", ADJUST_STAMP(1323));
+register_stamp_name("STAMP_llvmo__ConstantArray_O", ADJUST_STAMP(1327));
+register_stamp_name("STAMP_llvmo__TargetMachine_O", ADJUST_STAMP(1331));
+register_stamp_name("STAMP_llvmo__LLVMTargetMachine_O", ADJUST_STAMP(1335));
+register_stamp_name("STAMP_llvmo__ThreadSafeContext_O", ADJUST_STAMP(1339));
+register_stamp_name("STAMP_llvmo__NamedMDNode_O", ADJUST_STAMP(1343));
+register_stamp_name("STAMP_llvmo__Triple_O", ADJUST_STAMP(1347));
+register_stamp_name("STAMP_llvmo__DWARFContext_O", ADJUST_STAMP(1351));
+register_stamp_name("STAMP_llvmo__TargetOptions_O", ADJUST_STAMP(1355));
 register_stamp_name("STAMP_llvmo__LLVMContext_O", ADJUST_STAMP(1359));
 register_stamp_name("STAMP_llvmo__PassManagerBuilder_O", ADJUST_STAMP(1363));
 register_stamp_name("STAMP_llvmo__Module_O", ADJUST_STAMP(1367));
@@ -2156,8 +2156,8 @@ template <typename FP> struct Cast<core::MDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_size_t_O val -> 263
-      return (kindVal == ISA_ADJUST_STAMP(263));
+    // IsA-stamp-range core::MDArray_size_t_O val -> 267
+      return (kindVal == ISA_ADJUST_STAMP(267));
   };
 };
 // STAMP_core__SimpleVector_byte2_t_O
@@ -2165,8 +2165,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte2_t_O val -> 859
-      return (kindVal == ISA_ADJUST_STAMP(859));
+    // IsA-stamp-range core::SimpleVector_byte2_t_O val -> 863
+      return (kindVal == ISA_ADJUST_STAMP(863));
   };
 };
 // STAMP_gctools__GCVector_moveable_float_
@@ -2183,8 +2183,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_fixnum_O val -> 475
-      return (kindVal == ISA_ADJUST_STAMP(475));
+    // IsA-stamp-range core::SimpleMDArray_fixnum_O val -> 479
+      return (kindVal == ISA_ADJUST_STAMP(479));
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_short_
@@ -2201,8 +2201,8 @@ template <typename FP> struct Cast<core::ComplexVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_O low high --> 543 707 
-      return ((ISA_ADJUST_STAMP(543) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(707)));
+    // IsA-stamp-range core::ComplexVector_O low high --> 547 711 
+      return ((ISA_ADJUST_STAMP(547) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(711)));
   };
 };
 // STAMP_core__SimpleMDArray_int32_t_O
@@ -2210,8 +2210,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int32_t_O val -> 419
-      return (kindVal == ISA_ADJUST_STAMP(419));
+    // IsA-stamp-range core::SimpleMDArray_int32_t_O val -> 423
+      return (kindVal == ISA_ADJUST_STAMP(423));
   };
 };
 // STAMP_core__Integer_O
@@ -2255,8 +2255,8 @@ template <typename FP> struct Cast<mp::Process_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mp::Process_O val -> 191
-      return (kindVal == ISA_ADJUST_STAMP(191));
+    // IsA-stamp-range mp::Process_O val -> 195
+      return (kindVal == ISA_ADJUST_STAMP(195));
   };
 };
 // STAMP_core__Record_O
@@ -2282,8 +2282,8 @@ template <typename FP> struct Cast<core::MDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArrayT_O val -> 343
-      return (kindVal == ISA_ADJUST_STAMP(343));
+    // IsA-stamp-range core::MDArrayT_O val -> 347
+      return (kindVal == ISA_ADJUST_STAMP(347));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__T_O___
@@ -2336,8 +2336,8 @@ template <typename FP> struct Cast<core::MDArray_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_float_O val -> 255
-      return (kindVal == ISA_ADJUST_STAMP(255));
+    // IsA-stamp-range core::MDArray_float_O val -> 259
+      return (kindVal == ISA_ADJUST_STAMP(259));
   };
 };
 // STAMP_core__SourcePosInfo_O
@@ -2354,8 +2354,8 @@ template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BranchInst_O val -> 1267
-      return (kindVal == ISA_ADJUST_STAMP(1267));
+    // IsA-stamp-range llvmo::BranchInst_O val -> 1271
+      return (kindVal == ISA_ADJUST_STAMP(1271));
   };
 };
 // STAMP_llvmo__AllocaInst_O
@@ -2363,8 +2363,8 @@ template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AllocaInst_O val -> 1207
-      return (kindVal == ISA_ADJUST_STAMP(1207));
+    // IsA-stamp-range llvmo::AllocaInst_O val -> 1211
+      return (kindVal == ISA_ADJUST_STAMP(1211));
   };
 };
 // STAMP_core__StandardClassCreator_O
@@ -2381,8 +2381,8 @@ template <typename FP> struct Cast<core::ComplexVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_float_O val -> 607
-      return (kindVal == ISA_ADJUST_STAMP(607));
+    // IsA-stamp-range core::ComplexVector_float_O val -> 611
+      return (kindVal == ISA_ADJUST_STAMP(611));
   };
 };
 // STAMP_core__ComplexVector_byte8_t_O
@@ -2390,8 +2390,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte8_t_O val -> 647
-      return (kindVal == ISA_ADJUST_STAMP(647));
+    // IsA-stamp-range core::ComplexVector_byte8_t_O val -> 651
+      return (kindVal == ISA_ADJUST_STAMP(651));
   };
 };
 // STAMP_core__HashTable_O
@@ -2435,8 +2435,8 @@ template <typename FP> struct Cast<core::SimpleVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_size_t_O val -> 779
-      return (kindVal == ISA_ADJUST_STAMP(779));
+    // IsA-stamp-range core::SimpleVector_size_t_O val -> 783
+      return (kindVal == ISA_ADJUST_STAMP(783));
   };
 };
 // STAMP_llvmo__DIScope_O
@@ -2444,8 +2444,8 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIScope_O low high --> 1103 1147 
-      return ((ISA_ADJUST_STAMP(1103) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
+    // IsA-stamp-range llvmo::DIScope_O low high --> 1107 1151 
+      return ((ISA_ADJUST_STAMP(1107) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1151)));
   };
 };
 // STAMP_core__FileStatus_O
@@ -2462,8 +2462,8 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 1263
-      return (kindVal == ISA_ADJUST_STAMP(1263));
+    // IsA-stamp-range llvmo::IndirectBrInst_O val -> 1267
+      return (kindVal == ISA_ADJUST_STAMP(1267));
   };
 };
 // STAMP_llvmo__ConstantArray_O
@@ -2471,8 +2471,8 @@ template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantArray_O val -> 1323
-      return (kindVal == ISA_ADJUST_STAMP(1323));
+    // IsA-stamp-range llvmo::ConstantArray_O val -> 1327
+      return (kindVal == ISA_ADJUST_STAMP(1327));
   };
 };
 // STAMP_llvmo__PHINode_O
@@ -2480,8 +2480,8 @@ template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PHINode_O val -> 1259
-      return (kindVal == ISA_ADJUST_STAMP(1259));
+    // IsA-stamp-range llvmo::PHINode_O val -> 1263
+      return (kindVal == ISA_ADJUST_STAMP(1263));
   };
 };
 // STAMP_core__Package_O
@@ -2498,8 +2498,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArrayBaseChar_O val -> 491
-      return (kindVal == ISA_ADJUST_STAMP(491));
+    // IsA-stamp-range core::SimpleMDArrayBaseChar_O val -> 495
+      return (kindVal == ISA_ADJUST_STAMP(495));
   };
 };
 // STAMP_llvmo__DILocation_O
@@ -2507,8 +2507,8 @@ template <typename FP> struct Cast<llvmo::DILocation_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocation_O val -> 1155
-      return (kindVal == ISA_ADJUST_STAMP(1155));
+    // IsA-stamp-range llvmo::DILocation_O val -> 1159
+      return (kindVal == ISA_ADJUST_STAMP(1159));
   };
 };
 // STAMP_core__SimpleMDArray_O
@@ -2516,8 +2516,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_O low high --> 363 523 
-      return ((ISA_ADJUST_STAMP(363) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(523)));
+    // IsA-stamp-range core::SimpleMDArray_O low high --> 367 527 
+      return ((ISA_ADJUST_STAMP(367) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(527)));
   };
 };
 // STAMP_core__Stream_O
@@ -2552,8 +2552,8 @@ template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MDString_O val -> 1163
-      return (kindVal == ISA_ADJUST_STAMP(1163));
+    // IsA-stamp-range llvmo::MDString_O val -> 1167
+      return (kindVal == ISA_ADJUST_STAMP(1167));
   };
 };
 // STAMP_core__ShortFloat_O
@@ -2588,8 +2588,8 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DICompileUnit_O val -> 1147
-      return (kindVal == ISA_ADJUST_STAMP(1147));
+    // IsA-stamp-range llvmo::DICompileUnit_O val -> 1151
+      return (kindVal == ISA_ADJUST_STAMP(1151));
   };
 };
 // STAMP_core__AbstractSimpleVector_O
@@ -2597,8 +2597,8 @@ template <typename FP> struct Cast<core::AbstractSimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::AbstractSimpleVector_O low high --> 711 875 
-      return ((ISA_ADJUST_STAMP(711) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(875)));
+    // IsA-stamp-range core::AbstractSimpleVector_O low high --> 715 879 
+      return ((ISA_ADJUST_STAMP(715) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(879)));
   };
 };
 // STAMP_core__SimpleMDArray_byte16_t_O
@@ -2606,8 +2606,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte16_t_O val -> 483
-      return (kindVal == ISA_ADJUST_STAMP(483));
+    // IsA-stamp-range core::SimpleMDArray_byte16_t_O val -> 487
+      return (kindVal == ISA_ADJUST_STAMP(487));
   };
 };
 // STAMP_core__Pathname_O
@@ -2624,8 +2624,8 @@ template <typename FP> struct Cast<core::Str8Ns_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Str8Ns_O val -> 675
-      return (kindVal == ISA_ADJUST_STAMP(675));
+    // IsA-stamp-range core::Str8Ns_O val -> 679
+      return (kindVal == ISA_ADJUST_STAMP(679));
   };
 };
 // STAMP_llvmo__FunctionPass_O
@@ -2633,8 +2633,8 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionPass_O val -> 979
-      return (kindVal == ISA_ADJUST_STAMP(979));
+    // IsA-stamp-range llvmo::FunctionPass_O val -> 983
+      return (kindVal == ISA_ADJUST_STAMP(983));
   };
 };
 // STAMP_core__SimpleVector_byte4_t_O
@@ -2642,8 +2642,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte4_t_O val -> 875
-      return (kindVal == ISA_ADJUST_STAMP(875));
+    // IsA-stamp-range core::SimpleVector_byte4_t_O val -> 879
+      return (kindVal == ISA_ADJUST_STAMP(879));
   };
 };
 // STAMP_llvmo__UndefValue_O
@@ -2651,8 +2651,8 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UndefValue_O val -> 1319
-      return (kindVal == ISA_ADJUST_STAMP(1319));
+    // IsA-stamp-range llvmo::UndefValue_O val -> 1323
+      return (kindVal == ISA_ADJUST_STAMP(1323));
   };
 };
 // STAMP_gctools__GCBitUnitArray_moveable_2_1_
@@ -2678,8 +2678,8 @@ template <typename FP> struct Cast<llvmo::CallBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::CallBase_O low high --> 1247 1255 
-      return ((ISA_ADJUST_STAMP(1247) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1255)));
+    // IsA-stamp-range llvmo::CallBase_O low high --> 1251 1259 
+      return ((ISA_ADJUST_STAMP(1251) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1259)));
   };
 };
 // STAMP_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__
@@ -2714,8 +2714,8 @@ template <typename FP> struct Cast<mp::SharedMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mp::SharedMutex_O val -> 187
-      return (kindVal == ISA_ADJUST_STAMP(187));
+    // IsA-stamp-range mp::SharedMutex_O val -> 191
+      return (kindVal == ISA_ADJUST_STAMP(191));
   };
 };
 // STAMP_gctools__GCBitUnitArray_moveable_1_0_
@@ -2786,8 +2786,8 @@ template <typename FP> struct Cast<core::ComplexVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_double_O val -> 551
-      return (kindVal == ISA_ADJUST_STAMP(551));
+    // IsA-stamp-range core::ComplexVector_double_O val -> 555
+      return (kindVal == ISA_ADJUST_STAMP(555));
   };
 };
 // STAMP_core__StrWNs_O
@@ -2795,8 +2795,8 @@ template <typename FP> struct Cast<core::StrWNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StrWNs_O val -> 683
-      return (kindVal == ISA_ADJUST_STAMP(683));
+    // IsA-stamp-range core::StrWNs_O val -> 687
+      return (kindVal == ISA_ADJUST_STAMP(687));
   };
 };
 // STAMP_core__EchoStream_O
@@ -2822,8 +2822,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArrayBit_O val -> 507
-      return (kindVal == ISA_ADJUST_STAMP(507));
+    // IsA-stamp-range core::SimpleMDArrayBit_O val -> 511
+      return (kindVal == ISA_ADJUST_STAMP(511));
   };
 };
 // STAMP_core__MDArrayBit_O
@@ -2831,8 +2831,8 @@ template <typename FP> struct Cast<core::MDArrayBit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArrayBit_O val -> 351
-      return (kindVal == ISA_ADJUST_STAMP(351));
+    // IsA-stamp-range core::MDArrayBit_O val -> 355
+      return (kindVal == ISA_ADJUST_STAMP(355));
   };
 };
 // STAMP_core__ComplexVector_byte16_t_O
@@ -2840,8 +2840,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte16_t_O val -> 599
-      return (kindVal == ISA_ADJUST_STAMP(599));
+    // IsA-stamp-range core::ComplexVector_byte16_t_O val -> 603
+      return (kindVal == ISA_ADJUST_STAMP(603));
   };
 };
 // STAMP_core__AtomicFixnumHolder_O
@@ -2858,8 +2858,8 @@ template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocalScope_O low high --> 1131 1143 
-      return ((ISA_ADJUST_STAMP(1131) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1143)));
+    // IsA-stamp-range llvmo::DILocalScope_O low high --> 1135 1147 
+      return ((ISA_ADJUST_STAMP(1135) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
   };
 };
 // STAMP_core__ComplexVector_int2_t_O
@@ -2867,8 +2867,8 @@ template <typename FP> struct Cast<core::ComplexVector_int2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int2_t_O val -> 583
-      return (kindVal == ISA_ADJUST_STAMP(583));
+    // IsA-stamp-range core::ComplexVector_int2_t_O val -> 587
+      return (kindVal == ISA_ADJUST_STAMP(587));
   };
 };
 // STAMP_gctools__GCBitUnitArray_moveable_2_0_
@@ -2894,8 +2894,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 1143
-      return (kindVal == ISA_ADJUST_STAMP(1143));
+    // IsA-stamp-range llvmo::DILexicalBlock_O val -> 1147
+      return (kindVal == ISA_ADJUST_STAMP(1147));
   };
 };
 // STAMP_llvmo__DITypeRefArray_O
@@ -2903,8 +2903,8 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DITypeRefArray_O val -> 183
-      return (kindVal == ISA_ADJUST_STAMP(183));
+    // IsA-stamp-range llvmo::DITypeRefArray_O val -> 187
+      return (kindVal == ISA_ADJUST_STAMP(187));
   };
 };
 // STAMP_mp__Mutex_O
@@ -2912,8 +2912,8 @@ template <typename FP> struct Cast<mp::Mutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mp::Mutex_O low high --> 175 179 
-      return ((ISA_ADJUST_STAMP(175) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(179)));
+    // IsA-stamp-range mp::Mutex_O low high --> 179 183 
+      return ((ISA_ADJUST_STAMP(179) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(183)));
   };
 };
 // STAMP_core__RecursiveDirectoryIterator_O
@@ -2921,8 +2921,8 @@ template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::RecursiveDirectoryIterator_O val -> 207
-      return (kindVal == ISA_ADJUST_STAMP(207));
+    // IsA-stamp-range core::RecursiveDirectoryIterator_O val -> 211
+      return (kindVal == ISA_ADJUST_STAMP(211));
   };
 };
 // STAMP_core__StringInputStream_O
@@ -2939,8 +2939,8 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ModulePass_O low high --> 967 975 
-      return ((ISA_ADJUST_STAMP(967) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(975)));
+    // IsA-stamp-range llvmo::ModulePass_O low high --> 971 979 
+      return ((ISA_ADJUST_STAMP(971) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(979)));
   };
 };
 // STAMP_core__FunctionFrame_O
@@ -2957,8 +2957,8 @@ template <typename FP> struct Cast<llvmo::DILocalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILocalVariable_O val -> 1099
-      return (kindVal == ISA_ADJUST_STAMP(1099));
+    // IsA-stamp-range llvmo::DILocalVariable_O val -> 1103
+      return (kindVal == ISA_ADJUST_STAMP(1103));
   };
 };
 // STAMP_core__LongFloat_O
@@ -2975,8 +2975,8 @@ template <typename FP> struct Cast<core::ComplexVector_int4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int4_t_O val -> 623
-      return (kindVal == ISA_ADJUST_STAMP(623));
+    // IsA-stamp-range core::ComplexVector_int4_t_O val -> 627
+      return (kindVal == ISA_ADJUST_STAMP(627));
   };
 };
 // STAMP_llvmo__TargetLibraryInfoWrapperPass_O
@@ -2984,8 +2984,8 @@ template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 975
-      return (kindVal == ISA_ADJUST_STAMP(975));
+    // IsA-stamp-range llvmo::TargetLibraryInfoWrapperPass_O val -> 979
+      return (kindVal == ISA_ADJUST_STAMP(979));
   };
 };
 // STAMP_llvmo__User_O
@@ -2993,8 +2993,8 @@ template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::User_O low high --> 1187 1323 
-      return ((ISA_ADJUST_STAMP(1187) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
+    // IsA-stamp-range llvmo::User_O low high --> 1191 1327 
+      return ((ISA_ADJUST_STAMP(1191) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1327)));
   };
 };
 // STAMP_core__MDArray_int16_t_O
@@ -3002,8 +3002,8 @@ template <typename FP> struct Cast<core::MDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int16_t_O val -> 223
-      return (kindVal == ISA_ADJUST_STAMP(223));
+    // IsA-stamp-range core::MDArray_int16_t_O val -> 227
+      return (kindVal == ISA_ADJUST_STAMP(227));
   };
 };
 // STAMP_core__ComplexVector_T_O
@@ -3011,8 +3011,8 @@ template <typename FP> struct Cast<core::ComplexVector_T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_T_O val -> 575
-      return (kindVal == ISA_ADJUST_STAMP(575));
+    // IsA-stamp-range core::ComplexVector_T_O val -> 579
+      return (kindVal == ISA_ADJUST_STAMP(579));
   };
 };
 // STAMP_llvmo__FenceInst_O
@@ -3020,8 +3020,8 @@ template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FenceInst_O val -> 1243
-      return (kindVal == ISA_ADJUST_STAMP(1243));
+    // IsA-stamp-range llvmo::FenceInst_O val -> 1247
+      return (kindVal == ISA_ADJUST_STAMP(1247));
   };
 };
 // STAMP_llvmo__AtomicCmpXchgInst_O
@@ -3029,8 +3029,8 @@ template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 1239
-      return (kindVal == ISA_ADJUST_STAMP(1239));
+    // IsA-stamp-range llvmo::AtomicCmpXchgInst_O val -> 1243
+      return (kindVal == ISA_ADJUST_STAMP(1243));
   };
 };
 // STAMP_core__ValueFrame_O
@@ -3047,8 +3047,8 @@ template <typename FP> struct Cast<core::ComplexVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int8_t_O val -> 559
-      return (kindVal == ISA_ADJUST_STAMP(559));
+    // IsA-stamp-range core::ComplexVector_int8_t_O val -> 563
+      return (kindVal == ISA_ADJUST_STAMP(563));
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_long_
@@ -3065,8 +3065,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int4_t_O val -> 451
-      return (kindVal == ISA_ADJUST_STAMP(451));
+    // IsA-stamp-range core::SimpleMDArray_int4_t_O val -> 455
+      return (kindVal == ISA_ADJUST_STAMP(455));
   };
 };
 // STAMP_core__SimpleVector_int32_t_O
@@ -3074,8 +3074,8 @@ template <typename FP> struct Cast<core::SimpleVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int32_t_O val -> 867
-      return (kindVal == ISA_ADJUST_STAMP(867));
+    // IsA-stamp-range core::SimpleVector_int32_t_O val -> 871
+      return (kindVal == ISA_ADJUST_STAMP(871));
   };
 };
 // STAMP_core__SimpleMDArray_double_O
@@ -3083,8 +3083,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_double_O val -> 379
-      return (kindVal == ISA_ADJUST_STAMP(379));
+    // IsA-stamp-range core::SimpleMDArray_double_O val -> 383
+      return (kindVal == ISA_ADJUST_STAMP(383));
   };
 };
 // STAMP_core__Complex_O
@@ -3101,8 +3101,8 @@ template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 1315
-      return (kindVal == ISA_ADJUST_STAMP(1315));
+    // IsA-stamp-range llvmo::ConstantPointerNull_O val -> 1319
+      return (kindVal == ISA_ADJUST_STAMP(1319));
   };
 };
 // STAMP_llvmo__VectorType_O
@@ -3110,8 +3110,8 @@ template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::VectorType_O val -> 1019
-      return (kindVal == ISA_ADJUST_STAMP(1019));
+    // IsA-stamp-range llvmo::VectorType_O val -> 1023
+      return (kindVal == ISA_ADJUST_STAMP(1023));
   };
 };
 // STAMP_llvmo__ValueAsMetadata_O
@@ -3119,8 +3119,8 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 1159
-      return (kindVal == ISA_ADJUST_STAMP(1159));
+    // IsA-stamp-range llvmo::ValueAsMetadata_O val -> 1163
+      return (kindVal == ISA_ADJUST_STAMP(1163));
   };
 };
 // STAMP_llvmo__ConstantExpr_O
@@ -3128,8 +3128,8 @@ template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantExpr_O val -> 1311
-      return (kindVal == ISA_ADJUST_STAMP(1311));
+    // IsA-stamp-range llvmo::ConstantExpr_O val -> 1315
+      return (kindVal == ISA_ADJUST_STAMP(1315));
   };
 };
 // STAMP_llvmo__StructType_O
@@ -3137,8 +3137,8 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StructType_O val -> 1023
-      return (kindVal == ISA_ADJUST_STAMP(1023));
+    // IsA-stamp-range llvmo::StructType_O val -> 1027
+      return (kindVal == ISA_ADJUST_STAMP(1027));
   };
 };
 // STAMP_core__RandomState_O
@@ -3155,8 +3155,8 @@ template <typename FP> struct Cast<core::ComplexVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int16_t_O val -> 615
-      return (kindVal == ISA_ADJUST_STAMP(615));
+    // IsA-stamp-range core::ComplexVector_int16_t_O val -> 619
+      return (kindVal == ISA_ADJUST_STAMP(619));
   };
 };
 // STAMP_core__SimpleMDArray_float_O
@@ -3164,8 +3164,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_float_O val -> 427
-      return (kindVal == ISA_ADJUST_STAMP(427));
+    // IsA-stamp-range core::SimpleMDArray_float_O val -> 431
+      return (kindVal == ISA_ADJUST_STAMP(431));
   };
 };
 // STAMP_llvmo__Target_O
@@ -3182,8 +3182,8 @@ template <typename FP> struct Cast<core::SimpleVector_int2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int2_t_O val -> 803
-      return (kindVal == ISA_ADJUST_STAMP(803));
+    // IsA-stamp-range core::SimpleVector_int2_t_O val -> 807
+      return (kindVal == ISA_ADJUST_STAMP(807));
   };
 };
 // STAMP_core__MDArray_byte64_t_O
@@ -3191,8 +3191,8 @@ template <typename FP> struct Cast<core::MDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte64_t_O val -> 327
-      return (kindVal == ISA_ADJUST_STAMP(327));
+    // IsA-stamp-range core::MDArray_byte64_t_O val -> 331
+      return (kindVal == ISA_ADJUST_STAMP(331));
   };
 };
 // STAMP_core__SimpleVector_fixnum_O
@@ -3200,8 +3200,8 @@ template <typename FP> struct Cast<core::SimpleVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 819
-      return (kindVal == ISA_ADJUST_STAMP(819));
+    // IsA-stamp-range core::SimpleVector_fixnum_O val -> 823
+      return (kindVal == ISA_ADJUST_STAMP(823));
   };
 };
 // STAMP_core__SimpleVector_byte32_t_O
@@ -3209,8 +3209,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 771
-      return (kindVal == ISA_ADJUST_STAMP(771));
+    // IsA-stamp-range core::SimpleVector_byte32_t_O val -> 775
+      return (kindVal == ISA_ADJUST_STAMP(775));
   };
 };
 // STAMP_core__SingleDispatchGenericFunctionClosure_O
@@ -3254,8 +3254,8 @@ template <typename FP> struct Cast<llvmo::DIExpression_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIExpression_O val -> 1151
-      return (kindVal == ISA_ADJUST_STAMP(1151));
+    // IsA-stamp-range llvmo::DIExpression_O val -> 1155
+      return (kindVal == ISA_ADJUST_STAMP(1155));
   };
 };
 // STAMP_llvmo__Module_O
@@ -3290,8 +3290,8 @@ template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::InvokeInst_O val -> 1255
-      return (kindVal == ISA_ADJUST_STAMP(1255));
+    // IsA-stamp-range llvmo::InvokeInst_O val -> 1259
+      return (kindVal == ISA_ADJUST_STAMP(1259));
   };
 };
 // STAMP_core__StrNs_O
@@ -3299,8 +3299,8 @@ template <typename FP> struct Cast<core::StrNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::StrNs_O low high --> 667 683 
-      return ((ISA_ADJUST_STAMP(667) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(683)));
+    // IsA-stamp-range core::StrNs_O low high --> 671 687 
+      return ((ISA_ADJUST_STAMP(671) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(687)));
   };
 };
 // STAMP_core__UnwindProtectEnvironment_O
@@ -3326,8 +3326,8 @@ template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::CallInst_O val -> 1251
-      return (kindVal == ISA_ADJUST_STAMP(1251));
+    // IsA-stamp-range llvmo::CallInst_O val -> 1255
+      return (kindVal == ISA_ADJUST_STAMP(1255));
   };
 };
 // STAMP_llvmo__FunctionPassManager_O
@@ -3335,8 +3335,8 @@ template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 1079
-      return (kindVal == ISA_ADJUST_STAMP(1079));
+    // IsA-stamp-range llvmo::FunctionPassManager_O val -> 1083
+      return (kindVal == ISA_ADJUST_STAMP(1083));
   };
 };
 // STAMP_core__DoubleFloat_O
@@ -3398,8 +3398,8 @@ template <typename FP> struct Cast<core::MDArray_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int32_t_O val -> 239
-      return (kindVal == ISA_ADJUST_STAMP(239));
+    // IsA-stamp-range core::MDArray_int32_t_O val -> 243
+      return (kindVal == ISA_ADJUST_STAMP(243));
   };
 };
 // STAMP_asttooling__AsttoolingExposer_O
@@ -3407,8 +3407,8 @@ template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 923
-      return (kindVal == ISA_ADJUST_STAMP(923));
+    // IsA-stamp-range asttooling::AsttoolingExposer_O val -> 927
+      return (kindVal == ISA_ADJUST_STAMP(927));
   };
 };
 // STAMP_llvmo__IntegerType_O
@@ -3416,8 +3416,8 @@ template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IntegerType_O val -> 1027
-      return (kindVal == ISA_ADJUST_STAMP(1027));
+    // IsA-stamp-range llvmo::IntegerType_O val -> 1031
+      return (kindVal == ISA_ADJUST_STAMP(1031));
   };
 };
 // STAMP_core__MDArray_int64_t_O
@@ -3425,8 +3425,8 @@ template <typename FP> struct Cast<core::MDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int64_t_O val -> 279
-      return (kindVal == ISA_ADJUST_STAMP(279));
+    // IsA-stamp-range core::MDArray_int64_t_O val -> 283
+      return (kindVal == ISA_ADJUST_STAMP(283));
   };
 };
 // STAMP_core__SimpleMDArray_size_t_O
@@ -3434,8 +3434,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_size_t_O val -> 443
-      return (kindVal == ISA_ADJUST_STAMP(443));
+    // IsA-stamp-range core::SimpleMDArray_size_t_O val -> 447
+      return (kindVal == ISA_ADJUST_STAMP(447));
   };
 };
 // STAMP_core__SmallMultimap_O
@@ -3470,8 +3470,8 @@ template <typename FP> struct Cast<core::MDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int8_t_O val -> 231
-      return (kindVal == ISA_ADJUST_STAMP(231));
+    // IsA-stamp-range core::MDArray_int8_t_O val -> 235
+      return (kindVal == ISA_ADJUST_STAMP(235));
   };
 };
 // STAMP_llvmo__ConstantFP_O
@@ -3479,8 +3479,8 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantFP_O val -> 1307
-      return (kindVal == ISA_ADJUST_STAMP(1307));
+    // IsA-stamp-range llvmo::ConstantFP_O val -> 1311
+      return (kindVal == ISA_ADJUST_STAMP(1311));
   };
 };
 // STAMP_core__Cons_O
@@ -3515,8 +3515,8 @@ template <typename FP> struct Cast<core::MDArray_int4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int4_t_O val -> 531
-      return (kindVal == ISA_ADJUST_STAMP(531));
+    // IsA-stamp-range core::MDArray_int4_t_O val -> 535
+      return (kindVal == ISA_ADJUST_STAMP(535));
   };
 };
 // STAMP_core__WeakKeyHashTable_O
@@ -3542,8 +3542,8 @@ template <typename FP> struct Cast<core::MDArrayBaseChar_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArrayBaseChar_O val -> 319
-      return (kindVal == ISA_ADJUST_STAMP(319));
+    // IsA-stamp-range core::MDArrayBaseChar_O val -> 323
+      return (kindVal == ISA_ADJUST_STAMP(323));
   };
 };
 // STAMP_core__UserData_O
@@ -3560,8 +3560,8 @@ template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ExternalObject_O low high --> 959 1375 
-      return ((ISA_ADJUST_STAMP(959) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1375)));
+    // IsA-stamp-range core::ExternalObject_O low high --> 963 1375 
+      return ((ISA_ADJUST_STAMP(963) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1375)));
   };
 };
 // STAMP_llvmo__DINode_O
@@ -3569,8 +3569,8 @@ template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DINode_O low high --> 1091 1147 
-      return ((ISA_ADJUST_STAMP(1091) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
+    // IsA-stamp-range llvmo::DINode_O low high --> 1095 1151 
+      return ((ISA_ADJUST_STAMP(1095) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1151)));
   };
 };
 // STAMP_llvmo__GlobalVariable_O
@@ -3578,8 +3578,8 @@ template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::GlobalVariable_O val -> 1283
-      return (kindVal == ISA_ADJUST_STAMP(1283));
+    // IsA-stamp-range llvmo::GlobalVariable_O val -> 1287
+      return (kindVal == ISA_ADJUST_STAMP(1287));
   };
 };
 // STAMP_core__BroadcastStream_O
@@ -3614,8 +3614,8 @@ template <typename FP> struct Cast<llvmo::ObjectFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ObjectFile_O val -> 1355
-      return (kindVal == ISA_ADJUST_STAMP(1355));
+    // IsA-stamp-range llvmo::ObjectFile_O val -> 175
+      return (kindVal == ISA_ADJUST_STAMP(175));
   };
 };
 // STAMP_core__Closure_O
@@ -3632,8 +3632,8 @@ template <typename FP> struct Cast<core::ComplexVector_size_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_size_t_O val -> 631
-      return (kindVal == ISA_ADJUST_STAMP(631));
+    // IsA-stamp-range core::ComplexVector_size_t_O val -> 635
+      return (kindVal == ISA_ADJUST_STAMP(635));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__RequiredArgument_
@@ -3659,8 +3659,8 @@ template <typename FP> struct Cast<mpip::Mpi_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mpip::Mpi_O val -> 955
-      return (kindVal == ISA_ADJUST_STAMP(955));
+    // IsA-stamp-range mpip::Mpi_O val -> 959
+      return (kindVal == ISA_ADJUST_STAMP(959));
   };
 };
 // STAMP_llvmo__DINodeArray_O
@@ -3686,8 +3686,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 1295
-      return (kindVal == ISA_ADJUST_STAMP(1295));
+    // IsA-stamp-range llvmo::ConstantDataArray_O val -> 1299
+      return (kindVal == ISA_ADJUST_STAMP(1299));
   };
 };
 // STAMP_core__SmallMap_O
@@ -3695,8 +3695,8 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SmallMap_O val -> 951
-      return (kindVal == ISA_ADJUST_STAMP(951));
+    // IsA-stamp-range core::SmallMap_O val -> 955
+      return (kindVal == ISA_ADJUST_STAMP(955));
   };
 };
 // STAMP_core__Instance_O
@@ -3704,8 +3704,8 @@ template <typename FP> struct Cast<core::Instance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Instance_O low high --> 937 945 
-      if ((ISA_ADJUST_STAMP(937) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(945))) return true;
+    // IsA-stamp-range core::Instance_O low high --> 941 949 
+      if ((ISA_ADJUST_STAMP(941) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(949))) return true;
       return (dynamic_cast<core::Instance_O*>(client)!=NULL);
   };
 };
@@ -3714,8 +3714,8 @@ template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetOptions_O val -> 1351
-      return (kindVal == ISA_ADJUST_STAMP(1351));
+    // IsA-stamp-range llvmo::TargetOptions_O val -> 1355
+      return (kindVal == ISA_ADJUST_STAMP(1355));
   };
 };
 // STAMP_clasp_ffi__ForeignTypeSpec_O
@@ -3723,8 +3723,8 @@ template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clasp_ffi::ForeignTypeSpec_O val -> 935
-      return (kindVal == ISA_ADJUST_STAMP(935));
+    // IsA-stamp-range clasp_ffi::ForeignTypeSpec_O val -> 939
+      return (kindVal == ISA_ADJUST_STAMP(939));
   };
 };
 // STAMP_core__Unused_dummy_O
@@ -3741,8 +3741,8 @@ template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::PosixTimeDuration_O val -> 931
-      return (kindVal == ISA_ADJUST_STAMP(931));
+    // IsA-stamp-range core::PosixTimeDuration_O val -> 935
+      return (kindVal == ISA_ADJUST_STAMP(935));
   };
 };
 // STAMP_llvmo__DWARFContext_O
@@ -3750,8 +3750,8 @@ template <typename FP> struct Cast<llvmo::DWARFContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DWARFContext_O val -> 1347
-      return (kindVal == ISA_ADJUST_STAMP(1347));
+    // IsA-stamp-range llvmo::DWARFContext_O val -> 1351
+      return (kindVal == ISA_ADJUST_STAMP(1351));
   };
 };
 // STAMP_core__HashTableEqual_O
@@ -3768,8 +3768,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte64_t_O val -> 499
-      return (kindVal == ISA_ADJUST_STAMP(499));
+    // IsA-stamp-range core::SimpleMDArray_byte64_t_O val -> 503
+      return (kindVal == ISA_ADJUST_STAMP(503));
   };
 };
 // STAMP_llvmo__Triple_O
@@ -3777,8 +3777,8 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Triple_O val -> 1343
-      return (kindVal == ISA_ADJUST_STAMP(1343));
+    // IsA-stamp-range llvmo::Triple_O val -> 1347
+      return (kindVal == ISA_ADJUST_STAMP(1347));
   };
 };
 // STAMP_core__BitVectorNs_O
@@ -3786,8 +3786,8 @@ template <typename FP> struct Cast<core::BitVectorNs_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::BitVectorNs_O val -> 663
-      return (kindVal == ISA_ADJUST_STAMP(663));
+    // IsA-stamp-range core::BitVectorNs_O val -> 667
+      return (kindVal == ISA_ADJUST_STAMP(667));
   };
 };
 // STAMP_core__CoreExposer_O
@@ -3795,8 +3795,8 @@ template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CoreExposer_O val -> 919
-      return (kindVal == ISA_ADJUST_STAMP(919));
+    // IsA-stamp-range core::CoreExposer_O val -> 923
+      return (kindVal == ISA_ADJUST_STAMP(923));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__KeywordArgument_
@@ -3813,8 +3813,8 @@ template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::NamedMDNode_O val -> 1339
-      return (kindVal == ISA_ADJUST_STAMP(1339));
+    // IsA-stamp-range llvmo::NamedMDNode_O val -> 1343
+      return (kindVal == ISA_ADJUST_STAMP(1343));
   };
 };
 // STAMP_core__SimpleVector_byte16_t_O
@@ -3822,8 +3822,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte16_t_O val -> 747
-      return (kindVal == ISA_ADJUST_STAMP(747));
+    // IsA-stamp-range core::SimpleVector_byte16_t_O val -> 751
+      return (kindVal == ISA_ADJUST_STAMP(751));
   };
 };
 // STAMP_llvmo__ThreadSafeContext_O
@@ -3831,8 +3831,8 @@ template <typename FP> struct Cast<llvmo::ThreadSafeContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ThreadSafeContext_O val -> 1335
-      return (kindVal == ISA_ADJUST_STAMP(1335));
+    // IsA-stamp-range llvmo::ThreadSafeContext_O val -> 1339
+      return (kindVal == ISA_ADJUST_STAMP(1339));
   };
 };
 // STAMP_llvmo__TargetMachine_O
@@ -3840,8 +3840,8 @@ template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetMachine_O low high --> 1327 1331 
-      return ((ISA_ADJUST_STAMP(1327) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1331)));
+    // IsA-stamp-range llvmo::TargetMachine_O low high --> 1331 1335 
+      return ((ISA_ADJUST_STAMP(1331) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1335)));
   };
 };
 // STAMP_core__SimpleVector_byte64_t_O
@@ -3849,8 +3849,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 795
-      return (kindVal == ISA_ADJUST_STAMP(795));
+    // IsA-stamp-range core::SimpleVector_byte64_t_O val -> 799
+      return (kindVal == ISA_ADJUST_STAMP(799));
   };
 };
 // STAMP_llvmo__Value_O
@@ -3858,8 +3858,8 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Value_O low high --> 1171 1323 
-      return ((ISA_ADJUST_STAMP(1171) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
+    // IsA-stamp-range llvmo::Value_O low high --> 1175 1327 
+      return ((ISA_ADJUST_STAMP(1175) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1327)));
   };
 };
 // STAMP_core__SimpleBaseString_O
@@ -3867,8 +3867,8 @@ template <typename FP> struct Cast<core::SimpleBaseString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleBaseString_O val -> 731
-      return (kindVal == ISA_ADJUST_STAMP(731));
+    // IsA-stamp-range core::SimpleBaseString_O val -> 735
+      return (kindVal == ISA_ADJUST_STAMP(735));
   };
 };
 // STAMP_core__Test_O
@@ -3876,8 +3876,8 @@ template <typename FP> struct Cast<core::Test_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Test_O val -> 1167
-      return (kindVal == ISA_ADJUST_STAMP(1167));
+    // IsA-stamp-range core::Test_O val -> 1171
+      return (kindVal == ISA_ADJUST_STAMP(1171));
   };
 };
 // STAMP_llvmo__Metadata_O
@@ -3885,8 +3885,8 @@ template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Metadata_O low high --> 1083 1163 
-      return ((ISA_ADJUST_STAMP(1083) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1163)));
+    // IsA-stamp-range llvmo::Metadata_O low high --> 1087 1167 
+      return ((ISA_ADJUST_STAMP(1087) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1167)));
   };
 };
 // STAMP_core__MDArray_O
@@ -3894,8 +3894,8 @@ template <typename FP> struct Cast<core::MDArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_O low high --> 215 707 
-      return ((ISA_ADJUST_STAMP(215) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(707)));
+    // IsA-stamp-range core::MDArray_O low high --> 219 711 
+      return ((ISA_ADJUST_STAMP(219) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(711)));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__OptionalArgument_
@@ -3921,8 +3921,8 @@ template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRep_O val -> 945
-      return (kindVal == ISA_ADJUST_STAMP(945));
+    // IsA-stamp-range clbind::ClassRep_O val -> 949
+      return (kindVal == ISA_ADJUST_STAMP(949));
   };
 };
 // STAMP_llvmo__ConstantInt_O
@@ -3930,8 +3930,8 @@ template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantInt_O val -> 1303
-      return (kindVal == ISA_ADJUST_STAMP(1303));
+    // IsA-stamp-range llvmo::ConstantInt_O val -> 1307
+      return (kindVal == ISA_ADJUST_STAMP(1307));
   };
 };
 // STAMP_gctools__GCArray_moveable_double_
@@ -3948,8 +3948,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int16_t_O val -> 435
-      return (kindVal == ISA_ADJUST_STAMP(435));
+    // IsA-stamp-range core::SimpleMDArray_int16_t_O val -> 439
+      return (kindVal == ISA_ADJUST_STAMP(439));
   };
 };
 // STAMP_llvmo__StructLayout_O
@@ -3957,8 +3957,8 @@ template <typename FP> struct Cast<llvmo::StructLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StructLayout_O val -> 927
-      return (kindVal == ISA_ADJUST_STAMP(927));
+    // IsA-stamp-range llvmo::StructLayout_O val -> 931
+      return (kindVal == ISA_ADJUST_STAMP(931));
   };
 };
 // STAMP_llvmo__CompositeType_O
@@ -3966,8 +3966,8 @@ template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::CompositeType_O low high --> 1003 1023 
-      return ((ISA_ADJUST_STAMP(1003) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1023)));
+    // IsA-stamp-range llvmo::CompositeType_O low high --> 1007 1027 
+      return ((ISA_ADJUST_STAMP(1007) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1027)));
   };
 };
 // STAMP_core__SimpleMDArrayT_O
@@ -3975,8 +3975,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArrayT_O val -> 395
-      return (kindVal == ISA_ADJUST_STAMP(395));
+    // IsA-stamp-range core::SimpleMDArrayT_O val -> 399
+      return (kindVal == ISA_ADJUST_STAMP(399));
   };
 };
 // STAMP_core__ActivationFrame_O
@@ -3993,8 +3993,8 @@ template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 1071 1079 
-      return ((ISA_ADJUST_STAMP(1071) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1079)));
+    // IsA-stamp-range llvmo::PassManagerBase_O low high --> 1075 1083 
+      return ((ISA_ADJUST_STAMP(1075) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1083)));
   };
 };
 // STAMP_llvmo__LoadInst_O
@@ -4002,8 +4002,8 @@ template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LoadInst_O val -> 1203
-      return (kindVal == ISA_ADJUST_STAMP(1203));
+    // IsA-stamp-range llvmo::LoadInst_O val -> 1207
+      return (kindVal == ISA_ADJUST_STAMP(1207));
   };
 };
 // STAMP_llvmo__ConstantStruct_O
@@ -4011,8 +4011,8 @@ template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantStruct_O val -> 1299
-      return (kindVal == ISA_ADJUST_STAMP(1299));
+    // IsA-stamp-range llvmo::ConstantStruct_O val -> 1303
+      return (kindVal == ISA_ADJUST_STAMP(1303));
   };
 };
 // STAMP_core__Exposer_O
@@ -4020,8 +4020,8 @@ template <typename FP> struct Cast<core::Exposer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Exposer_O low high --> 915 923 
-      return ((ISA_ADJUST_STAMP(915) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(923)));
+    // IsA-stamp-range core::Exposer_O low high --> 919 927 
+      return ((ISA_ADJUST_STAMP(919) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(927)));
   };
 };
 // STAMP_core__DirectoryIterator_O
@@ -4029,8 +4029,8 @@ template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DirectoryIterator_O val -> 203
-      return (kindVal == ISA_ADJUST_STAMP(203));
+    // IsA-stamp-range core::DirectoryIterator_O val -> 207
+      return (kindVal == ISA_ADJUST_STAMP(207));
   };
 };
 // STAMP_core__MDArray_byte2_t_O
@@ -4038,8 +4038,8 @@ template <typename FP> struct Cast<core::MDArray_byte2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte2_t_O val -> 295
-      return (kindVal == ISA_ADJUST_STAMP(295));
+    // IsA-stamp-range core::MDArray_byte2_t_O val -> 299
+      return (kindVal == ISA_ADJUST_STAMP(299));
   };
 };
 // STAMP_llvmo__DISubroutineType_O
@@ -4047,8 +4047,8 @@ template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DISubroutineType_O val -> 1127
-      return (kindVal == ISA_ADJUST_STAMP(1127));
+    // IsA-stamp-range llvmo::DISubroutineType_O val -> 1131
+      return (kindVal == ISA_ADJUST_STAMP(1131));
   };
 };
 // STAMP_core__LexicalEnvironment_O
@@ -4065,8 +4065,8 @@ template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::PosixTime_O val -> 911
-      return (kindVal == ISA_ADJUST_STAMP(911));
+    // IsA-stamp-range core::PosixTime_O val -> 915
+      return (kindVal == ISA_ADJUST_STAMP(915));
   };
 };
 // STAMP_llvmo__MetadataAsValue_O
@@ -4074,8 +4074,8 @@ template <typename FP> struct Cast<llvmo::MetadataAsValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MetadataAsValue_O val -> 1183
-      return (kindVal == ISA_ADJUST_STAMP(1183));
+    // IsA-stamp-range llvmo::MetadataAsValue_O val -> 1187
+      return (kindVal == ISA_ADJUST_STAMP(1187));
   };
 };
 // STAMP_core__SimpleBitVector_O
@@ -4083,8 +4083,8 @@ template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleBitVector_O val -> 755
-      return (kindVal == ISA_ADJUST_STAMP(755));
+    // IsA-stamp-range core::SimpleBitVector_O val -> 759
+      return (kindVal == ISA_ADJUST_STAMP(759));
   };
 };
 // STAMP_core__FunctionContainerEnvironment_O
@@ -4101,8 +4101,8 @@ template <typename FP> struct Cast<core::SimpleVector_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 827
-      return (kindVal == ISA_ADJUST_STAMP(827));
+    // IsA-stamp-range core::SimpleVector_int8_t_O val -> 831
+      return (kindVal == ISA_ADJUST_STAMP(831));
   };
 };
 // STAMP_llvmo__ResumeInst_O
@@ -4110,8 +4110,8 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ResumeInst_O val -> 1235
-      return (kindVal == ISA_ADJUST_STAMP(1235));
+    // IsA-stamp-range llvmo::ResumeInst_O val -> 1239
+      return (kindVal == ISA_ADJUST_STAMP(1239));
   };
 };
 // STAMP_llvmo__Function_O
@@ -4119,8 +4119,8 @@ template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Function_O val -> 1279
-      return (kindVal == ISA_ADJUST_STAMP(1279));
+    // IsA-stamp-range llvmo::Function_O val -> 1283
+      return (kindVal == ISA_ADJUST_STAMP(1283));
   };
 };
 // STAMP_llvmo__DIType_O
@@ -4128,8 +4128,8 @@ template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIType_O low high --> 1111 1127 
-      return ((ISA_ADJUST_STAMP(1111) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1127)));
+    // IsA-stamp-range llvmo::DIType_O low high --> 1115 1131 
+      return ((ISA_ADJUST_STAMP(1115) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1131)));
   };
 };
 // STAMP_core__Readtable_O
@@ -4137,8 +4137,8 @@ template <typename FP> struct Cast<core::Readtable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Readtable_O val -> 907
-      return (kindVal == ISA_ADJUST_STAMP(907));
+    // IsA-stamp-range core::Readtable_O val -> 911
+      return (kindVal == ISA_ADJUST_STAMP(911));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__
@@ -4155,8 +4155,8 @@ template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IRBuilder_O val -> 1047
-      return (kindVal == ISA_ADJUST_STAMP(1047));
+    // IsA-stamp-range llvmo::IRBuilder_O val -> 1051
+      return (kindVal == ISA_ADJUST_STAMP(1051));
   };
 };
 // STAMP_llvmo__ClaspJIT_O
@@ -4164,8 +4164,8 @@ template <typename FP> struct Cast<llvmo::ClaspJIT_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ClaspJIT_O val -> 903
-      return (kindVal == ISA_ADJUST_STAMP(903));
+    // IsA-stamp-range llvmo::ClaspJIT_O val -> 907
+      return (kindVal == ISA_ADJUST_STAMP(907));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__
@@ -4182,8 +4182,8 @@ template <typename FP> struct Cast<core::SimpleVector_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_byte8_t_O val -> 851
-      return (kindVal == ISA_ADJUST_STAMP(851));
+    // IsA-stamp-range core::SimpleVector_byte8_t_O val -> 855
+      return (kindVal == ISA_ADJUST_STAMP(855));
   };
 };
 // STAMP_llvmo__DILexicalBlockBase_O
@@ -4191,8 +4191,8 @@ template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 1139 1143 
-      return ((ISA_ADJUST_STAMP(1139) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1143)));
+    // IsA-stamp-range llvmo::DILexicalBlockBase_O low high --> 1143 1147 
+      return ((ISA_ADJUST_STAMP(1143) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1147)));
   };
 };
 // STAMP_llvmo__MDNode_O
@@ -4200,8 +4200,8 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MDNode_O low high --> 1087 1155 
-      return ((ISA_ADJUST_STAMP(1087) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1155)));
+    // IsA-stamp-range llvmo::MDNode_O low high --> 1091 1159 
+      return ((ISA_ADJUST_STAMP(1091) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1159)));
   };
 };
 // STAMP_core__ComplexVector_fixnum_O
@@ -4209,8 +4209,8 @@ template <typename FP> struct Cast<core::ComplexVector_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_fixnum_O val -> 699
-      return (kindVal == ISA_ADJUST_STAMP(699));
+    // IsA-stamp-range core::ComplexVector_fixnum_O val -> 703
+      return (kindVal == ISA_ADJUST_STAMP(703));
   };
 };
 // STAMP_mp__RecursiveMutex_O
@@ -4218,8 +4218,8 @@ template <typename FP> struct Cast<mp::RecursiveMutex_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range mp::RecursiveMutex_O val -> 179
-      return (kindVal == ISA_ADJUST_STAMP(179));
+    // IsA-stamp-range mp::RecursiveMutex_O val -> 183
+      return (kindVal == ISA_ADJUST_STAMP(183));
   };
 };
 // STAMP_core__SimpleVector_float_O
@@ -4227,8 +4227,8 @@ template <typename FP> struct Cast<core::SimpleVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_float_O val -> 835
-      return (kindVal == ISA_ADJUST_STAMP(835));
+    // IsA-stamp-range core::SimpleVector_float_O val -> 839
+      return (kindVal == ISA_ADJUST_STAMP(839));
   };
 };
 // STAMP_llvmo__VAArgInst_O
@@ -4236,8 +4236,8 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::VAArgInst_O val -> 1199
-      return (kindVal == ISA_ADJUST_STAMP(1199));
+    // IsA-stamp-range llvmo::VAArgInst_O val -> 1203
+      return (kindVal == ISA_ADJUST_STAMP(1203));
   };
 };
 // STAMP_core__SimpleVector_int4_t_O
@@ -4245,8 +4245,8 @@ template <typename FP> struct Cast<core::SimpleVector_int4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int4_t_O val -> 763
-      return (kindVal == ISA_ADJUST_STAMP(763));
+    // IsA-stamp-range core::SimpleVector_int4_t_O val -> 767
+      return (kindVal == ISA_ADJUST_STAMP(767));
   };
 };
 // STAMP_core__MDArray_fixnum_O
@@ -4254,8 +4254,8 @@ template <typename FP> struct Cast<core::MDArray_fixnum_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_fixnum_O val -> 311
-      return (kindVal == ISA_ADJUST_STAMP(311));
+    // IsA-stamp-range core::MDArray_fixnum_O val -> 315
+      return (kindVal == ISA_ADJUST_STAMP(315));
   };
 };
 // STAMP_core__SharpEqualWrapper_O
@@ -4263,8 +4263,8 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SharpEqualWrapper_O val -> 899
-      return (kindVal == ISA_ADJUST_STAMP(899));
+    // IsA-stamp-range core::SharpEqualWrapper_O val -> 903
+      return (kindVal == ISA_ADJUST_STAMP(903));
   };
 };
 // STAMP_core__LoadTimeValues_O
@@ -4272,8 +4272,8 @@ template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::LoadTimeValues_O val -> 895
-      return (kindVal == ISA_ADJUST_STAMP(895));
+    // IsA-stamp-range core::LoadTimeValues_O val -> 899
+      return (kindVal == ISA_ADJUST_STAMP(899));
   };
 };
 // STAMP_llvmo__DIFile_O
@@ -4281,8 +4281,8 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIFile_O val -> 1107
-      return (kindVal == ISA_ADJUST_STAMP(1107));
+    // IsA-stamp-range llvmo::DIFile_O val -> 1111
+      return (kindVal == ISA_ADJUST_STAMP(1111));
   };
 };
 // STAMP_llvmo__DataLayout_O
@@ -4290,8 +4290,8 @@ template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DataLayout_O val -> 891
-      return (kindVal == ISA_ADJUST_STAMP(891));
+    // IsA-stamp-range llvmo::DataLayout_O val -> 895
+      return (kindVal == ISA_ADJUST_STAMP(895));
   };
 };
 // STAMP_llvmo__BasicBlock_O
@@ -4299,8 +4299,8 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BasicBlock_O val -> 1179
-      return (kindVal == ISA_ADJUST_STAMP(1179));
+    // IsA-stamp-range llvmo::BasicBlock_O val -> 1183
+      return (kindVal == ISA_ADJUST_STAMP(1183));
   };
 };
 // STAMP_core__SimpleMDArray_int8_t_O
@@ -4308,8 +4308,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int8_t_O val -> 371
-      return (kindVal == ISA_ADJUST_STAMP(371));
+    // IsA-stamp-range core::SimpleMDArray_int8_t_O val -> 375
+      return (kindVal == ISA_ADJUST_STAMP(375));
   };
 };
 // STAMP_llvmo__EngineBuilder_O
@@ -4317,8 +4317,8 @@ template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::EngineBuilder_O val -> 1067
-      return (kindVal == ISA_ADJUST_STAMP(1067));
+    // IsA-stamp-range llvmo::EngineBuilder_O val -> 1071
+      return (kindVal == ISA_ADJUST_STAMP(1071));
   };
 };
 // STAMP_core__ComplexVector_byte64_t_O
@@ -4326,8 +4326,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte64_t_O val -> 567
-      return (kindVal == ISA_ADJUST_STAMP(567));
+    // IsA-stamp-range core::ComplexVector_byte64_t_O val -> 571
+      return (kindVal == ISA_ADJUST_STAMP(571));
   };
 };
 // STAMP_llvmo__SectionedAddress_O
@@ -4335,8 +4335,8 @@ template <typename FP> struct Cast<llvmo::SectionedAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::SectionedAddress_O val -> 1063
-      return (kindVal == ISA_ADJUST_STAMP(1063));
+    // IsA-stamp-range llvmo::SectionedAddress_O val -> 1067
+      return (kindVal == ISA_ADJUST_STAMP(1067));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__KeyValuePair_
@@ -4353,8 +4353,8 @@ template <typename FP> struct Cast<core::MDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte32_t_O val -> 287
-      return (kindVal == ISA_ADJUST_STAMP(287));
+    // IsA-stamp-range core::MDArray_byte32_t_O val -> 291
+      return (kindVal == ISA_ADJUST_STAMP(291));
   };
 };
 // STAMP_core__Character_dummy_O
@@ -4362,8 +4362,8 @@ template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Character_dummy_O val -> 887
-      return (kindVal == ISA_ADJUST_STAMP(887));
+    // IsA-stamp-range core::Character_dummy_O val -> 891
+      return (kindVal == ISA_ADJUST_STAMP(891));
   };
 };
 // STAMP_core__TagbodyEnvironment_O
@@ -4380,8 +4380,8 @@ template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Constant_O low high --> 1271 1323 
-      return ((ISA_ADJUST_STAMP(1271) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1323)));
+    // IsA-stamp-range llvmo::Constant_O low high --> 1275 1327 
+      return ((ISA_ADJUST_STAMP(1275) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1327)));
   };
 };
 // STAMP_core__SpecialForm_O
@@ -4416,8 +4416,8 @@ template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIBasicType_O val -> 1123
-      return (kindVal == ISA_ADJUST_STAMP(1123));
+    // IsA-stamp-range llvmo::DIBasicType_O val -> 1127
+      return (kindVal == ISA_ADJUST_STAMP(1127));
   };
 };
 // STAMP_llvmo__DIBuilder_O
@@ -4425,8 +4425,8 @@ template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIBuilder_O val -> 1059
-      return (kindVal == ISA_ADJUST_STAMP(1059));
+    // IsA-stamp-range llvmo::DIBuilder_O val -> 1063
+      return (kindVal == ISA_ADJUST_STAMP(1063));
   };
 };
 // STAMP_core__NativeVector_int_O
@@ -4443,8 +4443,8 @@ template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::APInt_O val -> 1055
-      return (kindVal == ISA_ADJUST_STAMP(1055));
+    // IsA-stamp-range llvmo::APInt_O val -> 1059
+      return (kindVal == ISA_ADJUST_STAMP(1059));
   };
 };
 // STAMP_llvmo__APFloat_O
@@ -4452,8 +4452,8 @@ template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::APFloat_O val -> 1051
-      return (kindVal == ISA_ADJUST_STAMP(1051));
+    // IsA-stamp-range llvmo::APFloat_O val -> 1055
+      return (kindVal == ISA_ADJUST_STAMP(1055));
   };
 };
 // STAMP_core__SimpleMDArrayCharacter_O
@@ -4461,8 +4461,8 @@ template <typename FP> struct Cast<core::SimpleMDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArrayCharacter_O val -> 459
-      return (kindVal == ISA_ADJUST_STAMP(459));
+    // IsA-stamp-range core::SimpleMDArrayCharacter_O val -> 463
+      return (kindVal == ISA_ADJUST_STAMP(463));
   };
 };
 // STAMP_core__SimpleCharacterString_O
@@ -4470,8 +4470,8 @@ template <typename FP> struct Cast<core::SimpleCharacterString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleCharacterString_O val -> 723
-      return (kindVal == ISA_ADJUST_STAMP(723));
+    // IsA-stamp-range core::SimpleCharacterString_O val -> 727
+      return (kindVal == ISA_ADJUST_STAMP(727));
   };
 };
 // STAMP_core__Symbol_O
@@ -4479,8 +4479,8 @@ template <typename FP> struct Cast<core::Symbol_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Symbol_O low high --> 879 883 
-      return ((ISA_ADJUST_STAMP(879) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(883)));
+    // IsA-stamp-range core::Symbol_O low high --> 883 887 
+      return ((ISA_ADJUST_STAMP(883) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(887)));
   };
 };
 // STAMP_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___
@@ -4506,8 +4506,8 @@ template <typename FP> struct Cast<core::Array_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Array_O low high --> 211 875 
-      return ((ISA_ADJUST_STAMP(211) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(875)));
+    // IsA-stamp-range core::Array_O low high --> 215 879 
+      return ((ISA_ADJUST_STAMP(215) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(879)));
   };
 };
 // STAMP_core__MDArray_byte4_t_O
@@ -4515,8 +4515,8 @@ template <typename FP> struct Cast<core::MDArray_byte4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte4_t_O val -> 247
-      return (kindVal == ISA_ADJUST_STAMP(247));
+    // IsA-stamp-range core::MDArray_byte4_t_O val -> 251
+      return (kindVal == ISA_ADJUST_STAMP(251));
   };
 };
 // STAMP_llvmo__Argument_O
@@ -4524,8 +4524,8 @@ template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Argument_O val -> 1175
-      return (kindVal == ISA_ADJUST_STAMP(1175));
+    // IsA-stamp-range llvmo::Argument_O val -> 1179
+      return (kindVal == ISA_ADJUST_STAMP(1179));
   };
 };
 // STAMP_core__Iterator_O
@@ -4533,8 +4533,8 @@ template <typename FP> struct Cast<core::Iterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Iterator_O low high --> 199 207 
-      return ((ISA_ADJUST_STAMP(199) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(207)));
+    // IsA-stamp-range core::Iterator_O low high --> 203 211 
+      return ((ISA_ADJUST_STAMP(203) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(211)));
   };
 };
 // STAMP_llvmo__IRBuilderBase_O
@@ -4542,8 +4542,8 @@ template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 1043 1047 
-      return ((ISA_ADJUST_STAMP(1043) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1047)));
+    // IsA-stamp-range llvmo::IRBuilderBase_O low high --> 1047 1051 
+      return ((ISA_ADJUST_STAMP(1047) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1051)));
   };
 };
 // STAMP_core__Null_O
@@ -4551,8 +4551,8 @@ template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Null_O val -> 883
-      return (kindVal == ISA_ADJUST_STAMP(883));
+    // IsA-stamp-range core::Null_O val -> 887
+      return (kindVal == ISA_ADJUST_STAMP(887));
   };
 };
 // STAMP_llvmo__TargetPassConfig_O
@@ -4560,8 +4560,8 @@ template <typename FP> struct Cast<llvmo::TargetPassConfig_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetPassConfig_O val -> 1039
-      return (kindVal == ISA_ADJUST_STAMP(1039));
+    // IsA-stamp-range llvmo::TargetPassConfig_O val -> 1043
+      return (kindVal == ISA_ADJUST_STAMP(1043));
   };
 };
 // STAMP_core__SingleDispatchMethod_O
@@ -4569,8 +4569,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethod_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SingleDispatchMethod_O val -> 195
-      return (kindVal == ISA_ADJUST_STAMP(195));
+    // IsA-stamp-range core::SingleDispatchMethod_O val -> 199
+      return (kindVal == ISA_ADJUST_STAMP(199));
   };
 };
 // STAMP_gctools__GCArray_moveable_signed_char_
@@ -4605,8 +4605,8 @@ template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::CxxObject_O low high --> 139 191 
-      return ((ISA_ADJUST_STAMP(139) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(191)));
+    // IsA-stamp-range core::CxxObject_O low high --> 139 195 
+      return ((ISA_ADJUST_STAMP(139) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(195)));
   };
 };
 // STAMP_llvmo__ReturnInst_O
@@ -4614,8 +4614,8 @@ template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ReturnInst_O val -> 1231
-      return (kindVal == ISA_ADJUST_STAMP(1231));
+    // IsA-stamp-range llvmo::ReturnInst_O val -> 1235
+      return (kindVal == ISA_ADJUST_STAMP(1235));
   };
 };
 // STAMP_llvmo__FunctionType_O
@@ -4623,8 +4623,8 @@ template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::FunctionType_O val -> 999
-      return (kindVal == ISA_ADJUST_STAMP(999));
+    // IsA-stamp-range llvmo::FunctionType_O val -> 1003
+      return (kindVal == ISA_ADJUST_STAMP(1003));
   };
 };
 // STAMP_clbind__DummyCreator_O
@@ -4641,8 +4641,8 @@ template <typename FP> struct Cast<core::MDArray_byte16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte16_t_O val -> 359
-      return (kindVal == ISA_ADJUST_STAMP(359));
+    // IsA-stamp-range core::MDArray_byte16_t_O val -> 363
+      return (kindVal == ISA_ADJUST_STAMP(363));
   };
 };
 // STAMP_llvmo__DIContext_O
@@ -4650,8 +4650,8 @@ template <typename FP> struct Cast<llvmo::DIContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIContext_O val -> 1035
-      return (kindVal == ISA_ADJUST_STAMP(1035));
+    // IsA-stamp-range llvmo::DIContext_O val -> 1039
+      return (kindVal == ISA_ADJUST_STAMP(1039));
   };
 };
 // STAMP_llvmo__JITDylib_O
@@ -4659,8 +4659,8 @@ template <typename FP> struct Cast<llvmo::JITDylib_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::JITDylib_O val -> 1031
-      return (kindVal == ISA_ADJUST_STAMP(1031));
+    // IsA-stamp-range llvmo::JITDylib_O val -> 1035
+      return (kindVal == ISA_ADJUST_STAMP(1035));
   };
 };
 // STAMP_llvmo__Type_O
@@ -4668,8 +4668,8 @@ template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Type_O low high --> 995 1027 
-      return ((ISA_ADJUST_STAMP(995) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1027)));
+    // IsA-stamp-range llvmo::Type_O low high --> 999 1031 
+      return ((ISA_ADJUST_STAMP(999) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1031)));
   };
 };
 // STAMP_core__Pointer_O
@@ -4686,8 +4686,8 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UnreachableInst_O val -> 1227
-      return (kindVal == ISA_ADJUST_STAMP(1227));
+    // IsA-stamp-range llvmo::UnreachableInst_O val -> 1231
+      return (kindVal == ISA_ADJUST_STAMP(1231));
   };
 };
 // STAMP_core__ComplexVector_int64_t_O
@@ -4695,8 +4695,8 @@ template <typename FP> struct Cast<core::ComplexVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int64_t_O val -> 707
-      return (kindVal == ISA_ADJUST_STAMP(707));
+    // IsA-stamp-range core::ComplexVector_int64_t_O val -> 711
+      return (kindVal == ISA_ADJUST_STAMP(711));
   };
 };
 // STAMP_gctools__GCVector_moveable_core__SymbolClassHolderPair_
@@ -4740,8 +4740,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte4_t_O val -> 411
-      return (kindVal == ISA_ADJUST_STAMP(411));
+    // IsA-stamp-range core::SimpleMDArray_byte4_t_O val -> 415
+      return (kindVal == ISA_ADJUST_STAMP(415));
   };
 };
 // STAMP_llvmo__DIDerivedType_O
@@ -4749,8 +4749,8 @@ template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIDerivedType_O val -> 1119
-      return (kindVal == ISA_ADJUST_STAMP(1119));
+    // IsA-stamp-range llvmo::DIDerivedType_O val -> 1123
+      return (kindVal == ISA_ADJUST_STAMP(1123));
   };
 };
 // STAMP_clbind__ConstructorCreator_O
@@ -4767,8 +4767,8 @@ template <typename FP> struct Cast<core::SimpleVector_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 811
-      return (kindVal == ISA_ADJUST_STAMP(811));
+    // IsA-stamp-range core::SimpleVector_int64_t_O val -> 815
+      return (kindVal == ISA_ADJUST_STAMP(815));
   };
 };
 // STAMP_llvmo__ConstantDataSequential_O
@@ -4776,8 +4776,8 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 1291 1295 
-      return ((ISA_ADJUST_STAMP(1291) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1295)));
+    // IsA-stamp-range llvmo::ConstantDataSequential_O low high --> 1295 1299 
+      return ((ISA_ADJUST_STAMP(1295) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1299)));
   };
 };
 // STAMP_core__TranslationFunctor_O
@@ -4794,8 +4794,8 @@ template <typename FP> struct Cast<core::MDArray_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_double_O val -> 539
-      return (kindVal == ISA_ADJUST_STAMP(539));
+    // IsA-stamp-range core::MDArray_double_O val -> 543
+      return (kindVal == ISA_ADJUST_STAMP(543));
   };
 };
 // STAMP_llvmo__StoreInst_O
@@ -4803,8 +4803,8 @@ template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::StoreInst_O val -> 1223
-      return (kindVal == ISA_ADJUST_STAMP(1223));
+    // IsA-stamp-range llvmo::StoreInst_O val -> 1227
+      return (kindVal == ISA_ADJUST_STAMP(1227));
   };
 };
 // STAMP_llvmo__DebugLoc_O
@@ -4848,8 +4848,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte8_t_O val -> 515
-      return (kindVal == ISA_ADJUST_STAMP(515));
+    // IsA-stamp-range core::SimpleMDArray_byte8_t_O val -> 519
+      return (kindVal == ISA_ADJUST_STAMP(519));
   };
 };
 // STAMP_llvmo__Instruction_O
@@ -4857,8 +4857,8 @@ template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Instruction_O low high --> 1191 1267 
-      return ((ISA_ADJUST_STAMP(1191) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1267)));
+    // IsA-stamp-range llvmo::Instruction_O low high --> 1195 1271 
+      return ((ISA_ADJUST_STAMP(1195) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1271)));
   };
 };
 // STAMP_core__FileStream_O
@@ -4884,8 +4884,8 @@ template <typename FP> struct Cast<core::MDArrayCharacter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArrayCharacter_O val -> 335
-      return (kindVal == ISA_ADJUST_STAMP(335));
+    // IsA-stamp-range core::MDArrayCharacter_O val -> 339
+      return (kindVal == ISA_ADJUST_STAMP(339));
   };
 };
 // STAMP_llvmo__LandingPadInst_O
@@ -4893,8 +4893,8 @@ template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LandingPadInst_O val -> 1219
-      return (kindVal == ISA_ADJUST_STAMP(1219));
+    // IsA-stamp-range llvmo::LandingPadInst_O val -> 1223
+      return (kindVal == ISA_ADJUST_STAMP(1223));
   };
 };
 // STAMP_core__ImmobileObject_O
@@ -4920,8 +4920,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int2_t_O val -> 403
-      return (kindVal == ISA_ADJUST_STAMP(403));
+    // IsA-stamp-range core::SimpleMDArray_int2_t_O val -> 407
+      return (kindVal == ISA_ADJUST_STAMP(407));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__
@@ -4974,8 +4974,8 @@ template <typename FP> struct Cast<core::MDArray_byte8_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_byte8_t_O val -> 271
-      return (kindVal == ISA_ADJUST_STAMP(271));
+    // IsA-stamp-range core::MDArray_byte8_t_O val -> 275
+      return (kindVal == ISA_ADJUST_STAMP(275));
   };
 };
 // STAMP_core__FuncallableInstanceCreator_O
@@ -5010,8 +5010,8 @@ template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 1215
-      return (kindVal == ISA_ADJUST_STAMP(1215));
+    // IsA-stamp-range llvmo::AtomicRMWInst_O val -> 1219
+      return (kindVal == ISA_ADJUST_STAMP(1219));
   };
 };
 // STAMP_llvmo__MDBuilder_O
@@ -5028,8 +5028,8 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PassManager_O val -> 1075
-      return (kindVal == ISA_ADJUST_STAMP(1075));
+    // IsA-stamp-range llvmo::PassManager_O val -> 1079
+      return (kindVal == ISA_ADJUST_STAMP(1079));
   };
 };
 // STAMP_core__SimpleVector_O
@@ -5037,8 +5037,8 @@ template <typename FP> struct Cast<core::SimpleVector_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_O val -> 843
-      return (kindVal == ISA_ADJUST_STAMP(843));
+    // IsA-stamp-range core::SimpleVector_O val -> 847
+      return (kindVal == ISA_ADJUST_STAMP(847));
   };
 };
 // STAMP_llvmo__DISubprogram_O
@@ -5046,8 +5046,8 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DISubprogram_O val -> 1135
-      return (kindVal == ISA_ADJUST_STAMP(1135));
+    // IsA-stamp-range llvmo::DISubprogram_O val -> 1139
+      return (kindVal == ISA_ADJUST_STAMP(1139));
   };
 };
 // STAMP_core__Creator_O
@@ -5064,8 +5064,8 @@ template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ArrayType_O val -> 1015
-      return (kindVal == ISA_ADJUST_STAMP(1015));
+    // IsA-stamp-range llvmo::ArrayType_O val -> 1019
+      return (kindVal == ISA_ADJUST_STAMP(1019));
   };
 };
 // STAMP_core__SimpleMDArray_int64_t_O
@@ -5073,8 +5073,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_int64_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_int64_t_O val -> 523
-      return (kindVal == ISA_ADJUST_STAMP(523));
+    // IsA-stamp-range core::SimpleMDArray_int64_t_O val -> 527
+      return (kindVal == ISA_ADJUST_STAMP(527));
   };
 };
 // STAMP_core__SimpleString_O
@@ -5082,8 +5082,8 @@ template <typename FP> struct Cast<core::SimpleString_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleString_O low high --> 715 731 
-      return ((ISA_ADJUST_STAMP(715) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(731)));
+    // IsA-stamp-range core::SimpleString_O low high --> 719 735 
+      return ((ISA_ADJUST_STAMP(719) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(735)));
   };
 };
 // STAMP_llvmo__DIVariable_O
@@ -5091,8 +5091,8 @@ template <typename FP> struct Cast<llvmo::DIVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DIVariable_O low high --> 1095 1099 
-      return ((ISA_ADJUST_STAMP(1095) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1099)));
+    // IsA-stamp-range llvmo::DIVariable_O low high --> 1099 1103 
+      return ((ISA_ADJUST_STAMP(1099) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1103)));
   };
 };
 // STAMP_core__SimpleMDArray_byte2_t_O
@@ -5100,8 +5100,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte2_t_O val -> 467
-      return (kindVal == ISA_ADJUST_STAMP(467));
+    // IsA-stamp-range core::SimpleMDArray_byte2_t_O val -> 471
+      return (kindVal == ISA_ADJUST_STAMP(471));
   };
 };
 // STAMP_llvmo__BlockAddress_O
@@ -5109,8 +5109,8 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::BlockAddress_O val -> 1287
-      return (kindVal == ISA_ADJUST_STAMP(1287));
+    // IsA-stamp-range llvmo::BlockAddress_O val -> 1291
+      return (kindVal == ISA_ADJUST_STAMP(1291));
   };
 };
 // STAMP_llvmo__DICompositeType_O
@@ -5118,8 +5118,8 @@ template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::DICompositeType_O val -> 1115
-      return (kindVal == ISA_ADJUST_STAMP(1115));
+    // IsA-stamp-range llvmo::DICompositeType_O val -> 1119
+      return (kindVal == ISA_ADJUST_STAMP(1119));
   };
 };
 // STAMP_llvmo__MCSubtargetInfo_O
@@ -5127,8 +5127,8 @@ template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 987 991 
-      return ((ISA_ADJUST_STAMP(987) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(991)));
+    // IsA-stamp-range llvmo::MCSubtargetInfo_O low high --> 991 995 
+      return ((ISA_ADJUST_STAMP(991) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(995)));
   };
 };
 // STAMP_core__FunctionValueEnvironment_O
@@ -5226,8 +5226,8 @@ template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 971 975 
-      return ((ISA_ADJUST_STAMP(971) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(975)));
+    // IsA-stamp-range llvmo::ImmutablePass_O low high --> 975 979 
+      return ((ISA_ADJUST_STAMP(975) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(979)));
   };
 };
 // STAMP_core__FuncallableInstance_O
@@ -5262,8 +5262,8 @@ template <typename FP> struct Cast<core::MDArray_int2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::MDArray_int2_t_O val -> 303
-      return (kindVal == ISA_ADJUST_STAMP(303));
+    // IsA-stamp-range core::MDArray_int2_t_O val -> 307
+      return (kindVal == ISA_ADJUST_STAMP(307));
   };
 };
 // STAMP_core__ComplexVector_byte2_t_O
@@ -5271,8 +5271,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte2_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte2_t_O val -> 639
-      return (kindVal == ISA_ADJUST_STAMP(639));
+    // IsA-stamp-range core::ComplexVector_byte2_t_O val -> 643
+      return (kindVal == ISA_ADJUST_STAMP(643));
   };
 };
 // STAMP_core__ClosureWithSlots_O
@@ -5289,8 +5289,8 @@ template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 983
-      return (kindVal == ISA_ADJUST_STAMP(983));
+    // IsA-stamp-range llvmo::ExecutionEngine_O val -> 987
+      return (kindVal == ISA_ADJUST_STAMP(987));
   };
 };
 // STAMP_core__ClassRepCreator_O
@@ -5307,8 +5307,8 @@ template <typename FP> struct Cast<core::SimpleVector_int16_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_int16_t_O val -> 739
-      return (kindVal == ISA_ADJUST_STAMP(739));
+    // IsA-stamp-range core::SimpleVector_int16_t_O val -> 743
+      return (kindVal == ISA_ADJUST_STAMP(743));
   };
 };
 // STAMP_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__
@@ -5334,8 +5334,8 @@ template <typename FP> struct Cast<core::DerivableCxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::DerivableCxxObject_O val -> 940
-      return (kindVal == ISA_ADJUST_STAMP(940));
+    // IsA-stamp-range core::DerivableCxxObject_O val -> 944
+      return (kindVal == ISA_ADJUST_STAMP(944));
   };
 };
 // STAMP_core__SymbolToEnumConverter_O
@@ -5352,8 +5352,8 @@ template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::SwitchInst_O val -> 1211
-      return (kindVal == ISA_ADJUST_STAMP(1211));
+    // IsA-stamp-range llvmo::SwitchInst_O val -> 1215
+      return (kindVal == ISA_ADJUST_STAMP(1215));
   };
 };
 // STAMP_core__NativeVector_float_O
@@ -5370,8 +5370,8 @@ template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::Pass_O low high --> 963 979 
-      return ((ISA_ADJUST_STAMP(963) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(979)));
+    // IsA-stamp-range llvmo::Pass_O low high --> 967 983 
+      return ((ISA_ADJUST_STAMP(967) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(983)));
   };
 };
 // STAMP_core__ComplexVector_int32_t_O
@@ -5379,8 +5379,8 @@ template <typename FP> struct Cast<core::ComplexVector_int32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_int32_t_O val -> 591
-      return (kindVal == ISA_ADJUST_STAMP(591));
+    // IsA-stamp-range core::ComplexVector_int32_t_O val -> 595
+      return (kindVal == ISA_ADJUST_STAMP(595));
   };
 };
 // STAMP_core__Lisp_O
@@ -5415,8 +5415,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte4_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte4_t_O val -> 691
-      return (kindVal == ISA_ADJUST_STAMP(691));
+    // IsA-stamp-range core::ComplexVector_byte4_t_O val -> 695
+      return (kindVal == ISA_ADJUST_STAMP(695));
   };
 };
 // STAMP_core__CatchEnvironment_O
@@ -5442,8 +5442,8 @@ template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 991
-      return (kindVal == ISA_ADJUST_STAMP(991));
+    // IsA-stamp-range llvmo::TargetSubtargetInfo_O val -> 995
+      return (kindVal == ISA_ADJUST_STAMP(995));
   };
 };
 // STAMP_core__WrappedPointer_O
@@ -5460,8 +5460,8 @@ template <typename FP> struct Cast<core::SimpleVector_double_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleVector_double_O val -> 787
-      return (kindVal == ISA_ADJUST_STAMP(787));
+    // IsA-stamp-range core::SimpleVector_double_O val -> 791
+      return (kindVal == ISA_ADJUST_STAMP(791));
   };
 };
 // STAMP_core__SimpleMDArray_byte32_t_O
@@ -5469,8 +5469,8 @@ template <typename FP> struct Cast<core::SimpleMDArray_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::SimpleMDArray_byte32_t_O val -> 387
-      return (kindVal == ISA_ADJUST_STAMP(387));
+    // IsA-stamp-range core::SimpleMDArray_byte32_t_O val -> 391
+      return (kindVal == ISA_ADJUST_STAMP(391));
   };
 };
 // STAMP_core__Bignum_O
@@ -5487,8 +5487,8 @@ template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 1331
-      return (kindVal == ISA_ADJUST_STAMP(1331));
+    // IsA-stamp-range llvmo::LLVMTargetMachine_O val -> 1335
+      return (kindVal == ISA_ADJUST_STAMP(1335));
   };
 };
 // STAMP_core__ClassHolder_O
@@ -5505,8 +5505,8 @@ template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::SequentialType_O low high --> 1007 1019 
-      return ((ISA_ADJUST_STAMP(1007) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1019)));
+    // IsA-stamp-range llvmo::SequentialType_O low high --> 1011 1023 
+      return ((ISA_ADJUST_STAMP(1011) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1023)));
   };
 };
 // STAMP_core__ComplexVector_byte32_t_O
@@ -5514,8 +5514,8 @@ template <typename FP> struct Cast<core::ComplexVector_byte32_t_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::ComplexVector_byte32_t_O val -> 655
-      return (kindVal == ISA_ADJUST_STAMP(655));
+    // IsA-stamp-range core::ComplexVector_byte32_t_O val -> 659
+      return (kindVal == ISA_ADJUST_STAMP(659));
   };
 };
 // STAMP_llvmo__UnaryInstruction_O
@@ -5523,8 +5523,8 @@ template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 1195 1207 
-      return ((ISA_ADJUST_STAMP(1195) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1207)));
+    // IsA-stamp-range llvmo::UnaryInstruction_O low high --> 1199 1211 
+      return ((ISA_ADJUST_STAMP(1199) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1211)));
   };
 };
 // STAMP_llvmo__GlobalValue_O
@@ -5532,8 +5532,8 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::GlobalValue_O low high --> 1275 1283 
-      return ((ISA_ADJUST_STAMP(1275) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1283)));
+    // IsA-stamp-range llvmo::GlobalValue_O low high --> 1279 1287 
+      return ((ISA_ADJUST_STAMP(1279) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1287)));
   };
 };
 // STAMP_llvmo__PointerType_O
@@ -5541,8 +5541,8 @@ template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range llvmo::PointerType_O val -> 1011
-      return (kindVal == ISA_ADJUST_STAMP(1011));
+    // IsA-stamp-range llvmo::PointerType_O val -> 1015
+      return (kindVal == ISA_ADJUST_STAMP(1015));
   };
 };
 // STAMP_gctools__GCArray_moveable_unsigned_int_
@@ -5566,301 +5566,301 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
 #endif // defined(GC_DYNAMIC_CAST)
 #if defined(GC_TYPEQ)
       ADD_SINGLE_TYPEQ_TEST(core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(1671));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_size_t_O,TYPEQ_ADJUST_STAMP(263));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte2_t_O,TYPEQ_ADJUST_STAMP(859));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,TYPEQ_ADJUST_STAMP(475));
-      ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(543),TYPEQ_ADJUST_STAMP(707));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(419));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_size_t_O,TYPEQ_ADJUST_STAMP(267));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte2_t_O,TYPEQ_ADJUST_STAMP(863));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_fixnum_O,TYPEQ_ADJUST_STAMP(479));
+      ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(547),TYPEQ_ADJUST_STAMP(711));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(423));
       ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1539),TYPEQ_ADJUST_STAMP(1547));
       ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1667));
       ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1663));
       ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1687));
-      ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(191));
+      ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(195));
       ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1659));
       ADD_RANGE_TYPEQ_TEST(core::LightUserData_O,core::UserData_O,TYPEQ_ADJUST_STAMP(1651),TYPEQ_ADJUST_STAMP(1655));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,TYPEQ_ADJUST_STAMP(343));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayT_O,TYPEQ_ADJUST_STAMP(347));
       ADD_SINGLE_TYPEQ_TEST(core::DirectoryEntry_O,TYPEQ_ADJUST_STAMP(1647));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Linker_O,TYPEQ_ADJUST_STAMP(1375));
       ADD_SINGLE_TYPEQ_TEST(core::IntArray_O,TYPEQ_ADJUST_STAMP(1643));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_float_O,TYPEQ_ADJUST_STAMP(255));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_float_O,TYPEQ_ADJUST_STAMP(259));
       ADD_SINGLE_TYPEQ_TEST(core::SourcePosInfo_O,TYPEQ_ADJUST_STAMP(1639));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1267));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1207));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1271));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1211));
       ADD_SINGLE_TYPEQ_TEST(core::StandardClassCreator_O,TYPEQ_ADJUST_STAMP(91));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_float_O,TYPEQ_ADJUST_STAMP(607));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte8_t_O,TYPEQ_ADJUST_STAMP(647));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_float_O,TYPEQ_ADJUST_STAMP(611));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte8_t_O,TYPEQ_ADJUST_STAMP(651));
       ADD_RANGE_TYPEQ_TEST(core::HashTable_O,core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1475),TYPEQ_ADJUST_STAMP(1491));
       ADD_SINGLE_TYPEQ_TEST(core::InvocationHistoryFrameIterator_O,TYPEQ_ADJUST_STAMP(1635));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(779));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1103),TYPEQ_ADJUST_STAMP(1147));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_size_t_O,TYPEQ_ADJUST_STAMP(783));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIScope_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1107),TYPEQ_ADJUST_STAMP(1151));
       ADD_SINGLE_TYPEQ_TEST(core::FileStatus_O,TYPEQ_ADJUST_STAMP(1631));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,TYPEQ_ADJUST_STAMP(1263));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1323));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,TYPEQ_ADJUST_STAMP(1259));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IndirectBrInst_O,TYPEQ_ADJUST_STAMP(1267));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1327));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PHINode_O,TYPEQ_ADJUST_STAMP(1263));
       ADD_SINGLE_TYPEQ_TEST(core::Package_O,TYPEQ_ADJUST_STAMP(1627));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(491));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1155));
-      ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(363),TYPEQ_ADJUST_STAMP(523));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(495));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1159));
+      ADD_RANGE_TYPEQ_TEST(core::SimpleMDArray_O,core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(367),TYPEQ_ADJUST_STAMP(527));
       ADD_RANGE_TYPEQ_TEST(core::Stream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1575),TYPEQ_ADJUST_STAMP(1623));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1163));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1167));
       ADD_SINGLE_TYPEQ_TEST(core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1567));
       ADD_RANGE_TYPEQ_TEST(core::Number_O,core::Complex_O,TYPEQ_ADJUST_STAMP(1523),TYPEQ_ADJUST_STAMP(1571));
       ADD_RANGE_TYPEQ_TEST(core::T_O,core::Cons_O,TYPEQ_ADJUST_STAMP(7),TYPEQ_ADJUST_STAMP(1675));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1147));
-      ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(711),TYPEQ_ADJUST_STAMP(875));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(483));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1151));
+      ADD_RANGE_TYPEQ_TEST(core::AbstractSimpleVector_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(715),TYPEQ_ADJUST_STAMP(879));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(487));
       ADD_RANGE_TYPEQ_TEST(core::Pathname_O,core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1515),TYPEQ_ADJUST_STAMP(1519));
-      ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,TYPEQ_ADJUST_STAMP(675));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(979));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(875));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,TYPEQ_ADJUST_STAMP(1319));
-      ADD_RANGE_TYPEQ_TEST(llvmo::CallBase_O,llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1247),TYPEQ_ADJUST_STAMP(1255));
+      ADD_SINGLE_TYPEQ_TEST(core::Str8Ns_O,TYPEQ_ADJUST_STAMP(679));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(983));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(879));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UndefValue_O,TYPEQ_ADJUST_STAMP(1323));
+      ADD_RANGE_TYPEQ_TEST(llvmo::CallBase_O,llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1251),TYPEQ_ADJUST_STAMP(1259));
       ADD_RANGE_TYPEQ_TEST(core::CompileTimeEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1423),TYPEQ_ADJUST_STAMP(1443));
       ADD_SINGLE_TYPEQ_TEST(core::Path_O,TYPEQ_ADJUST_STAMP(1511));
-      ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,TYPEQ_ADJUST_STAMP(187));
+      ADD_SINGLE_TYPEQ_TEST(mp::SharedMutex_O,TYPEQ_ADJUST_STAMP(191));
       ADD_SINGLE_TYPEQ_TEST(core::InstanceCreator_O,TYPEQ_ADJUST_STAMP(87));
       ADD_SINGLE_TYPEQ_TEST(core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1603));
       ADD_RANGE_TYPEQ_TEST(core::Scope_O,core::FileScope_O,TYPEQ_ADJUST_STAMP(1503),TYPEQ_ADJUST_STAMP(1507));
       ADD_SINGLE_TYPEQ_TEST(llvmo::InsertPoint_O,TYPEQ_ADJUST_STAMP(1499));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionDescription_O,TYPEQ_ADJUST_STAMP(1495));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_double_O,TYPEQ_ADJUST_STAMP(551));
-      ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,TYPEQ_ADJUST_STAMP(683));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_double_O,TYPEQ_ADJUST_STAMP(555));
+      ADD_SINGLE_TYPEQ_TEST(core::StrWNs_O,TYPEQ_ADJUST_STAMP(687));
       ADD_SINGLE_TYPEQ_TEST(core::EchoStream_O,TYPEQ_ADJUST_STAMP(1623));
       ADD_RANGE_TYPEQ_TEST(core::HashTableBase_O,core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1467),TYPEQ_ADJUST_STAMP(1491));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,TYPEQ_ADJUST_STAMP(507));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,TYPEQ_ADJUST_STAMP(351));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte16_t_O,TYPEQ_ADJUST_STAMP(599));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayBit_O,TYPEQ_ADJUST_STAMP(511));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBit_O,TYPEQ_ADJUST_STAMP(355));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte16_t_O,TYPEQ_ADJUST_STAMP(603));
       ADD_SINGLE_TYPEQ_TEST(core::AtomicFixnumHolder_O,TYPEQ_ADJUST_STAMP(1463));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1131),TYPEQ_ADJUST_STAMP(1143));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int2_t_O,TYPEQ_ADJUST_STAMP(583));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1143));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,TYPEQ_ADJUST_STAMP(183));
-      ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(175),TYPEQ_ADJUST_STAMP(179));
-      ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(207));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILocalScope_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1135),TYPEQ_ADJUST_STAMP(1147));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int2_t_O,TYPEQ_ADJUST_STAMP(587));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1147));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DITypeRefArray_O,TYPEQ_ADJUST_STAMP(187));
+      ADD_RANGE_TYPEQ_TEST(mp::Mutex_O,mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(179),TYPEQ_ADJUST_STAMP(183));
+      ADD_SINGLE_TYPEQ_TEST(core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(211));
       ADD_SINGLE_TYPEQ_TEST(core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1619));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(967),TYPEQ_ADJUST_STAMP(975));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ModulePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(971),TYPEQ_ADJUST_STAMP(979));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1455));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1099));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1103));
       ADD_SINGLE_TYPEQ_TEST(core::LongFloat_O,TYPEQ_ADJUST_STAMP(1563));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int4_t_O,TYPEQ_ADJUST_STAMP(623));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(975));
-      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1187),TYPEQ_ADJUST_STAMP(1323));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int16_t_O,TYPEQ_ADJUST_STAMP(223));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_T_O,TYPEQ_ADJUST_STAMP(575));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,TYPEQ_ADJUST_STAMP(1243));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,TYPEQ_ADJUST_STAMP(1239));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int4_t_O,TYPEQ_ADJUST_STAMP(627));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(979));
+      ADD_RANGE_TYPEQ_TEST(llvmo::User_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1191),TYPEQ_ADJUST_STAMP(1327));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int16_t_O,TYPEQ_ADJUST_STAMP(227));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_T_O,TYPEQ_ADJUST_STAMP(579));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FenceInst_O,TYPEQ_ADJUST_STAMP(1247));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicCmpXchgInst_O,TYPEQ_ADJUST_STAMP(1243));
       ADD_SINGLE_TYPEQ_TEST(core::ValueFrame_O,TYPEQ_ADJUST_STAMP(1451));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int8_t_O,TYPEQ_ADJUST_STAMP(559));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int4_t_O,TYPEQ_ADJUST_STAMP(451));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,TYPEQ_ADJUST_STAMP(867));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_double_O,TYPEQ_ADJUST_STAMP(379));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int8_t_O,TYPEQ_ADJUST_STAMP(563));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int4_t_O,TYPEQ_ADJUST_STAMP(455));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int32_t_O,TYPEQ_ADJUST_STAMP(871));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_double_O,TYPEQ_ADJUST_STAMP(383));
       ADD_SINGLE_TYPEQ_TEST(core::Complex_O,TYPEQ_ADJUST_STAMP(1571));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,TYPEQ_ADJUST_STAMP(1315));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1019));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,TYPEQ_ADJUST_STAMP(1159));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,TYPEQ_ADJUST_STAMP(1311));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1023));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantPointerNull_O,TYPEQ_ADJUST_STAMP(1319));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1023));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ValueAsMetadata_O,TYPEQ_ADJUST_STAMP(1163));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantExpr_O,TYPEQ_ADJUST_STAMP(1315));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1027));
       ADD_SINGLE_TYPEQ_TEST(core::RandomState_O,TYPEQ_ADJUST_STAMP(1459));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int16_t_O,TYPEQ_ADJUST_STAMP(615));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_float_O,TYPEQ_ADJUST_STAMP(427));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int16_t_O,TYPEQ_ADJUST_STAMP(619));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_float_O,TYPEQ_ADJUST_STAMP(431));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Target_O,TYPEQ_ADJUST_STAMP(1371));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int2_t_O,TYPEQ_ADJUST_STAMP(803));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(327));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,TYPEQ_ADJUST_STAMP(819));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(771));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int2_t_O,TYPEQ_ADJUST_STAMP(807));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(331));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_fixnum_O,TYPEQ_ADJUST_STAMP(823));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte32_t_O,TYPEQ_ADJUST_STAMP(775));
       ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(115));
       ADD_RANGE_TYPEQ_TEST(core::AnsiStream_O,core::EchoStream_O,TYPEQ_ADJUST_STAMP(1579),TYPEQ_ADJUST_STAMP(1623));
       ADD_RANGE_TYPEQ_TEST(core::BuiltinClosure_O,core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(107),TYPEQ_ADJUST_STAMP(111));
       ADD_SINGLE_TYPEQ_TEST(core::SingleFloat_dummy_O,TYPEQ_ADJUST_STAMP(1559));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(1151));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIExpression_O,TYPEQ_ADJUST_STAMP(1155));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Module_O,TYPEQ_ADJUST_STAMP(1367));
       ADD_RANGE_TYPEQ_TEST(core::Environment_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1391),TYPEQ_ADJUST_STAMP(1455));
       ADD_SINGLE_TYPEQ_TEST(core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1419));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1255));
-      ADD_RANGE_TYPEQ_TEST(core::StrNs_O,core::StrWNs_O,TYPEQ_ADJUST_STAMP(667),TYPEQ_ADJUST_STAMP(683));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::InvokeInst_O,TYPEQ_ADJUST_STAMP(1259));
+      ADD_RANGE_TYPEQ_TEST(core::StrNs_O,core::StrWNs_O,TYPEQ_ADJUST_STAMP(671),TYPEQ_ADJUST_STAMP(687));
       ADD_SINGLE_TYPEQ_TEST(core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1443));
       ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(135));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,TYPEQ_ADJUST_STAMP(1251));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1079));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::CallInst_O,TYPEQ_ADJUST_STAMP(1255));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1083));
       ADD_SINGLE_TYPEQ_TEST(core::DoubleFloat_O,TYPEQ_ADJUST_STAMP(1555));
       ADD_RANGE_TYPEQ_TEST(core::StringStream_O,core::StringInputStream_O,TYPEQ_ADJUST_STAMP(1611),TYPEQ_ADJUST_STAMP(1619));
       ADD_SINGLE_TYPEQ_TEST(core::Sigset_O,TYPEQ_ADJUST_STAMP(1387));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,TYPEQ_ADJUST_STAMP(239));
-      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(923));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(1027));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int64_t_O,TYPEQ_ADJUST_STAMP(279));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,TYPEQ_ADJUST_STAMP(443));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int32_t_O,TYPEQ_ADJUST_STAMP(243));
+      ADD_SINGLE_TYPEQ_TEST(asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(927));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(1031));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int64_t_O,TYPEQ_ADJUST_STAMP(283));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_size_t_O,TYPEQ_ADJUST_STAMP(447));
       ADD_SINGLE_TYPEQ_TEST(core::SmallMultimap_O,TYPEQ_ADJUST_STAMP(1383));
       ADD_SINGLE_TYPEQ_TEST(llvmo::PassManagerBuilder_O,TYPEQ_ADJUST_STAMP(1363));
       ADD_SINGLE_TYPEQ_TEST(core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1547));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,TYPEQ_ADJUST_STAMP(231));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,TYPEQ_ADJUST_STAMP(1307));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int8_t_O,TYPEQ_ADJUST_STAMP(235));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantFP_O,TYPEQ_ADJUST_STAMP(1311));
       ADD_SINGLE_TYPEQ_TEST(core::Cons_O,TYPEQ_ADJUST_STAMP(1675));
       ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMContext_O,TYPEQ_ADJUST_STAMP(1359));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int4_t_O,TYPEQ_ADJUST_STAMP(531));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int4_t_O,TYPEQ_ADJUST_STAMP(535));
       ADD_SINGLE_TYPEQ_TEST(core::WeakKeyHashTable_O,TYPEQ_ADJUST_STAMP(1471));
       ADD_SINGLE_TYPEQ_TEST(core::Rack_O,TYPEQ_ADJUST_STAMP(1379));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(319));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayBaseChar_O,TYPEQ_ADJUST_STAMP(323));
       ADD_SINGLE_TYPEQ_TEST(core::UserData_O,TYPEQ_ADJUST_STAMP(1655));
-      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::Linker_O,TYPEQ_ADJUST_STAMP(959),TYPEQ_ADJUST_STAMP(1375));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1091),TYPEQ_ADJUST_STAMP(1147));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1283));
+      ADD_RANGE_TYPEQ_TEST(core::ExternalObject_O,llvmo::Linker_O,TYPEQ_ADJUST_STAMP(963),TYPEQ_ADJUST_STAMP(1375));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1095),TYPEQ_ADJUST_STAMP(1151));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1287));
       ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1607));
       ADD_RANGE_TYPEQ_TEST(core::General_O,core::MultiStringBuffer_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1671));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(1355));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(175));
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(99),TYPEQ_ADJUST_STAMP(115));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_size_t_O,TYPEQ_ADJUST_STAMP(631));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_size_t_O,TYPEQ_ADJUST_STAMP(635));
       ADD_SINGLE_TYPEQ_TEST(core::BlockEnvironment_O,TYPEQ_ADJUST_STAMP(1415));
-      ADD_SINGLE_TYPEQ_TEST(mpip::Mpi_O,TYPEQ_ADJUST_STAMP(955));
+      ADD_SINGLE_TYPEQ_TEST(mpip::Mpi_O,TYPEQ_ADJUST_STAMP(959));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DINodeArray_O,TYPEQ_ADJUST_STAMP(171));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1295));
-      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,TYPEQ_ADJUST_STAMP(951));
-      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(937),TYPEQ_ADJUST_STAMP(945));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,TYPEQ_ADJUST_STAMP(1351));
-      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignTypeSpec_O,TYPEQ_ADJUST_STAMP(935));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1299));
+      ADD_SINGLE_TYPEQ_TEST(core::SmallMap_O,TYPEQ_ADJUST_STAMP(955));
+      ADD_RANGE_TYPEQ_TEST_INSTANCE(core::Instance_O,clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(941),TYPEQ_ADJUST_STAMP(949));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetOptions_O,TYPEQ_ADJUST_STAMP(1355));
+      ADD_SINGLE_TYPEQ_TEST(clasp_ffi::ForeignTypeSpec_O,TYPEQ_ADJUST_STAMP(939));
       ADD_SINGLE_TYPEQ_TEST(core::Unused_dummy_O,TYPEQ_ADJUST_STAMP(15));
-      ADD_SINGLE_TYPEQ_TEST(core::PosixTimeDuration_O,TYPEQ_ADJUST_STAMP(931));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DWARFContext_O,TYPEQ_ADJUST_STAMP(1347));
+      ADD_SINGLE_TYPEQ_TEST(core::PosixTimeDuration_O,TYPEQ_ADJUST_STAMP(935));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DWARFContext_O,TYPEQ_ADJUST_STAMP(1351));
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEqual_O,TYPEQ_ADJUST_STAMP(1491));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(499));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,TYPEQ_ADJUST_STAMP(1343));
-      ADD_SINGLE_TYPEQ_TEST(core::BitVectorNs_O,TYPEQ_ADJUST_STAMP(663));
-      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,TYPEQ_ADJUST_STAMP(919));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,TYPEQ_ADJUST_STAMP(1339));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,TYPEQ_ADJUST_STAMP(747));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ThreadSafeContext_O,TYPEQ_ADJUST_STAMP(1335));
-      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1327),TYPEQ_ADJUST_STAMP(1331));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,TYPEQ_ADJUST_STAMP(795));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1171),TYPEQ_ADJUST_STAMP(1323));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(731));
-      ADD_SINGLE_TYPEQ_TEST(core::Test_O,TYPEQ_ADJUST_STAMP(1167));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1083),TYPEQ_ADJUST_STAMP(1163));
-      ADD_RANGE_TYPEQ_TEST(core::MDArray_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(215),TYPEQ_ADJUST_STAMP(707));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte64_t_O,TYPEQ_ADJUST_STAMP(503));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Triple_O,TYPEQ_ADJUST_STAMP(1347));
+      ADD_SINGLE_TYPEQ_TEST(core::BitVectorNs_O,TYPEQ_ADJUST_STAMP(667));
+      ADD_SINGLE_TYPEQ_TEST(core::CoreExposer_O,TYPEQ_ADJUST_STAMP(923));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::NamedMDNode_O,TYPEQ_ADJUST_STAMP(1343));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte16_t_O,TYPEQ_ADJUST_STAMP(751));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ThreadSafeContext_O,TYPEQ_ADJUST_STAMP(1339));
+      ADD_RANGE_TYPEQ_TEST(llvmo::TargetMachine_O,llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1331),TYPEQ_ADJUST_STAMP(1335));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte64_t_O,TYPEQ_ADJUST_STAMP(799));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Value_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1175),TYPEQ_ADJUST_STAMP(1327));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(735));
+      ADD_SINGLE_TYPEQ_TEST(core::Test_O,TYPEQ_ADJUST_STAMP(1171));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Metadata_O,llvmo::MDString_O,TYPEQ_ADJUST_STAMP(1087),TYPEQ_ADJUST_STAMP(1167));
+      ADD_RANGE_TYPEQ_TEST(core::MDArray_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(219),TYPEQ_ADJUST_STAMP(711));
       ADD_SINGLE_TYPEQ_TEST(core::Serializer_O,TYPEQ_ADJUST_STAMP(167));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(945));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,TYPEQ_ADJUST_STAMP(1303));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,TYPEQ_ADJUST_STAMP(435));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StructLayout_O,TYPEQ_ADJUST_STAMP(927));
-      ADD_RANGE_TYPEQ_TEST(llvmo::CompositeType_O,llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1003),TYPEQ_ADJUST_STAMP(1023));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,TYPEQ_ADJUST_STAMP(395));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRep_O,TYPEQ_ADJUST_STAMP(949));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantInt_O,TYPEQ_ADJUST_STAMP(1307));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int16_t_O,TYPEQ_ADJUST_STAMP(439));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StructLayout_O,TYPEQ_ADJUST_STAMP(931));
+      ADD_RANGE_TYPEQ_TEST(llvmo::CompositeType_O,llvmo::StructType_O,TYPEQ_ADJUST_STAMP(1007),TYPEQ_ADJUST_STAMP(1027));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayT_O,TYPEQ_ADJUST_STAMP(399));
       ADD_RANGE_TYPEQ_TEST(core::ActivationFrame_O,core::FunctionFrame_O,TYPEQ_ADJUST_STAMP(1447),TYPEQ_ADJUST_STAMP(1455));
-      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1071),TYPEQ_ADJUST_STAMP(1079));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,TYPEQ_ADJUST_STAMP(1203));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,TYPEQ_ADJUST_STAMP(1299));
-      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(915),TYPEQ_ADJUST_STAMP(923));
-      ADD_SINGLE_TYPEQ_TEST(core::DirectoryIterator_O,TYPEQ_ADJUST_STAMP(203));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(295));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1127));
+      ADD_RANGE_TYPEQ_TEST(llvmo::PassManagerBase_O,llvmo::FunctionPassManager_O,TYPEQ_ADJUST_STAMP(1075),TYPEQ_ADJUST_STAMP(1083));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LoadInst_O,TYPEQ_ADJUST_STAMP(1207));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ConstantStruct_O,TYPEQ_ADJUST_STAMP(1303));
+      ADD_RANGE_TYPEQ_TEST(core::Exposer_O,asttooling::AsttoolingExposer_O,TYPEQ_ADJUST_STAMP(919),TYPEQ_ADJUST_STAMP(927));
+      ADD_SINGLE_TYPEQ_TEST(core::DirectoryIterator_O,TYPEQ_ADJUST_STAMP(207));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(299));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1131));
       ADD_RANGE_TYPEQ_TEST(core::LexicalEnvironment_O,core::UnwindProtectEnvironment_O,TYPEQ_ADJUST_STAMP(1399),TYPEQ_ADJUST_STAMP(1443));
-      ADD_SINGLE_TYPEQ_TEST(core::PosixTime_O,TYPEQ_ADJUST_STAMP(911));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::MetadataAsValue_O,TYPEQ_ADJUST_STAMP(1183));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,TYPEQ_ADJUST_STAMP(755));
+      ADD_SINGLE_TYPEQ_TEST(core::PosixTime_O,TYPEQ_ADJUST_STAMP(915));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::MetadataAsValue_O,TYPEQ_ADJUST_STAMP(1187));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleBitVector_O,TYPEQ_ADJUST_STAMP(759));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionContainerEnvironment_O,TYPEQ_ADJUST_STAMP(1439));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(827));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,TYPEQ_ADJUST_STAMP(1235));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,TYPEQ_ADJUST_STAMP(1279));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1127));
-      ADD_SINGLE_TYPEQ_TEST(core::Readtable_O,TYPEQ_ADJUST_STAMP(907));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1047));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,TYPEQ_ADJUST_STAMP(903));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte8_t_O,TYPEQ_ADJUST_STAMP(851));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1139),TYPEQ_ADJUST_STAMP(1143));
-      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1087),TYPEQ_ADJUST_STAMP(1155));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_fixnum_O,TYPEQ_ADJUST_STAMP(699));
-      ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(179));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_float_O,TYPEQ_ADJUST_STAMP(835));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,TYPEQ_ADJUST_STAMP(1199));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int4_t_O,TYPEQ_ADJUST_STAMP(763));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,TYPEQ_ADJUST_STAMP(311));
-      ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,TYPEQ_ADJUST_STAMP(899));
-      ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,TYPEQ_ADJUST_STAMP(895));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,TYPEQ_ADJUST_STAMP(1107));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DataLayout_O,TYPEQ_ADJUST_STAMP(891));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,TYPEQ_ADJUST_STAMP(1179));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int8_t_O,TYPEQ_ADJUST_STAMP(371));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,TYPEQ_ADJUST_STAMP(1067));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte64_t_O,TYPEQ_ADJUST_STAMP(567));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::SectionedAddress_O,TYPEQ_ADJUST_STAMP(1063));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(287));
-      ADD_SINGLE_TYPEQ_TEST(core::Character_dummy_O,TYPEQ_ADJUST_STAMP(887));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int8_t_O,TYPEQ_ADJUST_STAMP(831));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ResumeInst_O,TYPEQ_ADJUST_STAMP(1239));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Function_O,TYPEQ_ADJUST_STAMP(1283));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIType_O,llvmo::DISubroutineType_O,TYPEQ_ADJUST_STAMP(1115),TYPEQ_ADJUST_STAMP(1131));
+      ADD_SINGLE_TYPEQ_TEST(core::Readtable_O,TYPEQ_ADJUST_STAMP(911));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1051));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ClaspJIT_O,TYPEQ_ADJUST_STAMP(907));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_byte8_t_O,TYPEQ_ADJUST_STAMP(855));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DILexicalBlockBase_O,llvmo::DILexicalBlock_O,TYPEQ_ADJUST_STAMP(1143),TYPEQ_ADJUST_STAMP(1147));
+      ADD_RANGE_TYPEQ_TEST(llvmo::MDNode_O,llvmo::DILocation_O,TYPEQ_ADJUST_STAMP(1091),TYPEQ_ADJUST_STAMP(1159));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_fixnum_O,TYPEQ_ADJUST_STAMP(703));
+      ADD_SINGLE_TYPEQ_TEST(mp::RecursiveMutex_O,TYPEQ_ADJUST_STAMP(183));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_float_O,TYPEQ_ADJUST_STAMP(839));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::VAArgInst_O,TYPEQ_ADJUST_STAMP(1203));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int4_t_O,TYPEQ_ADJUST_STAMP(767));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_fixnum_O,TYPEQ_ADJUST_STAMP(315));
+      ADD_SINGLE_TYPEQ_TEST(core::SharpEqualWrapper_O,TYPEQ_ADJUST_STAMP(903));
+      ADD_SINGLE_TYPEQ_TEST(core::LoadTimeValues_O,TYPEQ_ADJUST_STAMP(899));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIFile_O,TYPEQ_ADJUST_STAMP(1111));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DataLayout_O,TYPEQ_ADJUST_STAMP(895));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BasicBlock_O,TYPEQ_ADJUST_STAMP(1183));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int8_t_O,TYPEQ_ADJUST_STAMP(375));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::EngineBuilder_O,TYPEQ_ADJUST_STAMP(1071));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte64_t_O,TYPEQ_ADJUST_STAMP(571));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::SectionedAddress_O,TYPEQ_ADJUST_STAMP(1067));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(291));
+      ADD_SINGLE_TYPEQ_TEST(core::Character_dummy_O,TYPEQ_ADJUST_STAMP(891));
       ADD_SINGLE_TYPEQ_TEST(core::TagbodyEnvironment_O,TYPEQ_ADJUST_STAMP(1411));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1271),TYPEQ_ADJUST_STAMP(1323));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Constant_O,llvmo::ConstantArray_O,TYPEQ_ADJUST_STAMP(1275),TYPEQ_ADJUST_STAMP(1327));
       ADD_SINGLE_TYPEQ_TEST(core::SpecialForm_O,TYPEQ_ADJUST_STAMP(95));
       ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionCallee_O,TYPEQ_ADJUST_STAMP(163));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,TYPEQ_ADJUST_STAMP(1123));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,TYPEQ_ADJUST_STAMP(1059));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBasicType_O,TYPEQ_ADJUST_STAMP(1127));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIBuilder_O,TYPEQ_ADJUST_STAMP(1063));
       ADD_SINGLE_TYPEQ_TEST(core::NativeVector_int_O,TYPEQ_ADJUST_STAMP(159));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,TYPEQ_ADJUST_STAMP(1055));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,TYPEQ_ADJUST_STAMP(1051));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayCharacter_O,TYPEQ_ADJUST_STAMP(459));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleCharacterString_O,TYPEQ_ADJUST_STAMP(723));
-      ADD_RANGE_TYPEQ_TEST(core::Symbol_O,core::Null_O,TYPEQ_ADJUST_STAMP(879),TYPEQ_ADJUST_STAMP(883));
-      ADD_RANGE_TYPEQ_TEST(core::Array_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(211),TYPEQ_ADJUST_STAMP(875));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(247));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,TYPEQ_ADJUST_STAMP(1175));
-      ADD_RANGE_TYPEQ_TEST(core::Iterator_O,core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(199),TYPEQ_ADJUST_STAMP(207));
-      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1043),TYPEQ_ADJUST_STAMP(1047));
-      ADD_SINGLE_TYPEQ_TEST(core::Null_O,TYPEQ_ADJUST_STAMP(883));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetPassConfig_O,TYPEQ_ADJUST_STAMP(1039));
-      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchMethod_O,TYPEQ_ADJUST_STAMP(195));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APInt_O,TYPEQ_ADJUST_STAMP(1059));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::APFloat_O,TYPEQ_ADJUST_STAMP(1055));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArrayCharacter_O,TYPEQ_ADJUST_STAMP(463));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleCharacterString_O,TYPEQ_ADJUST_STAMP(727));
+      ADD_RANGE_TYPEQ_TEST(core::Symbol_O,core::Null_O,TYPEQ_ADJUST_STAMP(883),TYPEQ_ADJUST_STAMP(887));
+      ADD_RANGE_TYPEQ_TEST(core::Array_O,core::SimpleVector_byte4_t_O,TYPEQ_ADJUST_STAMP(215),TYPEQ_ADJUST_STAMP(879));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(251));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::Argument_O,TYPEQ_ADJUST_STAMP(1179));
+      ADD_RANGE_TYPEQ_TEST(core::Iterator_O,core::RecursiveDirectoryIterator_O,TYPEQ_ADJUST_STAMP(203),TYPEQ_ADJUST_STAMP(211));
+      ADD_RANGE_TYPEQ_TEST(llvmo::IRBuilderBase_O,llvmo::IRBuilder_O,TYPEQ_ADJUST_STAMP(1047),TYPEQ_ADJUST_STAMP(1051));
+      ADD_SINGLE_TYPEQ_TEST(core::Null_O,TYPEQ_ADJUST_STAMP(887));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetPassConfig_O,TYPEQ_ADJUST_STAMP(1043));
+      ADD_SINGLE_TYPEQ_TEST(core::SingleDispatchMethod_O,TYPEQ_ADJUST_STAMP(199));
       ADD_SINGLE_TYPEQ_TEST(core::NativeVector_double_O,TYPEQ_ADJUST_STAMP(155));
       ADD_SINGLE_TYPEQ_TEST(core::GlueEnvironment_O,TYPEQ_ADJUST_STAMP(1395));
-      ADD_RANGE_TYPEQ_TEST(core::CxxObject_O,mp::Process_O,TYPEQ_ADJUST_STAMP(139),TYPEQ_ADJUST_STAMP(191));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,TYPEQ_ADJUST_STAMP(1231));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,TYPEQ_ADJUST_STAMP(999));
+      ADD_RANGE_TYPEQ_TEST(core::CxxObject_O,mp::Process_O,TYPEQ_ADJUST_STAMP(139),TYPEQ_ADJUST_STAMP(195));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ReturnInst_O,TYPEQ_ADJUST_STAMP(1235));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::FunctionType_O,TYPEQ_ADJUST_STAMP(1003));
       ADD_SINGLE_TYPEQ_TEST(clbind::DummyCreator_O,TYPEQ_ADJUST_STAMP(83));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(359));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIContext_O,TYPEQ_ADJUST_STAMP(1035));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::JITDylib_O,TYPEQ_ADJUST_STAMP(1031));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(995),TYPEQ_ADJUST_STAMP(1027));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte16_t_O,TYPEQ_ADJUST_STAMP(363));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIContext_O,TYPEQ_ADJUST_STAMP(1039));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::JITDylib_O,TYPEQ_ADJUST_STAMP(1035));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Type_O,llvmo::IntegerType_O,TYPEQ_ADJUST_STAMP(999),TYPEQ_ADJUST_STAMP(1031));
       ADD_RANGE_TYPEQ_TEST(core::Pointer_O,clasp_ffi::ForeignData_O,TYPEQ_ADJUST_STAMP(131),TYPEQ_ADJUST_STAMP(135));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,TYPEQ_ADJUST_STAMP(1227));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(707));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::UnreachableInst_O,TYPEQ_ADJUST_STAMP(1231));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(711));
       ADD_SINGLE_TYPEQ_TEST(core::FileScope_O,TYPEQ_ADJUST_STAMP(1507));
       ADD_RANGE_TYPEQ_TEST(core::Float_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1551),TYPEQ_ADJUST_STAMP(1567));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(411));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(1119));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte4_t_O,TYPEQ_ADJUST_STAMP(415));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DIDerivedType_O,TYPEQ_ADJUST_STAMP(1123));
       ADD_SINGLE_TYPEQ_TEST(clbind::ConstructorCreator_O,TYPEQ_ADJUST_STAMP(79));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(811));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1291),TYPEQ_ADJUST_STAMP(1295));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int64_t_O,TYPEQ_ADJUST_STAMP(815));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ConstantDataSequential_O,llvmo::ConstantDataArray_O,TYPEQ_ADJUST_STAMP(1295),TYPEQ_ADJUST_STAMP(1299));
       ADD_SINGLE_TYPEQ_TEST(core::TranslationFunctor_O,TYPEQ_ADJUST_STAMP(111));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_double_O,TYPEQ_ADJUST_STAMP(539));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,TYPEQ_ADJUST_STAMP(1223));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_double_O,TYPEQ_ADJUST_STAMP(543));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::StoreInst_O,TYPEQ_ADJUST_STAMP(1227));
       ADD_SINGLE_TYPEQ_TEST(llvmo::DebugLoc_O,TYPEQ_ADJUST_STAMP(127));
       ADD_SINGLE_TYPEQ_TEST(core::WeakPointer_O,TYPEQ_ADJUST_STAMP(123));
       ADD_SINGLE_TYPEQ_TEST(core::IOFileStream_O,TYPEQ_ADJUST_STAMP(1599));
       ADD_RANGE_TYPEQ_TEST(core::RuntimeVisibleEnvironment_O,core::ValueEnvironment_O,TYPEQ_ADJUST_STAMP(1403),TYPEQ_ADJUST_STAMP(1419));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(515));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1191),TYPEQ_ADJUST_STAMP(1267));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(519));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Instruction_O,llvmo::BranchInst_O,TYPEQ_ADJUST_STAMP(1195),TYPEQ_ADJUST_STAMP(1271));
       ADD_RANGE_TYPEQ_TEST(core::FileStream_O,core::IOStreamStream_O,TYPEQ_ADJUST_STAMP(1595),TYPEQ_ADJUST_STAMP(1603));
       ADD_RANGE_TYPEQ_TEST(core::Rational_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1531),TYPEQ_ADJUST_STAMP(1547));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,TYPEQ_ADJUST_STAMP(335));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(1219));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArrayCharacter_O,TYPEQ_ADJUST_STAMP(339));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LandingPadInst_O,TYPEQ_ADJUST_STAMP(1223));
       ADD_SINGLE_TYPEQ_TEST(core::ImmobileObject_O,TYPEQ_ADJUST_STAMP(119));
       ADD_RANGE_TYPEQ_TEST(core::Function_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(55),TYPEQ_ADJUST_STAMP(115));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int2_t_O,TYPEQ_ADJUST_STAMP(403));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int2_t_O,TYPEQ_ADJUST_STAMP(407));
       ADD_SINGLE_TYPEQ_TEST(core::AtomicT_Holder_O,TYPEQ_ADJUST_STAMP(51));
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEql_O,TYPEQ_ADJUST_STAMP(1487));
       ADD_SINGLE_TYPEQ_TEST(mp::ConditionVariable_O,TYPEQ_ADJUST_STAMP(151));
       ADD_RANGE_TYPEQ_TEST(core::Real_O,core::ShortFloat_O,TYPEQ_ADJUST_STAMP(1527),TYPEQ_ADJUST_STAMP(1567));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(271));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_byte8_t_O,TYPEQ_ADJUST_STAMP(275));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstanceCreator_O,TYPEQ_ADJUST_STAMP(75));
       ADD_SINGLE_TYPEQ_TEST(core::StringOutputStream_O,TYPEQ_ADJUST_STAMP(1615));
       ADD_SINGLE_TYPEQ_TEST(llvmo::AttributeSet_O,TYPEQ_ADJUST_STAMP(47));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,TYPEQ_ADJUST_STAMP(1215));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::AtomicRMWInst_O,TYPEQ_ADJUST_STAMP(1219));
       ADD_SINGLE_TYPEQ_TEST(llvmo::MDBuilder_O,TYPEQ_ADJUST_STAMP(147));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,TYPEQ_ADJUST_STAMP(1075));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_O,TYPEQ_ADJUST_STAMP(843));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,TYPEQ_ADJUST_STAMP(1135));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PassManager_O,TYPEQ_ADJUST_STAMP(1079));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_O,TYPEQ_ADJUST_STAMP(847));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DISubprogram_O,TYPEQ_ADJUST_STAMP(1139));
       ADD_RANGE_TYPEQ_TEST(core::Creator_O,core::StandardClassCreator_O,TYPEQ_ADJUST_STAMP(63),TYPEQ_ADJUST_STAMP(91));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,TYPEQ_ADJUST_STAMP(1015));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(523));
-      ADD_RANGE_TYPEQ_TEST(core::SimpleString_O,core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(715),TYPEQ_ADJUST_STAMP(731));
-      ADD_RANGE_TYPEQ_TEST(llvmo::DIVariable_O,llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1095),TYPEQ_ADJUST_STAMP(1099));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(467));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,TYPEQ_ADJUST_STAMP(1287));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,TYPEQ_ADJUST_STAMP(1115));
-      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(987),TYPEQ_ADJUST_STAMP(991));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ArrayType_O,TYPEQ_ADJUST_STAMP(1019));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int64_t_O,TYPEQ_ADJUST_STAMP(527));
+      ADD_RANGE_TYPEQ_TEST(core::SimpleString_O,core::SimpleBaseString_O,TYPEQ_ADJUST_STAMP(719),TYPEQ_ADJUST_STAMP(735));
+      ADD_RANGE_TYPEQ_TEST(llvmo::DIVariable_O,llvmo::DILocalVariable_O,TYPEQ_ADJUST_STAMP(1099),TYPEQ_ADJUST_STAMP(1103));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte2_t_O,TYPEQ_ADJUST_STAMP(471));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::BlockAddress_O,TYPEQ_ADJUST_STAMP(1291));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::DICompositeType_O,TYPEQ_ADJUST_STAMP(1119));
+      ADD_RANGE_TYPEQ_TEST(llvmo::MCSubtargetInfo_O,llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(991),TYPEQ_ADJUST_STAMP(995));
       ADD_SINGLE_TYPEQ_TEST(core::FunctionValueEnvironment_O,TYPEQ_ADJUST_STAMP(1407));
       ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxClassCreator_O,TYPEQ_ADJUST_STAMP(71));
       ADD_SINGLE_TYPEQ_TEST(core::HashTableEq_O,TYPEQ_ADJUST_STAMP(1483));
@@ -5869,40 +5869,40 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(core::ConcatenatedStream_O,TYPEQ_ADJUST_STAMP(1591));
       ADD_SINGLE_TYPEQ_TEST(core::SymbolMacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1435));
       ADD_SINGLE_TYPEQ_TEST(core::MacroletEnvironment_O,TYPEQ_ADJUST_STAMP(1431));
-      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(971),TYPEQ_ADJUST_STAMP(975));
+      ADD_RANGE_TYPEQ_TEST(llvmo::ImmutablePass_O,llvmo::TargetLibraryInfoWrapperPass_O,TYPEQ_ADJUST_STAMP(975),TYPEQ_ADJUST_STAMP(979));
       ADD_SINGLE_TYPEQ_TEST(core::FuncallableInstance_O,TYPEQ_ADJUST_STAMP(57));
       ADD_SINGLE_TYPEQ_TEST(core::SynonymStream_O,TYPEQ_ADJUST_STAMP(1587));
       ADD_SINGLE_TYPEQ_TEST(core::Ratio_O,TYPEQ_ADJUST_STAMP(1535));
-      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int2_t_O,TYPEQ_ADJUST_STAMP(303));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte2_t_O,TYPEQ_ADJUST_STAMP(639));
+      ADD_SINGLE_TYPEQ_TEST(core::MDArray_int2_t_O,TYPEQ_ADJUST_STAMP(307));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte2_t_O,TYPEQ_ADJUST_STAMP(643));
       ADD_SINGLE_TYPEQ_TEST(core::ClosureWithSlots_O,TYPEQ_ADJUST_STAMP(103));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,TYPEQ_ADJUST_STAMP(983));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::ExecutionEngine_O,TYPEQ_ADJUST_STAMP(987));
       ADD_SINGLE_TYPEQ_TEST(core::ClassRepCreator_O,TYPEQ_ADJUST_STAMP(67));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int16_t_O,TYPEQ_ADJUST_STAMP(739));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_int16_t_O,TYPEQ_ADJUST_STAMP(743));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Attribute_O,TYPEQ_ADJUST_STAMP(39));
-      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxObject_O,TYPEQ_ADJUST_STAMP(940));
+      ADD_SINGLE_TYPEQ_TEST(core::DerivableCxxObject_O,TYPEQ_ADJUST_STAMP(944));
       ADD_SINGLE_TYPEQ_TEST(core::SymbolToEnumConverter_O,TYPEQ_ADJUST_STAMP(35));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,TYPEQ_ADJUST_STAMP(1211));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::SwitchInst_O,TYPEQ_ADJUST_STAMP(1215));
       ADD_SINGLE_TYPEQ_TEST(core::NativeVector_float_O,TYPEQ_ADJUST_STAMP(143));
-      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(963),TYPEQ_ADJUST_STAMP(979));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int32_t_O,TYPEQ_ADJUST_STAMP(591));
+      ADD_RANGE_TYPEQ_TEST(llvmo::Pass_O,llvmo::FunctionPass_O,TYPEQ_ADJUST_STAMP(967),TYPEQ_ADJUST_STAMP(983));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_int32_t_O,TYPEQ_ADJUST_STAMP(595));
       ADD_SINGLE_TYPEQ_TEST(core::VaList_dummy_O,TYPEQ_ADJUST_STAMP(11));
       ADD_SINGLE_TYPEQ_TEST(core::FdSet_O,TYPEQ_ADJUST_STAMP(31));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte4_t_O,TYPEQ_ADJUST_STAMP(691));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte4_t_O,TYPEQ_ADJUST_STAMP(695));
       ADD_SINGLE_TYPEQ_TEST(core::CatchEnvironment_O,TYPEQ_ADJUST_STAMP(1427));
       ADD_SINGLE_TYPEQ_TEST(core::LogicalPathname_O,TYPEQ_ADJUST_STAMP(1519));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(991));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::TargetSubtargetInfo_O,TYPEQ_ADJUST_STAMP(995));
       ADD_SINGLE_TYPEQ_TEST(core::WrappedPointer_O,TYPEQ_ADJUST_STAMP(26));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_double_O,TYPEQ_ADJUST_STAMP(787));
-      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(387));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleVector_double_O,TYPEQ_ADJUST_STAMP(791));
+      ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_byte32_t_O,TYPEQ_ADJUST_STAMP(391));
       ADD_SINGLE_TYPEQ_TEST(core::Bignum_O,TYPEQ_ADJUST_STAMP(1543));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1331));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::LLVMTargetMachine_O,TYPEQ_ADJUST_STAMP(1335));
       ADD_SINGLE_TYPEQ_TEST(core::ClassHolder_O,TYPEQ_ADJUST_STAMP(23));
-      ADD_RANGE_TYPEQ_TEST(llvmo::SequentialType_O,llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1007),TYPEQ_ADJUST_STAMP(1019));
-      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte32_t_O,TYPEQ_ADJUST_STAMP(655));
-      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1195),TYPEQ_ADJUST_STAMP(1207));
-      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1275),TYPEQ_ADJUST_STAMP(1283));
-      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1011));
+      ADD_RANGE_TYPEQ_TEST(llvmo::SequentialType_O,llvmo::VectorType_O,TYPEQ_ADJUST_STAMP(1011),TYPEQ_ADJUST_STAMP(1023));
+      ADD_SINGLE_TYPEQ_TEST(core::ComplexVector_byte32_t_O,TYPEQ_ADJUST_STAMP(659));
+      ADD_RANGE_TYPEQ_TEST(llvmo::UnaryInstruction_O,llvmo::AllocaInst_O,TYPEQ_ADJUST_STAMP(1199),TYPEQ_ADJUST_STAMP(1211));
+      ADD_RANGE_TYPEQ_TEST(llvmo::GlobalValue_O,llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1279),TYPEQ_ADJUST_STAMP(1287));
+      ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1015));
       ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1583));
 #endif // defined(GC_TYPEQ)
 #if defined(GC_STAMP_SELECTORS)
@@ -7783,7 +7783,39 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Serializer_O),_Data.NO-NAME._M_allocated_capacity), "_Data.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (T NIL T) fixable: NIL good-name: T
 // Stamp = llvmo::DINodeArray_O/171
 { class_kind, STAMP_llvmo__DINodeArray_O, sizeof(llvmo::DINodeArray_O), 0, "llvmo::DINodeArray_O" },
-// Stamp = mp::Mutex_O/175
+// Stamp = llvmo::ObjectFile_O/175
+{ class_kind, STAMP_llvmo__ObjectFile_O, sizeof(llvmo::ObjectFile_O), 0, "llvmo::ObjectFile_O" },
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_Size), "_Size" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_StartupID), "_StartupID" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::JITDylib_O>" :SPECIALIZER "class llvmo::JITDylib_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::JITDylib_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_JITDylib), "_JITDylib" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: "basic_string"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::char_traits<char>" :NAME "char_traits" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::allocator<char>" :NAME "allocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_FasoName._M_string_length), "_FasoName._M_string_length" }, // atomic: NIL public: (T NIL) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::__cxx11::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::char_traits<char>" :NAME "char_traits" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::allocator<char>" :NAME "allocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "char") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_FasoName.NO-NAME._M_allocated_capacity), "_FasoName.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (T NIL T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_FasoIndex), "_FasoIndex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_text_segment_size), "_text_segment_size" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_text_segment_SectionID), "_text_segment_SectionID" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_stackmap_size), "_stackmap_size" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// Stamp = mp::Mutex_O/179
 { class_kind, STAMP_mp__Mutex_O, sizeof(mp::Mutex_O), 0, "mp::Mutex_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -7814,7 +7846,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = mp::RecursiveMutex_O/179
+// Stamp = mp::RecursiveMutex_O/183
 { class_kind, STAMP_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, "mp::RecursiveMutex_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -7845,9 +7877,9 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = llvmo::DITypeRefArray_O/183
+// Stamp = llvmo::DITypeRefArray_O/187
 { class_kind, STAMP_llvmo__DITypeRefArray_O, sizeof(llvmo::DITypeRefArray_O), 0, "llvmo::DITypeRefArray_O" },
-// Stamp = mp::SharedMutex_O/187
+// Stamp = mp::SharedMutex_O/191
 { class_kind, STAMP_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, "mp::SharedMutex_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -7923,7 +7955,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReaders), "_SharedMutex.mReaders" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = mp::Process_O/191
+// Stamp = mp::Process_O/195
 { class_kind, STAMP_mp__Process_O, sizeof(mp::Process_O), 0, "mp::Process_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -7989,7 +8021,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SingleDispatchMethod_O/195
+// Stamp = core::SingleDispatchMethod_O/199
 { class_kind, STAMP_core__SingleDispatchMethod_O, sizeof(core::SingleDispatchMethod_O), 0, "core::SingleDispatchMethod_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -8009,14 +8041,14 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Function_O>" :SPECIALIZER "class core::Function_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_function), "_function" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Iterator_O/199
+// Stamp = core::Iterator_O/203
 { class_kind, STAMP_core__Iterator_O, sizeof(core::Iterator_O), 0, "core::Iterator_O" },
-// Stamp = core::DirectoryIterator_O/203
+// Stamp = core::DirectoryIterator_O/207
 { class_kind, STAMP_core__DirectoryIterator_O, sizeof(core::DirectoryIterator_O), 0, "core::DirectoryIterator_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_Path), "_Path" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::RecursiveDirectoryIterator_O/207
+// Stamp = core::RecursiveDirectoryIterator_O/211
 { class_kind, STAMP_core__RecursiveDirectoryIterator_O, sizeof(core::RecursiveDirectoryIterator_O), 0, "core::RecursiveDirectoryIterator_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
@@ -8024,12 +8056,12 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_EnterHidden), "_EnterHidden" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Array_O/211
+// Stamp = core::Array_O/215
 { class_kind, STAMP_core__Array_O, sizeof(core::Array_O), 0, "core::Array_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Array_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::MDArray_O/215
+// Stamp = core::MDArray_O/219
 { class_kind, STAMP_core__MDArray_O, sizeof(core::MDArray_O), 0, "core::MDArray_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8059,8 +8091,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>/219
-// Stamp = core::MDArray_int16_t_O/223
+// Stamp = core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>/223
+// Stamp = core::MDArray_int16_t_O/227
 { class_kind, STAMP_core__MDArray_int16_t_O, sizeof(core::MDArray_int16_t_O), 0, "core::MDArray_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8090,8 +8122,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>/227
-// Stamp = core::MDArray_int8_t_O/231
+// Stamp = core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>/231
+// Stamp = core::MDArray_int8_t_O/235
 { class_kind, STAMP_core__MDArray_int8_t_O, sizeof(core::MDArray_int8_t_O), 0, "core::MDArray_int8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8121,8 +8153,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>/235
-// Stamp = core::MDArray_int32_t_O/239
+// Stamp = core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>/239
+// Stamp = core::MDArray_int32_t_O/243
 { class_kind, STAMP_core__MDArray_int32_t_O, sizeof(core::MDArray_int32_t_O), 0, "core::MDArray_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8152,8 +8184,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>/243
-// Stamp = core::MDArray_byte4_t_O/247
+// Stamp = core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>/247
+// Stamp = core::MDArray_byte4_t_O/251
 { class_kind, STAMP_core__MDArray_byte4_t_O, sizeof(core::MDArray_byte4_t_O), 0, "core::MDArray_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8183,8 +8215,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>/251
-// Stamp = core::MDArray_float_O/255
+// Stamp = core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>/255
+// Stamp = core::MDArray_float_O/259
 { class_kind, STAMP_core__MDArray_float_O, sizeof(core::MDArray_float_O), 0, "core::MDArray_float_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8214,8 +8246,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>/259
-// Stamp = core::MDArray_size_t_O/263
+// Stamp = core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>/263
+// Stamp = core::MDArray_size_t_O/267
 { class_kind, STAMP_core__MDArray_size_t_O, sizeof(core::MDArray_size_t_O), 0, "core::MDArray_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8245,8 +8277,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>/267
-// Stamp = core::MDArray_byte8_t_O/271
+// Stamp = core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>/271
+// Stamp = core::MDArray_byte8_t_O/275
 { class_kind, STAMP_core__MDArray_byte8_t_O, sizeof(core::MDArray_byte8_t_O), 0, "core::MDArray_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8276,8 +8308,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>/275
-// Stamp = core::MDArray_int64_t_O/279
+// Stamp = core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>/279
+// Stamp = core::MDArray_int64_t_O/283
 { class_kind, STAMP_core__MDArray_int64_t_O, sizeof(core::MDArray_int64_t_O), 0, "core::MDArray_int64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8307,8 +8339,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>/283
-// Stamp = core::MDArray_byte32_t_O/287
+// Stamp = core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>/287
+// Stamp = core::MDArray_byte32_t_O/291
 { class_kind, STAMP_core__MDArray_byte32_t_O, sizeof(core::MDArray_byte32_t_O), 0, "core::MDArray_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8338,8 +8370,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>/291
-// Stamp = core::MDArray_byte2_t_O/295
+// Stamp = core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>/295
+// Stamp = core::MDArray_byte2_t_O/299
 { class_kind, STAMP_core__MDArray_byte2_t_O, sizeof(core::MDArray_byte2_t_O), 0, "core::MDArray_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8369,8 +8401,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>/299
-// Stamp = core::MDArray_int2_t_O/303
+// Stamp = core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>/303
+// Stamp = core::MDArray_int2_t_O/307
 { class_kind, STAMP_core__MDArray_int2_t_O, sizeof(core::MDArray_int2_t_O), 0, "core::MDArray_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8400,8 +8432,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>/307
-// Stamp = core::MDArray_fixnum_O/311
+// Stamp = core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>/311
+// Stamp = core::MDArray_fixnum_O/315
 { class_kind, STAMP_core__MDArray_fixnum_O, sizeof(core::MDArray_fixnum_O), 0, "core::MDArray_fixnum_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8431,8 +8463,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>/315
-// Stamp = core::MDArrayBaseChar_O/319
+// Stamp = core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>/319
+// Stamp = core::MDArrayBaseChar_O/323
 { class_kind, STAMP_core__MDArrayBaseChar_O, sizeof(core::MDArrayBaseChar_O), 0, "core::MDArrayBaseChar_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8462,8 +8494,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>/323
-// Stamp = core::MDArray_byte64_t_O/327
+// Stamp = core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>/327
+// Stamp = core::MDArray_byte64_t_O/331
 { class_kind, STAMP_core__MDArray_byte64_t_O, sizeof(core::MDArray_byte64_t_O), 0, "core::MDArray_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8493,8 +8525,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>/331
-// Stamp = core::MDArrayCharacter_O/335
+// Stamp = core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>/335
+// Stamp = core::MDArrayCharacter_O/339
 { class_kind, STAMP_core__MDArrayCharacter_O, sizeof(core::MDArrayCharacter_O), 0, "core::MDArrayCharacter_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8524,8 +8556,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>/339
-// Stamp = core::MDArrayT_O/343
+// Stamp = core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>/343
+// Stamp = core::MDArrayT_O/347
 { class_kind, STAMP_core__MDArrayT_O, sizeof(core::MDArrayT_O), 0, "core::MDArrayT_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8555,8 +8587,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>/347
-// Stamp = core::MDArrayBit_O/351
+// Stamp = core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>/351
+// Stamp = core::MDArrayBit_O/355
 { class_kind, STAMP_core__MDArrayBit_O, sizeof(core::MDArrayBit_O), 0, "core::MDArrayBit_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8586,8 +8618,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>/355
-// Stamp = core::MDArray_byte16_t_O/359
+// Stamp = core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>/359
+// Stamp = core::MDArray_byte16_t_O/363
 { class_kind, STAMP_core__MDArray_byte16_t_O, sizeof(core::MDArray_byte16_t_O), 0, "core::MDArray_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8617,7 +8649,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::SimpleMDArray_O/363
+// Stamp = core::SimpleMDArray_O/367
 { class_kind, STAMP_core__SimpleMDArray_O, sizeof(core::SimpleMDArray_O), 0, "core::SimpleMDArray_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8647,8 +8679,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>/367
-// Stamp = core::SimpleMDArray_int8_t_O/371
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>/371
+// Stamp = core::SimpleMDArray_int8_t_O/375
 { class_kind, STAMP_core__SimpleMDArray_int8_t_O, sizeof(core::SimpleMDArray_int8_t_O), 0, "core::SimpleMDArray_int8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8678,8 +8710,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>/375
-// Stamp = core::SimpleMDArray_double_O/379
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>/379
+// Stamp = core::SimpleMDArray_double_O/383
 { class_kind, STAMP_core__SimpleMDArray_double_O, sizeof(core::SimpleMDArray_double_O), 0, "core::SimpleMDArray_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8709,8 +8741,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>/383
-// Stamp = core::SimpleMDArray_byte32_t_O/387
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>/387
+// Stamp = core::SimpleMDArray_byte32_t_O/391
 { class_kind, STAMP_core__SimpleMDArray_byte32_t_O, sizeof(core::SimpleMDArray_byte32_t_O), 0, "core::SimpleMDArray_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8740,8 +8772,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>/391
-// Stamp = core::SimpleMDArrayT_O/395
+// Stamp = core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>/395
+// Stamp = core::SimpleMDArrayT_O/399
 { class_kind, STAMP_core__SimpleMDArrayT_O, sizeof(core::SimpleMDArrayT_O), 0, "core::SimpleMDArrayT_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8771,8 +8803,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>/399
-// Stamp = core::SimpleMDArray_int2_t_O/403
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>/403
+// Stamp = core::SimpleMDArray_int2_t_O/407
 { class_kind, STAMP_core__SimpleMDArray_int2_t_O, sizeof(core::SimpleMDArray_int2_t_O), 0, "core::SimpleMDArray_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8802,8 +8834,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>/407
-// Stamp = core::SimpleMDArray_byte4_t_O/411
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>/411
+// Stamp = core::SimpleMDArray_byte4_t_O/415
 { class_kind, STAMP_core__SimpleMDArray_byte4_t_O, sizeof(core::SimpleMDArray_byte4_t_O), 0, "core::SimpleMDArray_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8833,8 +8865,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>/415
-// Stamp = core::SimpleMDArray_int32_t_O/419
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>/419
+// Stamp = core::SimpleMDArray_int32_t_O/423
 { class_kind, STAMP_core__SimpleMDArray_int32_t_O, sizeof(core::SimpleMDArray_int32_t_O), 0, "core::SimpleMDArray_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8864,8 +8896,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>/423
-// Stamp = core::SimpleMDArray_float_O/427
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>/427
+// Stamp = core::SimpleMDArray_float_O/431
 { class_kind, STAMP_core__SimpleMDArray_float_O, sizeof(core::SimpleMDArray_float_O), 0, "core::SimpleMDArray_float_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8895,8 +8927,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>/431
-// Stamp = core::SimpleMDArray_int16_t_O/435
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>/435
+// Stamp = core::SimpleMDArray_int16_t_O/439
 { class_kind, STAMP_core__SimpleMDArray_int16_t_O, sizeof(core::SimpleMDArray_int16_t_O), 0, "core::SimpleMDArray_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8926,8 +8958,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>/439
-// Stamp = core::SimpleMDArray_size_t_O/443
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>/443
+// Stamp = core::SimpleMDArray_size_t_O/447
 { class_kind, STAMP_core__SimpleMDArray_size_t_O, sizeof(core::SimpleMDArray_size_t_O), 0, "core::SimpleMDArray_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8957,8 +8989,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>/447
-// Stamp = core::SimpleMDArray_int4_t_O/451
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>/451
+// Stamp = core::SimpleMDArray_int4_t_O/455
 { class_kind, STAMP_core__SimpleMDArray_int4_t_O, sizeof(core::SimpleMDArray_int4_t_O), 0, "core::SimpleMDArray_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -8988,8 +9020,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>/455
-// Stamp = core::SimpleMDArrayCharacter_O/459
+// Stamp = core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>/459
+// Stamp = core::SimpleMDArrayCharacter_O/463
 { class_kind, STAMP_core__SimpleMDArrayCharacter_O, sizeof(core::SimpleMDArrayCharacter_O), 0, "core::SimpleMDArrayCharacter_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9019,8 +9051,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>/463
-// Stamp = core::SimpleMDArray_byte2_t_O/467
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>/467
+// Stamp = core::SimpleMDArray_byte2_t_O/471
 { class_kind, STAMP_core__SimpleMDArray_byte2_t_O, sizeof(core::SimpleMDArray_byte2_t_O), 0, "core::SimpleMDArray_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9050,8 +9082,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>/471
-// Stamp = core::SimpleMDArray_fixnum_O/475
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>/475
+// Stamp = core::SimpleMDArray_fixnum_O/479
 { class_kind, STAMP_core__SimpleMDArray_fixnum_O, sizeof(core::SimpleMDArray_fixnum_O), 0, "core::SimpleMDArray_fixnum_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9081,8 +9113,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>/479
-// Stamp = core::SimpleMDArray_byte16_t_O/483
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>/483
+// Stamp = core::SimpleMDArray_byte16_t_O/487
 { class_kind, STAMP_core__SimpleMDArray_byte16_t_O, sizeof(core::SimpleMDArray_byte16_t_O), 0, "core::SimpleMDArray_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9112,8 +9144,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>/487
-// Stamp = core::SimpleMDArrayBaseChar_O/491
+// Stamp = core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>/491
+// Stamp = core::SimpleMDArrayBaseChar_O/495
 { class_kind, STAMP_core__SimpleMDArrayBaseChar_O, sizeof(core::SimpleMDArrayBaseChar_O), 0, "core::SimpleMDArrayBaseChar_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9143,8 +9175,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>/495
-// Stamp = core::SimpleMDArray_byte64_t_O/499
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>/499
+// Stamp = core::SimpleMDArray_byte64_t_O/503
 { class_kind, STAMP_core__SimpleMDArray_byte64_t_O, sizeof(core::SimpleMDArray_byte64_t_O), 0, "core::SimpleMDArray_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9174,8 +9206,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>/503
-// Stamp = core::SimpleMDArrayBit_O/507
+// Stamp = core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>/507
+// Stamp = core::SimpleMDArrayBit_O/511
 { class_kind, STAMP_core__SimpleMDArrayBit_O, sizeof(core::SimpleMDArrayBit_O), 0, "core::SimpleMDArrayBit_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9205,8 +9237,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>/511
-// Stamp = core::SimpleMDArray_byte8_t_O/515
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>/515
+// Stamp = core::SimpleMDArray_byte8_t_O/519
 { class_kind, STAMP_core__SimpleMDArray_byte8_t_O, sizeof(core::SimpleMDArray_byte8_t_O), 0, "core::SimpleMDArray_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9236,8 +9268,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>/519
-// Stamp = core::SimpleMDArray_int64_t_O/523
+// Stamp = core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>/523
+// Stamp = core::SimpleMDArray_int64_t_O/527
 { class_kind, STAMP_core__SimpleMDArray_int64_t_O, sizeof(core::SimpleMDArray_int64_t_O), 0, "core::SimpleMDArray_int64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9267,8 +9299,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>/527
-// Stamp = core::MDArray_int4_t_O/531
+// Stamp = core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>/531
+// Stamp = core::MDArray_int4_t_O/535
 { class_kind, STAMP_core__MDArray_int4_t_O, sizeof(core::MDArray_int4_t_O), 0, "core::MDArray_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9298,8 +9330,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>/535
-// Stamp = core::MDArray_double_O/539
+// Stamp = core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>/539
+// Stamp = core::MDArray_double_O/543
 { class_kind, STAMP_core__MDArray_double_O, sizeof(core::MDArray_double_O), 0, "core::MDArray_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9329,7 +9361,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::ComplexVector_O/543
+// Stamp = core::ComplexVector_O/547
 { class_kind, STAMP_core__ComplexVector_O, sizeof(core::ComplexVector_O), 0, "core::ComplexVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9359,8 +9391,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>/547
-// Stamp = core::ComplexVector_double_O/551
+// Stamp = core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>/551
+// Stamp = core::ComplexVector_double_O/555
 { class_kind, STAMP_core__ComplexVector_double_O, sizeof(core::ComplexVector_double_O), 0, "core::ComplexVector_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9390,8 +9422,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>/555
-// Stamp = core::ComplexVector_int8_t_O/559
+// Stamp = core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>/559
+// Stamp = core::ComplexVector_int8_t_O/563
 { class_kind, STAMP_core__ComplexVector_int8_t_O, sizeof(core::ComplexVector_int8_t_O), 0, "core::ComplexVector_int8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9421,8 +9453,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>/563
-// Stamp = core::ComplexVector_byte64_t_O/567
+// Stamp = core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>/567
+// Stamp = core::ComplexVector_byte64_t_O/571
 { class_kind, STAMP_core__ComplexVector_byte64_t_O, sizeof(core::ComplexVector_byte64_t_O), 0, "core::ComplexVector_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9452,8 +9484,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>/571
-// Stamp = core::ComplexVector_T_O/575
+// Stamp = core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>/575
+// Stamp = core::ComplexVector_T_O/579
 { class_kind, STAMP_core__ComplexVector_T_O, sizeof(core::ComplexVector_T_O), 0, "core::ComplexVector_T_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9483,8 +9515,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>/579
-// Stamp = core::ComplexVector_int2_t_O/583
+// Stamp = core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>/583
+// Stamp = core::ComplexVector_int2_t_O/587
 { class_kind, STAMP_core__ComplexVector_int2_t_O, sizeof(core::ComplexVector_int2_t_O), 0, "core::ComplexVector_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9514,8 +9546,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>/587
-// Stamp = core::ComplexVector_int32_t_O/591
+// Stamp = core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>/591
+// Stamp = core::ComplexVector_int32_t_O/595
 { class_kind, STAMP_core__ComplexVector_int32_t_O, sizeof(core::ComplexVector_int32_t_O), 0, "core::ComplexVector_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9545,8 +9577,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>/595
-// Stamp = core::ComplexVector_byte16_t_O/599
+// Stamp = core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>/599
+// Stamp = core::ComplexVector_byte16_t_O/603
 { class_kind, STAMP_core__ComplexVector_byte16_t_O, sizeof(core::ComplexVector_byte16_t_O), 0, "core::ComplexVector_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9576,8 +9608,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>/603
-// Stamp = core::ComplexVector_float_O/607
+// Stamp = core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>/607
+// Stamp = core::ComplexVector_float_O/611
 { class_kind, STAMP_core__ComplexVector_float_O, sizeof(core::ComplexVector_float_O), 0, "core::ComplexVector_float_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9607,8 +9639,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>/611
-// Stamp = core::ComplexVector_int16_t_O/615
+// Stamp = core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>/615
+// Stamp = core::ComplexVector_int16_t_O/619
 { class_kind, STAMP_core__ComplexVector_int16_t_O, sizeof(core::ComplexVector_int16_t_O), 0, "core::ComplexVector_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9638,8 +9670,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>/619
-// Stamp = core::ComplexVector_int4_t_O/623
+// Stamp = core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>/623
+// Stamp = core::ComplexVector_int4_t_O/627
 { class_kind, STAMP_core__ComplexVector_int4_t_O, sizeof(core::ComplexVector_int4_t_O), 0, "core::ComplexVector_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9669,8 +9701,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>/627
-// Stamp = core::ComplexVector_size_t_O/631
+// Stamp = core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>/631
+// Stamp = core::ComplexVector_size_t_O/635
 { class_kind, STAMP_core__ComplexVector_size_t_O, sizeof(core::ComplexVector_size_t_O), 0, "core::ComplexVector_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9700,8 +9732,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>/635
-// Stamp = core::ComplexVector_byte2_t_O/639
+// Stamp = core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>/639
+// Stamp = core::ComplexVector_byte2_t_O/643
 { class_kind, STAMP_core__ComplexVector_byte2_t_O, sizeof(core::ComplexVector_byte2_t_O), 0, "core::ComplexVector_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9731,8 +9763,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>/643
-// Stamp = core::ComplexVector_byte8_t_O/647
+// Stamp = core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>/647
+// Stamp = core::ComplexVector_byte8_t_O/651
 { class_kind, STAMP_core__ComplexVector_byte8_t_O, sizeof(core::ComplexVector_byte8_t_O), 0, "core::ComplexVector_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9762,8 +9794,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>/651
-// Stamp = core::ComplexVector_byte32_t_O/655
+// Stamp = core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>/655
+// Stamp = core::ComplexVector_byte32_t_O/659
 { class_kind, STAMP_core__ComplexVector_byte32_t_O, sizeof(core::ComplexVector_byte32_t_O), 0, "core::ComplexVector_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9793,8 +9825,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>/659
-// Stamp = core::BitVectorNs_O/663
+// Stamp = core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>/663
+// Stamp = core::BitVectorNs_O/667
 { class_kind, STAMP_core__BitVectorNs_O, sizeof(core::BitVectorNs_O), 0, "core::BitVectorNs_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9824,7 +9856,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::StrNs_O/667
+// Stamp = core::StrNs_O/671
 { class_kind, STAMP_core__StrNs_O, sizeof(core::StrNs_O), 0, "core::StrNs_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9854,8 +9886,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>/671
-// Stamp = core::Str8Ns_O/675
+// Stamp = core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>/675
+// Stamp = core::Str8Ns_O/679
 { class_kind, STAMP_core__Str8Ns_O, sizeof(core::Str8Ns_O), 0, "core::Str8Ns_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9885,8 +9917,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>/679
-// Stamp = core::StrWNs_O/683
+// Stamp = core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>/683
+// Stamp = core::StrWNs_O/687
 { class_kind, STAMP_core__StrWNs_O, sizeof(core::StrWNs_O), 0, "core::StrWNs_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9916,8 +9948,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>/687
-// Stamp = core::ComplexVector_byte4_t_O/691
+// Stamp = core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>/691
+// Stamp = core::ComplexVector_byte4_t_O/695
 { class_kind, STAMP_core__ComplexVector_byte4_t_O, sizeof(core::ComplexVector_byte4_t_O), 0, "core::ComplexVector_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9947,8 +9979,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>/695
-// Stamp = core::ComplexVector_fixnum_O/699
+// Stamp = core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>/699
+// Stamp = core::ComplexVector_fixnum_O/703
 { class_kind, STAMP_core__ComplexVector_fixnum_O, sizeof(core::ComplexVector_fixnum_O), 0, "core::ComplexVector_fixnum_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -9978,8 +10010,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>/703
-// Stamp = core::ComplexVector_int64_t_O/707
+// Stamp = core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>/707
+// Stamp = core::ComplexVector_int64_t_O/711
 { class_kind, STAMP_core__ComplexVector_int64_t_O, sizeof(core::ComplexVector_int64_t_O), 0, "core::ComplexVector_int64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10009,18 +10041,18 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::AbstractSimpleVector_O/711
+// Stamp = core::AbstractSimpleVector_O/715
 { class_kind, STAMP_core__AbstractSimpleVector_O, sizeof(core::AbstractSimpleVector_O), 0, "core::AbstractSimpleVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SimpleString_O/715
+// Stamp = core::SimpleString_O/719
 { class_kind, STAMP_core__SimpleString_O, sizeof(core::SimpleString_O), 0, "core::SimpleString_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
 // not-exposing {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleString_O),_Length), "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>/719
-// Stamp = core::SimpleCharacterString_O/723
+// Stamp = core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>/723
+// Stamp = core::SimpleCharacterString_O/727
 { class_kind, STAMP_core__SimpleCharacterString_O, sizeof(core::SimpleCharacterString_O), 0, "core::SimpleCharacterString_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10034,8 +10066,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>/727
-// Stamp = core::SimpleBaseString_O/731
+// Stamp = core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>/731
+// Stamp = core::SimpleBaseString_O/735
 { class_kind, STAMP_core__SimpleBaseString_O, sizeof(core::SimpleBaseString_O), 0, "core::SimpleBaseString_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10049,8 +10081,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>/735
-// Stamp = core::SimpleVector_int16_t_O/739
+// Stamp = core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>/739
+// Stamp = core::SimpleVector_int16_t_O/743
 { class_kind, STAMP_core__SimpleVector_int16_t_O, sizeof(core::SimpleVector_int16_t_O), 0, "core::SimpleVector_int16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10064,8 +10096,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>/743
-// Stamp = core::SimpleVector_byte16_t_O/747
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>/747
+// Stamp = core::SimpleVector_byte16_t_O/751
 { class_kind, STAMP_core__SimpleVector_byte16_t_O, sizeof(core::SimpleVector_byte16_t_O), 0, "core::SimpleVector_byte16_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10079,8 +10111,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>/751
-// Stamp = core::SimpleBitVector_O/755
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>/755
+// Stamp = core::SimpleBitVector_O/759
 { class_kind, STAMP_core__SimpleBitVector_O, sizeof(core::SimpleBitVector_O), 0, "core::SimpleBitVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10094,8 +10126,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>/759
-// Stamp = core::SimpleVector_int4_t_O/763
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>/763
+// Stamp = core::SimpleVector_int4_t_O/767
 { class_kind, STAMP_core__SimpleVector_int4_t_O, sizeof(core::SimpleVector_int4_t_O), 0, "core::SimpleVector_int4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10109,8 +10141,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/767
-// Stamp = core::SimpleVector_byte32_t_O/771
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/771
+// Stamp = core::SimpleVector_byte32_t_O/775
 { class_kind, STAMP_core__SimpleVector_byte32_t_O, sizeof(core::SimpleVector_byte32_t_O), 0, "core::SimpleVector_byte32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10124,8 +10156,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/775
-// Stamp = core::SimpleVector_size_t_O/779
+// Stamp = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/779
+// Stamp = core::SimpleVector_size_t_O/783
 { class_kind, STAMP_core__SimpleVector_size_t_O, sizeof(core::SimpleVector_size_t_O), 0, "core::SimpleVector_size_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10139,8 +10171,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/783
-// Stamp = core::SimpleVector_double_O/787
+// Stamp = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/787
+// Stamp = core::SimpleVector_double_O/791
 { class_kind, STAMP_core__SimpleVector_double_O, sizeof(core::SimpleVector_double_O), 0, "core::SimpleVector_double_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10154,8 +10186,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>/791
-// Stamp = core::SimpleVector_byte64_t_O/795
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>/795
+// Stamp = core::SimpleVector_byte64_t_O/799
 { class_kind, STAMP_core__SimpleVector_byte64_t_O, sizeof(core::SimpleVector_byte64_t_O), 0, "core::SimpleVector_byte64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10169,8 +10201,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>/799
-// Stamp = core::SimpleVector_int2_t_O/803
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>/803
+// Stamp = core::SimpleVector_int2_t_O/807
 { class_kind, STAMP_core__SimpleVector_int2_t_O, sizeof(core::SimpleVector_int2_t_O), 0, "core::SimpleVector_int2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10184,8 +10216,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>/807
-// Stamp = core::SimpleVector_int64_t_O/811
+// Stamp = core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>/811
+// Stamp = core::SimpleVector_int64_t_O/815
 { class_kind, STAMP_core__SimpleVector_int64_t_O, sizeof(core::SimpleVector_int64_t_O), 0, "core::SimpleVector_int64_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10199,8 +10231,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>/815
-// Stamp = core::SimpleVector_fixnum_O/819
+// Stamp = core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>/819
+// Stamp = core::SimpleVector_fixnum_O/823
 { class_kind, STAMP_core__SimpleVector_fixnum_O, sizeof(core::SimpleVector_fixnum_O), 0, "core::SimpleVector_fixnum_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10214,8 +10246,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")>
 {    variable_field, ctype_long, sizeof(long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/823
-// Stamp = core::SimpleVector_int8_t_O/827
+// Stamp = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/827
+// Stamp = core::SimpleVector_int8_t_O/831
 { class_kind, STAMP_core__SimpleVector_int8_t_O, sizeof(core::SimpleVector_int8_t_O), 0, "core::SimpleVector_int8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10229,8 +10261,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>/831
-// Stamp = core::SimpleVector_float_O/835
+// Stamp = core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>/835
+// Stamp = core::SimpleVector_float_O/839
 { class_kind, STAMP_core__SimpleVector_float_O, sizeof(core::SimpleVector_float_O), 0, "core::SimpleVector_float_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10244,8 +10276,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>/839
-// Stamp = core::SimpleVector_O/843
+// Stamp = core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>/843
+// Stamp = core::SimpleVector_O/847
 { class_kind, STAMP_core__SimpleVector_O, sizeof(core::SimpleVector_O), 0, "core::SimpleVector_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10259,8 +10291,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>/847
-// Stamp = core::SimpleVector_byte8_t_O/851
+// Stamp = core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>/851
+// Stamp = core::SimpleVector_byte8_t_O/855
 { class_kind, STAMP_core__SimpleVector_byte8_t_O, sizeof(core::SimpleVector_byte8_t_O), 0, "core::SimpleVector_byte8_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10274,8 +10306,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>/855
-// Stamp = core::SimpleVector_byte2_t_O/859
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>/859
+// Stamp = core::SimpleVector_byte2_t_O/863
 { class_kind, STAMP_core__SimpleVector_byte2_t_O, sizeof(core::SimpleVector_byte2_t_O), 0, "core::SimpleVector_byte2_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10289,8 +10321,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>/863
-// Stamp = core::SimpleVector_int32_t_O/867
+// Stamp = core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>/867
+// Stamp = core::SimpleVector_int32_t_O/871
 { class_kind, STAMP_core__SimpleVector_int32_t_O, sizeof(core::SimpleVector_int32_t_O), 0, "core::SimpleVector_int32_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10304,8 +10336,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>/871
-// Stamp = core::SimpleVector_byte4_t_O/875
+// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>/875
+// Stamp = core::SimpleVector_byte4_t_O/879
 { class_kind, STAMP_core__SimpleVector_byte4_t_O, sizeof(core::SimpleVector_byte4_t_O), 0, "core::SimpleVector_byte4_t_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
@@ -10319,7 +10351,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, "only" },
-// Stamp = core::Symbol_O/879
+// Stamp = core::Symbol_O/883
 { class_kind, STAMP_core__Symbol_O, sizeof(core::Symbol_O), 0, "core::Symbol_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
@@ -10352,7 +10384,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_PropertyList), "_PropertyList" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Null_O/883
+// Stamp = core::Null_O/887
 { class_kind, STAMP_core__Null_O, sizeof(core::Null_O), 0, "core::Null_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
@@ -10385,18 +10417,18 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_PropertyList), "_PropertyList" }, // atomic: T public: (T NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Character_dummy_O/887
+// Stamp = core::Character_dummy_O/891
 { class_kind, STAMP_core__Character_dummy_O, sizeof(core::Character_dummy_O), 0, "core::Character_dummy_O" },
-// Stamp = llvmo::DataLayout_O/891
+// Stamp = llvmo::DataLayout_O/895
 { class_kind, STAMP_llvmo__DataLayout_O, sizeof(llvmo::DataLayout_O), 0, "llvmo::DataLayout_O" },
-// Stamp = core::LoadTimeValues_O/895
+// Stamp = core::LoadTimeValues_O/899
 { class_kind, STAMP_core__LoadTimeValues_O, sizeof(core::LoadTimeValues_O), 0, "core::LoadTimeValues_O" },
 // second-last-field is-atomic atomic: NIL  name: "GCVector"
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<core::T_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<core::T_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<core::T_O> >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LoadTimeValues_O),_Objects._Vector._Contents), "_Objects._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = core::SharpEqualWrapper_O/899
+// Stamp = core::SharpEqualWrapper_O/903
 { class_kind, STAMP_core__SharpEqualWrapper_O, sizeof(core::SharpEqualWrapper_O), 0, "core::SharpEqualWrapper_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -10404,9 +10436,9 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Label), "_Label" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ClaspJIT_O/903
+// Stamp = llvmo::ClaspJIT_O/907
 { class_kind, STAMP_llvmo__ClaspJIT_O, sizeof(llvmo::ClaspJIT_O), 0, "llvmo::ClaspJIT_O" },
-// Stamp = core::Readtable_O/907
+// Stamp = core::Readtable_O/911
 { class_kind, STAMP_core__Readtable_O, sizeof(core::Readtable_O), 0, "core::Readtable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
@@ -10420,7 +10452,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTable_O>" :SPECIALIZER "class core::HashTable_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),DispatchMacroCharacters_), "DispatchMacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::PosixTime_O/911
+// Stamp = core::PosixTime_O/915
 { class_kind, STAMP_core__PosixTime_O, sizeof(core::PosixTime_O), 0, "core::PosixTime_O" },
 // second-last-field is-atomic atomic: NIL  name: "int_adapter"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::ptime" :NAME "ptime")
@@ -10428,7 +10460,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "boost::date_time::int_adapter<long>" :NAME "int_adapter" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time.time_.time_count_.value_), "_Time.time_.time_count_.value_" }, // atomic: NIL public: (NIL NIL NIL NIL) fixable: NIL good-name: T
-// Stamp = core::Exposer_O/915
+// Stamp = core::Exposer_O/919
 { class_kind, STAMP_core__Exposer_O, sizeof(core::Exposer_O), 0, "core::Exposer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
@@ -10442,7 +10474,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL T) fixable: NIL good-name: T
-// Stamp = core::CoreExposer_O/919
+// Stamp = core::CoreExposer_O/923
 { class_kind, STAMP_core__CoreExposer_O, sizeof(core::CoreExposer_O), 0, "core::CoreExposer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
@@ -10456,7 +10488,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL T) fixable: NIL good-name: T
-// Stamp = asttooling::AsttoolingExposer_O/923
+// Stamp = asttooling::AsttoolingExposer_O/927
 { class_kind, STAMP_asttooling__AsttoolingExposer_O, sizeof(asttooling::AsttoolingExposer_O), 0, "asttooling::AsttoolingExposer_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
@@ -10470,16 +10502,16 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_PackageName.NO-NAME._M_allocated_capacity), "_PackageName.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL T) fixable: NIL good-name: T
-// Stamp = llvmo::StructLayout_O/927
+// Stamp = llvmo::StructLayout_O/931
 { class_kind, STAMP_llvmo__StructLayout_O, sizeof(llvmo::StructLayout_O), 0, "llvmo::StructLayout_O" },
-// Stamp = core::PosixTimeDuration_O/931
+// Stamp = core::PosixTimeDuration_O/935
 { class_kind, STAMP_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, "core::PosixTimeDuration_O" },
 // second-last-field is-atomic atomic: NIL  name: "int_adapter"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::time_duration" :NAME "time_duration")
 // (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "boost::date_time::int_adapter<long>" :NAME "int_adapter" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
 // not-exposing {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_Duration.ticks_.value_), "_Duration.ticks_.value_" }, // atomic: NIL public: (NIL NIL NIL) fixable: NIL good-name: T
-// Stamp = clasp_ffi::ForeignTypeSpec_O/935
+// Stamp = clasp_ffi::ForeignTypeSpec_O/939
 { class_kind, STAMP_clasp_ffi__ForeignTypeSpec_O, sizeof(clasp_ffi::ForeignTypeSpec_O), 0, "clasp_ffi::ForeignTypeSpec_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
@@ -10511,7 +10543,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clasp_ffi::ForeignData_O>" :SPECIALIZER "class clasp_ffi::ForeignData_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clasp_ffi::ForeignData_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_from_object_fn_ptr), "m_from_object_fn_ptr" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Instance_O/937
+// Stamp = core::Instance_O/941
 { class_kind, STAMP_core__Instance_O, sizeof(core::Instance_O), 0, "core::Instance_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10519,7 +10551,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::DerivableCxxObject_O/940
+// Stamp = core::DerivableCxxObject_O/944
 { class_kind, STAMP_core__DerivableCxxObject_O, sizeof(core::DerivableCxxObject_O), 0, "core::DerivableCxxObject_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10527,7 +10559,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRep_O/945
+// Stamp = clbind::ClassRep_O/949
 { class_kind, STAMP_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10552,13 +10584,13 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), "m_derivable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SmallMap_O/951
+// Stamp = core::SmallMap_O/955
 { class_kind, STAMP_core__SmallMap_O, sizeof(core::SmallMap_O), 0, "core::SmallMap_O" },
 // second-last-field is-atomic atomic: NIL  name: "SmallMap"
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMap<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>" :NAME "SmallMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::T_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // atomic: NIL public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = mpip::Mpi_O/955
+// Stamp = mpip::Mpi_O/959
 { class_kind, STAMP_mpip__Mpi_O, sizeof(mpip::Mpi_O), 0, "mpip::Mpi_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
@@ -10569,37 +10601,37 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_Tag), "_Tag" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::ExternalObject_O/959
+// Stamp = core::ExternalObject_O/963
 { class_kind, STAMP_core__ExternalObject_O, sizeof(core::ExternalObject_O), 0, "core::ExternalObject_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ExternalObject_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Pass_O/963
+// Stamp = llvmo::Pass_O/967
 { class_kind, STAMP_llvmo__Pass_O, sizeof(llvmo::Pass_O), 0, "llvmo::Pass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ModulePass_O/967
+// Stamp = llvmo::ModulePass_O/971
 { class_kind, STAMP_llvmo__ModulePass_O, sizeof(llvmo::ModulePass_O), 0, "llvmo::ModulePass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ImmutablePass_O/971
+// Stamp = llvmo::ImmutablePass_O/975
 { class_kind, STAMP_llvmo__ImmutablePass_O, sizeof(llvmo::ImmutablePass_O), 0, "llvmo::ImmutablePass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::TargetLibraryInfoWrapperPass_O/975
+// Stamp = llvmo::TargetLibraryInfoWrapperPass_O/979
 { class_kind, STAMP_llvmo__TargetLibraryInfoWrapperPass_O, sizeof(llvmo::TargetLibraryInfoWrapperPass_O), 0, "llvmo::TargetLibraryInfoWrapperPass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::FunctionPass_O/979
+// Stamp = llvmo::FunctionPass_O/983
 { class_kind, STAMP_llvmo__FunctionPass_O, sizeof(llvmo::FunctionPass_O), 0, "llvmo::FunctionPass_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ExecutionEngine_O/983
+// Stamp = llvmo::ExecutionEngine_O/987
 { class_kind, STAMP_llvmo__ExecutionEngine_O, sizeof(llvmo::ExecutionEngine_O), 0, "llvmo::ExecutionEngine_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10607,77 +10639,77 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_DependentModules), "_DependentModules" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::MCSubtargetInfo_O/987
+// Stamp = llvmo::MCSubtargetInfo_O/991
 { class_kind, STAMP_llvmo__MCSubtargetInfo_O, sizeof(llvmo::MCSubtargetInfo_O), 0, "llvmo::MCSubtargetInfo_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::TargetSubtargetInfo_O/991
+// Stamp = llvmo::TargetSubtargetInfo_O/995
 { class_kind, STAMP_llvmo__TargetSubtargetInfo_O, sizeof(llvmo::TargetSubtargetInfo_O), 0, "llvmo::TargetSubtargetInfo_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Type_O/995
+// Stamp = llvmo::Type_O/999
 { class_kind, STAMP_llvmo__Type_O, sizeof(llvmo::Type_O), 0, "llvmo::Type_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::FunctionType_O/999
+// Stamp = llvmo::FunctionType_O/1003
 { class_kind, STAMP_llvmo__FunctionType_O, sizeof(llvmo::FunctionType_O), 0, "llvmo::FunctionType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::CompositeType_O/1003
+// Stamp = llvmo::CompositeType_O/1007
 { class_kind, STAMP_llvmo__CompositeType_O, sizeof(llvmo::CompositeType_O), 0, "llvmo::CompositeType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CompositeType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::SequentialType_O/1007
+// Stamp = llvmo::SequentialType_O/1011
 { class_kind, STAMP_llvmo__SequentialType_O, sizeof(llvmo::SequentialType_O), 0, "llvmo::SequentialType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SequentialType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::PointerType_O/1011
+// Stamp = llvmo::PointerType_O/1015
 { class_kind, STAMP_llvmo__PointerType_O, sizeof(llvmo::PointerType_O), 0, "llvmo::PointerType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ArrayType_O/1015
+// Stamp = llvmo::ArrayType_O/1019
 { class_kind, STAMP_llvmo__ArrayType_O, sizeof(llvmo::ArrayType_O), 0, "llvmo::ArrayType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::VectorType_O/1019
+// Stamp = llvmo::VectorType_O/1023
 { class_kind, STAMP_llvmo__VectorType_O, sizeof(llvmo::VectorType_O), 0, "llvmo::VectorType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::StructType_O/1023
+// Stamp = llvmo::StructType_O/1027
 { class_kind, STAMP_llvmo__StructType_O, sizeof(llvmo::StructType_O), 0, "llvmo::StructType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::IntegerType_O/1027
+// Stamp = llvmo::IntegerType_O/1031
 { class_kind, STAMP_llvmo__IntegerType_O, sizeof(llvmo::IntegerType_O), 0, "llvmo::IntegerType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::JITDylib_O/1031
+// Stamp = llvmo::JITDylib_O/1035
 { class_kind, STAMP_llvmo__JITDylib_O, sizeof(llvmo::JITDylib_O), 0, "llvmo::JITDylib_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIContext_O/1035
+// Stamp = llvmo::DIContext_O/1039
 { class_kind, STAMP_llvmo__DIContext_O, sizeof(llvmo::DIContext_O), 0, "llvmo::DIContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::TargetPassConfig_O/1039
+// Stamp = llvmo::TargetPassConfig_O/1043
 { class_kind, STAMP_llvmo__TargetPassConfig_O, sizeof(llvmo::TargetPassConfig_O), 0, "llvmo::TargetPassConfig_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::IRBuilderBase_O/1043
+// Stamp = llvmo::IRBuilderBase_O/1047
 { class_kind, STAMP_llvmo__IRBuilderBase_O, sizeof(llvmo::IRBuilderBase_O), 0, "llvmo::IRBuilderBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10685,7 +10717,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_CurrentDebugLocationSet), "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::IRBuilder_O/1047
+// Stamp = llvmo::IRBuilder_O/1051
 { class_kind, STAMP_llvmo__IRBuilder_O, sizeof(llvmo::IRBuilder_O), 0, "llvmo::IRBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10693,7 +10725,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_CurrentDebugLocationSet), "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::APFloat_O/1051
+// Stamp = llvmo::APFloat_O/1055
 { class_kind, STAMP_llvmo__APFloat_O, sizeof(llvmo::APFloat_O), 0, "llvmo::APFloat_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10717,7 +10749,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::detail::IEEEFloat" :NAME "IEEEFloat")
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_value.U.IEEE.sign), "_value.U.IEEE.sign" }, // atomic: NIL public: (T NIL T NIL) fixable: NIL good-name: T
-// Stamp = llvmo::APInt_O/1055
+// Stamp = llvmo::APInt_O/1059
 { class_kind, STAMP_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, "llvmo::APInt_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10731,12 +10763,12 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APInt" :NAME "APInt")
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_value.BitWidth), "_value.BitWidth" }, // atomic: NIL public: (T NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIBuilder_O/1059
+// Stamp = llvmo::DIBuilder_O/1063
 { class_kind, STAMP_llvmo__DIBuilder_O, sizeof(llvmo::DIBuilder_O), 0, "llvmo::DIBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::SectionedAddress_O/1063
+// Stamp = llvmo::SectionedAddress_O/1067
 { class_kind, STAMP_llvmo__SectionedAddress_O, sizeof(llvmo::SectionedAddress_O), 0, "llvmo::SectionedAddress_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10749,7 +10781,7 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::object::SectionedAddress" :NAME "SectionedAddress")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_value.SectionIndex), "_value.SectionIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = llvmo::EngineBuilder_O/1067
+// Stamp = llvmo::EngineBuilder_O/1071
 { class_kind, STAMP_llvmo__EngineBuilder_O, sizeof(llvmo::EngineBuilder_O), 0, "llvmo::EngineBuilder_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -10763,262 +10795,262 @@ public:
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::(anonymous)" :NAME "")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ErrorStr.NO-NAME._M_allocated_capacity), "_ErrorStr.NO-NAME._M_allocated_capacity" }, // atomic: NIL public: (NIL NIL T) fixable: NIL good-name: T
-// Stamp = llvmo::PassManagerBase_O/1071
+// Stamp = llvmo::PassManagerBase_O/1075
 { class_kind, STAMP_llvmo__PassManagerBase_O, sizeof(llvmo::PassManagerBase_O), 0, "llvmo::PassManagerBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::PassManager_O/1075
+// Stamp = llvmo::PassManager_O/1079
 { class_kind, STAMP_llvmo__PassManager_O, sizeof(llvmo::PassManager_O), 0, "llvmo::PassManager_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::FunctionPassManager_O/1079
+// Stamp = llvmo::FunctionPassManager_O/1083
 { class_kind, STAMP_llvmo__FunctionPassManager_O, sizeof(llvmo::FunctionPassManager_O), 0, "llvmo::FunctionPassManager_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Metadata_O/1083
+// Stamp = llvmo::Metadata_O/1087
 { class_kind, STAMP_llvmo__Metadata_O, sizeof(llvmo::Metadata_O), 0, "llvmo::Metadata_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::MDNode_O/1087
+// Stamp = llvmo::MDNode_O/1091
 { class_kind, STAMP_llvmo__MDNode_O, sizeof(llvmo::MDNode_O), 0, "llvmo::MDNode_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DINode_O/1091
+// Stamp = llvmo::DINode_O/1095
 { class_kind, STAMP_llvmo__DINode_O, sizeof(llvmo::DINode_O), 0, "llvmo::DINode_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIVariable_O/1095
+// Stamp = llvmo::DIVariable_O/1099
 { class_kind, STAMP_llvmo__DIVariable_O, sizeof(llvmo::DIVariable_O), 0, "llvmo::DIVariable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DILocalVariable_O/1099
+// Stamp = llvmo::DILocalVariable_O/1103
 { class_kind, STAMP_llvmo__DILocalVariable_O, sizeof(llvmo::DILocalVariable_O), 0, "llvmo::DILocalVariable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIScope_O/1103
+// Stamp = llvmo::DIScope_O/1107
 { class_kind, STAMP_llvmo__DIScope_O, sizeof(llvmo::DIScope_O), 0, "llvmo::DIScope_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIFile_O/1107
+// Stamp = llvmo::DIFile_O/1111
 { class_kind, STAMP_llvmo__DIFile_O, sizeof(llvmo::DIFile_O), 0, "llvmo::DIFile_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIType_O/1111
+// Stamp = llvmo::DIType_O/1115
 { class_kind, STAMP_llvmo__DIType_O, sizeof(llvmo::DIType_O), 0, "llvmo::DIType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DICompositeType_O/1115
+// Stamp = llvmo::DICompositeType_O/1119
 { class_kind, STAMP_llvmo__DICompositeType_O, sizeof(llvmo::DICompositeType_O), 0, "llvmo::DICompositeType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIDerivedType_O/1119
+// Stamp = llvmo::DIDerivedType_O/1123
 { class_kind, STAMP_llvmo__DIDerivedType_O, sizeof(llvmo::DIDerivedType_O), 0, "llvmo::DIDerivedType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIBasicType_O/1123
+// Stamp = llvmo::DIBasicType_O/1127
 { class_kind, STAMP_llvmo__DIBasicType_O, sizeof(llvmo::DIBasicType_O), 0, "llvmo::DIBasicType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DISubroutineType_O/1127
+// Stamp = llvmo::DISubroutineType_O/1131
 { class_kind, STAMP_llvmo__DISubroutineType_O, sizeof(llvmo::DISubroutineType_O), 0, "llvmo::DISubroutineType_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DILocalScope_O/1131
+// Stamp = llvmo::DILocalScope_O/1135
 { class_kind, STAMP_llvmo__DILocalScope_O, sizeof(llvmo::DILocalScope_O), 0, "llvmo::DILocalScope_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DISubprogram_O/1135
+// Stamp = llvmo::DISubprogram_O/1139
 { class_kind, STAMP_llvmo__DISubprogram_O, sizeof(llvmo::DISubprogram_O), 0, "llvmo::DISubprogram_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DILexicalBlockBase_O/1139
+// Stamp = llvmo::DILexicalBlockBase_O/1143
 { class_kind, STAMP_llvmo__DILexicalBlockBase_O, sizeof(llvmo::DILexicalBlockBase_O), 0, "llvmo::DILexicalBlockBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DILexicalBlock_O/1143
+// Stamp = llvmo::DILexicalBlock_O/1147
 { class_kind, STAMP_llvmo__DILexicalBlock_O, sizeof(llvmo::DILexicalBlock_O), 0, "llvmo::DILexicalBlock_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DICompileUnit_O/1147
+// Stamp = llvmo::DICompileUnit_O/1151
 { class_kind, STAMP_llvmo__DICompileUnit_O, sizeof(llvmo::DICompileUnit_O), 0, "llvmo::DICompileUnit_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DIExpression_O/1151
+// Stamp = llvmo::DIExpression_O/1155
 { class_kind, STAMP_llvmo__DIExpression_O, sizeof(llvmo::DIExpression_O), 0, "llvmo::DIExpression_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DILocation_O/1155
+// Stamp = llvmo::DILocation_O/1159
 { class_kind, STAMP_llvmo__DILocation_O, sizeof(llvmo::DILocation_O), 0, "llvmo::DILocation_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ValueAsMetadata_O/1159
+// Stamp = llvmo::ValueAsMetadata_O/1163
 { class_kind, STAMP_llvmo__ValueAsMetadata_O, sizeof(llvmo::ValueAsMetadata_O), 0, "llvmo::ValueAsMetadata_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::MDString_O/1163
+// Stamp = llvmo::MDString_O/1167
 { class_kind, STAMP_llvmo__MDString_O, sizeof(llvmo::MDString_O), 0, "llvmo::MDString_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Test_O/1167
+// Stamp = core::Test_O/1171
 { class_kind, STAMP_core__Test_O, sizeof(core::Test_O), 0, "core::Test_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Value_O/1171
+// Stamp = llvmo::Value_O/1175
 { class_kind, STAMP_llvmo__Value_O, sizeof(llvmo::Value_O), 0, "llvmo::Value_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Argument_O/1175
+// Stamp = llvmo::Argument_O/1179
 { class_kind, STAMP_llvmo__Argument_O, sizeof(llvmo::Argument_O), 0, "llvmo::Argument_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::BasicBlock_O/1179
+// Stamp = llvmo::BasicBlock_O/1183
 { class_kind, STAMP_llvmo__BasicBlock_O, sizeof(llvmo::BasicBlock_O), 0, "llvmo::BasicBlock_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::MetadataAsValue_O/1183
+// Stamp = llvmo::MetadataAsValue_O/1187
 { class_kind, STAMP_llvmo__MetadataAsValue_O, sizeof(llvmo::MetadataAsValue_O), 0, "llvmo::MetadataAsValue_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::User_O/1187
+// Stamp = llvmo::User_O/1191
 { class_kind, STAMP_llvmo__User_O, sizeof(llvmo::User_O), 0, "llvmo::User_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Instruction_O/1191
+// Stamp = llvmo::Instruction_O/1195
 { class_kind, STAMP_llvmo__Instruction_O, sizeof(llvmo::Instruction_O), 0, "llvmo::Instruction_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::UnaryInstruction_O/1195
+// Stamp = llvmo::UnaryInstruction_O/1199
 { class_kind, STAMP_llvmo__UnaryInstruction_O, sizeof(llvmo::UnaryInstruction_O), 0, "llvmo::UnaryInstruction_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::VAArgInst_O/1199
+// Stamp = llvmo::VAArgInst_O/1203
 { class_kind, STAMP_llvmo__VAArgInst_O, sizeof(llvmo::VAArgInst_O), 0, "llvmo::VAArgInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::LoadInst_O/1203
+// Stamp = llvmo::LoadInst_O/1207
 { class_kind, STAMP_llvmo__LoadInst_O, sizeof(llvmo::LoadInst_O), 0, "llvmo::LoadInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::AllocaInst_O/1207
+// Stamp = llvmo::AllocaInst_O/1211
 { class_kind, STAMP_llvmo__AllocaInst_O, sizeof(llvmo::AllocaInst_O), 0, "llvmo::AllocaInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::SwitchInst_O/1211
+// Stamp = llvmo::SwitchInst_O/1215
 { class_kind, STAMP_llvmo__SwitchInst_O, sizeof(llvmo::SwitchInst_O), 0, "llvmo::SwitchInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::AtomicRMWInst_O/1215
+// Stamp = llvmo::AtomicRMWInst_O/1219
 { class_kind, STAMP_llvmo__AtomicRMWInst_O, sizeof(llvmo::AtomicRMWInst_O), 0, "llvmo::AtomicRMWInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::LandingPadInst_O/1219
+// Stamp = llvmo::LandingPadInst_O/1223
 { class_kind, STAMP_llvmo__LandingPadInst_O, sizeof(llvmo::LandingPadInst_O), 0, "llvmo::LandingPadInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::StoreInst_O/1223
+// Stamp = llvmo::StoreInst_O/1227
 { class_kind, STAMP_llvmo__StoreInst_O, sizeof(llvmo::StoreInst_O), 0, "llvmo::StoreInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::UnreachableInst_O/1227
+// Stamp = llvmo::UnreachableInst_O/1231
 { class_kind, STAMP_llvmo__UnreachableInst_O, sizeof(llvmo::UnreachableInst_O), 0, "llvmo::UnreachableInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ReturnInst_O/1231
+// Stamp = llvmo::ReturnInst_O/1235
 { class_kind, STAMP_llvmo__ReturnInst_O, sizeof(llvmo::ReturnInst_O), 0, "llvmo::ReturnInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ResumeInst_O/1235
+// Stamp = llvmo::ResumeInst_O/1239
 { class_kind, STAMP_llvmo__ResumeInst_O, sizeof(llvmo::ResumeInst_O), 0, "llvmo::ResumeInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::AtomicCmpXchgInst_O/1239
+// Stamp = llvmo::AtomicCmpXchgInst_O/1243
 { class_kind, STAMP_llvmo__AtomicCmpXchgInst_O, sizeof(llvmo::AtomicCmpXchgInst_O), 0, "llvmo::AtomicCmpXchgInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::FenceInst_O/1243
+// Stamp = llvmo::FenceInst_O/1247
 { class_kind, STAMP_llvmo__FenceInst_O, sizeof(llvmo::FenceInst_O), 0, "llvmo::FenceInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::CallBase_O/1247
+// Stamp = llvmo::CallBase_O/1251
 { class_kind, STAMP_llvmo__CallBase_O, sizeof(llvmo::CallBase_O), 0, "llvmo::CallBase_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::CallInst_O/1251
+// Stamp = llvmo::CallInst_O/1255
 { class_kind, STAMP_llvmo__CallInst_O, sizeof(llvmo::CallInst_O), 0, "llvmo::CallInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::InvokeInst_O/1255
+// Stamp = llvmo::InvokeInst_O/1259
 { class_kind, STAMP_llvmo__InvokeInst_O, sizeof(llvmo::InvokeInst_O), 0, "llvmo::InvokeInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::PHINode_O/1259
+// Stamp = llvmo::PHINode_O/1263
 { class_kind, STAMP_llvmo__PHINode_O, sizeof(llvmo::PHINode_O), 0, "llvmo::PHINode_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::IndirectBrInst_O/1263
+// Stamp = llvmo::IndirectBrInst_O/1267
 { class_kind, STAMP_llvmo__IndirectBrInst_O, sizeof(llvmo::IndirectBrInst_O), 0, "llvmo::IndirectBrInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::BranchInst_O/1267
+// Stamp = llvmo::BranchInst_O/1271
 { class_kind, STAMP_llvmo__BranchInst_O, sizeof(llvmo::BranchInst_O), 0, "llvmo::BranchInst_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Constant_O/1271
+// Stamp = llvmo::Constant_O/1275
 { class_kind, STAMP_llvmo__Constant_O, sizeof(llvmo::Constant_O), 0, "llvmo::Constant_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::GlobalValue_O/1275
+// Stamp = llvmo::GlobalValue_O/1279
 { class_kind, STAMP_llvmo__GlobalValue_O, sizeof(llvmo::GlobalValue_O), 0, "llvmo::GlobalValue_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -11026,7 +11058,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_PtrIsOwned), "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Function_O/1279
+// Stamp = llvmo::Function_O/1283
 { class_kind, STAMP_llvmo__Function_O, sizeof(llvmo::Function_O), 0, "llvmo::Function_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -11037,7 +11069,7 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LoadTimeValues_O>" :SPECIALIZER "class core::LoadTimeValues_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LoadTimeValues_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_RunTimeValues), "_RunTimeValues" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::GlobalVariable_O/1283
+// Stamp = llvmo::GlobalVariable_O/1287
 { class_kind, STAMP_llvmo__GlobalVariable_O, sizeof(llvmo::GlobalVariable_O), 0, "llvmo::GlobalVariable_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -11045,96 +11077,91 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_PtrIsOwned), "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::BlockAddress_O/1287
+// Stamp = llvmo::BlockAddress_O/1291
 { class_kind, STAMP_llvmo__BlockAddress_O, sizeof(llvmo::BlockAddress_O), 0, "llvmo::BlockAddress_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantDataSequential_O/1291
+// Stamp = llvmo::ConstantDataSequential_O/1295
 { class_kind, STAMP_llvmo__ConstantDataSequential_O, sizeof(llvmo::ConstantDataSequential_O), 0, "llvmo::ConstantDataSequential_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantDataArray_O/1295
+// Stamp = llvmo::ConstantDataArray_O/1299
 { class_kind, STAMP_llvmo__ConstantDataArray_O, sizeof(llvmo::ConstantDataArray_O), 0, "llvmo::ConstantDataArray_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantStruct_O/1299
+// Stamp = llvmo::ConstantStruct_O/1303
 { class_kind, STAMP_llvmo__ConstantStruct_O, sizeof(llvmo::ConstantStruct_O), 0, "llvmo::ConstantStruct_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantInt_O/1303
+// Stamp = llvmo::ConstantInt_O/1307
 { class_kind, STAMP_llvmo__ConstantInt_O, sizeof(llvmo::ConstantInt_O), 0, "llvmo::ConstantInt_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantFP_O/1307
+// Stamp = llvmo::ConstantFP_O/1311
 { class_kind, STAMP_llvmo__ConstantFP_O, sizeof(llvmo::ConstantFP_O), 0, "llvmo::ConstantFP_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantExpr_O/1311
+// Stamp = llvmo::ConstantExpr_O/1315
 { class_kind, STAMP_llvmo__ConstantExpr_O, sizeof(llvmo::ConstantExpr_O), 0, "llvmo::ConstantExpr_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantPointerNull_O/1315
+// Stamp = llvmo::ConstantPointerNull_O/1319
 { class_kind, STAMP_llvmo__ConstantPointerNull_O, sizeof(llvmo::ConstantPointerNull_O), 0, "llvmo::ConstantPointerNull_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::UndefValue_O/1319
+// Stamp = llvmo::UndefValue_O/1323
 { class_kind, STAMP_llvmo__UndefValue_O, sizeof(llvmo::UndefValue_O), 0, "llvmo::UndefValue_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ConstantArray_O/1323
+// Stamp = llvmo::ConstantArray_O/1327
 { class_kind, STAMP_llvmo__ConstantArray_O, sizeof(llvmo::ConstantArray_O), 0, "llvmo::ConstantArray_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::TargetMachine_O/1327
+// Stamp = llvmo::TargetMachine_O/1331
 { class_kind, STAMP_llvmo__TargetMachine_O, sizeof(llvmo::TargetMachine_O), 0, "llvmo::TargetMachine_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::LLVMTargetMachine_O/1331
+// Stamp = llvmo::LLVMTargetMachine_O/1335
 { class_kind, STAMP_llvmo__LLVMTargetMachine_O, sizeof(llvmo::LLVMTargetMachine_O), 0, "llvmo::LLVMTargetMachine_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ThreadSafeContext_O/1335
+// Stamp = llvmo::ThreadSafeContext_O/1339
 { class_kind, STAMP_llvmo__ThreadSafeContext_O, sizeof(llvmo::ThreadSafeContext_O), 0, "llvmo::ThreadSafeContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::NamedMDNode_O/1339
+// Stamp = llvmo::NamedMDNode_O/1343
 { class_kind, STAMP_llvmo__NamedMDNode_O, sizeof(llvmo::NamedMDNode_O), 0, "llvmo::NamedMDNode_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Triple_O/1343
+// Stamp = llvmo::Triple_O/1347
 { class_kind, STAMP_llvmo__Triple_O, sizeof(llvmo::Triple_O), 0, "llvmo::Triple_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DWARFContext_O/1347
+// Stamp = llvmo::DWARFContext_O/1351
 { class_kind, STAMP_llvmo__DWARFContext_O, sizeof(llvmo::DWARFContext_O), 0, "llvmo::DWARFContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::TargetOptions_O/1351
+// Stamp = llvmo::TargetOptions_O/1355
 { class_kind, STAMP_llvmo__TargetOptions_O, sizeof(llvmo::TargetOptions_O), 0, "llvmo::TargetOptions_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ObjectFile_O/1355
-{ class_kind, STAMP_llvmo__ObjectFile_O, sizeof(llvmo::ObjectFile_O), 0, "llvmo::ObjectFile_O" },
-// second-last-field is-atomic atomic: NIL  name: NIL
-// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::LLVMContext_O/1359
 { class_kind, STAMP_llvmo__LLVMContext_O, sizeof(llvmo::LLVMContext_O), 0, "llvmo::LLVMContext_O" },
 // second-last-field is-atomic atomic: NIL  name: NIL
@@ -11611,6 +11638,9 @@ public:
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_docstring), "_docstring" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// second-last-field is-atomic atomic: NIL  name: NIL
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::ObjectFile_O>" :SPECIALIZER "class llvmo::ObjectFile_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::ObjectFile_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_ObjectFile), "_ObjectFile" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
 // not-exposing {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),lineno), "lineno" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -12699,6 +12729,11 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_guard), "_guard" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::Lisp_O/1679
 { class_kind, STAMP_core__Lisp_O, sizeof(core::Lisp_O), 0, "core::Lisp_O" },
+// second-last-field is-atomic atomic: T  name: "atomic"
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
+// (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
+// (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ObjectFiles), "_Roots._ObjectFiles" }, // atomic: T public: (T T NIL) fixable: SMART-PTR-FIX good-name: T
 // second-last-field is-atomic atomic: NIL  name: NIL
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 // (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
@@ -14617,9 +14652,19 @@ obj_finalize_STAMP_llvmo__DINodeArray_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_mp__Mutex_O:
+obj_finalize_STAMP_llvmo__ObjectFile_O:
 {
      // stamp value 175
+    llvmo::ObjectFile_O* obj_gc_safe = reinterpret_cast<llvmo::ObjectFile_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~ObjectFile_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMP_mp__Mutex_O:
+{
+     // stamp value 179
     mp::Mutex_O* obj_gc_safe = reinterpret_cast<mp::Mutex_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14629,7 +14674,7 @@ obj_finalize_STAMP_mp__Mutex_O:
 }
 obj_finalize_STAMP_mp__RecursiveMutex_O:
 {
-     // stamp value 179
+     // stamp value 183
     mp::RecursiveMutex_O* obj_gc_safe = reinterpret_cast<mp::RecursiveMutex_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14639,7 +14684,7 @@ obj_finalize_STAMP_mp__RecursiveMutex_O:
 }
 obj_finalize_STAMP_llvmo__DITypeRefArray_O:
 {
-     // stamp value 183
+     // stamp value 187
     llvmo::DITypeRefArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeRefArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14649,7 +14694,7 @@ obj_finalize_STAMP_llvmo__DITypeRefArray_O:
 }
 obj_finalize_STAMP_mp__SharedMutex_O:
 {
-     // stamp value 187
+     // stamp value 191
     mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14659,7 +14704,7 @@ obj_finalize_STAMP_mp__SharedMutex_O:
 }
 obj_finalize_STAMP_mp__Process_O:
 {
-     // stamp value 191
+     // stamp value 195
     mp::Process_O* obj_gc_safe = reinterpret_cast<mp::Process_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14669,7 +14714,7 @@ obj_finalize_STAMP_mp__Process_O:
 }
 obj_finalize_STAMP_core__SingleDispatchMethod_O:
 {
-     // stamp value 195
+     // stamp value 199
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14679,7 +14724,7 @@ obj_finalize_STAMP_core__SingleDispatchMethod_O:
 }
 obj_finalize_STAMP_core__Iterator_O:
 {
-     // stamp value 199
+     // stamp value 203
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14689,7 +14734,7 @@ obj_finalize_STAMP_core__Iterator_O:
 }
 obj_finalize_STAMP_core__DirectoryIterator_O:
 {
-     // stamp value 203
+     // stamp value 207
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14699,7 +14744,7 @@ obj_finalize_STAMP_core__DirectoryIterator_O:
 }
 obj_finalize_STAMP_core__RecursiveDirectoryIterator_O:
 {
-     // stamp value 207
+     // stamp value 211
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14709,7 +14754,7 @@ obj_finalize_STAMP_core__RecursiveDirectoryIterator_O:
 }
 obj_finalize_STAMP_core__Array_O:
 {
-     // stamp value 211
+     // stamp value 215
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14719,7 +14764,7 @@ obj_finalize_STAMP_core__Array_O:
 }
 obj_finalize_STAMP_core__MDArray_O:
 {
-     // stamp value 215
+     // stamp value 219
     core::MDArray_O* obj_gc_safe = reinterpret_cast<core::MDArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14729,12 +14774,12 @@ obj_finalize_STAMP_core__MDArray_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 219
+     // do nothing stamp value 223
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int16_t_O:
 {
-     // stamp value 223
+     // stamp value 227
     core::MDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14744,12 +14789,12 @@ obj_finalize_STAMP_core__MDArray_int16_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 227
+     // do nothing stamp value 231
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int8_t_O:
 {
-     // stamp value 231
+     // stamp value 235
     core::MDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14759,12 +14804,12 @@ obj_finalize_STAMP_core__MDArray_int8_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 235
+     // do nothing stamp value 239
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int32_t_O:
 {
-     // stamp value 239
+     // stamp value 243
     core::MDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14774,12 +14819,12 @@ obj_finalize_STAMP_core__MDArray_int32_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 243
+     // do nothing stamp value 247
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte4_t_O:
 {
-     // stamp value 247
+     // stamp value 251
     core::MDArray_byte4_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14789,12 +14834,12 @@ obj_finalize_STAMP_core__MDArray_byte4_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_:
 {
-     // do nothing stamp value 251
+     // do nothing stamp value 255
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_float_O:
 {
-     // stamp value 255
+     // stamp value 259
     core::MDArray_float_O* obj_gc_safe = reinterpret_cast<core::MDArray_float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14804,12 +14849,12 @@ obj_finalize_STAMP_core__MDArray_float_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 259
+     // do nothing stamp value 263
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_size_t_O:
 {
-     // stamp value 263
+     // stamp value 267
     core::MDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_size_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14819,12 +14864,12 @@ obj_finalize_STAMP_core__MDArray_size_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 267
+     // do nothing stamp value 271
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte8_t_O:
 {
-     // stamp value 271
+     // stamp value 275
     core::MDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14834,12 +14879,12 @@ obj_finalize_STAMP_core__MDArray_byte8_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 275
+     // do nothing stamp value 279
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int64_t_O:
 {
-     // stamp value 279
+     // stamp value 283
     core::MDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14849,12 +14894,12 @@ obj_finalize_STAMP_core__MDArray_int64_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 283
+     // do nothing stamp value 287
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte32_t_O:
 {
-     // stamp value 287
+     // stamp value 291
     core::MDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14864,12 +14909,12 @@ obj_finalize_STAMP_core__MDArray_byte32_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 291
+     // do nothing stamp value 295
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte2_t_O:
 {
-     // stamp value 295
+     // stamp value 299
     core::MDArray_byte2_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14879,12 +14924,12 @@ obj_finalize_STAMP_core__MDArray_byte2_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 299
+     // do nothing stamp value 303
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int2_t_O:
 {
-     // stamp value 303
+     // stamp value 307
     core::MDArray_int2_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14894,12 +14939,12 @@ obj_finalize_STAMP_core__MDArray_int2_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
 {
-     // do nothing stamp value 307
+     // do nothing stamp value 311
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_fixnum_O:
 {
-     // stamp value 311
+     // stamp value 315
     core::MDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::MDArray_fixnum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14909,12 +14954,12 @@ obj_finalize_STAMP_core__MDArray_fixnum_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
 {
-     // do nothing stamp value 315
+     // do nothing stamp value 319
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArrayBaseChar_O:
 {
-     // stamp value 319
+     // stamp value 323
     core::MDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::MDArrayBaseChar_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14924,12 +14969,12 @@ obj_finalize_STAMP_core__MDArrayBaseChar_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 323
+     // do nothing stamp value 327
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte64_t_O:
 {
-     // stamp value 327
+     // stamp value 331
     core::MDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14939,12 +14984,12 @@ obj_finalize_STAMP_core__MDArray_byte64_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
 {
-     // do nothing stamp value 331
+     // do nothing stamp value 335
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArrayCharacter_O:
 {
-     // stamp value 335
+     // stamp value 339
     core::MDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::MDArrayCharacter_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14954,12 +14999,12 @@ obj_finalize_STAMP_core__MDArrayCharacter_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
 {
-     // do nothing stamp value 339
+     // do nothing stamp value 343
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArrayT_O:
 {
-     // stamp value 343
+     // stamp value 347
     core::MDArrayT_O* obj_gc_safe = reinterpret_cast<core::MDArrayT_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14969,12 +15014,12 @@ obj_finalize_STAMP_core__MDArrayT_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_:
 {
-     // do nothing stamp value 347
+     // do nothing stamp value 351
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArrayBit_O:
 {
-     // stamp value 351
+     // stamp value 355
     core::MDArrayBit_O* obj_gc_safe = reinterpret_cast<core::MDArrayBit_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14984,12 +15029,12 @@ obj_finalize_STAMP_core__MDArrayBit_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 355
+     // do nothing stamp value 359
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_byte16_t_O:
 {
-     // stamp value 359
+     // stamp value 363
     core::MDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -14999,7 +15044,7 @@ obj_finalize_STAMP_core__MDArray_byte16_t_O:
 }
 obj_finalize_STAMP_core__SimpleMDArray_O:
 {
-     // stamp value 363
+     // stamp value 367
     core::SimpleMDArray_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15009,12 +15054,12 @@ obj_finalize_STAMP_core__SimpleMDArray_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 367
+     // do nothing stamp value 371
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int8_t_O:
 {
-     // stamp value 371
+     // stamp value 375
     core::SimpleMDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15024,12 +15069,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int8_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 375
+     // do nothing stamp value 379
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_double_O:
 {
-     // stamp value 379
+     // stamp value 383
     core::SimpleMDArray_double_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_double_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15039,12 +15084,12 @@ obj_finalize_STAMP_core__SimpleMDArray_double_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 383
+     // do nothing stamp value 387
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O:
 {
-     // stamp value 387
+     // stamp value 391
     core::SimpleMDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15054,12 +15099,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 391
+     // do nothing stamp value 395
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArrayT_O:
 {
-     // stamp value 395
+     // stamp value 399
     core::SimpleMDArrayT_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayT_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15069,12 +15114,12 @@ obj_finalize_STAMP_core__SimpleMDArrayT_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 399
+     // do nothing stamp value 403
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int2_t_O:
 {
-     // stamp value 403
+     // stamp value 407
     core::SimpleMDArray_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15084,12 +15129,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int2_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 407
+     // do nothing stamp value 411
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte4_t_O:
 {
-     // stamp value 411
+     // stamp value 415
     core::SimpleMDArray_byte4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15099,12 +15144,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte4_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 415
+     // do nothing stamp value 419
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int32_t_O:
 {
-     // stamp value 419
+     // stamp value 423
     core::SimpleMDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15114,12 +15159,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int32_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 423
+     // do nothing stamp value 427
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_float_O:
 {
-     // stamp value 427
+     // stamp value 431
     core::SimpleMDArray_float_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15129,12 +15174,12 @@ obj_finalize_STAMP_core__SimpleMDArray_float_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 431
+     // do nothing stamp value 435
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int16_t_O:
 {
-     // stamp value 435
+     // stamp value 439
     core::SimpleMDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15144,12 +15189,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int16_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 439
+     // do nothing stamp value 443
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_size_t_O:
 {
-     // stamp value 443
+     // stamp value 447
     core::SimpleMDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_size_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15159,12 +15204,12 @@ obj_finalize_STAMP_core__SimpleMDArray_size_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 447
+     // do nothing stamp value 451
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int4_t_O:
 {
-     // stamp value 451
+     // stamp value 455
     core::SimpleMDArray_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15174,12 +15219,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int4_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 455
+     // do nothing stamp value 459
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArrayCharacter_O:
 {
-     // stamp value 459
+     // stamp value 463
     core::SimpleMDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayCharacter_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15189,12 +15234,12 @@ obj_finalize_STAMP_core__SimpleMDArrayCharacter_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 463
+     // do nothing stamp value 467
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte2_t_O:
 {
-     // stamp value 467
+     // stamp value 471
     core::SimpleMDArray_byte2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15204,12 +15249,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte2_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 471
+     // do nothing stamp value 475
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_fixnum_O:
 {
-     // stamp value 475
+     // stamp value 479
     core::SimpleMDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_fixnum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15219,12 +15264,12 @@ obj_finalize_STAMP_core__SimpleMDArray_fixnum_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 479
+     // do nothing stamp value 483
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O:
 {
-     // stamp value 483
+     // stamp value 487
     core::SimpleMDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15234,12 +15279,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 487
+     // do nothing stamp value 491
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O:
 {
-     // stamp value 491
+     // stamp value 495
     core::SimpleMDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBaseChar_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15249,12 +15294,12 @@ obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 495
+     // do nothing stamp value 499
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O:
 {
-     // stamp value 499
+     // stamp value 503
     core::SimpleMDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15264,12 +15309,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 503
+     // do nothing stamp value 507
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArrayBit_O:
 {
-     // stamp value 507
+     // stamp value 511
     core::SimpleMDArrayBit_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBit_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15279,12 +15324,12 @@ obj_finalize_STAMP_core__SimpleMDArrayBit_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 511
+     // do nothing stamp value 515
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O:
 {
-     // stamp value 515
+     // stamp value 519
     core::SimpleMDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15294,12 +15339,12 @@ obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 519
+     // do nothing stamp value 523
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
 }
 obj_finalize_STAMP_core__SimpleMDArray_int64_t_O:
 {
-     // stamp value 523
+     // stamp value 527
     core::SimpleMDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15309,12 +15354,12 @@ obj_finalize_STAMP_core__SimpleMDArray_int64_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 527
+     // do nothing stamp value 531
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_int4_t_O:
 {
-     // stamp value 531
+     // stamp value 535
     core::MDArray_int4_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15324,12 +15369,12 @@ obj_finalize_STAMP_core__MDArray_int4_t_O:
 }
 obj_finalize_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_:
 {
-     // do nothing stamp value 535
+     // do nothing stamp value 539
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>"));
 }
 obj_finalize_STAMP_core__MDArray_double_O:
 {
-     // stamp value 539
+     // stamp value 543
     core::MDArray_double_O* obj_gc_safe = reinterpret_cast<core::MDArray_double_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15339,7 +15384,7 @@ obj_finalize_STAMP_core__MDArray_double_O:
 }
 obj_finalize_STAMP_core__ComplexVector_O:
 {
-     // stamp value 543
+     // stamp value 547
     core::ComplexVector_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15349,12 +15394,12 @@ obj_finalize_STAMP_core__ComplexVector_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 547
+     // do nothing stamp value 551
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_double_O:
 {
-     // stamp value 551
+     // stamp value 555
     core::ComplexVector_double_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_double_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15364,12 +15409,12 @@ obj_finalize_STAMP_core__ComplexVector_double_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 555
+     // do nothing stamp value 559
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int8_t_O:
 {
-     // stamp value 559
+     // stamp value 563
     core::ComplexVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15379,12 +15424,12 @@ obj_finalize_STAMP_core__ComplexVector_int8_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 563
+     // do nothing stamp value 567
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte64_t_O:
 {
-     // stamp value 567
+     // stamp value 571
     core::ComplexVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15394,12 +15439,12 @@ obj_finalize_STAMP_core__ComplexVector_byte64_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 571
+     // do nothing stamp value 575
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_T_O:
 {
-     // stamp value 575
+     // stamp value 579
     core::ComplexVector_T_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_T_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15409,12 +15454,12 @@ obj_finalize_STAMP_core__ComplexVector_T_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 579
+     // do nothing stamp value 583
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int2_t_O:
 {
-     // stamp value 583
+     // stamp value 587
     core::ComplexVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15424,12 +15469,12 @@ obj_finalize_STAMP_core__ComplexVector_int2_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 587
+     // do nothing stamp value 591
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int32_t_O:
 {
-     // stamp value 591
+     // stamp value 595
     core::ComplexVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15439,12 +15484,12 @@ obj_finalize_STAMP_core__ComplexVector_int32_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 595
+     // do nothing stamp value 599
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte16_t_O:
 {
-     // stamp value 599
+     // stamp value 603
     core::ComplexVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15454,12 +15499,12 @@ obj_finalize_STAMP_core__ComplexVector_byte16_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 603
+     // do nothing stamp value 607
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_float_O:
 {
-     // stamp value 607
+     // stamp value 611
     core::ComplexVector_float_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15469,12 +15514,12 @@ obj_finalize_STAMP_core__ComplexVector_float_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 611
+     // do nothing stamp value 615
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int16_t_O:
 {
-     // stamp value 615
+     // stamp value 619
     core::ComplexVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15484,12 +15529,12 @@ obj_finalize_STAMP_core__ComplexVector_int16_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 619
+     // do nothing stamp value 623
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int4_t_O:
 {
-     // stamp value 623
+     // stamp value 627
     core::ComplexVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15499,12 +15544,12 @@ obj_finalize_STAMP_core__ComplexVector_int4_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 627
+     // do nothing stamp value 631
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_size_t_O:
 {
-     // stamp value 631
+     // stamp value 635
     core::ComplexVector_size_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_size_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15514,12 +15559,12 @@ obj_finalize_STAMP_core__ComplexVector_size_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 635
+     // do nothing stamp value 639
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte2_t_O:
 {
-     // stamp value 639
+     // stamp value 643
     core::ComplexVector_byte2_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15529,12 +15574,12 @@ obj_finalize_STAMP_core__ComplexVector_byte2_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 643
+     // do nothing stamp value 647
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte8_t_O:
 {
-     // stamp value 647
+     // stamp value 651
     core::ComplexVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15544,12 +15589,12 @@ obj_finalize_STAMP_core__ComplexVector_byte8_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 651
+     // do nothing stamp value 655
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte32_t_O:
 {
-     // stamp value 655
+     // stamp value 659
     core::ComplexVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15559,12 +15604,12 @@ obj_finalize_STAMP_core__ComplexVector_byte32_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 659
+     // do nothing stamp value 663
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__BitVectorNs_O:
 {
-     // stamp value 663
+     // stamp value 667
     core::BitVectorNs_O* obj_gc_safe = reinterpret_cast<core::BitVectorNs_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15574,7 +15619,7 @@ obj_finalize_STAMP_core__BitVectorNs_O:
 }
 obj_finalize_STAMP_core__StrNs_O:
 {
-     // stamp value 667
+     // stamp value 671
     core::StrNs_O* obj_gc_safe = reinterpret_cast<core::StrNs_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15584,12 +15629,12 @@ obj_finalize_STAMP_core__StrNs_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
 {
-     // do nothing stamp value 671
+     // do nothing stamp value 675
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
 }
 obj_finalize_STAMP_core__Str8Ns_O:
 {
-     // stamp value 675
+     // stamp value 679
     core::Str8Ns_O* obj_gc_safe = reinterpret_cast<core::Str8Ns_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15599,12 +15644,12 @@ obj_finalize_STAMP_core__Str8Ns_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
 {
-     // do nothing stamp value 679
+     // do nothing stamp value 683
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
 }
 obj_finalize_STAMP_core__StrWNs_O:
 {
-     // stamp value 683
+     // stamp value 687
     core::StrWNs_O* obj_gc_safe = reinterpret_cast<core::StrWNs_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15614,12 +15659,12 @@ obj_finalize_STAMP_core__StrWNs_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 687
+     // do nothing stamp value 691
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_byte4_t_O:
 {
-     // stamp value 691
+     // stamp value 695
     core::ComplexVector_byte4_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15629,12 +15674,12 @@ obj_finalize_STAMP_core__ComplexVector_byte4_t_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 695
+     // do nothing stamp value 699
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_fixnum_O:
 {
-     // stamp value 699
+     // stamp value 703
     core::ComplexVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_fixnum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15644,12 +15689,12 @@ obj_finalize_STAMP_core__ComplexVector_fixnum_O:
 }
 obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 703
+     // do nothing stamp value 707
     THROW_HARD_ERROR(BF("Should never finalize object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>"));
 }
 obj_finalize_STAMP_core__ComplexVector_int64_t_O:
 {
-     // stamp value 707
+     // stamp value 711
     core::ComplexVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15659,7 +15704,7 @@ obj_finalize_STAMP_core__ComplexVector_int64_t_O:
 }
 obj_finalize_STAMP_core__AbstractSimpleVector_O:
 {
-     // stamp value 711
+     // stamp value 715
     core::AbstractSimpleVector_O* obj_gc_safe = reinterpret_cast<core::AbstractSimpleVector_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15669,7 +15714,7 @@ obj_finalize_STAMP_core__AbstractSimpleVector_O:
 }
 obj_finalize_STAMP_core__SimpleString_O:
 {
-     // stamp value 715
+     // stamp value 719
     core::SimpleString_O* obj_gc_safe = reinterpret_cast<core::SimpleString_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15679,12 +15724,12 @@ obj_finalize_STAMP_core__SimpleString_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_:
 {
-     // do nothing stamp value 719
+     // do nothing stamp value 723
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>"));
 }
 obj_finalize_STAMP_core__SimpleCharacterString_O:
 {
-     // stamp value 723
+     // stamp value 727
     core::SimpleCharacterString_O* obj_gc_safe = reinterpret_cast<core::SimpleCharacterString_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15694,12 +15739,12 @@ obj_finalize_STAMP_core__SimpleCharacterString_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
 {
-     // do nothing stamp value 727
+     // do nothing stamp value 731
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
 }
 obj_finalize_STAMP_core__SimpleBaseString_O:
 {
-     // stamp value 731
+     // stamp value 735
     core::SimpleBaseString_O* obj_gc_safe = reinterpret_cast<core::SimpleBaseString_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15709,12 +15754,12 @@ obj_finalize_STAMP_core__SimpleBaseString_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 735
+     // do nothing stamp value 739
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int16_t_O:
 {
-     // stamp value 739
+     // stamp value 743
     core::SimpleVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15724,12 +15769,12 @@ obj_finalize_STAMP_core__SimpleVector_int16_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 743
+     // do nothing stamp value 747
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte16_t_O:
 {
-     // stamp value 747
+     // stamp value 751
     core::SimpleVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte16_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15739,12 +15784,12 @@ obj_finalize_STAMP_core__SimpleVector_byte16_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_:
 {
-     // do nothing stamp value 751
+     // do nothing stamp value 755
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>"));
 }
 obj_finalize_STAMP_core__SimpleBitVector_O:
 {
-     // stamp value 755
+     // stamp value 759
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15754,12 +15799,12 @@ obj_finalize_STAMP_core__SimpleBitVector_O:
 }
 obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
-     // do nothing stamp value 759
+     // do nothing stamp value 763
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int4_t_O:
 {
-     // stamp value 763
+     // stamp value 767
     core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15769,12 +15814,12 @@ obj_finalize_STAMP_core__SimpleVector_int4_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 767
+     // do nothing stamp value 771
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte32_t_O:
 {
-     // stamp value 771
+     // stamp value 775
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15784,12 +15829,12 @@ obj_finalize_STAMP_core__SimpleVector_byte32_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 775
+     // do nothing stamp value 779
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_size_t_O:
 {
-     // stamp value 779
+     // stamp value 783
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15799,12 +15844,12 @@ obj_finalize_STAMP_core__SimpleVector_size_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 783
+     // do nothing stamp value 787
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_double_O:
 {
-     // stamp value 787
+     // stamp value 791
     core::SimpleVector_double_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_double_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15814,12 +15859,12 @@ obj_finalize_STAMP_core__SimpleVector_double_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 791
+     // do nothing stamp value 795
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte64_t_O:
 {
-     // stamp value 795
+     // stamp value 799
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15829,12 +15874,12 @@ obj_finalize_STAMP_core__SimpleVector_byte64_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
-     // do nothing stamp value 799
+     // do nothing stamp value 803
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int2_t_O:
 {
-     // stamp value 803
+     // stamp value 807
     core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15844,12 +15889,12 @@ obj_finalize_STAMP_core__SimpleVector_int2_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 807
+     // do nothing stamp value 811
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int64_t_O:
 {
-     // stamp value 811
+     // stamp value 815
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15859,12 +15904,12 @@ obj_finalize_STAMP_core__SimpleVector_int64_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 815
+     // do nothing stamp value 819
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_fixnum_O:
 {
-     // stamp value 819
+     // stamp value 823
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15874,12 +15919,12 @@ obj_finalize_STAMP_core__SimpleVector_fixnum_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 823
+     // do nothing stamp value 827
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int8_t_O:
 {
-     // stamp value 827
+     // stamp value 831
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15889,12 +15934,12 @@ obj_finalize_STAMP_core__SimpleVector_int8_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 831
+     // do nothing stamp value 835
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_float_O:
 {
-     // stamp value 835
+     // stamp value 839
     core::SimpleVector_float_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_float_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15904,12 +15949,12 @@ obj_finalize_STAMP_core__SimpleVector_float_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 839
+     // do nothing stamp value 843
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_O:
 {
-     // stamp value 843
+     // stamp value 847
     core::SimpleVector_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15919,12 +15964,12 @@ obj_finalize_STAMP_core__SimpleVector_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 847
+     // do nothing stamp value 851
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte8_t_O:
 {
-     // stamp value 851
+     // stamp value 855
     core::SimpleVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte8_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15934,12 +15979,12 @@ obj_finalize_STAMP_core__SimpleVector_byte8_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_:
 {
-     // do nothing stamp value 855
+     // do nothing stamp value 859
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte2_t_O:
 {
-     // stamp value 859
+     // stamp value 863
     core::SimpleVector_byte2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte2_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15949,12 +15994,12 @@ obj_finalize_STAMP_core__SimpleVector_byte2_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 863
+     // do nothing stamp value 867
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
 }
 obj_finalize_STAMP_core__SimpleVector_int32_t_O:
 {
-     // stamp value 867
+     // stamp value 871
     core::SimpleVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int32_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15964,12 +16009,12 @@ obj_finalize_STAMP_core__SimpleVector_int32_t_O:
 }
 obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_:
 {
-     // do nothing stamp value 871
+     // do nothing stamp value 875
     THROW_HARD_ERROR(BF("Should never finalize object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>"));
 }
 obj_finalize_STAMP_core__SimpleVector_byte4_t_O:
 {
-     // stamp value 875
+     // stamp value 879
     core::SimpleVector_byte4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte4_t_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15979,7 +16024,7 @@ obj_finalize_STAMP_core__SimpleVector_byte4_t_O:
 }
 obj_finalize_STAMP_core__Symbol_O:
 {
-     // stamp value 879
+     // stamp value 883
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15989,7 +16034,7 @@ obj_finalize_STAMP_core__Symbol_O:
 }
 obj_finalize_STAMP_core__Null_O:
 {
-     // stamp value 883
+     // stamp value 887
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -15999,7 +16044,7 @@ obj_finalize_STAMP_core__Null_O:
 }
 obj_finalize_STAMP_core__Character_dummy_O:
 {
-     // stamp value 887
+     // stamp value 891
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16009,7 +16054,7 @@ obj_finalize_STAMP_core__Character_dummy_O:
 }
 obj_finalize_STAMP_llvmo__DataLayout_O:
 {
-     // stamp value 891
+     // stamp value 895
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16019,7 +16064,7 @@ obj_finalize_STAMP_llvmo__DataLayout_O:
 }
 obj_finalize_STAMP_core__LoadTimeValues_O:
 {
-     // stamp value 895
+     // stamp value 899
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16029,7 +16074,7 @@ obj_finalize_STAMP_core__LoadTimeValues_O:
 }
 obj_finalize_STAMP_core__SharpEqualWrapper_O:
 {
-     // stamp value 899
+     // stamp value 903
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16039,7 +16084,7 @@ obj_finalize_STAMP_core__SharpEqualWrapper_O:
 }
 obj_finalize_STAMP_llvmo__ClaspJIT_O:
 {
-     // stamp value 903
+     // stamp value 907
     llvmo::ClaspJIT_O* obj_gc_safe = reinterpret_cast<llvmo::ClaspJIT_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16049,7 +16094,7 @@ obj_finalize_STAMP_llvmo__ClaspJIT_O:
 }
 obj_finalize_STAMP_core__Readtable_O:
 {
-     // stamp value 907
+     // stamp value 911
     core::Readtable_O* obj_gc_safe = reinterpret_cast<core::Readtable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16059,7 +16104,7 @@ obj_finalize_STAMP_core__Readtable_O:
 }
 obj_finalize_STAMP_core__PosixTime_O:
 {
-     // stamp value 911
+     // stamp value 915
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16069,7 +16114,7 @@ obj_finalize_STAMP_core__PosixTime_O:
 }
 obj_finalize_STAMP_core__Exposer_O:
 {
-     // stamp value 915
+     // stamp value 919
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16079,7 +16124,7 @@ obj_finalize_STAMP_core__Exposer_O:
 }
 obj_finalize_STAMP_core__CoreExposer_O:
 {
-     // stamp value 919
+     // stamp value 923
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16089,7 +16134,7 @@ obj_finalize_STAMP_core__CoreExposer_O:
 }
 obj_finalize_STAMP_asttooling__AsttoolingExposer_O:
 {
-     // stamp value 923
+     // stamp value 927
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16099,7 +16144,7 @@ obj_finalize_STAMP_asttooling__AsttoolingExposer_O:
 }
 obj_finalize_STAMP_llvmo__StructLayout_O:
 {
-     // stamp value 927
+     // stamp value 931
     llvmo::StructLayout_O* obj_gc_safe = reinterpret_cast<llvmo::StructLayout_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16109,7 +16154,7 @@ obj_finalize_STAMP_llvmo__StructLayout_O:
 }
 obj_finalize_STAMP_core__PosixTimeDuration_O:
 {
-     // stamp value 931
+     // stamp value 935
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16119,7 +16164,7 @@ obj_finalize_STAMP_core__PosixTimeDuration_O:
 }
 obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O:
 {
-     // stamp value 935
+     // stamp value 939
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16129,7 +16174,7 @@ obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O:
 }
 obj_finalize_STAMP_core__Instance_O:
 {
-     // stamp value 937
+     // stamp value 941
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16139,7 +16184,7 @@ obj_finalize_STAMP_core__Instance_O:
 }
 obj_finalize_STAMP_core__DerivableCxxObject_O:
 {
-     // stamp value 940
+     // stamp value 944
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16149,7 +16194,7 @@ obj_finalize_STAMP_core__DerivableCxxObject_O:
 }
 obj_finalize_STAMP_clbind__ClassRep_O:
 {
-     // stamp value 945
+     // stamp value 949
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16159,7 +16204,7 @@ obj_finalize_STAMP_clbind__ClassRep_O:
 }
 obj_finalize_STAMP_core__SmallMap_O:
 {
-     // stamp value 951
+     // stamp value 955
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16169,7 +16214,7 @@ obj_finalize_STAMP_core__SmallMap_O:
 }
 obj_finalize_STAMP_mpip__Mpi_O:
 {
-     // stamp value 955
+     // stamp value 959
     mpip::Mpi_O* obj_gc_safe = reinterpret_cast<mpip::Mpi_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16179,7 +16224,7 @@ obj_finalize_STAMP_mpip__Mpi_O:
 }
 obj_finalize_STAMP_core__ExternalObject_O:
 {
-     // stamp value 959
+     // stamp value 963
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16189,7 +16234,7 @@ obj_finalize_STAMP_core__ExternalObject_O:
 }
 obj_finalize_STAMP_llvmo__Pass_O:
 {
-     // stamp value 963
+     // stamp value 967
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16199,7 +16244,7 @@ obj_finalize_STAMP_llvmo__Pass_O:
 }
 obj_finalize_STAMP_llvmo__ModulePass_O:
 {
-     // stamp value 967
+     // stamp value 971
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16209,7 +16254,7 @@ obj_finalize_STAMP_llvmo__ModulePass_O:
 }
 obj_finalize_STAMP_llvmo__ImmutablePass_O:
 {
-     // stamp value 971
+     // stamp value 975
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16219,7 +16264,7 @@ obj_finalize_STAMP_llvmo__ImmutablePass_O:
 }
 obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O:
 {
-     // stamp value 975
+     // stamp value 979
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16229,7 +16274,7 @@ obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O:
 }
 obj_finalize_STAMP_llvmo__FunctionPass_O:
 {
-     // stamp value 979
+     // stamp value 983
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16239,7 +16284,7 @@ obj_finalize_STAMP_llvmo__FunctionPass_O:
 }
 obj_finalize_STAMP_llvmo__ExecutionEngine_O:
 {
-     // stamp value 983
+     // stamp value 987
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16249,7 +16294,7 @@ obj_finalize_STAMP_llvmo__ExecutionEngine_O:
 }
 obj_finalize_STAMP_llvmo__MCSubtargetInfo_O:
 {
-     // stamp value 987
+     // stamp value 991
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16259,7 +16304,7 @@ obj_finalize_STAMP_llvmo__MCSubtargetInfo_O:
 }
 obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O:
 {
-     // stamp value 991
+     // stamp value 995
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16269,7 +16314,7 @@ obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O:
 }
 obj_finalize_STAMP_llvmo__Type_O:
 {
-     // stamp value 995
+     // stamp value 999
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16279,7 +16324,7 @@ obj_finalize_STAMP_llvmo__Type_O:
 }
 obj_finalize_STAMP_llvmo__FunctionType_O:
 {
-     // stamp value 999
+     // stamp value 1003
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16289,7 +16334,7 @@ obj_finalize_STAMP_llvmo__FunctionType_O:
 }
 obj_finalize_STAMP_llvmo__CompositeType_O:
 {
-     // stamp value 1003
+     // stamp value 1007
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16299,7 +16344,7 @@ obj_finalize_STAMP_llvmo__CompositeType_O:
 }
 obj_finalize_STAMP_llvmo__SequentialType_O:
 {
-     // stamp value 1007
+     // stamp value 1011
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16309,7 +16354,7 @@ obj_finalize_STAMP_llvmo__SequentialType_O:
 }
 obj_finalize_STAMP_llvmo__PointerType_O:
 {
-     // stamp value 1011
+     // stamp value 1015
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16319,7 +16364,7 @@ obj_finalize_STAMP_llvmo__PointerType_O:
 }
 obj_finalize_STAMP_llvmo__ArrayType_O:
 {
-     // stamp value 1015
+     // stamp value 1019
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16329,7 +16374,7 @@ obj_finalize_STAMP_llvmo__ArrayType_O:
 }
 obj_finalize_STAMP_llvmo__VectorType_O:
 {
-     // stamp value 1019
+     // stamp value 1023
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16339,7 +16384,7 @@ obj_finalize_STAMP_llvmo__VectorType_O:
 }
 obj_finalize_STAMP_llvmo__StructType_O:
 {
-     // stamp value 1023
+     // stamp value 1027
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16349,7 +16394,7 @@ obj_finalize_STAMP_llvmo__StructType_O:
 }
 obj_finalize_STAMP_llvmo__IntegerType_O:
 {
-     // stamp value 1027
+     // stamp value 1031
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16359,7 +16404,7 @@ obj_finalize_STAMP_llvmo__IntegerType_O:
 }
 obj_finalize_STAMP_llvmo__JITDylib_O:
 {
-     // stamp value 1031
+     // stamp value 1035
     llvmo::JITDylib_O* obj_gc_safe = reinterpret_cast<llvmo::JITDylib_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16369,7 +16414,7 @@ obj_finalize_STAMP_llvmo__JITDylib_O:
 }
 obj_finalize_STAMP_llvmo__DIContext_O:
 {
-     // stamp value 1035
+     // stamp value 1039
     llvmo::DIContext_O* obj_gc_safe = reinterpret_cast<llvmo::DIContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16379,7 +16424,7 @@ obj_finalize_STAMP_llvmo__DIContext_O:
 }
 obj_finalize_STAMP_llvmo__TargetPassConfig_O:
 {
-     // stamp value 1039
+     // stamp value 1043
     llvmo::TargetPassConfig_O* obj_gc_safe = reinterpret_cast<llvmo::TargetPassConfig_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16389,7 +16434,7 @@ obj_finalize_STAMP_llvmo__TargetPassConfig_O:
 }
 obj_finalize_STAMP_llvmo__IRBuilderBase_O:
 {
-     // stamp value 1043
+     // stamp value 1047
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16399,7 +16444,7 @@ obj_finalize_STAMP_llvmo__IRBuilderBase_O:
 }
 obj_finalize_STAMP_llvmo__IRBuilder_O:
 {
-     // stamp value 1047
+     // stamp value 1051
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16409,7 +16454,7 @@ obj_finalize_STAMP_llvmo__IRBuilder_O:
 }
 obj_finalize_STAMP_llvmo__APFloat_O:
 {
-     // stamp value 1051
+     // stamp value 1055
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16419,7 +16464,7 @@ obj_finalize_STAMP_llvmo__APFloat_O:
 }
 obj_finalize_STAMP_llvmo__APInt_O:
 {
-     // stamp value 1055
+     // stamp value 1059
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16429,7 +16474,7 @@ obj_finalize_STAMP_llvmo__APInt_O:
 }
 obj_finalize_STAMP_llvmo__DIBuilder_O:
 {
-     // stamp value 1059
+     // stamp value 1063
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16439,7 +16484,7 @@ obj_finalize_STAMP_llvmo__DIBuilder_O:
 }
 obj_finalize_STAMP_llvmo__SectionedAddress_O:
 {
-     // stamp value 1063
+     // stamp value 1067
     llvmo::SectionedAddress_O* obj_gc_safe = reinterpret_cast<llvmo::SectionedAddress_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16449,7 +16494,7 @@ obj_finalize_STAMP_llvmo__SectionedAddress_O:
 }
 obj_finalize_STAMP_llvmo__EngineBuilder_O:
 {
-     // stamp value 1067
+     // stamp value 1071
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16459,7 +16504,7 @@ obj_finalize_STAMP_llvmo__EngineBuilder_O:
 }
 obj_finalize_STAMP_llvmo__PassManagerBase_O:
 {
-     // stamp value 1071
+     // stamp value 1075
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16469,7 +16514,7 @@ obj_finalize_STAMP_llvmo__PassManagerBase_O:
 }
 obj_finalize_STAMP_llvmo__PassManager_O:
 {
-     // stamp value 1075
+     // stamp value 1079
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16479,7 +16524,7 @@ obj_finalize_STAMP_llvmo__PassManager_O:
 }
 obj_finalize_STAMP_llvmo__FunctionPassManager_O:
 {
-     // stamp value 1079
+     // stamp value 1083
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16489,7 +16534,7 @@ obj_finalize_STAMP_llvmo__FunctionPassManager_O:
 }
 obj_finalize_STAMP_llvmo__Metadata_O:
 {
-     // stamp value 1083
+     // stamp value 1087
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16499,7 +16544,7 @@ obj_finalize_STAMP_llvmo__Metadata_O:
 }
 obj_finalize_STAMP_llvmo__MDNode_O:
 {
-     // stamp value 1087
+     // stamp value 1091
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16509,7 +16554,7 @@ obj_finalize_STAMP_llvmo__MDNode_O:
 }
 obj_finalize_STAMP_llvmo__DINode_O:
 {
-     // stamp value 1091
+     // stamp value 1095
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16519,7 +16564,7 @@ obj_finalize_STAMP_llvmo__DINode_O:
 }
 obj_finalize_STAMP_llvmo__DIVariable_O:
 {
-     // stamp value 1095
+     // stamp value 1099
     llvmo::DIVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DIVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16529,7 +16574,7 @@ obj_finalize_STAMP_llvmo__DIVariable_O:
 }
 obj_finalize_STAMP_llvmo__DILocalVariable_O:
 {
-     // stamp value 1099
+     // stamp value 1103
     llvmo::DILocalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16539,7 +16584,7 @@ obj_finalize_STAMP_llvmo__DILocalVariable_O:
 }
 obj_finalize_STAMP_llvmo__DIScope_O:
 {
-     // stamp value 1103
+     // stamp value 1107
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16549,7 +16594,7 @@ obj_finalize_STAMP_llvmo__DIScope_O:
 }
 obj_finalize_STAMP_llvmo__DIFile_O:
 {
-     // stamp value 1107
+     // stamp value 1111
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16559,7 +16604,7 @@ obj_finalize_STAMP_llvmo__DIFile_O:
 }
 obj_finalize_STAMP_llvmo__DIType_O:
 {
-     // stamp value 1111
+     // stamp value 1115
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16569,7 +16614,7 @@ obj_finalize_STAMP_llvmo__DIType_O:
 }
 obj_finalize_STAMP_llvmo__DICompositeType_O:
 {
-     // stamp value 1115
+     // stamp value 1119
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16579,7 +16624,7 @@ obj_finalize_STAMP_llvmo__DICompositeType_O:
 }
 obj_finalize_STAMP_llvmo__DIDerivedType_O:
 {
-     // stamp value 1119
+     // stamp value 1123
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16589,7 +16634,7 @@ obj_finalize_STAMP_llvmo__DIDerivedType_O:
 }
 obj_finalize_STAMP_llvmo__DIBasicType_O:
 {
-     // stamp value 1123
+     // stamp value 1127
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16599,7 +16644,7 @@ obj_finalize_STAMP_llvmo__DIBasicType_O:
 }
 obj_finalize_STAMP_llvmo__DISubroutineType_O:
 {
-     // stamp value 1127
+     // stamp value 1131
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16609,7 +16654,7 @@ obj_finalize_STAMP_llvmo__DISubroutineType_O:
 }
 obj_finalize_STAMP_llvmo__DILocalScope_O:
 {
-     // stamp value 1131
+     // stamp value 1135
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16619,7 +16664,7 @@ obj_finalize_STAMP_llvmo__DILocalScope_O:
 }
 obj_finalize_STAMP_llvmo__DISubprogram_O:
 {
-     // stamp value 1135
+     // stamp value 1139
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16629,7 +16674,7 @@ obj_finalize_STAMP_llvmo__DISubprogram_O:
 }
 obj_finalize_STAMP_llvmo__DILexicalBlockBase_O:
 {
-     // stamp value 1139
+     // stamp value 1143
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16639,7 +16684,7 @@ obj_finalize_STAMP_llvmo__DILexicalBlockBase_O:
 }
 obj_finalize_STAMP_llvmo__DILexicalBlock_O:
 {
-     // stamp value 1143
+     // stamp value 1147
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16649,7 +16694,7 @@ obj_finalize_STAMP_llvmo__DILexicalBlock_O:
 }
 obj_finalize_STAMP_llvmo__DICompileUnit_O:
 {
-     // stamp value 1147
+     // stamp value 1151
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16659,7 +16704,7 @@ obj_finalize_STAMP_llvmo__DICompileUnit_O:
 }
 obj_finalize_STAMP_llvmo__DIExpression_O:
 {
-     // stamp value 1151
+     // stamp value 1155
     llvmo::DIExpression_O* obj_gc_safe = reinterpret_cast<llvmo::DIExpression_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16669,7 +16714,7 @@ obj_finalize_STAMP_llvmo__DIExpression_O:
 }
 obj_finalize_STAMP_llvmo__DILocation_O:
 {
-     // stamp value 1155
+     // stamp value 1159
     llvmo::DILocation_O* obj_gc_safe = reinterpret_cast<llvmo::DILocation_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16679,7 +16724,7 @@ obj_finalize_STAMP_llvmo__DILocation_O:
 }
 obj_finalize_STAMP_llvmo__ValueAsMetadata_O:
 {
-     // stamp value 1159
+     // stamp value 1163
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16689,7 +16734,7 @@ obj_finalize_STAMP_llvmo__ValueAsMetadata_O:
 }
 obj_finalize_STAMP_llvmo__MDString_O:
 {
-     // stamp value 1163
+     // stamp value 1167
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16699,7 +16744,7 @@ obj_finalize_STAMP_llvmo__MDString_O:
 }
 obj_finalize_STAMP_core__Test_O:
 {
-     // stamp value 1167
+     // stamp value 1171
     core::Test_O* obj_gc_safe = reinterpret_cast<core::Test_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16709,7 +16754,7 @@ obj_finalize_STAMP_core__Test_O:
 }
 obj_finalize_STAMP_llvmo__Value_O:
 {
-     // stamp value 1171
+     // stamp value 1175
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16719,7 +16764,7 @@ obj_finalize_STAMP_llvmo__Value_O:
 }
 obj_finalize_STAMP_llvmo__Argument_O:
 {
-     // stamp value 1175
+     // stamp value 1179
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16729,7 +16774,7 @@ obj_finalize_STAMP_llvmo__Argument_O:
 }
 obj_finalize_STAMP_llvmo__BasicBlock_O:
 {
-     // stamp value 1179
+     // stamp value 1183
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16739,7 +16784,7 @@ obj_finalize_STAMP_llvmo__BasicBlock_O:
 }
 obj_finalize_STAMP_llvmo__MetadataAsValue_O:
 {
-     // stamp value 1183
+     // stamp value 1187
     llvmo::MetadataAsValue_O* obj_gc_safe = reinterpret_cast<llvmo::MetadataAsValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16749,7 +16794,7 @@ obj_finalize_STAMP_llvmo__MetadataAsValue_O:
 }
 obj_finalize_STAMP_llvmo__User_O:
 {
-     // stamp value 1187
+     // stamp value 1191
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16759,7 +16804,7 @@ obj_finalize_STAMP_llvmo__User_O:
 }
 obj_finalize_STAMP_llvmo__Instruction_O:
 {
-     // stamp value 1191
+     // stamp value 1195
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16769,7 +16814,7 @@ obj_finalize_STAMP_llvmo__Instruction_O:
 }
 obj_finalize_STAMP_llvmo__UnaryInstruction_O:
 {
-     // stamp value 1195
+     // stamp value 1199
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16779,7 +16824,7 @@ obj_finalize_STAMP_llvmo__UnaryInstruction_O:
 }
 obj_finalize_STAMP_llvmo__VAArgInst_O:
 {
-     // stamp value 1199
+     // stamp value 1203
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16789,7 +16834,7 @@ obj_finalize_STAMP_llvmo__VAArgInst_O:
 }
 obj_finalize_STAMP_llvmo__LoadInst_O:
 {
-     // stamp value 1203
+     // stamp value 1207
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16799,7 +16844,7 @@ obj_finalize_STAMP_llvmo__LoadInst_O:
 }
 obj_finalize_STAMP_llvmo__AllocaInst_O:
 {
-     // stamp value 1207
+     // stamp value 1211
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16809,7 +16854,7 @@ obj_finalize_STAMP_llvmo__AllocaInst_O:
 }
 obj_finalize_STAMP_llvmo__SwitchInst_O:
 {
-     // stamp value 1211
+     // stamp value 1215
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16819,7 +16864,7 @@ obj_finalize_STAMP_llvmo__SwitchInst_O:
 }
 obj_finalize_STAMP_llvmo__AtomicRMWInst_O:
 {
-     // stamp value 1215
+     // stamp value 1219
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16829,7 +16874,7 @@ obj_finalize_STAMP_llvmo__AtomicRMWInst_O:
 }
 obj_finalize_STAMP_llvmo__LandingPadInst_O:
 {
-     // stamp value 1219
+     // stamp value 1223
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16839,7 +16884,7 @@ obj_finalize_STAMP_llvmo__LandingPadInst_O:
 }
 obj_finalize_STAMP_llvmo__StoreInst_O:
 {
-     // stamp value 1223
+     // stamp value 1227
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16849,7 +16894,7 @@ obj_finalize_STAMP_llvmo__StoreInst_O:
 }
 obj_finalize_STAMP_llvmo__UnreachableInst_O:
 {
-     // stamp value 1227
+     // stamp value 1231
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16859,7 +16904,7 @@ obj_finalize_STAMP_llvmo__UnreachableInst_O:
 }
 obj_finalize_STAMP_llvmo__ReturnInst_O:
 {
-     // stamp value 1231
+     // stamp value 1235
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16869,7 +16914,7 @@ obj_finalize_STAMP_llvmo__ReturnInst_O:
 }
 obj_finalize_STAMP_llvmo__ResumeInst_O:
 {
-     // stamp value 1235
+     // stamp value 1239
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16879,7 +16924,7 @@ obj_finalize_STAMP_llvmo__ResumeInst_O:
 }
 obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O:
 {
-     // stamp value 1239
+     // stamp value 1243
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16889,7 +16934,7 @@ obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O:
 }
 obj_finalize_STAMP_llvmo__FenceInst_O:
 {
-     // stamp value 1243
+     // stamp value 1247
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16899,7 +16944,7 @@ obj_finalize_STAMP_llvmo__FenceInst_O:
 }
 obj_finalize_STAMP_llvmo__CallBase_O:
 {
-     // stamp value 1247
+     // stamp value 1251
     llvmo::CallBase_O* obj_gc_safe = reinterpret_cast<llvmo::CallBase_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16909,7 +16954,7 @@ obj_finalize_STAMP_llvmo__CallBase_O:
 }
 obj_finalize_STAMP_llvmo__CallInst_O:
 {
-     // stamp value 1251
+     // stamp value 1255
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16919,7 +16964,7 @@ obj_finalize_STAMP_llvmo__CallInst_O:
 }
 obj_finalize_STAMP_llvmo__InvokeInst_O:
 {
-     // stamp value 1255
+     // stamp value 1259
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16929,7 +16974,7 @@ obj_finalize_STAMP_llvmo__InvokeInst_O:
 }
 obj_finalize_STAMP_llvmo__PHINode_O:
 {
-     // stamp value 1259
+     // stamp value 1263
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16939,7 +16984,7 @@ obj_finalize_STAMP_llvmo__PHINode_O:
 }
 obj_finalize_STAMP_llvmo__IndirectBrInst_O:
 {
-     // stamp value 1263
+     // stamp value 1267
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16949,7 +16994,7 @@ obj_finalize_STAMP_llvmo__IndirectBrInst_O:
 }
 obj_finalize_STAMP_llvmo__BranchInst_O:
 {
-     // stamp value 1267
+     // stamp value 1271
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16959,7 +17004,7 @@ obj_finalize_STAMP_llvmo__BranchInst_O:
 }
 obj_finalize_STAMP_llvmo__Constant_O:
 {
-     // stamp value 1271
+     // stamp value 1275
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16969,7 +17014,7 @@ obj_finalize_STAMP_llvmo__Constant_O:
 }
 obj_finalize_STAMP_llvmo__GlobalValue_O:
 {
-     // stamp value 1275
+     // stamp value 1279
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16979,7 +17024,7 @@ obj_finalize_STAMP_llvmo__GlobalValue_O:
 }
 obj_finalize_STAMP_llvmo__Function_O:
 {
-     // stamp value 1279
+     // stamp value 1283
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16989,7 +17034,7 @@ obj_finalize_STAMP_llvmo__Function_O:
 }
 obj_finalize_STAMP_llvmo__GlobalVariable_O:
 {
-     // stamp value 1283
+     // stamp value 1287
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -16999,7 +17044,7 @@ obj_finalize_STAMP_llvmo__GlobalVariable_O:
 }
 obj_finalize_STAMP_llvmo__BlockAddress_O:
 {
-     // stamp value 1287
+     // stamp value 1291
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17009,7 +17054,7 @@ obj_finalize_STAMP_llvmo__BlockAddress_O:
 }
 obj_finalize_STAMP_llvmo__ConstantDataSequential_O:
 {
-     // stamp value 1291
+     // stamp value 1295
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17019,7 +17064,7 @@ obj_finalize_STAMP_llvmo__ConstantDataSequential_O:
 }
 obj_finalize_STAMP_llvmo__ConstantDataArray_O:
 {
-     // stamp value 1295
+     // stamp value 1299
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17029,7 +17074,7 @@ obj_finalize_STAMP_llvmo__ConstantDataArray_O:
 }
 obj_finalize_STAMP_llvmo__ConstantStruct_O:
 {
-     // stamp value 1299
+     // stamp value 1303
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17039,7 +17084,7 @@ obj_finalize_STAMP_llvmo__ConstantStruct_O:
 }
 obj_finalize_STAMP_llvmo__ConstantInt_O:
 {
-     // stamp value 1303
+     // stamp value 1307
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17049,7 +17094,7 @@ obj_finalize_STAMP_llvmo__ConstantInt_O:
 }
 obj_finalize_STAMP_llvmo__ConstantFP_O:
 {
-     // stamp value 1307
+     // stamp value 1311
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17059,7 +17104,7 @@ obj_finalize_STAMP_llvmo__ConstantFP_O:
 }
 obj_finalize_STAMP_llvmo__ConstantExpr_O:
 {
-     // stamp value 1311
+     // stamp value 1315
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17069,7 +17114,7 @@ obj_finalize_STAMP_llvmo__ConstantExpr_O:
 }
 obj_finalize_STAMP_llvmo__ConstantPointerNull_O:
 {
-     // stamp value 1315
+     // stamp value 1319
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17079,7 +17124,7 @@ obj_finalize_STAMP_llvmo__ConstantPointerNull_O:
 }
 obj_finalize_STAMP_llvmo__UndefValue_O:
 {
-     // stamp value 1319
+     // stamp value 1323
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17089,7 +17134,7 @@ obj_finalize_STAMP_llvmo__UndefValue_O:
 }
 obj_finalize_STAMP_llvmo__ConstantArray_O:
 {
-     // stamp value 1323
+     // stamp value 1327
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17099,7 +17144,7 @@ obj_finalize_STAMP_llvmo__ConstantArray_O:
 }
 obj_finalize_STAMP_llvmo__TargetMachine_O:
 {
-     // stamp value 1327
+     // stamp value 1331
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17109,7 +17154,7 @@ obj_finalize_STAMP_llvmo__TargetMachine_O:
 }
 obj_finalize_STAMP_llvmo__LLVMTargetMachine_O:
 {
-     // stamp value 1331
+     // stamp value 1335
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17119,7 +17164,7 @@ obj_finalize_STAMP_llvmo__LLVMTargetMachine_O:
 }
 obj_finalize_STAMP_llvmo__ThreadSafeContext_O:
 {
-     // stamp value 1335
+     // stamp value 1339
     llvmo::ThreadSafeContext_O* obj_gc_safe = reinterpret_cast<llvmo::ThreadSafeContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17129,7 +17174,7 @@ obj_finalize_STAMP_llvmo__ThreadSafeContext_O:
 }
 obj_finalize_STAMP_llvmo__NamedMDNode_O:
 {
-     // stamp value 1339
+     // stamp value 1343
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17139,7 +17184,7 @@ obj_finalize_STAMP_llvmo__NamedMDNode_O:
 }
 obj_finalize_STAMP_llvmo__Triple_O:
 {
-     // stamp value 1343
+     // stamp value 1347
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17149,7 +17194,7 @@ obj_finalize_STAMP_llvmo__Triple_O:
 }
 obj_finalize_STAMP_llvmo__DWARFContext_O:
 {
-     // stamp value 1347
+     // stamp value 1351
     llvmo::DWARFContext_O* obj_gc_safe = reinterpret_cast<llvmo::DWARFContext_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
@@ -17159,21 +17204,11 @@ obj_finalize_STAMP_llvmo__DWARFContext_O:
 }
 obj_finalize_STAMP_llvmo__TargetOptions_O:
 {
-     // stamp value 1351
+     // stamp value 1355
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~TargetOptions_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
-obj_finalize_STAMP_llvmo__ObjectFile_O:
-{
-     // stamp value 1355
-    llvmo::ObjectFile_O* obj_gc_safe = reinterpret_cast<llvmo::ObjectFile_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~ObjectFile_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -18251,302 +18286,302 @@ static void* OBJ_FINALIZE_table[] = {
   /* 163 */ &&obj_finalize_STAMP_llvmo__FunctionCallee_O,
   /* 167 */ &&obj_finalize_STAMP_core__Serializer_O,
   /* 171 */ &&obj_finalize_STAMP_llvmo__DINodeArray_O,
-  /* 175 */ &&obj_finalize_STAMP_mp__Mutex_O,
-  /* 179 */ &&obj_finalize_STAMP_mp__RecursiveMutex_O,
-  /* 183 */ &&obj_finalize_STAMP_llvmo__DITypeRefArray_O,
-  /* 187 */ &&obj_finalize_STAMP_mp__SharedMutex_O,
-  /* 191 */ &&obj_finalize_STAMP_mp__Process_O,
-  /* 195 */ &&obj_finalize_STAMP_core__SingleDispatchMethod_O,
-  /* 199 */ &&obj_finalize_STAMP_core__Iterator_O,
-  /* 203 */ &&obj_finalize_STAMP_core__DirectoryIterator_O,
-  /* 207 */ &&obj_finalize_STAMP_core__RecursiveDirectoryIterator_O,
-  /* 211 */ &&obj_finalize_STAMP_core__Array_O,
-  /* 215 */ &&obj_finalize_STAMP_core__MDArray_O,
-  /* 219 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
-  /* 223 */ &&obj_finalize_STAMP_core__MDArray_int16_t_O,
-  /* 227 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
-  /* 231 */ &&obj_finalize_STAMP_core__MDArray_int8_t_O,
-  /* 235 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
-  /* 239 */ &&obj_finalize_STAMP_core__MDArray_int32_t_O,
-  /* 243 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_,
-  /* 247 */ &&obj_finalize_STAMP_core__MDArray_byte4_t_O,
-  /* 251 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_,
-  /* 255 */ &&obj_finalize_STAMP_core__MDArray_float_O,
-  /* 259 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
-  /* 263 */ &&obj_finalize_STAMP_core__MDArray_size_t_O,
-  /* 267 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
-  /* 271 */ &&obj_finalize_STAMP_core__MDArray_byte8_t_O,
-  /* 275 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
-  /* 279 */ &&obj_finalize_STAMP_core__MDArray_int64_t_O,
-  /* 283 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
-  /* 287 */ &&obj_finalize_STAMP_core__MDArray_byte32_t_O,
-  /* 291 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_,
-  /* 295 */ &&obj_finalize_STAMP_core__MDArray_byte2_t_O,
-  /* 299 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_,
-  /* 303 */ &&obj_finalize_STAMP_core__MDArray_int2_t_O,
-  /* 307 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
-  /* 311 */ &&obj_finalize_STAMP_core__MDArray_fixnum_O,
-  /* 315 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
-  /* 319 */ &&obj_finalize_STAMP_core__MDArrayBaseChar_O,
-  /* 323 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
-  /* 327 */ &&obj_finalize_STAMP_core__MDArray_byte64_t_O,
-  /* 331 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
-  /* 335 */ &&obj_finalize_STAMP_core__MDArrayCharacter_O,
-  /* 339 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
-  /* 343 */ &&obj_finalize_STAMP_core__MDArrayT_O,
-  /* 347 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_,
-  /* 351 */ &&obj_finalize_STAMP_core__MDArrayBit_O,
-  /* 355 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
-  /* 359 */ &&obj_finalize_STAMP_core__MDArray_byte16_t_O,
-  /* 363 */ &&obj_finalize_STAMP_core__SimpleMDArray_O,
-  /* 367 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
-  /* 371 */ &&obj_finalize_STAMP_core__SimpleMDArray_int8_t_O,
-  /* 375 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_,
-  /* 379 */ &&obj_finalize_STAMP_core__SimpleMDArray_double_O,
-  /* 383 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
-  /* 387 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O,
-  /* 391 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
-  /* 395 */ &&obj_finalize_STAMP_core__SimpleMDArrayT_O,
-  /* 399 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_,
-  /* 403 */ &&obj_finalize_STAMP_core__SimpleMDArray_int2_t_O,
-  /* 407 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_,
-  /* 411 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte4_t_O,
-  /* 415 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
-  /* 419 */ &&obj_finalize_STAMP_core__SimpleMDArray_int32_t_O,
-  /* 423 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_,
-  /* 427 */ &&obj_finalize_STAMP_core__SimpleMDArray_float_O,
-  /* 431 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
-  /* 435 */ &&obj_finalize_STAMP_core__SimpleMDArray_int16_t_O,
-  /* 439 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
-  /* 443 */ &&obj_finalize_STAMP_core__SimpleMDArray_size_t_O,
-  /* 447 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_,
-  /* 451 */ &&obj_finalize_STAMP_core__SimpleMDArray_int4_t_O,
-  /* 455 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
-  /* 459 */ &&obj_finalize_STAMP_core__SimpleMDArrayCharacter_O,
-  /* 463 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_,
-  /* 467 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte2_t_O,
-  /* 471 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
-  /* 475 */ &&obj_finalize_STAMP_core__SimpleMDArray_fixnum_O,
-  /* 479 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
-  /* 483 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O,
-  /* 487 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
-  /* 491 */ &&obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O,
-  /* 495 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
-  /* 499 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O,
-  /* 503 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_,
-  /* 507 */ &&obj_finalize_STAMP_core__SimpleMDArrayBit_O,
-  /* 511 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
-  /* 515 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O,
-  /* 519 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
-  /* 523 */ &&obj_finalize_STAMP_core__SimpleMDArray_int64_t_O,
-  /* 527 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_,
-  /* 531 */ &&obj_finalize_STAMP_core__MDArray_int4_t_O,
-  /* 535 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_,
-  /* 539 */ &&obj_finalize_STAMP_core__MDArray_double_O,
-  /* 543 */ &&obj_finalize_STAMP_core__ComplexVector_O,
-  /* 547 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_,
-  /* 551 */ &&obj_finalize_STAMP_core__ComplexVector_double_O,
-  /* 555 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_,
-  /* 559 */ &&obj_finalize_STAMP_core__ComplexVector_int8_t_O,
-  /* 563 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_,
-  /* 567 */ &&obj_finalize_STAMP_core__ComplexVector_byte64_t_O,
-  /* 571 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_,
-  /* 575 */ &&obj_finalize_STAMP_core__ComplexVector_T_O,
-  /* 579 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_,
-  /* 583 */ &&obj_finalize_STAMP_core__ComplexVector_int2_t_O,
-  /* 587 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_,
-  /* 591 */ &&obj_finalize_STAMP_core__ComplexVector_int32_t_O,
-  /* 595 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_,
-  /* 599 */ &&obj_finalize_STAMP_core__ComplexVector_byte16_t_O,
-  /* 603 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_,
-  /* 607 */ &&obj_finalize_STAMP_core__ComplexVector_float_O,
-  /* 611 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_,
-  /* 615 */ &&obj_finalize_STAMP_core__ComplexVector_int16_t_O,
-  /* 619 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_,
-  /* 623 */ &&obj_finalize_STAMP_core__ComplexVector_int4_t_O,
-  /* 627 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_,
-  /* 631 */ &&obj_finalize_STAMP_core__ComplexVector_size_t_O,
-  /* 635 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_,
-  /* 639 */ &&obj_finalize_STAMP_core__ComplexVector_byte2_t_O,
-  /* 643 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_,
-  /* 647 */ &&obj_finalize_STAMP_core__ComplexVector_byte8_t_O,
-  /* 651 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_,
-  /* 655 */ &&obj_finalize_STAMP_core__ComplexVector_byte32_t_O,
-  /* 659 */ &&obj_finalize_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_,
-  /* 663 */ &&obj_finalize_STAMP_core__BitVectorNs_O,
-  /* 667 */ &&obj_finalize_STAMP_core__StrNs_O,
-  /* 671 */ &&obj_finalize_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
-  /* 675 */ &&obj_finalize_STAMP_core__Str8Ns_O,
-  /* 679 */ &&obj_finalize_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
-  /* 683 */ &&obj_finalize_STAMP_core__StrWNs_O,
-  /* 687 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_,
-  /* 691 */ &&obj_finalize_STAMP_core__ComplexVector_byte4_t_O,
-  /* 695 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_,
-  /* 699 */ &&obj_finalize_STAMP_core__ComplexVector_fixnum_O,
-  /* 703 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_,
-  /* 707 */ &&obj_finalize_STAMP_core__ComplexVector_int64_t_O,
-  /* 711 */ &&obj_finalize_STAMP_core__AbstractSimpleVector_O,
-  /* 715 */ &&obj_finalize_STAMP_core__SimpleString_O,
-  /* 719 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
-  /* 723 */ &&obj_finalize_STAMP_core__SimpleCharacterString_O,
-  /* 727 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
-  /* 731 */ &&obj_finalize_STAMP_core__SimpleBaseString_O,
-  /* 735 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
-  /* 739 */ &&obj_finalize_STAMP_core__SimpleVector_int16_t_O,
-  /* 743 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
-  /* 747 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
-  /* 751 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
-  /* 755 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
-  /* 759 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
-  /* 763 */ &&obj_finalize_STAMP_core__SimpleVector_int4_t_O,
-  /* 767 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
-  /* 771 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
-  /* 775 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 779 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
-  /* 783 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
-  /* 787 */ &&obj_finalize_STAMP_core__SimpleVector_double_O,
-  /* 791 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 795 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
-  /* 799 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
-  /* 803 */ &&obj_finalize_STAMP_core__SimpleVector_int2_t_O,
-  /* 807 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
-  /* 811 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
-  /* 815 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
-  /* 819 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
-  /* 823 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
-  /* 827 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
-  /* 831 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
-  /* 835 */ &&obj_finalize_STAMP_core__SimpleVector_float_O,
-  /* 839 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
-  /* 843 */ &&obj_finalize_STAMP_core__SimpleVector_O,
-  /* 847 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
-  /* 851 */ &&obj_finalize_STAMP_core__SimpleVector_byte8_t_O,
-  /* 855 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_,
-  /* 859 */ &&obj_finalize_STAMP_core__SimpleVector_byte2_t_O,
-  /* 863 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
-  /* 867 */ &&obj_finalize_STAMP_core__SimpleVector_int32_t_O,
-  /* 871 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_,
-  /* 875 */ &&obj_finalize_STAMP_core__SimpleVector_byte4_t_O,
-  /* 879 */ &&obj_finalize_STAMP_core__Symbol_O,
-  /* 883 */ &&obj_finalize_STAMP_core__Null_O,
-  /* 887 */ &&obj_finalize_STAMP_core__Character_dummy_O,
-  /* 891 */ &&obj_finalize_STAMP_llvmo__DataLayout_O,
-  /* 895 */ &&obj_finalize_STAMP_core__LoadTimeValues_O,
-  /* 899 */ &&obj_finalize_STAMP_core__SharpEqualWrapper_O,
-  /* 903 */ &&obj_finalize_STAMP_llvmo__ClaspJIT_O,
-  /* 907 */ &&obj_finalize_STAMP_core__Readtable_O,
-  /* 911 */ &&obj_finalize_STAMP_core__PosixTime_O,
-  /* 915 */ &&obj_finalize_STAMP_core__Exposer_O,
-  /* 919 */ &&obj_finalize_STAMP_core__CoreExposer_O,
-  /* 923 */ &&obj_finalize_STAMP_asttooling__AsttoolingExposer_O,
-  /* 927 */ &&obj_finalize_STAMP_llvmo__StructLayout_O,
-  /* 931 */ &&obj_finalize_STAMP_core__PosixTimeDuration_O,
-  /* 935 */ &&obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O,
-  /* 937 */ &&obj_finalize_STAMP_core__Instance_O,
-  /* 940 */ &&obj_finalize_STAMP_core__DerivableCxxObject_O,
-  /* 945 */ &&obj_finalize_STAMP_clbind__ClassRep_O,
-  /* 951 */ &&obj_finalize_STAMP_core__SmallMap_O,
-  /* 955 */ &&obj_finalize_STAMP_mpip__Mpi_O,
-  /* 959 */ &&obj_finalize_STAMP_core__ExternalObject_O,
-  /* 963 */ &&obj_finalize_STAMP_llvmo__Pass_O,
-  /* 967 */ &&obj_finalize_STAMP_llvmo__ModulePass_O,
-  /* 971 */ &&obj_finalize_STAMP_llvmo__ImmutablePass_O,
-  /* 975 */ &&obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 979 */ &&obj_finalize_STAMP_llvmo__FunctionPass_O,
-  /* 983 */ &&obj_finalize_STAMP_llvmo__ExecutionEngine_O,
-  /* 987 */ &&obj_finalize_STAMP_llvmo__MCSubtargetInfo_O,
-  /* 991 */ &&obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O,
-  /* 995 */ &&obj_finalize_STAMP_llvmo__Type_O,
-  /* 999 */ &&obj_finalize_STAMP_llvmo__FunctionType_O,
-  /* 1003 */ &&obj_finalize_STAMP_llvmo__CompositeType_O,
-  /* 1007 */ &&obj_finalize_STAMP_llvmo__SequentialType_O,
-  /* 1011 */ &&obj_finalize_STAMP_llvmo__PointerType_O,
-  /* 1015 */ &&obj_finalize_STAMP_llvmo__ArrayType_O,
-  /* 1019 */ &&obj_finalize_STAMP_llvmo__VectorType_O,
-  /* 1023 */ &&obj_finalize_STAMP_llvmo__StructType_O,
-  /* 1027 */ &&obj_finalize_STAMP_llvmo__IntegerType_O,
-  /* 1031 */ &&obj_finalize_STAMP_llvmo__JITDylib_O,
-  /* 1035 */ &&obj_finalize_STAMP_llvmo__DIContext_O,
-  /* 1039 */ &&obj_finalize_STAMP_llvmo__TargetPassConfig_O,
-  /* 1043 */ &&obj_finalize_STAMP_llvmo__IRBuilderBase_O,
-  /* 1047 */ &&obj_finalize_STAMP_llvmo__IRBuilder_O,
-  /* 1051 */ &&obj_finalize_STAMP_llvmo__APFloat_O,
-  /* 1055 */ &&obj_finalize_STAMP_llvmo__APInt_O,
-  /* 1059 */ &&obj_finalize_STAMP_llvmo__DIBuilder_O,
-  /* 1063 */ &&obj_finalize_STAMP_llvmo__SectionedAddress_O,
-  /* 1067 */ &&obj_finalize_STAMP_llvmo__EngineBuilder_O,
-  /* 1071 */ &&obj_finalize_STAMP_llvmo__PassManagerBase_O,
-  /* 1075 */ &&obj_finalize_STAMP_llvmo__PassManager_O,
-  /* 1079 */ &&obj_finalize_STAMP_llvmo__FunctionPassManager_O,
-  /* 1083 */ &&obj_finalize_STAMP_llvmo__Metadata_O,
-  /* 1087 */ &&obj_finalize_STAMP_llvmo__MDNode_O,
-  /* 1091 */ &&obj_finalize_STAMP_llvmo__DINode_O,
-  /* 1095 */ &&obj_finalize_STAMP_llvmo__DIVariable_O,
-  /* 1099 */ &&obj_finalize_STAMP_llvmo__DILocalVariable_O,
-  /* 1103 */ &&obj_finalize_STAMP_llvmo__DIScope_O,
-  /* 1107 */ &&obj_finalize_STAMP_llvmo__DIFile_O,
-  /* 1111 */ &&obj_finalize_STAMP_llvmo__DIType_O,
-  /* 1115 */ &&obj_finalize_STAMP_llvmo__DICompositeType_O,
-  /* 1119 */ &&obj_finalize_STAMP_llvmo__DIDerivedType_O,
-  /* 1123 */ &&obj_finalize_STAMP_llvmo__DIBasicType_O,
-  /* 1127 */ &&obj_finalize_STAMP_llvmo__DISubroutineType_O,
-  /* 1131 */ &&obj_finalize_STAMP_llvmo__DILocalScope_O,
-  /* 1135 */ &&obj_finalize_STAMP_llvmo__DISubprogram_O,
-  /* 1139 */ &&obj_finalize_STAMP_llvmo__DILexicalBlockBase_O,
-  /* 1143 */ &&obj_finalize_STAMP_llvmo__DILexicalBlock_O,
-  /* 1147 */ &&obj_finalize_STAMP_llvmo__DICompileUnit_O,
-  /* 1151 */ &&obj_finalize_STAMP_llvmo__DIExpression_O,
-  /* 1155 */ &&obj_finalize_STAMP_llvmo__DILocation_O,
-  /* 1159 */ &&obj_finalize_STAMP_llvmo__ValueAsMetadata_O,
-  /* 1163 */ &&obj_finalize_STAMP_llvmo__MDString_O,
-  /* 1167 */ &&obj_finalize_STAMP_core__Test_O,
-  /* 1171 */ &&obj_finalize_STAMP_llvmo__Value_O,
-  /* 1175 */ &&obj_finalize_STAMP_llvmo__Argument_O,
-  /* 1179 */ &&obj_finalize_STAMP_llvmo__BasicBlock_O,
-  /* 1183 */ &&obj_finalize_STAMP_llvmo__MetadataAsValue_O,
-  /* 1187 */ &&obj_finalize_STAMP_llvmo__User_O,
-  /* 1191 */ &&obj_finalize_STAMP_llvmo__Instruction_O,
-  /* 1195 */ &&obj_finalize_STAMP_llvmo__UnaryInstruction_O,
-  /* 1199 */ &&obj_finalize_STAMP_llvmo__VAArgInst_O,
-  /* 1203 */ &&obj_finalize_STAMP_llvmo__LoadInst_O,
-  /* 1207 */ &&obj_finalize_STAMP_llvmo__AllocaInst_O,
-  /* 1211 */ &&obj_finalize_STAMP_llvmo__SwitchInst_O,
-  /* 1215 */ &&obj_finalize_STAMP_llvmo__AtomicRMWInst_O,
-  /* 1219 */ &&obj_finalize_STAMP_llvmo__LandingPadInst_O,
-  /* 1223 */ &&obj_finalize_STAMP_llvmo__StoreInst_O,
-  /* 1227 */ &&obj_finalize_STAMP_llvmo__UnreachableInst_O,
-  /* 1231 */ &&obj_finalize_STAMP_llvmo__ReturnInst_O,
-  /* 1235 */ &&obj_finalize_STAMP_llvmo__ResumeInst_O,
-  /* 1239 */ &&obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O,
-  /* 1243 */ &&obj_finalize_STAMP_llvmo__FenceInst_O,
-  /* 1247 */ &&obj_finalize_STAMP_llvmo__CallBase_O,
-  /* 1251 */ &&obj_finalize_STAMP_llvmo__CallInst_O,
-  /* 1255 */ &&obj_finalize_STAMP_llvmo__InvokeInst_O,
-  /* 1259 */ &&obj_finalize_STAMP_llvmo__PHINode_O,
-  /* 1263 */ &&obj_finalize_STAMP_llvmo__IndirectBrInst_O,
-  /* 1267 */ &&obj_finalize_STAMP_llvmo__BranchInst_O,
-  /* 1271 */ &&obj_finalize_STAMP_llvmo__Constant_O,
-  /* 1275 */ &&obj_finalize_STAMP_llvmo__GlobalValue_O,
-  /* 1279 */ &&obj_finalize_STAMP_llvmo__Function_O,
-  /* 1283 */ &&obj_finalize_STAMP_llvmo__GlobalVariable_O,
-  /* 1287 */ &&obj_finalize_STAMP_llvmo__BlockAddress_O,
-  /* 1291 */ &&obj_finalize_STAMP_llvmo__ConstantDataSequential_O,
-  /* 1295 */ &&obj_finalize_STAMP_llvmo__ConstantDataArray_O,
-  /* 1299 */ &&obj_finalize_STAMP_llvmo__ConstantStruct_O,
-  /* 1303 */ &&obj_finalize_STAMP_llvmo__ConstantInt_O,
-  /* 1307 */ &&obj_finalize_STAMP_llvmo__ConstantFP_O,
-  /* 1311 */ &&obj_finalize_STAMP_llvmo__ConstantExpr_O,
-  /* 1315 */ &&obj_finalize_STAMP_llvmo__ConstantPointerNull_O,
-  /* 1319 */ &&obj_finalize_STAMP_llvmo__UndefValue_O,
-  /* 1323 */ &&obj_finalize_STAMP_llvmo__ConstantArray_O,
-  /* 1327 */ &&obj_finalize_STAMP_llvmo__TargetMachine_O,
-  /* 1331 */ &&obj_finalize_STAMP_llvmo__LLVMTargetMachine_O,
-  /* 1335 */ &&obj_finalize_STAMP_llvmo__ThreadSafeContext_O,
-  /* 1339 */ &&obj_finalize_STAMP_llvmo__NamedMDNode_O,
-  /* 1343 */ &&obj_finalize_STAMP_llvmo__Triple_O,
-  /* 1347 */ &&obj_finalize_STAMP_llvmo__DWARFContext_O,
-  /* 1351 */ &&obj_finalize_STAMP_llvmo__TargetOptions_O,
-  /* 1355 */ &&obj_finalize_STAMP_llvmo__ObjectFile_O,
+  /* 175 */ &&obj_finalize_STAMP_llvmo__ObjectFile_O,
+  /* 179 */ &&obj_finalize_STAMP_mp__Mutex_O,
+  /* 183 */ &&obj_finalize_STAMP_mp__RecursiveMutex_O,
+  /* 187 */ &&obj_finalize_STAMP_llvmo__DITypeRefArray_O,
+  /* 191 */ &&obj_finalize_STAMP_mp__SharedMutex_O,
+  /* 195 */ &&obj_finalize_STAMP_mp__Process_O,
+  /* 199 */ &&obj_finalize_STAMP_core__SingleDispatchMethod_O,
+  /* 203 */ &&obj_finalize_STAMP_core__Iterator_O,
+  /* 207 */ &&obj_finalize_STAMP_core__DirectoryIterator_O,
+  /* 211 */ &&obj_finalize_STAMP_core__RecursiveDirectoryIterator_O,
+  /* 215 */ &&obj_finalize_STAMP_core__Array_O,
+  /* 219 */ &&obj_finalize_STAMP_core__MDArray_O,
+  /* 223 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
+  /* 227 */ &&obj_finalize_STAMP_core__MDArray_int16_t_O,
+  /* 231 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
+  /* 235 */ &&obj_finalize_STAMP_core__MDArray_int8_t_O,
+  /* 239 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
+  /* 243 */ &&obj_finalize_STAMP_core__MDArray_int32_t_O,
+  /* 247 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_,
+  /* 251 */ &&obj_finalize_STAMP_core__MDArray_byte4_t_O,
+  /* 255 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_,
+  /* 259 */ &&obj_finalize_STAMP_core__MDArray_float_O,
+  /* 263 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
+  /* 267 */ &&obj_finalize_STAMP_core__MDArray_size_t_O,
+  /* 271 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
+  /* 275 */ &&obj_finalize_STAMP_core__MDArray_byte8_t_O,
+  /* 279 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
+  /* 283 */ &&obj_finalize_STAMP_core__MDArray_int64_t_O,
+  /* 287 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
+  /* 291 */ &&obj_finalize_STAMP_core__MDArray_byte32_t_O,
+  /* 295 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_,
+  /* 299 */ &&obj_finalize_STAMP_core__MDArray_byte2_t_O,
+  /* 303 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_,
+  /* 307 */ &&obj_finalize_STAMP_core__MDArray_int2_t_O,
+  /* 311 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
+  /* 315 */ &&obj_finalize_STAMP_core__MDArray_fixnum_O,
+  /* 319 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
+  /* 323 */ &&obj_finalize_STAMP_core__MDArrayBaseChar_O,
+  /* 327 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
+  /* 331 */ &&obj_finalize_STAMP_core__MDArray_byte64_t_O,
+  /* 335 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
+  /* 339 */ &&obj_finalize_STAMP_core__MDArrayCharacter_O,
+  /* 343 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
+  /* 347 */ &&obj_finalize_STAMP_core__MDArrayT_O,
+  /* 351 */ &&obj_finalize_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_,
+  /* 355 */ &&obj_finalize_STAMP_core__MDArrayBit_O,
+  /* 359 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
+  /* 363 */ &&obj_finalize_STAMP_core__MDArray_byte16_t_O,
+  /* 367 */ &&obj_finalize_STAMP_core__SimpleMDArray_O,
+  /* 371 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
+  /* 375 */ &&obj_finalize_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 379 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_,
+  /* 383 */ &&obj_finalize_STAMP_core__SimpleMDArray_double_O,
+  /* 387 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
+  /* 391 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 395 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
+  /* 399 */ &&obj_finalize_STAMP_core__SimpleMDArrayT_O,
+  /* 403 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_,
+  /* 407 */ &&obj_finalize_STAMP_core__SimpleMDArray_int2_t_O,
+  /* 411 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_,
+  /* 415 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte4_t_O,
+  /* 419 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
+  /* 423 */ &&obj_finalize_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 427 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_,
+  /* 431 */ &&obj_finalize_STAMP_core__SimpleMDArray_float_O,
+  /* 435 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
+  /* 439 */ &&obj_finalize_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 443 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
+  /* 447 */ &&obj_finalize_STAMP_core__SimpleMDArray_size_t_O,
+  /* 451 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_,
+  /* 455 */ &&obj_finalize_STAMP_core__SimpleMDArray_int4_t_O,
+  /* 459 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
+  /* 463 */ &&obj_finalize_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 467 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_,
+  /* 471 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte2_t_O,
+  /* 475 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
+  /* 479 */ &&obj_finalize_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 483 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
+  /* 487 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 491 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
+  /* 495 */ &&obj_finalize_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 499 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
+  /* 503 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte64_t_O,
+  /* 507 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_,
+  /* 511 */ &&obj_finalize_STAMP_core__SimpleMDArrayBit_O,
+  /* 515 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
+  /* 519 */ &&obj_finalize_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 523 */ &&obj_finalize_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
+  /* 527 */ &&obj_finalize_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 531 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_,
+  /* 535 */ &&obj_finalize_STAMP_core__MDArray_int4_t_O,
+  /* 539 */ &&obj_finalize_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_,
+  /* 543 */ &&obj_finalize_STAMP_core__MDArray_double_O,
+  /* 547 */ &&obj_finalize_STAMP_core__ComplexVector_O,
+  /* 551 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_,
+  /* 555 */ &&obj_finalize_STAMP_core__ComplexVector_double_O,
+  /* 559 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_,
+  /* 563 */ &&obj_finalize_STAMP_core__ComplexVector_int8_t_O,
+  /* 567 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_,
+  /* 571 */ &&obj_finalize_STAMP_core__ComplexVector_byte64_t_O,
+  /* 575 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_,
+  /* 579 */ &&obj_finalize_STAMP_core__ComplexVector_T_O,
+  /* 583 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_,
+  /* 587 */ &&obj_finalize_STAMP_core__ComplexVector_int2_t_O,
+  /* 591 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_,
+  /* 595 */ &&obj_finalize_STAMP_core__ComplexVector_int32_t_O,
+  /* 599 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_,
+  /* 603 */ &&obj_finalize_STAMP_core__ComplexVector_byte16_t_O,
+  /* 607 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_,
+  /* 611 */ &&obj_finalize_STAMP_core__ComplexVector_float_O,
+  /* 615 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_,
+  /* 619 */ &&obj_finalize_STAMP_core__ComplexVector_int16_t_O,
+  /* 623 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_,
+  /* 627 */ &&obj_finalize_STAMP_core__ComplexVector_int4_t_O,
+  /* 631 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_,
+  /* 635 */ &&obj_finalize_STAMP_core__ComplexVector_size_t_O,
+  /* 639 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_,
+  /* 643 */ &&obj_finalize_STAMP_core__ComplexVector_byte2_t_O,
+  /* 647 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_,
+  /* 651 */ &&obj_finalize_STAMP_core__ComplexVector_byte8_t_O,
+  /* 655 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_,
+  /* 659 */ &&obj_finalize_STAMP_core__ComplexVector_byte32_t_O,
+  /* 663 */ &&obj_finalize_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_,
+  /* 667 */ &&obj_finalize_STAMP_core__BitVectorNs_O,
+  /* 671 */ &&obj_finalize_STAMP_core__StrNs_O,
+  /* 675 */ &&obj_finalize_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
+  /* 679 */ &&obj_finalize_STAMP_core__Str8Ns_O,
+  /* 683 */ &&obj_finalize_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
+  /* 687 */ &&obj_finalize_STAMP_core__StrWNs_O,
+  /* 691 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_,
+  /* 695 */ &&obj_finalize_STAMP_core__ComplexVector_byte4_t_O,
+  /* 699 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_,
+  /* 703 */ &&obj_finalize_STAMP_core__ComplexVector_fixnum_O,
+  /* 707 */ &&obj_finalize_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_,
+  /* 711 */ &&obj_finalize_STAMP_core__ComplexVector_int64_t_O,
+  /* 715 */ &&obj_finalize_STAMP_core__AbstractSimpleVector_O,
+  /* 719 */ &&obj_finalize_STAMP_core__SimpleString_O,
+  /* 723 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
+  /* 727 */ &&obj_finalize_STAMP_core__SimpleCharacterString_O,
+  /* 731 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
+  /* 735 */ &&obj_finalize_STAMP_core__SimpleBaseString_O,
+  /* 739 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
+  /* 743 */ &&obj_finalize_STAMP_core__SimpleVector_int16_t_O,
+  /* 747 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
+  /* 751 */ &&obj_finalize_STAMP_core__SimpleVector_byte16_t_O,
+  /* 755 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
+  /* 759 */ &&obj_finalize_STAMP_core__SimpleBitVector_O,
+  /* 763 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
+  /* 767 */ &&obj_finalize_STAMP_core__SimpleVector_int4_t_O,
+  /* 771 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
+  /* 775 */ &&obj_finalize_STAMP_core__SimpleVector_byte32_t_O,
+  /* 779 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 783 */ &&obj_finalize_STAMP_core__SimpleVector_size_t_O,
+  /* 787 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
+  /* 791 */ &&obj_finalize_STAMP_core__SimpleVector_double_O,
+  /* 795 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 799 */ &&obj_finalize_STAMP_core__SimpleVector_byte64_t_O,
+  /* 803 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
+  /* 807 */ &&obj_finalize_STAMP_core__SimpleVector_int2_t_O,
+  /* 811 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
+  /* 815 */ &&obj_finalize_STAMP_core__SimpleVector_int64_t_O,
+  /* 819 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
+  /* 823 */ &&obj_finalize_STAMP_core__SimpleVector_fixnum_O,
+  /* 827 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
+  /* 831 */ &&obj_finalize_STAMP_core__SimpleVector_int8_t_O,
+  /* 835 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
+  /* 839 */ &&obj_finalize_STAMP_core__SimpleVector_float_O,
+  /* 843 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
+  /* 847 */ &&obj_finalize_STAMP_core__SimpleVector_O,
+  /* 851 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
+  /* 855 */ &&obj_finalize_STAMP_core__SimpleVector_byte8_t_O,
+  /* 859 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_,
+  /* 863 */ &&obj_finalize_STAMP_core__SimpleVector_byte2_t_O,
+  /* 867 */ &&obj_finalize_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
+  /* 871 */ &&obj_finalize_STAMP_core__SimpleVector_int32_t_O,
+  /* 875 */ &&obj_finalize_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_,
+  /* 879 */ &&obj_finalize_STAMP_core__SimpleVector_byte4_t_O,
+  /* 883 */ &&obj_finalize_STAMP_core__Symbol_O,
+  /* 887 */ &&obj_finalize_STAMP_core__Null_O,
+  /* 891 */ &&obj_finalize_STAMP_core__Character_dummy_O,
+  /* 895 */ &&obj_finalize_STAMP_llvmo__DataLayout_O,
+  /* 899 */ &&obj_finalize_STAMP_core__LoadTimeValues_O,
+  /* 903 */ &&obj_finalize_STAMP_core__SharpEqualWrapper_O,
+  /* 907 */ &&obj_finalize_STAMP_llvmo__ClaspJIT_O,
+  /* 911 */ &&obj_finalize_STAMP_core__Readtable_O,
+  /* 915 */ &&obj_finalize_STAMP_core__PosixTime_O,
+  /* 919 */ &&obj_finalize_STAMP_core__Exposer_O,
+  /* 923 */ &&obj_finalize_STAMP_core__CoreExposer_O,
+  /* 927 */ &&obj_finalize_STAMP_asttooling__AsttoolingExposer_O,
+  /* 931 */ &&obj_finalize_STAMP_llvmo__StructLayout_O,
+  /* 935 */ &&obj_finalize_STAMP_core__PosixTimeDuration_O,
+  /* 939 */ &&obj_finalize_STAMP_clasp_ffi__ForeignTypeSpec_O,
+  /* 941 */ &&obj_finalize_STAMP_core__Instance_O,
+  /* 944 */ &&obj_finalize_STAMP_core__DerivableCxxObject_O,
+  /* 949 */ &&obj_finalize_STAMP_clbind__ClassRep_O,
+  /* 955 */ &&obj_finalize_STAMP_core__SmallMap_O,
+  /* 959 */ &&obj_finalize_STAMP_mpip__Mpi_O,
+  /* 963 */ &&obj_finalize_STAMP_core__ExternalObject_O,
+  /* 967 */ &&obj_finalize_STAMP_llvmo__Pass_O,
+  /* 971 */ &&obj_finalize_STAMP_llvmo__ModulePass_O,
+  /* 975 */ &&obj_finalize_STAMP_llvmo__ImmutablePass_O,
+  /* 979 */ &&obj_finalize_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 983 */ &&obj_finalize_STAMP_llvmo__FunctionPass_O,
+  /* 987 */ &&obj_finalize_STAMP_llvmo__ExecutionEngine_O,
+  /* 991 */ &&obj_finalize_STAMP_llvmo__MCSubtargetInfo_O,
+  /* 995 */ &&obj_finalize_STAMP_llvmo__TargetSubtargetInfo_O,
+  /* 999 */ &&obj_finalize_STAMP_llvmo__Type_O,
+  /* 1003 */ &&obj_finalize_STAMP_llvmo__FunctionType_O,
+  /* 1007 */ &&obj_finalize_STAMP_llvmo__CompositeType_O,
+  /* 1011 */ &&obj_finalize_STAMP_llvmo__SequentialType_O,
+  /* 1015 */ &&obj_finalize_STAMP_llvmo__PointerType_O,
+  /* 1019 */ &&obj_finalize_STAMP_llvmo__ArrayType_O,
+  /* 1023 */ &&obj_finalize_STAMP_llvmo__VectorType_O,
+  /* 1027 */ &&obj_finalize_STAMP_llvmo__StructType_O,
+  /* 1031 */ &&obj_finalize_STAMP_llvmo__IntegerType_O,
+  /* 1035 */ &&obj_finalize_STAMP_llvmo__JITDylib_O,
+  /* 1039 */ &&obj_finalize_STAMP_llvmo__DIContext_O,
+  /* 1043 */ &&obj_finalize_STAMP_llvmo__TargetPassConfig_O,
+  /* 1047 */ &&obj_finalize_STAMP_llvmo__IRBuilderBase_O,
+  /* 1051 */ &&obj_finalize_STAMP_llvmo__IRBuilder_O,
+  /* 1055 */ &&obj_finalize_STAMP_llvmo__APFloat_O,
+  /* 1059 */ &&obj_finalize_STAMP_llvmo__APInt_O,
+  /* 1063 */ &&obj_finalize_STAMP_llvmo__DIBuilder_O,
+  /* 1067 */ &&obj_finalize_STAMP_llvmo__SectionedAddress_O,
+  /* 1071 */ &&obj_finalize_STAMP_llvmo__EngineBuilder_O,
+  /* 1075 */ &&obj_finalize_STAMP_llvmo__PassManagerBase_O,
+  /* 1079 */ &&obj_finalize_STAMP_llvmo__PassManager_O,
+  /* 1083 */ &&obj_finalize_STAMP_llvmo__FunctionPassManager_O,
+  /* 1087 */ &&obj_finalize_STAMP_llvmo__Metadata_O,
+  /* 1091 */ &&obj_finalize_STAMP_llvmo__MDNode_O,
+  /* 1095 */ &&obj_finalize_STAMP_llvmo__DINode_O,
+  /* 1099 */ &&obj_finalize_STAMP_llvmo__DIVariable_O,
+  /* 1103 */ &&obj_finalize_STAMP_llvmo__DILocalVariable_O,
+  /* 1107 */ &&obj_finalize_STAMP_llvmo__DIScope_O,
+  /* 1111 */ &&obj_finalize_STAMP_llvmo__DIFile_O,
+  /* 1115 */ &&obj_finalize_STAMP_llvmo__DIType_O,
+  /* 1119 */ &&obj_finalize_STAMP_llvmo__DICompositeType_O,
+  /* 1123 */ &&obj_finalize_STAMP_llvmo__DIDerivedType_O,
+  /* 1127 */ &&obj_finalize_STAMP_llvmo__DIBasicType_O,
+  /* 1131 */ &&obj_finalize_STAMP_llvmo__DISubroutineType_O,
+  /* 1135 */ &&obj_finalize_STAMP_llvmo__DILocalScope_O,
+  /* 1139 */ &&obj_finalize_STAMP_llvmo__DISubprogram_O,
+  /* 1143 */ &&obj_finalize_STAMP_llvmo__DILexicalBlockBase_O,
+  /* 1147 */ &&obj_finalize_STAMP_llvmo__DILexicalBlock_O,
+  /* 1151 */ &&obj_finalize_STAMP_llvmo__DICompileUnit_O,
+  /* 1155 */ &&obj_finalize_STAMP_llvmo__DIExpression_O,
+  /* 1159 */ &&obj_finalize_STAMP_llvmo__DILocation_O,
+  /* 1163 */ &&obj_finalize_STAMP_llvmo__ValueAsMetadata_O,
+  /* 1167 */ &&obj_finalize_STAMP_llvmo__MDString_O,
+  /* 1171 */ &&obj_finalize_STAMP_core__Test_O,
+  /* 1175 */ &&obj_finalize_STAMP_llvmo__Value_O,
+  /* 1179 */ &&obj_finalize_STAMP_llvmo__Argument_O,
+  /* 1183 */ &&obj_finalize_STAMP_llvmo__BasicBlock_O,
+  /* 1187 */ &&obj_finalize_STAMP_llvmo__MetadataAsValue_O,
+  /* 1191 */ &&obj_finalize_STAMP_llvmo__User_O,
+  /* 1195 */ &&obj_finalize_STAMP_llvmo__Instruction_O,
+  /* 1199 */ &&obj_finalize_STAMP_llvmo__UnaryInstruction_O,
+  /* 1203 */ &&obj_finalize_STAMP_llvmo__VAArgInst_O,
+  /* 1207 */ &&obj_finalize_STAMP_llvmo__LoadInst_O,
+  /* 1211 */ &&obj_finalize_STAMP_llvmo__AllocaInst_O,
+  /* 1215 */ &&obj_finalize_STAMP_llvmo__SwitchInst_O,
+  /* 1219 */ &&obj_finalize_STAMP_llvmo__AtomicRMWInst_O,
+  /* 1223 */ &&obj_finalize_STAMP_llvmo__LandingPadInst_O,
+  /* 1227 */ &&obj_finalize_STAMP_llvmo__StoreInst_O,
+  /* 1231 */ &&obj_finalize_STAMP_llvmo__UnreachableInst_O,
+  /* 1235 */ &&obj_finalize_STAMP_llvmo__ReturnInst_O,
+  /* 1239 */ &&obj_finalize_STAMP_llvmo__ResumeInst_O,
+  /* 1243 */ &&obj_finalize_STAMP_llvmo__AtomicCmpXchgInst_O,
+  /* 1247 */ &&obj_finalize_STAMP_llvmo__FenceInst_O,
+  /* 1251 */ &&obj_finalize_STAMP_llvmo__CallBase_O,
+  /* 1255 */ &&obj_finalize_STAMP_llvmo__CallInst_O,
+  /* 1259 */ &&obj_finalize_STAMP_llvmo__InvokeInst_O,
+  /* 1263 */ &&obj_finalize_STAMP_llvmo__PHINode_O,
+  /* 1267 */ &&obj_finalize_STAMP_llvmo__IndirectBrInst_O,
+  /* 1271 */ &&obj_finalize_STAMP_llvmo__BranchInst_O,
+  /* 1275 */ &&obj_finalize_STAMP_llvmo__Constant_O,
+  /* 1279 */ &&obj_finalize_STAMP_llvmo__GlobalValue_O,
+  /* 1283 */ &&obj_finalize_STAMP_llvmo__Function_O,
+  /* 1287 */ &&obj_finalize_STAMP_llvmo__GlobalVariable_O,
+  /* 1291 */ &&obj_finalize_STAMP_llvmo__BlockAddress_O,
+  /* 1295 */ &&obj_finalize_STAMP_llvmo__ConstantDataSequential_O,
+  /* 1299 */ &&obj_finalize_STAMP_llvmo__ConstantDataArray_O,
+  /* 1303 */ &&obj_finalize_STAMP_llvmo__ConstantStruct_O,
+  /* 1307 */ &&obj_finalize_STAMP_llvmo__ConstantInt_O,
+  /* 1311 */ &&obj_finalize_STAMP_llvmo__ConstantFP_O,
+  /* 1315 */ &&obj_finalize_STAMP_llvmo__ConstantExpr_O,
+  /* 1319 */ &&obj_finalize_STAMP_llvmo__ConstantPointerNull_O,
+  /* 1323 */ &&obj_finalize_STAMP_llvmo__UndefValue_O,
+  /* 1327 */ &&obj_finalize_STAMP_llvmo__ConstantArray_O,
+  /* 1331 */ &&obj_finalize_STAMP_llvmo__TargetMachine_O,
+  /* 1335 */ &&obj_finalize_STAMP_llvmo__LLVMTargetMachine_O,
+  /* 1339 */ &&obj_finalize_STAMP_llvmo__ThreadSafeContext_O,
+  /* 1343 */ &&obj_finalize_STAMP_llvmo__NamedMDNode_O,
+  /* 1347 */ &&obj_finalize_STAMP_llvmo__Triple_O,
+  /* 1351 */ &&obj_finalize_STAMP_llvmo__DWARFContext_O,
+  /* 1355 */ &&obj_finalize_STAMP_llvmo__TargetOptions_O,
   /* 1359 */ &&obj_finalize_STAMP_llvmo__LLVMContext_O,
   /* 1363 */ &&obj_finalize_STAMP_llvmo__PassManagerBuilder_O,
   /* 1367 */ &&obj_finalize_STAMP_llvmo__Module_O,
@@ -18970,1916 +19005,1916 @@ obj_deallocate_unmanaged_instance_STAMP_llvmo__DINodeArray_O:
     GC<llvmo::DINodeArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O:
+obj_deallocate_unmanaged_instance_STAMP_llvmo__ObjectFile_O:
 {
      // stamp value 175
+    llvmo::ObjectFile_O* obj_gc_safe = reinterpret_cast<llvmo::ObjectFile_O*>(client);
+    GC<llvmo::ObjectFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O:
+{
+     // stamp value 179
     mp::Mutex_O* obj_gc_safe = reinterpret_cast<mp::Mutex_O*>(client);
     GC<mp::Mutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O:
 {
-     // stamp value 179
+     // stamp value 183
     mp::RecursiveMutex_O* obj_gc_safe = reinterpret_cast<mp::RecursiveMutex_O*>(client);
     GC<mp::RecursiveMutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O:
 {
-     // stamp value 183
+     // stamp value 187
     llvmo::DITypeRefArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeRefArray_O*>(client);
     GC<llvmo::DITypeRefArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O:
 {
-     // stamp value 187
+     // stamp value 191
     mp::SharedMutex_O* obj_gc_safe = reinterpret_cast<mp::SharedMutex_O*>(client);
     GC<mp::SharedMutex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mp__Process_O:
 {
-     // stamp value 191
+     // stamp value 195
     mp::Process_O* obj_gc_safe = reinterpret_cast<mp::Process_O*>(client);
     GC<mp::Process_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O:
 {
-     // stamp value 195
+     // stamp value 199
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     GC<core::SingleDispatchMethod_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O:
 {
-     // stamp value 199
+     // stamp value 203
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
     GC<core::Iterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O:
 {
-     // stamp value 203
+     // stamp value 207
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     GC<core::DirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O:
 {
-     // stamp value 207
+     // stamp value 211
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     GC<core::RecursiveDirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Array_O:
 {
-     // stamp value 211
+     // stamp value 215
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
     GC<core::Array_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O:
 {
-     // stamp value 215
+     // stamp value 219
     core::MDArray_O* obj_gc_safe = reinterpret_cast<core::MDArray_O*>(client);
     GC<core::MDArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 219
+     // do nothing stamp value 223
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O:
 {
-     // stamp value 223
+     // stamp value 227
     core::MDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int16_t_O*>(client);
     GC<core::MDArray_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 227
+     // do nothing stamp value 231
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O:
 {
-     // stamp value 231
+     // stamp value 235
     core::MDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int8_t_O*>(client);
     GC<core::MDArray_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 235
+     // do nothing stamp value 239
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O:
 {
-     // stamp value 239
+     // stamp value 243
     core::MDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int32_t_O*>(client);
     GC<core::MDArray_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 243
+     // do nothing stamp value 247
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte4_t_O:
 {
-     // stamp value 247
+     // stamp value 251
     core::MDArray_byte4_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte4_t_O*>(client);
     GC<core::MDArray_byte4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_:
 {
-     // do nothing stamp value 251
+     // do nothing stamp value 255
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_float_O:
 {
-     // stamp value 255
+     // stamp value 259
     core::MDArray_float_O* obj_gc_safe = reinterpret_cast<core::MDArray_float_O*>(client);
     GC<core::MDArray_float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 259
+     // do nothing stamp value 263
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O:
 {
-     // stamp value 263
+     // stamp value 267
     core::MDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_size_t_O*>(client);
     GC<core::MDArray_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 267
+     // do nothing stamp value 271
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O:
 {
-     // stamp value 271
+     // stamp value 275
     core::MDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte8_t_O*>(client);
     GC<core::MDArray_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 275
+     // do nothing stamp value 279
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O:
 {
-     // stamp value 279
+     // stamp value 283
     core::MDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int64_t_O*>(client);
     GC<core::MDArray_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 283
+     // do nothing stamp value 287
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O:
 {
-     // stamp value 287
+     // stamp value 291
     core::MDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte32_t_O*>(client);
     GC<core::MDArray_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 291
+     // do nothing stamp value 295
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte2_t_O:
 {
-     // stamp value 295
+     // stamp value 299
     core::MDArray_byte2_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte2_t_O*>(client);
     GC<core::MDArray_byte2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 299
+     // do nothing stamp value 303
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int2_t_O:
 {
-     // stamp value 303
+     // stamp value 307
     core::MDArray_int2_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int2_t_O*>(client);
     GC<core::MDArray_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_:
 {
-     // do nothing stamp value 307
+     // do nothing stamp value 311
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O:
 {
-     // stamp value 311
+     // stamp value 315
     core::MDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::MDArray_fixnum_O*>(client);
     GC<core::MDArray_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_:
 {
-     // do nothing stamp value 315
+     // do nothing stamp value 319
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O:
 {
-     // stamp value 319
+     // stamp value 323
     core::MDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::MDArrayBaseChar_O*>(client);
     GC<core::MDArrayBaseChar_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 323
+     // do nothing stamp value 327
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O:
 {
-     // stamp value 327
+     // stamp value 331
     core::MDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte64_t_O*>(client);
     GC<core::MDArray_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_:
 {
-     // do nothing stamp value 331
+     // do nothing stamp value 335
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O:
 {
-     // stamp value 335
+     // stamp value 339
     core::MDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::MDArrayCharacter_O*>(client);
     GC<core::MDArrayCharacter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_:
 {
-     // do nothing stamp value 339
+     // do nothing stamp value 343
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O:
 {
-     // stamp value 343
+     // stamp value 347
     core::MDArrayT_O* obj_gc_safe = reinterpret_cast<core::MDArrayT_O*>(client);
     GC<core::MDArrayT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_:
 {
-     // do nothing stamp value 347
+     // do nothing stamp value 351
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O:
 {
-     // stamp value 351
+     // stamp value 355
     core::MDArrayBit_O* obj_gc_safe = reinterpret_cast<core::MDArrayBit_O*>(client);
     GC<core::MDArrayBit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 355
+     // do nothing stamp value 359
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O:
 {
-     // stamp value 359
+     // stamp value 363
     core::MDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_byte16_t_O*>(client);
     GC<core::MDArray_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O:
 {
-     // stamp value 363
+     // stamp value 367
     core::SimpleMDArray_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_O*>(client);
     GC<core::SimpleMDArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 367
+     // do nothing stamp value 371
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O:
 {
-     // stamp value 371
+     // stamp value 375
     core::SimpleMDArray_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int8_t_O*>(client);
     GC<core::SimpleMDArray_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 375
+     // do nothing stamp value 379
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_double_O:
 {
-     // stamp value 379
+     // stamp value 383
     core::SimpleMDArray_double_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_double_O*>(client);
     GC<core::SimpleMDArray_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 383
+     // do nothing stamp value 387
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O:
 {
-     // stamp value 387
+     // stamp value 391
     core::SimpleMDArray_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte32_t_O*>(client);
     GC<core::SimpleMDArray_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 391
+     // do nothing stamp value 395
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O:
 {
-     // stamp value 395
+     // stamp value 399
     core::SimpleMDArrayT_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayT_O*>(client);
     GC<core::SimpleMDArrayT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 399
+     // do nothing stamp value 403
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int2_t_O:
 {
-     // stamp value 403
+     // stamp value 407
     core::SimpleMDArray_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int2_t_O*>(client);
     GC<core::SimpleMDArray_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 407
+     // do nothing stamp value 411
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte4_t_O:
 {
-     // stamp value 411
+     // stamp value 415
     core::SimpleMDArray_byte4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte4_t_O*>(client);
     GC<core::SimpleMDArray_byte4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 415
+     // do nothing stamp value 419
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O:
 {
-     // stamp value 419
+     // stamp value 423
     core::SimpleMDArray_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int32_t_O*>(client);
     GC<core::SimpleMDArray_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 423
+     // do nothing stamp value 427
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_float_O:
 {
-     // stamp value 427
+     // stamp value 431
     core::SimpleMDArray_float_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_float_O*>(client);
     GC<core::SimpleMDArray_float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 431
+     // do nothing stamp value 435
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O:
 {
-     // stamp value 435
+     // stamp value 439
     core::SimpleMDArray_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int16_t_O*>(client);
     GC<core::SimpleMDArray_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 439
+     // do nothing stamp value 443
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O:
 {
-     // stamp value 443
+     // stamp value 447
     core::SimpleMDArray_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_size_t_O*>(client);
     GC<core::SimpleMDArray_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 447
+     // do nothing stamp value 451
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int4_t_O:
 {
-     // stamp value 451
+     // stamp value 455
     core::SimpleMDArray_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int4_t_O*>(client);
     GC<core::SimpleMDArray_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 455
+     // do nothing stamp value 459
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O:
 {
-     // stamp value 459
+     // stamp value 463
     core::SimpleMDArrayCharacter_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayCharacter_O*>(client);
     GC<core::SimpleMDArrayCharacter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 463
+     // do nothing stamp value 467
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte2_t_O:
 {
-     // stamp value 467
+     // stamp value 471
     core::SimpleMDArray_byte2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte2_t_O*>(client);
     GC<core::SimpleMDArray_byte2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 471
+     // do nothing stamp value 475
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O:
 {
-     // stamp value 475
+     // stamp value 479
     core::SimpleMDArray_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_fixnum_O*>(client);
     GC<core::SimpleMDArray_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 479
+     // do nothing stamp value 483
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O:
 {
-     // stamp value 483
+     // stamp value 487
     core::SimpleMDArray_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte16_t_O*>(client);
     GC<core::SimpleMDArray_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 487
+     // do nothing stamp value 491
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O:
 {
-     // stamp value 491
+     // stamp value 495
     core::SimpleMDArrayBaseChar_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBaseChar_O*>(client);
     GC<core::SimpleMDArrayBaseChar_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 495
+     // do nothing stamp value 499
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O:
 {
-     // stamp value 499
+     // stamp value 503
     core::SimpleMDArray_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte64_t_O*>(client);
     GC<core::SimpleMDArray_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 503
+     // do nothing stamp value 507
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O:
 {
-     // stamp value 507
+     // stamp value 511
     core::SimpleMDArrayBit_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArrayBit_O*>(client);
     GC<core::SimpleMDArrayBit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 511
+     // do nothing stamp value 515
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O:
 {
-     // stamp value 515
+     // stamp value 519
     core::SimpleMDArray_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_byte8_t_O*>(client);
     GC<core::SimpleMDArray_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_:
 {
-     // do nothing stamp value 519
+     // do nothing stamp value 523
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O:
 {
-     // stamp value 523
+     // stamp value 527
     core::SimpleMDArray_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleMDArray_int64_t_O*>(client);
     GC<core::SimpleMDArray_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_:
 {
-     // do nothing stamp value 527
+     // do nothing stamp value 531
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int4_t_O:
 {
-     // stamp value 531
+     // stamp value 535
     core::MDArray_int4_t_O* obj_gc_safe = reinterpret_cast<core::MDArray_int4_t_O*>(client);
     GC<core::MDArray_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_:
 {
-     // do nothing stamp value 535
+     // do nothing stamp value 539
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__MDArray_double_O:
 {
-     // stamp value 539
+     // stamp value 543
     core::MDArray_double_O* obj_gc_safe = reinterpret_cast<core::MDArray_double_O*>(client);
     GC<core::MDArray_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_O:
 {
-     // stamp value 543
+     // stamp value 547
     core::ComplexVector_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_O*>(client);
     GC<core::ComplexVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 547
+     // do nothing stamp value 551
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_double_O:
 {
-     // stamp value 551
+     // stamp value 555
     core::ComplexVector_double_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_double_O*>(client);
     GC<core::ComplexVector_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 555
+     // do nothing stamp value 559
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int8_t_O:
 {
-     // stamp value 559
+     // stamp value 563
     core::ComplexVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int8_t_O*>(client);
     GC<core::ComplexVector_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 563
+     // do nothing stamp value 567
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte64_t_O:
 {
-     // stamp value 567
+     // stamp value 571
     core::ComplexVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte64_t_O*>(client);
     GC<core::ComplexVector_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 571
+     // do nothing stamp value 575
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_T_O:
 {
-     // stamp value 575
+     // stamp value 579
     core::ComplexVector_T_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_T_O*>(client);
     GC<core::ComplexVector_T_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 579
+     // do nothing stamp value 583
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int2_t_O:
 {
-     // stamp value 583
+     // stamp value 587
     core::ComplexVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int2_t_O*>(client);
     GC<core::ComplexVector_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 587
+     // do nothing stamp value 591
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int32_t_O:
 {
-     // stamp value 591
+     // stamp value 595
     core::ComplexVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int32_t_O*>(client);
     GC<core::ComplexVector_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 595
+     // do nothing stamp value 599
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte16_t_O:
 {
-     // stamp value 599
+     // stamp value 603
     core::ComplexVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte16_t_O*>(client);
     GC<core::ComplexVector_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 603
+     // do nothing stamp value 607
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_float_O:
 {
-     // stamp value 607
+     // stamp value 611
     core::ComplexVector_float_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_float_O*>(client);
     GC<core::ComplexVector_float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 611
+     // do nothing stamp value 615
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int16_t_O:
 {
-     // stamp value 615
+     // stamp value 619
     core::ComplexVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int16_t_O*>(client);
     GC<core::ComplexVector_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 619
+     // do nothing stamp value 623
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int4_t_O:
 {
-     // stamp value 623
+     // stamp value 627
     core::ComplexVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int4_t_O*>(client);
     GC<core::ComplexVector_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 627
+     // do nothing stamp value 631
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_size_t_O:
 {
-     // stamp value 631
+     // stamp value 635
     core::ComplexVector_size_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_size_t_O*>(client);
     GC<core::ComplexVector_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 635
+     // do nothing stamp value 639
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte2_t_O:
 {
-     // stamp value 639
+     // stamp value 643
     core::ComplexVector_byte2_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte2_t_O*>(client);
     GC<core::ComplexVector_byte2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 643
+     // do nothing stamp value 647
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte8_t_O:
 {
-     // stamp value 647
+     // stamp value 651
     core::ComplexVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte8_t_O*>(client);
     GC<core::ComplexVector_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 651
+     // do nothing stamp value 655
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte32_t_O:
 {
-     // stamp value 655
+     // stamp value 659
     core::ComplexVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte32_t_O*>(client);
     GC<core::ComplexVector_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 659
+     // do nothing stamp value 663
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O:
 {
-     // stamp value 663
+     // stamp value 667
     core::BitVectorNs_O* obj_gc_safe = reinterpret_cast<core::BitVectorNs_O*>(client);
     GC<core::BitVectorNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O:
 {
-     // stamp value 667
+     // stamp value 671
     core::StrNs_O* obj_gc_safe = reinterpret_cast<core::StrNs_O*>(client);
     GC<core::StrNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_:
 {
-     // do nothing stamp value 671
+     // do nothing stamp value 675
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O:
 {
-     // stamp value 675
+     // stamp value 679
     core::Str8Ns_O* obj_gc_safe = reinterpret_cast<core::Str8Ns_O*>(client);
     GC<core::Str8Ns_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_:
 {
-     // do nothing stamp value 679
+     // do nothing stamp value 683
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O:
 {
-     // stamp value 683
+     // stamp value 687
     core::StrWNs_O* obj_gc_safe = reinterpret_cast<core::StrWNs_O*>(client);
     GC<core::StrWNs_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 687
+     // do nothing stamp value 691
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte4_t_O:
 {
-     // stamp value 691
+     // stamp value 695
     core::ComplexVector_byte4_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_byte4_t_O*>(client);
     GC<core::ComplexVector_byte4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 695
+     // do nothing stamp value 699
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_fixnum_O:
 {
-     // stamp value 699
+     // stamp value 703
     core::ComplexVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_fixnum_O*>(client);
     GC<core::ComplexVector_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_:
 {
-     // do nothing stamp value 703
+     // do nothing stamp value 707
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int64_t_O:
 {
-     // stamp value 707
+     // stamp value 711
     core::ComplexVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::ComplexVector_int64_t_O*>(client);
     GC<core::ComplexVector_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O:
 {
-     // stamp value 711
+     // stamp value 715
     core::AbstractSimpleVector_O* obj_gc_safe = reinterpret_cast<core::AbstractSimpleVector_O*>(client);
     GC<core::AbstractSimpleVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O:
 {
-     // stamp value 715
+     // stamp value 719
     core::SimpleString_O* obj_gc_safe = reinterpret_cast<core::SimpleString_O*>(client);
     GC<core::SimpleString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_:
 {
-     // do nothing stamp value 719
+     // do nothing stamp value 723
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleCharacterString_O,int,core::SimpleString_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O:
 {
-     // stamp value 723
+     // stamp value 727
     core::SimpleCharacterString_O* obj_gc_safe = reinterpret_cast<core::SimpleCharacterString_O*>(client);
     GC<core::SimpleCharacterString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_:
 {
-     // do nothing stamp value 727
+     // do nothing stamp value 731
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O:
 {
-     // stamp value 731
+     // stamp value 735
     core::SimpleBaseString_O* obj_gc_safe = reinterpret_cast<core::SimpleBaseString_O*>(client);
     GC<core::SimpleBaseString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 735
+     // do nothing stamp value 739
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O:
 {
-     // stamp value 739
+     // stamp value 743
     core::SimpleVector_int16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int16_t_O*>(client);
     GC<core::SimpleVector_int16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 743
+     // do nothing stamp value 747
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O:
 {
-     // stamp value 747
+     // stamp value 751
     core::SimpleVector_byte16_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte16_t_O*>(client);
     GC<core::SimpleVector_byte16_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_:
 {
-     // do nothing stamp value 751
+     // do nothing stamp value 755
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O:
 {
-     // stamp value 755
+     // stamp value 759
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
     GC<core::SimpleBitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_:
 {
-     // do nothing stamp value 759
+     // do nothing stamp value 763
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O:
 {
-     // stamp value 763
+     // stamp value 767
     core::SimpleVector_int4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int4_t_O*>(client);
     GC<core::SimpleVector_int4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 767
+     // do nothing stamp value 771
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O:
 {
-     // stamp value 771
+     // stamp value 775
     core::SimpleVector_byte32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte32_t_O*>(client);
     GC<core::SimpleVector_byte32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 775
+     // do nothing stamp value 779
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O:
 {
-     // stamp value 779
+     // stamp value 783
     core::SimpleVector_size_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_size_t_O*>(client);
     GC<core::SimpleVector_size_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 783
+     // do nothing stamp value 787
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O:
 {
-     // stamp value 787
+     // stamp value 791
     core::SimpleVector_double_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_double_O*>(client);
     GC<core::SimpleVector_double_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 791
+     // do nothing stamp value 795
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O:
 {
-     // stamp value 795
+     // stamp value 799
     core::SimpleVector_byte64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte64_t_O*>(client);
     GC<core::SimpleVector_byte64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_:
 {
-     // do nothing stamp value 799
+     // do nothing stamp value 803
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O:
 {
-     // stamp value 803
+     // stamp value 807
     core::SimpleVector_int2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int2_t_O*>(client);
     GC<core::SimpleVector_int2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 807
+     // do nothing stamp value 811
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int64_t_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O:
 {
-     // stamp value 811
+     // stamp value 815
     core::SimpleVector_int64_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int64_t_O*>(client);
     GC<core::SimpleVector_int64_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 815
+     // do nothing stamp value 819
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_fixnum_O,long,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O:
 {
-     // stamp value 819
+     // stamp value 823
     core::SimpleVector_fixnum_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_fixnum_O*>(client);
     GC<core::SimpleVector_fixnum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 823
+     // do nothing stamp value 827
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O:
 {
-     // stamp value 827
+     // stamp value 831
     core::SimpleVector_int8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int8_t_O*>(client);
     GC<core::SimpleVector_int8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 831
+     // do nothing stamp value 835
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_float_O:
 {
-     // stamp value 835
+     // stamp value 839
     core::SimpleVector_float_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_float_O*>(client);
     GC<core::SimpleVector_float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 839
+     // do nothing stamp value 843
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O:
 {
-     // stamp value 843
+     // stamp value 847
     core::SimpleVector_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_O*>(client);
     GC<core::SimpleVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 847
+     // do nothing stamp value 851
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O:
 {
-     // stamp value 851
+     // stamp value 855
     core::SimpleVector_byte8_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte8_t_O*>(client);
     GC<core::SimpleVector_byte8_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_:
 {
-     // do nothing stamp value 855
+     // do nothing stamp value 859
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte2_t_O:
 {
-     // stamp value 859
+     // stamp value 863
     core::SimpleVector_byte2_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte2_t_O*>(client);
     GC<core::SimpleVector_byte2_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_:
 {
-     // do nothing stamp value 863
+     // do nothing stamp value 867
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O:
 {
-     // stamp value 867
+     // stamp value 871
     core::SimpleVector_int32_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_int32_t_O*>(client);
     GC<core::SimpleVector_int32_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_:
 {
-     // do nothing stamp value 871
+     // do nothing stamp value 875
     THROW_HARD_ERROR(BF("Should never deallocate object core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>"));
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte4_t_O:
 {
-     // stamp value 875
+     // stamp value 879
     core::SimpleVector_byte4_t_O* obj_gc_safe = reinterpret_cast<core::SimpleVector_byte4_t_O*>(client);
     GC<core::SimpleVector_byte4_t_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O:
 {
-     // stamp value 879
+     // stamp value 883
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     GC<core::Symbol_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Null_O:
 {
-     // stamp value 883
+     // stamp value 887
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     GC<core::Null_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O:
 {
-     // stamp value 887
+     // stamp value 891
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
     GC<core::Character_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O:
 {
-     // stamp value 891
+     // stamp value 895
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     GC<llvmo::DataLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O:
 {
-     // stamp value 895
+     // stamp value 899
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     GC<core::LoadTimeValues_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O:
 {
-     // stamp value 899
+     // stamp value 903
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
     GC<core::SharpEqualWrapper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O:
 {
-     // stamp value 903
+     // stamp value 907
     llvmo::ClaspJIT_O* obj_gc_safe = reinterpret_cast<llvmo::ClaspJIT_O*>(client);
     GC<llvmo::ClaspJIT_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Readtable_O:
 {
-     // stamp value 907
+     // stamp value 911
     core::Readtable_O* obj_gc_safe = reinterpret_cast<core::Readtable_O*>(client);
     GC<core::Readtable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O:
 {
-     // stamp value 911
+     // stamp value 915
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
     GC<core::PosixTime_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O:
 {
-     // stamp value 915
+     // stamp value 919
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
     GC<core::Exposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O:
 {
-     // stamp value 919
+     // stamp value 923
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
     GC<core::CoreExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O:
 {
-     // stamp value 923
+     // stamp value 927
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
     GC<asttooling::AsttoolingExposer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__StructLayout_O:
 {
-     // stamp value 927
+     // stamp value 931
     llvmo::StructLayout_O* obj_gc_safe = reinterpret_cast<llvmo::StructLayout_O*>(client);
     GC<llvmo::StructLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__PosixTimeDuration_O:
 {
-     // stamp value 931
+     // stamp value 935
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
     GC<core::PosixTimeDuration_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignTypeSpec_O:
 {
-     // stamp value 935
+     // stamp value 939
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
     GC<clasp_ffi::ForeignTypeSpec_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Instance_O:
 {
-     // stamp value 937
+     // stamp value 941
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     GC<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O:
 {
-     // stamp value 940
+     // stamp value 944
     core::DerivableCxxObject_O* obj_gc_safe = reinterpret_cast<core::DerivableCxxObject_O*>(client);
     GC<core::DerivableCxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O:
 {
-     // stamp value 945
+     // stamp value 949
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     GC<clbind::ClassRep_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O:
 {
-     // stamp value 951
+     // stamp value 955
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     GC<core::SmallMap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_mpip__Mpi_O:
 {
-     // stamp value 955
+     // stamp value 959
     mpip::Mpi_O* obj_gc_safe = reinterpret_cast<mpip::Mpi_O*>(client);
     GC<mpip::Mpi_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O:
 {
-     // stamp value 959
+     // stamp value 963
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     GC<core::ExternalObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O:
 {
-     // stamp value 963
+     // stamp value 967
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     GC<llvmo::Pass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O:
 {
-     // stamp value 967
+     // stamp value 971
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     GC<llvmo::ModulePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O:
 {
-     // stamp value 971
+     // stamp value 975
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     GC<llvmo::ImmutablePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O:
 {
-     // stamp value 975
+     // stamp value 979
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
     GC<llvmo::TargetLibraryInfoWrapperPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O:
 {
-     // stamp value 979
+     // stamp value 983
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     GC<llvmo::FunctionPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O:
 {
-     // stamp value 983
+     // stamp value 987
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     GC<llvmo::ExecutionEngine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O:
 {
-     // stamp value 987
+     // stamp value 991
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
     GC<llvmo::MCSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O:
 {
-     // stamp value 991
+     // stamp value 995
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
     GC<llvmo::TargetSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O:
 {
-     // stamp value 995
+     // stamp value 999
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     GC<llvmo::Type_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O:
 {
-     // stamp value 999
+     // stamp value 1003
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     GC<llvmo::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O:
 {
-     // stamp value 1003
+     // stamp value 1007
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     GC<llvmo::CompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O:
 {
-     // stamp value 1007
+     // stamp value 1011
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     GC<llvmo::SequentialType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O:
 {
-     // stamp value 1011
+     // stamp value 1015
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     GC<llvmo::PointerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O:
 {
-     // stamp value 1015
+     // stamp value 1019
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     GC<llvmo::ArrayType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O:
 {
-     // stamp value 1019
+     // stamp value 1023
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     GC<llvmo::VectorType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O:
 {
-     // stamp value 1023
+     // stamp value 1027
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     GC<llvmo::StructType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O:
 {
-     // stamp value 1027
+     // stamp value 1031
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     GC<llvmo::IntegerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__JITDylib_O:
 {
-     // stamp value 1031
+     // stamp value 1035
     llvmo::JITDylib_O* obj_gc_safe = reinterpret_cast<llvmo::JITDylib_O*>(client);
     GC<llvmo::JITDylib_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIContext_O:
 {
-     // stamp value 1035
+     // stamp value 1039
     llvmo::DIContext_O* obj_gc_safe = reinterpret_cast<llvmo::DIContext_O*>(client);
     GC<llvmo::DIContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetPassConfig_O:
 {
-     // stamp value 1039
+     // stamp value 1043
     llvmo::TargetPassConfig_O* obj_gc_safe = reinterpret_cast<llvmo::TargetPassConfig_O*>(client);
     GC<llvmo::TargetPassConfig_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O:
 {
-     // stamp value 1043
+     // stamp value 1047
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     GC<llvmo::IRBuilderBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O:
 {
-     // stamp value 1047
+     // stamp value 1051
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     GC<llvmo::IRBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O:
 {
-     // stamp value 1051
+     // stamp value 1055
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     GC<llvmo::APFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O:
 {
-     // stamp value 1055
+     // stamp value 1059
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     GC<llvmo::APInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O:
 {
-     // stamp value 1059
+     // stamp value 1063
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     GC<llvmo::DIBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__SectionedAddress_O:
 {
-     // stamp value 1063
+     // stamp value 1067
     llvmo::SectionedAddress_O* obj_gc_safe = reinterpret_cast<llvmo::SectionedAddress_O*>(client);
     GC<llvmo::SectionedAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O:
 {
-     // stamp value 1067
+     // stamp value 1071
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     GC<llvmo::EngineBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O:
 {
-     // stamp value 1071
+     // stamp value 1075
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     GC<llvmo::PassManagerBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O:
 {
-     // stamp value 1075
+     // stamp value 1079
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     GC<llvmo::PassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O:
 {
-     // stamp value 1079
+     // stamp value 1083
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     GC<llvmo::FunctionPassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O:
 {
-     // stamp value 1083
+     // stamp value 1087
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
     GC<llvmo::Metadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O:
 {
-     // stamp value 1087
+     // stamp value 1091
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     GC<llvmo::MDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O:
 {
-     // stamp value 1091
+     // stamp value 1095
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
     GC<llvmo::DINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIVariable_O:
 {
-     // stamp value 1095
+     // stamp value 1099
     llvmo::DIVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DIVariable_O*>(client);
     GC<llvmo::DIVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalVariable_O:
 {
-     // stamp value 1099
+     // stamp value 1103
     llvmo::DILocalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalVariable_O*>(client);
     GC<llvmo::DILocalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O:
 {
-     // stamp value 1103
+     // stamp value 1107
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
     GC<llvmo::DIScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O:
 {
-     // stamp value 1107
+     // stamp value 1111
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
     GC<llvmo::DIFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O:
 {
-     // stamp value 1111
+     // stamp value 1115
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
     GC<llvmo::DIType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O:
 {
-     // stamp value 1115
+     // stamp value 1119
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
     GC<llvmo::DICompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O:
 {
-     // stamp value 1119
+     // stamp value 1123
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     GC<llvmo::DIDerivedType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O:
 {
-     // stamp value 1123
+     // stamp value 1127
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
     GC<llvmo::DIBasicType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O:
 {
-     // stamp value 1127
+     // stamp value 1131
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
     GC<llvmo::DISubroutineType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O:
 {
-     // stamp value 1131
+     // stamp value 1135
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
     GC<llvmo::DILocalScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O:
 {
-     // stamp value 1135
+     // stamp value 1139
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
     GC<llvmo::DISubprogram_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O:
 {
-     // stamp value 1139
+     // stamp value 1143
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
     GC<llvmo::DILexicalBlockBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O:
 {
-     // stamp value 1143
+     // stamp value 1147
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     GC<llvmo::DILexicalBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O:
 {
-     // stamp value 1147
+     // stamp value 1151
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     GC<llvmo::DICompileUnit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DIExpression_O:
 {
-     // stamp value 1151
+     // stamp value 1155
     llvmo::DIExpression_O* obj_gc_safe = reinterpret_cast<llvmo::DIExpression_O*>(client);
     GC<llvmo::DIExpression_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocation_O:
 {
-     // stamp value 1155
+     // stamp value 1159
     llvmo::DILocation_O* obj_gc_safe = reinterpret_cast<llvmo::DILocation_O*>(client);
     GC<llvmo::DILocation_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O:
 {
-     // stamp value 1159
+     // stamp value 1163
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
     GC<llvmo::ValueAsMetadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O:
 {
-     // stamp value 1163
+     // stamp value 1167
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     GC<llvmo::MDString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Test_O:
 {
-     // stamp value 1167
+     // stamp value 1171
     core::Test_O* obj_gc_safe = reinterpret_cast<core::Test_O*>(client);
     GC<core::Test_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O:
 {
-     // stamp value 1171
+     // stamp value 1175
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     GC<llvmo::Value_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O:
 {
-     // stamp value 1175
+     // stamp value 1179
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     GC<llvmo::Argument_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O:
 {
-     // stamp value 1179
+     // stamp value 1183
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     GC<llvmo::BasicBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__MetadataAsValue_O:
 {
-     // stamp value 1183
+     // stamp value 1187
     llvmo::MetadataAsValue_O* obj_gc_safe = reinterpret_cast<llvmo::MetadataAsValue_O*>(client);
     GC<llvmo::MetadataAsValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O:
 {
-     // stamp value 1187
+     // stamp value 1191
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     GC<llvmo::User_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O:
 {
-     // stamp value 1191
+     // stamp value 1195
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     GC<llvmo::Instruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O:
 {
-     // stamp value 1195
+     // stamp value 1199
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     GC<llvmo::UnaryInstruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O:
 {
-     // stamp value 1199
+     // stamp value 1203
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     GC<llvmo::VAArgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O:
 {
-     // stamp value 1203
+     // stamp value 1207
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     GC<llvmo::LoadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O:
 {
-     // stamp value 1207
+     // stamp value 1211
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     GC<llvmo::AllocaInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O:
 {
-     // stamp value 1211
+     // stamp value 1215
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     GC<llvmo::SwitchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O:
 {
-     // stamp value 1215
+     // stamp value 1219
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     GC<llvmo::AtomicRMWInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O:
 {
-     // stamp value 1219
+     // stamp value 1223
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     GC<llvmo::LandingPadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O:
 {
-     // stamp value 1223
+     // stamp value 1227
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     GC<llvmo::StoreInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O:
 {
-     // stamp value 1227
+     // stamp value 1231
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     GC<llvmo::UnreachableInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O:
 {
-     // stamp value 1231
+     // stamp value 1235
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     GC<llvmo::ReturnInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O:
 {
-     // stamp value 1235
+     // stamp value 1239
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     GC<llvmo::ResumeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O:
 {
-     // stamp value 1239
+     // stamp value 1243
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     GC<llvmo::AtomicCmpXchgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O:
 {
-     // stamp value 1243
+     // stamp value 1247
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     GC<llvmo::FenceInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__CallBase_O:
 {
-     // stamp value 1247
+     // stamp value 1251
     llvmo::CallBase_O* obj_gc_safe = reinterpret_cast<llvmo::CallBase_O*>(client);
     GC<llvmo::CallBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O:
 {
-     // stamp value 1251
+     // stamp value 1255
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     GC<llvmo::CallInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O:
 {
-     // stamp value 1255
+     // stamp value 1259
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     GC<llvmo::InvokeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O:
 {
-     // stamp value 1259
+     // stamp value 1263
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     GC<llvmo::PHINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O:
 {
-     // stamp value 1263
+     // stamp value 1267
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     GC<llvmo::IndirectBrInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O:
 {
-     // stamp value 1267
+     // stamp value 1271
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     GC<llvmo::BranchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O:
 {
-     // stamp value 1271
+     // stamp value 1275
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     GC<llvmo::Constant_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O:
 {
-     // stamp value 1275
+     // stamp value 1279
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     GC<llvmo::GlobalValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O:
 {
-     // stamp value 1279
+     // stamp value 1283
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     GC<llvmo::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O:
 {
-     // stamp value 1283
+     // stamp value 1287
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     GC<llvmo::GlobalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O:
 {
-     // stamp value 1287
+     // stamp value 1291
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     GC<llvmo::BlockAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O:
 {
-     // stamp value 1291
+     // stamp value 1295
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     GC<llvmo::ConstantDataSequential_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O:
 {
-     // stamp value 1295
+     // stamp value 1299
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     GC<llvmo::ConstantDataArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O:
 {
-     // stamp value 1299
+     // stamp value 1303
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     GC<llvmo::ConstantStruct_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O:
 {
-     // stamp value 1303
+     // stamp value 1307
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     GC<llvmo::ConstantInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O:
 {
-     // stamp value 1307
+     // stamp value 1311
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     GC<llvmo::ConstantFP_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O:
 {
-     // stamp value 1311
+     // stamp value 1315
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     GC<llvmo::ConstantExpr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O:
 {
-     // stamp value 1315
+     // stamp value 1319
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     GC<llvmo::ConstantPointerNull_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O:
 {
-     // stamp value 1319
+     // stamp value 1323
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     GC<llvmo::UndefValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O:
 {
-     // stamp value 1323
+     // stamp value 1327
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     GC<llvmo::ConstantArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O:
 {
-     // stamp value 1327
+     // stamp value 1331
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     GC<llvmo::TargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O:
 {
-     // stamp value 1331
+     // stamp value 1335
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     GC<llvmo::LLVMTargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__ThreadSafeContext_O:
 {
-     // stamp value 1335
+     // stamp value 1339
     llvmo::ThreadSafeContext_O* obj_gc_safe = reinterpret_cast<llvmo::ThreadSafeContext_O*>(client);
     GC<llvmo::ThreadSafeContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O:
 {
-     // stamp value 1339
+     // stamp value 1343
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     GC<llvmo::NamedMDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O:
 {
-     // stamp value 1343
+     // stamp value 1347
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
     GC<llvmo::Triple_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__DWARFContext_O:
 {
-     // stamp value 1347
+     // stamp value 1351
     llvmo::DWARFContext_O* obj_gc_safe = reinterpret_cast<llvmo::DWARFContext_O*>(client);
     GC<llvmo::DWARFContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O:
 {
-     // stamp value 1351
+     // stamp value 1355
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
     GC<llvmo::TargetOptions_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_STAMP_llvmo__ObjectFile_O:
-{
-     // stamp value 1355
-    llvmo::ObjectFile_O* obj_gc_safe = reinterpret_cast<llvmo::ObjectFile_O*>(client);
-    GC<llvmo::ObjectFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMContext_O:
@@ -21705,302 +21740,302 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 163 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionCallee_O,
   /* 167 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Serializer_O,
   /* 171 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINodeArray_O,
-  /* 175 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O,
-  /* 179 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O,
-  /* 183 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O,
-  /* 187 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O,
-  /* 191 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Process_O,
-  /* 195 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O,
-  /* 199 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O,
-  /* 203 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O,
-  /* 207 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O,
-  /* 211 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Array_O,
-  /* 215 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O,
-  /* 219 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
-  /* 223 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O,
-  /* 227 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
-  /* 231 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O,
-  /* 235 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
-  /* 239 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O,
-  /* 243 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_,
-  /* 247 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte4_t_O,
-  /* 251 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_,
-  /* 255 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_float_O,
-  /* 259 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
-  /* 263 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O,
-  /* 267 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
-  /* 271 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O,
-  /* 275 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
-  /* 279 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O,
-  /* 283 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
-  /* 287 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O,
-  /* 291 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_,
-  /* 295 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte2_t_O,
-  /* 299 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_,
-  /* 303 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int2_t_O,
-  /* 307 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
-  /* 311 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O,
-  /* 315 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
-  /* 319 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O,
-  /* 323 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
-  /* 327 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O,
-  /* 331 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
-  /* 335 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O,
-  /* 339 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
-  /* 343 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O,
-  /* 347 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_,
-  /* 351 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O,
-  /* 355 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
-  /* 359 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O,
-  /* 363 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O,
-  /* 367 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
-  /* 371 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O,
-  /* 375 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_,
-  /* 379 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_double_O,
-  /* 383 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
-  /* 387 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O,
-  /* 391 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
-  /* 395 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O,
-  /* 399 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_,
-  /* 403 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int2_t_O,
-  /* 407 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_,
-  /* 411 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte4_t_O,
-  /* 415 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
-  /* 419 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O,
-  /* 423 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_,
-  /* 427 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_float_O,
-  /* 431 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
-  /* 435 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O,
-  /* 439 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
-  /* 443 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O,
-  /* 447 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_,
-  /* 451 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int4_t_O,
-  /* 455 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
-  /* 459 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O,
-  /* 463 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_,
-  /* 467 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte2_t_O,
-  /* 471 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
-  /* 475 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O,
-  /* 479 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
-  /* 483 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O,
-  /* 487 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
-  /* 491 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O,
-  /* 495 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
-  /* 499 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O,
-  /* 503 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_,
-  /* 507 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O,
-  /* 511 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
-  /* 515 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O,
-  /* 519 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
-  /* 523 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O,
-  /* 527 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_,
-  /* 531 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int4_t_O,
-  /* 535 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_,
-  /* 539 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_double_O,
-  /* 543 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_O,
-  /* 547 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_,
-  /* 551 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_double_O,
-  /* 555 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_,
-  /* 559 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int8_t_O,
-  /* 563 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_,
-  /* 567 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte64_t_O,
-  /* 571 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_,
-  /* 575 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_T_O,
-  /* 579 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_,
-  /* 583 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int2_t_O,
-  /* 587 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_,
-  /* 591 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int32_t_O,
-  /* 595 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_,
-  /* 599 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte16_t_O,
-  /* 603 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_,
-  /* 607 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_float_O,
-  /* 611 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_,
-  /* 615 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int16_t_O,
-  /* 619 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_,
-  /* 623 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int4_t_O,
-  /* 627 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_,
-  /* 631 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_size_t_O,
-  /* 635 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_,
-  /* 639 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte2_t_O,
-  /* 643 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_,
-  /* 647 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte8_t_O,
-  /* 651 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_,
-  /* 655 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte32_t_O,
-  /* 659 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_,
-  /* 663 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O,
-  /* 667 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O,
-  /* 671 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
-  /* 675 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O,
-  /* 679 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
-  /* 683 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O,
-  /* 687 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_,
-  /* 691 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte4_t_O,
-  /* 695 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_,
-  /* 699 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_fixnum_O,
-  /* 703 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_,
-  /* 707 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int64_t_O,
-  /* 711 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O,
-  /* 715 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O,
-  /* 719 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
-  /* 723 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O,
-  /* 727 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
-  /* 731 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O,
-  /* 735 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
-  /* 739 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O,
-  /* 743 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
-  /* 747 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
-  /* 751 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
-  /* 755 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
-  /* 759 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
-  /* 763 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O,
-  /* 767 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
-  /* 771 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
-  /* 775 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 779 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
-  /* 783 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
-  /* 787 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O,
-  /* 791 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
-  /* 795 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
-  /* 799 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
-  /* 803 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O,
-  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
-  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
-  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
-  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
-  /* 823 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
-  /* 827 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
-  /* 831 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
-  /* 835 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_float_O,
-  /* 839 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
-  /* 843 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O,
-  /* 847 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
-  /* 851 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O,
-  /* 855 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_,
-  /* 859 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte2_t_O,
-  /* 863 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
-  /* 867 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O,
-  /* 871 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_,
-  /* 875 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte4_t_O,
-  /* 879 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O,
-  /* 883 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Null_O,
-  /* 887 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O,
-  /* 891 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O,
-  /* 895 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O,
-  /* 899 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O,
-  /* 903 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O,
-  /* 907 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Readtable_O,
-  /* 911 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O,
-  /* 915 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O,
-  /* 919 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O,
-  /* 923 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O,
-  /* 927 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructLayout_O,
-  /* 931 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTimeDuration_O,
-  /* 935 */ &&obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignTypeSpec_O,
-  /* 937 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Instance_O,
-  /* 940 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O,
-  /* 945 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O,
-  /* 951 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O,
-  /* 955 */ &&obj_deallocate_unmanaged_instance_STAMP_mpip__Mpi_O,
-  /* 959 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O,
-  /* 963 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O,
-  /* 967 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O,
-  /* 971 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O,
-  /* 975 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 979 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O,
-  /* 983 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O,
-  /* 987 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O,
-  /* 991 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O,
-  /* 995 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O,
-  /* 999 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O,
-  /* 1003 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O,
-  /* 1007 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O,
-  /* 1011 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O,
-  /* 1015 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O,
-  /* 1019 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O,
-  /* 1023 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O,
-  /* 1027 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O,
-  /* 1031 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__JITDylib_O,
-  /* 1035 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIContext_O,
-  /* 1039 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetPassConfig_O,
-  /* 1043 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O,
-  /* 1047 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O,
-  /* 1051 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O,
-  /* 1055 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O,
-  /* 1059 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O,
-  /* 1063 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SectionedAddress_O,
-  /* 1067 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O,
-  /* 1071 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O,
-  /* 1075 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O,
-  /* 1079 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O,
-  /* 1083 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O,
-  /* 1087 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O,
-  /* 1091 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O,
-  /* 1095 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIVariable_O,
-  /* 1099 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalVariable_O,
-  /* 1103 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O,
-  /* 1107 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O,
-  /* 1111 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O,
-  /* 1115 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O,
-  /* 1119 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O,
-  /* 1123 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O,
-  /* 1127 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O,
-  /* 1131 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O,
-  /* 1135 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O,
-  /* 1139 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O,
-  /* 1143 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O,
-  /* 1147 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O,
-  /* 1151 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIExpression_O,
-  /* 1155 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocation_O,
-  /* 1159 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O,
-  /* 1163 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O,
-  /* 1167 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Test_O,
-  /* 1171 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O,
-  /* 1175 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O,
-  /* 1179 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O,
-  /* 1183 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MetadataAsValue_O,
-  /* 1187 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O,
-  /* 1191 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O,
-  /* 1195 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O,
-  /* 1199 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O,
-  /* 1203 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O,
-  /* 1207 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O,
-  /* 1211 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O,
-  /* 1215 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O,
-  /* 1219 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O,
-  /* 1223 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O,
-  /* 1227 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O,
-  /* 1231 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O,
-  /* 1235 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O,
-  /* 1239 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O,
-  /* 1243 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O,
-  /* 1247 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallBase_O,
-  /* 1251 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O,
-  /* 1255 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O,
-  /* 1259 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O,
-  /* 1263 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O,
-  /* 1267 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O,
-  /* 1271 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O,
-  /* 1275 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O,
-  /* 1279 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O,
-  /* 1283 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O,
-  /* 1287 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O,
-  /* 1291 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O,
-  /* 1295 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O,
-  /* 1299 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O,
-  /* 1303 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O,
-  /* 1307 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O,
-  /* 1311 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O,
-  /* 1315 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O,
-  /* 1319 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O,
-  /* 1323 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O,
-  /* 1327 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O,
-  /* 1331 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O,
-  /* 1335 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ThreadSafeContext_O,
-  /* 1339 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O,
-  /* 1343 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O,
-  /* 1347 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DWARFContext_O,
-  /* 1351 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O,
-  /* 1355 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ObjectFile_O,
+  /* 175 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ObjectFile_O,
+  /* 179 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Mutex_O,
+  /* 183 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__RecursiveMutex_O,
+  /* 187 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DITypeRefArray_O,
+  /* 191 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__SharedMutex_O,
+  /* 195 */ &&obj_deallocate_unmanaged_instance_STAMP_mp__Process_O,
+  /* 199 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SingleDispatchMethod_O,
+  /* 203 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Iterator_O,
+  /* 207 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DirectoryIterator_O,
+  /* 211 */ &&obj_deallocate_unmanaged_instance_STAMP_core__RecursiveDirectoryIterator_O,
+  /* 215 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Array_O,
+  /* 219 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_O,
+  /* 223 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int16_t_O_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__MDArray_O_,
+  /* 227 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int16_t_O,
+  /* 231 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int8_t_O_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__MDArray_O_,
+  /* 235 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int8_t_O,
+  /* 239 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int32_t_O_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__MDArray_O_,
+  /* 243 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int32_t_O,
+  /* 247 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte4_t_O_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__MDArray_O_,
+  /* 251 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte4_t_O,
+  /* 255 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_float_O_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__MDArray_O_,
+  /* 259 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_float_O,
+  /* 263 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_size_t_O_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__MDArray_O_,
+  /* 267 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_size_t_O,
+  /* 271 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte8_t_O_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__MDArray_O_,
+  /* 275 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte8_t_O,
+  /* 279 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int64_t_O_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__MDArray_O_,
+  /* 283 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int64_t_O,
+  /* 287 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte32_t_O_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__MDArray_O_,
+  /* 291 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte32_t_O,
+  /* 295 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte2_t_O_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__MDArray_O_,
+  /* 299 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte2_t_O,
+  /* 303 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int2_t_O_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__MDArray_O_,
+  /* 307 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int2_t_O,
+  /* 311 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_fixnum_O_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__MDArray_O_,
+  /* 315 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_fixnum_O,
+  /* 319 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBaseChar_O_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__MDArray_O_,
+  /* 323 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBaseChar_O,
+  /* 327 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte64_t_O_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__MDArray_O_,
+  /* 331 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte64_t_O,
+  /* 335 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayCharacter_O_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__MDArray_O_,
+  /* 339 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayCharacter_O,
+  /* 343 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayT_O_core__SimpleMDArrayT_O_core__SimpleVector_O_core__MDArray_O_,
+  /* 347 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayT_O,
+  /* 351 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArrayBit_O_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__MDArray_O_,
+  /* 355 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArrayBit_O,
+  /* 359 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_byte16_t_O_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__MDArray_O_,
+  /* 363 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_byte16_t_O,
+  /* 367 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_O,
+  /* 371 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int8_t_O_core__SimpleVector_int8_t_O_core__SimpleMDArray_O_,
+  /* 375 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int8_t_O,
+  /* 379 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__SimpleMDArray_O_,
+  /* 383 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_double_O,
+  /* 387 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte32_t_O_core__SimpleVector_byte32_t_O_core__SimpleMDArray_O_,
+  /* 391 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte32_t_O,
+  /* 395 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayT_O_core__SimpleVector_O_core__SimpleMDArray_O_,
+  /* 399 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayT_O,
+  /* 403 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int2_t_O_core__SimpleVector_int2_t_O_core__SimpleMDArray_O_,
+  /* 407 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int2_t_O,
+  /* 411 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte4_t_O_core__SimpleVector_byte4_t_O_core__SimpleMDArray_O_,
+  /* 415 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte4_t_O,
+  /* 419 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int32_t_O_core__SimpleVector_int32_t_O_core__SimpleMDArray_O_,
+  /* 423 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int32_t_O,
+  /* 427 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_float_O_core__SimpleVector_float_O_core__SimpleMDArray_O_,
+  /* 431 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_float_O,
+  /* 435 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int16_t_O_core__SimpleVector_int16_t_O_core__SimpleMDArray_O_,
+  /* 439 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int16_t_O,
+  /* 443 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_size_t_O_core__SimpleVector_size_t_O_core__SimpleMDArray_O_,
+  /* 447 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_size_t_O,
+  /* 451 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__SimpleMDArray_O_,
+  /* 455 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int4_t_O,
+  /* 459 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayCharacter_O_core__SimpleCharacterString_O_core__SimpleMDArray_O_,
+  /* 463 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayCharacter_O,
+  /* 467 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte2_t_O_core__SimpleVector_byte2_t_O_core__SimpleMDArray_O_,
+  /* 471 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte2_t_O,
+  /* 475 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_fixnum_O_core__SimpleVector_fixnum_O_core__SimpleMDArray_O_,
+  /* 479 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_fixnum_O,
+  /* 483 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte16_t_O_core__SimpleVector_byte16_t_O_core__SimpleMDArray_O_,
+  /* 487 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte16_t_O,
+  /* 491 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBaseChar_O_core__SimpleBaseString_O_core__SimpleMDArray_O_,
+  /* 495 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBaseChar_O,
+  /* 499 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte64_t_O_core__SimpleVector_byte64_t_O_core__SimpleMDArray_O_,
+  /* 503 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte64_t_O,
+  /* 507 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArrayBit_O_core__SimpleBitVector_O_core__SimpleMDArray_O_,
+  /* 511 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArrayBit_O,
+  /* 515 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_byte8_t_O_core__SimpleVector_byte8_t_O_core__SimpleMDArray_O_,
+  /* 519 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_byte8_t_O,
+  /* 523 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleArray_core__SimpleMDArray_int64_t_O_core__SimpleVector_int64_t_O_core__SimpleMDArray_O_,
+  /* 527 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleMDArray_int64_t_O,
+  /* 531 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_int4_t_O_core__SimpleMDArray_int4_t_O_core__SimpleVector_int4_t_O_core__MDArray_O_,
+  /* 535 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_int4_t_O,
+  /* 539 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Array_core__MDArray_double_O_core__SimpleMDArray_double_O_core__SimpleVector_double_O_core__MDArray_O_,
+  /* 543 */ &&obj_deallocate_unmanaged_instance_STAMP_core__MDArray_double_O,
+  /* 547 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_O,
+  /* 551 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_double_O_core__SimpleVector_double_O_core__ComplexVector_O_,
+  /* 555 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_double_O,
+  /* 559 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int8_t_O_core__SimpleVector_int8_t_O_core__ComplexVector_O_,
+  /* 563 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int8_t_O,
+  /* 567 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte64_t_O_core__SimpleVector_byte64_t_O_core__ComplexVector_O_,
+  /* 571 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte64_t_O,
+  /* 575 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_T_O_core__SimpleVector_O_core__ComplexVector_O_,
+  /* 579 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_T_O,
+  /* 583 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int2_t_O_core__SimpleVector_int2_t_O_core__ComplexVector_O_,
+  /* 587 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int2_t_O,
+  /* 591 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int32_t_O_core__SimpleVector_int32_t_O_core__ComplexVector_O_,
+  /* 595 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int32_t_O,
+  /* 599 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte16_t_O_core__SimpleVector_byte16_t_O_core__ComplexVector_O_,
+  /* 603 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte16_t_O,
+  /* 607 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_float_O_core__SimpleVector_float_O_core__ComplexVector_O_,
+  /* 611 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_float_O,
+  /* 615 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int16_t_O_core__SimpleVector_int16_t_O_core__ComplexVector_O_,
+  /* 619 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int16_t_O,
+  /* 623 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int4_t_O_core__SimpleVector_int4_t_O_core__ComplexVector_O_,
+  /* 627 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int4_t_O,
+  /* 631 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_size_t_O_core__SimpleVector_size_t_O_core__ComplexVector_O_,
+  /* 635 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_size_t_O,
+  /* 639 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte2_t_O_core__SimpleVector_byte2_t_O_core__ComplexVector_O_,
+  /* 643 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte2_t_O,
+  /* 647 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte8_t_O_core__SimpleVector_byte8_t_O_core__ComplexVector_O_,
+  /* 651 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte8_t_O,
+  /* 655 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte32_t_O_core__SimpleVector_byte32_t_O_core__ComplexVector_O_,
+  /* 659 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte32_t_O,
+  /* 663 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__BitVectorNs_O_core__SimpleBitVector_O_core__ComplexVector_O_,
+  /* 667 */ &&obj_deallocate_unmanaged_instance_STAMP_core__BitVectorNs_O,
+  /* 671 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrNs_O,
+  /* 675 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__Str8Ns_O_core__SimpleBaseString_O_core__StrNs_O_,
+  /* 679 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Str8Ns_O,
+  /* 683 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__StrWNs_O_core__SimpleCharacterString_O_core__StrNs_O_,
+  /* 687 */ &&obj_deallocate_unmanaged_instance_STAMP_core__StrWNs_O,
+  /* 691 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_byte4_t_O_core__SimpleVector_byte4_t_O_core__ComplexVector_O_,
+  /* 695 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_byte4_t_O,
+  /* 699 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_fixnum_O_core__SimpleVector_fixnum_O_core__ComplexVector_O_,
+  /* 703 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_fixnum_O,
+  /* 707 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_Vector_core__ComplexVector_int64_t_O_core__SimpleVector_int64_t_O_core__ComplexVector_O_,
+  /* 711 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ComplexVector_int64_t_O,
+  /* 715 */ &&obj_deallocate_unmanaged_instance_STAMP_core__AbstractSimpleVector_O,
+  /* 719 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleString_O,
+  /* 723 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleCharacterString_O_int_core__SimpleString_O_,
+  /* 727 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleCharacterString_O,
+  /* 731 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleBaseString_O_unsigned_char_core__SimpleString_O_,
+  /* 735 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBaseString_O,
+  /* 739 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int16_t_O_short_core__AbstractSimpleVector_O_,
+  /* 743 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int16_t_O,
+  /* 747 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte16_t_O_unsigned_short_core__AbstractSimpleVector_O_,
+  /* 751 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte16_t_O,
+  /* 755 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleBitVector_O_1_0_,
+  /* 759 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleBitVector_O,
+  /* 763 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int4_t_O_4_1_,
+  /* 767 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int4_t_O,
+  /* 771 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte32_t_O_unsigned_int_core__AbstractSimpleVector_O_,
+  /* 775 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte32_t_O,
+  /* 779 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_size_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 783 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_size_t_O,
+  /* 787 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_double_O_double_core__AbstractSimpleVector_O_,
+  /* 791 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_double_O,
+  /* 795 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte64_t_O_unsigned_long_core__AbstractSimpleVector_O_,
+  /* 799 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte64_t_O,
+  /* 803 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_int2_t_O_2_1_,
+  /* 807 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int2_t_O,
+  /* 811 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int64_t_O_long_core__AbstractSimpleVector_O_,
+  /* 815 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int64_t_O,
+  /* 819 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_fixnum_O_long_core__AbstractSimpleVector_O_,
+  /* 823 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_fixnum_O,
+  /* 827 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int8_t_O_signed_char_core__AbstractSimpleVector_O_,
+  /* 831 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int8_t_O,
+  /* 835 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_float_O_float_core__AbstractSimpleVector_O_,
+  /* 839 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_float_O,
+  /* 843 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_O_gctools__smart_ptr_core__T_O__core__AbstractSimpleVector_O_,
+  /* 847 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_O,
+  /* 851 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_byte8_t_O_unsigned_char_core__AbstractSimpleVector_O_,
+  /* 855 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte8_t_O,
+  /* 859 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte2_t_O_2_0_,
+  /* 863 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte2_t_O,
+  /* 867 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleVector_core__SimpleVector_int32_t_O_int_core__AbstractSimpleVector_O_,
+  /* 871 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_int32_t_O,
+  /* 875 */ &&obj_deallocate_unmanaged_instance_STAMP_core__template_SimpleBitUnitVector_core__SimpleVector_byte4_t_O_4_0_,
+  /* 879 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SimpleVector_byte4_t_O,
+  /* 883 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Symbol_O,
+  /* 887 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Null_O,
+  /* 891 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Character_dummy_O,
+  /* 895 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DataLayout_O,
+  /* 899 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LoadTimeValues_O,
+  /* 903 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SharpEqualWrapper_O,
+  /* 907 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ClaspJIT_O,
+  /* 911 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Readtable_O,
+  /* 915 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTime_O,
+  /* 919 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Exposer_O,
+  /* 923 */ &&obj_deallocate_unmanaged_instance_STAMP_core__CoreExposer_O,
+  /* 927 */ &&obj_deallocate_unmanaged_instance_STAMP_asttooling__AsttoolingExposer_O,
+  /* 931 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructLayout_O,
+  /* 935 */ &&obj_deallocate_unmanaged_instance_STAMP_core__PosixTimeDuration_O,
+  /* 939 */ &&obj_deallocate_unmanaged_instance_STAMP_clasp_ffi__ForeignTypeSpec_O,
+  /* 941 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Instance_O,
+  /* 944 */ &&obj_deallocate_unmanaged_instance_STAMP_core__DerivableCxxObject_O,
+  /* 949 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRep_O,
+  /* 955 */ &&obj_deallocate_unmanaged_instance_STAMP_core__SmallMap_O,
+  /* 959 */ &&obj_deallocate_unmanaged_instance_STAMP_mpip__Mpi_O,
+  /* 963 */ &&obj_deallocate_unmanaged_instance_STAMP_core__ExternalObject_O,
+  /* 967 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Pass_O,
+  /* 971 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ModulePass_O,
+  /* 975 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ImmutablePass_O,
+  /* 979 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 983 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPass_O,
+  /* 987 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ExecutionEngine_O,
+  /* 991 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MCSubtargetInfo_O,
+  /* 995 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetSubtargetInfo_O,
+  /* 999 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Type_O,
+  /* 1003 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionType_O,
+  /* 1007 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CompositeType_O,
+  /* 1011 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SequentialType_O,
+  /* 1015 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PointerType_O,
+  /* 1019 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ArrayType_O,
+  /* 1023 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VectorType_O,
+  /* 1027 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StructType_O,
+  /* 1031 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IntegerType_O,
+  /* 1035 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__JITDylib_O,
+  /* 1039 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIContext_O,
+  /* 1043 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetPassConfig_O,
+  /* 1047 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilderBase_O,
+  /* 1051 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IRBuilder_O,
+  /* 1055 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APFloat_O,
+  /* 1059 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__APInt_O,
+  /* 1063 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBuilder_O,
+  /* 1067 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SectionedAddress_O,
+  /* 1071 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__EngineBuilder_O,
+  /* 1075 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBase_O,
+  /* 1079 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManager_O,
+  /* 1083 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FunctionPassManager_O,
+  /* 1087 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Metadata_O,
+  /* 1091 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDNode_O,
+  /* 1095 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DINode_O,
+  /* 1099 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIVariable_O,
+  /* 1103 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalVariable_O,
+  /* 1107 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIScope_O,
+  /* 1111 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIFile_O,
+  /* 1115 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIType_O,
+  /* 1119 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompositeType_O,
+  /* 1123 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIDerivedType_O,
+  /* 1127 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIBasicType_O,
+  /* 1131 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubroutineType_O,
+  /* 1135 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocalScope_O,
+  /* 1139 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DISubprogram_O,
+  /* 1143 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlockBase_O,
+  /* 1147 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILexicalBlock_O,
+  /* 1151 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DICompileUnit_O,
+  /* 1155 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DIExpression_O,
+  /* 1159 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DILocation_O,
+  /* 1163 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ValueAsMetadata_O,
+  /* 1167 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MDString_O,
+  /* 1171 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Test_O,
+  /* 1175 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Value_O,
+  /* 1179 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Argument_O,
+  /* 1183 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BasicBlock_O,
+  /* 1187 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__MetadataAsValue_O,
+  /* 1191 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__User_O,
+  /* 1195 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Instruction_O,
+  /* 1199 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnaryInstruction_O,
+  /* 1203 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__VAArgInst_O,
+  /* 1207 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LoadInst_O,
+  /* 1211 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AllocaInst_O,
+  /* 1215 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__SwitchInst_O,
+  /* 1219 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicRMWInst_O,
+  /* 1223 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LandingPadInst_O,
+  /* 1227 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__StoreInst_O,
+  /* 1231 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UnreachableInst_O,
+  /* 1235 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ReturnInst_O,
+  /* 1239 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ResumeInst_O,
+  /* 1243 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__AtomicCmpXchgInst_O,
+  /* 1247 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__FenceInst_O,
+  /* 1251 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallBase_O,
+  /* 1255 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__CallInst_O,
+  /* 1259 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__InvokeInst_O,
+  /* 1263 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PHINode_O,
+  /* 1267 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__IndirectBrInst_O,
+  /* 1271 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BranchInst_O,
+  /* 1275 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Constant_O,
+  /* 1279 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalValue_O,
+  /* 1283 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Function_O,
+  /* 1287 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__GlobalVariable_O,
+  /* 1291 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__BlockAddress_O,
+  /* 1295 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataSequential_O,
+  /* 1299 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantDataArray_O,
+  /* 1303 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantStruct_O,
+  /* 1307 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantInt_O,
+  /* 1311 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantFP_O,
+  /* 1315 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantExpr_O,
+  /* 1319 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantPointerNull_O,
+  /* 1323 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__UndefValue_O,
+  /* 1327 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ConstantArray_O,
+  /* 1331 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetMachine_O,
+  /* 1335 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMTargetMachine_O,
+  /* 1339 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__ThreadSafeContext_O,
+  /* 1343 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__NamedMDNode_O,
+  /* 1347 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Triple_O,
+  /* 1351 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__DWARFContext_O,
+  /* 1355 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__TargetOptions_O,
   /* 1359 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__LLVMContext_O,
   /* 1363 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__PassManagerBuilder_O,
   /* 1367 */ &&obj_deallocate_unmanaged_instance_STAMP_llvmo__Module_O,
