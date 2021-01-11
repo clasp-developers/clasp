@@ -81,19 +81,19 @@ fields at the same offset as Instance_O.
 FORWARD(FunctionDescription);
 class FunctionDescription_O : public General_O {
   LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
-public:
-// There are six slots below that end with Index
-    // They need space opened up in the GCRoots vector
   static const size_t Roots = 2;
-  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-  T_sp _sourcePathname;
-  T_sp _functionName;
-  T_sp _lambdaList;
-  T_sp _docstring;
-  llvmo::ObjectFile_sp _ObjectFile;
-  int lineno;
-  int column;
-  int filepos;
+public:
+  /* vtable */                                //  1 vtable from General_O
+  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS]; //  2 entry-points
+  T_sp _sourcePathname;                       //  3 source-info
+  T_sp _functionName;                         //  4 function-name
+  T_sp _lambdaList;                           //  5 lambda-list 
+  T_sp _docstring;                            //  6 docstring
+  llvmo::ObjectFile_sp _ObjectFile;           //  7 object-file
+  int lineno;                                 //  8 lineno
+  int column;                                 //  9 column
+  int filepos;                                // 10 filepos
+public:
   // Accessors
   T_sp sourcePathname() const;
   void setf_sourcePathname(T_sp);

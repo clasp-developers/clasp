@@ -743,15 +743,16 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %entry-points-vector% (llvm-sys:array-type-get %i8*% core:*number-of-entry-points*))
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
-                              (list %i8*% ; vtable
-                                    %entry-points-vector%
-                                    %t*% ; source-info
-                                    %t*% ; function-name
-                                    %t*% ; lambda-list
-                                    %t*% ; docstring
-                                    %i32% ; lineno
-                                    %i32% ; column
-                                    %i32% ; filepos
+                              (list %i8*%                  ;  1 vtable
+                                    %entry-points-vector%  ;  2 entry-points
+                                    %t*%                   ;  3 source-info
+                                    %t*%                   ;  4 function-name
+                                    %t*%                   ;  5 lambda-list
+                                    %t*%                   ;  6 docstring
+                                    %t*%                   ;  7 object-file
+                                    %i32%                  ;  8 lineno
+                                    %i32%                  ;  9 column
+                                    %i32%                  ; 10filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
