@@ -576,7 +576,7 @@ class boehmsl(boehm_base):
     gc_name = 'boehmsl'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehmsl", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(boehmsl,self).configure_variant(cfg,env_copy)
 
 class boehmsl_d(boehm_base):
@@ -584,7 +584,7 @@ class boehmsl_d(boehm_base):
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehmsl_d", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(boehmsl_d,self).configure_variant(cfg,env_copy)
         
 class mps_base(variant):
@@ -616,7 +616,7 @@ class mps(mps_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(mps,self).configure_variant(cfg,env_copy)
 
 class mps_d(mps_base):
@@ -625,7 +625,7 @@ class mps_d(mps_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(mps_d,self).configure_variant(cfg,env_copy)
 
 class iboehm(boehm):
@@ -764,7 +764,7 @@ class mps_mpi(mps_mpi_base):
     gc_name = 'mps'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(mps_mpi,self).configure_variant(cfg,env_copy)
 
 class mps_mpi_d(mps_mpi_base):
@@ -773,7 +773,7 @@ class mps_mpi_d(mps_mpi_base):
 
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_mpi_d", env=env_copy.derive())
-        cfg.define("USE_ANALYSIS",1)
+        cfg.define("USE_PRECISE_GC",1)
         super(mps_mpi_d,self).configure_variant(cfg,env_copy)
 
 class iboehm_mpi(boehm_mpi):

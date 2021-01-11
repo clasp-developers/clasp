@@ -409,7 +409,7 @@ class base_ptr /*: public tagged_ptr<T>*/ {
 
 
 #ifndef SCRAPING
- #ifdef USE_ANALYSIS
+ #ifdef USE_PRECISE_GC
   #define GC_DECLARE_FORWARDS
   #include CLASP_GC_FILENAME
   #undef GC_DECLARE_FORWARDS
@@ -426,7 +426,7 @@ namespace gctools {
 template <typename T1, typename T2>
 struct Inherits : std::false_type {};
 // This is the only place that we include INIT_CLASSES_INC_H into a build
-// that uses USE_ANALYSIS - the static analyzer doesn't generate the inheritance
+// that uses USE_PRECISE_GC - the static analyzer doesn't generate the inheritance
 // relationship - so we use the one from INIT_CLASSES_INC_H
  #define DECLARE_INHERITANCE
  #include INIT_CLASSES_INC_H

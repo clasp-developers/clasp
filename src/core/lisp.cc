@@ -1260,7 +1260,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   // Informs CL that MPS is being used
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #endif
-#ifdef USE_ANALYSIS
+#ifdef USE_PRECISE_GC
   // Informs CL that BOEHMSL is being used
   features = Cons_O::create(_lisp->internKeyword("USE-ANALYSIS"), features);
 #endif
@@ -1316,7 +1316,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     seedRandomNumberGenerators(this->mpiRank());
   }
   if (options._HasDescribeFile) {
-#if defined(USE_MPS) || defined(USE_ANALYSIS)
+#if defined(USE_MPS) || defined(USE_PRECISE_GC)
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
     llvmo::dump_objects_for_lldb(fout,"  ");

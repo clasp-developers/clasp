@@ -31,7 +31,7 @@ THE SOFTWARE.
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) (dynamic_cast<void *>(_smartptr_.px_ref()))
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
-#ifdef USE_ANALYSIS
+#ifdef USE_PRECISE_GC
 namespace gctools {
 struct GcScanStateType {
 };

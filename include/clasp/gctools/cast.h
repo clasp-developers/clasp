@@ -49,7 +49,7 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#if (defined(USE_BOEHM) && !defined(USE_ANALYSIS)) || defined(RUNNING_MPSPREP)
+#if (defined(USE_BOEHM) && !defined(USE_PRECISE_GC)) || defined(RUNNING_MPSPREP)
 //----------------------------------------------------------------------
 #ifndef SCRAPING
  #define DECLARE_FORWARDS
@@ -67,7 +67,7 @@ namespace cast {
 #endif // #ifdef USE_BOEHM
 
 #if !defined(SCRAPING)
- #if defined(USE_ANALYSIS)
+ #if defined(USE_PRECISE_GC)
 //----------------------------------------------------------------------
   #define GC_DECLARE_FORWARDS
    #include CLASP_GC_FILENAME
@@ -77,13 +77,13 @@ namespace cast {
    #include CLASP_GC_FILENAME
   #undef GC_DYNAMIC_CAST
 };
- #endif // #if defined(USE_ANALYSIS)
+ #endif // #if defined(USE_PRECISE_GC)
 #endif // #if !defined(SCRAPING)
 
 
 
 // Cast assumes that the client pointer is untagged already
-#if !defined(USE_ANALYSIS)
+#if !defined(USE_PRECISE_GC)
 namespace gctools {
     template <typename TOPTR>
     struct FromGeneralCast {
@@ -93,12 +93,12 @@ namespace gctools {
     }
   };
 };
-#endif // !USE_ANALYSIS
+#endif // !USE_PRECISE_GC
 
 
 
 
-#if defined(USE_ANALYSIS)
+#if defined(USE_PRECISE_GC)
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -109,7 +109,7 @@ namespace gctools {
     };
 
 };
-#endif // USE_ANALYSIS
+#endif // USE_PRECISE_GC
 
 
 

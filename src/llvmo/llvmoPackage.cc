@@ -570,7 +570,7 @@ void initialize_llvm(int argc, char **argv) {
 
 };
 
-#if defined(USE_MPS)||defined(USE_ANALYSIS)
+#if defined(USE_MPS)||defined(USE_PRECISE_GC)
 //
 // Include the Kinds
 //

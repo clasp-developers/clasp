@@ -160,7 +160,7 @@ namespace gctools {
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
- #if !defined(USE_ANALYSIS)
+ #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
         STAMP_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
