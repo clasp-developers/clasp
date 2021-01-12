@@ -372,7 +372,7 @@ static void obj_pad(mps_addr_t base, size_t size) {
 GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
   mps_addr_t original_client = client;
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+  MPS_SCAN_BEGIN(ss) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
@@ -399,7 +399,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         abort();
       }
     };
-  } MPS_SCAN_END(GC_SCAN_STATE);
+  } MPS_SCAN_END(ss);
   return MPS_RES_OK;
 };
 

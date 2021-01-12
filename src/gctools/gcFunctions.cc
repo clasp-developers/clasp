@@ -696,10 +696,16 @@ extern "C" {
 #define SCAN_BEGIN(xxx)
 #define SCAN_END(xxx)
 #define POINTER_FIX(field)
+#define EXTRA_ARGUMENTS
+#define GC_RESULT_TYPE GC_RESULT
+#define RETURN_OK MPS_RES_OK
 #define GC_OBJECT_SCAN
 __attribute__((optnone))
 #include "obj_scan.cc"
 #undef GC_OBJ_SCAN
+#undef RETURN_OK
+#undef GC_RESULT_TYPE
+#undef EXTRA_ARGUMENTS
 #undef OBJ_SCAN
 #undef SCAN_STRUCT_T
 #endif // USE_MPS

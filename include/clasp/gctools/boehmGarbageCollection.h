@@ -37,7 +37,6 @@ struct GcScanStateType {
 };
 #define GC_RESULT int
 #define GC_SCAN_STATE_TYPE GcScanStateType
-#define GC_SCAN_STATE ss
 #define GC_POINTER void*
 };
 #endif

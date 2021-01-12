@@ -39,6 +39,9 @@ THE SOFTWARE.
   #define GC_THREADS
 #endif
 #include <gc/gc.h>
+ #ifdef USE_PRECISE_GC
+  #include <gc/gc_mark.h>
+ #endif // USE_PRECISE_GC
 #endif // USE_BOEHM
 
 #ifdef USE_MPS

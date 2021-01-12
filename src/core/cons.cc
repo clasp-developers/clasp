@@ -158,10 +158,13 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
     }
     size_t cons_size = gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
     my_thread_low_level->_Allocations.registerAllocation(gctools::STAMP_CONS,size*cons_size);
-
     return result;
   }
 };
+
+CL_DEFUN size_t core__cons_size() {
+  return gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
+}
 
 Cons_sp Cons_O::createList(T_sp o1) {
   return (Cons_O::create(o1, _Nil<T_O>()));
