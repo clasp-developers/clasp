@@ -93,7 +93,7 @@ STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # thin LTO  -flto=thin
 LTO_OPTION = "-flto=thin"
 GCS_NAMES = [ 'boehm',
-              'boehmsl',
+              'boehmprecise',
               'mpsprep',
               'mps' ]
 
@@ -572,20 +572,20 @@ class boehm_d(boehm_base):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
-class boehmsl(boehm_base):
-    gc_name = 'boehmsl'
+class boehmprecise(boehm_base):
+    gc_name = 'boehmprecise'
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("boehmsl", env=env_copy.derive())
+        cfg.setenv("boehmprecise", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
-        super(boehmsl,self).configure_variant(cfg,env_copy)
+        super(boehmprecise,self).configure_variant(cfg,env_copy)
 
-class boehmsl_d(boehm_base):
-    gc_name = 'boehmsl'
+class boehmprecise_d(boehm_base):
+    gc_name = 'boehmprecise'
     build_with_debug_info = True
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("boehmsl_d", env=env_copy.derive())
+        cfg.setenv("boehmprecise_d", env=env_copy.derive())
         cfg.define("USE_PRECISE_GC",1)
-        super(boehmsl_d,self).configure_variant(cfg,env_copy)
+        super(boehmprecise_d,self).configure_variant(cfg,env_copy)
         
 class mps_base(variant):
     enable_mpi = False
@@ -646,22 +646,22 @@ class bboehm_d(boehm_d):
 class cboehm_d(boehm_d):
     stage_char = 'c'
 
-class iboehmsl(boehmsl):
+class iboehmprecise(boehmprecise):
     stage_char = 'i'
-class aboehmsl(boehmsl):
+class aboehmprecise(boehmprecise):
     stage_char = 'a'
-class bboehmsl(boehmsl):
+class bboehmprecise(boehmprecise):
     stage_char = 'b'
-class cboehmsl(boehmsl):
+class cboehmprecise(boehmprecise):
     stage_char = 'c'
 
-class iboehmsl_d(boehmsl_d):
+class iboehmprecise_d(boehmprecise_d):
     stage_char = 'i'
-class aboehmsl_d(boehmsl_d):
+class aboehmprecise_d(boehmprecise_d):
     stage_char = 'a'
-class bboehmsl_d(boehmsl_d):
+class bboehmprecise_d(boehmprecise_d):
     stage_char = 'b'
-class cboehmsl_d(boehmsl_d):
+class cboehmprecise_d(boehmprecise_d):
     stage_char = 'c'
     
 class imps(mps):

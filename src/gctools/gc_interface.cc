@@ -364,9 +364,9 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 
 
 
-#ifdef USE_MPS
 extern "C" {
   using namespace gctools;
+#ifdef USE_MPS
   /*! I'm using a format_header so MPS gives me the object-pointer */
 #define GC_OBJECT_SKIP
 #define OBJECT_SKIP obj_skip_debug

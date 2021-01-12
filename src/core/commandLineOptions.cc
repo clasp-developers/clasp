@@ -141,13 +141,10 @@ void process_clasp_arguments(CommandLineOptions* options)
 #endif
 #ifdef USE_BOEHM
       #ifdef USE_PRECISE_GC 
-      std::cout << "-boehmsl-";
+      std::cout << "-boehmprecise-";
       #else
       std::cout << "-boehm-";
       #endif
-#endif
-#ifdef USE_BOEHMSL
-      std::cout << "-boehmsl-";
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);

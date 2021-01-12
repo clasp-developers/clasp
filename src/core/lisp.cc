@@ -1261,8 +1261,8 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #endif
 #ifdef USE_PRECISE_GC
-  // Informs CL that BOEHMSL is being used
-  features = Cons_O::create(_lisp->internKeyword("USE-ANALYSIS"), features);
+  // Informs CL that precise GC is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
 #endif
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);

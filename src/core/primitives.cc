@@ -219,7 +219,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
 #endif
 #ifdef USE_BOEHM
   #ifdef USE_PRECISE_GC
-  ss << "boehmsl-";
+  ss << "boehmprecise-";
   #else
   ss << "boehm-";
   #endif
