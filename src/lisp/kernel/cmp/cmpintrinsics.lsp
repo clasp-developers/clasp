@@ -278,6 +278,8 @@ Boehm and MPS use a single pointer"
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (define-symbol-macro %t% %i8%) ; (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
+;; alias for bignum dumping
+(define-symbol-macro %bignum% %t*%)
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
