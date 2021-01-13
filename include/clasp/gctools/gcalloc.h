@@ -27,8 +27,11 @@ THE SOFTWARE.
 #ifndef gc_gcalloc_H
 #define gc_gcalloc_H
 
-#define BOEHM_ONE_BIG_STACK 1
+//#define BOEHM_ONE_BIG_STACK 1
 //#define DEBUG_BOEHM_STACK 1
+
+#define DEBUG_CONS_ALLOC 1
+
 
 #include <limits>
 #include <clasp/gctools/interrupt.h>
@@ -110,65 +113,198 @@ inline void* verify_alignment(void* ptr) {
 
 namespace gctools {
 #ifdef USE_BOEHM
-  inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-  {
-    RAII_DISABLE_INTERRUPTS();
-    size_t true_size = size;
-#ifdef DEBUG_GUARD
-    size_t tail_size = ((rand()%8)+1)*Alignment();
-    true_size += tail_size;
-#endif
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-    memset(header,0x00,true_size);
-    new (header) Header_s(the_header,size,tail_size,true_size);
+
+#define INITIALIZE_BOEHM_HEADER_PRECISE(_boehmHeader_,_stamp_,_size_) new(_boehmHeader_) BoehmHeader_s(global_stamp_layout[_stamp_].boehm._header)
+#define INITIALIZE_BOEHM_HEADER_DEBUG(_boehmHeader_,_stamp_,_size_) new(_boehmHeader_) BoehmHeader_s(((_size_)<<2) | GC_DS_LENGTH )
+
+
+template <typename Cons, typename...ARGS>
+inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
+{ RAII_DISABLE_INTERRUPTS();
+  Cons* cons;
+#ifdef USE_PRECISE_GC
+  GC_word* boehmHeader = reinterpret_cast<GC_word*>(ALIGNED_GC_MALLOC(cons_size));
+  constexpr size_t cons_stamp = STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O);
+  INITIALIZE_BOEHM_HEADER_DEBUG(boehmHeader,cons_stamp,cons_size-sizeof(GC_word));
+  static_assert(sizeof(GC_word)==8);
+  ConsHeader_s* consHeader = reinterpret_cast<ConsHeader_s*>((char*)boehmHeader + sizeof(GC_word));
+  new (consHeader) ConsHeader_s();
+  cons = reinterpret_cast<Cons*>((char*)consHeader+sizeof(ConsHeader_s));
 #else
-    new (header) Header_s(the_header);
+  // Not precise GC
+  ConsHeader_s* consHeader = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(cons_size));
+  new (consHeader) ConsHeader_s();
+  static_assert(sizeof(ConsHeader_s)==AlignUp(sizeof(ConsHeader_s)));
+  cons = reinterpret_cast<Cons*>((char*)consHeader+sizeof(ConsHeader_s));
 #endif
-    return header;
-  };
+#ifdef DEBUG_CONS_ALLOC
+  printf("%s:%d:%s consHeader@%p cons@%p sizeof alloc = %lu\n", __FILE__, __LINE__, __FUNCTION__, consHeader, cons, cons_size );
+  if (cons_size!=32) {
+    printf("%s:%d:%s     Check the stack - a cons cell is being allocated with the wrong size\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
+#endif
+  new (cons) Cons(std::forward<ARGS>(args)...);
+  return cons;
+}
+
+
+template <typename container_pointer>
+inline container_pointer do_boehm_weak_bucket_allocate(size_t size) {
+#ifdef DEBUG_GCWEAK
+  printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC_ATOMIC(size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(size<<2 | GC_DS_LENGTH);
+  container_pointer myAddress = (container_pointer)((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+#endif
+  return myAddress;
+}
+
+
+template <typename container_pointer>
+inline container_pointer do_boehm_strong_bucket_allocate(size_t size) {
+#ifdef DEBUG_GCWEAK
+  printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC(size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(size<<2 | GC_DS_LENGTH);
+  container_pointer myAddress = (container_pointer)((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
+#endif
+  return myAddress;
+}
+
+template <typename container_pointer>
+inline container_pointer do_boehm_weak_mapping_allocate(size_t size) {
+#ifdef DEBUG_GCWEAK
+  printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC_ATOMIC(size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(size<<2 | GC_DS_LENGTH);
+  container_pointer myAddress = (container_pointer)((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+#endif
+  return myAddress;
+}
+
+
+template <typename container_pointer>
+inline container_pointer do_boehm_strong_mapping_allocate(size_t size) {
+#ifdef DEBUG_GCWEAK
+  printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC(size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(size<<2 | GC_DS_LENGTH);
+  container_pointer myAddress = (container_pointer)((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
+#endif
+  return myAddress;
+}
+
+template <typename container_pointer>
+inline container_pointer do_boehm_weak_pointer_allocate(size_t size) {
+#ifdef DEBUG_GCWEAK
+  printf("%s:%d Allocating Pointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC_ATOMIC(size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(size<<2 | GC_DS_LENGTH);
+  container_pointer myAddress = (container_pointer)((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+#endif
+  return myAddress;
+}
+
+
+
+inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+{
+  RAII_DISABLE_INTERRUPTS();
+  size_t true_size = size;
+#ifdef DEBUG_GUARD
+  size_t tail_size = ((rand()%8)+1)*Alignment();
+  true_size += tail_size;
+#endif
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC_ATOMIC(true_size+sizeof(BoehmHeader_s));
+  new (boehm_header) BoehmHeader_s(global_stamp_layout[the_header.stamp()].boehm._header);
+  Header_s* header = reinterpret_cast<Header_s*>((char*)boehm_header + sizeof(BoehmHeader_s));
+#else
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
+#endif
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) Header_s(the_header,size,tail_size,true_size);
+#else
+  new (header) Header_s(the_header);
+#endif
+  return header;
+};
 #endif
 
 #ifdef USE_BOEHM
-  inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-  {
-    RAII_DISABLE_INTERRUPTS();
-    size_t true_size = size;
+inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+{
+  RAII_DISABLE_INTERRUPTS();
+  size_t true_size = size;
 #ifdef DEBUG_GUARD
-    size_t tail_size = ((rand()%8)+1)*Alignment();
-    true_size += tail_size;
+  size_t tail_size = ((rand()%8)+1)*Alignment();
+  true_size += tail_size;
 #endif
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-    memset(header,0x00,true_size);
-    new (header) Header_s(the_header,size,tail_size,true_size);
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC(true_size+sizeof(BoehmHeader_s));
+  INITIALIZE_BOEHM_HEADER_DEBUG(boehm_header,the_header.stamp(),true_size);
+  Header_s* header = reinterpret_cast<Header_s*>((char*)boehm_header + sizeof(BoehmHeader_s));
 #else
-    new (header) Header_s(the_header);
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
 #endif
-    return header;
-  };
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) Header_s(the_header,size,tail_size,true_size);
+#else
+  new (header) Header_s(the_header);
+#endif
+  return header;
+};
 #endif
 #ifdef USE_BOEHM
-  inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
-  {
-    RAII_DISABLE_INTERRUPTS();
-    size_t true_size = size;
+inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+{
+  RAII_DISABLE_INTERRUPTS();
+  size_t true_size = size;
 #ifdef DEBUG_GUARD
-    size_t tail_size = ((rand()%8)+1)*Alignment();
-    true_size += tail_size;
+  size_t tail_size = ((rand()%8)+1)*Alignment();
+  true_size += tail_size;
 #endif
-    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(true_size));
-    my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
-#ifdef DEBUG_GUARD
-    memset(header,0x00,true_size);
-    new (header) Header_s(the_header,size,tail_size,true_size);
+#ifdef USE_PRECISE_GC
+  BoehmHeader_s* boehm_header = (BoehmHeader_s*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(true_size+sizeof(BoehmHeader_s));
+  INITIALIZE_BOEHM_HEADER_DEBUG(boehm_header,the_header.stamp(),true_size);
+  Header_s* header = reinterpret_cast<Header_s*>((char*)boehm_header + sizeof(BoehmHeader_s));
 #else
-    new (header) Header_s(the_header);
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(true_size));
 #endif
-    return header;
-  };
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) Header_s(the_header,size,tail_size,true_size);
+#else
+  new (header) Header_s(the_header);
+#endif
+  return header;
+};
 #endif
 };
 
@@ -178,29 +314,20 @@ namespace gctools {
 class DontRegister {};
 class DoRegister {};
 
-template <typename Cons,typename Register=DoRegister>
+template <typename Cons,typename Register=DontRegister>
 struct ConsSizeCalculator {
   static inline size_t value() {
-#ifdef USE_MPS
-    size_t size = AlignUp(sizeof(Cons));
-#endif
-#ifdef USE_BOEHM
-    size_t size = sizeof(Cons);
-#endif
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,size);
+    static_assert(AlignUp(sizeof(Cons)+sizeof(ConsHeader_s)) == 32);
+    size_t size = AlignUp(sizeof(Cons)+sizeof(ConsHeader_s));
     return size;
   }
 };
 
 template <typename Cons>
-struct ConsSizeCalculator<Cons,DontRegister> {
+struct ConsSizeCalculator<Cons,DoRegister> {
   static inline size_t value() {
-#ifdef USE_MPS
-    size_t size = AlignUp(sizeof(Cons));
-#endif
-#ifdef USE_BOEHM
-    size_t size = sizeof(Cons);
-#endif
+    size_t size = ConsSizeCalculator<Cons,DontRegister>::value();
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,size);
     return size;
   }
 };
@@ -214,34 +341,35 @@ template <typename ConsType, typename Register, typename... ARGS>
 #else
     inline
 #endif
-smart_ptr<ConsType> cons_mps_allocation(mps_ap_t& allocation_point,
-                                               const char* ap_name,
-                                               ARGS &&... args) {
+smart_ptr<ConsType> do_cons_mps_allocation(mps_ap_t& allocation_point,
+                                           const char* ap_name,
+                                           ARGS &&... args) {
   gc::smart_ptr<ConsType> tagged_obj;
-    { RAII_DISABLE_INTERRUPTS();
-      RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
-      // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
-      mps_addr_t addr;
-      ConsType* cons;
-      size_t cons_size = ConsSizeCalculator<ConsType,Register>::value();
-      do {
-        mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
-        if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
-        cons = reinterpret_cast<ConsType*>(addr);
-        new (cons) ConsType(std::forward<ARGS>(args)...);
-        tagged_obj = smart_ptr<ConsType>((Tagged)tag_cons(cons));
-      } while (!mps_commit(allocation_point, addr, cons_size));
-      MAYBE_VERIFY_ALIGNMENT((void*)addr);
-      //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
-    }
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    handle_all_queued_interrupts();
+  { RAII_DISABLE_INTERRUPTS();
+    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
+    // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
+    mps_addr_t addr;
+    ConsType* cons;
+    size_t cons_size = ConsSizeCalculator<ConsType,Register>::value();
+    printf("%s:%d I need to deal with adding the cons header\n", __FILE__, __LINE__ );
+    do {
+      mps_res_t res = mps_reserve(&addr, allocation_point, cons_size);
+      if ( res != MPS_RES_OK ) bad_cons_mps_reserve_error();
+      cons = reinterpret_cast<ConsType*>(addr);
+      new (cons) ConsType(std::forward<ARGS>(args)...);
+      tagged_obj = smart_ptr<ConsType>((Tagged)tag_cons(cons));
+    } while (!mps_commit(allocation_point, addr, cons_size));
+    MAYBE_VERIFY_ALIGNMENT((void*)addr);
+    //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
+  }
+  DEBUG_MPS_UNDERSCANNING_TESTS();
+  handle_all_queued_interrupts();
 #if 0
-    globalMpsMetrics.totalMemoryAllocated += cons_size;
-    ++globalMpsMetrics.consAllocations;
+  globalMpsMetrics.totalMemoryAllocated += cons_size;
+  ++globalMpsMetrics.consAllocations;
 #endif    
-    return tagged_obj;
-  };
+  return tagged_obj;
+};
 
 
 extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
@@ -445,10 +573,7 @@ template <class Cons, class Register>
 #ifdef USE_BOEHM
       Cons* cons;
       size_t cons_size = ConsSizeCalculator<Cons,Register>::value();
-      { RAII_DISABLE_INTERRUPTS();
-        cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(cons_size));
-        new (cons) Cons(std::forward<ARGS>(args)...);
-      }
+      cons = do_boehm_cons_allocation<Cons,ARGS...>(cons_size,std::forward<ARGS>(args)...);
       handle_all_queued_interrupts();
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
@@ -456,7 +581,7 @@ template <class Cons, class Register>
         mps_ap_t obj_ap = my_thread_allocation_points._cons_allocation_point;
         //        globalMpsMetrics.consAllocations++;
         smart_ptr<Cons> obj =
-            cons_mps_allocation<Cons,Register>(obj_ap,"CONS",
+            do_cons_mps_allocation<Cons,Register>(obj_ap,"CONS",
                               std::forward<ARGS>(args)...);
         return obj;
 #endif
@@ -1104,10 +1229,7 @@ public:
   static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
 #ifdef USE_BOEHM
-#ifdef DEBUG_GCWEAK
-    printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
-    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+    container_pointer myAddress = do_boehm_weak_bucket_allocate<container_pointer>(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1181,7 +1303,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
+    container_pointer myAddress = do_boehm_strong_bucket_allocate<container_pointer>(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1245,7 +1367,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+    container_pointer myAddress = do_boehm_weak_mapping_allocate<container_pointer>(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1282,7 +1404,7 @@ public:
     size_t size = sizeof(container_type);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
-    container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
+    container_pointer myAddress = do_boehm_strong_mapping_allocate<container_pointer>(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1321,7 +1443,7 @@ public:
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    value_pointer myAddress = (value_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+    value_pointer myAddress = do_boehm_weak_pointer_allocate<value_pointer>(size);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1391,6 +1513,7 @@ public:
     bufferSize = STACK_ALIGN_UP(bufferSize);
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
+    DEPRECATED();
     this->_StackBottom = (uintptr_t *)ALIGNED_GC_MALLOC(bufferSize);
     this->_StackMiddleOffset = (bufferSize / 2);
     this->_StackLimit = (uintptr_t *)((char *)this->_StackBottom + bufferSize);

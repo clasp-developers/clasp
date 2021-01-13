@@ -1638,18 +1638,15 @@ size_t lisp_general_badge(General_sp object) {
   return header->_header_badge;
 }
 
+size_t lisp_cons_badge(Cons_sp object) {
+  const gctools::Header_s* header = gctools::header_pointer(object.unsafe_cons());
+  return header->_header_badge;
+}
+
 size_t lisp_badge(T_sp object) {
   if (object.consp()) {
-#ifdef USE_BOEHM
-    return (size_t)object.raw_();
-#else
-    // USE_MPS
-# ifdef MPS_CONS_AWL_POOL    
-    return (size_t)object.unsafe_cons();
-# else
-    return (size_t)object.unsafe_cons()->_badge;
-# endif
-#endif    
+    Cons_sp cobject = gc::As_unsafe<Cons_sp>(object);
+    return lisp_cons_badge(cobject);
   }
   return lisp_general_badge(gc::As_unsafe<General_sp>(object));
 }
@@ -1663,19 +1660,9 @@ CL_DEFUN size_t core__get_badge(T_sp object)
 CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
-#ifdef USE_BOEHM
-    object.rawRef_() = (core::T_O*)badge;
+    gctools::ConsHeader_s* header = const_cast<gctools::ConsHeader_s*>(gctools::cons_header_pointer(object.unsafe_cons()));
+    header->_header_badge = badge;
     return;
-#else
-    // USE_MPS
-# ifdef MPS_CONS_AWL_POOL
-    SIMPLE_ERROR(BF("Cant set badge for MPS_CONS_AWL_POOL"));
-    return (size_t)object.unsafe_cons();
-# else
-    object.unsafe_cons()->_badge = badge;
-    return;
-# endif
-#endif    
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
   header->_header_badge = badge;

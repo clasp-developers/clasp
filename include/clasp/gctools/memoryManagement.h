@@ -199,8 +199,6 @@ namespace gctools {
 
 namespace gctools {
   constexpr size_t Alignment() {
-//  return sizeof(Header_s);
-//    return alignof(Header_s);
     return 16;
   };
   inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
@@ -304,6 +302,29 @@ namespace gctools {
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
     */
 
+#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
+class BoehmHeader_s {
+public:
+  uintptr_t _header;
+  uintptr_t _guard;
+  BoehmHeader_s(uintptr_t h) : _header(h), _guard(0xce11beefce11beef) {};
+};
+#endif
+
+
+  class ConsHeader_s {
+  public:
+#if defined(USE_MPS) || defined(USE_BOEHM)&&!defined(USE_PRECISE_GC)
+    uintptr_t     _guard;
+#endif
+    uintptr_t     _header_badge;
+    ConsHeader_s() :
+#if defined(USE_MPS) || defined(USE_BOEHM)&&!defined(USE_PRECISE_GC)
+        _guard(0xDEEDCA11),
+#endif
+        _header_badge((uintptr_t)this) {};
+  };
+
   class Header_s {
   public:
     static const tagged_stamp_t mtag_mask      =  0b0011;
@@ -345,6 +366,7 @@ namespace gctools {
       static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
         return (start+(1<<stamp_shift))&(~mtag_mask);
       }
+      uintptr_t stamp() const { return this->_value>>(wtag_width+mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
         size_t sm = STAMP_max;
         // This is the only test that makes sense.
@@ -731,7 +753,13 @@ namespace gctools {
     const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
     return header;
   }
-  
+
+  inline const ConsHeader_s* cons_header_pointer(const void* cons_pointer)
+  {
+    const ConsHeader_s* header = reinterpret_cast<const ConsHeader_s*>(reinterpret_cast<const char*>(cons_pointer) - sizeof(ConsHeader_s));
+    return header;
+  }
+
   inline void throwIfInvalidClient(core::T_O *client) {
     Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
     if (header->invalidP()) {

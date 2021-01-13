@@ -1141,13 +1141,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ).str();
 
-  bool mps_cons_awl_pool = false;
-#ifdef MPS_CONS_AWL_POOL
-  mps_cons_awl_pool = true;
-  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("MPS-CONS-AWL-POOL"), features);
-#endif
-  if (buildReport) ss << (BF("MPS_CONS_AWL_POOL = %s\n") % (mps_cons_awl_pool ? "**DEFINED**" : "undefined") ).str();
-
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
   mps_recognize_zero_tags = true;

@@ -1011,16 +1011,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-#ifdef MPS_CONS_AWL_POOL    // 1 if awl pool
-    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_awl(), args);
-    printf("%s:%d Using the AWL pool for cons cells\n", __FILE__, __LINE__ );
-#else
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR,1);
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
     res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_amc(), args);
-#endif
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -1276,17 +1271,8 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
 
-#ifdef MPS_CONS_AWL_POOL
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&this->_cons_allocation_point,
-                          global_cons_pool, args);
-  }
-  MPS_ARGS_END(args);
-#else
   res = mps_ap_create_k(&this->_cons_allocation_point,
                         global_cons_pool, mps_args_none);
-#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_cons_allocation_point");
 
