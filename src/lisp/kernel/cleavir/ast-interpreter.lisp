@@ -12,34 +12,24 @@
 
 (in-package #:interpret-ast)
 
-;;; environment definition
-;;; it's a list of hash tables. car is the most recent
+;;;; Environment
+;;;; We use a flat mapping from AST lexical variables to values.
 
 (defun empty-environment ()
-  (list (make-hash-table :test #'eq)))
-
-(defun augment-environment (env)
-  (cons (make-hash-table :test #'eq) env))
+  (make-hash-table :test #'eq))
 
 (defun variable (var env)
   (multiple-value-bind (value presentp)
       (gethash var (car env))
-    (cond
-      (presentp value)
-      ((null (cdr env))
-       (error "BUG: Unbound ~a" var))
-      (t (variable var (cdr env))))))
-
-(defun variable-frame (var env)
-  (cond ((null env) nil)
-        ((nth-value 1 (gethash var (car env))) (car env))
-        (t (variable-frame var (cdr env)))))
+    (if presentp
+        value
+        (error "BUG: Unbound ~a" var))))
 
 (defun bind-variable (var value env)
-  (setf (gethash var (car env)) value))
+  (setf (gethash var env) value))
 
 (defun setq-variable (var value env)
-  (setf (gethash var (variable-frame var env)) value))
+  (setf (gethash var env) value))
 
 ;; interface
 
@@ -202,11 +192,10 @@
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
-        (let ((env (augment-environment env)))
-          (bind-list arguments env
-                     required optional rest va-rest-p keyp key aok-p)
-          ;; ok body now
-          (interpret-ast body env))))))
+        (bind-list arguments env
+                   required optional rest va-rest-p keyp key aok-p)
+        ;; ok body now
+        (interpret-ast body env)))))
 
 (defcan cleavir-ast:progn-ast)
 (defmethod interpret-ast ((ast cleavir-ast:progn-ast) env)
