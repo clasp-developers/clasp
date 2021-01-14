@@ -407,6 +407,62 @@ extern "C" {
   }
 
 
+  struct GC_ms_entry* cons_mark(GC_word addr,
+                                struct GC_ms_entry* msp,
+                                struct GC_ms_entry* msl,
+                                GC_word env)
+  {
+#ifdef DEBUG_OBJECT_SCAN
+    printf("%s:%d:%s addr = %p\n", __FILE__, __LINE__,__FUNCTION__, addr );
+#endif
+    // The client must have a valid header
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
+    void* client = (char*)addr;
+    MAYBE_MARK((char*)addr+offset(core::Cons_O,_Car));
+    MAYBE_MARK((char*)addr+offset(core::Cons_O,_Cdr));
+    return msp;
+  }
+
+  struct GC_ms_entry* class_mark(GC_word addr,
+                                 struct GC_ms_entry* msp,
+                                 struct GC_ms_entry* msl,
+                                 GC_word env)
+  {
+#ifdef DEBUG_OBJECT_SCAN
+    printf("%s:%d:%s addr = %p\n", __FILE__, __LINE__,__FUNCTION__, addr );
+#endif
+    // The client must have a valid header
+    const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
+    void* client = (char*)addr + sizeof(gctools::Header_s);
+    const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+    size_t stamp_index = header.stamp_();
+    gctools::tagged_stamp_t mtag = header_value.mtag();
+    gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+    const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
+    int idx = 0;
+    uintptr_t pointer_bitmap = stamp_layout.boehm._class_bitmap;
+#ifdef DEBUG_POINTER_BITMAPS
+    const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+#endif
+    // Only mark the class fields if env == 0
+    if (!env) {
+      for (uintptr_t* addr = (uintptr_t*)client; pointer_bitmap; addr++, pointer_bitmap<<=1) {
+        if ((intptr_t)pointer_bitmap < 0) {
+#ifdef DEBUG_POINTER_BITMAPS
+          core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
+          if (addr != (uintptr_t*)field) {
+            printf("%s:%d stamp: %lu client@%p bitmap[%p]/field[%p] address mismatch!!!! field_offset=%lu\n", __FILE__, __LINE__, stamp_index, client, addr, field, field_layout_cur->field_offset);
+          }
+          ++field_layout_cur;
+#endif
+          MAYBE_MARK(addr,);
+        }
+      }
+    }
+    return msp;
+  }
+
+
   struct GC_ms_entry* pointer_containing_container_mark(GC_word addr,
                                                         struct GC_ms_entry* msp,
                                                         struct GC_ms_entry* msl,

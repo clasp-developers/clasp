@@ -340,7 +340,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 
   // Calculate boehm header
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-  uintptr_t pointer_container_proc_index = GC_new_proc((GC_mark_proc)pointer_containing_container_mark);
+  uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(lisp_proc_index,0), 0, 1);
+  uintptr_t cons_stamp = STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O);
+  uintptr_t cons_bitmap = gctools::global_stamp_layout[cons_stamp].boehm._class_bitmap;
+  uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 );
+  uintptr_t atomic_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1)
+  uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc(class_mark),0),0,1);
+  uintptr_t pointer_container_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)pointer_containing_container_mark),0),0,1);
   for ( cur_stamp=0; cur_stamp<local_stamp_max; ++cur_stamp ) {
     if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC
@@ -348,8 +354,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 #endif
       if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Lisp_O) ) {
         uintptr_t lisp_proc_index = GC_new_proc((GC_mark_proc)Lisp_O_object_mark);
-        local_stamp_layout[cur_stamp].boehm._header = GC_MAKE_PROC(lisp_proc_index,0);
-        local_stamp_layout[cur_stamp].boehm._header_defined = true;
+        local_stamp_layout[cur_stamp].boehm._kind = lisp_kind;
+        local_stamp_layout[cur_stamp].boehm._kind_defined = true;
       } else {
         uintptr_t class_bitmap = (local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
         uintptr_t bitmap_skip_header = class_bitmap >> (sizeof(gctools::Header_s)/8);
@@ -363,7 +369,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
             // There are no class fields to mark and not a container - zero rank - mark nothing
             local_stamp_layout[cur_stamp].boehm._header = 0 | GC_DS_LENGTH;
           }
-          local_stamp_layout[cur_stamp].boehm._header_defined = true;
+          local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         } else {
           // Start from the client pointer
           local_stamp_layout[cur_stamp].boehm._class_bitmap = (local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
@@ -390,17 +396,17 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
             // SimpleCharacterString_O is one of these
             local_stamp_layout[cur_stamp].boehm._header = 0 | GC_DS_LENGTH;
           }
-          local_stamp_layout[cur_stamp].boehm._header_defined = true;
+          local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         }
 #endif
       }
 #ifdef DUMP_PRECISE_CALC
-      if (local_stamp_layout[cur_stamp].boehm._header_defined) {
+      if (local_stamp_layout[cur_stamp].boehm._kind_defined) {
         printf("%s:%d      boehm_header = 0x%lX\n", __FILE__, __LINE__, local_stamp_layout[cur_stamp].boehm._header);
       }
 #endif
-      if (!local_stamp_layout[cur_stamp].boehm._header_defined) {
-        printf("%s:%d calculate boehm header cur_stamp = %d  layout_op %d  %s  UNDEFINED boehm_header\n", __FILE__, __LINE__, cur_stamp, local_stamp_layout[cur_stamp].layout_op, local_stamp_info[cur_stamp].name );
+      if (!local_stamp_layout[cur_stamp].boehm._kind_defined) {
+        printf("%s:%d calculate boehm header cur_stamp = %d  layout_op %d  %s  UNDEFINED kind\n", __FILE__, __LINE__, cur_stamp, local_stamp_layout[cur_stamp].layout_op, local_stamp_info[cur_stamp].name );
       }
     }
   }

@@ -145,13 +145,13 @@ struct Boehm_info {
   uintptr_t         _container_bitmap;
   int               _container_pointer_count;
   int               _container_element_work;
-  uintptr_t         _header;
+  uintptr_t         _kind;
   Boehm_info() : _header_defined(false)
                , _class_bitmap(0)
                , _container_bitmap(0)
                , _container_pointer_count(0)
                , _container_element_work(0)
-               , _header(0)
+               , _kind(0)
   {};
 };
 
