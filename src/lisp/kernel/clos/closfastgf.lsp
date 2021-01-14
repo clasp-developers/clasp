@@ -193,7 +193,7 @@
           (gf-log "(core:instance-stamp i) -> %s%N" instance-stamp)
           (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N"
                   class-stamp)
-          (update-instance i)
+          (update-instance instance)
           t)))))
 
 (defun maybe-update-instances (arguments)
