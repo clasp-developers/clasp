@@ -100,9 +100,13 @@
   (declare (ignore env))
   (cleavir-ast:value ast))
 
+(defcan cleavir-ast:lexical-variable)
+(defmethod interpret-ast ((ast cleavir-ast:lexical-variable) env)
+  (error "Lexical variables are not meant to be interpreted."))
+
 (defcan cleavir-ast:lexical-ast)
 (defmethod interpret-ast ((ast cleavir-ast:lexical-ast) env)
-  (variable (lexical-variable ast) env))
+  (variable (cleavir-ast:lexical-variable ast) env))
 
 (defcan cleavir-ast:symbol-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:symbol-value-ast) env)
