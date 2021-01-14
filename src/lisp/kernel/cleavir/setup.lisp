@@ -157,7 +157,16 @@
   (define-function-attributes core:two-arg-char< :flushable)
   (define-function-attributes core:two-arg-char<= :flushable)
   (define-function-attributes core:two-arg-char> :flushable)
-  (define-function-attributes core:two-arg-char>= :flushable))
+  (define-function-attributes core:two-arg-char>= :flushable)
+
+  (define-function-attributes core::map-into-sequence :dyn-call :dx-call)
+  (define-function-attributes core::map-into-sequence/1 :dyn-call :dx-call)
+  (define-function-attributes core::map-for-effect :dyn-call :dx-call)
+  (define-function-attributes core::map-for-effect/1 :dyn-call :dx-call)
+  (define-function-attributes core::map-to-list :dyn-call :dx-call)
+  (define-function-attributes core::map-to-list/1 :dyn-call :dx-call)
+  (define-function-attributes core::every/1 :dyn-call :dx-call)
+  (define-function-attributes core::some/1 :dyn-call :dx-call))
 
 (defun treat-as-special-operator-p (name)
   (cond

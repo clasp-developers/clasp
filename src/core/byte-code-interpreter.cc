@@ -114,7 +114,7 @@ void parse_ltvc_make_next_bignum(gctools::GCRootsInModule* roots, T_sp fin, bool
   if (log) printf("%s:%d:%s parse_ltvc_make_next_bignum\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
+  T_O* arg2 = ltvc_read_bignum( fin, log, byte_index );
   ltvc_make_next_bignum( roots, tag, index, arg2);
 };
 void parse_ltvc_make_bitvector(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {

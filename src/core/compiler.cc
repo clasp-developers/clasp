@@ -1500,6 +1500,30 @@ std::string ltvc_read_string(T_sp stream, bool log, size_t& index)
   return str;
 }
 
+CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(long long,stream,index);
+  core::Bignum_sp bignum = gc::As<Bignum_sp>(object);
+  mp_size_t length = bignum->length();
+  const mp_limb_t* limbs = bignum->limbs();
+  compact_write_size_t(length, stream, index);
+  for (mp_size_t i = 0; i < std::abs(length); i++)
+    compact_write_size_t(limbs[i], stream, index);
+  return index;
+}
+
+T_O* ltvc_read_bignum(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(long long,stream,index);
+  mp_size_t length = compact_read_size_t(stream, index);
+  size_t size = std::abs(length);
+  mp_limb_t limbs[length];
+  for (mp_size_t i = 0; i < size; i++) {
+    limbs[i] = compact_read_size_t(stream, index);
+  }
+  return reinterpret_cast<T_O*>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
+}
+
 CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index)
 {
   SELF_DOCUMENT(float,stream,index);
