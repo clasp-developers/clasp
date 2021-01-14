@@ -20,7 +20,7 @@
 
 (defun variable (var env)
   (multiple-value-bind (value presentp)
-      (gethash var (car env))
+      (gethash var env)
     (if presentp
         value
         (error "BUG: Unbound ~a" var))))
