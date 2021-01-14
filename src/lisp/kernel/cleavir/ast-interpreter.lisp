@@ -102,7 +102,7 @@
 
 (defcan cleavir-ast:lexical-ast)
 (defmethod interpret-ast ((ast cleavir-ast:lexical-ast) env)
-  (variable ast env))
+  (variable (lexical-variable ast) env))
 
 (defcan cleavir-ast:symbol-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:symbol-value-ast) env)
@@ -232,13 +232,13 @@
 
 (defcan cleavir-ast:lexical-bind-ast)
 (defmethod interpret-ast ((ast cleavir-ast:lexical-bind-ast) env)
-  (bind-variable (cleavir-ast:lhs-ast ast)
+  (bind-variable (cleavir-ast:lexical-variable ast)
                  (interpret-ast (cleavir-ast:value-ast ast) env)
                  env))
 
 (defcan cleavir-ast:setq-ast)
 (defmethod interpret-ast ((ast cleavir-ast:setq-ast) env)
-  (setq-variable (cleavir-ast:lhs-ast ast)
+  (setq-variable (cleavir-ast:lexical-variable ast)
                  (interpret-ast (cleavir-ast:value-ast ast) env)
                  env))
 
@@ -247,7 +247,7 @@
   (let ((values (multiple-value-list
                  (interpret-ast (cleavir-ast:form-ast ast) env))))
     (loop with rvalues = values
-          for var in (cleavir-ast:lhs-asts ast)
+          for var in (cleavir-ast:lexical-variables ast)
           do (setq-variable var (pop rvalues) env))
     (values-list values)))
 
