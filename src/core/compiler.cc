@@ -1517,7 +1517,7 @@ T_O* ltvc_read_bignum(T_sp stream, bool log, size_t& index)
   SELF_CHECK(long long,stream,index);
   mp_size_t length = compact_read_size_t(stream, index);
   size_t size = std::abs(length);
-  mp_limb_t limbs[length];
+  mp_limb_t limbs[size];
   for (mp_size_t i = 0; i < size; i++) {
     limbs[i] = compact_read_size_t(stream, index);
   }
