@@ -8,7 +8,7 @@ global_lldb_interface = None
 
 class LldbInterface(Interface):
     def __init__(self,debugger,internal_dict,prefix):
-        global global_Structs
+        global global_structs
         self._debugger = debugger
         self._process = debugger.GetSelectedTarget().GetProcess()
         self.print_("In clasp_inspect for lldb_interface")

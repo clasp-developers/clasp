@@ -7,7 +7,7 @@ global_udb_interface = None
 
 class UdbInterface(Interface):
     def __init__(self,debugger,internal_dict,prefix):
-        global global_Structs
+        global global_structs
         print "In clasp_inspect for gdb_interface"
         filename = "/tmp/clasp-layout.py"
         with open(filename, "rb") as source_file:
@@ -57,5 +57,5 @@ def do_udb_init_module():
     debugger.HandleCommand('command script add -f %s.inspect il' % prefix)
     global_lldb_interface = UdbInterface(debugger,internal_dict,prefix)
     print("Leaving do_lldb_init_module")
-    
+    print("il <address> - dump lisp object\n")
     
