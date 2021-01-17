@@ -690,7 +690,7 @@ CL_DEFUN Number_sp contagion_div(Number_sp na, Number_sp nb) {
 
 CL_LAMBDA(&rest numbers);
 CL_DEFUN Number_sp cl___PLUS_(List_sp numbers) {
-  if (numbers.nilp())
+  if (!numbers.consp())
     return make_fixnum(0);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
@@ -703,7 +703,7 @@ CL_LAMBDA(&rest numbers);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: *");
 CL_DEFUN Number_sp cl___TIMES_(List_sp numbers) {
-  if (numbers.nilp())
+  if (!numbers.consp())
     return make_fixnum(1);
   Number_sp result = gc::As<Number_sp>(oCar(numbers));
   for (auto cur : (List_sp)oCdr(numbers)) {
@@ -716,7 +716,7 @@ CL_LAMBDA(num &rest numbers);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: +");
 CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
-  if (numbers.nilp()) {
+  if (!numbers.consp()) {
     return clasp_negate(num);
   }
   Number_sp result = num;
@@ -728,7 +728,7 @@ CL_DEFUN Number_sp cl___MINUS_(Number_sp num, List_sp numbers) {
 
 CL_LAMBDA(num &rest numbers);
 CL_DEFUN Number_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
-  if (numbers.nilp()) {
+  if (!numbers.consp()) {
     return clasp_reciprocal(num);
   }
   Number_sp result = num;
@@ -1198,7 +1198,7 @@ CL_DEFUN T_sp cl___NE_(VaList_sp args) {
      * We're going to iterate over the arguments several times,
      * so a valist isn't going to cut it. */
     List_sp largs = core__list_from_va_list(args);
-    while (largs.notnilp()) {
+    while (largs.consp()) {
       Number_sp n1 = gc::As<Number_sp>(oCar(largs));
       for (List_sp cur = oCdr(largs); cur.notnilp(); cur = oCdr(cur)) {
         Number_sp n2 = gc::As<Number_sp>(oCar(cur));
