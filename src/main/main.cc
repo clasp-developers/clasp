@@ -435,8 +435,17 @@ int main( int argc, char *argv[] )
 
   fflush( stderr );
 
-  // CALL LISP STARTUP
+  // Pause before any allocations take place
+  {
+    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+    if (pause_startup) {
+      printf("%s:%d PID = %d Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      fflush(stdout);
+      getchar();
+    }
+  }
 
+  // Startup the garbage collector and the lisp system
   int exit_code;
   {
     exit_code = gctools::startupGarbageCollectorAndSystem( &startup, argc, argv, rl.rlim_cur, mpiEnabled, mpiRank, mpiSize );

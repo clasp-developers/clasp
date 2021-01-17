@@ -448,14 +448,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #endif
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  {
-    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
-    if (pause_startup) {
-      printf("%s:%d PID = %d Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
-    }
-  }
   char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
   if (debug_byte_code) {
     printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
@@ -1267,6 +1259,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
 #endif
+#if TAG_BITS==4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
+#endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
   // Set additional features for debugging flags
   //  pass a dummy stringstream that builds a report
@@ -1316,10 +1311,10 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     seedRandomNumberGenerators(this->mpiRank());
   }
   if (options._HasDescribeFile) {
-#if defined(USE_MPS) || defined(USE_PRECISE_GC)
+#if defined(USE_PRECISE_GC)
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-    llvmo::dump_objects_for_lldb(fout,"  ");
+    llvmo::dump_objects_for_lldb(fout,"");
     fclose(fout);
     printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
 #else

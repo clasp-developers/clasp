@@ -889,33 +889,9 @@ void dumpBoehmLayoutTables(FILE* fout) {
   fprintf(fout,"Init__variable_capacity( stamp=%lu, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
   fprintf(fout,"Init__variable_field( stamp=%lu, index=%d, data_type=%d, field_name=\"%s\", field_offset=%d );\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_data_type_,_field_name_,_field_offset_);
-
-  #if 0
-  fprintf(fout, "Init_data_type( data_type=1, name=\"tagged_ptr\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=2, name=\"array\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=3, name=\"pointer\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=4, name=\"constant_array\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=5, name=\"double\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=6, name=\"float\",sizeof=4)\n");
-  fprintf(fout, "Init_data_type( data_type=7, name=\"int\",sizeof=4)\n");
-  fprintf(fout, "Init_data_type( data_type=8, name=\"short\",sizeof=2)\n");
-  fprintf(fout, "Init_data_type( data_type=10, name=\"signed_char\",sizeof=1)\n");
-  fprintf(fout, "Init_data_type( data_type=11, name=\"unsigned_short\",sizeof=2)\n");
-  fprintf(fout, "Init_data_type( data_type=12, name=\"signed_short\",sizeof=2)\n");
-  fprintf(fout, "Init_data_type( data_type=13, name=\"unsigned_long\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=14, name=\"unsigned_int\",sizeof=4)\n");
-  fprintf(fout, "Init_data_type( data_type=15, name=\"long\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=16, name=\"long_long\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=17, name=\"char\",sizeof=1)\n");
-  fprintf(fout, "Init_data_type( data_type=18, name=\"_Bool\",sizeof=1)\n");
-  fprintf(fout, "Init_data_type( data_type=19, name=\"enum_core__StreamMode\",sizeof=4)\n");
-  fprintf(fout, "Init_data_type( data_type=21, name=\"const_char_ptr\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=22, name=\"size_t\",sizeof=8)\n");
-  fprintf(fout, "Init_data_type( data_type=23, name=\"opaque_ptr\",sizeof=8)\n");
-#endif
-
+#define Init_global_ints(_name_,_value_) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d)\n", _name_,_value_);
+  printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
-  
   Init_class_kind(core::T_O);
   Init_class_kind(core::General_O);
   Init_class_kind(core::Cons_O);

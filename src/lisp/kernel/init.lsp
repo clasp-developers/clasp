@@ -583,8 +583,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
               ((member :use-boehm *features*)
-               (if (member :use-analysis *features*)
-                   "boehmsl"
+               (if (member :use-precise-gc *features*)
+                   "boehmprecise"
                    "boehm"))
               (t (error "Unknown clasp configuration"))))
         (mpi (if (member :use-mpi *features*) "-mpi" "")))

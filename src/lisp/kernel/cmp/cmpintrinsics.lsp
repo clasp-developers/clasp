@@ -293,57 +293,56 @@ Boehm and MPS use a single pointer"
 
 
 ;;; MUST match WrappedPointer_O layout
-(define-symbol-macro %wrapped-pointer%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %i64%     ; 1 _Stamp_;
-         %t*%      ; 2 Class_;
-         )
-   nil))
-(defconstant +wrapped-pointer.stamp-index+ 1)
+(define-c++-struct %wrapped-pointer% +general-tag+
+  (
+   (%i8*%     :vtable)
+   (%i64%     :stamp)
+   (%t*%      :class)
+   ))
+
+(defconstant +wrapped-pointer.stamp-index+ (c++-field-index :stamp info.%wrapped-pointer%))
 (define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
 
+(define-c++-struct %instance% +general-tag+
+  ((%i8*%     :vtable)
+   (%t*%      :Class)
+   (%t*%      :Rack)
+   ))
+
+
 ;;; MUST match Instance_O layout
-(define-symbol-macro %instance%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %t*%      ; 1 _Class
-         %t*%      ; 2 _Rack
-         )
-   nil))
-(defconstant +instance.rack-index+ 2)
+(define-c++-struct %instance% +general-tag+
+  ((%i8*%     :vtable)
+   (%t*%      :Class)
+   (%t*%      :Rack)
+   ))
+
+(defconstant +instance.rack-index+ (c++-field-index :rack info.%instance%))
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
 
-
 ;;; Must match SimpleVector_O aka GCArray_moveable<T_sp>
-(define-symbol-macro %simple-vector%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %size_t%  ; 1 length
-         %tsp[0]%  ; 2 zeroth element of data
-         )
-   nil))
-(defconstant +simple-vector.length-index+ 1)
-(defconstant +simple-vector.data-index+ 2)
+(define-c++-struct %simple-vector% +general-tag+
+  ((%i8*%     :vtable)
+   (%size_t%      :length)
+   (%tsp[0]%      :data)
+   ))
+(defconstant +simple-vector.length-index+ (c++-field-index :length info.%simple-vector%))
+(defconstant +simple-vector.data-index+ (c++-field-index :data info.%simple-vector%))
 
-(define-symbol-macro %rack%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %tsp%     ; 1 Stamp
-         %tsp%     ; 2 Sig
-         %size_t%  ; 3 length
-         %t*[0]%   ; 4 zeroth element of data
-         )
-   nil))
+
+(define-c++-struct %rack% +general-tag+
+  ((%i8*%     :vtable)
+   (%tsp%     :stamp)
+   (%tsp%     :sig)
+   (%size_t%  :length)
+   (%t*[0]%   :data)
+   ))
+
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
-(defconstant +rack.stamp-index+ 1)
-(defconstant +rack.length-index+ 3)
-(defconstant +rack.data-index+ 4)
+(defconstant +rack.stamp-index+ (c++-field-index :stamp info.%rack%))
+(defconstant +rack.length-index+ (c++-field-index :length info.%rack%))
+(defconstant +rack.data-index+ (c++-field-index :data info.%rack%))
 
 (define-c++-struct %mdarray% +general-tag+
   ((%i8*% :vtable)
@@ -357,36 +356,29 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
 
-(define-symbol-macro %value-frame%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %tsp%     ; 1 _Parent
-         %size_t%  ; 2 length
-         %tsp[0]%  ; 3 zeroth element of data
-         )
-   nil))
+(define-c++-struct %value-frame% +general-tag+
+  ((%i8*%     :vtable)
+   (%tsp%     :parent)
+   (%size_t%  :length)
+   (%tsp[0]%  :data))
+  )
 (define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
-(defconstant +value-frame.parent-index+ 1)
-(defconstant +value-frame.length-index+ 2)
-(defconstant +value-frame.data-index+ 3)
-
+(defconstant +value-frame.parent-index+ (c++-field-index :parent info.%value-frame%))
+(defconstant +value-frame.length-index+ (c++-field-index :length info.%value-frame%))
+(defconstant +value-frame.data-index+ (c++-field-index :data info.%value-frame%))
 
 
 ;;; MUST match FuncallableInstance_O layout
-(define-symbol-macro %funcallable-instance%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %i8*%     ; 1 _FunctionDescription (From Function_O)
-         %t*%      ; 2 _Rack
-         %t*%      ; 3 _Class
-         %atomic<size_t>%          ; 4 _InterpretedCalls
-         %atomic<tsp>%             ; 5 _CompiledDispatchFunction
-         )
-   nil))
+(define-c++-struct %funcallable-instance% +general-tag+
+  ((%i8*% :vtable)
+   (%i8*% :function-description)
+   (%t*% :rack)
+   (%t*% :class)
+   (%atomic<size_t>% :interpreted-calls)
+   (%atomic<tsp>% :compiled-dispatch-function)))
+
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
-(defconstant +funcallable-instance.rack-index+ 2)
+(defconstant +funcallable-instance.rack-index+ (c++-field-index :rack info.%funcallable-instance%))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;;
@@ -403,22 +395,22 @@ Boehm and MPS use a single pointer"
    (%i32% :flags) ; index=7 offset=56
    (%t*% :property-list))) ; index=8 offset=64
 
-(defconstant +symbol.function-index+ 4)
-(defconstant +symbol.setf-function-index+ 5)
+(defconstant +symbol.function-index+ (c++-field-index :function info.%symbol%))
+(defconstant +symbol.setf-function-index+ (c++-field-index :setf-function info.%symbol%))
 
 (define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get
-                             (thread-local-llvm-context)
-                             (smart-pointer-fields %t*% %t*%
-                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%
-                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%) nil))
+(define-c++-struct %cons% +cons-tag+
+  ((%t*% :car)
+   (%t*% :cdr)
+   (%size_t% :badge)))
+
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
-(defconstant +cons.car-index+ 0)
-(defconstant +cons.cdr-index+ 1)
+(defconstant +cons.car-index+ (c++-field-index :car info.%cons%))
+(defconstant +cons.cdr-index+ (c++-field-index :cdr info.%cons%))
 (let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %cons%))
        (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
@@ -427,17 +419,15 @@ Boehm and MPS use a single pointer"
 
 
 ;; This structure must match the gctools::GCRootsInModule structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
-                                          (thread-local-llvm-context)
-                                          (list
-                                           %size_t% ; _index_offset
-                                           %i8*% ; _boehm_shadow_memory
-                                           %i8*% ; _module_memory
-                                           %size_t% ; _num_entries
-                                           %size_t% ; _capacity
-                                           %i8**% ; function pointers
-                                           %size_t% ; number of functions
-                                           ) nil))
+(define-c++-struct %gcroots-in-module% +general-tag+
+  ((%size_t%  :index-offset)
+   (%i8*%  :boehm-shadow-memory)
+   (%i8*%  :module-memory)
+   (%size_t%  :num-entries)
+   (%size_t%  :capacity)
+   (%i8**%  :function-pointers)
+   (%size_t%  :number-of-functions)))
+
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp

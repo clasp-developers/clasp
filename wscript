@@ -1048,9 +1048,9 @@ def configure(cfg):
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(lib='ffi', cflags='-Wall', uselib_store='FFI')
     try:
-        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except ConfigurationError:
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
     #libz
     cfg.check_cxx(lib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS or cfg.env['DEST_OS'] == FREEBSD_OS):

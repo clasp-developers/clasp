@@ -12,7 +12,7 @@
 #endif
 
 //#define DUMP_GC_BOOT 1
-#define DUMP_PRECISE_CALC 1
+//#define DUMP_PRECISE_CALC 1
 
 
 
@@ -25,8 +25,8 @@
 
 namespace gctools {
 
-
-
+int              global_cons_kind;
+int              global_container_kind;
 size_t           global_stamp_max;
 Stamp_info*       global_stamp_info;
 Stamp_layout*     global_stamp_layout;
@@ -38,6 +38,9 @@ Container_info*  global_container_info;
 
 inline size_t bitmap_field_index(size_t start,size_t offset) {
   size_t bitindex = start-(offset/8);
+  if (bitindex > 63) {
+    printf("%s:%d The bit position for offset %lu will not fit in a 64-bit word - the class has pointers beyond the reach of a 62-bit bitmap\n", __FILE__, __LINE__, offset );
+  }
   return bitindex;
 }
 
@@ -76,8 +79,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
          codes[idx].cmd == container_kind ||
          codes[idx].cmd == bitunit_container_kind ||
          codes[idx].cmd == templated_kind ) {
-      if ( local_stamp_max < codes[idx].data0 ) {
-        local_stamp_max = codes[idx].data0;
+      size_t stamp_code = STAMP_UNSHIFT_MTAG(codes[idx].data0);
+      if ( local_stamp_max < stamp_code ) {
+        local_stamp_max = stamp_code+1;
       } else {
       }
     } else if ( (codes[idx].cmd == fixed_field
@@ -165,7 +169,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         // Handle Lisp_O object specially
         // There is a corresponding change to obj_scan.cc
-        if (idx != gctools::STAMP_core__Lisp_O) {
+        if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMP_core__Lisp_O)) {
           size_t field_bit = bitmap_field_index(63,field_offset);
           uintptr_t field_bitmap = bitmap_field_bitmap(field_bit);
           if ( local_stamp_layout[cur_stamp].field_layout_start == NULL )
@@ -181,6 +185,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         if ( local_stamp_info[cur_stamp].field_info_ptr == NULL )
           local_stamp_info[cur_stamp].field_info_ptr = cur_field_info;
         cur_field_info->field_name = field_name;
+        cur_field_info->data_type = data_type;
         ++local_stamp_layout[cur_stamp].number_of_fields;
         ++cur_field_layout;
         ++cur_field_info;
@@ -295,6 +300,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
           local_stamp_info[cur_stamp].container_info_ptr = &local_container_info[cur_container_info_idx++];
         GCTOOLS_ASSERT(cur_container_info_idx<=number_of_containers);
         local_stamp_info[cur_stamp].container_info_ptr->field_name = field_name;
+        local_stamp_info[cur_stamp].container_info_ptr->data_type = data_type;
         ++cur_field_layout;
         ++local_stamp_layout[cur_stamp].container_layout->number_of_fields;
       }
@@ -340,34 +346,68 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 
   // Calculate boehm header
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-  uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(lisp_proc_index,0), 0, 1);
+
+  // Setup the CONS cell bitmap
   uintptr_t cons_stamp = STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O);
-  uintptr_t cons_bitmap = gctools::global_stamp_layout[cons_stamp].boehm._class_bitmap;
-  uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 );
-  uintptr_t atomic_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1)
-  uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc(class_mark),0),0,1);
-  uintptr_t pointer_container_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)pointer_containing_container_mark),0),0,1);
+  uintptr_t cons_bitmap = ((uintptr_t)1<<(63-(offsetof(core::Cons_O,_Car)/8)))|((uintptr_t)1<<(63-(offsetof(core::Cons_O,_Cdr)/8)));
+  if (cons_bitmap != local_stamp_layout[cons_stamp].class_field_pointer_bitmap) {
+    printf("%s:%d The cons stamp %lu cons_bitmap = 0x%lX  and it doesn't match   local_stamp_layout[cons_stamp].class_field_pointer_bitmap = 0x%lX\n", __FILE__, __LINE__, cons_stamp, cons_bitmap, local_stamp_layout[cons_stamp].class_field_pointer_bitmap);
+    abort();
+  }
+
+  // Use boehm in the precise GC mode
+#if 1
+  uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
+  uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
+  uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
+  uintptr_t container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
+#else
+  uintptr_t lisp_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
+  uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
+  uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
+  uintptr_t container_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)class_container_mark),0),0,1); // GC_DS_LENGTH, 1, 1);
+#endif
+  uintptr_t atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
+  global_container_kind = container_kind;
   for ( cur_stamp=0; cur_stamp<local_stamp_max; ++cur_stamp ) {
     if (local_stamp_layout[cur_stamp].layout_op != undefined_op) {
 #ifdef DUMP_PRECISE_CALC
+      printf("%s:%d --------------------------------------\n", __FILE__, __LINE__ );
       printf("%s:%d calculate boehm header cur_stamp = %d  layout_op %d  %s  \n", __FILE__, __LINE__, cur_stamp, local_stamp_layout[cur_stamp].layout_op, local_stamp_info[cur_stamp].name);
 #endif
       if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Lisp_O) ) {
-        uintptr_t lisp_proc_index = GC_new_proc((GC_mark_proc)Lisp_O_object_mark);
         local_stamp_layout[cur_stamp].boehm._kind = lisp_kind;
+        local_stamp_layout[cur_stamp].boehm._kind_defined = true;
+      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O) ) {
+        local_stamp_layout[cur_stamp].boehm._kind = cons_kind;
+        global_cons_kind = cons_kind;
+#ifdef DUMP_PRECISE_CALC
+        printf("%s:%d   cons_bitmap = 0x%lx global_cons_kind = %d  address = %p\n", __FILE__, __LINE__, cons_bitmap, global_cons_kind, &global_cons_kind );
+#endif
         local_stamp_layout[cur_stamp].boehm._kind_defined = true;
       } else {
         uintptr_t class_bitmap = (local_stamp_layout[cur_stamp].class_field_pointer_bitmap);
-        uintptr_t bitmap_skip_header = class_bitmap >> (sizeof(gctools::Header_s)/8);
+        local_stamp_layout[cur_stamp].boehm._class_bitmap = class_bitmap;
 #ifdef DUMP_PRECISE_CALC
-        printf("%s:%d stamp = %d  bitmap_skip_header = 0x%lX\n", __FILE__, __LINE__, cur_stamp, bitmap_skip_header );
+        printf("%s:%d stamp = %d  class_bitmap = 0x%lX\n", __FILE__, __LINE__, cur_stamp, class_bitmap );
+        const gctools::Stamp_layout& stamp_layout = local_stamp_layout[cur_stamp];
+        const gctools::Stamp_info& stamp_info = local_stamp_info[cur_stamp];
+        const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
+        const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+        int num_fields = stamp_layout.number_of_fields;
+        for ( int i=0; i<num_fields; ++i ) {
+          printf("%s:%d [%d]   offset %zu   %s\n", __FILE__, __LINE__, i, field_layout_cur->field_offset, field_info_cur->field_name);
+          field_layout_cur++;
+          field_info_cur++;
+        }
+#endif
         if (!local_stamp_layout[cur_stamp].container_layout) {
-          if (bitmap_skip_header) {
+          if (class_bitmap) {
             // There are class fields to mark but not a container
-            local_stamp_layout[cur_stamp].boehm._header = bitmap_skip_header | GC_DS_BITMAP;
+            local_stamp_layout[cur_stamp].boehm._kind = class_kind;
           } else {
             // There are no class fields to mark and not a container - zero rank - mark nothing
-            local_stamp_layout[cur_stamp].boehm._header = 0 | GC_DS_LENGTH;
+            local_stamp_layout[cur_stamp].boehm._kind = atomic_kind;
           }
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         } else {
@@ -387,22 +427,21 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
           if ( class_bitmap && !container_bitmap) {
             // There are no pointers in the container part
             // - so we can use the bitmap_skip_header
-            local_stamp_layout[cur_stamp].boehm._header = bitmap_skip_header | GC_DS_BITMAP;
+            local_stamp_layout[cur_stamp].boehm._kind = class_kind;
           } else if (container_bitmap) {
             // The container part contains pointers - so we need to use a callback
-            local_stamp_layout[cur_stamp].boehm._header = GC_MAKE_PROC(pointer_container_proc_index,0);
+            local_stamp_layout[cur_stamp].boehm._kind = container_kind;
           } else {
             // Container with no fixable pointers at all
             // SimpleCharacterString_O is one of these
-            local_stamp_layout[cur_stamp].boehm._header = 0 | GC_DS_LENGTH;
+            local_stamp_layout[cur_stamp].boehm._kind = atomic_kind;
           }
           local_stamp_layout[cur_stamp].boehm._kind_defined = true;
         }
-#endif
       }
 #ifdef DUMP_PRECISE_CALC
       if (local_stamp_layout[cur_stamp].boehm._kind_defined) {
-        printf("%s:%d      boehm_header = 0x%lX\n", __FILE__, __LINE__, local_stamp_layout[cur_stamp].boehm._header);
+        printf("%s:%d      boehm_kind = %lu address = %p\n", __FILE__, __LINE__, local_stamp_layout[cur_stamp].boehm._kind, &local_stamp_layout[cur_stamp].boehm._kind);
       }
 #endif
       if (!local_stamp_layout[cur_stamp].boehm._kind_defined) {
@@ -410,6 +449,15 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       }
     }
   }
+#ifdef DUMP_PRECISE_CALC
+      printf("%s:%d    GC_I_NORMAL = %d\n", __FILE__, __LINE__, GC_I_NORMAL );
+      printf("%s:%d   GC_I_PTRFREE = %d\n", __FILE__, __LINE__, GC_I_PTRFREE );
+      printf("%s:%d      lisp_kind = %lu\n", __FILE__, __LINE__, lisp_kind );
+      printf("%s:%d      cons_kind = %lu\n", __FILE__, __LINE__, cons_kind );
+      printf("%s:%d    atomic_kind = %lu\n", __FILE__, __LINE__, atomic_kind );
+      printf("%s:%d     class_kind = %lu\n", __FILE__, __LINE__, class_kind );
+      printf("%s:%d container_kind = %lu\n", __FILE__, __LINE__, container_kind );
+#endif
 #endif // #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
 
   

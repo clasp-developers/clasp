@@ -37,7 +37,7 @@ def untag_cons(tptr):
     return tptr-clasp_inspect.object_layout.global_ints["CONS_TAG"]
 
 def vaslistp(tptr):
-    return (tptr&clasp_inspect.object_layout.global_ints["IMMEDIATE_MASK"]==clasp_inspect.object_layout.global_ints["VASLIST1_TAG"])
+    return (tptr&clasp_inspect.object_layout.global_ints["IMMEDIATE_MASK"]==clasp_inspect.object_layout.global_ints["VASLIST0_TAG"])
 
 def untag_vaslist(tptr):
     return (tptr - clasp_inspect.object_layout.global_ints["VASLIST1_TAG"])

@@ -56,6 +56,9 @@ enum Data_types {
   ctype_opaque_ptr,
   last_data_type };
 
+extern int global_cons_kind;
+extern int global_container_kind;
+
 inline void dump_data_types(FILE* fout, const std::string& indent)
 {
 #define DTNAME(_type_,_name_,_sz_) fprintf(fout,"%sInit_data_type( data_type=%d, name=\"%s\",sizeof=%lu)\n", indent.c_str(), _type_, _name_, _sz_)
@@ -82,6 +85,16 @@ inline void dump_data_types(FILE* fout, const std::string& indent)
   DTNAME(ctype_const_char_ptr,"const_char_ptr",sizeof(const char*));
   DTNAME(ctype_size_t,"size_t",sizeof(size_t));
   DTNAME(ctype_opaque_ptr,"opaque_ptr",sizeof(void*));
+#define Init_global_ints(_name_,_value_) fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%d)\n", indent.c_str(), _name_,_value_);
+  Init_global_ints("TAG_BITS",TAG_BITS);
+  Init_global_ints("IMMEDIATE_MASK",IMMEDIATE_MASK);
+  Init_global_ints("FIXNUM_MASK",FIXNUM_MASK);
+  Init_global_ints("GENERAL_TAG",GENERAL_TAG);
+  Init_global_ints("CONS_TAG",CONS_TAG);
+  Init_global_ints("SINGLE_FLOAT_TAG",SINGLE_FLOAT_TAG);
+  Init_global_ints("CHARACTER_TAG",CHARACTER_TAG);
+  Init_global_ints("VASLIST0_TAG",VASLIST0_TAG);
+  Init_global_ints("FIXNUM_SHIFT",FIXNUM_SHIFT);
 }
 
 enum Layout_cmd {
@@ -105,15 +118,17 @@ struct Layout_code {
 };
 
 struct Field_layout {
-  size_t            field_offset;
+  size_t         field_offset;
 };
 
 struct Field_info {
   const char*    field_name;
+  size_t         data_type;
 };
 
 struct Container_info {
   const char*    field_name;
+  size_t         data_type;
 };
 
 struct Container_layout {
@@ -140,18 +155,18 @@ struct Stamp_info {
 };
 
 struct Boehm_info {
-  bool              _header_defined;
+  bool              _kind_defined;
   uintptr_t         _class_bitmap;
   uintptr_t         _container_bitmap;
   int               _container_pointer_count;
   int               _container_element_work;
   uintptr_t         _kind;
-  Boehm_info() : _header_defined(false)
+  Boehm_info() : _kind_defined(false)
                , _class_bitmap(0)
                , _container_bitmap(0)
                , _container_pointer_count(0)
                , _container_element_work(0)
-               , _kind(0)
+               , _kind(99999)
   {};
 };
 

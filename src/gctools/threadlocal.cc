@@ -155,13 +155,20 @@ ThreadLocalState::ThreadLocalState() :
 
 size_t ThreadLocalState::random() {
   unsigned long t;
-  this->_xorshf_x ^= this->_xorshf_x << 16;
-  this->_xorshf_x ^= this->_xorshf_x >> 5;
-  this->_xorshf_x ^= this->_xorshf_x << 1;
-  t = this->_xorshf_x;
-  this->_xorshf_x = this->_xorshf_y;
-  this->_xorshf_y = this->_xorshf_z;
-  this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
+  // This random number generator is ONLY used to initialize
+  // the badges of general objects (currently, because cons cells
+  // initialize their badge using the allocation address).
+  // This generator should never return zero because
+  // that would cause problems with boehm precise mode marking.
+  do {
+    this->_xorshf_x ^= this->_xorshf_x << 16;
+    this->_xorshf_x ^= this->_xorshf_x >> 5;
+    this->_xorshf_x ^= this->_xorshf_x << 1;
+    t = this->_xorshf_x;
+    this->_xorshf_x = this->_xorshf_y;
+    this->_xorshf_y = this->_xorshf_z;
+    this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
+  } while (this->_xorshf_z==0);
   return this->_xorshf_z;
 }
 

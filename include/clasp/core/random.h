@@ -33,6 +33,16 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 
+
+
+template <>
+struct gctools::GCInfo<core::RandomState_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+
+
 namespace core {
   
 SMART(RandomState);

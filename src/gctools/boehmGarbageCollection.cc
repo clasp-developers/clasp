@@ -295,7 +295,6 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_INIT();
   GC_allow_register_threads();
   GC_set_java_finalization(1);
-//  GC_allow_register_threads();
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);
@@ -308,7 +307,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
   core::transfer_StartupInfo_to_my_thread();
-#if 0
+#if 1
   // I'm not sure if this needs to be done for the main thread
   GC_stack_base gc_stack_base;
   GC_get_stack_base(&gc_stack_base);

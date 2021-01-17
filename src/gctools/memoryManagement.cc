@@ -187,9 +187,9 @@ namespace gctools {
 void register_thread(mp::Process_sp process, void* stack_base) {
 #ifdef USE_BOEHM
   // ----   Boehm stuff needs to be done in the thread function
-//  GC_stack_base gc_stack_base;
-//  GC_get_stack_base(&gc_stack_base);
-//  GC_register_my_thread(&gc_stack_base);
+  GC_stack_base gc_stack_base;
+  GC_get_stack_base(&gc_stack_base);
+  GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
   my_mps_thread_reg(&process->thr_o);
@@ -199,7 +199,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
 void unregister_thread(mp::Process_sp process) {
 #ifdef USE_BOEHM
   // ----   Boehm stuff needs to be done in the thread function
-//  GC_unregister_my_thread();
+  GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
   my_mps_thread_deref(process->thr_o);
@@ -351,12 +351,19 @@ void Header_s::validate() const {
     printf("%s:%d The header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"header is 0");
+  if ( this->_stamp_wtag_mtag._value == 0 ) signal_invalid_object(this,"stamp_wtag_mtag is 0");
 #ifdef DEBUG_GUARD  
   if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
 #endif
   if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
   if ( this->stampP() ) {
+#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
+    uintptr_t stamp_index = (uintptr_t)this->stamp_();
+    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMP_max)) {
+      printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
+      signal_invalid_object(this,"stamp out of range in header");
+    }
+#endif // USE_BOEHM
 #ifdef DEBUG_GUARD    
     if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= 0xAAAAAAAAAAAAAAAA) signal_invalid_object(this,"normal object bad header guard2");

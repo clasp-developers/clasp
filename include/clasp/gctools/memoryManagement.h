@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <gc/gc.h>
  #ifdef USE_PRECISE_GC
   #include <gc/gc_mark.h>
+  #include <gc/gc_inline.h>
  #endif // USE_PRECISE_GC
 #endif // USE_BOEHM
 
@@ -199,7 +200,7 @@ namespace gctools {
 
 namespace gctools {
   constexpr size_t Alignment() {
-    return 16;
+    return CLASP_ALIGNMENT;
   };
   inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
@@ -301,29 +302,6 @@ namespace gctools {
       NOTE!!!   Writing anything into header.additional_data[0] wipes out the objects vtable and completely
                 invalidates it - this is only used by the MPS GC when it's ok to invalidate the object.
     */
-
-#if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-class BoehmHeader_s {
-public:
-  uintptr_t _header;
-  uintptr_t _guard;
-  BoehmHeader_s(uintptr_t h) : _header(h), _guard(0xce11beefce11beef) {};
-};
-#endif
-
-
-  class ConsHeader_s {
-  public:
-#if defined(USE_MPS) || defined(USE_BOEHM)&&!defined(USE_PRECISE_GC)
-    uintptr_t     _guard;
-#endif
-    uintptr_t     _header_badge;
-    ConsHeader_s() :
-#if defined(USE_MPS) || defined(USE_BOEHM)&&!defined(USE_PRECISE_GC)
-        _guard(0xDEEDCA11),
-#endif
-        _header_badge((uintptr_t)this) {};
-  };
 
   class Header_s {
   public:
@@ -501,10 +479,11 @@ public:
     }
   public:
     // The header contains the stamp_wtag_mtag value.
-    StampWtagMtag _stamp_wtag_mtag;
+    StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
     // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
     tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
-    uintptr_t     _header_badge;
+    uintptr_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
+                                 /* will treat it like a unused object residing on a free list          */
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
@@ -678,10 +657,33 @@ namespace gctools {
     return AlignUp(totalSz);
   };
 
-  template <class T>
-    inline size_t sizeof_container_with_header(size_t num) {
-    return sizeof_container<T>(num) + sizeof(Header_s);
-  };
+
+/*
+ * atomic == Object contains no internal tagged pointers, is collectable
+ * normal == Object contains internal tagged pointers, is collectable
+ * collectable_immobile == Object cannot be moved but is collectable
+ * unmanaged == Object cannot be moved and cannot be automatically collected
+ */
+  typedef enum { atomic = 0,
+                 normal = 1,
+                 collectable_immobile = 2,
+                 unmanaged = 3 } GCInfo_policy;
+
+
+template <class OT>
+struct GCInfo {
+  static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
+  static bool const NeedsFinalization = false;  // By default, nothing needs finalization
+  static constexpr GCInfo_policy Policy = normal;
+};
+
+
+
+template <class T>
+inline size_t sizeof_container_with_header(size_t num) {
+  return sizeof_container<T>(num) + sizeof(Header_s)
+      ;
+};
 
   /*! Size of containers given the number of binits where BinitWidth is the number of bits/bunit */
   template <typename Cont_impl>
@@ -754,12 +756,6 @@ namespace gctools {
     return header;
   }
 
-  inline const ConsHeader_s* cons_header_pointer(const void* cons_pointer)
-  {
-    const ConsHeader_s* header = reinterpret_cast<const ConsHeader_s*>(reinterpret_cast<const char*>(cons_pointer) - sizeof(ConsHeader_s));
-    return header;
-  }
-
   inline void throwIfInvalidClient(core::T_O *client) {
     Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
     if (header->invalidP()) {
@@ -809,23 +805,8 @@ namespace core {
 
 namespace gctools {
 
-/*
- * atomic == Object contains no internal tagged pointers, is collectable
- * normal == Object contains internal tagged pointers, is collectable
- * collectable_immobile == Object cannot be moved but is collectable
- * unmanaged == Object cannot be moved and cannot be automatically collected
- */
-  typedef enum { atomic,
-                 normal,
-                 collectable_immobile,
-                 unmanaged } GCInfo_policy;
   
-template <class OT>
-struct GCInfo {
-  static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
-  static bool const NeedsFinalization = false;  // By default, nothing needs finalization
-  static constexpr GCInfo_policy Policy = normal;
-};
+
 };
 
 #include <clasp/gctools/smart_pointers.h>
@@ -968,6 +949,13 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
     }
     return tagged_object;
   }
+  inline void* ensure_valid_header(void* base) {
+  // Only validate general objects for now
+    Header_s* header = reinterpret_cast<Header_s*>(base);
+    header->quick_validate();
+    return base;
+  }
+
   template <typename OT>
     inline gctools::smart_ptr<OT> ensure_valid_object(gctools::smart_ptr<OT> tagged_object) {
 #ifdef DEBUG_GUARD_VALIDATE
@@ -992,9 +980,11 @@ void gc_release();
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define EVO(x) (gctools::ensure_valid_object(x))
+#define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
 #else
 #define ENSURE_VALID_OBJECT(x) x
 #define EVO(x)
+#define ENSURE_VALID_HEADER(x) x
 #endif
 
 namespace gctools {
