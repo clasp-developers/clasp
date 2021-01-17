@@ -283,11 +283,6 @@ void* boehm_create_shadow_table(size_t nargs)
 
 };
 
-#ifdef USE_PRECISE_GC
-extern "C" {
-extern struct GC_ms_entry* object_mark_proc(void* addr, struct GC_ms_entry *msp, struct GC_ms_entry *msl, GC_word env);
-};
-#endif // USE_PRECISE_GC
 namespace gctools {
 __attribute__((noinline))
 int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -314,13 +309,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   GC_register_my_thread(&gc_stack_base);
 #endif
 
-
-  // If precise
-#ifdef USE_PRECISE_GC
-  printf("%s:%d Setting up to use PRECISE mode for boehm\n", __FILE__, __LINE__ );
-  GC_new_proc((GC_mark_proc)object_mark_proc);
-#endif // USE_PRECISE_GC
-  
+ 
 #ifndef SCRAPING
 #define ALL_PREGCSTARTUPS_CALLS
 #include PREGCSTARTUP_INC_H
