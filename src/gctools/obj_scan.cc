@@ -392,10 +392,6 @@ GC_ms_entry * GC_signal_mark_stack_overflow(GC_ms_entry *msp);
   } \
 }
 
-mp::Mutex* global_mark_mutex = NULL;
-
-
-
 extern "C" {
 int global_scan_stamp = -1;
 
@@ -404,10 +400,6 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
                                        struct GC_ms_entry* msl,
                                        GC_word env)
 {
-  if (global_mark_mutex == NULL) {
-    global_mark_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
-  }
-  WITH_READ_WRITE_LOCK(*global_mark_mutex);
     // The client must have a valid header
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
   if (header._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
