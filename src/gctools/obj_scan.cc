@@ -534,7 +534,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
     const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
 #endif
     // Only mark the class fields if env == 0 
-    if (env) {
+    if (!env) {
       for (uintptr_t* addr = (uintptr_t*)client; pointer_bitmap; addr++, pointer_bitmap<<=1) {
         if ((intptr_t)pointer_bitmap < 0) {
 #ifdef DEBUG_POINTER_BITMAPS
@@ -587,8 +587,8 @@ struct GC_ms_entry* class_mark(GC_word addr,
         int work_to_do = stamp_layout.boehm._container_element_work;
         for ( size_t i=env; i<end; ++i, element_start += (stamp_layout.element_size)) {
           // THIS IS WHERE WE BREAK THE WORK INTO CHUNKS AND UPDATE ENV
-          printf("%s:%d:%s This is where I need to break work into chunks work_to_do= %d env = %lu\n", __FILE__, __LINE__, __FUNCTION__, work_to_do, env );
           if (work_to_do) {
+            printf("%s:%d:%s Marking element[%lu/%lu] addr=%p :  chunks work_to_do= %d env = %lu\n", __FILE__, __LINE__, __FUNCTION__, i, end, (void*)addr, work_to_do, env );
 #ifdef DEBUG_POINTER_BITMAPS
             gctools::Field_layout* field_layout_cur = container_layout.field_layout_start;
             gctools::Field_info* field_info_cur = container_info->field_info_ptr;
@@ -610,27 +610,31 @@ struct GC_ms_entry* class_mark(GC_word addr,
               }
             }
           } else {
-#if 1
             // Update work_done and return msp
-            msp++;
-            if ((GC_word)msp >= (GC_word)msl) {
-              msp = GC_signal_mark_stack_overflow(msp);
-            }
-            stolen_GC_ms_entry* stolen_msp = (stolen_GC_ms_entry*)msp;
-            stolen_msp->mse_start = (char*)addr;
-            size_t new_env = env+stamp_layout.boehm._container_element_work;
-            stolen_msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_kind,new_env);
-            printf("%s:%d Hacking the GC_ms_entry stack - pushing container back on stack with env %lu\n", __FILE__, __LINE__, new_env );
-#endif
+            if (i<end) {
+              msp++;
+              if ((GC_word)msp >= (GC_word)msl) {
+                msp = GC_signal_mark_stack_overflow(msp);
+              }
+              stolen_GC_ms_entry* stolen_msp = (stolen_GC_ms_entry*)msp;
+              stolen_msp->mse_start = (char*)addr;
+              size_t new_env = i; // env+stamp_layout.boehm._container_element_work;
+              stolen_msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_proc_index,new_env);
+              printf("%s:%d Hacking the GC_ms_entry stack - pushing container back on stack with global_container_proc_index: %d  env %lu\nj", __FILE__, __LINE__, gctools::global_container_proc_index, new_env );
             // msp = GC_mark_and_push((void*)client,msp,msl,(void**)NULL);
             // printf("%s:%d You need to update the amount of work you have done in env = %lu\n", __FILE__, __LINE__, env );
-            return msp;
+            }
+            goto DONE;
           }
           --work_to_do;
         }
       }
     }
     // Zero out work_done
+  DONE:
+#ifdef DEBUG_POINTER_BITMAPS
+    printf("%s:%d:%s Leaving addr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr);
+#endif    
     return msp;
   }
 

@@ -26,6 +26,7 @@
 namespace gctools {
 
 int              global_cons_kind;
+int              global_container_proc_index;
 int              global_container_kind;
 size_t           global_stamp_max;
 Stamp_info*       global_stamp_info;
@@ -356,6 +357,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   }
 
   // Use boehm in the precise GC mode
+  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)class_container_mark);
 #if 0
   uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
@@ -365,7 +367,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   uintptr_t lisp_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
   uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
   uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
-  uintptr_t container_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)class_container_mark),0),0,1); // GC_DS_LENGTH, 1, 1);
+  uintptr_t container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1); // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
 #endif
   uintptr_t atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
   global_container_kind = container_kind;
@@ -422,7 +424,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
           local_stamp_layout[cur_stamp].boehm._container_pointer_count = pointer_count;
           // Calculate the number of elements worth of pointers are processed with each
           // call to the marking procedure
-          int container_element_work = pointer_count ? (GC_PROC_BYTES/8)/pointer_count : 0;
+          int container_element_work = pointer_count ? (GC_PROC_BYTES/8/2)/pointer_count : 0;
           local_stamp_layout[cur_stamp].boehm._container_element_work = container_element_work;
           if ( class_bitmap && !container_bitmap) {
             // There are no pointers in the container part

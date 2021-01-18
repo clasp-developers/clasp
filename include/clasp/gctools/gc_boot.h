@@ -58,6 +58,7 @@ enum Data_types {
 
 extern int global_cons_kind;
 extern int global_container_kind;
+extern int global_container_proc_index;
 
 inline void dump_data_types(FILE* fout, const std::string& indent)
 {
