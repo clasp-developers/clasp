@@ -356,13 +356,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   }
 
   // Use boehm in the precise GC mode
-#if 1
+#if 0
   uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
   uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   uintptr_t container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
 #else
-  uintptr_t lisp_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
+  uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
   uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
   uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
   uintptr_t container_kind = GC_I_NORMAL; // GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)class_container_mark),0),0,1); // GC_DS_LENGTH, 1, 1);

@@ -17,9 +17,12 @@
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
-//#define DEBUG_OBJECT_SCAN 1
+#define DEBUG_OBJECT_SCAN 1
 //#define DEBUG_POINTER_BITMAPS 1
 
+#if defined(DEBUG_OBJECT_SCAN) && !defined(DEBUG_GUARD_VALIDATE)
+# error "DEBUG_OBJECT_SCAN needs DEBUG_GUARD_VALIDATE to be turned on"
+#endif
 
 
 
@@ -379,8 +382,9 @@ typedef struct stolen_GC_ms_entry {
                         /* Descriptor; low order two bits are tags,     */
                         /* as described in gc_mark.h.                   */
 } mse;
-
+extern "C" {
 GC_ms_entry * GC_signal_mark_stack_overflow(GC_ms_entry *msp);
+};
 
 #define MAYBE_MARK(taggedP) { \
   gctools::Tagged tagged_obj = (gctools::Tagged)(core::T_O*)*taggedP; \
@@ -423,21 +427,23 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
   const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
   int num_fields = stamp_layout.number_of_fields;
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-  for ( int i=0; i<num_fields; ++i ) {
-    gctools::Tagged* taggedP = (gctools::Tagged*)((const char*)client + field_layout_cur->field_offset);
+  if (field_layout_cur) {
+    for ( int i=0; i<num_fields; ++i ) {
+      gctools::Tagged* taggedP = (gctools::Tagged*)((const char*)client + field_layout_cur->field_offset);
 #ifdef DEBUG_OBJECT_SCAN
-    if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
-      printf("%s:%d [%d]   offset %zu %s  taggedP -> %p\n", __FILE__, __LINE__, i, field_layout_cur->field_offset, field_info_cur->field_name, *(void**)taggedP);
-    }
+      if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
+        printf("%s:%d [%d]   offset %zu %s  taggedP -> %p\n", __FILE__, __LINE__, i, field_layout_cur->field_offset, field_info_cur->field_name, *(void**)taggedP);
+      }
 #endif
 #ifdef DEBUG_GUARD_VALIDATE
-    if (field_info_cur->data_type==gctools::SMART_PTR_OFFSET) {
-      ENSURE_VALID_OBJECT((core::T_O*)taggedP);
-    }
-    ++field_info_cur;
+      if (field_info_cur->data_type==gctools::SMART_PTR_OFFSET) {
+        ENSURE_VALID_OBJECT((core::T_O*)taggedP);
+      }
+      ++field_info_cur;
 #endif
-    MAYBE_MARK(taggedP);
-    ++field_layout_cur;
+      MAYBE_MARK(taggedP);
+      ++field_layout_cur;
+    }
   }
   return msp;
 }
@@ -504,6 +510,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
                                      struct GC_ms_entry* msl,
                                      GC_word env)
   {
+    printf("%s:%d:%s   addr = %p   env = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr, env );
     // The client must have a valid header
     const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>((void*)addr);
     if (header._stamp_wtag_mtag._value == 0 ) return msp;
@@ -600,14 +607,16 @@ struct GC_ms_entry* class_mark(GC_word addr,
               }
             }
           } else {
-#if 0            
+#if 1
+            printf("%s:%d Hacking the GC_ms_entry stack\n", __FILE__, __LINE__ );
             // Update work_done and return msp
             msp++;
             if ((GC_word)msp >= (GC_word)msl) {
               msp = GC_signal_mark_stack_overflow(msp);
             }
-            msp->mse_start = (void*)addr;
-            msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_kind,env+stamp_layout.boehm._container_element_work);
+            stolen_GC_ms_entry* stolen_msp = (stolen_GC_ms_entry*)msp;
+            stolen_msp->mse_start = (char*)addr;
+            stolen_msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_kind,env+stamp_layout.boehm._container_element_work);
 #endif
             // msp = GC_mark_and_push((void*)client,msp,msl,(void**)NULL);
             // printf("%s:%d You need to update the amount of work you have done in env = %lu\n", __FILE__, __LINE__, env );
