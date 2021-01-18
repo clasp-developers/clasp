@@ -18,10 +18,11 @@
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
 //#define DEBUG_OBJECT_SCAN 1
+#define DEBUG_CONTAINER_SCAN 1
 //#define DEBUG_POINTER_BITMAPS 1
 
-#if defined(DEBUG_OBJECT_SCAN) && !defined(DEBUG_GUARD_VALIDATE)
-# error "DEBUG_OBJECT_SCAN needs DEBUG_GUARD_VALIDATE to be turned on"
+#if (defined(DEBUG_OBJECT_SCAN)||defined(DEBUG_CONTAINER_SCAN)) && !defined(DEBUG_GUARD_VALIDATE)
+# error "DEBUG_OBJECT_SCAN || DEBUG_CONTAINER_SCAN needs DEBUG_GUARD_VALIDATE to be turned on"
 #endif
 
 
@@ -510,7 +511,6 @@ struct GC_ms_entry* class_mark(GC_word addr,
                                      struct GC_ms_entry* msl,
                                      GC_word env)
   {
-    printf("%s:%d:%s   addr = %p   env = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)addr, env );
     // The client must have a valid header
     const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>((void*)addr);
     if (header._stamp_wtag_mtag._value == 0 ) return msp;
@@ -518,10 +518,10 @@ struct GC_ms_entry* class_mark(GC_word addr,
     void* client = (char*)addr + sizeof(gctools::Header_s);
     const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
     size_t stamp_index = header.stamp_();
-#ifdef DEBUG_OBJECT_SCAN
+#ifdef DEBUG_CONTAINER_SCAN
     const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
     if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
-      printf("%s:%d:%s  addr = %p client = %p stamp = %lu %s\n", __FILE__, __LINE__,__FUNCTION__, (void*)addr, client, stamp_index, stamp_info.name );
+      printf("%s:%d:%s  addr = %p env = %lu client = %p stamp = %lu %s\n", __FILE__, __LINE__,__FUNCTION__, (void*)addr, env, client, stamp_index, stamp_info.name );
     }
     const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
@@ -553,11 +553,14 @@ struct GC_ms_entry* class_mark(GC_word addr,
     }
     // Now mark the container pointers
     const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-#ifdef DEBUG_OBJECT_SCAN
+#ifdef DEBUG_POINTER_BITMAPS
     gctools::Container_info& container_info = *stamp_info.container_info_ptr;
 #endif
     size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
     size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
+#ifdef DEBUG_CONTAINER_SCAN
+    printf("%s:%d Container size = %lu\n", __FILE__, __LINE__, end );
+#endif
     // Use new way with pointer bitmaps
     uintptr_t start_pointer_bitmap = stamp_layout.boehm._container_bitmap;
     if (start_pointer_bitmap) {
@@ -608,7 +611,6 @@ struct GC_ms_entry* class_mark(GC_word addr,
             }
           } else {
 #if 1
-            printf("%s:%d Hacking the GC_ms_entry stack\n", __FILE__, __LINE__ );
             // Update work_done and return msp
             msp++;
             if ((GC_word)msp >= (GC_word)msl) {
@@ -616,7 +618,9 @@ struct GC_ms_entry* class_mark(GC_word addr,
             }
             stolen_GC_ms_entry* stolen_msp = (stolen_GC_ms_entry*)msp;
             stolen_msp->mse_start = (char*)addr;
-            stolen_msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_kind,env+stamp_layout.boehm._container_element_work);
+            size_t new_env = env+stamp_layout.boehm._container_element_work;
+            stolen_msp->mse_descr.w = GC_MAKE_PROC(gctools::global_container_kind,new_env);
+            printf("%s:%d Hacking the GC_ms_entry stack - pushing container back on stack with env %lu\n", __FILE__, __LINE__, new_env );
 #endif
             // msp = GC_mark_and_push((void*)client,msp,msl,(void**)NULL);
             // printf("%s:%d You need to update the amount of work you have done in env = %lu\n", __FILE__, __LINE__, env );
