@@ -417,7 +417,10 @@ void initialize_signals(int clasp_signal) {
 #ifdef SIGVTALRM
   INIT_SIGNAL(SIGVTALRM, (SA_NODEFER | SA_RESTART), handle_signal_now);
 #endif
+  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
+#if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
   INIT_SIGNAL(SIGXCPU, (SA_NODEFER | SA_RESTART), handle_signal_now);
+#endif
   INIT_SIGNAL(SIGXFSZ, (SA_NODEFER | SA_RESTART), handle_signal_now);
   
   // FIXME: Move?
@@ -514,7 +517,10 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGTTOU",KeywordPkg), core::clasp_make_fixnum(SIGTTOU)), alist);
 #endif
 #ifdef SIGXCPU
+  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
+# if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXCPU",KeywordPkg), core::clasp_make_fixnum(SIGXCPU)), alist);
+# endif
 #endif
 #ifdef SIGXFSZ
   alist = core::Cons_O::create(core::Cons_O::create(_lisp->intern("SIGXFSZ",KeywordPkg), core::clasp_make_fixnum(SIGXFSZ)), alist);
@@ -633,7 +639,10 @@ void initialize_unix_signal_handlers() {
         ADD_SIGNAL( SIGIO, "SIGIO", _Nil<core::T_O>());
 #endif
 #ifdef SIGXCPU
+  // SIGXCPU is used by boehm to stop threads - this causes problems with boehm in the precise mode
+# if !(defined(USE_BOEHM) && defined(USE_PRECISE_GC))
         ADD_SIGNAL( SIGXCPU, "SIGXCPU", _Nil<core::T_O>());
+# endif
 #endif
 #ifdef SIGXFSZ
         ADD_SIGNAL( SIGXFSZ, "SIGXFSZ", _Nil<core::T_O>());
