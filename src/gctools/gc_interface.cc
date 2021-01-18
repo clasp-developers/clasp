@@ -603,7 +603,7 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
     printf("%s:%d For symbol %s there is a mismatch in the package desired %s and the one retrieved %s\n", __FILE__, __LINE__, full_name.c_str(), package_part.c_str(), store._PackageName.c_str());
     SIMPLE_ERROR(BF("Mismatch of package when setting a class symbol"));
   }
-//  printf("%s:%d Setting static_class_symbol to %s\n", __FILE__, __LINE__, _safe_rep_(store._Symbol).c_str());
+  //  printf("%s:%d Setting static_class_symbol to %s\n", __FILE__, __LINE__, _safe_rep_(store._Symbol).c_str());
   TheClass::set_static_class_symbol(store._Symbol);
 }
 

@@ -17,7 +17,7 @@
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
-#define DEBUG_OBJECT_SCAN 1
+//#define DEBUG_OBJECT_SCAN 1
 //#define DEBUG_POINTER_BITMAPS 1
 
 #if defined(DEBUG_OBJECT_SCAN) && !defined(DEBUG_GUARD_VALIDATE)

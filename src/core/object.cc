@@ -597,16 +597,17 @@ void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_s
     _lisp->_Roots.staticClassSymbolsUnshiftedNowhere.resize(unstamp+1);
   }
   size_t unstamp = header.nowhere_stamp();
-  // printf("%s:%d:%s unstamp: %lu\n", __FILE__, __LINE__, __FUNCTION__, unstamp);
   _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp] = value;
+  //  printf("%s:%d:%s unstamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _rep_(value).c_str(), &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp]);
 }
 Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag header)
 {
   ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(header.unshifted_stamp()));
   size_t unstamp = header.nowhere_stamp();
   T_sp value = _lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp];
-//  printf("%s:%d:%s unstamp: %lu  value: %s\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _safe_rep_(value).c_str());
-  return value;
+  //  printf("%s:%d:%s unstamp: %lu  value: %s@%p\n", __FILE__, __LINE__, __FUNCTION__, unstamp, _rep_(value).c_str(), &_lisp->_Roots.staticClassSymbolsUnshiftedNowhere[unstamp]);
+  Symbol_sp svalue = gc::As<Symbol_sp>(value);
+  return svalue;
 }
 
 
