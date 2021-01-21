@@ -30,7 +30,7 @@
            ;; we can't deal with. Unlikely to occur in practice, but we want
            ;; to ensure we actually look up the class name if that's what was
            ;; in the original form.
-           ;; BUT: Maybe the usaul invalidation should take care of that and
+           ;; BUT: Maybe the usual invalidation should take care of that and
            ;; we needn't worry? Not sure.
            (compute-constructor-for-class
             class `(find-class ',class-designator) keys)

@@ -179,19 +179,27 @@
 ;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
 
+;; Returns true iff the instance was updated.
+(defun maybe-update-instance (instance)
+  (when (and (core:instancep instance)
+             (si:sl-boundp (si:instance-sig instance)))
+    (with-early-accessors (+standard-class-slots+)
+      (let ((instance-stamp (core:instance-stamp instance))
+            (class-stamp (core:class-stamp-for-instances
+                          (core:instance-class instance))))
+        (unless (= instance-stamp class-stamp)
+          (gf-log "   instance-stamp matches that of class -> %s%N"
+                  (= instance-stamp class-stamp))
+          (gf-log "(core:instance-stamp i) -> %s%N" instance-stamp)
+          (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N"
+                  class-stamp)
+          (update-instance instance)
+          t)))))
+
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
-    (dolist (i arguments)
-      (when (and (core:instancep i)
-                 (si:sl-boundp (si:instance-sig i)))
-        (clos::with-early-accessors (+standard-class-slots+)
-          (unless (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i)))
-            (gf-log "   instance-stamp matches that of class -> %s%N"  (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
-            (gf-log "(core:instance-stamp i) -> %s%N" (core:instance-stamp i))
-            (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N" (core:class-stamp-for-instances (core:instance-class i)))
-            (setf invalid-instance t)
-            (update-instance i)))))
-    invalid-instance))
+    (dolist (i arguments invalid-instance)
+      (setf invalid-instance (or (maybe-update-instance i) invalid-instance)))))
 
 (defun applicable-method-p (method specializers)
   (loop for spec in (method-specializers method)

@@ -170,8 +170,6 @@ cleavir_file_list = [
     "src/lisp/kernel/contrib/Cleavir/AST-transformations/replace",
     "src/lisp/kernel/contrib/Cleavir/AST-transformations/hoist-load-time-value",
     "src/lisp/kernel/contrib/Cleavir/Environment/packages",
-    "src/lisp/kernel/contrib/Cleavir/Environment/conditions",
-    "src/lisp/kernel/contrib/Cleavir/Environment/condition-reporters-english",
     "src/lisp/kernel/contrib/Cleavir/Environment/query",
     "src/lisp/kernel/contrib/Cleavir/Environment/augmentation-functions",
     "src/lisp/kernel/contrib/Cleavir/Environment/default-augmentation-classes",

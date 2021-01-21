@@ -7,7 +7,7 @@ This is heavily based on SBCL's CTOR mechanism, which does the same thing. This 
 make-instance
 -------------
 
-In standard Lisp, the only functions of this sort are `make-instance` and `allocate-instance`. `make-instance` is the main target of this implementation at the moment, because large parts of its action can be optimized greatly in this case:
+`make-instance` is the main target of this implementation at the moment. Large parts of its action can be optimized greatly in this case:
 
  * Keywords can be checked and defaulted ahead of time, rather than going through the whole 7.1.2 and 7.1.3 processes.
  * The class is known, so we don't have to call `allocate-instance` either.
@@ -42,6 +42,20 @@ CLOS implementation integration
 -------------------------------
 
 This optimization is unfortunately not portable, and hooks into Clasp's CLOS implementation. These hooks are marked with `#+static-gfs` conditionalization. There's one on `(setf find-class)` and one in the inheritance finalizer.
+
+reinitialize-instance
+---------------------
+
+Similar code is in place for `reinitialize-instance`. This is not "static" in the same sense, as we must do different things depending on the class of the object being reinitialized. But it is similar in that we can generate code specific to each class.
+
+The keyword parsing and code generation are more or less the same as with constructors, except that the generated shared-initialize code essentially has a `slot-names` argument of `nil` as per how `reinitialize-instance` works.
+
+For each list of initarg keywords encountered, a "reinitializer" is generated at load time. The "reinitializer" is a funcallable instance that's a bit like a special generic function. It's not actually a `generic-function`, but it dispatches based on the object in the same way, and has a special call history. When a miss occurs a new dispatch clause is generated. The call history is invalidated when classes are redefined or when new methods on `reinitialize-instance` or `shared-initialize` are defined, similarly to actual generic functions.
+
+change-class
+------------
+
+The `change-class` optimization is essentially a combination of the `make-instance` and `reinitialize-instance` cases. Each combination of a destination class designator and list of initarg keywords generates a "class changer". The class changer is a pseudo generic function similar to a reinitializer: it dispatches on the object being `change-class`ed only.
 
 Future
 ------

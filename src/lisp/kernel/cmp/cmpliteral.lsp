@@ -335,8 +335,7 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (let ((bn-str (prin1-to-base-string bignum)))
-    (add-creator "ltvc_make_next_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
+  (add-creator "ltvc_make_next_bignum" index bignum bignum))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -530,6 +529,7 @@ rewrite the slot in the literal table to store a closure."
     ((fixnump arg) (core:ltvc-write-size-t arg stream byte-index))
     ((characterp arg) (core:ltvc-write-char arg stream byte-index))
     ((stringp arg) (core:ltvc-write-string arg stream byte-index))
+    ((core:bignump arg) (core:ltvc-write-bignum arg stream byte-index))
     ((immediate-datum-p arg)
      (core:ltvc-write-object #\i (immediate-datum-value arg) stream byte-index))
     ((single-float-datum-p arg) (core:ltvc-write-float (single-float-datum-value arg) stream byte-index))
@@ -1069,6 +1069,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (set-c++-info 'cmp:%float% "float" "float")
   (set-c++-info 'cmp:%double% "double" "double")
   (set-c++-info 'cmp:%uintptr_t% "uintptr_t" "size_t")
+  (set-c++-info 'cmp::%bignum% "T_O*" "bignum")
   (set-c++-info :unknown "UNKNOWN" "UNKNOWN")
   )
 

@@ -64,7 +64,7 @@ void ltvc_setf_row_major_aref(gctools::GCRootsInModule* holder, core::T_O* array
 void ltvc_setf_gethash(gctools::GCRootsInModule* holder,core::T_O* hash_table_t,core::T_O* key_index_t,core::T_O* value_index_t );
 LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t index, int64_t val);
 LtvcReturn ltvc_make_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t);
-LtvcReturn ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t);
+LtvcReturn ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum);
 LtvcReturn ltvc_make_bitvector(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bitvector_string_t);
 LtvcReturn ltvc_make_symbol(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* name_t,core::T_O* package_t );
 LtvcReturn ltvc_make_character(gctools::GCRootsInModule* holder, char tag, size_t index, uintptr_t val);

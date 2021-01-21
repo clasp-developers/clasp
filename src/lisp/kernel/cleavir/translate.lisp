@@ -21,10 +21,8 @@
     (declare (ignore reqargs optargs rest-var keyargs aok aux))
     (or key-flag varest-p)))
 
-;; Assume that functions with no encloses and no local calls are
-;; toplevel and need a XEP.
 (defun xep-needed-p (function)
-  (or (not (cleavir-set:empty-set-p (cleavir-bir:encloses function)))
+  (or (cleavir-bir:enclose function)
       ;; We need a XEP for more involved lambda lists.
       (lambda-list-too-hairy-p (cleavir-bir:lambda-list function))
       ;; or for mv-calls that might need to signal an error.
@@ -35,8 +33,9 @@
                 (cleavir-bir:lambda-list function))
              (declare (ignore opt))
              (or (plusp (car req)) (not rest))))
-      ;; Else it would have been removed or deleted as it is
-      ;; unreferenced otherwise.
+      ;; Assume that a function with no enclose and no local calls is
+      ;; toplevel and needs an XEP. Else it would have been removed or
+      ;; deleted as it is unreferenced otherwise.
       (cleavir-set:empty-set-p (cleavir-bir:local-calls function))))
 
 (defun allocate-llvm-function-info (function &key (linkage 'llvm-sys:internal-linkage))
@@ -1144,10 +1143,8 @@
           ;; Branch to the start block.
           (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
           ;; Lay out blocks.
-          (cleavir-bir::map-reachable-iblocks
-           (lambda (ib)
-             (layout-iblock ib abi))
-           (cleavir-bir:start ir))))))
+          (cleavir-bir:do-iblocks (ib ir)
+            (layout-iblock ib abi))))))
   ;; Finish up by jumping from the entry block to the body block
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:irc-br body-block))
@@ -1277,20 +1274,19 @@
              (compile-form form *clasp-env*))))))
 
 (defun layout-module (module abi &key (linkage 'llvm-sys:internal-linkage))
-  (let ((functions (cleavir-bir:functions module)))
-    ;; Create llvm IR functions for each BIR function.
-    (cleavir-set:doset (function functions)
-      ;; Assign IDs to unwind destinations.
-      (let ((i 0))
-        (cleavir-set:doset (entrance (cleavir-bir:entrances function))
-          (setf (gethash entrance *unwind-ids*) i)
-          (incf i)))
-      (setf (gethash function *function-info*)
-            (allocate-llvm-function-info function :linkage linkage)))
-    (allocate-module-constants module)
-    (cleavir-set:doset (function functions)
-      (layout-procedure function (get-or-create-lambda-name function)
-                        abi :linkage linkage))))
+  ;; Create llvm IR functions for each BIR function.
+  (cleavir-bir:do-functions (function module)
+    ;; Assign IDs to unwind destinations.
+    (let ((i 0))
+      (cleavir-set:doset (entrance (cleavir-bir:entrances function))
+                         (setf (gethash entrance *unwind-ids*) i)
+                         (incf i)))
+    (setf (gethash function *function-info*)
+          (allocate-llvm-function-info function :linkage linkage)))
+  (allocate-module-constants module)
+  (cleavir-bir:do-functions (function module)
+    (layout-procedure function (get-or-create-lambda-name function)
+                      abi :linkage linkage)))
 
 (defun translate (bir &key abi linkage)
   (let* ((*unwind-ids* (make-hash-table :test #'eq))
@@ -1329,17 +1325,17 @@ Does not hoist.
 COMPILE might call this with an environment in ENV.
 COMPILE-FILE will use the default *clasp-env*."
   (handler-bind
-      ((cleavir-env:no-variable-info
+      ((cleavir-cst-to-ast:no-variable-info
          (lambda (condition)
            (cmp:warn-undefined-global-variable
-            (origin-spi (cleavir-env:origin condition))
-            (cleavir-environment:name condition))
+            (origin-spi (cleavir-conditions:origin condition))
+            (cleavir-cst-to-ast:name condition))
            (invoke-restart 'cleavir-cst-to-ast:consider-special)))
-       (cleavir-env:no-function-info
+       (cleavir-cst-to-ast:no-function-info
          (lambda (condition)
            (cmp:register-global-function-ref
-            (cleavir-environment:name condition)
-            (origin-spi (cleavir-env:origin condition)))
+            (cleavir-cst-to-ast:name condition)
+            (origin-spi (cleavir-conditions:origin condition)))
            (invoke-restart 'cleavir-cst-to-ast:consider-global)))
        (cleavir-cst-to-ast:compiler-macro-expansion-error
          (lambda (condition)

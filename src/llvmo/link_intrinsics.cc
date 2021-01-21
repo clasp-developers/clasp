@@ -345,10 +345,9 @@ LtvcReturn ltvc_make_fixnum(gctools::GCRootsInModule* holder, char tag, size_t i
   NO_UNWIND_END();
 }
 
-LtvcReturn ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* bignum_string_t)
+LtvcReturn ltvc_make_next_bignum(gctools::GCRootsInModule* holder, char tag, size_t index, T_O* bignum)
 {NO_UNWIND_BEGIN();
-  core::SimpleBaseString_sp bignum_string = gctools::As<core::SimpleBaseString_sp>(core::T_sp(bignum_string_t));
-  core::T_sp val = core::Bignum_O::make(bignum_string->get_std_string());
+  core::T_sp val = core::T_sp(bignum);
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
