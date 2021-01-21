@@ -41,7 +41,6 @@ class IndirectVariadicMethoid : public core::BuiltinClosure_O {
 };
 };
 
-#if 1
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
@@ -107,12 +106,6 @@ public:
 };
 
 };
-#else
-namespace clbind {
-#include <clasp/clbind/clbind_methoids.h>
-#include <clasp/clbind/clbind_static_members.h>
-};
-#endif
 
 
 template <typename Pols, typename OT, typename MethodPtrType>

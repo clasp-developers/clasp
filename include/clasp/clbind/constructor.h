@@ -173,7 +173,6 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 
-#if 1
 template <typename Policies, typename Pointer, typename ConstructType ,typename... ARGS >
 class VariadicConstructorFunction_O < Policies, Pointer, ConstructType, constructor<ARGS...> > : public core::BuiltinClosure_O {
 public:
@@ -202,9 +201,6 @@ public:
     return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
   }
 };
-#else
-#include <clasp/clbind/clbind_constructor_functoids.h>
-#endif
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>
