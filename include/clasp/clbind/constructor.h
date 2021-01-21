@@ -166,9 +166,6 @@ namespace clbind {
 
 template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O;
 
-#if 0
-#include <clasp/clbind/clbind_constructor_functoids.h>
-#else
 template <typename Pols, typename Pointer, typename T ,typename... ARGS >
 class VariadicConstructorFunction_O
 < Pols, Pointer, T, constructor<ARGS...> >
@@ -204,8 +201,6 @@ public:
     return LCC_RETURN(retval.raw_(),1);
   }
 };
-
-#endif
 
 };
 
