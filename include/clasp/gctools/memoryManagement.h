@@ -35,14 +35,12 @@ THE SOFTWARE.
 #include <clasp/gctools/hardErrors.h>
 
 #if  defined(USE_BOEHM)
-#ifdef CLASP_THREADS
-  #define GC_THREADS
-#endif
-#include <gc/gc.h>
- #ifdef USE_PRECISE_GC
-  #include <gc/gc_mark.h>
-  #include <gc/gc_inline.h>
- #endif // USE_PRECISE_GC
+# ifdef CLASP_THREADS
+#  define GC_THREADS
+# endif
+# include <gc/gc.h>
+# include <gc/gc_mark.h>
+# include <gc/gc_inline.h>
 #endif // USE_BOEHM
 
 #ifdef USE_MPS
@@ -199,10 +197,12 @@ namespace gctools {
 };
 
 namespace gctools {
-  constexpr size_t Alignment() {
-    return CLASP_ALIGNMENT;
-  };
-  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+constexpr size_t Alignment() {
+  return CLASP_ALIGNMENT;
+};
+inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+inline constexpr uintptr_t AlignUp(uintptr_t size, size_t alignment) { return (size + alignment - 1) & ~(alignment -1); };
+inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return size & ~(alignment -1); };
 
 };
 

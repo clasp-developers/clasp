@@ -4675,11 +4675,7 @@ public:
 public:
   llvm::DataLayout* _DataLayout;
   llvm::orc::ExecutionSession *_ES;
-#ifdef USE_JITLINKER
-  llvm::org::JITLinker* _LinkLayer;
-#else
   llvm::orc::RTDyldObjectLinkingLayer *_LinkLayer;
-#endif
   llvm::orc::ConcurrentIRCompiler *_Compiler;
   llvm::orc::IRCompileLayer *_CompileLayer;
 };
@@ -4730,62 +4726,6 @@ public:
     ;
 
 
-template <>
-struct gctools::GCInfo<llvmo::ObjectFile_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-
-// ObjectFile_O
-namespace llvmo {
-FORWARD(ObjectFile);
-class ObjectFile_O : public core::CxxObject_O {
-  LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", core::CxxObject_O);
-public:
-  void*         _Start;
-  size_t        _Size;
-  size_t        _StartupID;
-  JITDylib_sp   _JITDylib;
-  std::string   _FasoName;
-  size_t        _FasoIndex;
-  void*         _text_segment_start;
-  size_t        _text_segment_size;
-  size_t        _text_segment_SectionID;
-  void*         _stackmap_start;
-  size_t        _stackmap_size;
-  gctools::GCRootsInModule* _GCRootsInModule;
-public:
-  static ObjectFile_sp create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-  ObjectFile_O(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _Start(start), _Size(size), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex) {};
-  ~ObjectFile_O();
-}; // ObjectFile_O class def
-}; // llvmo
-/* from_object translators */
-
-#if 0
-namespace translate {
-template <>
-struct from_object<llvm::object::ObjectFile *, std::true_type> {
-  typedef llvm::object::ObjectFile *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ObjectFile_sp>(object)->wrappedPtr()){};
-};
-
-};
-
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::object::ObjectFile *> {
-  static core::T_sp convert(llvm::object::ObjectFile *ptr) {
-    return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
-  }
-};
-}; // namespace llvmo - ObjectFile_O done
-#endif
 
 
 // SectionedAddress_O

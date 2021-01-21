@@ -21,6 +21,11 @@
 ;;;
 (setq *echo-repl-read* nil)
 
+;;; ------------------------------------------------------------
+;;; Turn on printing messages as object files are converted to runnable code
+;;;
+;;(setq llvm-sys::*debug-object-files* t)
+
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)
 

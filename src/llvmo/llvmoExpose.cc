@@ -3,34 +3,13 @@
 
 */
 
-/*
-Copyright (c) 2014, Christian E. Schafmeister
-
-CLASP is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-See directory 'clasp/licenses' for full details.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-/* -^- */
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <iomanip>
 #include <clasp/core/foundation.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -3681,16 +3660,6 @@ using namespace llvm::orc;
 //#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
 //#define DUMP_OBJECT_FILES 1
 
-std::atomic<size_t> fileNum;
-void dumpObjectFile(size_t num, const char* start, size_t size) {
-  std::stringstream filename;
-  filename << "object-file-" << num << ".o";
-  std::ofstream fout;
-  fout.open(filename.str(), std::ios::out | std::ios::binary );
-  fout.write(start,size);
-  fout.close();
-}
-
 
 ////////////////////////////////////////////////////////////
 //
@@ -3789,6 +3758,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,constant_index);
 
 namespace llvmo {
 
+using namespace llvm;
 
 #if 0
 CL_DEFUN core::T_sp llvm_sys__vmmap()
@@ -3800,157 +3770,7 @@ CL_DEFUN core::T_sp llvm_sys__vmmap()
 
 
 SYMBOL_EXPORT_SC_(LlvmoPkg,library);
-};
     
-namespace llvmo {
-
-class ClaspSectionMemoryManager : public SectionMemoryManager {
-
-  uint8_t* allocateCodeSection( uintptr_t Size, unsigned Alignment,
-                                unsigned SectionID,
-                                StringRef SectionName ) {
-    uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
-    my_thread->_text_segment_start = (void*)ptr;
-    my_thread->_text_segment_size = Size;
-    my_thread->_text_segment_SectionID = SectionID;
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
-    }
-    return ptr;
-  }
-
-#ifdef _TARGET_OS_DARWIN    
-#define STACKMAPS_NAME "__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
-  uint8_t* allocateDataSection( uintptr_t Size, unsigned Alignment,
-                                unsigned SectionID,
-                                StringRef SectionName,
-                                bool isReadOnly) {
-    uint8_t* ptr = this->SectionMemoryManager::allocateDataSection(Size,Alignment,SectionID,SectionName,isReadOnly);
-//    printf("%s:%d:%s allocateDataSection: %s size: %lu ptr -> %p\n", __FILE__, __LINE__, __FUNCTION__, SectionName.str().c_str(), Size, ptr);
-    if (SectionName.str() == STACKMAPS_NAME) {
-      my_thread->_stackmap = (uintptr_t)ptr;
-      my_thread->_stackmap_size = (size_t)Size;
-#if 0
-      printf("%s:%d recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n" ,
-             __FILE__, __LINE__,
-             Size , Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr );
-#endif
-      LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
-          Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
-    }
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      core::write_bf_stream(BF("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
-    }
-    return ptr;
-  }
-
-  void 	notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
-//    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
-#if 0
-      // DONT DELETE DONT DELETE DONT DELETE
-      // This is trying to use the gdb jit interface described here.
-      // https://v8.dev/docs/gdb-jit
-      // https://llvm.org/docs/DebuggingJITedCode.html
-      // https://doc.ecoscentric.com/gnutools/doc/gdb/JIT-Interface.html
-      // Example: https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=blob;f=gdb/testsuite/gdb.base/jit-main.c
-      // Simple example: https://stackoverflow.com/questions/20046943/gdb-jit-interface-simpliest-example
-      //
-      // What I don't like about this is that the ObjectFile is going to be destroyed by the caller
-      // and so I make a copy of the ObjectFile here.
-      //
-    {
-      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-#if 1
-          // Copy the ObjectFile - I can't be sure that it will persist once this callback returns
-      void* obj_file_copy = (void*)malloc(mem.getBufferSize());
-      memcpy( (void*)obj_file_copy,mem.getBufferStart(),mem.getBufferSize());
-      register_object_file_with_gdb(obj_file_copy,mem.getBufferSize());
-#else
-          // Try using the ObjectFile directly - see the comment above about it persisting
-      register_object_file_with_gdb((void*)mem.getBufferStart(),mem.getBufferSize());
-#endif
-    }
-#endif
-#if 0
-    uintptr_t stackmap = 0;
-    size_t stackmap_size = 0;
-    for ( auto section : Obj.sections() ) {
-      llvm::StringRef name;
-      section.getName(name);
-//      printf("%s:%d name: %s\n", __FILE__, __LINE__, name.str().c_str());
-      if (name=="__llvm_stackmaps") {
-        auto reloc = section.getRelocatedSection();
-        stackmap = (uintptr_t)reloc->getAddress();
-        stackmap_size = (size_t)reloc->getSize();
-        printf("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size);
-      }
-    }
-    unsigned long section_size = 0;
-    void* p_section = NULL;
-#else
-    unsigned long section_size = 0;
-    void* p_section = NULL;
-#if 0
-    if (my_thread->_stackmap>0) {
-      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
-      section_size = my_thread->_stackmap_size;
-      my_thread->_stackmap = 0;
-    }
-#endif
-#endif
-    if (p_section!=nullptr) {
-      printf("%s:%d LLVM_STACKMAPS  p_section@%p section_size=%lu\n", __FILE__, __LINE__, (void*)p_section, section_size );
-//      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size);
-    } else {
-//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
-    }
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-      core::write_bf_stream( BF("%s:%d notifyObjectLoaded was invoked\n") % __FILE__ % __LINE__ );
-      core::write_bf_stream( BF("%s:%d      --> sizeof(ObjectFile) -> %lu  MemoryBufferRef start: %p   size: %lu\n") % __FILE__ % __LINE__ % sizeof(Obj) % (void*) mem.getBufferStart() % mem.getBufferSize() );
-      void** words = (void**)(&Obj);
-      core::write_bf_stream( BF("%s:%d      --> ObjectFile words:\n") % __FILE__% __LINE__ );
-      core::write_bf_stream( BF("%s:%d            0x00: %18p %18p\n") % __FILE__% __LINE__% words[0]% words[1]);
-      core::write_bf_stream( BF("%s:%d            0x10: %18p %18p\n") % __FILE__% __LINE__% words[2]% words[3]);
-      core::write_bf_stream( BF("%s:%d            0x20: %18p %18p\n") % __FILE__% __LINE__% words[4]% words[5]);
-    }
-    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
-      llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-      dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
-    }
-  }
-
-  bool finalizeMemory(std::string* ErrMsg = nullptr) {
-//    printf("%s:%d finalizeMemory\n", __FILE__, __LINE__);
-    LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
-    bool result = this->SectionMemoryManager::finalizeMemory(ErrMsg);
-    unsigned long section_size = 0;
-    void* p_section = NULL;
-    if (my_thread->_stackmap>0 && my_thread->_stackmap_size!=0) {
-      p_section = reinterpret_cast<void*>(my_thread->_stackmap);
-      section_size = my_thread->_stackmap_size;
-      LOG(BF("STACKMAP_LOG   p_section@%p section_size=%lu\n") % (void*)p_section % section_size );
-      core::register_llvm_stackmaps((uintptr_t)p_section,(uintptr_t)p_section+section_size,1);
-//      core::process_llvm_stackmaps();
-      my_thread->_stackmap = 0;
-    } else {
-//      printf("%s:%d     Could not find LLVM_STACKMAPS\n", __FILE__, __LINE__ );
-    }
-    return result;
-  }
-
-
-
-
-};
-
 
 
 
@@ -3987,13 +3807,13 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
-    Expected<StringRef> expected_symbol_name = symbol.getName();
+    llvm::Expected<llvm::StringRef> expected_symbol_name = symbol.getName();
     if (expected_symbol_name) {
       auto &symbol_name = *expected_symbol_name;
       uint64_t size = p.second;
       std::string name(symbol_name.data());
       uint64_t address = symbol.getValue();
-      Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
+      llvm::Expected<llvm::object::section_iterator> expected_section_iterator = symbol.getSection();
       if (expected_section_iterator) {
         const llvm::object::SectionRef& section_ref = **expected_section_iterator;
         uint64_t section_address = loaded_object_info.getSectionLoadAddress(section_ref);
@@ -4046,7 +3866,7 @@ CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
     That would require a lot of C++ header file rearrangement.
     The ctors should have been called by the executable so these ctors are unused.
 */
-CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
+CL_DEFUN void llvm_sys__remove_useless_global_ctors(llvmo::Module_sp module) {
   llvm::Module* M = module->wrappedPtr();
   llvm::GlobalVariable* ctors = M->getGlobalVariable("llvm.global_ctors");
   if (ctors) {
@@ -4376,9 +4196,6 @@ ClaspJIT_O::ClaspJIT_O() {
   
   this->_ES = new llvm::orc::ExecutionSession();
   auto GetMemMgr = []() { return llvm::make_unique<llvmo::ClaspSectionMemoryManager>(); };
-#ifdef USE_JITLINKER
-    #error "JITLinker support needed"
-#else
   this->_LinkLayer = new llvm::orc::RTDyldObjectLinkingLayer(*this->_ES,GetMemMgr);
   this->_LinkLayer->setProcessAllSections(true);
   this->_LinkLayer->setNotifyLoaded( [&] (VModuleKey, const llvm::object::ObjectFile &Obj, const llvm::RuntimeDyld::LoadedObjectInfo &loadedObjectInfo) {
@@ -4386,7 +4203,6 @@ ClaspJIT_O::ClaspJIT_O() {
                                       save_symbol_info(Obj,loadedObjectInfo);
                                       register_object_file_with_gdb(Obj,loadedObjectInfo);
                                     });
-#endif
   auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
   auto edl = JTMB->getDefaultDataLayoutForTarget();
   if (!edl) {
@@ -4473,6 +4289,7 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
 
 
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
+  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
   JITDylib& jdl = *dylib->wrappedPtr();
@@ -4483,6 +4300,7 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, T
 void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
+  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)of->_Start % of->_Size );
   llvm::StringRef sbuffer((const char*)of->_Start, of->_Size);
   llvm::StringRef name("buffer-name");
@@ -4568,22 +4386,6 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 };  
 
 }; // namespace llvmo
-
-namespace llvmo { // ObjectFile_O
-
-ObjectFile_sp ObjectFile_O::create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
-{
-  GC_ALLOCATE_VARIADIC(ObjectFile_O,of,start,size,startupID,jitdylib,fasoName,fasoIndex);
-  return of;
-}
-
-
-ObjectFile_O::~ObjectFile_O() {
-  printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
-  printf("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule );
-}
-
-}; // namespace llvmo, ObjectFile_O
 
 namespace llvmo { // SectionedAddress_O
 

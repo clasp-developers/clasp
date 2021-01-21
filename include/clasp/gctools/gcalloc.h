@@ -270,6 +270,31 @@ inline Header_s* do_boehm_normal_allocation(const Header_s::StampWtagMtag& the_h
   return header;
 };
 #endif
+
+#ifdef USE_BOEHM
+inline Header_s* do_boehm_normal_allocation_partial_scan(const Header_s::StampWtagMtag& the_header, size_t size, size_t scanSize) 
+{
+  RAII_DISABLE_INTERRUPTS();
+  size_t true_size = size;
+#ifdef DEBUG_GUARD
+  size_t tail_size = ((rand()%8)+1)*Alignment();
+  true_size += tail_size;
+#endif
+  size_t kind = ((sizeof(Header_s)+scanSize)*4)|GC_DS_LENGTH;
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(the_header.stamp(),true_size,kind,&kind));
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) Header_s(the_header,size,tail_size,true_size);
+#else
+  new (header) Header_s(the_header);
+#endif
+  return header;
+};
+#endif
+
+
+
 #ifdef USE_BOEHM
 inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
 {
@@ -666,6 +691,24 @@ When would I ever want the GC to automatically collect objects but not move them
       return sp;
 #endif
     };
+    template <typename... ARGS>
+    static smart_pointer_type allocate_in_appropriate_pool_kind_partial_scan( size_t scanSize, const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+#ifdef USE_BOEHM
+      Header_s* base = do_boehm_normal_allocation_partial_scan(the_header,size,scanSize);
+      pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
+      new (ptr) OT(std::forward<ARGS>(args)...);
+      smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
+      return sp;
+#endif
+#ifdef USE_MPS
+      mps_ap_t obj_ap = my_thread_allocation_points._non_moving_allocation_point;
+      globalMpsMetrics.nonMovingAllocations++;
+      smart_pointer_type sp =
+        general_mps_allocation<smart_pointer_type>(the_header,size,obj_ap,
+                                              std::forward<ARGS>(args)...);
+      return sp;
+#endif
+    };
     static void deallocate(OT* memory) {
       // Nothing needs to be done but this function needs to be here
       // so that the static analyzer has something to call
@@ -798,41 +841,33 @@ namespace gctools {
     };
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
+    static smart_pointer_type allocate_kind_partial_scan(size_t scanSize, const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind_partial_scan(scanSize,the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
       handle_all_queued_interrupts();
       return sp;
-#endif
-#ifdef USE_MPS
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(  the_header, size, std::forward<ARGS>(args)...);
+    };
+
+
+    template <typename... ARGS>
+      static smart_pointer_type allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
       handle_all_queued_interrupts();
       return sp;
-#endif
     };
-
+    
     template <typename... ARGS>
     static smart_pointer_type static_allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS &&... args) {
-#ifdef USE_BOEHM
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
       handle_all_queued_interrupts();
       return sp;
-#endif
-#ifdef USE_MPS
-      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
-      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      handle_all_queued_interrupts();
-      return sp;
-#endif
     };
 
 
@@ -927,7 +962,6 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
-
     static smart_pointer_type allocate_with_default_constructor() {
       return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_StampWtagMtag);
     }
@@ -945,6 +979,7 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
     }
 
+
     template <typename... ARGS>
     static smart_pointer_type allocate_container_null_terminated_string( bool static_container_p,
                                                                          size_t length, ARGS &&... args) {
@@ -957,6 +992,21 @@ namespace gctools {
         return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag, size, length,
                                                     std::forward<ARGS>(args)...);
     }
+
+
+            /*! Allocate enough space for capacity elements, but set the length to length */
+
+    // Allocates an object with proper header and everything.
+    // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
+    // ends up passing the ... to the SimpleVector_O constructor.
+    template <typename... ARGS>
+    static smart_pointer_type allocate_container_partial_scan(size_t dataScanSize, int64_t length, ARGS &&... args) {
+      size_t capacity = std::abs(length);
+      size_t size = sizeof_container_with_header<OT>(capacity);
+      size_t scanSize = sizeof_container_with_header<OT>(dataScanSize);
+      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+    }
+
 
     
     template <typename... ARGS>

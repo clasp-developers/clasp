@@ -151,6 +151,7 @@ typedef bool _Bool;
 
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugInfoExpose.h>
@@ -310,7 +311,7 @@ const char *obj_name(gctools::stamp_t stamp) {
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
   }
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, stamp, global_unshifted_nowhere_stamp_names.size());
-  return NULL;
+  return "BoehmNoClass";
 #endif
   
 }

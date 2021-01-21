@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 #include <clasp/core/wrappers.h>
 
 

@@ -46,6 +46,13 @@ struct CleanupFunctionNode {
 };
 };
 
+namespace llvmo {
+class ObjectFile_O;
+typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
+class Code_O;
+typedef gctools::smart_ptr<Code_O> Code_sp;
+
+};
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
@@ -55,7 +62,7 @@ namespace core {
     void create_sigaltstack();
     void destroy_sigaltstack();
     void pushCatchTag(T_sp);
-    
+
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
@@ -79,6 +86,8 @@ namespace core {
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     void*             _ObjectFileStartUp;
+    llvmo::ObjectFile_sp _ObjectFile;
+    llvmo::Code_sp       _Code;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

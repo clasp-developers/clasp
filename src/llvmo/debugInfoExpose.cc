@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/IR/LLVMContext.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 
 #/*
