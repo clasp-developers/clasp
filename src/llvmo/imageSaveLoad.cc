@@ -115,6 +115,8 @@ void dumpObjectFile(size_t num, const char* start, size_t size) {
 }
 
 
+// #define USE_CODE_O 1
+
 void ClaspSectionMemoryManager::reserveAllocationSpace(uintptr_t CodeSize,
                                                        uint32_t CodeAlign,
                                                        uintptr_t RODataSize,
@@ -122,7 +124,7 @@ void ClaspSectionMemoryManager::reserveAllocationSpace(uintptr_t CodeSize,
                                                        uintptr_t RWDataSize,
                                                        uint32_t RWDataAlign) {
   printf("%s:%d:%s  CodeSize: %lu CodeAlign: %u RODataSize: %lu RODataAlign: %u RWDataSize: %lu RWDataAlign: %u \n", __FILE__, __LINE__, __FUNCTION__, CodeSize, CodeAlign, RODataSize, RODataAlign, RWDataSize, RWDataAlign );
-#if 1
+#ifdef USE_CODE_O
   Code_sp code = Code_O::make(CodeSize,CodeAlign,RODataSize,RODataAlign,RWDataSize,RWDataAlign);
   my_thread->_Code = code;
   printf("%s:%d  Created code object\n", __FILE__, __LINE__);
@@ -134,7 +136,7 @@ void ClaspSectionMemoryManager::reserveAllocationSpace(uintptr_t CodeSize,
 uint8_t* ClaspSectionMemoryManager::allocateCodeSection( uintptr_t Size, unsigned Alignment,
                                                          unsigned SectionID,
                                                          StringRef SectionName ) {
-#if 1
+#ifdef USE_CODE_O
   uint8_t* ptr = (uint8_t*)my_thread->_Code->allocateTail(Size,Alignment);
   this->_CodeStart = ptr;
   this->_CodeSize = Size;
@@ -163,7 +165,7 @@ uint8_t* ClaspSectionMemoryManager::allocateDataSection( uintptr_t Size, unsigne
                                                          unsigned SectionID,
                                                          StringRef SectionName,
                                                          bool isReadOnly) {
-#if 1
+#ifdef USE_CODE_O
   uint8_t* ptr;
   if (isReadOnly) {
     ptr = (uint8_t*)my_thread->_Code->allocateTail(Size,Alignment);
@@ -269,6 +271,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
 }
 
 bool ClaspSectionMemoryManager::finalizeMemory(std::string* ErrMsg ) {
+#ifdef USE_CODE_O
   if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
     printf("%s:%d finalizeMemory\n", __FILE__, __LINE__);
   }
@@ -277,6 +280,9 @@ bool ClaspSectionMemoryManager::finalizeMemory(std::string* ErrMsg ) {
   llvm::sys::Memory::protectMappedMemory(block,
                                          sys::Memory::MF_READ | sys::Memory::MF_EXEC);
   llvm::sys::Memory::InvalidateInstructionCache((void*)this->_CodeStart,this->_CodeSize);
+#else
+  this->SectionMemoryManager::finalizeMemory(ErrMsg);
+#endif
   unsigned long section_size = 0;
   void* p_section = NULL;
   if (my_thread->_stackmap>0 && my_thread->_stackmap_size!=0) {
