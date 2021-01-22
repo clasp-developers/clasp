@@ -152,13 +152,19 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
   if (size < 0)
     TYPE_ERROR(osize, cl::_sym_UnsignedByte);
   else {
-    ql::list result;
+    T_sp result = _Nil<T_O>();
     for (size_t i = 0; i < size; i++) {
-      result << initial_element;
+      result = gctools::ConsAllocator<Cons_O,gctools::DontRegister>::allocate(initial_element,result);
     }
-    return (result.cons());
+    size_t cons_size = gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
+    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMP_CONS,size*cons_size);
+    return result;
   }
 };
+
+CL_DEFUN size_t core__cons_size() {
+  return gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
+}
 
 Cons_sp Cons_O::createList(T_sp o1) {
   return (Cons_O::create(o1, _Nil<T_O>()));
@@ -372,8 +378,9 @@ bool Cons_O::equalp(T_sp obj) const {
   return cl__equalp(this_cdr, other_cdr);
 }
 
-CL_LISPIFY_NAME("core:extend");
-CL_DEFMETHOD List_sp Cons_O::extend(List_sp rest) {
+//CL_LISPIFY_NAME("core:extend");
+//CL_DEFMETHOD
+List_sp Cons_O::extend(List_sp rest) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp nc = first;
   Cons_sp next, newCur;
@@ -465,16 +472,30 @@ T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
 
 T_sp Cons_O::elt(cl_index index) const {
   _OF();
-  if (index < 0 || index >= this->length()) {
-    SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
+  size_t max = this->length();
+  unlikely_if (index < 0 || index >= max) {
+    ERROR(core::_sym_sequence_out_of_bounds,
+          core::lisp_createList(kw::_sym_expected_type,
+                                core::lisp_createList(cl::_sym_integer,
+                                                      clasp_make_fixnum(0),
+                                                      core::lisp_createList(clasp_make_fixnum(max))),
+                                kw::_sym_datum, clasp_make_fixnum(index),
+                                kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->onth(index)));
 }
 
 T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
   _OF();
-  if (index < 0 || index >= this->length()) {
-    SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
+  size_t max = this->length();
+  unlikely_if (index < 0 || index >= this->length()) {
+    ERROR(core::_sym_sequence_out_of_bounds,
+          core::lisp_createList(kw::_sym_expected_type,
+                                core::lisp_createList(cl::_sym_integer,
+                                                      clasp_make_fixnum(0),
+                                                      core::lisp_createList(clasp_make_fixnum(max))),
+                                kw::_sym_datum, clasp_make_fixnum(index),
+                                kw::_sym_object, this->asSmartPtr()));
   }
   return ((this->setf_nth(index, value)));
 }

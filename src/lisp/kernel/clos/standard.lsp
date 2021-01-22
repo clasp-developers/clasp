@@ -15,7 +15,7 @@
 #+(or)
 (defmacro dbg-standard (fmt &rest args)
   `(format t ,fmt ,@args))
-(defmacro dbg-standard (fmt &rest args))
+(defmacro dbg-standard (fmt &rest args) (declare (ignore fmt args)))
 
 ;;; ----------------------------------------------------------------------
 ;;; INSTANCES INITIALIZATION AND REINITIALIZATION
@@ -220,6 +220,8 @@
   ;; if a generic function is specialized where an obsolete instance is, it will go to
   ;; the slow path, which will call MAYBE-UPDATE-INSTANCES.
   (invalidate-generic-functions-with-class-selector class)
+  #+static-gfs
+  (static-gfs:invalidate-class-reinitializers* class)
   class)
 
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
@@ -384,6 +386,10 @@ because it contains a reference to the undefined class~%  ~A"
 (defmethod finalize-inheritance :after ((class std-class))
   #+static-gfs
   (static-gfs:invalidate-class-constructors class)
+  #+static-gfs
+  (static-gfs:invalidate-class-changers class)
+  #+static-gfs
+  (static-gfs:invalidate-class-reinitializers* class)
   (std-class-generate-accessors class))
 
 (defmethod compute-class-precedence-list ((class class))
@@ -476,6 +482,7 @@ because it contains a reference to the undefined class~%  ~A"
           :location location)))
 
 (defmethod compute-effective-slot-definition ((class class) name direct-slots)
+  (declare (ignore name))
   (let* ((initargs (compute-effective-slot-definition-initargs class direct-slots))
          (slotd-class (apply #'effective-slot-definition-class class initargs)))
     (apply #'make-instance slotd-class initargs)))
@@ -502,6 +509,7 @@ because it contains a reference to the undefined class~%  ~A"
   (clos::gf-log "     name -> %s%N" name)
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
+    (declare (ignore direct-superclasses))
     (cond ((forward-referenced-class-p class)
 	   (change-class class metaclass))
 	  ((not (eq (class-of class) metaclass))
@@ -632,9 +640,7 @@ because it contains a reference to the undefined class~%  ~A"
   object)
 
 (defmethod describe-object ((obj standard-object) (stream t))
-  (let* ((class (si:instance-class obj))
-	 (slotds (class-slots class))
-	 slotname has-shared-slots)
+  (let* ((class (si:instance-class obj)))
     (format stream "~&~S - ~S"
 	    obj (class-name class))
     (describe-slots obj stream))

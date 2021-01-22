@@ -33,83 +33,79 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind_tuple.h>
 namespace clbind {
 
-template <typename Pols, typename OT, typename MethodPtrType>
-class IndirectVariadicMethoid;
-
-template <typename Pols, typename OT, typename RT, typename... ARGS>
-class IndirectVariadicMethoid
-< Pols, OT, RT (OT::*)(ARGS...)> : public core::BuiltinClosure_O {
-public:
-  typedef IndirectVariadicMethoid <Pols, OT, RT(OT::*)(ARGS...)> MyType;
+template <typename Policies, typename OT, typename MethodPtrType>
+class IndirectVariadicMethoid : public core::BuiltinClosure_O {
   typedef BuiltinClosure_O TemplatedBase;
+  virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual const char *describe() const { return "IndirectVariadicMethoid"; };
+};
+};
+
+namespace clbind {
+
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...)> : public core::BuiltinClosure_O {
 public:
-  virtual const char* describe() const { return "IndirectVariadicMethoid"; };
-  typedef RT (OT::*MethodType)( ARGS... );
+  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+  typedef RT(OT::*MethodType)(ARGS...) ;
   MethodType mptr;
 public:
-  enum { NumParams = sizeof...(ARGS) };
-  IndirectVariadicMethoid(const Pols& pols, core::FunctionDescription* fdesc, MethodType ptr) : core::BuiltinClosure_O(entry_point,fdesc), mptr(ptr) {};
+  enum { NumParams = sizeof...(ARGS)+1 };
+  IndirectVariadicMethoid(core::FunctionDescription_sp fdesc, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
     INVOCATION_HISTORY_FRAME();
-    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    arg_tuple<Pols,OT,ARGS...> all_args(frame->data());
-    return apply_and_return<RT,Pols,MethodType,arg_tuple<Pols,OT,ARGS...>>::go(returnValues,(closure->mptr),all_args);
+    translate::from_object<OT*> otep(frame->arg(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::go(frame->arguments(0));
+    return clbind::clbind_external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT*,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep._v,std::move(all_args));
   }
 };
 
-template <typename Pols, typename OT, typename RT, typename... ARGS>
-class IndirectVariadicMethoid
-< Pols, OT, RT (OT::*)(ARGS...) const> : public core::BuiltinClosure_O {
+template <typename Policies, typename RT, typename OT, typename... ARGS>
+class IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...) const> : public core::BuiltinClosure_O {
 public:
-  typedef IndirectVariadicMethoid <Pols, OT, RT(OT::*)(ARGS...) const> MyType;
-  typedef BuiltinClosure_O TemplatedBase;
+  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) const > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
 public:
-  virtual const char* describe() const { return "IndirectVariadicMethoid"; };
-  typedef RT (OT::*MethodType)( ARGS... ) const;
+  virtual const char* describe() const {return "IndirectVariadicMethoid";};
+  typedef RT(OT::*MethodType)(ARGS...) const ;
   MethodType mptr;
 public:
-  enum { NumParams = sizeof...(ARGS) };
-  IndirectVariadicMethoid(const Pols& pols, core::FunctionDescription* fdesc, MethodType ptr) : core::BuiltinClosure_O(entry_point,fdesc), mptr(ptr) {};
+  enum { NumParams = sizeof...(ARGS)+1 };
+  IndirectVariadicMethoid(core::FunctionDescription_sp fdesc, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     COPY_VA_LIST();
     INVOCATION_HISTORY_FRAME();
-    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),5);
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS)+1);
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    arg_tuple<Pols,OT,ARGS...> all_args(frame->data());
-    return apply_and_return<RT,Pols,MethodType,arg_tuple<Pols,OT,ARGS...>>::go(returnValues,(closure->mptr),all_args);
+    translate::from_object<OT*> otep(frame->arg(0));
+    std::tuple<translate::from_object<ARGS>...> all_args = clbind::arg_tuple<1,Policies,ARGS...>::go(frame->arguments(0));
+    return clbind::clbind_external_method_apply_and_return<Policies,RT,decltype(closure->mptr),OT*,decltype(all_args)>::go(returnValues,std::move(closure->mptr),otep._v,std::move(all_args));
   }
 };
 
-// User template deduction guide
-template <typename Pols, typename OT, typename RT, typename... ARGS>
-IndirectVariadicMethoid(Pols& pols, core::FunctionDescription* fdesc, RT(OT::*)(ARGS...)) -> IndirectVariadicMethoid< Pols, OT, RT (OT::*)(ARGS...)>;
-
-template <typename Pols, typename OT, typename RT, typename... ARGS>
-IndirectVariadicMethoid(Pols& pols, core::FunctionDescription* fdesc, RT(OT::*)(ARGS...) const) -> IndirectVariadicMethoid< Pols, OT, RT (OT::*)(ARGS...) const>;
-
-}
-
-//#include <clasp/clbind/clbind_static_members.h>
+};
 
 
 template <typename Pols, typename OT, typename MethodPtrType>

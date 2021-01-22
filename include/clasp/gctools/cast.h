@@ -2,7 +2,6 @@
 #define gctools_cast_H
 
 
-
 namespace cast {
   template <typename TOPTR, typename FROMPTR>
     struct Cast {
@@ -30,7 +29,7 @@ namespace gctools {
     class GCArraySignedLength_moveable;
   template <class T>
     class GCVector_moveable;
-  template <size_t N, bool s>
+  template <size_t N, int SignedP>
     class GCBitUnitArray_moveable;
   template <class K>
     class SmallOrderedSet;
@@ -50,7 +49,7 @@ namespace clbind {
   class ConstructorCreator_O;
 };
 
-#ifdef USE_BOEHM
+#if (defined(USE_BOEHM) && !defined(USE_PRECISE_GC)) || defined(RUNNING_MPSPREP)
 //----------------------------------------------------------------------
 #ifndef SCRAPING
  #define DECLARE_FORWARDS
@@ -67,39 +66,24 @@ namespace cast {
 //----------------------------------------------------------------------
 #endif // #ifdef USE_BOEHM
 
-
-#ifdef USE_MPS
+#if !defined(SCRAPING)
+ #if defined(USE_PRECISE_GC)
 //----------------------------------------------------------------------
- #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
   #define GC_DECLARE_FORWARDS
    #include CLASP_GC_FILENAME
   #undef GC_DECLARE_FORWARDS
- #endif
 namespace cast {
- #if !defined(RUNNING_GC_BUILDER) && !defined(SCRAPING)
   #define GC_DYNAMIC_CAST
    #include CLASP_GC_FILENAME
   #undef GC_DYNAMIC_CAST
- #endif
 };
-#endif // #ifdef USE_MPS
+ #endif // #if defined(USE_PRECISE_GC)
+#endif // #if !defined(SCRAPING)
 
 
 
 // Cast assumes that the client pointer is untagged already
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-namespace gctools {
-    template <typename TOPTR>
-    struct FromGeneralCast {
-    typedef TOPTR ToType;
-    inline static bool isA(core::General_O* client) {
-      return (dynamic_cast<ToType>(client) != NULL);
-    }
-  };
-};
-
-#else
+#if !defined(USE_PRECISE_GC)
 namespace gctools {
     template <typename TOPTR>
     struct FromGeneralCast {
@@ -109,13 +93,12 @@ namespace gctools {
     }
   };
 };
-#endif // USE_CXX_DYNAMIC_CAST
-#endif // USE_BOEHM
+#endif // !USE_PRECISE_GC
 
 
 
 
-#ifdef USE_MPS
+#if defined(USE_PRECISE_GC)
 namespace gctools {
   template <typename TOPTR>
     struct FromGeneralCast {
@@ -126,7 +109,7 @@ namespace gctools {
     };
 
 };
-#endif // USE_MPS
+#endif // USE_PRECISE_GC
 
 
 

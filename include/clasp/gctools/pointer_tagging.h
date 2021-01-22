@@ -97,9 +97,9 @@ namespace gctools {
       by first reinterpret_casting it to Tagged */
   typedef uintptr_t Tagged;
   typedef uintptr_t TaggedVaList; // Used in situations where only a tagged Vaslist ptr is accepted
-  static const int tag_shift = 3;
-  static const int fixnum_bits = 62;
-  static const int fixnum_shift = 2;
+  static const int tag_shift = TAG_BITS;
+static const int fixnum_bits = 64-FIXNUM_SHIFT;
+  static const int fixnum_shift = FIXNUM_SHIFT;
 
   static const long int most_positive_fixnum =  2305843009213693951;
   static const long int most_negative_fixnum = -2305843009213693952;
@@ -176,9 +176,11 @@ namespace gctools {
 /* The rest of the bits are the fixnum */
   static const uintptr_t ptag_mask     = ZERO_TAG_MASK; // #b1111;
   static const uintptr_t fixnum00_tag  = FIXNUM0_TAG; // x0000 means fixnum
-  static const uintptr_t fixnum01_tag  = FIXNUM1_TAG; // x0100 means fixnum 
+  static const uintptr_t fixnum01_tag  = FIXNUM1_TAG; // x0100 means fixnum
+#if TAG_BITS==4
   static const uintptr_t fixnum10_tag  = FIXNUM2_TAG; // x1000 means fixnum
-  static const uintptr_t fixnum11_tag  = FIXNUM3_TAG; // x1100 means fixnum 
+  static const uintptr_t fixnum11_tag  = FIXNUM3_TAG; // x1100 means fixnum
+#endif
   static const uintptr_t fixnum_mask =  FIXNUM_MASK;
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
@@ -201,9 +203,11 @@ point to are only ever on the stack.
 I hack the va_list structure in X86_64 ABI dependent ways and I will abstract all of the
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
-  static const uintptr_t vaslist_ptag_mask = VASLIST_TAG_MASK; // #b111
   static const uintptr_t vaslist0_tag = VASLIST0_TAG; // means a valist
+#if TAG_BITS==4
   static const uintptr_t vaslist1_tag = VASLIST1_TAG; // means a valist that is unaligned
+  static const uintptr_t vaslist_ptag_mask = VASLIST_TAG_MASK; // #b111
+#endif
                                                        /*! Immediate value tags */
   static const uintptr_t immediate_mask   = IMMEDIATE_MASK;
   static const uintptr_t character_tag    = CHARACTER_TAG;
@@ -243,6 +247,7 @@ ABI's  */
   static const char * tagged_vaslist_str = "VALIST";
   static const char * tagged_nil_str = "NIL";
   static const char * tagged_general_str = "GENERAL";
+  static const char * tagged_function_description_str = "FUNCTION_DESCRIPTION";
 
   template <class T>
     T ptag(T ptr) { return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(ptr) & ptag_mask); };
@@ -332,7 +337,10 @@ template <class T>
   }
   template <class T>
     inline T tag_vaslist(core::Vaslist *p) {
+#if TAG_BITS==4
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & vaslist_ptag_mask) == 0);
+#error "Handle TAG_BITS==4"
+#endif
     return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + vaslist0_tag);
   }
 
@@ -342,9 +350,13 @@ template <class T>
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == general_tag);
     return reinterpret_cast<T>(&reinterpret_cast<char*>(ptr)[-general_tag]);
   }
+
   template <class T>
     inline core::Vaslist* untag_vaslist(T ptr) {
+#if TAG_BITS==4
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
+#error "Handle TAG_BITS==4"
+#endif
     return reinterpret_cast<core::Vaslist*>(reinterpret_cast<uintptr_t>(ptr) - vaslist0_tag);
   }
 
@@ -407,9 +419,16 @@ template <class T>
     inline bool tagged_generalp(T ptr) {
     return ((uintptr_t)(ptr) & ptag_mask) == general_tag;
   }
+
   template <class T>
     inline bool tagged_vaslistp(T ptr) {
+#if TAG_BITS==3    
+    return ((reinterpret_cast<uintptr_t>(ptr) & ptag_mask) == vaslist0_tag);
+#else
+    #error "Handle TAG_BITS==4"
     return ((reinterpret_cast<uintptr_t>(ptr) & vaslist_ptag_mask) == vaslist0_tag);
+#endif
+    
   };
 
   template <class T>
@@ -476,6 +495,11 @@ template <class T>
     if( tagged_generalp( tagged_obj )  )
     {
       return std::string( tagged_general_str );
+    }
+
+    if( tagged_function_descriptionp( tagged_obj )  )
+    {
+      return std::string( tagged_function_description_str );
     }
 
     if( tagged_objectp( tagged_obj )  )

@@ -423,4 +423,5 @@ For example, for a function-name that is a symbol, returns that symbol's package
 
 ;;; Called by SIGINFO handler, see gctools/interrupt.cc
 (defun information-interrupt (&rest args)
+  (declare (ignore args))
   (core:safe-backtrace))

@@ -43,10 +43,9 @@
         (with-debug-info-generator (:module module
                                     :pathname #P"/dev/null")
           (with-make-new-run-all (run-all-function)
-            (with-literal-table
-                (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env nil))))
-                  ;; Do nothing (irc-intrinsic-call "ltvc_toplevel_funcall" (list fn))
-                  ))))
+            (with-literal-table (:id 0)
+              (literal:arrange-thunk-as-top-level
+               (compile-thunk 'walk-thunk form env nil)))))
         (llvm-sys::module-delete module))))
   t)
 

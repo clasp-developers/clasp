@@ -78,8 +78,6 @@ Set this to other IRBuilders to make code go where you want")
 names to offsets."
   (let ((layout (gensym))
         (gs-field (gensym))
-        (type-name (gensym "type-name"))
-        (context (gensym "context"))
         (field-index (gensym)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
                                     (llvm-sys:struct-type-get
@@ -141,8 +139,7 @@ names to offsets."
   (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info))))
   
 (defun c++-field-ptr (struct-info tagged-object field-name)
-  (let* ((tag (c++-struct-tag struct-info))
-         (tagged-object-i8* tagged-object)
+  (let* ((tagged-object-i8* tagged-object)
          (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter))))
@@ -265,8 +262,9 @@ names to offsets."
 ;;
 ;; Setup smart-ptr constants
 ;;
-(multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
+(multiple-value-bind (pointer-type pointer-px-offset)
     (smart-pointer-details)
+  (declare (ignore pointer-type))
   #+(or)(defvar +using-intrusive-reference-count+
           (eq pointer-type 'core::intrusive-reference-counted-pointer))
   (defvar +smart-ptr-px-offset+ pointer-px-offset))
@@ -280,6 +278,8 @@ Boehm and MPS use a single pointer"
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (define-symbol-macro %t% %i8%) ; (llvm-sys:struct-type-get (thread-local-llvm-context) nil  nil)) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
+;; alias for bignum dumping
+(define-symbol-macro %bignum% %t*%)
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))
 (define-symbol-macro %t*[0]*% (llvm-sys:type-get-pointer-to %t*[0]%))
@@ -295,66 +295,59 @@ Boehm and MPS use a single pointer"
 
 
 ;;; MUST match WrappedPointer_O layout
-(define-symbol-macro %wrapped-pointer%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 Badge
-         %i64%     ; 2 _Stamp_;
-         %t*%      ; 3 Class_;
-         )
-   nil))
-(defconstant +wrapped-pointer.stamp-index+ 2)
+(define-c++-struct %wrapped-pointer% +general-tag+
+  (
+   (%i8*%     :vtable)
+   (%i64%     :stamp)
+   (%t*%      :class)
+   ))
+
+(defconstant +wrapped-pointer.stamp-index+ (c++-field-index :stamp info.%wrapped-pointer%))
 (define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
 
+(define-c++-struct %instance% +general-tag+
+  ((%i8*%     :vtable)
+   (%t*%      :Class)
+   (%t*%      :Rack)
+   ))
+
+
 ;;; MUST match Instance_O layout
-(define-symbol-macro %instance%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 badge
-         %t*%      ; 2 _Class
-         %t*%      ; 3 _Rack
-         )
-   nil))
-(defconstant +instance.rack-index+ 3)
+(define-c++-struct %instance% +general-tag+
+  ((%i8*%     :vtable)
+   (%t*%      :Class)
+   (%t*%      :Rack)
+   ))
+
+(defconstant +instance.rack-index+ (c++-field-index :rack info.%instance%))
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
 
-
 ;;; Must match SimpleVector_O aka GCArray_moveable<T_sp>
-(define-symbol-macro %simple-vector%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 badge
-         %size_t%  ; 2 length
-         %tsp[0]%  ; 3 zeroth element of data
-         )
-   nil))
-(defconstant +simple-vector.length-index+ 2)
-(defconstant +simple-vector.data-index+ 3)
+(define-c++-struct %simple-vector% +general-tag+
+  ((%i8*%     :vtable)
+   (%size_t%      :length)
+   (%tsp[0]%      :data)
+   ))
+(defconstant +simple-vector.length-index+ (c++-field-index :length info.%simple-vector%))
+(defconstant +simple-vector.data-index+ (c++-field-index :data info.%simple-vector%))
 
-(define-symbol-macro %rack%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 badge
-         %tsp%     ; 2 Stamp
-         %tsp%     ; 3 Sig
-         %size_t%  ; 4 length
-         %t*[0]%   ; 5 zeroth element of data
-         )
-   nil))
+
+(define-c++-struct %rack% +general-tag+
+  ((%i8*%     :vtable)
+   (%tsp%     :stamp)
+   (%tsp%     :sig)
+   (%size_t%  :length)
+   (%t*[0]%   :data)
+   ))
+
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
-(defconstant +rack.stamp-index+ 2)
-(defconstant +rack.length-index+ 4)
-(defconstant +rack.data-index+ 5)
-
+(defconstant +rack.stamp-index+ (c++-field-index :stamp info.%rack%))
+(defconstant +rack.length-index+ (c++-field-index :length info.%rack%))
+(defconstant +rack.data-index+ (c++-field-index :data info.%rack%))
 
 (define-c++-struct %mdarray% +general-tag+
   ((%i8*% :vtable)
-   (%badge% :badge)
    (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
    (%size_t% :Array-Total-Size)
    (%t*%     :Data)
@@ -365,72 +358,61 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
 
-(define-symbol-macro %value-frame%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 badge
-         %tsp%     ; 2 _Parent
-         %size_t%  ; 3 length
-         %tsp[0]%  ; 4 zeroth element of data
-         )
-   nil))
+(define-c++-struct %value-frame% +general-tag+
+  ((%i8*%     :vtable)
+   (%tsp%     :parent)
+   (%size_t%  :length)
+   (%tsp[0]%  :data))
+  )
 (define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
-(defconstant +value-frame.parent-index+ 2)
-(defconstant +value-frame.length-index+ 3)
-(defconstant +value-frame.data-index+ 4)
-
+(defconstant +value-frame.parent-index+ (c++-field-index :parent info.%value-frame%))
+(defconstant +value-frame.length-index+ (c++-field-index :length info.%value-frame%))
+(defconstant +value-frame.data-index+ (c++-field-index :data info.%value-frame%))
 
 
 ;;; MUST match FuncallableInstance_O layout
-(define-symbol-macro %funcallable-instance%
-  (llvm-sys:struct-type-get
-   (thread-local-llvm-context)
-   (list %i8*%     ; 0 vtable
-         %badge%   ; 1 badge
-         %i8*%     ; 2 entry (From Function_O)
-         %t*%      ; 3 _Rack
-         %t*%      ; 4 _Class
-         %function-description*%   ; 5  FunctionDescription*
-         %atomic<size_t>%          ; 6  _InterpretedCalls
-         %atomic<tsp>%             ; 7 _CompiledDispatchFunction
-         )
-   nil))
+(define-c++-struct %funcallable-instance% +general-tag+
+  ((%i8*% :vtable)
+   (%i8*% :function-description)
+   (%t*% :rack)
+   (%t*% :class)
+   (%atomic<size_t>% :interpreted-calls)
+   (%atomic<tsp>% :compiled-dispatch-function)))
+
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
-(defconstant +funcallable-instance.rack-index+ 3)
+(defconstant +funcallable-instance.rack-index+ (c++-field-index :rack info.%funcallable-instance%))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
 ;;;
 (define-c++-struct %symbol% +general-tag+
-  ((%i8*% :sym-vtable)
-   (%badge% :badge)
-   (%t*% :name)
-   (%t*% :home-package)
-   (%t*% :global-value)
-   (%t*% :function)
-   (%t*% :setf-function)
-   (%i32% :binding-idx)
-   (%i32% :flags)
-   (%t*% :property-list)))
+  ((%i8*% :sym-vtable) ; index=0 offset=0
+   (%t*% :name) ; index=1 offset=8
+   (%t*% :home-package) ; index=2 offset=16
+   (%t*% :global-value) ; index=3 offset=24
+   (%t*% :function) ; index=4 offset=32
+   (%t*% :setf-function) ; index=5 offset=40
+   (%i32% :binding-idx) ; index=6 offset=48
+   (%i32% :flags) ; index=7 offset=56
+   (%t*% :property-list))) ; index=8 offset=64
 
-(defconstant +symbol.function-index+ 5)
-(defconstant +symbol.setf-function-index+ 6)
+(defconstant +symbol.function-index+ (c++-field-index :function info.%symbol%))
+(defconstant +symbol.setf-function-index+ (c++-field-index :setf-function info.%symbol%))
 
 (define-symbol-macro %symbol*% (llvm-sys:type-get-pointer-to %symbol%))
 (define-symbol-macro %symsp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %symbol*%) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-symbol-macro %cons% (llvm-sys:struct-type-get
-                             (thread-local-llvm-context)
-                             (smart-pointer-fields %t*% %t*%
-                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%
-                                                   #+(and use-mps (not mps-cons-awl-pool)) %size_t%) nil))
+(define-c++-struct %cons% +cons-tag+
+  ((%t*% :car)
+   (%t*% :cdr)
+   (%size_t% :badge)))
+
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
-(defconstant +cons.car-index+ 0)
-(defconstant +cons.cdr-index+ 1)
+(defconstant +cons.car-index+ (c++-field-index :car info.%cons%))
+(defconstant +cons.cdr-index+ (c++-field-index :cdr info.%cons%))
 (let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %cons%))
        (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
@@ -439,18 +421,15 @@ Boehm and MPS use a single pointer"
 
 
 ;; This structure must match the gctools::GCRootsInModule structure
-(define-symbol-macro %gcroots-in-module% (llvm-sys:struct-type-get
-                                          (thread-local-llvm-context)
-                                          (list
-                                           %size_t% ; _index_offset
-                                           %i8*% ; _boehm_shadow_memory
-                                           %i8*% ; _module_memory
-                                           %size_t% ; _num_entries
-                                           %size_t% ; _capacity
-                                           %i8**% ; function pointers
-                                           %i8**% ; function descriptions
-                                           %size_t% ; number of functions
-                                           ) nil))
+(define-c++-struct %gcroots-in-module% +general-tag+
+  ((%size_t%  :index-offset)
+   (%i8*%  :boehm-shadow-memory)
+   (%i8*%  :module-memory)
+   (%size_t%  :num-entries)
+   (%size_t%  :capacity)
+   (%i8**%  :function-pointers)
+   (%size_t%  :number-of-functions)))
+
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
 ;; The definition of %tmv% doesn't quite match T_mv because T_mv inherits from T_sp
@@ -590,6 +569,8 @@ Boehm and MPS use a single pointer"
 ;; What if we don't want/need to spill the registers to the register-save-area?
 (defun initialize-calling-convention (arguments setup &key cleavir-lambda-list rest-alloc)
   (let ((register-save-area* (calling-convention-configuration-register-save-area* setup)))
+    (unless (first arguments)
+      (error "initialize-calling-convention for arguments ~a - the closure is NIL" arguments))
     (if (null register-save-area*)
         ;; If there's no RSA, we determined we only need registers and don't need to dump things.
         (make-calling-convention-impl :closure (first arguments)
@@ -737,10 +718,9 @@ eg:  (f closure-ptr nargs a b c d ...)
     (llvm-sys:struct-type-get
      (thread-local-llvm-context)
      (list %i8*%            ; 0 vtable
-           %badge%          ; 1 badge
-           %fn-prototype*%  ; 2 entry
+           %i8*%            ; 1 function-description
            ) nil))
-(defconstant +function.entry-index+ 2)
+(defconstant +function.function-description-index+ 1)
 
 (define-symbol-macro %Function-ptr% (llvm-sys:type-get-pointer-to %Function%))
 (define-symbol-macro %Function_sp% (llvm-sys:struct-type-get (thread-local-llvm-context) (smart-pointer-fields %Function-ptr%) nil)) ;; "Cfn_sp"
@@ -752,15 +732,19 @@ eg:  (f closure-ptr nargs a b c d ...)
 ;;;
 ;;; source-info/function-name are stored in a CONS cell CAR/CDR
 ;;; lambda-list/docstring are stored in a CONS cell CAR/CDR
+(define-symbol-macro %entry-points-vector% (llvm-sys:array-type-get %i8*% core:*number-of-entry-points*))
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
-                              (list %fn-prototype*%
-                                    %gcroots-in-module*%
-                                    %size_t% ; source-info.function-name index
-                                    %size_t% ; lambda-list./docstring literal index
-                                    %i32% ; lineno
-                                    %i32% ; column
-                                    %i32% ; filepos
+                              (list %i8*%                  ;  1 vtable
+                                    %entry-points-vector%  ;  2 entry-points
+                                    %t*%                   ;  3 source-info
+                                    %t*%                   ;  4 function-name
+                                    %t*%                   ;  5 lambda-list
+                                    %t*%                   ;  6 docstring
+                                    %t*%                   ;  7 object-file
+                                    %i32%                  ;  8 lineno
+                                    %i32%                  ;  9 column
+                                    %i32%                  ; 10filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -768,9 +752,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 
 (define-c++-struct %closure-with-slots% +general-tag+
   ((%i8*% vtable)
-   (%badge% :badge)
-   (%fn-prototype*% entry)
-   (%function-description*% function-description)
+   (%i8*% function-description)
    (%i32% closure-type)
    (%size_t% data-length)
    (%tsp[0]% data0))
@@ -964,7 +946,7 @@ and initialize it with an array consisting of one function pointer."
          (symbol-setf-function-offset (llvm-sys:struct-layout-get-element-offset symbol-layout +symbol.setf-function-index+))
          (function-size (llvm-sys:data-layout-get-type-alloc-size data-layout %function%))
          (function-layout (llvm-sys:data-layout-get-struct-layout data-layout %function%))
-         (function-entry-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.entry-index+))
+         (function-description-offset (llvm-sys:struct-layout-get-element-offset function-layout +function.function-description-index+))
          (vaslist-size (llvm-sys:data-layout-get-type-alloc-size data-layout %vaslist%))
          (register-save-area-size (llvm-sys:data-layout-get-type-alloc-size data-layout %register-save-area%))
          (invocation-history-frame-size (llvm-sys:data-layout-get-type-alloc-size data-layout %InvocationHistoryFrame%))
@@ -976,7 +958,7 @@ and initialize it with an array consisting of one function pointer."
                                                   :symbol-function-offset symbol-function-offset
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
-                                                  :function-entry-offset function-entry-offset
+                                                  :function-description-offset function-description-offset
                                                   :contab gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
@@ -1076,7 +1058,7 @@ and initialize it with an array consisting of one function pointer."
                                     (list (jit-constant-size_t 0)
                                           (jit-constant-size_t 0)))
                            (llvm-sys:constant-pointer-null-get %t**%))))
-            (multiple-value-bind (function-vector-length function-vector function-descs)
+            (multiple-value-bind (function-vector-length function-vector)
                 (literal:setup-literal-machine-function-vectors cmp:*the-module*)
               (when gcroots-in-module
                 (irc-intrinsic-call "cc_initialize_gcroots_in_module" (list gcroots-in-module ; holder
@@ -1091,11 +1073,6 @@ and initialize it with an array consisting of one function pointer."
                                                                                           (list (cmp:jit-constant-size_t 0)
                                                                                                 (cmp:jit-constant-size_t 0)))
                                                                              %i8**%) ; fptrs
-                                                                            (irc-bit-cast
-                                                                             (cmp:irc-gep function-descs
-                                                                                          (list (cmp:jit-constant-size_t 0)
-                                                                                                (cmp:jit-constant-size_t 0)))
-                                                                             %i8**%) ; fdescs
                                                                             ))))
             ;; If the constant/literal list is provided - then we may need to generate code for closurettes
             (when ordered-literals
@@ -1159,7 +1136,6 @@ and initialize it with an array consisting of one function pointer."
   "A global value that stores a pointer to the boot function for the Module.
 It has appending linkage.")
 (defvar *current-function* nil "The current function")
-(defvar *current-function-description* nil "The current function description")
 (defvar *current-function-name* nil "Store the current function name")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 

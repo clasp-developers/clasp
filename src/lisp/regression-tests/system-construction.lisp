@@ -6,6 +6,7 @@
   "newfasl"
   (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl"))))
 
+#+(or)
 (test
  compile-file-pathname-2a
  (let ((cmp:*compile-file-parallel* t))
@@ -13,6 +14,7 @@
     (cmp::cfp-output-extension :fasl)
     (pathname-type (compile-file-pathname "test.lisp")))))
 
+#+(or)
 (test
  compile-file-pathname-2b
  (let ((cmp:*compile-file-parallel* nil))
@@ -22,14 +24,14 @@
 
 (test
  compile-file-pathname-3a
- (let ((*use-human-readable-bitcode* t))
+ (let ((cmp:*use-human-readable-bitcode* t))
    (string-equal
     (cmp::cfp-output-extension :bitcode)
     (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl" :output-type :bitcode)))))
 
 (test
  compile-file-pathname-3b
- (let ((*use-human-readable-bitcode* nil))
+ (let ((cmp:*use-human-readable-bitcode* nil))
    (string-equal
     (cmp::cfp-output-extension :bitcode)
     (pathname-type (compile-file-pathname "test.lisp" :output-file "test.newfasl" :output-type :bitcode)))))
@@ -53,7 +55,6 @@
 (test
  compile-file-serial-no-faso
  (let ((cmp::*compile-file-parallel* nil)
-       (cmp::*generate-faso* nil)
        (core:*clasp-build-mode* :faso)
        (file "sys:regression-tests;framework.lisp"))
    (let ((fasl (compile-file file :output-file (make-pathname :type "newfasl" :defaults file) :verbose nil :print nil)))

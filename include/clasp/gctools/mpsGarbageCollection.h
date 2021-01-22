@@ -98,7 +98,7 @@ extern MpsMetrics globalMpsMetrics;
 
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
-#define GC_SCAN_STATE ss
+#define GC_POINTER mps_addr_t
 };
 
 extern "C" {
@@ -132,7 +132,7 @@ mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t base, size_t allocate_size,
 void obj_finalize(mps_addr_t base);
 
 /*! This must be implemented in the main directory */
-extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
+extern mps_res_t main_thread_roots_scan(mps_ss_t ss, void *p, size_t s);
 };
 
 

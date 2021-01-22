@@ -401,6 +401,58 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   }
 #endif
 }
+
+struct FindStamp {
+  gctools::GCStampEnum _stamp;
+  std::vector<void*> _addresses;
+  FindStamp(gctools::GCStampEnum stamp) : _stamp(stamp) {};
+};
+
+void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
+  FindStamp* findStamp = (FindStamp*)client_data;
+  gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
+  gctools::GCStampEnum stamp = h->stamp_();
+  if (!valid_stamp(stamp)) {
+    if (sz==32) {
+      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+//      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
+    } else {
+      stamp = (gctools::GCStampEnum)0; // unknown uses 0
+    }
+  }
+  if (stamp == findStamp->_stamp) {
+    findStamp->_addresses.push_back(ptr);
+  }
+}
+
+
+struct FindOwner {
+  void*  _pointer;
+  std::vector<void*> _addresses;
+  FindOwner(void* pointer) : _pointer(pointer) {};
+};
+
+void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *client_data) {
+  FindOwner* findOwner = (FindOwner*)client_data;
+  for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
+    void* tp = *cur;
+    uintptr_t tag = (uintptr_t)tp&0xf;
+    void* obj = gctools::untag_object(tp);
+    uintptr_t addr = (uintptr_t)obj;
+    void* base = gctools::ClientPtrToBasePtr(obj);
+    if (addr>1024 && (tag==GENERAL_TAG || tag==CONS_TAG)) {
+      printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
+      printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
+      printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
+      printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
+    }
+    if (base == findOwner->_pointer ) {
+      findOwner->_addresses.push_back(ptr);
+    }
+  }
+}
+
+
 };
 
 template <typename T>
@@ -644,10 +696,16 @@ extern "C" {
 #define SCAN_BEGIN(xxx)
 #define SCAN_END(xxx)
 #define POINTER_FIX(field)
+#define EXTRA_ARGUMENTS
+#define GC_RESULT_TYPE GC_RESULT
+#define RETURN_OK MPS_RES_OK
 #define GC_OBJECT_SCAN
 __attribute__((optnone))
 #include "obj_scan.cc"
 #undef GC_OBJ_SCAN
+#undef RETURN_OK
+#undef GC_RESULT_TYPE
+#undef EXTRA_ARGUMENTS
 #undef OBJ_SCAN
 #undef SCAN_STRUCT_T
 #endif // USE_MPS
@@ -748,11 +806,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
   OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-#if USE_CXX_DYNAMIC_CAST
-  OutputStream << "Total live memory total size = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-#else
   OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-#endif
   OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
   OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
   OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
@@ -769,6 +823,64 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   return Values(_Nil<core::T_O>());
 };
 };
+
+namespace gctools {
+
+CL_LAMBDA(stamp);
+CL_DECLARE();
+CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
+CL_DEFUN core::T_sp gctools__objects_with_stamp(core::T_sp stamp) {
+#ifdef USE_MPS
+  SIMPLE_ERROR(BF("Add support for MPS"));
+#endif
+#ifdef USE_BOEHM
+  if (stamp.fixnump()) {
+    FindStamp findStamp((gctools::GCStampEnum)stamp.unsafe_fixnum());
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_stamps, (void*)&findStamp);
+#else
+    SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+#endif
+    core::List_sp result = _Nil<core::T_O>();
+    for ( size_t ii=0; ii<findStamp._addresses.size(); ii++ ) {
+      core::Pointer_sp ptr = core::Pointer_O::create((void*)findStamp._addresses[ii]);
+      result = core::Cons_O::create(ptr,result);
+    }
+    return result;
+  }
+#endif // USE_BOEHM
+  SIMPLE_ERROR(BF("You must pass a stamp value"));
+}
+
+
+CL_LAMBDA(address);
+CL_DECLARE();
+CL_DOCSTRING("Return a list of addresses of objects with the given stamp");
+CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
+#ifdef USE_MPS
+  SIMPLE_ERROR(BF("Add support for MPS"));
+#endif
+#ifdef USE_BOEHM
+  if (obj.fixnump()) {
+    FindOwner findOwner((void*)obj.unsafe_fixnum());
+#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
+    GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
+#else
+    SIMPLE_ERROR(BF("The boehm function GC_enumerate_reachable_objects_inner is not available"));
+#endif
+    core::List_sp result = _Nil<core::T_O>();
+    for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
+      core::Pointer_sp ptr = core::Pointer_O::create((void*)findOwner._addresses[ii]);
+      result = core::Cons_O::create(ptr,result);
+    }
+    return result;
+  }
+#endif // USE_BOEHM
+  SIMPLE_ERROR(BF("You must pass a pointer"));
+}
+
+};
+
 
 namespace gctools {
 #ifdef USE_MPS
@@ -1029,13 +1141,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "**DEFINED**" : "undefined") ).str();
 
-  bool mps_cons_awl_pool = false;
-#ifdef MPS_CONS_AWL_POOL
-  mps_cons_awl_pool = true;
-  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("MPS-CONS-AWL-POOL"), features);
-#endif
-  if (buildReport) ss << (BF("MPS_CONS_AWL_POOL = %s\n") % (mps_cons_awl_pool ? "**DEFINED**" : "undefined") ).str();
-
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
   mps_recognize_zero_tags = true;
@@ -1252,6 +1357,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_MPS_SIZE = %s\n") % (debug_mps_size ? "**DEFINED**" : "undefined") ).str();
 
+  bool sanitize_memory = false;
+#ifdef SANITIZE_MEMORY
+  sanitize_memory = true;
+  debugging = true;
+  if (setFeatures) features = core::Cons_O::create(_lisp->internKeyword("SANITIZE-MEMORY"),features);
+#endif
+  if (buildReport) ss << (BF("SANITIZE_MEMORY = %s\n") % (sanitize_memory ? "**DEFINED**" : "undefined") ).str();
+
 
   bool debug_bclasp_lisp = false;
 #ifdef DEBUG_BCLASP_LISP
@@ -1396,10 +1509,20 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #if USE_COMPILE_FILE_PARALLEL == 0
   use_compile_file_parallel = false;
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_Nil<core::T_O>());
+  printf("%s:%d You have turned off compile-file-parallel\n   - you can enable it by setting USE_COMPILE_FILE_PARALLEL in the wscript.config\n   - compile-file-parallel should be enabled by default\n", __FILE__, __LINE__ );
 #else
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
 #endif
   if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s") % USE_COMPILE_FILE_PARALLEL);
+
+  bool force_startup_external_linkage = true;
+#if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
+  force_startup_external_linkage = false;
+  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_Nil<core::T_O>());
+#else
+  INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
+#endif
+  if (buildReport) ss << (BF("FORCE_STARTUP_EXTERNAL_LINKAGE = %s") % FORCE_STARTUP_EXTERNAL_LINKAGE);
   
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
@@ -1421,6 +1544,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   use_lto = false;
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_faso);
+#elif CLASP_BUILD_MODE == 4
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasoll);
+#elif CLASP_BUILD_MODE == 5
+  use_lto = false;
+  debugging = false;
+  INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
 #endif
   if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
   

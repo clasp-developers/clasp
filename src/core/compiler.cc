@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -355,6 +356,12 @@ CL_DEFUN void core__startup_functions_invoke(List_sp literals)
   abort();
 };
 
+CL_DEFUN void core__test_simple_error(T_sp msg) {
+  core::String_sp smsg = gc::As<core::String_sp>(msg);
+  std::string ss = smsg->get_std_string();
+  SIMPLE_ERROR(BF(ss));
+}
+
 
 };
 
@@ -434,6 +441,10 @@ CL_DEFUN T_sp core__startup_image_pathname(char stage) {
   T_sp mode = core::_sym_STARclasp_build_modeSTAR->symbolValue();
   if (mode == kw::_sym_faso) {
     ss << ".fasp";
+  } else if (mode == kw::_sym_fasoll) {
+    ss << ".faspll";
+  } else if (mode == kw::_sym_fasobc) {
+    ss << ".faspbc";
   } else if (mode == kw::_sym_object) {
     ss << ".fasl";
   } else if (mode == kw::_sym_bitcode) {
@@ -669,7 +680,10 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
     for ( size_t pi=0; pi<padding; ++pi ) {
       fwrite(&pad,1,1,fout);
     }
-    int res = munmap(mmaps[mmi]._Memory,mmaps[mmi]._ObjectFileAreaSize);
+    size_t mmap_size
+      = mmaps[mmi]._ObjectFileAreaStart
+      + mmaps[mmi]._ObjectFileAreaSize;
+    int res = munmap(mmaps[mmi]._Memory,mmap_size);
     if (res!=0) {
       SIMPLE_ERROR(BF("Could not munmap memory"));
     }
@@ -679,14 +693,39 @@ CL_DEFUN void core__link_faso_files(T_sp outputPathDesig, List_sp fasoFiles, boo
   if (verbose) write_bf_stream(BF("Returning %s\n") % _rep_(filename));
 }
 
+
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_fasoll(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+{
+//  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
+  llvmo::llvm_sys__load_bitcode_ll(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  return _lisp->_true();
+}
+
+CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
+CL_DEFUN core::T_sp core__load_fasobc(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
+{
+//  printf("%s:%d:%s\n",__FILE__,__LINE__,__FUNCTION__);
+  llvmo::llvm_sys__load_bitcode(cl__pathname(pathDesig),verbose.notnilp(),print.notnilp(),external_format,_Nil<core::T_O>());
+  return _lisp->_true();
+}
+
+
+CL_DEFUN llvmo::ClaspJIT_sp compiler__jit_engine()
+{
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+    return jit;
+}
+
 CL_LAMBDA(path-designator &optional (verbose *load-verbose*) (print t) (external-format :default))
 CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_sp external_format)
 {
-  String_sp filename = gc::As<String_sp>(cl__namestring(pathDesig));
-  char* name_buffer = (char*)malloc(filename->get_std_string().size()+1);
-  strncpy(name_buffer,filename->get_std_string().c_str(),filename->get_std_string().size());
-  name_buffer[filename->get_std_string().size()] = '\0';
-  int fd = open(filename->get_std_string().c_str(),O_RDONLY);
+  String_sp sfilename = gc::As<String_sp>(cl__namestring(pathDesig));
+  std::string filename = sfilename->get_std_string(); 
+  char* name_buffer = (char*)malloc(filename.size()+1);
+  strncpy(name_buffer,filename.c_str(),filename.size());
+  name_buffer[filename.size()] = '\0';
+  int fd = open(filename.c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
   void* memory = mmap(NULL, fsize, PROT_READ, MAP_SHARED|MAP_FILE, fd, 0);
@@ -695,7 +734,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
   close(fd); // Ok to close file descriptor after mmap
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+  llvmo::ClaspJIT_sp jit = compiler__jit_engine();
   FasoHeader* header = (FasoHeader*)memory;
   llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
@@ -707,13 +746,9 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
-    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % _rep_(filename) % ofi);
-    jit->addObjectFile((const char*)of_start,of_length,
-                       header->_ObjectFiles[ofi]._ObjectID,
-                       *jitDylib->wrappedPtr(),
-                       name_buffer,
-                       ofi,
-                       print.notnilp() );
+    if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
+    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(of_start,of_length,header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
+    jit->addObjectFile(of,print.notnilp());
   }
   jit->runInitializers(*jitDylib->wrappedPtr());
   return _lisp->_true();
@@ -730,7 +765,7 @@ CL_DEFUN core::T_sp core__describe_faso(T_sp pathDesig)
     close(fd);
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % _rep_(pathDesig) % strerror(errno));
   }
-  llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
+  llvmo::ClaspJIT_sp jit = compiler__jit_engine();
   FasoHeader* header = (FasoHeader*)memory;
   write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
@@ -1077,7 +1112,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
                                                                         _Nil<T_O>(),
                                                                         code, env, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
   Function_sp thunk = ic;
-  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   //  return eval::funcall(thunk);
 };
 
@@ -1162,7 +1197,7 @@ CL_DECLARE();
 CL_DOCSTRING("Call THUNK with the given SYMBOL bound to to the given VALUE.");
 CL_DEFUN T_mv core__call_with_variable_bound(Symbol_sp sym, T_sp val, Function_sp thunk) {
   DynamicScopeManager scope(sym, val);
-  return (thunk->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+  return (thunk->entry())(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
 }
 
 }
@@ -1174,7 +1209,7 @@ LCC_RETURN call_with_variable_bound(core::T_O* tsym, core::T_O* tval, core::T_O*
   core::T_sp val((gctools::Tagged)tval);
   core::Function_sp func((gctools::Tagged)tthunk);
   core::DynamicScopeManager scope(sym, val);
-  return (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
 
 };
@@ -1187,7 +1222,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   try {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(protected_fn);
     ASSERT(closure);
-    result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
   catch (...)
   {
@@ -1198,7 +1233,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     multipleValuesSaveToTemp(nvals, mv_temp);
     {
       Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-      closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+      closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
     }
     multipleValuesLoadFromTemp(nvals, mv_temp);
     throw;  // __cxa_rethrow
@@ -1210,23 +1245,22 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   returnTypeSaveToTemp(nvals, result.raw_(), mv_temp);
   {
     Closure_sp closure = gc::As_unsafe<Closure_sp>(cleanup_fn);
-    closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+    closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   }
   return returnTypeLoadFromTemp(nvals, mv_temp);
 }
 
-CL_LAMBDA(function-designator &rest functions);
+CL_LAMBDA(function &rest thunks);
 CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
-CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
-  Function_sp fmv = coerce::functionDesignator(funcDesignator);
+CL_DEFUN T_mv core__multiple_value_funcall(Function_sp fmv, List_sp thunks) {
   MAKE_STACK_FRAME(frame, fmv.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
-  for (auto cur : functions) {
+  for (auto cur : thunks) {
     Function_sp tfunc = gc::As<Function_sp>(oCar(cur));
-    T_mv result = (tfunc->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
+    T_mv result = (tfunc->entry())(LCC_PASS_ARGS0_ELLIPSIS(tfunc.raw_()));
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     if (result.number_of_values() > 0  ) {
         (*frame)[idx] = result.raw_();
@@ -1250,7 +1284,7 @@ CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   CLASP_BEGIN_CATCH(tag) {
-    result = thunk->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
+    result = thunk->entry()(LCC_PASS_ARGS0_ELLIPSIS(thunk.raw_()));
   } CLASP_END_CATCH(tag, result);
   return result;
 }
@@ -1262,7 +1296,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  result = closure->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
+  result = closure->entry()(LCC_PASS_ARGS0_ELLIPSIS(closure.raw_()));
   result.saveToMultipleValue0();
   clasp_throw(tag);
 }
@@ -1280,7 +1314,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       return core__progv_function(CONS_CDR(symbols),_Nil<core::T_O>(),func);
     }
   } else {
-    T_mv result = (func->entry.load())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+    T_mv result = (func->entry())(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
   // T_mv result = eval::funcall(func);
     return result;
   }
@@ -1474,6 +1508,30 @@ std::string ltvc_read_string(T_sp stream, bool log, size_t& index)
   index += len;
   if (log) printf("%s:%d:%s -> \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, str.c_str());
   return str;
+}
+
+CL_DEFUN size_t core__ltvc_write_bignum(T_sp object, T_sp stream, size_t index)
+{
+  SELF_DOCUMENT(long long,stream,index);
+  core::Bignum_sp bignum = gc::As<Bignum_sp>(object);
+  mp_size_t length = bignum->length();
+  const mp_limb_t* limbs = bignum->limbs();
+  compact_write_size_t(length, stream, index);
+  for (mp_size_t i = 0; i < std::abs(length); i++)
+    compact_write_size_t(limbs[i], stream, index);
+  return index;
+}
+
+T_O* ltvc_read_bignum(T_sp stream, bool log, size_t& index)
+{
+  SELF_CHECK(long long,stream,index);
+  mp_size_t length = compact_read_size_t(stream, index);
+  size_t size = std::abs(length);
+  mp_limb_t limbs[size];
+  for (mp_size_t i = 0; i < size; i++) {
+    limbs[i] = compact_read_size_t(stream, index);
+  }
+  return reinterpret_cast<T_O*>(Bignum_O::create_from_limbs(length, 0, false, size, limbs).raw_());
 }
 
 CL_DEFUN size_t core__ltvc_write_float(T_sp object, T_sp stream, size_t index)

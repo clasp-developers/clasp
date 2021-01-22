@@ -146,8 +146,6 @@
 (defparameter *l* '(y x &optional (z nil zp)))
 (defparameter *a* (cleavir-code-utilities:parse-ordinary-lambda-list *l*))
 (defparameter *d* (cleavir-code-utilities:canonicalize-declaration-specifiers '((optimize debug speed) (special x y z) (ignore x) (integer x))))
-(defparameter *b* (cleavir-generate-ast::itemize-lambda-list *a*))
-(cleavir-generate-ast::itemize-declaration-specifiers *b* *d*)
 
 
 

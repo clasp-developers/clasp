@@ -56,7 +56,8 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
-             "-d/--describe file   - Describe the clasp data structures for lldb Python API\n"
+             "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
+             "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
              "-U/--unpack-faso (faso-file) - Unpack the faso file into separate object files\n"
              "--noinform           - Don't print startup banner text\n"
@@ -79,6 +80,9 @@ void process_clasp_arguments(CommandLineOptions* options)
              "-w/--wait            - Print the PID and wait for the user to hit a key\n"
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
              "*feature* settings\n"
+             " sanitizer=thread    - Setup codegen for thread sanitizer\n"
+             " sanitizer=memory    - Setup codegen for memory sanitizer\n"
+             " sanitizer=address   - Setup codegen for address sanitizer\n"
              " debug-startup       - Print a message for every top level form at startup (requires DEBUG_SLOW)\n"
              " debug-startup-verbose - Print a message for every top level form and literal read at startup (requires DEBUG_SLOW)\n"
              " debug-run-clang     - Print every clang invocation\n"
@@ -91,6 +95,9 @@ void process_clasp_arguments(CommandLineOptions* options)
              " disable-profiling   - Set cmp::*enable-profiling* to NIL and \n"
              " disable-dbg-generate-dwarf   - Set cmp::*dbg-generate-dwarf* to NIL \n"
              "                       disable generation of DWARF metadata during compilations\n"
+             " force-compile-file-serial - Force compile-file-serial to be used for compilation\n"
+             " dont-start-cando-user - Cando option that disables start-cando-user - lets you start\n"
+             "                         slime and THEN start cando with (start-cando-user)\n"
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
@@ -133,7 +140,11 @@ void process_clasp_arguments(CommandLineOptions* options)
       std::cout << "-mps-";
 #endif
 #ifdef USE_BOEHM
+      #ifdef USE_PRECISE_GC 
+      std::cout << "-boehmprecise-";
+      #else
       std::cout << "-boehm-";
+      #endif
 #endif
       std::cout << CLASP_VERSION << std::endl;
       exit(0);
@@ -178,6 +189,9 @@ void process_clasp_arguments(CommandLineOptions* options)
       options->_HasImageFile = true;
       options->_ImageFile = options->_RawArguments[iarg + 1];
       iarg++;
+    } else if (arg == "-g" || arg == "--debug") {
+      options->_HasDescribeFile = true;
+      options->_DescribeFile = "/tmp/clasp-layout.py";
     } else if (arg == "-d" || arg == "--describe") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --describe,-d"));
       options->_HasDescribeFile = true;

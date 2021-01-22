@@ -53,6 +53,7 @@
                    (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                    (link-time llvm-sys:*accumulated-clang-link-time*))
                (when verbose
+                 #+(or)
                  (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
                                         ""))
@@ -66,7 +67,7 @@
                           (if report-link-time
                               (core:bformat nil "(llvm+link)/real(%1.f%%)" percent-llvm-time)
                               (core:bformat nil "llvm/real(%1.f%%)" percent-llvm-time))))
-                   #+(or)(core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
+                   (core:bformat t "   %s seconds real(%.1f) run(%.1f) llvm(%.1f)%s %s%N"
                                  message
                                  compiler-real-time
                                  compiler-run-time
@@ -85,19 +86,23 @@
 
 ;;; I wonder, why that doesn't take core:*clasp-build-mode* into account
 (defun cfp-output-extension (output-type)
-  (cond
-    ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
-    ((and *generate-faso* (or (eq output-type :object))) "faso")
-    ((and *generate-faso* (or (eq output-type :fasl))) "fasp")
-    ((eq output-type :object) "o")
-    ((eq output-type :fasl) "fasl")
-    ((eq output-type :faso) "faso")
-    ((eq output-type :fasp) "fasp")
-    ((eq output-type :executable) #-windows "" #+windows "exe")
-    (t (error "unsupported output-type ~a" output-type))))
-
-(if (or *generate-faso* (eq *clasp-build-mode* :faso))
-                                               :fasp :fasl)
+  (let ((result (cond
+                  ((eq output-type :bitcode) (if *use-human-readable-bitcode* "ll" "bc"))
+                  ((and (eq *default-object-type* :faso) (eq output-type :object)) "faso")
+                  ((eq output-type :object) "o")
+                  ((eq output-type :fasl) "fasl")
+                  ((eq output-type :faso) "faso")
+                  ((eq output-type :fasoll) "fasoll")
+                  ((eq output-type :fasobc) "fasobc")
+                  ((eq output-type :faspll) "faspll")
+                  ((eq output-type :faspbc) "faspbc")
+                  ((eq output-type :fasp) "fasp")
+                  ((eq output-type :executable) #-windows "" #+windows "exe")
+                  (t (error "unsupported output-type ~a" output-type)))))
+    (let ((build-extension (core:build-extension output-type)))
+      (unless (string= build-extension result)
+        (error "For output-type ~s there is a mismatch between cfp-extension (~s) and build-extension (~s) - if this never happens then get rid of cfp-extension" output-type result build-extension)))
+    result))
 
 (defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
@@ -116,10 +121,11 @@
 ;;; at the level of e.g. whether it returns logical pathname or a
 ;;; physical pathname. Patches to make it more correct are welcome.
 (defun compile-file-pathname (input-file &key (output-file nil output-file-p)
-                                           (output-type :fasl output-type-p)
+                                           (output-type (default-library-type) output-type-p)
 					   type
 					   target-backend
-                                           &allow-other-keys)
+                              &allow-other-keys)
+  (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
   (let* ((pn (if output-file-p
 		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
@@ -140,7 +146,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *triple* nil)
 
-(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file (or *generate-faso* *compile-file-parallel*)))
+(defun generate-obj-asm-stream (module output-stream file-type reloc-model &key (target-faso-file *default-object-type*))
   (with-track-llvm-time
       (progn
         (unless *triple*
@@ -236,8 +242,7 @@ Compile a lisp source file into an LLVM module."
 				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input))
          (module (llvm-create-module (namestring input-pathname)))
-	 (module-name (cf-module-name type given-input-pathname))
-	 warnings-p failure-p)
+	 (module-name (cf-module-name type given-input-pathname)))
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
@@ -251,7 +256,7 @@ Compile a lisp source file into an LLVM module."
                                       :pathname *compile-file-source-debug-pathname*)
             (or module (error "module is NIL"))
             (with-make-new-run-all (run-all-function (namestring input-pathname))
-              (with-literal-table
+              (with-literal-table (:id 0)
                   (loop-read-and-compile-file-forms source-sin environment compile-file-hook))
               (setf run-all-name (llvm-sys:get-name run-all-function))))
           (cmp-log "About to verify the module%N")
@@ -287,6 +292,29 @@ Compile a lisp source file into an LLVM module."
                           count-ht)))
              *track-inlined-functions*)))
 
+(defun default-object-type ()
+  *default-object-type*)
+
+(defun default-library-type (&optional (output-type *default-object-type*))
+  (case output-type
+    (:faso :fasp)
+    (:object :fasl)
+    (:fasoll :faspll)
+    (:fasobc :faspbc)
+    (:faspll :faspll)
+    (:faspbc :faspbc)
+    (otherwise (error "Handle output-type for ~a" output-type))))
+
+(defun maybe-fixup-output-type (output-type output-type-p)
+  (when output-type-p
+    (cond
+      ((eq output-type :object)
+       (setf output-type (default-object-type)))
+      ((eq output-type :fasl)
+       (setf output-type (default-library-type)))))
+  output-type)
+
+
 (defun compile-file-serial (input-file
                             &key
                               (output-file nil output-file-p)
@@ -300,7 +328,7 @@ Compile a lisp source file into an LLVM module."
                               (source-debug-offset 0)
                               ;; output-type can be (or :fasl :bitcode :object)
                               ;; logic needs to be consistent with compile-file-serial and cfp-output-extension
-                              (output-type (if *generate-faso* :fasp :fasl) output-type-p)
+                              (output-type (default-library-type) output-type-p)
                               ;; type can be either :kernel or :user
                               (type :user)
                               ;; A unique prefix for symbols of compile-file'd files that
@@ -315,12 +343,14 @@ Compile a lisp source file into an LLVM module."
                               environment)
   "See CLHS compile-file."
   #+debug-monitor(sys:monitor-message "compile-file ~a" input-file)
+  (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (let* ((*compile-file-parallel* nil))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
     (with-compiler-env ()
-      (let* ((output-path (if output-type-p
-                              (compile-file-pathname input-file :output-file output-file :output-type output-type)
-                              (compile-file-pathname input-file :output-file output-file)))
+      (let* ((output-path
+               (if output-type-p
+                    (compile-file-pathname input-file :output-file output-file :output-type output-type)
+                    (compile-file-pathname input-file :output-file output-file)))
              (*track-inlined-functions* (make-hash-table :test #'equal))
              (output-info-pathname (when output-info (make-pathname :type "info" :defaults output-path)))
              (*compilation-module-index* 0) ; FIXME: necessary?
@@ -353,7 +383,7 @@ Compile a lisp source file into an LLVM module."
                                           :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))
               (gctools:thread-local-cleanup)
-              output-path)))))))
+              (truename output-path))))))))
 
 (defun reloc-model ()
   (cond
@@ -361,9 +391,9 @@ Compile a lisp source file into an LLVM module."
      'llvm-sys:reloc-model-pic-)
     (t 'llvm-sys:reloc-model-undefined)))
 
-(defun output-bitcode (module file)
+(defun output-bitcode (module file &key output-type)
   (with-track-llvm-time
-      (write-bitcode module file)))
+      (write-bitcode module file :output-type output-type)))
 
 (defun output-kernel-fasl (output-file input-file output-type)
   (let ((fasl-output-file (make-pathname :type "fasl" :defaults output-file)))
@@ -372,74 +402,102 @@ Compile a lisp source file into an LLVM module."
       (finish-output))
     (llvm-link fasl-output-file :input-files (list input-file) :input-type :bitcode)))
 
+(defun compile-file-output-module-to-faso (module output-file input-file
+                                           &key position (output-bitcode t))
+  "Generate a faso file from the module"
+  (when output-bitcode
+    (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                    :output-file output-file :output-type :bitcode)))
+      (ensure-directories-exist temp-bitcode-file)
+      (when *compile-verbose*
+        (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+      (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
+                      :output-type :object)))
+  (when *compile-verbose*
+    (bformat t "Writing faso file to: %s%N" output-file)
+    (finish-output))
+  (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
+                                         'llvm-sys:code-gen-file-type-object-file
+                                         (reloc-model))))
+    (core:write-faso output-file (list stream) :start-object-id position)))
+
 (defun compile-file-output-module (module output-file output-type output-path input-file type
-                                   &key position)
+                                   &key position (output-bitcode t))
   (when (null output-path)
     (error "The output-path is nil for input filename ~a~%" input-file))
   (ensure-directories-exist output-path)
-  (cond ((eq output-type :object)
-         (when *compile-verbose*
-           (bformat t "Writing object to: %s%N" (core:coerce-to-filename output-path)))
-         ;; save the bitcode so we can look at it.
-         (let ((temp-bitcode-file
-                 (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (when *compile-verbose*
-             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-           (output-bitcode module temp-bitcode-file)
-           (prog1
-               (compile-file-generate-obj-asm module output-path
-                                              :file-type 'llvm-sys:code-gen-file-type-object-file
-                                              :reloc-model (reloc-model))
-             (when (eq type :kernel)
-               (output-kernel-fasl output-file temp-bitcode-file :object)))))
-        ((eq output-type :faso)
-         (let ((temp-bitcode-file (compile-file-pathname input-file
-                                                         :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (when *compile-verbose*
-             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (when *compile-verbose*
-             (bformat t "Writing faso file to: %s%N" output-file)
-             (finish-output))
-           (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
-                                                  'llvm-sys:code-gen-file-type-object-file
-                                                  (reloc-model))))
-             (core:write-faso output-file (list stream) :start-object-id position))))
-        ((eq output-type :bitcode)
-         (when *compile-verbose*
-           (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
-         (prog1 (output-bitcode module (core:coerce-to-filename output-path))
-           (when (eq type :kernel)
-             (output-kernel-fasl output-file output-path :bitcode))))
-        ((eq output-type :fasp)
-         (let ((temp-bitcode-file (compile-file-pathname input-file
-                                                         :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (when *compile-verbose*
-             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (when *compile-verbose*
-             (bformat t "Writing faso file to: %s%N" output-file)
-             (finish-output))
-           (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
-                                                  'llvm-sys:code-gen-file-type-object-file
-                                                  (reloc-model))))
-             (core:write-faso output-file (list stream) :start-object-id position))))
-        ((eq output-type :fasl)
-         (let ((temp-bitcode-file (compile-file-pathname input-file
-                                                         :output-file output-file :output-type :bitcode)))
-           (ensure-directories-exist temp-bitcode-file)
-           (when *compile-verbose*
-             (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
-           (output-bitcode module (core:coerce-to-filename temp-bitcode-file))
-           (when *compile-verbose*
-             (bformat t "Writing fasl file to: %s%N" output-file)
-             (finish-output))
-           (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
-        (t ;; Unknown
-         (error "Add support to file of type: ~a" output-type)))
+  (cond
+    ((eq output-type :object)
+     (when *compile-verbose*
+       (bformat t "Writing object to: %s%N" (core:coerce-to-filename output-path)))
+     ;; save the bitcode so we can look at it.
+     (let ((temp-bitcode-file
+             (compile-file-pathname input-file :output-file output-file :output-type :bitcode)))
+       (ensure-directories-exist temp-bitcode-file)
+       (when *compile-verbose*
+         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+       (output-bitcode module temp-bitcode-file
+                       :output-type (default-library-type output-type))
+       (prog1
+           (compile-file-generate-obj-asm module output-path
+                                          :file-type 'llvm-sys:code-gen-file-type-object-file
+                                          :reloc-model (reloc-model))
+         (when (eq type :kernel)
+           (output-kernel-fasl output-file temp-bitcode-file :object)))))
+    ((eq output-type :faso)
+     (compile-file-output-module-to-faso module output-file input-file
+                                         :position position :output-bitcode output-bitcode))
+    ((eq output-type :bitcode)
+     (when *compile-verbose*
+       (bformat t "Writing bitcode to: %s%N" (core:coerce-to-filename output-path)))
+     (prog1 (output-bitcode module (core:coerce-to-filename output-path)
+                            :output-type (default-library-type output-type))
+       (when (eq type :kernel)
+         (output-kernel-fasl output-file output-path :bitcode))))
+    ((eq output-type :fasp)
+     (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                     :output-file output-file :output-type :bitcode)))
+       (ensure-directories-exist temp-bitcode-file)
+       (when *compile-verbose*
+         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+       (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
+                       :output-type :object)
+       (when *compile-verbose*
+         (bformat t "Writing faso file to: %s%N" output-file)
+         (finish-output))
+       (let ((stream (generate-obj-asm-stream module :simple-vector-byte8
+                                              'llvm-sys:code-gen-file-type-object-file
+                                              (reloc-model))))
+         (core:write-faso output-file (list stream) :start-object-id position))))
+    ((member output-type '(:fasoll :faspll))
+     (let ((filename (compile-file-pathname input-file :output-file output-file :output-type output-type)))
+       (ensure-directories-exist filename)
+       (when *compile-verbose*
+         (format t "Writing ~a file to: ~a~%" output-type filename))
+       (with-atomic-file-rename (temp-pathname filename)
+         (with-open-file (fout temp-pathname :direction :output :if-exists :supersede)
+           (llvm-sys:dump-module module fout)))))
+    ((member output-type '(:fasobc :faspbc))
+     (let ((filename (compile-file-pathname input-file :output-file output-file :output-type output-type)))
+       (ensure-directories-exist filename)
+       (when *compile-verbose*
+         (format t "Writing ~a file to: ~a~%" output-type filename))
+       (with-atomic-file-rename (temp-pathname filename)
+         (llvm-sys:write-bitcode-to-file module (namestring temp-pathname)))))
+    ((eq output-type :fasl)
+     (let ((temp-bitcode-file (compile-file-pathname input-file
+                                                     :output-file output-file :output-type :bitcode)))
+       (ensure-directories-exist temp-bitcode-file)
+       (when *compile-verbose*
+         (bformat t "Writing temporary bitcode file to: %s%N" temp-bitcode-file))
+       (output-bitcode module (core:coerce-to-filename temp-bitcode-file)
+                       :output-type :object)
+       (when *compile-verbose*
+         (bformat t "Writing fasl file to: %s%N" output-file)
+         (finish-output))
+       (llvm-link output-file :input-files (list temp-bitcode-file) :input-type :bitcode)))
+    (t ;; Unknown
+     (error "Add support to file of type: ~a" output-type)))
   (with-track-llvm-time
       (llvm-sys:module-delete module)))
 
@@ -454,6 +512,7 @@ Compile a lisp source file into an LLVM module."
     (let ((cmp:*cleavir-compile-hook* nil)
           (cmp:*cleavir-compile-file-hook* nil)
           (core:*use-cleavir-compiler* nil)
+          (cmp:*compile-file-parallel* nil)
           (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
-      (apply 'compile-file input-file args)))
+      (apply 'compile-file-serial input-file args)))
   (export 'bclasp-compile-file))

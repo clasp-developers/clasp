@@ -15,6 +15,7 @@ a constructor ought to be computed, before make-instance.
 
 ;;; MAPPING
 
+;;; FIXME: Should be weak-key
 (defvar *constructor-cells* (make-hash-table :test #'eq))
 
 (defun make-invalid-cell (class-designator keys)
@@ -94,6 +95,7 @@ a constructor ought to be computed, before make-instance.
 (defun invalidate-designated-constructors (designator)
   (map-constructor-cells #'invalidate-cell designator))
 
+;;; Called from finalize-inheritance.
 (defun invalidate-class-constructors (class)
   (invalidate-designated-constructors class)
   (let ((name (proper-class-name class)))

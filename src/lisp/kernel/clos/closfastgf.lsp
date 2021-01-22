@@ -156,14 +156,18 @@
 
 #-debug-fastgf
 (eval-when (:execute :load-toplevel)
-  (defmacro gf-log-sorted-roots (roots) nil)
-  (defmacro gf-log-dispatch-graph (gf) nil)
-  (defmacro gf-log-dispatch-miss (msg gf args) nil)
-  (defmacro gf-log-dispatch-miss-followup (msg &rest args) nil)
-  (defmacro gf-log-dispatch-miss-message (msg &rest args) nil)
-  (defmacro gf-log (fmt &rest fmt-args) nil)
-  (defmacro gf-log-noindent (fmt &rest fmt-args) nil)
-  (defmacro gf-do (&body code) nil)
+  (defmacro gf-log-sorted-roots (roots) (declare (ignore roots)))
+  (defmacro gf-log-dispatch-graph (gf) (declare (ignore gf)))
+  (defmacro gf-log-dispatch-miss (msg gf args)
+    (declare (ignore msg gf args)))
+  (defmacro gf-log-dispatch-miss-followup (msg &rest args)
+    (declare (ignore msg args)))
+  (defmacro gf-log-dispatch-miss-message (msg &rest args)
+    (declare (ignore msg args)))
+  (defmacro gf-log (fmt &rest fmt-args) (declare (ignore fmt fmt-args)))
+  (defmacro gf-log-noindent (fmt &rest fmt-args)
+    (declare (ignore fmt fmt-args)))
+  (defmacro gf-do (&body code) (declare (ignore code)))
   (defun incf-debug-fastgf-indent ())
   (defun decf-debug-fastgf-indent ())
   )
@@ -175,29 +179,28 @@
 ;;;   codegen-dispatcher to generate a new dispatch function when needed
 ;;;
 
+;; Returns true iff the instance was updated.
+(defun maybe-update-instance (instance)
+  (when (and (core:instancep instance)
+             (si:sl-boundp (si:instance-sig instance)))
+    (with-early-accessors (+standard-class-slots+)
+      (let ((instance-stamp (core:instance-stamp instance))
+            (class-stamp (core:class-stamp-for-instances
+                          (core:instance-class instance))))
+        (unless (= instance-stamp class-stamp)
+          (gf-log "   instance-stamp matches that of class -> %s%N"
+                  (= instance-stamp class-stamp))
+          (gf-log "(core:instance-stamp i) -> %s%N" instance-stamp)
+          (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N"
+                  class-stamp)
+          (update-instance instance)
+          t)))))
+
 (defun maybe-update-instances (arguments)
   (let ((invalid-instance nil))
-    (dolist (i arguments)
-      (when (and (core:instancep i)
-                 (si:sl-boundp (si:instance-sig i)))
-        (clos::with-early-accessors (+standard-class-slots+)
-          (unless (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i)))
-            (gf-log "   instance-stamp matches that of class -> %s%N"  (= (core:instance-stamp i) (core:class-stamp-for-instances (core:instance-class i))))
-            (gf-log "(core:instance-stamp i) -> %s%N" (core:instance-stamp i))
-            (gf-log "(core:class-stamp-for-instances (core:instance-class i)) -> %s%N" (core:class-stamp-for-instances (core:instance-class i)))
-            (setf invalid-instance t)
-            (update-instance i)))))
-    invalid-instance))
+    (dolist (i arguments invalid-instance)
+      (setf invalid-instance (or (maybe-update-instance i) invalid-instance)))))
 
-;; A call history selector a list of classes and eql-specializers
-;; So to compute the applicable methods we need to consider the following cases for each
-;; possible entry selector ...
-;; 1) The selector is a list of just classes
-;;      In that case behavior like that of compute-applicable-methods-using-classes can be used
-;; 2) The selector is a mix of classes and eql-specializers
-;;      In this case something like compute-applicable-methods needs to be used - but
-;;         compute-applicable-methods takes a list of ARGUMENTS
-;;        So I think we 
 (defun applicable-method-p (method specializers)
   (loop for spec in (method-specializers method)
         for argspec in specializers
@@ -205,6 +208,25 @@
                       (and (eql-specializer-p argspec)
                            (eql (eql-specializer-object argspec)
                                 (eql-specializer-object spec))))
+                     ((eql-specializer-p argspec)
+                      ;; This is (typep (e-s-o ...) spec) but we know spec is
+                      ;; a class so we skip to this.
+                      (subclassp (class-of (eql-specializer-object argspec))
+                                 spec))
+                     (t (subclassp argspec spec)))))
+
+;;; This "fuzzed" applicable-method-p is used in
+;;; update-call-history-for-add-method, below, to handle added EQL-specialized
+;;; methods properly. See bug #1009.
+(defun fuzzed-applicable-method-p (method specializers)
+  (loop for spec in (method-specializers method)
+        for argspec in specializers
+        always (cond ((eql-specializer-p spec)
+                      (if (eql-specializer-p argspec)
+                          (eql (eql-specializer-object argspec)
+                               (eql-specializer-object spec))
+                          (subclassp argspec
+                                     (class-of (eql-specializer-object spec)))))
                      ((eql-specializer-p argspec)
                       (subclassp (class-of (eql-specializer-object argspec))
                                  spec))
@@ -305,7 +327,7 @@
           (loop repeat nreq collect (gensym "REQ-ARG")))))
 
 (defun compute-outcome
-    (generic-function method-combination methods actual-specializers &key log)
+    (generic-function method-combination methods actual-specializers)
   ;; Calculate the effective-method-function as well as an optimized one
   ;; so that we can apply the e-m-f to the arguments if we need to debug the optimized version.
   ;; This will hopefully be expanded, but for now, we can at least optimize standard slot accesses.
@@ -402,19 +424,8 @@
   (let ((call-history (copy-list orig-call-history)))
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
-          when (applicable-method-p method specializers)
-            do (let* ((methods (compute-applicable-methods-using-specializers
-                                generic-function
-                                specializers))
-                      (outcome (outcome
-                                generic-function
-                                (generic-function-method-combination
-                                 generic-function)
-                                ;; I have actual specializers from the call history
-                                ;; in specializers
-                                methods specializers)))
-                 (rplacd entry outcome)))
-    call-history))
+          unless (fuzzed-applicable-method-p method specializers)
+            collect entry)))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
   "When a method is added then we update the effective-method-functions for
@@ -429,20 +440,7 @@ FIXME!!!! This code will have problems with multithreading if a generic function
   (let (new-call-history)
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
-          if (applicable-method-p method specializers)
-            do (let* ((methods (compute-applicable-methods-using-specializers
-                                generic-function
-                                specializers))
-                      (outcome (if methods
-                                   (outcome
-                                    generic-function
-                                    (generic-function-method-combination
-                                     generic-function)
-                                    methods specializers)
-                                   nil)))
-                 (when outcome
-                   (push (cons (car entry) outcome) new-call-history)))
-          else
+          unless (applicable-method-p method specializers)
             do (push (cons (car entry) (cdr entry)) new-call-history))
     new-call-history))
 
@@ -483,7 +481,8 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                :test #'eq))))
 
 (defun memoize-call (generic-function new-entry)
-  "Memoizes the call and installs a new discriminator function - returns nothing"
+  "Add an entry to the generic function's call history based on a call.
+Return true iff a new entry was added; so for example it will return false if another thread has already added the entry."
   (let ((memoized-key (car new-entry)))
     (gf-log "Specializers key: %s%N" memoized-key)
     (gf-log "The specializer-profile: %s%N"
@@ -496,9 +495,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
             for found-key = (call-history-find-key call-history memoized-key)
             for new-call-history = (if found-key
                                        (progn
-                                         (gf-log "Error: For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
+                                         (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
                                                  (generic-function-name generic-function))
-                                         call-history)
+                                         (return-from memoize-call nil))
                                        (progn
                                          (gf-log "Pushing entry into call history%N")
                                          (cons new-entry call-history)))
@@ -522,8 +521,18 @@ FIXME!!!! This code will have problems with multithreading if a generic function
       #+debug-long-call-history
       (when (> (length (generic-function-call-history generic-function)) 16384)
         (error "DEBUG-LONG-CALL-HISTORY is triggered - The call history for ~a is longer (~a entries) than 16384" generic-function (length (generic-function-call-history generic-function))))
-      (force-dispatcher generic-function)
-      (values))))
+      t)))
+
+(defun memoize-calls (generic-function new-entries)
+  (if new-entries
+      (loop with any = nil
+            for new-entry in new-entries
+            when (memoize-call generic-function new-entry)
+              do (setf any t)
+            finally (return any))
+      ;; If there are no new entries, the call history is not altered,
+      ;; so return false.
+      nil))
 
 (defun perform-outcome (outcome arguments vaslist-arguments)
   (cond
@@ -549,37 +558,34 @@ FIXME!!!! This code will have problems with multithreading if a generic function
 #+debug-fastgf
 (defvar *dispatch-miss-start-time*)
 
-(defun all-eql-specialized-p (specializer-profile arguments)
-  ;; Make sure that any argument in a position with eql-specializers
-  ;; is an eql specializer object.
-  ;; If they all are, return a memoization key. If not, NIL.
-  ;; See comment in do-dispatch-miss for rationale.
-  (loop for spec across specializer-profile
-        for arg in arguments
-        collect (if (consp spec) ; this parameter is eql-specialized by some method
-                    (if (member arg spec)
-                        (intern-eql-specializer arg)
-                        (return-from all-eql-specialized-p nil))
-                    (class-of arg))
-          into key
-        finally (return (coerce key 'simple-vector))))
+;;; Given a list of lists of specializers, expand out all combinations.
+;;; So for example, ((a b) (c) (d e)) => ((a c d) (b c d) (a c e) (b c e))
+;;; in some arbitrary order.
+(defun specializers-combinate (list)
+  (if (null list)
+      '(nil)
+      (loop with next = (specializers-combinate (rest list))
+            for elem in (first list)
+            nconc (loop for rest in next collect (cons elem rest)))))
 
 ;;; Returns two values: the outcome to perform, and a new call history entry,
 ;;; or NIL if none should be added (e.g. due to eql specialization).
 ;;; This function has no side effects. DO-DISPATCH-MISS is in charge of that.
 (defun dispatch-miss-info (generic-function arguments)
   (let ((argument-classes (mapcar #'class-of arguments)))
-    (multiple-value-bind (method-list ok)
+    (multiple-value-bind (class-method-list ok)
         (compute-applicable-methods-using-classes generic-function argument-classes)
       (gf-log "Called compute-applicable-methods-using-classes - returned method-list: %s  ok: %s%N"
-              method-list ok)
+              class-method-list ok)
       (let* ((method-list (if ok
-                              method-list
-                              (compute-applicable-methods generic-function arguments)))
+                              class-method-list
+                              (compute-applicable-methods
+                               generic-function arguments)))
+             (method-combination
+               (generic-function-method-combination generic-function))
              (final-methods (final-methods method-list argument-classes))
              (outcome (outcome
-                       generic-function
-                       (generic-function-method-combination generic-function)
+                       generic-function method-combination
                        final-methods argument-classes)))
         (values
          outcome
@@ -597,37 +603,52 @@ FIXME!!!! This code will have problems with multithreading if a generic function
                                       generic-function arguments)
                 (let ((key-length
                         (length (safe-gf-specializer-profile generic-function))))
-                  (cons (coerce (subseq argument-classes 0 key-length) 'simple-vector)
-                        outcome)))
-               ((eq (class-of generic-function) (find-class 'standard-generic-function))
+                  (list
+                   (cons (coerce (subseq argument-classes 0 key-length)
+                                 'simple-vector)
+                         outcome))))
+               ((eq (class-of generic-function)
+                    (find-class 'standard-generic-function))
                 ;; we have a call with eql specialized arguments.
-                ;; We can still memoize this sometimes, as long as the gf is standard.
+                ;; We can still memoize this sometimes, as long as the gf is
+                ;; standard so we don't need to worry about MOP.
                 ;; What we need to watch out for it the following situation-
                 ;; (defmethod foo ((x (eql 'x))) ...)
                 ;; (foo 'y)
-                ;; If we memoize this naively, we'll put in an entry for class SYMBOL,
-                ;; and then if we call (foo 'x) later, it will go to that instead of properly
-                ;; missing the cache.
-                ;; EQL specializers play merry hob hell with the assumption of fastgf that
-                ;; as long as you treat all classes distinctly there are no problems with
-                ;; inheritance, basically.
-                ;; So, we only memoize the (foo 'x) call, and leave the more general symbol
-                ;; specialization to slow path. We could fix it up further to have that
-                ;; fast-path as well, but I think it's more involved, and probably not worth it,
-                ;; as most functions with eql specialization
-                ;; only use that argument with eql specializer objects, or so I assume.
-                (let ((maybe-memo-key
-                        (all-eql-specialized-p
-                         (generic-function-specializer-profile generic-function)
-                         arguments)))
-                  (cond (maybe-memo-key
-                         (gf-log-dispatch-miss "Memoizing eql-specialized call"
-                                               generic-function arguments)
-                         (cons maybe-memo-key outcome))
-                        (t
-                         (gf-log-dispatch-miss "Cannot memoize eql-specialized call"
-                                               generic-function arguments)
-                         nil))))
+                ;; If we memoize this naively,
+                ;; we'll put in an entry for class SYMBOL,
+                ;; and then if we call (foo 'x) later,
+                ;; it will go to that instead of properly missing the cache.
+                ;; EQL specializers play merry hob hell with the assumption of
+                ;; fastgf that as long as you treat all classes distinctly
+                ;; there are no problems with inheritance, basically.
+                ;; We deal with this by memoizing every combination of eql
+                ;; specializers for the given classes at once.
+                (gf-log-dispatch-miss "Memoizing eql-specialized call"
+                                      generic-function arguments)
+                (loop for spec across (safe-gf-specializer-profile
+                                       generic-function)
+                      for argument-class in argument-classes
+                      collect (list*
+                               argument-class
+                               (if (consp spec) ; eql specialized
+                                   (loop for obj in spec
+                                         when (typep obj argument-class)
+                                           collect (intern-eql-specializer obj))
+                                   nil))
+                        into combo
+                      finally (let ((speclists (specializers-combinate combo)))
+                                (return
+                                  (loop for speclist in speclists
+                                        for key = (coerce speclist
+                                                          'simple-vector)
+                                        for methods = (compute-applicable-methods-using-specializers generic-function speclist)
+                                        for outcome = (outcome
+                                                       generic-function
+                                                       method-combination
+                                                       methods
+                                                       argument-classes)
+                                        collect (cons key outcome))))))
                (t
                 ;; No more options: we just don't memoize.
                 ;; This only occurs with eql specializers,
@@ -647,10 +668,10 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
                :min-nargs min :max-nargs max))))
   (let (#+debug-fastgf
         (*dispatch-miss-start-time* (get-internal-real-time)))
-    (multiple-value-bind (outcome new-ch-entry)
+    (multiple-value-bind (outcome new-ch-entries)
         (dispatch-miss-info generic-function arguments)
-      (when new-ch-entry
-        (memoize-call generic-function new-ch-entry))
+      (when (memoize-calls generic-function new-ch-entries)
+        (force-dispatcher generic-function))
       (gf-log "Performing outcome %s%N" outcome)
       #+debug-fastgf
       (let ((results (multiple-value-list
@@ -702,6 +723,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun force-dispatcher (generic-function)
   (let (log-output)
+    #-debug-fastgf (declare (ignore log-output))
     #+debug-fastgf
     (progn
       (if (eq (class-of generic-function) (find-class 'standard-generic-function))
@@ -793,10 +815,11 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 (defun call-history-entry-key-contains-specializers (key specializers)
   (loop for specializer in specializers
-        do (when (find specializer key :test #'eq)
-             (return-from call-history-entry-key-contains-specializers t))))
+        when (find specializer key :test #'eq)
+          return t))
 
 (defun generic-function-call-history-separate-entries-with-specializers (gf call-history specializers)
+  (declare (ignorable gf))
   (gf-log "generic-function-call-history-remove-entries-with-specializers  gf: %s%N    specializers: %s%N" gf specializers)
   #+debug-long-call-history
   (when (> (length call-history) 16384)
@@ -837,8 +860,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
          (_ (gf-log "        %s%N" generic-functions))
          (unique-generic-functions (remove-duplicates generic-functions))
          (_ (gf-log "  unique-generic-functions...%N"))
-         (_ (gf-log "        %s%N" unique-generic-functions))
-         edited)
+         (_ (gf-log "        %s%N" unique-generic-functions)))
     (gf-log "   subclasses* -> %s%N" all-subclasses)
     ;;(when core:*debug-dispatch* (format t "    generic-functions: ~a~%" generic-functions))
     (loop for gf in unique-generic-functions

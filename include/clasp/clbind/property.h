@@ -59,7 +59,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
- GetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : core::Closure_O(entry_point,fdesc), _MemberPtr(p){};
+  GetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -83,7 +83,7 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
- GetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : Closure_O(entry_point,fdesc), _MemberPtr(p){};
+  GetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -117,7 +117,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
- SetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : core::Closure_O(entry_point,fdesc), _MemberPtr(p){};
+  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -143,7 +143,7 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
- SetterMethoid(core::FunctionDescription* fdesc, VariablePtrType p) : Closure_O(entry_point,fdesc), _MemberPtr(p){};
+  SetterMethoid(core::FunctionDescription_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);

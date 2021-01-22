@@ -154,6 +154,7 @@ all functions."
               (values-list results)))))))
 
 (defun complex-trace (fname break exitbreak entrycond exitcond entry exit step)
+  (declare (ignore step))
   `(let ((oldf (fdefinition ',fname)))
      (defun ,fname (&rest args)
        (let ((*trace-level* (1+ *trace-level*)))
@@ -362,7 +363,7 @@ for Stepper mode commands."
 (defun step-next ()
   (throw *step-tag* nil))
 
-(defun step-skip (&optional (when 0))
+(defun step-skip ()
   (setf *step-action* 0)
   (throw *step-tag* nil))
 

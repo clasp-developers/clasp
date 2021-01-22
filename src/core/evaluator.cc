@@ -151,22 +151,22 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
   int nargs = lenRest + 0;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a0,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_VASLIST(a0,var);
     GET_AND_ADVANCE_VASLIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 3: {
     GET_AND_ADVANCE_VASLIST(a0,var);
     GET_AND_ADVANCE_VASLIST(a1,var);
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=4
     // if lenRest == 4 the alloca will be zero sized, which should be fine.
@@ -179,7 +179,7 @@ T_mv apply0_inner_valist(Function_sp func, VaList_sp v) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -192,16 +192,16 @@ T_mv apply1_inner_valist(Function_sp func, VaList_sp v, T_O *a0) {
   int nargs = lenRest + 1;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_VASLIST(a1,var);
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=3
     GET_AND_ADVANCE_VASLIST(a1,var);
@@ -211,7 +211,7 @@ T_mv apply1_inner_valist(Function_sp func, VaList_sp v, T_O *a0) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -224,11 +224,11 @@ T_mv apply2_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1) {
   int nargs = lenRest + 2;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_VASLIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=2
     GET_AND_ADVANCE_VASLIST(a2,var);
@@ -237,7 +237,7 @@ T_mv apply2_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -250,7 +250,7 @@ T_mv apply3_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1, T_O *a
   int nargs = lenRest + 3;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=1
     GET_AND_ADVANCE_VASLIST(a3,var);
@@ -258,7 +258,7 @@ T_mv apply3_inner_valist(Function_sp func, VaList_sp v, T_O *a0, T_O *a1, T_O *a
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_VASLIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -278,7 +278,7 @@ T_mv apply4_inner_valist(Function_sp func, VaList_sp v,
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], fixed);
   for (; variadic_idx < (nargs - REG_ARGS); ++variadic_idx)
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], var);
-  return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+  return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
 
 // These substantially recapitulate the above, but with GET_AND_ADVANCE_LIST.
@@ -297,22 +297,22 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
   int nargs = lenRest + 0;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,NULL,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a0,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_LIST(a0,var);
     GET_AND_ADVANCE_LIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 3: {
     GET_AND_ADVANCE_LIST(a0,var);
     GET_AND_ADVANCE_LIST(a1,var);
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=4
     GET_AND_ADVANCE_LIST(a0,var);
@@ -323,7 +323,7 @@ T_mv apply0_inner_list(Function_sp func, T_sp var) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -342,16 +342,16 @@ T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
   int nargs = lenRest + 1;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,NULL,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,NULL,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a1,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 2: {
     GET_AND_ADVANCE_LIST(a1,var);
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=3
     GET_AND_ADVANCE_LIST(a1,var);
@@ -361,7 +361,7 @@ T_mv apply1_inner_list(Function_sp func, T_sp var, T_O *a0) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -380,11 +380,11 @@ T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
   int nargs = lenRest + 2;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,NULL,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,NULL,NULL);
   }
   case 1: {
     GET_AND_ADVANCE_LIST(a2,var);
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=2
     GET_AND_ADVANCE_LIST(a2,var);
@@ -393,7 +393,7 @@ T_mv apply2_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -412,7 +412,7 @@ T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
   int nargs = lenRest + 3;
   switch (lenRest) {
   case 0: {
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,NULL);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,NULL);
   }
   default: { // lenRest>=1
     GET_AND_ADVANCE_LIST(a3,var);
@@ -420,7 +420,7 @@ T_mv apply3_inner_list(Function_sp func, T_sp var, T_O *a0, T_O *a1, T_O *a2) {
     for ( size_t idx = 0; idx<(nargs-REG_ARGS); ++idx ) {
       GET_AND_ADVANCE_LIST(variadic[idx],var);
     }
-    return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+    return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
   }
   }
 }
@@ -445,7 +445,7 @@ T_mv apply4_inner_list(Function_sp func, T_sp var,
     GET_AND_ADVANCE_VASLIST(variadic[variadic_idx], fixed);
   for (; variadic_idx < (nargs - REG_ARGS); ++variadic_idx)
     GET_AND_ADVANCE_LIST(variadic[variadic_idx], var);
-  return (*func).entry.load()(func.raw_(),nargs,a0,a1,a2,a3);
+  return (*func).entry()(func.raw_(),nargs,a0,a1,a2,a3);
 }
 
 /* The idea is that given a call to apply: (apply f1 f2... fn var),
@@ -964,9 +964,6 @@ namespace core {
     }
 
 
-#define ARGS_af_interpreter_lookup_variable "(symbol env)"
-#define DECL_af_interpreter_lookup_variable ""
-#define DOCS_af_interpreter_lookup_variable "environment_lookup_variable"
     T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
         if (env.notnilp()) {
             int depth, index;
@@ -2013,23 +2010,52 @@ namespace core {
             T_mv result;
             LOG(BF("Evaluating atom: %s") % exp->__repr__());
             if (exp.fixnump() || exp.characterp() || exp.single_floatp()) {
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+              }
+#endif
                 return Values(exp);
             } else if (Symbol_sp sym = exp.asOrNull<Symbol_O>()) {
                 _BLOCK_TRACEF(BF("Evaluating symbol: %s") % exp->__repr__());
-                if (sym->isKeywordSymbol())
+                if (sym->isKeywordSymbol()) {
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+              }
+#endif
                     return Values(sym);
+                }
                 if (ext__symbol_macro(sym, environment).notnilp()) {
                     T_sp texpr;
                     {
                         texpr = cl__macroexpand(sym, environment);
                     }
                     result = eval::evaluate(texpr, environment);
+#ifdef DEBUG_EVALUATE
+              if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+                printf("%s:%d evaluate_atom returning %s\n", __FILE__, __LINE__, _rep_(result).c_str());
+              }
+#endif
                     return (result);
                 }
                 result = af_interpreter_lookup_variable(sym, environment);
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate variable %s -> %s\n", __FILE__, __LINE__, _rep_(sym).c_str(), _rep_(result).c_str());
+          }
+#endif                
                 return (result);
             }
             LOG(BF(" Its the self returning object: %s") % exp->__repr__());
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate return  %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+          }
+#endif                
             return (Values(exp));
         }
 
@@ -2150,14 +2176,19 @@ namespace core {
             return eval::funcall(comp::_sym_STARimplicit_compile_hookSTAR->symbolValue(), exp, environment);
         }
 
-        //#define DEBUG_EVALUATE 1
     
         DONT_OPTIMIZE_WHEN_DEBUG_RELEASE
         T_mv evaluate(T_sp exp, T_sp environment) {
 #ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
             printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
-            //    	    Environment_sp localEnvironment = environment;
-            //            printf("%s:%d evaluate %s environment@%p\n", __FILE__, __LINE__, _rep_(exp).c_str(), environment.raw_());
+            T_sp localEnv = environment;
+            while (localEnv.notnilp()) {
+              printf("    in environment@%p -> %s\n", environment.raw_(), Environment_O::clasp_summaryOfContents(localEnv).c_str());
+              localEnv = gc::As<Environment_sp>(localEnv)->getParentEnvironment();
+            }
+          }
 #endif
             //            printf("    environment: %s\n", _rep_(environment).c_str() );
             ASSERT(environment.generalp());
@@ -2170,7 +2201,14 @@ namespace core {
                 printf("core::eval::evaluate depth[%5d] -> %s\n", _evaluateDepth, _rep_(exp).c_str());
             }
             if (!exp.consp()) {
-                return evaluate_atom(exp, environment);
+              T_sp result = evaluate_atom(exp, environment);
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+          //printf("%s:%d evaluate %s\n", __FILE__, __LINE__, _rep_(exp).c_str());
+            printf("%s:%d evaluate_atom returned  %s\n", __FILE__, __LINE__, _rep_(result).c_str());
+          }
+#endif              
+              return Values(result);
             }
             //
             // If it reached here then exp is a cons
@@ -2246,7 +2284,9 @@ namespace core {
                 T_sp theadFunc = af_interpreter_lookup_macro(headSym, environment);
                 if (theadFunc.notnilp()) {
 #ifdef DEBUG_EVALUATE
-                    printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d %s is macro\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          }
 #endif
                     T_sp expanded;
                     /* macros are expanded again and again and again */
@@ -2271,7 +2311,9 @@ namespace core {
                 //
                 //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
 #ifdef DEBUG_EVALUATE
-                printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+          }
 #endif
                 size_t nargs = cl__length(oCdr(form));
                 T_sp headFunc = theadFunc;
@@ -2281,6 +2323,18 @@ namespace core {
                     (*callArgs)[argIdx] = eval::evaluate(CONS_CAR(cur), environment).raw_();
                     ++argIdx;
                 }
+#ifdef DEBUG_EVALUATE
+          if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+            printf("%s:%d evaluate %s is function\n", __FILE__, __LINE__, _rep_(headSym).c_str());
+            for (size_t ia=0; ia<argIdx; ++ia) {
+              T_sp obj((gctools::Tagged)(*callArgs)[ia]);
+              printf("    arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+            }
+            if (_rep_(headSym)=="REPLACE-ALL-USES-WITH") {
+              printf("%s:%d About to hit error\n", __FILE__, __LINE__ );
+            }
+          }
+#endif
                 Vaslist valist_struct(callArgs);
                 VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
                 try {
@@ -2420,65 +2474,65 @@ namespace core {
 namespace core {
 
 
-    CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
-    CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
-        ql::list l;
-        l << cl::_sym_progn;
-        l << cl::_sym_block;
-        l << cl::_sym_catch;
-        l << cl::_sym_eval_when;
-        l << cl::_sym_flet;
-        l << cl::_sym_function;
-        l << cl::_sym_the;
-        l << cl::_sym_go;
-        l << cl::_sym_if;
-        l << cl::_sym_labels;
-        l << cl::_sym_let;
-        l << cl::_sym_letSTAR;
-        l << cl::_sym_locally;
-        l << cl::_sym_macrolet;
-        l << cl::_sym_multiple_value_prog1;
-        l << cl::_sym_multiple_value_call;
-        l << core::_sym_debug_message;
-        l << core::_sym_multiple_value_foreign_call;
-        l << core::_sym_foreign_call;
-        l << core::_sym_foreign_call_pointer;
-        l << cl::_sym_progv;
-        l << cl::_sym_quote;
-        l << cl::_sym_return_from;
-        l << cl::_sym_setq;
-        l << cl::_sym_tagbody;
-        l << cl::_sym_throw;
-        l << cl::_sym_unwind_protect;
-        l << cl::_sym_symbol_macrolet;
-        l << cl::_sym_load_time_value;
-        l << ext::_sym_specialVar;
-        l << ext::_sym_lexicalVar;
-        return l.cons();
-    }
+CL_DOCSTRING("Return a list of all special operators as defined in aclasp");
+CL_DEFUN core::List_sp core__aclasp_list_of_all_special_operators() {
+  ql::list l;
+  l << cl::_sym_progn;
+  l << cl::_sym_block;
+  l << cl::_sym_catch;
+  l << cl::_sym_eval_when;
+  l << cl::_sym_flet;
+  l << cl::_sym_function;
+  l << cl::_sym_the;
+  l << cl::_sym_go;
+  l << cl::_sym_if;
+  l << cl::_sym_labels;
+  l << cl::_sym_let;
+  l << cl::_sym_letSTAR;
+  l << cl::_sym_locally;
+  l << cl::_sym_macrolet;
+  l << cl::_sym_multiple_value_prog1;
+  l << cl::_sym_multiple_value_call;
+  l << core::_sym_debug_message;
+  l << core::_sym_multiple_value_foreign_call;
+  l << core::_sym_foreign_call;
+  l << core::_sym_foreign_call_pointer;
+  l << cl::_sym_progv;
+  l << cl::_sym_quote;
+  l << cl::_sym_return_from;
+  l << cl::_sym_setq;
+  l << cl::_sym_tagbody;
+  l << cl::_sym_throw;
+  l << cl::_sym_unwind_protect;
+  l << cl::_sym_symbol_macrolet;
+  l << cl::_sym_load_time_value;
+  l << ext::_sym_specialVar;
+  l << ext::_sym_lexicalVar;
+  return l.cons();
+}
 
-    SYMBOL_SC_(CorePkg, processDeclarations);
-    SYMBOL_EXPORT_SC_(ClPkg, eval);
+SYMBOL_SC_(CorePkg, processDeclarations);
+SYMBOL_EXPORT_SC_(ClPkg, eval);
     //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
     //	    Defun(extractDeclaresDocstringCode);
-    SYMBOL_SC_(CorePkg, evaluateVerbosity);
-    SYMBOL_SC_(CorePkg, evaluateDepth);
-    SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
-    SYMBOL_EXPORT_SC_(ClPkg, apply);
-    SYMBOL_EXPORT_SC_(ClPkg, funcall);
-    SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
-    SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
+SYMBOL_SC_(CorePkg, evaluateVerbosity);
+SYMBOL_SC_(CorePkg, evaluateDepth);
+SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
+SYMBOL_EXPORT_SC_(ClPkg, apply);
+SYMBOL_EXPORT_SC_(ClPkg, funcall);
+SYMBOL_EXPORT_SC_(CorePkg, STAReval_with_env_hookSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, interpret_eval_with_env);
 
 
-    gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
-    {
-        switch ((*frame).number_of_arguments()) {
+gctools::return_type funcall_frame(Function_sp func, gctools::Frame* frame)
+{
+  switch ((*frame).number_of_arguments()) {
 #define APPLY_TO_FRAME
 #include <clasp/core/applyToFrame.h>
 #undef APPLY_TO_FRAME
-        default:
-            SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
-        };
-    }
+  default:
+      SIMPLE_ERROR(BF("Function call with %lu arguments exceeded the call-arguments-limit %lu") % (*frame).number_of_arguments() % CALL_ARGUMENTS_LIMIT);
+  };
+}
 
 };

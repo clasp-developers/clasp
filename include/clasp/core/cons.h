@@ -144,9 +144,6 @@ namespace core {
       return sz;
     }
     void setFwdPointer(void* ptr) {
-#if (defined(USE_MPS)&&!defined(MPS_CONS_AWL_POOL))
-      this->_badge = (uintptr_t)(gctools::Header_s::fwd_tag);
-#endif
       this->rawRefSetCdr((uintptr_t)(gctools::Header_s::fwd_tag));
       this->rawRefSetCar((uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag));
     }
@@ -168,10 +165,7 @@ namespace core {
   public:
     std::atomic<T_sp> _Car;
     std::atomic<T_sp> _Cdr;
-#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
-    size_t            _badge;
-    size_t            _guard;
-#endif
+    uintptr_t         _Badge;
   public:
     template <class T>
       static List_sp createFromVec0(const gctools::Vec0<T> &vec) {
@@ -198,11 +192,10 @@ namespace core {
 #else
     inline
 #endif
-    static Cons_sp create(T_sp car, T_sp cdr) {
-      gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
-      MAYBE_VERIFY_ALIGNMENT((void*)(ll.unsafe_cons()));
-      return ll;
-    };
+  static Cons_sp create(T_sp car, T_sp cdr) {
+    gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O,gctools::DoRegister>::allocate(car,cdr);
+    return ll;
+  };
   public:
     inline static size_t car_offset() {
       return offsetof(Cons_O, _Car);
@@ -290,8 +283,9 @@ namespace core {
     List_sp revappend(T_sp tail);
     List_sp nreconc(T_sp tail);
 
-    CL_LISPIFY_NAME("core:cons-setf-cdr");
-    CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
+//    CL_LISPIFY_NAME("core:cons-setf-cdr");
+//    CL_DEFMETHOD
+    T_sp setf_cdr(T_sp o) {
       this->setCdr(o);
       return o;
     };
@@ -351,20 +345,12 @@ namespace core {
   /*! Return the value associated with the property of the plist - implements CL getf */
     T_sp getf(T_sp key, T_sp defValue) const;
 
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>())
-#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
-                     , _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111)
-#endif
-    {};
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr)
-#if (defined(USE_MPS) && !defined(MPS_CONS_AWL_POOL))
-                                        , _badge(my_thread->random()|(~gctools::ptag_mask)), _guard(0xFFFFEEEEDDDD1111)
-#endif
-    {}
+    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _Badge((uintptr_t)this) {};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr), _Badge((uintptr_t)this)  {}
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.
-  Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()) {}
+    Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()), _Badge((uintptr_t)this) {}
     Cons_O& operator=(const Cons_O& other) {
         if (this != &other) {
             setCar(other.ocar());

@@ -3,34 +3,13 @@
 
 */
 
-/*
-Copyright (c) 2014, Christian E. Schafmeister
-
-CLASP is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
-
-See directory 'clasp/licenses' for full details.
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-/* -^- */
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <iomanip>
 #include <clasp/core/foundation.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 //
 // The include for Debug.h must be first so we can force NDEBUG undefined
 // otherwise setCurrentDebugTypes will be an empty macro
@@ -67,6 +46,7 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 #include <llvm/IRReader/IRReader.h>
+#include <llvm/IR/DiagnosticPrinter.h>
 #include "llvm/MC/MCObjectFileInfo.h"
 #include "llvm/MC/MCContext.h"
 #include "llvm/MC/MCDisassembler/MCDisassembler.h"
@@ -337,7 +317,19 @@ CL_DEFUN ThreadSafeContext_sp ThreadSafeContext_O::create_thread_safe_context() 
 };
 
 
-CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() { return this->wrappedPtr()->getContext(); };
+CL_DEFMETHOD LLVMContext* ThreadSafeContext_O::getContext() {
+  return this->wrappedPtr()->getContext();
+};
+
+
+CL_DEFUN LLVMContext_sp llvm_sys__thread_local_llvm_context() {
+  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
+  llvm::LLVMContext* lc = tsc->wrappedPtr()->getContext();
+  GC_ALLOCATE(LLVMContext_O, context);
+  context->_ptr = lc;
+  return context;
+}
+
 
 };
 
@@ -350,13 +342,63 @@ CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   return self;
 };
 
+static void expectNoDiags(const llvm::DiagnosticInfo &DI, void *C) {
+  printf("%s:%d Got a diagnostic\n", __FILE__, __LINE__ );
+}
+
+};
+namespace {
+struct ClaspDiagnosticHandler : public llvm::DiagnosticHandler {
+  bool handleDiagnostics(const llvm::DiagnosticInfo &DI) override {
+    llvm::raw_ostream &OS = llvm::errs();
+    OS << "llvm-lto: ";
+    switch (DI.getSeverity()) {
+    case llvm::DS_Error:
+        OS << "error";
+        break;
+    case llvm::DS_Warning:
+        OS << "warning";
+        break;
+    case llvm::DS_Remark:
+        OS << "remark";
+        break;
+    case llvm::DS_Note:
+        OS << "note"; 
+        break;
+    }
+    llvm::DiagnosticPrinterRawOStream DP(llvm::errs());
+    DI.print(DP);
+    return true;
+  }
+};
+}
+
+
+namespace llvmo {
 CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
   std::string errorMsg = "llvm::Linker::linkInModule reported an error";
   // Take ownership of the pointer and give it to the linker
   llvm::Module* mptr = module->wrappedPtr();
+  llvm::LLVMContext &Ctx = mptr->getContext();
   module->reset_wrappedPtr();
   std::unique_ptr<llvm::Module> u_module(mptr);
+  Ctx.setDiagnosticHandlerCallBack(expectNoDiags);
   bool res = linker->wrappedPtr()->linkInModule(std::move(u_module));
+  Ctx.setDiagnosticHandlerCallBack(NULL);
+  return Values(_lisp->_boolean(res), core::SimpleBaseString_O::make(errorMsg));
+};
+
+CL_DEFUN core::T_mv llvm_sys__linkModules(Module_sp linkedModule, Module_sp module) {
+  std::string errorMsg = "llvm::Linker::linkModules reported an error";
+  // Take ownership of the pointer and give it to the linker
+  llvm::Module* linkedModulePtr = linkedModule->wrappedPtr();
+  llvm::Module* mptr = module->wrappedPtr();
+  llvm::LLVMContext &Ctx = mptr->getContext();
+  module->reset_wrappedPtr();
+  std::unique_ptr<llvm::Module> u_module(mptr);
+//  Ctx.setDiagnosticHandler(std::make_unique<ClaspDiagnosticHandler>(), true);
+  bool res = llvm::Linker::linkModules(*linkedModulePtr,std::move(u_module));
+//  Ctx.setDiagnosticHandlerCallBack(NULL);
   return Values(_lisp->_boolean(res), core::SimpleBaseString_O::make(errorMsg));
 };
 
@@ -1011,6 +1053,24 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::String_sp pat
 };
 
 
+CL_DEFUN Module_sp llvm_sys__parseIRString(core::T_sp llvm_ir_string, LLVMContext_sp context) {
+  core::String_sp source = gc::As<core::String_sp>(llvm_ir_string);
+  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getMemBufferCopy(source->get_std_string());
+  if (std::error_code ec = eo_membuf.getError()) {
+    SIMPLE_ERROR(BF("Could not read the string %s - error: %s") % source->get_std_string() % ec.message());
+  }
+  llvm::SMDiagnostic smd;
+  std::unique_ptr<llvm::Module> module =
+    llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
+  llvm::Module* m = module.release();
+  if (!m) {
+    std::string message = smd.getMessage();
+    SIMPLE_ERROR(BF("Could not load llvm-ir from string %s - error: %s") % source->get_std_string() % message );
+  }
+  Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+  return omodule;
+};
+
 CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp context) {
   if (tfilename.nilp()) SIMPLE_ERROR(BF("%s was about to pass nil to pathname") % __FUNCTION__);
   core::String_sp spathname = gc::As<core::String_sp>(core::cl__namestring(core::cl__pathname(tfilename)));
@@ -1023,8 +1083,8 @@ CL_DEFUN Module_sp llvm_sys__parseIRFile(core::T_sp tfilename, LLVMContext_sp co
     llvm::parseIR(eo_membuf.get()->getMemBufferRef(), smd, *(context->wrappedPtr()));
   llvm::Module* m = module.release();
   if (!m) {
-    std::string message = smd.getMessage().str();
-    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % spathname->get_std_string() % message );
+    std::string message = smd.getMessage();
+    SIMPLE_ERROR(BF("Could not load llvm-ir for file %s - error: %s") % spathname->get_std_string() % message );
   }
   Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
   return omodule;
@@ -1139,11 +1199,15 @@ CL_VALUE_ENUM(_sym_AttributeReturnsTwice, llvm::Attribute::ReturnsTwice);
 CL_VALUE_ENUM(_sym_AttributeUWTable, llvm::Attribute::UWTable);
 CL_VALUE_ENUM(_sym_AttributeNonLazyBind, llvm::Attribute::NonLazyBind);
       //	    .value(_sym_AttributeAddressSafety,llvm::Attribute::AddressSafety)
-CL_END_ENUM(_sym_AttributeEnum);
-SYMBOL_EXPORT_SC_(LlvmoPkg, attributesGet);
-
-
-
+  CL_END_ENUM(_sym_AttributeEnum);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, attributesGet);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, CallingConv);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, C);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, fastcc);
+  CL_BEGIN_ENUM(llvmo::ClaspCallingConv, _sym_CallingConv, "CallingConv");
+  CL_VALUE_ENUM(_sym_C, llvmo::ClaspCallingConv::C);
+  CL_VALUE_ENUM(_sym_fastcc, llvmo::ClaspCallingConv::Fast);
+  CL_END_ENUM(_sym_CallingConv)
 
 CL_LAMBDA(module value &optional label);
 CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::String_sp svalue, core::T_sp label) {
@@ -1236,7 +1300,7 @@ CL_DEFMETHOD LLVMContext_sp Module_O::getContext() const {
 std::string Module_O::__repr__() const {
   stringstream ss;
   ss << "#<MODULE ";
-  ss << (void*)this->wrappedPtr() << ">";
+//  ss << (void*)this->wrappedPtr() << ">";
   return ss.str();
 }
 
@@ -1933,8 +1997,13 @@ CL_DEFUN llvm::Instruction* llvm_sys__replace_call(llvm::Function* func, llvm::I
   return NewCI;
 };
 
+// FIXME: Should be made into a generic function or something.
+CL_LISPIFY_NAME(getCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, (llvmo::ClaspCallingConv(llvm::CallBase::*)())&CallBase_O::ExternalType::getCallingConv);
+CL_LISPIFY_NAME(setCallingConv);
+CL_EXTERN_DEFMETHOD(CallBase_O, (void(llvm::CallBase::*)(llvmo::ClaspCallingConv))&CallBase_O::ExternalType::setCallingConv);
 
-core::List_sp CallInst_O::getArgumentList() const {
+core::List_sp CallBase_O::getArgumentList() const {
   ql::list l;
   for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
         arg != argEnd; ++arg ) {
@@ -1943,41 +2012,23 @@ core::List_sp CallInst_O::getArgumentList() const {
   return l.cons();
 };  
 
-CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(Instruction_sp callOrInvoke) {
-  if (gc::IsA<CallInst_sp>(callOrInvoke)) {
-    return gc::As<CallInst_sp>(callOrInvoke)->getArgumentList();
-  } else if (gc::IsA<InvokeInst_sp>(callOrInvoke)) {
-    return gc::As<InvokeInst_sp>(callOrInvoke)->getArgumentList();
+CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(CallBase_sp callOrInvoke) {
+  core::List_sp result = callOrInvoke->getArgumentList();
+#ifdef DEBUG_EVALUATE
+  if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+    printf("%s:%d:%s on %s result = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(callOrInvoke).c_str(), _rep_(result).c_str());
   }
-  SIMPLE_ERROR(BF("Only call or invoke can provide arguments"));
+#endif
+  return result;
 }
 
-
-CL_DEFMETHOD void CallInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
+CL_DEFMETHOD void CallBase_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
 {
   this->wrappedPtr()->addParamAttr(index,attrkind);
 }
 
-CL_DEFMETHOD llvm::Function* CallInst_O::getCalledFunction() {
+CL_DEFMETHOD llvm::Function* CallBase_O::getCalledFunction() {
   return this->wrappedPtr()->getCalledFunction();
-}
-
-CL_DEFMETHOD void InvokeInst_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind)
-{
-  this->wrappedPtr()->addParamAttr(index,attrkind);
-}
-
-CL_DEFMETHOD llvm::Function* InvokeInst_O::getCalledFunction() {
-  return this->wrappedPtr()->getCalledFunction();
-}
-
-core::List_sp InvokeInst_O::getArgumentList() const {
-  ql::list l;
-  for ( auto arg = this->wrappedPtr()->arg_begin(), argEnd(this->wrappedPtr()->arg_end());
-        arg != argEnd; ++arg ) {
-    l << translate::to_object<llvm::Value*>::convert(*arg);
-  }
-  return l.cons();
 };  
 
 }; // llvmo
@@ -2573,9 +2624,9 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::StoreInst* (llvm::IRBuilderBase::*)(
 CL_LISPIFY_NAME(CreateConstGEP1-32);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (llvm::Value *(IRBuilderBase_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name )) &IRBuilderBase_O::ExternalType::CreateConstGEP1_32);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP1-32);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP1_32);
-  CL_LISPIFY_NAME(CreateConstGEP2-32);
-  CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstGEP2_32);
+  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32);
+//  CL_LISPIFY_NAME(CreateConstGEP2-32);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_32);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-32);
   CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateConstInBoundsGEP2_32);
   CL_LISPIFY_NAME(CreateConstGEP1-64);
@@ -2931,6 +2982,10 @@ CL_DEFMETHOD core::List_sp Function_O::basic_blocks() const {
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::empty);
   CL_LISPIFY_NAME(arg_size);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::arg_size);
+CL_LISPIFY_NAME(getCallingConv);
+CL_EXTERN_DEFMETHOD(Function_O, (llvmo::ClaspCallingConv(llvm::Function::*)())&Function_O::ExternalType::getCallingConv);
+CL_LISPIFY_NAME(setCallingConv);
+CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvmo::ClaspCallingConv))&Function_O::ExternalType::setCallingConv);
   CL_LISPIFY_NAME(setDoesNotThrow);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotThrow);
   CL_LISPIFY_NAME(doesNotThrow);
@@ -3667,16 +3722,6 @@ using namespace llvm::orc;
 //#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
 //#define DUMP_OBJECT_FILES 1
 
-std::atomic<size_t> fileNum;
-void dumpObjectFile(size_t num, const char* start, size_t size) {
-  std::stringstream filename;
-  filename << "object-file-" << num << ".o";
-  std::ofstream fout;
-  fout.open(filename.str(), std::ios::out | std::ios::binary );
-  fout.write(start,size);
-  fout.close();
-}
-
 
 ////////////////////////////////////////////////////////////
 //
@@ -3775,6 +3820,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,constant_index);
 
 namespace llvmo {
 
+using namespace llvm;
 
 #if 0
 CL_DEFUN core::T_sp llvm_sys__vmmap()
@@ -3972,7 +4018,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
-    Expected<StringRef> expected_symbol_name = symbol.getName();
+    llvm::Expected<llvm::StringRef> expected_symbol_name = symbol.getName();
     if (expected_symbol_name) {
       auto &symbol_name = *expected_symbol_name;
       uint64_t size = p.second;
@@ -4031,7 +4077,7 @@ CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
     That would require a lot of C++ header file rearrangement.
     The ctors should have been called by the executable so these ctors are unused.
 */
-CL_DEFUN void llvm_sys__remove_useless_global_ctors(Module_sp module) {
+CL_DEFUN void llvm_sys__remove_useless_global_ctors(llvmo::Module_sp module) {
   llvm::Module* M = module->wrappedPtr();
   llvm::GlobalVariable* ctors = M->getGlobalVariable("llvm.global_ctors");
   if (ctors) {
@@ -4408,24 +4454,21 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
 
 
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
+  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
 //  printf("%s:%d:%s  module added\n", __FILE__, __LINE__, __FUNCTION__ );
   ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
-std::atomic<size_t> global_objectFileCounter;
-void ClaspJIT_O::addObjectFile(const char* rbuffer, size_t bytes,size_t startupID, JITDylib& dylib,
-                               const char* faso_filename, size_t faso_index,
-                               bool print)
+
+void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
-  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)rbuffer % bytes );
-  llvm::StringRef sbuffer((const char*)rbuffer,bytes);
-  stringstream sname;
-  sname << "of" << global_objectFileCounter++;
-  std::string ssname = sname.str();
-  llvm::StringRef name(ssname);
+  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)of->_Start % of->_Size );
+  llvm::StringRef sbuffer((const char*)of->_Start, of->_Size);
+  llvm::StringRef name("buffer-name");
   std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
@@ -4512,14 +4555,6 @@ CL_DEFUN void llvm_sys__set_current_debug_types(core::List_sp types)
 
 }; // namespace llvmo
 
-namespace llvmo { // ObjectFile_O
-
-ObjectFile_sp ObjectFile_O::create(llvm::object::ObjectFile *ptr) {
-  return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
-}
-
-}; // namespace llvmo, ObjectFile_O
-
 namespace llvmo { // SectionedAddress_O
 
 SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t Address) {
@@ -4534,10 +4569,11 @@ void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_t
   fprintf(fout, "[ \"%s\", %d, %lu ]\n", name, dt, offset );
 }
 
-void dump_objects_for_lldb(FILE* fout)
+void dump_objects_for_lldb(FILE* fout,std::string indent)
 {
-  fprintf(fout,"Init_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", sizeof(gctools::Header_s));
+  fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
   python_dump_field(fout,"_stamp_wtag_mtag",false,gctools::ctype_size_t,offsetof(gctools::Header_s,_stamp_wtag_mtag));
+  python_dump_field(fout,"_header_badge",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_header_badge));
 #ifdef DEBUG_GUARD
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
@@ -4548,7 +4584,8 @@ void dump_objects_for_lldb(FILE* fout)
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
 #endif
   fprintf(fout,"] )\n");
-  fprintf(fout,"Init_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", sizeof(llvmo::ObjectFileInfo));
+#if 0
+//  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
   python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));
@@ -4561,6 +4598,7 @@ void dump_objects_for_lldb(FILE* fout)
   python_dump_field(fout,"_stackmap_size",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_stackmap_size));
   python_dump_field(fout,"_next",true,gctools::ctype_opaque_ptr ,offsetof(ObjectFileInfo,_next));
   fprintf(fout,"] )\n");
+#endif
 };
   
 }; // namespace llvmo, SectionedAddress_O

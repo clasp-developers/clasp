@@ -228,9 +228,17 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   }
 #if defined(USE_BOEHM)
   #if defined(_DEBUG_BUILD)
-     std::string target = "boehm_d";
+    #if defined(USE_PRECISE_GC)
+       std::string target = "boehmprecise_d";
+    #else
+       std::string target = "boehm_d";
+    #endif
   #else
-     std::string target = "boehm";
+    #if defined(USE_PRECISE_GC)
+       std::string target = "boehmprecise";
+    #else
+       std::string target = "boehm";
+    #endif
   #endif
 #elif defined(USE_MPS)
   #if defined(_DEBUG_BUILD)

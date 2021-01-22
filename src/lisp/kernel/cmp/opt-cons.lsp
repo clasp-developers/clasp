@@ -16,6 +16,9 @@
     (1 `(cons ,object ,(first more-objects)))
     (t form)))
 
+(define-compiler-macro null (object) `(if ,object nil t))
+(define-compiler-macro endp (object) `(if (the list ,object) nil t))
+
 (defconstant +nthcdr-inline-limit+ 8) ; totally arbitrary
 
 (define-compiler-macro nthcdr (&whole whole index list &environment env)
@@ -65,6 +68,7 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'member sequence-args :start-end nil :environment env)
+    (declare (ignore key-flag test-flag))
     ;; When having complex arguments (:allow-other-keys, etc)
     ;; we just give up.
     (when (null key-function)
@@ -90,7 +94,7 @@
 
 (define-compiler-macro member (&whole whole value list &rest sequence-args &environment env)
   ;; FIXME: pay attention to policy, e.g. don't inline for high SPACE.
-  (or (apply #'expand-member env (rest whole))
+  (or (apply #'expand-member env value list sequence-args)
       whole))
 
 ;;;
@@ -101,6 +105,7 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'assoc sequence-args :start-end nil :environment env)
+    (declare (ignore key-flag test-flag))
     (when test-function
       (si::with-unique-names (%value %list %sublist %elt %car)
         `(let ((,%value ,value)
@@ -117,7 +122,7 @@
                    (error 'type-error :datum ,%elt :expected-type 'list)))))))))
 
 (define-compiler-macro assoc (&whole whole value list &rest sequence-args &environment env)
-  (or (apply #'expand-assoc env (rest whole))
+  (or (apply #'expand-assoc env value list sequence-args)
       whole))
 
 ;;;
@@ -128,9 +133,10 @@
   (multiple-value-bind (key-function test-function init ignores
                         key-flag test-flag)
       (two-arg-test-parse-args 'adjoin sequence-args :start-end nil :environment env)
+    (declare (ignore test-flag key-flag))
     (when test-function
       (si::with-unique-names
-	  (%value %sublist %elt %car %list %value-after-key-function-)
+	  (%value %sublist %elt %list %value-after-key-function-)
 	`(let ((,%value ,value)
 	       (,%list ,list)
 	       ,@init)
@@ -142,6 +148,7 @@
 		 (return ,%list)))))))))
 
 (define-compiler-macro adjoin (&whole whole value list &rest sequence-args &environment env)
+  (declare (ignore value list sequence-args))
   (or (apply #'expand-adjoin env (rest whole))
       whole))
 

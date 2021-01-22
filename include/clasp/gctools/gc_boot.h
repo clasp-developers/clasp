@@ -29,32 +29,36 @@ THE SOFTWARE.
 #define GC_BOOT_H
 namespace gctools {
 
-  enum Data_types {
-      SMART_PTR_OFFSET,
-      TAGGED_POINTER_OFFSET,
-      ARRAY_OFFSET,
-      POINTER_OFFSET,
-      CONSTANT_ARRAY_OFFSET,
-      ctype_double,
-      ctype_float,
-      ctype_int,
-      ctype_short,
-      ctype_unsigned_char,
-      ctype_signed_char,
-      ctype_unsigned_short,
-      ctype_signed_short,
-      ctype_unsigned_long,
-      ctype_unsigned_int,
-      ctype_long,
-      ctype_long_long,
-      ctype_char,
-      ctype__Bool,
-      ctype_enum_core__StreamMode,
-      ctype_core__FrameStamp,
-      ctype_const_char_ptr,
-      ctype_size_t,
-      ctype_opaque_ptr,
-      last_data_type };
+enum Data_types {
+  SMART_PTR_OFFSET,
+  TAGGED_POINTER_OFFSET,
+  ARRAY_OFFSET,
+  POINTER_OFFSET,
+  CONSTANT_ARRAY_OFFSET,
+  ctype_double,
+  ctype_float,
+  ctype_int,
+  ctype_short,
+  ctype_unsigned_char,
+  ctype_signed_char,
+  ctype_unsigned_short,
+  ctype_signed_short,
+  ctype_unsigned_long,
+  ctype_unsigned_int,
+  ctype_long,
+  ctype_long_long,
+  ctype_char,
+  ctype__Bool,
+  ctype_enum_core__StreamMode,
+  ctype_core__FrameStamp,
+  ctype_const_char_ptr,
+  ctype_size_t,
+  ctype_opaque_ptr,
+  last_data_type };
+
+extern int global_cons_kind;
+extern int global_container_kind;
+extern int global_container_proc_index;
 
 inline void dump_data_types(FILE* fout, const std::string& indent)
 {
@@ -82,76 +86,126 @@ inline void dump_data_types(FILE* fout, const std::string& indent)
   DTNAME(ctype_const_char_ptr,"const_char_ptr",sizeof(const char*));
   DTNAME(ctype_size_t,"size_t",sizeof(size_t));
   DTNAME(ctype_opaque_ptr,"opaque_ptr",sizeof(void*));
+#define Init_global_ints(_name_,_value_) fprintf(fout,"%sInit_global_ints(name=\"%s\",value=%d)\n", indent.c_str(), _name_,_value_);
+  Init_global_ints("TAG_BITS",TAG_BITS);
+  Init_global_ints("IMMEDIATE_MASK",IMMEDIATE_MASK);
+  Init_global_ints("FIXNUM_MASK",FIXNUM_MASK);
+  Init_global_ints("GENERAL_TAG",GENERAL_TAG);
+  Init_global_ints("CONS_TAG",CONS_TAG);
+  Init_global_ints("SINGLE_FLOAT_TAG",SINGLE_FLOAT_TAG);
+  Init_global_ints("CHARACTER_TAG",CHARACTER_TAG);
+  Init_global_ints("VASLIST0_TAG",VASLIST0_TAG);
+  Init_global_ints("FIXNUM_SHIFT",FIXNUM_SHIFT);
 }
 
-  enum Layout_cmd {
-      class_kind=0, container_kind=1, templated_kind=2,
-      fixed_field=3,
-      variable_array0=4,
-      variable_capacity=5, variable_field=6,
-      templated_class_jump_table_index=7,
-      container_jump_table_index=8,
-      bitunit_container_kind=9,
-      variable_bit_array0=10,
-      layout_end
-  };
+enum Layout_cmd {
+  class_kind=0, container_kind=1, templated_kind=2,
+  fixed_field=3,
+  variable_array0=4,
+  variable_capacity=5, variable_field=6,
+  templated_class_jump_table_index=7,
+  container_jump_table_index=8,
+  bitunit_container_kind=9,
+  variable_bit_array0=10,
+  layout_end
+};
 
-  struct Layout_code {
-    Layout_cmd    cmd;
-    uintptr_t     data0;
-    uintptr_t     data1;
-    uintptr_t     data2;
-    const char*   description;
-  };
+struct Layout_code {
+  Layout_cmd    cmd;
+  uintptr_t     data0;
+  uintptr_t     data1;
+  uintptr_t     data2;
+  const char*   description;
+};
 
-  struct Field_layout {
-    size_t            field_offset;
-  };
+struct Field_layout {
+  size_t         field_offset;
+};
 
-  struct Field_info {
-    const char*    field_name;
-  };
+struct Field_info {
+  const char*    field_name;
+  size_t         data_type;
+};
 
-  struct Container_info {
-    const char*    field_name;
-  };
+struct Container_info {
+  const char*    field_name;
+  size_t         data_type;
+};
 
-  struct Container_layout {
-    Field_layout*     field_layout_start; // Points into global_field_layout_table
-    uint              number_of_fields;
-//    uint              bits_per_bitunit;
-//    size_t            data_offset;
-//    size_t            end_offset;
-//    size_t            capacity_offset;
-  };
+struct Container_layout {
+  // A bitmap of pointer fields for mps fixing and boehm marking
+  uintptr_t         container_field_pointer_bitmap;
+  int               container_field_pointer_count;
+  Field_layout*     field_layout_start; // Points into global_field_layout_table
+  uint              number_of_fields;
+  //    uint              bits_per_bitunit;
+  //    size_t            data_offset;
+  //    size_t            end_offset;
+  //    size_t            capacity_offset;
+  Container_layout() : container_field_pointer_bitmap(0)
+                     , container_field_pointer_count(0)
+  {};
+};
 
-  enum Layout_operation { class_container_op, bitunit_container_op, templated_op };
-  struct Stamp_info {
-    Layout_operation    layout_op;
-    const char*   name;
-    Field_info*   field_info_ptr; // Only applies to classes
-    Container_info* container_info_ptr; // 
-  };
+enum Layout_operation { class_container_op, bitunit_container_op, templated_op, undefined_op };
+struct Stamp_info {
+  Layout_operation    layout_op;
+  const char*   name;
+  Field_info*   field_info_ptr; // Only applies to classes
+  Container_info* container_info_ptr; // 
+};
 
-  struct Stamp_layout {
-    Layout_operation  layout_op; // One of class_container_op, bitunit_container_op, templated_op
-    uint              number_of_fields;
-    uint              bits_per_bitunit;
-    uint              size;
-    uint              element_size;
-    uint              data_offset;
-    uint              end_offset;
-    uint              capacity_offset;
-    Field_layout*     field_layout_start; // Points into global_field_layout_table
-    Container_layout* container_layout;
-  };
+struct Boehm_info {
+  bool              _kind_defined;
+  uintptr_t         _class_bitmap;
+  uintptr_t         _container_bitmap;
+  int               _container_pointer_count;
+  int               _container_element_work;
+  uintptr_t         _kind;
+  Boehm_info() : _kind_defined(false)
+               , _class_bitmap(0)
+               , _container_bitmap(0)
+               , _container_pointer_count(0)
+               , _container_element_work(0)
+               , _kind(99999)
+  {};
+};
 
-  extern Layout_code* get_stamp_layout_codes();
-  extern size_t           global_stamp_max;
-  extern Stamp_info*       global_stamp_info;
-  extern Stamp_layout*     global_stamp_layout;
-  extern Field_info*      global_field_info;
-  extern Field_layout*    global_field_layout;
+struct Stamp_layout {
+  Layout_operation  layout_op; // One of class_container_op, bitunit_container_op, templated_op
+  Boehm_info        boehm;
+  // A bitmap of pointer fields for mps fixing and (once shifted right to skip clasp header - boehm marking)
+  // The most significant bit indicates the vtable - it must be zero
+  uintptr_t         class_field_pointer_bitmap; 
+  uint              number_of_fields;
+  uint              bits_per_bitunit;
+  uint              size;
+  uint              element_size;
+  uint              data_offset;
+  uint              end_offset;
+  uint              capacity_offset;
+  Field_layout*     field_layout_start; // Points into global_field_layout_table
+  Container_layout* container_layout;
+  Stamp_layout() : layout_op(undefined_op)
+                 , boehm()
+                 , class_field_pointer_bitmap(0)
+                 , number_of_fields(0)
+                 , bits_per_bitunit(0)
+                 , size(0)
+                 , element_size(0)
+                 , data_offset(0)
+                 , end_offset(0)
+                 , capacity_offset(0)
+                 , field_layout_start(NULL) // Points into global_field_layout_table
+  {};
+};
+
+extern Layout_code* get_stamp_layout_codes();
+extern size_t           global_stamp_max;
+extern Stamp_info*       global_stamp_info;
+extern Stamp_layout*     global_stamp_layout;
+extern Field_info*      global_field_info;
+extern Field_layout*    global_field_layout;
 
 
 typedef enum { mps_info, lldb_info } WalkKind;

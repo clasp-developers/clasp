@@ -45,7 +45,7 @@ typedef constructor<> default_constructor;
 class ConstructorCreator_O : public core::Creator_O {
   LISP_CLASS(clbind,ClbindPkg,ConstructorCreator_O,"ConstructorCreator",core::Creator_O);
 public:
-  ConstructorCreator_O(core::Symbol_sp c) : _mostDerivedClassSymbol(c){};
+  ConstructorCreator_O(core::FunctionDescription_sp fdesc, core::Symbol_sp c) : Creator_O(fdesc), _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
   virtual ~ConstructorCreator_O() {};
 };
@@ -64,15 +64,18 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
- DefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>()) 
-#ifndef USE_CXX_DYNAMIC_CAST
-    , _HeaderValue(gctools::Header_s::StampWtagMtag::make<WrapperType>())
-#endif
+#if 0
+  DefaultConstructorCreator_O() : ConstructorCreator_O(core::makeFunctionDescription(_Nil<core::T_O>(),entry_point),reg::lisp_classSymbol<T>()) 
     , _duplicationLevel(0){
 //    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
- DefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
-   : ConstructorCreator_O(cn), _HeaderValue(headerValue), _duplicationLevel(dupnum){
+#endif
+  DefaultConstructorCreator_O(core::FunctionDescription_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>()) 
+    , _duplicationLevel(0){
+//    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
+  };
+  DefaultConstructorCreator_O(core::FunctionDescription_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag headerValue, int dupnum)
+      : ConstructorCreator_O(fdesc, cn), _HeaderValue(headerValue), _duplicationLevel(dupnum){
 //    printf("%s:%d  Constructing non trivial DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCStamp<WrapperType>::Kind);
   };
 
@@ -87,7 +90,8 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
     printf("%s:%d  duplicateForClassName %s  this->_HeaderValue = %" Ptagged_stamp_t "\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_HeaderValue._value);
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_HeaderValue, this->_duplicationLevel + 1));
+    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<T, Pointer>::entry_point);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(fdesc,className, this->_HeaderValue, this->_duplicationLevel + 1));
     return allocator;
   }
 };
@@ -112,13 +116,10 @@ public:
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
-  DerivableDefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>())
-#ifdef USE_CXX_DYNAMIC_CAST
-    , _Header(gctools::Header_s::StampWtagMtag::make<T>())
-#endif
+  DerivableDefaultConstructorCreator_O(core::FunctionDescription_sp fdesc) : ConstructorCreator_O(fdesc,reg::lisp_classSymbol<T>())
     , _duplicationLevel(0){};
- DerivableDefaultConstructorCreator_O(core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
-      : ConstructorCreator_O(cn), _Header(header), _duplicationLevel(dupnum){};
+  DerivableDefaultConstructorCreator_O(core::FunctionDescription_sp fdesc, core::Symbol_sp cn, const gctools::Header_s::StampWtagMtag& header, int dupnum)
+      : ConstructorCreator_O(fdesc,cn), _Header(header), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
@@ -128,7 +129,8 @@ public:
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
 //    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
-    return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(className, this->_Header, this->_duplicationLevel + 1));
+    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DerivableDefaultConstructorCreator_O<T>::entry_point);
+    return gc::As_unsafe<core::Creator_sp>(gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(fdesc,className, this->_Header, this->_duplicationLevel + 1));
   }
 };
 };
@@ -146,7 +148,7 @@ public:
   typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
- DerivableDefaultConstructorFunctor(core::FunctionDescription* fdesc) : core::Closure_O(entry_point,fdesc){};
+  DerivableDefaultConstructorFunctor(core::FunctionDescription_sp fdesc) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -202,6 +204,34 @@ public:
   }
 };
 
+template <typename Policies, typename Pointer, typename ConstructType ,typename... ARGS >
+class VariadicConstructorFunction_O < Policies, Pointer, ConstructType, constructor<ARGS...> > : public core::BuiltinClosure_O {
+public:
+  typedef VariadicConstructorFunction_O< Policies, Pointer, ConstructType, constructor<ARGS...> > MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  typedef Wrapper<ConstructType,Pointer>  WrapperType;
+public:
+  virtual const char* describe() const { return "VariadicConstructorFunctor"; };
+  enum { NumParams = sizeof...(ARGS) };
+  VariadicConstructorFunction_O(core::FunctionDescription_sp fdesc) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)) {};
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    INITIALIZE_VA_LIST();
+    INVOCATION_HISTORY_FRAME();
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),2);
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
+                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+    core::MultipleValues& returnValues = core::lisp_multipleValues();
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
+    return constructor_apply_and_return<WrapperType,Policies,ConstructType,decltype(all_args)>::go(returnValues,std::move(all_args));
+  }
+};
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>

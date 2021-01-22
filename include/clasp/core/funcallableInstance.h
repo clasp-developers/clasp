@@ -37,6 +37,7 @@ THE SOFTWARE.
 
 namespace core {
   FORWARD(FuncallableInstance);
+  FORWARD(SingleDispatchMethod);
 };
 
 template <>
@@ -55,32 +56,30 @@ namespace core {
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O(FunctionDescription* fdesc) :
-    Base(funcallable_entry_point)
+  FuncallableInstance_O(FunctionDescription_sp fdesc) :
+      Base(ENSURE_ENTRY_POINT(fdesc,funcallable_entry_point))
       , _Class(_Nil<Instance_O>())
-      , _FunctionDescription(fdesc)
-      , _CompiledDispatchFunction(_Nil<T_O>()) {};
-    explicit FuncallableInstance_O(FunctionDescription* fdesc,Instance_sp metaClass, size_t slots) :
-    Base(funcallable_entry_point),
-      _Class(metaClass)
-      , _FunctionDescription(fdesc)
-      , _CompiledDispatchFunction(_Nil<T_O>())
+    , _CompiledDispatchFunction(_Nil<T_O>()) {}
+    explicit FuncallableInstance_O(FunctionDescription_sp fdesc,Instance_sp metaClass, size_t slots) :
+        Base(fdesc)
+        , _Class(metaClass)
+        , _CompiledDispatchFunction(_Nil<T_O>())
     {};
-    FuncallableInstance_O(FunctionDescription* fdesc, Instance_sp cl, Rack_sp rack)
-      : Base(funcallable_entry_point),
-        _Class(cl),
-        _Rack(rack),
-        _FunctionDescription(fdesc),
-        _CompiledDispatchFunction(_Nil<T_O>())
+    FuncallableInstance_O(FunctionDescription_sp fdesc, Instance_sp cl, Rack_sp rack)
+        : Base(fdesc),
+          _Class(cl),
+          _Rack(rack),
+          _CompiledDispatchFunction(_Nil<T_O>())
     {};
     virtual ~FuncallableInstance_O(){};
+  public:
+    static FuncallableInstance_sp create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex);
   public:
     // The order MUST be
     // entry (inherited from Function_O, matches offset)
     // _Rack (matches offset in Instance_O)
     Rack_sp _Rack;
     Instance_sp _Class;
-    FunctionDescription* _FunctionDescription;
     std::atomic<size_t>        _InterpretedCalls;
     std::atomic<T_sp>   _CompiledDispatchFunction;
   public:
@@ -93,10 +92,6 @@ namespace core {
     void lowLevel_calculateClassPrecedenceList();
 
 //    virtual bool isSubClassOf(Instance_sp mc) const;
-
-    FunctionDescription* fdesc() const { return this->_FunctionDescription; }
-    virtual void set_fdesc(FunctionDescription* address) { this->_FunctionDescription = address; };
-    
     T_sp make_instance();
   public:
   // Add support for Function_O methods
@@ -107,7 +102,9 @@ namespace core {
     virtual size_t filePos() const { return 0; }
     virtual int lineNumber() const { return 0; }
     virtual int column() const { return 0; };
-    virtual T_sp lambdaListHandler() const { HARD_IMPLEMENT_ME(); };
+    virtual T_sp lambdaListHandler() const;
+    virtual T_sp callHistory() const;
+    virtual void addSingleDispatchMethod(SingleDispatchMethod_sp method);
   public: // The hard-coded indexes above are defined below to be used by Class
     void initializeSlots(gctools::ShiftedStamp is, T_sp sig, size_t numberOfSlots);
     void initializeClassSlots(Creator_sp creator, gctools::ShiftedStamp class_stamp);
@@ -143,6 +140,8 @@ namespace core {
     void __write__(T_sp sout) const; // Look in write_ugly.cc
 
     static LCC_RETURN funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    static LCC_RETURN single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS);
+    
   }; // FuncallableInstance class
 
 }; // core namespace

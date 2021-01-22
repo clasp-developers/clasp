@@ -44,7 +44,6 @@
             *debug-compile-file-counter*
             *generate-compile-file-load-time-values*
             module-literal-table
-            *load-time-initializer-environment*
             *gv-current-function-name*
             *gv-source-namestring*
             *implicit-compile-hook*
@@ -106,6 +105,7 @@
             %gcroots-in-module*%
             %function-description%
             %function-description*%
+            function-info-reference-index
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             jit-remove-module
@@ -332,6 +332,7 @@
 
 ;;; exports for conditions
 (export '(deencapsulate-compiler-condition
+          *default-condition-origin*
           compiler-condition-origin
           compiled-program-error
           compiler-condition
@@ -339,6 +340,7 @@
           undefined-function-warning
           undefined-type-warning
           redefined-function-warning
+          wrong-argcount-warning
           compiler-macro-expansion-error-warning))
 
 (in-package :literal)
@@ -381,10 +383,9 @@
           new-table-index
           constants-table-reference
           constants-table-value
-          with-load-time-value
-          with-load-time-value-cleavir
+          load-time-value-from-thunk
           with-rtv
-          with-top-level-form
+          arrange-thunk-as-top-level
           with-literal-table
           generate-run-time-code-for-closurette))
 

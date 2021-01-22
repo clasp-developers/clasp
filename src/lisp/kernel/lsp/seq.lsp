@@ -49,7 +49,7 @@
 ;;; or a class (a user-defined sequence class).
 ;;; The length is a minimum, and if the third value is true, also a maximum.
 (defun sequence-type-maker-info (type &optional env)
-  (let (elt-type length name args)
+  (let (name args)
     (cond ((consp type)
 	   (setq name (first type) args (cdr type)))
 	  ((clos::classp type)
@@ -375,7 +375,7 @@ default value of INITIAL-ELEMENT depends on TYPE."
 (defun concatenate-into-sequence (seq core:&va-rest sequences)
   ;; seq is assumed to be non complex and have the correct length.
   (reckless
-   (sequence:with-sequence-iterator (it limit from-end step nil nil setelt)
+   (sequence:with-sequence-iterator (it nil from-end step nil nil setelt)
        (seq)
      (dovaslist (sequence sequences seq)
        (sequence:dosequence (elt sequence)
@@ -548,7 +548,7 @@ stops when it reaches the end of one of the given sequences."
 (defun map-into-sequence (result-sequence function &rest sequences)
   (declare (type function function))
   (reckless
-    (sequence:with-sequence-iterator (out-it out-limit out-fe
+    (sequence:with-sequence-iterator (out-it nil out-fe
                                              out-step nil nil out-set)
         (result-sequence)
       (do-sequence-list (elt-list sequences result-sequence)
@@ -559,7 +559,7 @@ stops when it reaches the end of one of the given sequences."
 (defun map-into-sequence/1 (result-sequence function sequence)
   (declare (type function function))
   (reckless
-    (sequence:with-sequence-iterator (out-it out-limit out-fe
+    (sequence:with-sequence-iterator (out-it nil out-fe
                                              out-step nil nil out-set)
         (result-sequence)
       (sequence:dosequence (e sequence)

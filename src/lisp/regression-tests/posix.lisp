@@ -63,6 +63,7 @@
  (multiple-value-bind
        (errno pid-or-error-message stream)
      (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t)
+   (declare (ignore errno pid-or-error-message))
    (if stream
        (write stream)
        nil)))

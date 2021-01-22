@@ -908,6 +908,7 @@ to expose to C++.
            )
       (unless (member arg0-integral-value '("1" "2" "4") :test #'string=)
         (error "The argument ~s, which describes the bit width of a bitunit, must be a positive integer 1,2, or 4 - it is not" arg0-integral-value))
+      (format t "bitunit arg0-integral-value -> ~s arg1-ctype -> ~s~%" arg0-integral-value arg1-ctype)
       (list (make-instance 'gcbitunitarray-offset
                            :base base
                            :fixed-fields nodes
@@ -3563,7 +3564,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   "Build a function that fixes up compile command arguments to run the static analyzer."
   (lambda (args filename) 
     (let ((result (concatenate 'vector args
-                               (vector "-v" "-DRUNNING_GC_BUILDER" "-Wno-nullability-completeness"))))
+                               (vector "-v" "-DRUNNING_MPSPREP" "-Wno-nullability-completeness"))))
       result)))
 
 (defun setup-tools (compilation-tool-database)

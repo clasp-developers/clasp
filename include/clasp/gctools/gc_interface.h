@@ -90,19 +90,19 @@ namespace asttooling {
 #undef GC_INTERFACE_GC_MANAGED_TYPES
 #endif
 
-#ifdef USE_BOEHM
+#ifndef USE_PRECISE_GC
 #ifndef SCRAPING
   #define DECLARE_FORWARDS
   #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
 #endif
 #endif
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER
+#if defined(USE_PRECISE_GC)
+ #ifndef RUNNING_MPSPREP
   #define DECLARE_FORWARDS
   #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
   #undef DECLARE_FORWARDS
-#endif
+ #endif
 #endif
 namespace gctools {
 
@@ -110,19 +110,18 @@ namespace gctools {
 ////////////////////////////////////////////////////////////
 //
 // Define the stamps  
-#ifdef USE_BOEHM  
-#ifndef SCRAPING
- #define GC_STAMP_SELECTORS
- #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
- #undef GC_STAMP_SELECTORS
-#endif
-#endif
-#ifdef USE_MPS
-#ifndef RUNNING_GC_BUILDER
- #define GC_STAMP_SELECTORS
- #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
- #undef GC_STAMP_SELECTORS
-#endif
+#ifndef USE_PRECISE_GC
+ #ifndef SCRAPING
+  #define GC_STAMP_SELECTORS
+  #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
+  #undef GC_STAMP_SELECTORS
+ #endif
+#else
+ #ifndef RUNNING_MPSPREP
+  #define GC_STAMP_SELECTORS
+  #include CLASP_GC_FILENAME // "main/clasp_gc.cc"
+  #undef GC_STAMP_SELECTORS
+ #endif
 #endif
 };
 

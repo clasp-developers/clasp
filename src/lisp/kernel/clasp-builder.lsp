@@ -620,7 +620,7 @@ Return files."
              (setq idx (- idx 1))
              (go top))))
     result))
-           
+(export 'command-line-arguments-as-list)           
 
 (defun recursive-remove-from-list (item list)
   (if list
@@ -681,7 +681,7 @@ Return files."
           (format fout "(load #P\"app-fasl:~a\")~%" (namestring relative-name)))))))
 
 (defun link-modules (output-file all-modules)
-  ;;(format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)
+  (format t "link-modules output-file: ~a  all-modules: ~a~%" output-file all-modules)
   (cond
     ((eq core:*clasp-build-mode* :bitcode)
      (cmp:link-bitcode-modules output-file all-modules))
@@ -691,12 +691,16 @@ Return files."
     ((eq core:*clasp-build-mode* :faso)
      ;; Do nothing - faso files are the result
      (core:link-faso-files output-file all-modules nil))
+    ((eq core:*clasp-build-mode* :fasoll)
+     (cmp::link-fasoll-modules output-file all-modules))
+    ((eq core::*clasp-build-mode* :fasobc)
+     (cmp::link-fasobc-modules output-file all-modules))
     ((eq core:*clasp-build-mode* :fasl)
      (generate-loader output-file all-modules))
     (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
     
-(export '(compile-aclasp link-faso))
+(export '(compile-aclasp link-fasl))
 (defun compile-aclasp (&key clean
                          (output-file (build-common-lisp-bitcode-pathname))
                          (target-backend (default-target-backend))
@@ -722,16 +726,33 @@ Return files."
               (compile-system files :reload nil #| RELOAD USED T HERE |# :parallel-jobs (min *number-of-jobs* 16) :total-files (length system) :file-order file-order)
               ;;  Just compile the following files and don't reload, they are needed to link
               (compile-system pre-files :reload nil :file-order file-order :total-files (length system))
+              (format t "Done with compile-system of aclasp~%")
               (if epilogue-files (compile-system epilogue-files
                                                  :reload nil
                                                  :total-files (length system)
                                                  :file-order file-order))))))))
 
-(defun link-faso (&key clean
-                      (output-file (build-common-lisp-bitcode-pathname))
-                      (target-backend (default-target-backend))
+(defun link-fasl (&key clean
+                    (output-file (build-common-lisp-bitcode-pathname))
+                    (target-backend (default-target-backend))
                     (system (command-line-arguments-as-list)))
-  (core:link-faso-files output-file system nil))
+  (cond
+    ((eq core:*clasp-build-mode* :bitcode)
+     (cmp:link-bitcode-modules output-file all-modules))
+    ((eq core:*clasp-build-mode* :object)
+     ;; Do nothing - object files are the result
+     )
+    ((eq core:*clasp-build-mode* :faso)
+     ;; Do nothing - faso files are the result
+     (core:link-faso-files output-file system nil))
+    ((eq core:*clasp-build-mode* :fasoll)
+     (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasoll))
+            (fout (open output-file :direction :output :if-exists :supersede)))
+       (llvm-sys:dump-module module fout)))
+    ((eq core::*clasp-build-mode* :fasobc)
+     (let* ((module (cmp:link-bitcode-modules-together output-file system :clasp-build-mode :fasobc)))
+       (llvm-sys:write-bitcode-to-file module (namestring output-file))))
+    (t (error "Unsupported value for core:*clasp-build-mode* -> ~a" core:*clasp-build-mode*))))
 
 (export '(bclasp-features with-bclasp-features))
 (defun bclasp-features()
@@ -790,11 +811,7 @@ Return files."
   "Compile the cclasp source code."
   (let ((ensure-adjacent (select-source-files #P"src/lisp/kernel/cleavir/inline-prep" #P"src/lisp/kernel/cleavir/auto-compile" :system system)))
     (or (= (length ensure-adjacent) 2) (error "src/lisp/kernel/inline-prep MUST immediately precede src/lisp/kernel/auto-compile - currently the order is: ~a" ensure-adjacent)))
-  (let ((files #+(or)(append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/cleavir/inline-prep" :system system)
-                             (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
-                                                  #P"src/lisp/kernel/tag/cclasp"
-                                                  :system system))
-               (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
+  (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system))
         (file-order (calculate-file-order system)))
     ;; Inline ASTs refer to various classes etc that are not available while earlier files are loaded.
     ;; Therefore we can't have the compiler save inline definitions for files earlier than we're able
@@ -825,6 +842,17 @@ Return files."
               (let* ((files (select-source-files #P"src/lisp/kernel/tag/bclasp"
                                                  #P"src/lisp/kernel/tag/pre-epilogue-cclasp"
                                                  :system system)))
+                ;; We recompile and load these Eclector files under
+                ;; cclasp because the functions here are performance
+                ;; critical for compilation and cclasp does a much
+                ;; better job at reducing unwinding, thereby speeding
+                ;; up bootstrapping quite a bit by recompiling and
+                ;; loading these as soon as possible.
+                (setq files (append files
+                                    '("src/lisp/kernel/contrib/Eclector/code/reader/tokens"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/read-common"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/macro-functions"
+                                      "src/lisp/kernel/contrib/Eclector/code/reader/read")))
                 (load-system files)))
          (pop *features*))
        (push :cleavir *features*)

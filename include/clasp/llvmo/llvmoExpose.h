@@ -1,4 +1,3 @@
-//#define DEBUG_DTORS
 /*
     File: llvmoExpose.h
 */
@@ -102,7 +101,7 @@ class LLVMContext_O : public core::ExternalObject_O {
   typedef llvm::LLVMContext ExternalType;
   typedef llvm::LLVMContext *PointerToExternalType;
 
-protected:
+public:
   PointerToExternalType _ptr;
 
 public:
@@ -286,11 +285,8 @@ class JITDylib_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
   typedef llvm::orc::JITDylib ExternalType;
   typedef llvm::orc::JITDylib *PointerToExternalType;
-
 protected:
   PointerToExternalType _ptr;
-
-public:
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -488,9 +484,10 @@ public:
   ~Triple_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -580,9 +577,10 @@ public:
   ~TargetOptions_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -896,9 +894,10 @@ public:
   ~TargetMachine_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1075,9 +1074,10 @@ public:
   ~TargetPassConfig_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1240,9 +1240,10 @@ public:
   virtual ~PassManagerBase_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1329,24 +1330,28 @@ struct from_object<llvm::Value *, std::true_type> {
 };
 template <>
 struct from_object<llvm::ArrayRef<llvm::Value *>> {
-  typedef std::vector<llvm::Value *> DeclareType;
+  typedef llvm::ArrayRef<llvm::Value*> DeclareType;
+  std::vector<llvm::Value*> _backing;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      _v.clear();
+      _backing.clear();
+      this->_v = _backing;
       return;
     } else if (core::List_sp lcvals = o.asOrNull<core::Cons_O>()) {
       for (auto cvals : lcvals) {
         llvm::Value *vP = gc::As<llvmo::Value_sp>(core::oCar(cvals))->wrappedPtr();
-        _v.push_back(vP);
+        _backing.push_back(vP);
       }
+      this->_v = _backing;
       return;
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
-      _v.resize(vvals->length());
+      _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
+        _backing[i] = gc::As<llvmo::Value_sp>(vvals->rowMajorAref(i))->wrappedPtr();
         printf("%s:%d   Entry[%d] <-- %s\n", __FILE__, __LINE__, i, _rep_(vvals->rowMajorAref(i)).c_str());
       }
+      this->_v = _backing;
       return;
     }
     SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Value*>", core::_rep_(o).c_str());
@@ -1607,9 +1612,10 @@ public:
   ~DataLayout_O() {
     if (this->_DataLayout) {
       auto ptr = this->_DataLayout;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -1765,23 +1771,27 @@ struct from_object<llvm::Constant *, std::true_type> {
 
 template <>
 struct from_object<llvm::ArrayRef<llvm::Constant *>> {
-  typedef std::vector<llvm::Constant *> DeclareType;
+  typedef llvm::ArrayRef<llvm::Constant *> DeclareType;
+  std::vector<llvm::Constant *> _backing;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (o.nilp()) {
-      _v.clear();
+      _backing.clear();
+      this->_v = this->_backing;
       return;
     } else if (core::List_sp lcvals = o.asOrNull<core::Cons_O>()) {
       for (auto cvals : lcvals) {
         llvm::Constant *vP = gc::As<llvmo::Constant_sp>(core::oCar(cvals))->wrappedPtr();
-        _v.push_back(vP);
+        _backing.push_back(vP);
       }
+      this->_v = this->_backing;
       return;
     } else if (core::Vector_sp vvals = o.asOrNull<core::Vector_O>()) {
-      _v.resize(vvals->length());
+      _backing.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
+        _backing[i] = gc::As<llvmo::Constant_sp>(vvals->rowMajorAref(i))->wrappedPtr();
       }
+      this->_v = this->_backing;
       return;
     }
     SIMPLE_ERROR_SPRINTF("Could not convert %s to llvm::ArrayRef<llvm::Constant*>", core::_rep_(o).c_str());
@@ -2247,9 +2257,10 @@ public:
   ~FunctionPassManager_O() {
     if ( this->_ptr!=NULL ) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2316,9 +2327,10 @@ public:
   virtual ~PassManager_O() {
     if (this->_ptr) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2467,9 +2479,10 @@ public:
 #endif
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2621,9 +2634,10 @@ public:
   ~IRBuilderBase_O() {
     if (_ptr != NULL) {
       auto ptr = this->_ptr;
+//      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
       core::thread_local_register_cleanup([ptr] (void) {
 #ifdef DEBUG_DTORS
-                                            printf("%s:%d dtor %p\n", __FILE__, __LINE__, ptr);
+                                            printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
 #endif
                                             delete ptr;
                                           });
@@ -2976,6 +2990,22 @@ struct to_object<llvm::PHINode *> {
 
 
 namespace llvmo {
+
+/* The LLVM enum for calling conventions is completely anonymous, which
+ * makes translating Lisp function arguments annoying.
+ * So here we define our own enum with what we need, and use that.
+ * FIXME: Move, maybe? */
+
+enum ClaspCallingConv {
+    C = llvm::CallingConv::C,
+    Fast = llvm::CallingConv::Fast
+};
+}; // namespace llvmo
+
+ENUM_TRANSLATOR(llvmo::ClaspCallingConv, llvmo::_sym_CallingConv);
+
+namespace llvmo {
+
 FORWARD(CallBase);
 class CallBase_O : public Instruction_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::CallBase, CallBase_O, "CallBase", Instruction_O);
@@ -2988,6 +3018,9 @@ public:
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
+  void addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
+  core::List_sp getArgumentList() const;
+  llvm::Function* getCalledFunction();
   CallBase_O() : Base(){};
   ~CallBase_O() {}
 
@@ -3005,13 +3038,10 @@ class CallInst_O : public CallBase_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  core::List_sp getArgumentList() const;
-  llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool CallInstP() const { return true; };
   CallInst_O() : Base(){};
   ~CallInst_O() {}
@@ -3363,13 +3393,10 @@ class InvokeInst_O : public CallBase_O {
 
 public:
   PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
-  void 	addParamAttr(unsigned ArgNo, llvm::Attribute::AttrKind Attr);
   void set_wrapped(PointerToExternalType ptr) {
     /* delete this->_ptr; */
     this->_ptr = ptr;
   }
-  core::List_sp getArgumentList() const;
-  llvm::Function* getCalledFunction();
   CL_DEFMETHOD bool InvokeInstP() const { return true; };
   InvokeInst_O() : Base(){};
   ~InvokeInst_O() {}
@@ -4551,24 +4578,10 @@ struct gctools::GCInfo<llvmo::ClaspJIT_O> {
 
 namespace llvmo {
 
-struct ObjectFileInfo {
-  const char* _faso_filename;
-  size_t    _faso_index;
-  size_t    _objectID;
-  void*     _object_file_start;
-  size_t    _object_file_size;
-  void*     _text_segment_start;
-  size_t    _text_segment_size;
-  size_t    _text_segment_SectionID;
-  void*     _stackmap_start;
-  size_t    _stackmap_size;
-  ObjectFileInfo* _next;
-};
-
+FORWARD(ObjectFile);
 FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
-public:
 public:
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
@@ -4576,25 +4589,25 @@ public:
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void addObjectFile(const char* buffer, size_t bytes, size_t startupID, JITDylib& dylib, 
-                     const char* faso_filename, size_t faso_index,
-                     bool print=false);
+  void addObjectFile(ObjectFile_sp of, bool print=false);
   void runInitializers(JITDylib& dylib);
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-#ifdef USE_JITLINKER
   llvm::org::JITLinker* _LinkLayer;
-#else
   #if _TARGET_OS_DARWIN
   llvm::orc::ObjectLinkingLayer *LinkLayer;
-
-  
   #else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
   #endif
 #endif
+  llvm::DataLayout* _DataLayout;
+  llvm::orc::ExecutionSession *_ES;
+  llvm::orc::RTDyldObjectLinkingLayer *_LinkLayer;
+  llvm::orc::ConcurrentIRCompiler *_Compiler;
+  llvm::orc::IRCompileLayer *_CompileLayer;
+======= end
 };
 
 
@@ -4642,56 +4655,8 @@ public:
 
     ;
 
-// ObjectFile_O
-namespace llvmo {
-FORWARD(ObjectFile);
-class ObjectFile_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::object::ObjectFile, ObjectFile_O, "ObjectFile", core::ExternalObject_O);
-  typedef llvm::object::ObjectFile ExternalType;
-  typedef llvm::object::ObjectFile *PointerToExternalType;
 
-protected:
-  PointerToExternalType _ptr;
 
-public:
-  virtual void *externalObject() const { return this->_ptr; };
-  PointerToExternalType wrappedPtr() const { return this->_ptr; }
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
- public:
-  static ObjectFile_sp create(PointerToExternalType);
- ObjectFile_O(PointerToExternalType ptr) : Base(), _ptr(ptr){};
- ObjectFile_O() : Base(), _ptr(NULL){};
-  ~ObjectFile_O() {
-    /* delete _ptr;*/
-    _ptr = NULL;
-  }
-}; // ObjectFile_O class def
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::object::ObjectFile *, std::true_type> {
-  typedef llvm::object::ObjectFile *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::ObjectFile_sp>(object)->wrappedPtr()){};
-};
-
-};
-
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::object::ObjectFile *> {
-  static core::T_sp convert(llvm::object::ObjectFile *ptr) {
-    return core::RP_Create_wrapped<llvmo::ObjectFile_O, llvm::object::ObjectFile *>(ptr);
-  }
-};
-}; // namespace llvmo - ObjectFile_O done
 
 // SectionedAddress_O
 namespace llvmo {
@@ -4746,7 +4711,9 @@ struct from_object<llvm::Optional<T>> {
 }
 
 namespace llvmo {
-void dump_objects_for_lldb(FILE* fout);
+void dump_objects_for_lldb(FILE* fout,std::string indent);
+LLVMContext_sp llvm_sys__thread_local_llvm_context();
+
 };
 
 #endif //]

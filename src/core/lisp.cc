@@ -46,6 +46,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
@@ -166,7 +167,6 @@ bool global_Started = false;
 bool globalTheSystemIsUp = false;
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 32;
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot
 {
@@ -196,7 +196,10 @@ public:
 // Constructor
 //
 Lisp_O::GCRoots::GCRoots() :
+  _ObjectFiles(_Nil<T_O>()),
 #ifdef CLASP_THREADS
+    _UnboundSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
+    _UnboundSetfSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
   _ActiveThreads(_Nil<T_O>()),
   _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
   _DefaultSpecialBindings(_Nil<T_O>()),
@@ -206,7 +209,6 @@ Lisp_O::GCRoots::GCRoots() :
   _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
-  _SingleDispatchGenericFunctionHashTableEqualMutex(SINGDISP_NAMEWORD),
 #ifdef DEBUG_MONITOR_SUPPORT
   _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
@@ -223,6 +225,7 @@ Lisp_O::GCRoots::GCRoots() :
   _UnixSignalHandlers(_Nil<T_O>())
 {
   this->_JITDylibs.store(_Nil<core::T_O>());
+  this->_SingleDispatchGenericFunctions.store(_Nil<core::T_O>());
 };
 
 Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
@@ -440,16 +443,11 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+#ifdef DEBUG_FLAGS_SET
+  printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
+#endif
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
-  {
-    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
-    if (pause_startup) {
-      printf("%s:%d PID = %d Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
-      fflush(stdout);
-      getchar();
-    }
-  }
   char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
   if (debug_byte_code) {
     printf("%s:%d Turning on *debug-byte-code*\n", __FILE__, __LINE__);
@@ -462,8 +460,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
   { // Trap symbols as they are interned
-    if (offsetof(Function_O,entry)!=offsetof(FuncallableInstance_O,entry)) {
-      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,entry),offsetof(FuncallableInstance_O,entry) );
+    if (offsetof(Function_O,_FunctionDescription)!=offsetof(FuncallableInstance_O,_FunctionDescription)) {
+      printf("%s:%d  The offsetf(Function_O,entry)/%lu!=offsetof(FuncallableInstance_O,entry)/%lu!!!!\n", __FILE__, __LINE__, offsetof(Function_O,_FunctionDescription),offsetof(FuncallableInstance_O,_FunctionDescription) );
       printf("        These must match for Clasp to be able to function\n");
       abort();
     }
@@ -522,12 +520,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
   }
-  {
-    _BLOCK_TRACE("Create some housekeeping objects");
-//NEW_LTV    this->_Roots._LoadTimeValueArrays = HashTableEqual_O::create_default();
-//    this->_Roots._SetfDefinitions = HashTableEq_O::create_default();
-    this->_Roots._SingleDispatchGenericFunctionHashTableEqual = HashTableEqual_O::create_default();
-  }
   this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
   //	LOG(BF("ALL CLASSES: %s")% this->dumpClasses() );
@@ -559,14 +551,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
 #endif
     initialize_classes_and_methods();
+    // core__satiateSingleDispatchGenericFunctions();
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_source_info\n", __FILE__, __LINE__ );
 #endif
     initialize_source_info();
-#ifdef DEBUG_PROGRESS
-    printf("%s:%d startupLispEnvironment initialize_cache\n", __FILE__, __LINE__ );
-#endif
-    initialize_cache();
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment initialize_backquote\n", __FILE__, __LINE__ );
 #endif
@@ -635,16 +624,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
     my_thread->initialize_thread(main_process,false);
   }
-  {
-    // initialize caches
-    my_thread->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-    my_thread->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
-  }
-//  printf("%s:%d  After my_thread->initialize_thread  my_thread->_Process -> %p\n", __FILE__, __LINE__, (void*)my_thread->_Process.raw_());
-  {
-    _BLOCK_TRACE("Start printing symbols properly");
-    this->_PrintSymbolsProperly = true;
-  }
+  this->_PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
   startup_register_loaded_objects();
@@ -796,6 +776,7 @@ List_sp Lisp_O::processes() const {
   WITH_READ_LOCK(this->_Roots._ActiveThreadsMutex);
   return cl__copy_list(this->_Roots._ActiveThreads);
 }
+
 
 void Lisp_O::push_default_special_binding(Symbol_sp symbol, T_sp form)
 {
@@ -1271,8 +1252,15 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   // Informs CL that MPS is being used
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #endif
+#ifdef USE_PRECISE_GC
+  // Informs CL that precise GC is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
+#endif
 #ifdef CLASP_THREADS
   features = Cons_O::create(_lisp->internKeyword("THREADS"),features);
+#endif
+#if TAG_BITS==4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"),features);
 #endif
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
   // Set additional features for debugging flags
@@ -1323,16 +1311,18 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     seedRandomNumberGenerators(this->mpiRank());
   }
   if (options._HasDescribeFile) {
-#ifdef USE_MPS 
+#if defined(USE_PRECISE_GC)
     FILE* fout = fopen(options._DescribeFile.c_str(),"w");
     gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-    llvmo::dump_objects_for_lldb(fout);
+    llvmo::dump_objects_for_lldb(fout,"");
     fclose(fout);
     printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
-    exit(0);
 #else
-    printf("%s:%d Only MPS can describe datastructures\n", __FILE__, __LINE__ );
-    abort();
+    FILE* fout = fopen(options._DescribeFile.c_str(),"w");
+    dumpBoehmLayoutTables(fout);
+    llvmo::dump_objects_for_lldb(fout,"");
+    fclose(fout);
+    printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
 #endif
   }
     
@@ -1427,6 +1417,13 @@ CL_DEFUN void core__low_level_repl() {
     }
   }
 };
+
+CL_DOCSTRING("Return a list of all single dispatch generic functions.");
+CL_DEFUN List_sp core__singleDispatchGenericFunctions()
+{
+  List_sp result = _lisp->_Roots._SingleDispatchGenericFunctions.load();
+  return result;
+}
 
 CL_DEFUN bool core__noinform_p() {
   return _lisp->_NoInform;
@@ -2116,8 +2113,9 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
 CL_LAMBDA(cformat eformat &rest arguments);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS cerror");
-CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
+CL_DEFUN T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   eval::funcall(_sym_universalErrorHandler, cformat, eformat, arguments);
+  return _Nil<T_O>();
 }
 
 CL_LAMBDA(arg);
@@ -2170,36 +2168,6 @@ void Lisp_O::switchToClassNameHashTable() {
   }
   this->_Roots.bootClassTable.clear();
   this->_BootClassTableIsValid = false;
-}
-
-CL_LAMBDA(gf-symbol &optional errorp);
-CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is true and the generic function isn't found throw an exception - otherwise return _Unbound<SingleDispatchGenericFunctionClosure_O>()");
-CL_LISPIFY_NAME(find_single_dispatch_generic_function);
-CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::find_single_dispatch_generic_function(T_sp gfName, bool errorp) {
-  WITH_READ_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  T_sp tfn = _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->gethash(gfName, _Nil<T_O>());
-  if (tfn.nilp()) {
-    if (errorp) {
-      SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfName));
-    }
-    return _Unbound<SingleDispatchGenericFunctionClosure_O>();
-  }
-  return gc::As<SingleDispatchGenericFunctionClosure_sp>(tfn);
-}
-
-CL_LAMBDA(gf-symbol gf)
-CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
-CL_DOCSTRING("Define a single dispatch generic function");
-CL_DEFUN SingleDispatchGenericFunctionClosure_sp Lisp_O::setf_find_single_dispatch_generic_function(T_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->setf_gethash(gfName, gf);
-  return gf;
-}
-
-CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
-CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._SingleDispatchGenericFunctionHashTableEqualMutex);
-  _lisp->_Roots._SingleDispatchGenericFunctionHashTableEqual->clrhash();
 }
 
 void Lisp_O::parseStringIntoPackageAndSymbolName(const string &name, bool &packageDefined, Package_sp &package, string &symbolName, bool &exported) const {
@@ -2385,7 +2353,7 @@ int Lisp_O::run() {
       } else {
         Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
         DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
-        //printf("%s:%d About to load: %s\n", __FILE__, __LINE__, _rep_(initPathname).c_str());
+//        printf("%s:%d About to load: %s\n", __FILE__, __LINE__, _rep_(initPathname).c_str());
         T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();

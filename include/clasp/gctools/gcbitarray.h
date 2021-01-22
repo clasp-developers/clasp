@@ -38,7 +38,7 @@ namespace gctools {
  * Operations deal with signed or unsigned chars.
  * Various things assume two's complement.
  */
-template <size_t BitUnitBitWidth, bool signedp>
+template <size_t BitUnitBitWidth, int Signedp>
 class GCBitUnitArray_moveable : public GCContainer {
  public:
   static const size_t bits_in_word = sizeof(bit_array_word)*CHAR_BIT;
@@ -56,7 +56,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   bit_array_word _Data[0];
  public:
   // Type for bit units, as used by the external inteface.
-  typedef typename std::conditional<signedp, signed char, unsigned char>::type value_type;
+  typedef typename std::conditional<Signedp!=0, signed char, unsigned char>::type value_type;
  public:
  GCBitUnitArray_moveable(size_t length, bit_array_word initialValue,
                          bool initialValueSupplied,
@@ -128,7 +128,7 @@ class GCBitUnitArray_moveable : public GCContainer {
   }
   static unsigned char unsign(unsigned char pvalue) { return pvalue; }
   static value_type sign(unsigned char pvalue) {
-    if (signedp) // template constant
+    if (Signedp) // template constant
       return (pvalue & magnitude_mask) - (pvalue & sign_mask);
     else return pvalue;
   }

@@ -46,6 +46,13 @@ struct CleanupFunctionNode {
 };
 };
 
+namespace llvmo {
+class ObjectFile_O;
+typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
+class Code_O;
+typedef gctools::smart_ptr<Code_O> Code_sp;
+
+};
 namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
@@ -55,7 +62,7 @@ namespace core {
     void create_sigaltstack();
     void destroy_sigaltstack();
     void pushCatchTag(T_sp);
-    
+
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
@@ -79,8 +86,11 @@ namespace core {
     size_t            _text_segment_SectionID;   // store text segment SectionID
     uintptr_t         _stackmap;
     size_t            _stackmap_size;
+    gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     void*             _ObjectFileStartUp;
+    llvmo::ObjectFile_sp _ObjectFile;
+    llvmo::Code_sp       _Code;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
@@ -101,11 +111,6 @@ namespace core {
     // generated.  These log files are automatically closed when the
     // thread exits.
     std::map<std::string,FILE*> _MonitorFiles;
-#endif
-#if 1
-// thread local caches work fine
-    /*! SingleDispatchGenericFunction cache */
-    Cache_sp _SingleDispatchMethodCachePtr;
 #endif
     /*! Pending interrupts */
     List_sp _PendingInterrupts;

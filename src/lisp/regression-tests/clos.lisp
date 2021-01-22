@@ -11,7 +11,8 @@
              (multiple-value-list
               (let* ((sym (gensym))
                      (method
-                      (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
+                       (eval `(defmethod (setf ,sym) ((x t) (y cons)) (setf (car y) x)))))
+                (declare (ignore method))
                 (values
                  (fboundp sym)
                  (let ((x (cons 1 2))) (list (funcall (fdefinition `(setf ,sym)) 3 x) x)))))))
@@ -23,13 +24,14 @@
 (test issue-698
       (vectorp (foo-bar (make-array 23 :adjustable T))))
 
-#+cst (test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
+(test-expect-error make-instance.error.5 (let ()(make-instance)) :type program-error)
 
 (defclass slot-missing-class-01 () (a))
 
 (defmethod slot-missing ((class t) (obj slot-missing-class-01)
                          (slot-name t) (operation t)
                          &optional (new-value nil new-value-p))
+  (declare (ignore new-value))
   42)
 
 (test slot-missing-2-simplified
@@ -104,12 +106,17 @@
   ((a :initform :a)))
 
 (defmethod initialize-instance ((me  %foo-1) &rest initargs &key policy provider (hash-test 'eql) &allow-other-keys)
-  (declare (ignore initargs))
+  (declare (ignore initargs policy provider hash-test))
   (call-next-method)
   23)
 
-(test  test-issue-1031
-  (not (numberp (make-instance ' %foo-1 :a 1))))
+(test test-issue-1031
+      (not (numberp (make-instance '%foo-1 :a 1))))
+
+(defgeneric congruent-gf (a &key b &allow-other-keys))
+(test clos-lambda-list-congruent-allow-other-keys
+      (defmethod congruent-gf (a &key)
+        a))
  
 
 

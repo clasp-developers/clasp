@@ -18,6 +18,7 @@
       gep)))
 
 (defun %literal-value (value &optional (label "literal"))
+  (declare (ignore label))
   (cmp:irc-load (%literal-ref value)))
 
 (defun %closurette-index (function function-description)
@@ -157,55 +158,17 @@ And convert everything to JIT constants."
 ;; Only one pointer and one integer can be returned in registers (from X86 System V ABI)
 ;; so we return one pointer (value) and the number of returned values.
 
-;;; The "return-value" we use throughout translate is actually a list (nreg register...)
-;;; Using scalars helps LLVM, in that mem2reg can eliminate a structure alloca.
-;;; We have to return something here that's compatible (through load-return-value)
-;;; with %return-type%.
-;;; FIXME: An alternate scheme would be to actually alloca a return value, but load it as
-;;; a whole and use extractvalue/insertvalue. Previously we allocad it but used geps to get
-;;; pointers to the fields; llvm then chokes during mem2reg, leaving the structure in memory.
-
-;;; We have nret before the primary, which is backwards from %return-type%, in case we want
-;;; to add more registers at some point.
-(defun alloca-return ()
-  (list (cmp:alloca-size_t "nret")
-        ;; only one register
-        (cmp:alloca-t* "primary-return-value")))
-
-;;; given the above "return-value", generate code to make an actual return-value,
-;;; and return that LLVM::Value. (Note the type is tmv, not tmv*.)
-(defun load-return-value (return-value)
-  (let ((nret (cmp:irc-load (first return-value)))
-        (val0 (cmp:irc-load (second return-value))))
-    (cmp:irc-make-tmv nret val0)))
-
-;;; given a tmv, store it in a "return-value".
-(defun store-tmv (tmv return-value)
-  (cmp:irc-store (cmp:irc-tmv-nret tmv) (first return-value))
-  (cmp:irc-store (cmp:irc-tmv-primary tmv) (second return-value)))
-
-(defun return-value-elt (return-regs idx)
-  (if (< idx +pointers-returned-in-registers+)
-      (elt return-regs idx)
-      (let ((multiple-value-pointer (multiple-value-array-address)))
-        (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx)))))
-
-;;; Given an above return-value, bind nret and ret-regs to the actual pointers.
-;;; (ABI is currently ignored.)
-(defmacro with-return-values ((return-value abi nret ret-regs) &body body)
-  (declare (ignore abi))
-  (let ((rvs (gensym "RETURN-VALUE")))
-    `(let* ((,rvs ,return-value)
-            (,nret (first ,rvs))
-            (,ret-regs (rest ,rvs)))
-       ,@body)))
+(defun return-value-elt (idx)
+  (assert (>= idx +pointers-returned-in-registers+))
+  (let ((multiple-value-pointer (multiple-value-array-address)))
+    (%gep cmp:%t*[0]*% multiple-value-pointer (list 0 idx))))
 
 ;;; These functions are like cc_{save,restore}MultipleValue0
 ;; FIXME: we don't really need intrinsics for these - they're easy
-(defun save-multiple-value-0 (return-value)
-  (%intrinsic-call "cc_saveMultipleValue0" (list (load-return-value return-value))))
-(defun restore-multiple-value-0 (return-value)
-  (store-tmv (%intrinsic-call "cc_restoreMultipleValue0" nil) return-value))
+(defun save-multiple-value-0 (tmv)
+  (%intrinsic-call "cc_saveMultipleValue0" (list tmv)))
+(defun restore-multiple-value-0 ()
+  (%intrinsic-call "cc_restoreMultipleValue0" nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -215,8 +178,8 @@ And convert everything to JIT constants."
 ;;; Arguments are passed in registers and in the multiple-value-array
 ;;;
 
-(defun closure-call-or-invoke (closure return-value arguments &key (label ""))
-  (let* ((entry-point (cmp:irc-calculate-entry closure))
+(defun closure-call-or-invoke (closure arguments &key (label ""))
+  (let* ((entry-point (cmp:irc-calculate-entry closure arguments))
          (real-args (cmp:irc-calculate-real-args arguments))
          (args (list* closure
                       (%size_t (length arguments))
@@ -262,7 +225,8 @@ And convert everything to JIT constants."
         (let ((foreign-result (cmp:irc-call-or-invoke function-type func arguments)))
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result))))))
 
-(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi &key (label ""))
+(defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi)
+  (declare (ignore abi))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
                               (%intrinsic-invoke-if-landing-pad-or-call

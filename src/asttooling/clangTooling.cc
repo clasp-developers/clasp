@@ -125,7 +125,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      void* function_address = (void*)func->entry.load();
+      void* function_address = (void*)func->entry();
       printf("%s:%d   intermediate from_object<clang::tooling::ArgumentsAdjuster> with Function arg: %s@%p - function_address: %p\n", __FILE__, __LINE__, _rep_(o).c_str(), (void*)o.tagged_(), function_address);
       this->_v = [func,function_address](const clang::tooling::CommandLineArguments &args, llvm::StringRef filename ) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
@@ -739,8 +739,9 @@ void initialize_clangTooling() {
         .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands);
     class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>> cljcd(m,"JSONCompilationDatabase");
     /*This was used when exposing the original clang function, the wrapped one doesn't have a second string parameter */
-    m.def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile,
-          adopt<result>() ,outValue<2>());
+    m.def("getFieldOffset",&getFieldOffset);
+    m.def("getRecordSize",&getRecordSize);
+// RESTOREME   m.def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile, adopt<result>() ,outValue<1>());
     class_<clang::ASTConsumer> cl_aa(m,"Clang-ASTConsumer");
     class_<clang::LangOptions> cl_ab(m,"LangOptions");
     class_<clang::Lexer> cl_ac(m,"Lexer");
@@ -752,18 +753,16 @@ void initialize_clangTooling() {
         .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout);
   
     class_<clang::SourceManager> cl_af(m,"SourceManager");
-    cl_af.def("getFilename", &clang::SourceManager::getFilename)
-      .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
-      .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
-      .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, pureOutValue<2>())
-      .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
-      .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, pureOutValue<2>())
-      .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
-      .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
-      .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>())
-      .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)      ;
-    m.def("getFieldOffset",&getFieldOffset);
-    m.def("getRecordSize",&getRecordSize);
+    cl_af.def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, "docstring","((self ast-tooling:source-manager) source-location &optional (use-line-directives t))"_ll)
+        .def("getFilename", &clang::SourceManager::getFilename)
+        .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
+        .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, pureOutValue<2>())
+        .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, pureOutValue<2>())
+        .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
+        .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, pureOutValue<2>())
+        .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
+        .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
+        .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>());
     class_<clang::SourceLocation> cl_ag(m,"SourceLocation");
     cl_ag.def("isFileID", &clang::SourceLocation::isFileID)
         .def("printToString", &clang::SourceLocation::printToString);

@@ -102,6 +102,7 @@
                                        "" ; 15 SysRoot (-isysroot value)
                                        "" ; 16 SDK
                                        )))
+             (declare (ignorable ,dir-name)) ; cmp-log may expand empty
              (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s%N" *dbg-compile-unit*)
              (cmp-log "with-dbg-compile-unit source-pathname: %s%N" ,source-pathname)
              (cmp-log "with-dbg-compile-unit file-name: [%s]%N" ,file)
@@ -130,9 +131,7 @@
                           nil)))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
-  (let ((path (gensym))
-        (file-name (gensym))
-        (dir-name (gensym)))
+  (let ((path (gensym)))
     `(if (and *dbg-generate-dwarf* *the-module-dibuilder*)
          (let* ((,path (pathname ,source-pathname))
                 (*dbg-current-file* (make-file-metadata ,path)))

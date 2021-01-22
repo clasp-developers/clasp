@@ -127,8 +127,8 @@
           (CLOSE S))
         (handler-case (LET ((S (OPEN "foo.txt" :DIRECTION :INPUT)))
                         (UNWIND-PROTECT (READ-BYTE S) (CLOSE S)))
-          (end-of-file (e) nil)
-          (error (e) t))))
+          (end-of-file () nil)
+          (error () t))))
 
 (test READ-BYTE.ERROR.4.simplyfied
       (stringp
@@ -154,7 +154,7 @@
                    (close is)))))))
 
 (test READ-SYMBOL.11 (symbolp (READ-FROM-STRING "\\.")))
-#+cst (test glsl-toolkit-grammar.lisp-1 (eq '|.| '\.))
+(test glsl-toolkit-grammar.lisp-1 (eq '|.| '\.))
 
 (test-expect-error SYNTAX.DOT-ERROR.2 (read-from-string "..") :type reader-error)
 (test-expect-error SYNTAX.DOT-ERROR.3 (read-from-string "...") :type reader-error)
@@ -338,7 +338,7 @@
         (eq :good
             (handler-case
                 (READ-FROM-STRING "#:a:b")
-              (reader-error (e) :good)))))
+              (reader-error () :good)))))
 
 (test SYNTAX.SHARP-B.5 (= 17/4 (READ-FROM-STRING "#b010001/100")))
 
@@ -570,6 +570,11 @@
       (let (($%e 2.7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274274663919320030599218174135966290435729003342952605956307381323286279434907632338298807531952510190115738341879307021540891499348841675092447614606680822648001684774118537423454424371075390777449920695517027618386062613313845830007520449338265602976067371132007093287091274437470472306969772093101416928368190255151086574637721112523897844250569536967707854499699679468644549059879316368892300987931277361782154249992295763514822082698951936680331825288693984964651058209392398294887933203625094431173012381970684161404))
         (and (floatp $%e)
              (not (ext:float-nan-p $%e)))))
+
+(test issue-case-sensitivity-mode
+      (locally (declare (optimize (safety 3)))
+        (let ()
+          (readtable-case *readtable*))))
 
 
 

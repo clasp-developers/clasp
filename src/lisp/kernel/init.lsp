@@ -21,6 +21,11 @@
 ;;;
 (setq *echo-repl-read* nil)
 
+;;; ------------------------------------------------------------
+;;; Turn on printing messages as object files are converted to runnable code
+;;;
+;;(setq llvm-sys::*debug-object-files* t)
+
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)
 
@@ -29,14 +34,29 @@
 (sys:*make-special 'core::*clang-bin*)
 (export 'core::*clang-bin*)
 
-(setq cmp:*generate-faso* (if (eq core:*clasp-build-mode* :faso)
-                              t
-                              (if (member :generate-faso *features*)
-                                  t
-                                  nil)))
+
+;;; --------------------------------------------------
+;;;
+;;; Use force-compile-file-serial feature to
+;;; shutdown compile-file-parallel.
+;;;
+(if (member :force-compile-file-serial *features*)
+    (setq cmp:*use-compile-file-parallel* nil))
+
+(cond
+  ((member :generate-faso *features*)
+   (setq core:*clasp-build-mode* :faso))
+  ((member :generate-fasoll *features*)
+   (setq core:*clasp-build-mode* :fasoll))
+  ((member :generate-fasobc *features*)
+   (setq core:*clasp-build-mode* :fasobc)))
+  
 (if (member :generate-faso *features*)
     (setq core:*clasp-build-mode* :faso))
                                   
+
+(setq cmp:*default-object-type* core:*clasp-build-mode*)
+
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -113,7 +133,7 @@
   (core::select-package :cmp))
 (sys:*make-special '*dbg-generate-dwarf*)
 (setq *dbg-generate-dwarf* (null (member :disable-dbg-generate-dwarf *features*)))
-(export '(llvm-link link-bitcode-modules))
+(export '(llvm-link link-bitcode-modules link-fasoll-modules link-fasobc-modules))
 ;;; Turn on aclasp/bclasp activation-frame optimization
 (sys:*make-special '*activation-frame-optimize*)
 (setq *activation-frame-optimize* t)
@@ -237,56 +257,56 @@
          (make-hash-table :test #'eq :thread-safe t)))
 
 (si:fset 'core::defvar #'(lambda (whole env)
-			     (let ((var (cadr whole))
-				   (formp (cddr whole))
-				   (form (caddr whole))
-				   (doc-string (cadddr whole)))
-				  "Syntax: (defvar name form [doc])
+                           (declare (ignore env))
+                           (let ((var (cadr whole))
+                                 (formp (cddr whole))
+                                 (form (caddr whole)))
+                             "Syntax: (defvar name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     ,@(if formp
-					     `((if (boundp ',var)
-						   ',var
-						   (progn
-                                                     (setq ,var ,form)
-                                                     ',var)))))))
-	  t )
+                             `(LOCALLY (DECLARE (SPECIAL ,var))
+                                (SYS:*MAKE-SPECIAL ',var)
+                                ,@(if formp
+                                      `((if (boundp ',var)
+                                            ',var
+                                            (progn
+                                              (setq ,var ,form)
+                                              ',var)))))))
+         t)
 (export 'defvar)
 
 (si:fset 'core::defparameter #'(lambda (whole env)
-                            (let ((var (cadr whole))
-                                  (form (caddr whole))
-                                  (doc-string (cadddr whole)))
-                                  "Syntax: (defparameter name form [doc])
+                                 (declare (ignore env))
+                                 (let ((var (cadr whole))
+                                       (form (caddr whole)))
+                                   "Syntax: (defparameter name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-				  `(LOCALLY (DECLARE (SPECIAL ,var))
-				     (SYS:*MAKE-SPECIAL ',var)
-				     (SETQ ,var ,form)
-                                     ',var)))
-	  t )
+                                   `(LOCALLY (DECLARE (SPECIAL ,var))
+                                      (SYS:*MAKE-SPECIAL ',var)
+                                      (SETQ ,var ,form)
+                                      ',var)))
+         t)
 (export 'defparameter)
 
 
 
 (si:fset 'core::defconstant #'(lambda (whole env)
-                            (let ((var (cadr whole))
-                                  (form (caddr whole))
-                                  (doc-string (cadddr whole)))
+                                (declare (ignore env))
+                                (let ((var (cadr whole))
+                                      (form (caddr whole)))
                                   "Syntax: (defconstant name form [doc])
 Declares the global variable named by NAME as a special variable and assigns
 the value of FORM to the variable.  The doc-string DOC, if supplied, is saved
 as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
-                              `(if (core:symbol-constantp ',var)
-                                   nil
-                                   (progn
-                                     (set ',var ,form)
-                                     (funcall #'(setf core:symbol-constantp) t ',var)))))
-	  t )
+                                  `(if (core:symbol-constantp ',var)
+                                       nil
+                                       (progn
+                                         (set ',var ,form)
+                                         (funcall #'(setf core:symbol-constantp) t ',var)))))
+         t)
 (export 'defconstant)
 
 (if (boundp '+ecl-safe-declarations+)
@@ -452,7 +472,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
           *proclaim-hook*))
 
 ;; Discard documentation until helpfile.lsp is loaded
-(defun set-documentation (o d s) nil)
+(defun set-documentation (o d s) (declare (ignore o d s)) nil)
 
 (defun proclaim (decl)
   "Args: (decl-spec)
@@ -493,9 +513,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun default-link-flags ()
   "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
-  (let (err error-msg stream)
-    (multiple-value-setq (err error-msg stream)
-      (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))
+  (let ((stream (nth-value 2 (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))))
     (let* ((ldflags (split-at-white-space (read-line stream)))
            #+(or)(clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
            (libdir (read-line stream))
@@ -519,32 +537,35 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (si:fset 'and
-           #'(lambda (whole env)
-               (let ((forms (cdr whole)))
-                 (if (null forms)
-                     t
-                     (if (null (cdr forms))
-                         (car forms)
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((forms (cdr whole)))
+               (if (null forms)
+                   t
+                   (if (null (cdr forms))
+                       (car forms)
                          `(if ,(car forms)
                               (and ,@(cdr forms)))))))
            t)
 
 (si:fset 'or
-           #'(lambda (whole env)
-               (let ((forms (cdr whole)))
-                 (if (null forms)
-                     nil
-                     (if ( null (cdr forms))
-                         (car forms)
-                         (let ((tmp (gensym)))
-                           `(let ((,tmp ,(car forms)))
-                              (if ,tmp
-                                  ,tmp
-                                  (or ,@(cdr forms)))))))))
+         #'(lambda (whole env)
+             (declare (ignore env))
+             (let ((forms (cdr whole)))
+               (if (null forms)
+                   nil
+                   (if ( null (cdr forms))
+                       (car forms)
+                       (let ((tmp (gensym)))
+                         `(let ((,tmp ,(car forms)))
+                            (if ,tmp
+                                ,tmp
+                                (or ,@(cdr forms)))))))))
            t )
 (export '(and or))
 
 (defun build-target-dir (type &optional stage)
+  (declare (ignore type))
   (let* ((stage (if stage
                     stage
                     (default-target-stage)))
@@ -566,7 +587,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-configuration ()
   (let ((gc (cond
               ((member :use-mps *features*) "mps")
-              ((member :use-boehm *features*) "boehm")
+              ((member :use-boehm *features*)
+               (if (member :use-precise-gc *features*)
+                   "boehmprecise"
+                   "boehm"))
               (t (error "Unknown clasp configuration"))))
         (mpi (if (member :use-mpi *features*) "-mpi" "")))
     (bformat nil "%s-%s%s" (lisp-implementation-type) gc mpi)))
@@ -619,14 +643,46 @@ a relative path from there."
   (if (eq type :fasl)
       "fasl"
       (if (eq type :bitcode)
-          "bc"
+          (if cmp::*use-human-readable-bitcode*
+              "ll"
+              "bc")
           (if (eq type :ll)
               "ll"
               (if (eq type :object)
                   "o"
-                  (if (eq type :faso)
-                      "faso"
-                      (error "Unsupported build-extension type ~a" type)))))))
+                  (if (eq type :fasp)
+                      "fasp"
+                      (if (eq type :faso)
+                          "faso"
+                          (if (eq type :fasoll)
+                              "fasoll"
+                              (if (eq type :faspll)
+                                  "faspll"
+                                  (if (eq type :fasobc)
+                                      "fasobc"
+                                      (if (eq type :faspbc)
+                                          "faspbc"
+                                          (error "Unsupported build-extension type ~a" type))))))))))))
+
+(defun build-library-type (type)
+  "Given the object-type TYPE return what type of library it generates"
+  (if (eq type :fasl)
+      :fasl
+      (if (eq type :object)
+          :fasl
+          (if (eq type :fasp)
+              :fasp
+              (if (eq type :faso)
+                  :fasp
+                  (if (eq type :fasoll)
+                      :faspll
+                      (if (eq type :faspll)
+                          :faspll
+                          (if (eq type :fasobc)
+                              :faspbc
+                              (if (eq type :faspbc)
+                                  :faspbc
+                                  (error "Unsupported build-extension type ~a" type))))))))))
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   "If partial-pathname is nil and type is :fasl or :executable then construct the name using
@@ -637,8 +693,7 @@ the stage, the +application-name+ and the +bitcode-name+"
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((target-host "lib")
-          (target-dir (build-target-dir type stage))
-          pn)
+          (target-dir (build-target-dir type stage)))
       #+dbg-print(bformat t "DBG-PRINT build-pathname module: %s%N" module)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-host: %s%N" target-host)
       #+dbg-print(bformat t "DBG-PRINT build-pathname target-dir: %s%N" target-dir)
@@ -655,36 +710,22 @@ the stage, the +application-name+ and the +bitcode-name+"
                                         (translate-logical-pathname "GENERATED:")))
                      (t
                       (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
-                ((and partial-pathname (eq type :bitcode))
-                 (if cmp::*use-human-readable-bitcode* (setq type :ll))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :object))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :faso))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and partial-pathname (eq type :fasl))
-                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
-                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
-                                  (translate-logical-pathname (make-pathname :host target-host))))
-                ((and (null partial-pathname) (eq type :fasl))
-                 (let* ((stage-char (default-target-stage))
-                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
-                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
-                   exec-pathname))
                 ((eq type :executable)
                  (let* ((stage-char (default-target-stage))
                         (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
                         (exec-pathname (merge-pathnames (make-pathname :name filename :type nil) (translate-logical-pathname "app-executable:") )))
                    exec-pathname))
-                (t (error "Add support for build-pathname type: ~a" type)))))
+                ((and (null partial-pathname) (eq type :fasl))
+                 (let* ((stage-char (default-target-stage))
+                        (filename (bformat nil "%s%s-%s-image" stage-char +application-name+ +bitcode-name+))
+                        (exec-pathname (merge-pathnames (make-pathname :name filename :type "fasl") (translate-logical-pathname "app-fasl:"))))
+                   exec-pathname))
+                (t
+                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
+                                                   (make-pathname :directory (list :relative target-dir) :type (build-extension type)))
+                                  (translate-logical-pathname (make-pathname :host target-host)))))))
         result))))
-(export '(build-pathname))
+(export '(build-pathname build-extension))
 
 
 (eval-when (:execute)
@@ -728,7 +769,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun bitcode-exists-and-up-to-date (entry)
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename))
-         (bitcode-path (build-pathname filename :bitcode))
+         (bitcode-path (build-pathname filename cmp:*default-object-type*))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
         (> (file-write-date bitcode-path)

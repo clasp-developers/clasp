@@ -66,6 +66,7 @@ extern core::Symbol_sp& _sym_name;
     lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
+#define FUNCTION_DESCRIPTION_ERROR() SIMPLE_ERROR(BF("Do something about function-description"));
 #define SIMPLE_WARN(_boost_fmt_) core::eval::funcall(cl::_sym_warn, core::SimpleBaseString_O::make((_boost_fmt_).str()))
 #define ERROR(_type_, _initializers_) lisp_error( _type_, _initializers_)
 #define SIMPLE_ERROR_SPRINTF(...) ::core::lisp_error_sprintf(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
@@ -636,13 +637,13 @@ public:
   T_mv returnObject() { return this->_ReturnObject; };
 };
 
-void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type);
 
-void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
+[[noreturn]] void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp key, T_sp value, T_sp type);
 
-void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
+[[noreturn]] void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type);
 
 [[noreturn]] void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type);
 

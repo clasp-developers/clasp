@@ -13,6 +13,7 @@
         (default-make-instance-form class class-form keys params))))
 
 (defun default-make-instance-form (class class-form keys params)
+  (declare (ignore class))
   ;; This is strictly worse than not inlining,
   ;; but it's rare to define methods on make-instance.
   `(locally
@@ -108,6 +109,4 @@
   (let ((valid-keywords (valid-keywords class)))
     (if (eq valid-keywords t)
         nil
-        (loop for key in keys
-              unless (member key valid-keywords)
-                collect key))))
+        (set-difference keys valid-keywords))))

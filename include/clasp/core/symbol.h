@@ -66,11 +66,11 @@ class Symbol_O : public General_O {
 
  public: // FIXME: Probably oughta be private.
   // This MUST match the layout for %sym% in cmpintrinsics.lsp and the sanity check core__verify_symbol_layout
-  SimpleString_sp _Name;
-  std::atomic<T_sp> _HomePackage; // NIL or Package
-  std::atomic<T_sp> _GlobalValue;
-  std::atomic<Function_sp> _Function;
-  std::atomic<Function_sp> _SetfFunction;
+  SimpleString_sp _Name; // offset 8
+  std::atomic<T_sp> _HomePackage; // offset=16 NIL or Package
+  std::atomic<T_sp> _GlobalValue; // offset=24
+  std::atomic<Function_sp> _Function; // offset=32
+  std::atomic<Function_sp> _SetfFunction; // offset=40
   mutable std::atomic<uint32_t> _BindingIdx;
   std::atomic<uint32_t>  _Flags;
   std::atomic<T_sp>   _PropertyList;

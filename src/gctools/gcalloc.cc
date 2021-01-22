@@ -156,4 +156,10 @@ void* malloc_uncollectable_and_zero(size_t size)
   return buffer;
 };
 
+
+void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_t size, uintptr_t stmp, void* addr) {
+  // print message and abort
+  printf("%s:%d Got an unexpected kind: %lu size: %lu stamp: %lu addr: %p   expected: %lu\n", __FILE__, __LINE__, kind, size, stmp, addr, expected_kind );
+  abort();
+}
 };

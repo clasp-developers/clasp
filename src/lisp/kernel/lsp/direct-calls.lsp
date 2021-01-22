@@ -12,13 +12,13 @@
     (error "Only magic-intern is supported"))
   (multiple-value-bind (pkg-sym pkg sym)
       (apply 'core:magic-name (cdr raw-lisp-name))
-    (let ((lisp-name (find-symbol sym pkg))
-          (source-info (gensym)))
+    (declare (ignore pkg-sym))
+    (let ((lisp-name (find-symbol sym pkg)))
       (if (and (not (declared-global-inline-p lisp-name))
                (dlsym :rtld-default c-name)
                (fboundp lisp-name))
           `(progn
-             (let ((,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
+             (let (#+(or)(,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
                  (declare (optimize (debug 0)))
                  ,@(if declare-forms
@@ -27,7 +27,7 @@
                  (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
                                                               (core:make-lambda-list-handler
                                                                lambda-list nil 'function))))
-               (core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
+               #+(or)(core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))
 
@@ -38,13 +38,14 @@
     (error "Only magic-intern is supported"))
   (multiple-value-bind (pkg-sym pkg sym)
       (apply 'core:magic-name (cdr raw-lisp-name))
+    (declare (ignore pkg-sym))
     (let ((lisp-name (list 'cl:setf (find-symbol sym pkg)))
           (source-info (gensym)))
       (if (and (not (declared-global-inline-p lisp-name))
                (dlsym :rtld-default c-name)
                (fboundp lisp-name))
           `(progn
-             (let ((,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
+             (let (#+(or)(,source-info (core:function-description-address (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
                  (declare (optimize (debug 0)))
                  ,@(if declare-forms
@@ -53,6 +54,6 @@
                  (core:multiple-value-foreign-call ,c-name ,@(core:names-of-lexical-variables
                                                               (core:make-lambda-list-handler
                                                                lambda-list nil 'function))))
-               (core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
+               #+(or)(core:set-function-description-address (fdefinition ',lisp-name) ,source-info)))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining%N" ',lisp-name))))))

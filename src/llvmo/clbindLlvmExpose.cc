@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind.h>
 
 #ifdef USE_MPS
+// What the hell is this?   Which name means something???
 #define NAMESPACE_clbind_llvm
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_clbind_clang

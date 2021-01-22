@@ -155,13 +155,20 @@ ThreadLocalState::ThreadLocalState() :
 
 size_t ThreadLocalState::random() {
   unsigned long t;
-  this->_xorshf_x ^= this->_xorshf_x << 16;
-  this->_xorshf_x ^= this->_xorshf_x >> 5;
-  this->_xorshf_x ^= this->_xorshf_x << 1;
-  t = this->_xorshf_x;
-  this->_xorshf_x = this->_xorshf_y;
-  this->_xorshf_y = this->_xorshf_z;
-  this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
+  // This random number generator is ONLY used to initialize
+  // the badges of general objects (currently, because cons cells
+  // initialize their badge using the allocation address).
+  // This generator should never return zero because
+  // that would cause problems with boehm precise mode marking.
+  do {
+    this->_xorshf_x ^= this->_xorshf_x << 16;
+    this->_xorshf_x ^= this->_xorshf_x >> 5;
+    this->_xorshf_x ^= this->_xorshf_x << 1;
+    t = this->_xorshf_x;
+    this->_xorshf_x = this->_xorshf_y;
+    this->_xorshf_y = this->_xorshf_z;
+    this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
+  } while (this->_xorshf_z==0);
   return this->_xorshf_z;
 }
 
@@ -172,11 +179,13 @@ ThreadLocalState::~ThreadLocalState() {
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup)
 {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup,my_thread->_CleanupFunctions);
+//  printf("%s:%d:%s %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)node);
   my_thread->_CleanupFunctions = node;
 }
 
 
 void thread_local_invoke_and_clear_cleanup() {
+//  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
   CleanupFunctionNode* node = my_thread->_CleanupFunctions;
   while (node) {
     node->_CleanupFunction();
@@ -206,8 +215,6 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
 #else
    this->_WriteToStringOutputStream = gc::As<StringOutputStream_sp>(clasp_make_string_output_stream());
 #endif
-  this->_SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
-  this->_SingleDispatchMethodCachePtr->setup(2, Lisp_O::SingleDispatchMethodCacheSize);
   this->_PendingInterrupts = _Nil<T_O>();
   this->_CatchTags = _Nil<T_O>();
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
@@ -284,7 +291,14 @@ CL_DEFUN core::SimpleVector_sp gctools__allocation_counts()
   }
   return counts;
 }
-  
+
 #endif
+
+CL_DEFUN size_t gctools__thread_local_unwinds()
+{
+  return
+    my_thread->_unwinds;
+}
+
 
 };

@@ -457,8 +457,10 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj) {
   switch (tag) {
   case gctools::fixnum00_tag:
   case gctools::fixnum01_tag:
+#if TAG_BITS==4
   case gctools::fixnum10_tag:
   case gctools::fixnum11_tag:
+#endif
     {
       hg.addValue0(obj.unsafe_fixnum());
       return;

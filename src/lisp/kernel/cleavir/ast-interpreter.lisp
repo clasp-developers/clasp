@@ -12,34 +12,24 @@
 
 (in-package #:interpret-ast)
 
-;;; environment definition
-;;; it's a list of hash tables. car is the most recent
+;;;; Environment
+;;;; We use a flat mapping from AST lexical variables to values.
 
 (defun empty-environment ()
-  (list (make-hash-table :test #'eq)))
-
-(defun augment-environment (env)
-  (cons (make-hash-table :test #'eq) env))
+  (make-hash-table :test #'eq))
 
 (defun variable (var env)
   (multiple-value-bind (value presentp)
-      (gethash var (car env))
-    (cond
-      (presentp value)
-      ((null (cdr env))
-       (error "BUG: Unbound ~a" var))
-      (t (variable var (cdr env))))))
+      (gethash var env)
+    (if presentp
+        value
+        (error "BUG: Unbound ~a" var))))
 
-(defun variable-frame (var env)
-  (cond ((null env) nil)
-        ((nth-value 1 (gethash var (car env))) (car env))
-        (t (variable-frame var (cdr env)))))
+(defun bind-variable (var value env)
+  (setf (gethash var env) value))
 
-(defun (setf variable) (new var env)
-  (let ((frame (variable-frame var env)))
-    (if (null frame) ; var not found, set it locally
-        (setf (gethash var (car env)) new)
-        (setf (gethash var frame) new))))
+(defun setq-variable (var value env)
+  (setf (gethash var env) value))
 
 ;; interface
 
@@ -71,7 +61,7 @@
 
 ;;; Some we don't bother with, such as all the arithmetic.
 (defgeneric can-interpret-p (ast))
-(defmethod can-interpret-p (ast) nil)
+(defmethod can-interpret-p (ast) (declare (ignore ast)) nil)
 
 (defun can-interpret-ast-p (ast)
   (cleavir-ast:map-ast-depth-first-preorder
@@ -90,6 +80,7 @@
   (let* ((val (cleavir-ast:value ast))
          (_ (or val (error "AST immediate from ~a is not possible" val)))
          (imm (core:value-from-tagged-immediate val)))
+    (declare (ignore _))
     (or imm (error "AST immediate ~a produced nil" val)))        
   #+(or)
   (error "AST produced for interpretation cannot include immediates: ~a" ast))
@@ -99,9 +90,13 @@
   (declare (ignore env))
   (cleavir-ast:value ast))
 
+(defcan cleavir-ast:lexical-variable)
+(defmethod interpret-ast ((ast cleavir-ast:lexical-variable) env)
+  (error "Lexical variables are not meant to be interpreted."))
+
 (defcan cleavir-ast:lexical-ast)
 (defmethod interpret-ast ((ast cleavir-ast:lexical-ast) env)
-  (variable ast env))
+  (variable (cleavir-ast:lexical-variable ast) env))
 
 (defcan cleavir-ast:symbol-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:symbol-value-ast) env)
@@ -157,18 +152,22 @@
 ;;; given a vaslist of arguments, an env, and the shredded viscera of a lambda list,
 ;;; fill the env with the appropriate bindings.
 (defun bind-list (arguments env required optional rest va-rest-p keyp key aok-p)
+  (declare (ignore aok-p))
   (loop for r in required
         if (zerop (core:vaslist-length arguments))
           do (error "Not enough arguments") ; FIXME: message
-        else do (setf (variable r env) (core:vaslist-pop arguments)))
+        else do (bind-variable r (core:vaslist-pop arguments) env))
   (loop for (ovar o-p) in optional
         if (zerop (core:vaslist-length arguments))
-          do (setf (variable o-p env) nil)
-        else do (setf (variable ovar env) (core:vaslist-pop arguments)
-                      (variable o-p env) t))
+          do (bind-variable o-p nil env)
+        else do (bind-variable ovar (core:vaslist-pop arguments) env)
+                (bind-variable o-p t env))
   (when rest
-    (setf (variable rest env)
-          (if va-rest-p arguments (core:list-from-va-list arguments))))
+    (bind-variable rest
+                   (if va-rest-p
+                       arguments
+                       (core:list-from-va-list arguments))
+                   env))
   (when keyp
     (unless (evenp (core:vaslist-length arguments))
       (error "Odd number of keyword arguments")))
@@ -179,9 +178,9 @@
         for (k var var-p) in key
         for value = (getf arguments k indicator)
         if (eq value indicator) ; not present
-          do (setf (variable var-p env) nil)
-        else do (setf (variable var env) value
-                      (variable var-p env) t))
+          do (bind-variable var-p nil env)
+        else do (bind-variable var value env)
+                (bind-variable var-p t env))
   ;; TODO: aokp check blabla
   (values))
 
@@ -193,11 +192,10 @@
         (parse-lambda-list ll)
       (lambda (core:&va-rest arguments)
         (declare (core:lambda-name ast-interpreted-closure))
-        (let ((env (augment-environment env)))
-          (bind-list arguments env
-                     required optional rest va-rest-p keyp key aok-p)
-          ;; ok body now
-          (interpret-ast body env))))))
+        (bind-list arguments env
+                   required optional rest va-rest-p keyp key aok-p)
+        ;; ok body now
+        (interpret-ast body env)))))
 
 (defcan cleavir-ast:progn-ast)
 (defmethod interpret-ast ((ast cleavir-ast:progn-ast) env)
@@ -215,7 +213,7 @@
   ;; more than once. Storing things in the environment
   ;; lets it work with closures.
   (let ((catch-tag (gensym)))
-    (setf (variable ast env) catch-tag)
+    (bind-variable ast catch-tag env)
     (catch catch-tag
       (interpret-ast (cleavir-ast:body-ast ast) env))))
 
@@ -225,18 +223,25 @@
     (throw catch-tag
       (interpret-ast (cleavir-ast:form-ast ast) env))))
 
+(defcan cleavir-ast:lexical-bind-ast)
+(defmethod interpret-ast ((ast cleavir-ast:lexical-bind-ast) env)
+  (bind-variable (cleavir-ast:lexical-variable ast)
+                 (interpret-ast (cleavir-ast:value-ast ast) env)
+                 env))
+
 (defcan cleavir-ast:setq-ast)
 (defmethod interpret-ast ((ast cleavir-ast:setq-ast) env)
-  (setf (variable (cleavir-ast:lhs-ast ast) env)
-        (interpret-ast (cleavir-ast:value-ast ast) env)))
+  (setq-variable (cleavir-ast:lexical-variable ast)
+                 (interpret-ast (cleavir-ast:value-ast ast) env)
+                 env))
 
 (defcan cleavir-ast:multiple-value-setq-ast)
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-setq-ast) env)
   (let ((values (multiple-value-list
                  (interpret-ast (cleavir-ast:form-ast ast) env))))
     (loop with rvalues = values
-          for var in (cleavir-ast:lhs-asts ast)
-          do (setf (variable var env) (pop rvalues)))
+          for var in (cleavir-ast:lexical-variables ast)
+          do (setq-variable var (pop rvalues) env))
     (values-list values)))
 
 (defcan cleavir-ast:tag-ast)
@@ -254,7 +259,7 @@
     ;; Set up the tags
     (loop for (item . rest) on items
           when (typep item 'cleavir-ast:tag-ast)
-            do (setf (variable item env) (cons catch-tag rest)))
+            do (bind-variable item (cons catch-tag rest) env))
     ;; Go
     (loop for to-interpret = items
             then (catch catch-tag
@@ -279,17 +284,22 @@
 (defcan cleavir-ast:typeq-ast)
 (defmethod interpret-boolean-ast ((condition cleavir-ast:typeq-ast) env)
   (typep (interpret-ast (cleavir-ast:form-ast condition) env)
-         (cleavir-ast:type-specifier condition)))
+         (cleavir-ast:ctype condition)))
 
 (defcan cleavir-ast:load-time-value-ast)
 (defmethod interpret-ast ((ast cleavir-ast:load-time-value-ast) env)
+  (declare (ignore env))
   (eval (cleavir-ast:form ast)))
 
-(defcan cleavir-ast:if-ast)
-(defmethod interpret-ast ((ast cleavir-ast:if-ast) env)
-  (if (interpret-boolean-ast (cleavir-ast:test-ast ast) env)
-      (interpret-ast (cleavir-ast:then-ast ast) env)
-      (interpret-ast (cleavir-ast:else-ast ast) env)))
+;; Turns out the AST interpreter is much slower once we start
+;; introducing more complex expressions like this....
+#+(or)
+(progn
+  (defcan cleavir-ast:if-ast)
+  (defmethod interpret-ast ((ast cleavir-ast:if-ast) env)
+    (if (interpret-boolean-ast (cleavir-ast:test-ast ast) env)
+        (interpret-ast (cleavir-ast:then-ast ast) env)
+        (interpret-ast (cleavir-ast:else-ast ast) env))))
 
 (defcan cleavir-ast:multiple-value-call-ast)
 (defmethod interpret-ast ((ast cleavir-ast:multiple-value-call-ast) env)
@@ -316,6 +326,7 @@
 
 (defcan cleavir-ast:unreachable-ast)
 (defmethod interpret-ast ((ast cleavir-ast:unreachable-ast) env)
+  (declare (ignore env))
   (error "BUG: Unreachable"))
 
 (defcan cleavir-ast:eq-ast)
@@ -453,10 +464,6 @@
 
 ;; The array access ASTs, like vector-length, are annoying to do non-metacircularly, so we don't.
 
-(defcan cc-ast:vaslist-pop-ast)
-(defmethod interpret-ast ((ast cc-ast:vaslist-pop-ast) env)
-  (core:vaslist-pop (interpret-ast (cleavir-ast:arg-ast ast) env)))
-
 #-cst (defcan cc-ast:bind-va-list-ast)
 #-cst ; bind-va-list doesn't inline right - FIXME
 (defmethod interpret-ast ((ast cc-ast:bind-va-list-ast) env)
@@ -485,17 +492,11 @@
 ;; to give up immediately, because of inner closures.
 ;; We check proactively.
 
-(defun ast-interpret-form (form env)
-  (let ((ast #+cst(cst->ast (cst:cst-from-expression form) env)
-             #-cst(generate-ast form env)))
-    (if (interpret-ast:can-interpret-ast-p ast)
-        (interpret-ast:interpret ast)
-        (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))
-
-#+cst
 (defun ast-interpret-cst (cst env)
-  (let ((ast #+cst(cst->ast cst env)
-             #-cst(generate-ast (cst:raw cst) env)))
+  (let* (;; Make sure we convert to ast without file compilation
+         ;; semantics.
+         (cleavir-cst-to-ast:*compiler* 'cl:eval)
+         (ast (cst->ast cst env)))
     (if (interpret-ast:can-interpret-ast-p ast)
         (interpret-ast:interpret ast)
         (cclasp-eval-with-env `(cleavir-primop:ast ,ast) env))))

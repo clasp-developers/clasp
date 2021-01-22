@@ -42,6 +42,15 @@ THE SOFTWARE.
 #include <clasp/core/numerics.h>
 #include <clasp/core/object.h>
 
+
+template <>
+struct gctools::GCInfo<core::PosixTime_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+
+
 namespace core {
 
 SMART(PosixTime);

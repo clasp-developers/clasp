@@ -54,6 +54,9 @@
 (define-compiler-macro /= (&whole form &rest numbers)
   (core:expand-uncompare form 'core:two-arg-= numbers 'number))
 
+(define-compiler-macro plusp (number) `(> ,number 0))
+(define-compiler-macro minusp (number) `(< ,number 0))
+
 (define-compiler-macro 1+ (x)
   `(core:two-arg-+ ,x 1))
 

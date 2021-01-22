@@ -6,6 +6,7 @@ To build the machine use:
 (2) (literal::build-c++-machine)
 (3) copy the result below
  */
+
 #ifdef DEFINE_PARSERS
 void parse_ltvc_make_nil(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_nil\n", __FILE__, __LINE__, __FUNCTION__);
@@ -114,7 +115,7 @@ void parse_ltvc_make_next_bignum(gctools::GCRootsInModule* roots, T_sp fin, bool
   if (log) printf("%s:%d:%s parse_ltvc_make_next_bignum\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
+  T_O* arg2 = ltvc_read_bignum( fin, log, byte_index );
   ltvc_make_next_bignum( roots, tag, index, arg2);
 };
 void parse_ltvc_make_bitvector(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
@@ -179,20 +180,13 @@ void parse_ltvc_make_double(gctools::GCRootsInModule* roots, T_sp fin, bool log,
   double arg2 = ltvc_read_double( fin, log, byte_index );
   ltvc_make_double( roots, tag, index, arg2);
 };
-void parse_ltvc_enclose(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
-  if (log) printf("%s:%d:%s parse_ltvc_enclose\n", __FILE__, __LINE__, __FUNCTION__);
-  char tag = ltvc_read_char( fin, log, byte_index );
-  size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
-  size_t arg3 = ltvc_read_size_t( fin, log, byte_index );
-  ltvc_enclose( roots, tag, index, arg2, arg3);
-};
 void parse_ltvc_make_closurette(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_closurette\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
   size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
-  ltvc_make_closurette( roots, tag, index, arg2);
+  size_t arg3 = ltvc_read_size_t( fin, log, byte_index );
+  ltvc_make_closurette( roots, tag, index, arg2, arg3);
 };
 void parse_ltvc_set_mlf_creator_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_set_mlf_creator_funcall\n", __FILE__, __LINE__, __FUNCTION__);
@@ -288,20 +282,18 @@ void parse_ltvc_toplevel_funcall(gctools::GCRootsInModule* roots, T_sp fin, bool
            break;
   case 88: parse_ltvc_make_double(roots,fin,log,byte_index);
            break;
-  case 89: parse_ltvc_enclose(roots,fin,log,byte_index);
+  case 89: parse_ltvc_make_closurette(roots,fin,log,byte_index);
            break;
-  case 90: parse_ltvc_make_closurette(roots,fin,log,byte_index);
+  case 90: parse_ltvc_set_mlf_creator_funcall(roots,fin,log,byte_index);
            break;
-  case 91: parse_ltvc_set_mlf_creator_funcall(roots,fin,log,byte_index);
+  case 91: parse_ltvc_mlf_init_funcall(roots,fin,log,byte_index);
            break;
-  case 92: parse_ltvc_mlf_init_funcall(roots,fin,log,byte_index);
+  case 92: parse_ltvc_mlf_init_basic_call(roots,fin,log,byte_index);
            break;
-  case 93: parse_ltvc_mlf_init_basic_call(roots,fin,log,byte_index);
+  case 93: parse_ltvc_mlf_create_basic_call(roots,fin,log,byte_index);
            break;
-  case 94: parse_ltvc_mlf_create_basic_call(roots,fin,log,byte_index);
+  case 94: parse_ltvc_set_ltv_funcall(roots,fin,log,byte_index);
            break;
-  case 95: parse_ltvc_set_ltv_funcall(roots,fin,log,byte_index);
-           break;
-  case 96: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
+  case 95: parse_ltvc_toplevel_funcall(roots,fin,log,byte_index);
            break;
 #endif // DEFINE_SWITCH

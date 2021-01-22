@@ -49,27 +49,15 @@ namespace core {
 FORWARD(WeakKeyHashTable);
 class WeakKeyHashTable_O : public HashTableBase_O {
   LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",HashTableBase_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif  // defined(XML_ARCHIVE)
 public: // instance variables here
-#if 1
   typedef typename gctools::WeakKeyHashTable::value_type value_type;
   typedef typename gctools::WeakKeyHashTable::KeyBucketsType KeyBucketsType;
   typedef typename gctools::WeakKeyHashTable::ValueBucketsType ValueBucketsType;
   typedef typename gctools::WeakKeyHashTable::KeyBucketsAllocatorType KeyBucketsAllocatorType;
   typedef typename gctools::WeakKeyHashTable::ValueBucketsAllocatorType ValueBucketsAllocatorType;
   typedef gctools::WeakKeyHashTable HashTableType;
-#else
-  typedef gctools::tagged_backcastable_base_ptr<T_O> value_type;
-  typedef gctools::Buckets<value_type, value_type, gctools::WeakLinks> KeyBucketsType;
-  typedef gctools::Buckets<value_type, value_type, gctools::StrongLinks> ValueBucketsType;
-  typedef gctools::GCBucketAllocator<KeyBucketsType> KeyBucketsAllocatorType;
-  typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
-  typedef gctools::WeakKeyHashTable<KeyBucketsType, ValueBucketsType> HashTableType;
-#endif
+public: // Fields
   HashTableType _HashTable;
-  
 public:
   WeakKeyHashTable_O(size_t sz, Number_sp rehashSize, double rehashThreshold ) : _HashTable(sz,rehashSize, rehashThreshold) {};
   WeakKeyHashTable_O();

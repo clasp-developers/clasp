@@ -34,11 +34,13 @@ THE SOFTWARE.
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
-#ifdef USE_BOEHM
-#ifdef CLASP_THREADS
-  #define GC_THREADS
-#endif
-#include <gc/gc.h>
+#if  defined(USE_BOEHM)
+# ifdef CLASP_THREADS
+#  define GC_THREADS
+# endif
+# include <gc/gc.h>
+# include <gc/gc_mark.h>
+# include <gc/gc_inline.h>
 #endif // USE_BOEHM
 
 #ifdef USE_MPS
@@ -95,25 +97,11 @@ extern size_t _global_stack_max_size;
 
 namespace gctools {
 
-#ifdef USE_BOEHM
 class Header_s;
-#endif
-#ifdef USE_MPS
-class Header_s;
-#endif
 
 template <typename T>
 struct GCHeader {
-#ifdef USE_BOEHM
   typedef Header_s HeaderType;
-#endif
-#ifdef USE_MPS
-#ifdef RUNNING_GC_BUILDER
-  typedef Header_s HeaderType;
-#else
-  typedef Header_s HeaderType;
-#endif
-#endif
 };
 
 template <typename T>
@@ -174,15 +162,12 @@ namespace gctools {
 #define STAMP_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
- #if defined(USE_BOEHM) || defined(RUNNING_GC_BUILDER)
+ #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
         STAMP_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
- #endif
-#endif        
-#ifndef RUNNING_GC_BUILDER
- #ifdef USE_MPS
+ #else
   #define GC_STAMP
    #include CLASP_GC_FILENAME
   #undef GC_STAMP
@@ -212,12 +197,12 @@ namespace gctools {
 };
 
 namespace gctools {
-  constexpr size_t Alignment() {
-//  return sizeof(Header_s);
-//    return alignof(Header_s);
-    return 16;
-  };
-  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+constexpr size_t Alignment() {
+  return CLASP_ALIGNMENT;
+};
+inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+inline constexpr uintptr_t AlignUp(uintptr_t size, size_t alignment) { return (size + alignment - 1) & ~(alignment -1); };
+inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return size & ~(alignment -1); };
 
 };
 
@@ -359,6 +344,7 @@ namespace gctools {
       static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
         return (start+(1<<stamp_shift))&(~mtag_mask);
       }
+      uintptr_t stamp() const { return this->_value>>(wtag_width+mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
         size_t sm = STAMP_max;
         // This is the only test that makes sense.
@@ -493,10 +479,11 @@ namespace gctools {
     }
   public:
     // The header contains the stamp_wtag_mtag value.
-    StampWtagMtag _stamp_wtag_mtag;
+    StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
     // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
     tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
-    uintptr_t     _header_badge;
+    uintptr_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
+                                 /* will treat it like a unused object residing on a free list          */
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
@@ -636,7 +623,7 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
 
 
 
-#ifdef USE_BOEHM
+#if  defined(USE_BOEHM)
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
 
@@ -670,10 +657,33 @@ namespace gctools {
     return AlignUp(totalSz);
   };
 
-  template <class T>
-    inline size_t sizeof_container_with_header(size_t num) {
-    return sizeof_container<T>(num) + sizeof(Header_s);
-  };
+
+/*
+ * atomic == Object contains no internal tagged pointers, is collectable
+ * normal == Object contains internal tagged pointers, is collectable
+ * collectable_immobile == Object cannot be moved but is collectable
+ * unmanaged == Object cannot be moved and cannot be automatically collected
+ */
+  typedef enum { atomic = 0,
+                 normal = 1,
+                 collectable_immobile = 2,
+                 unmanaged = 3 } GCInfo_policy;
+
+
+template <class OT>
+struct GCInfo {
+  static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
+  static bool const NeedsFinalization = false;  // By default, nothing needs finalization
+  static constexpr GCInfo_policy Policy = normal;
+};
+
+
+
+template <class T>
+inline size_t sizeof_container_with_header(size_t num) {
+  return sizeof_container<T>(num) + sizeof(Header_s)
+      ;
+};
 
   /*! Size of containers given the number of binits where BinitWidth is the number of bits/bunit */
   template <typename Cont_impl>
@@ -745,7 +755,7 @@ namespace gctools {
     const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
     return header;
   }
-  
+
   inline void throwIfInvalidClient(core::T_O *client) {
     Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
     if (header->invalidP()) {
@@ -772,24 +782,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-#ifdef USE_MPS
-#ifdef RUNNING_GC_BUILDER
       static GCStampEnum const Stamp = STAMP_null;
-#else
-  // We need a default Kind when running the gc-builder.lsp static analyzer
-  // but we don't want a default Kind when compiling the mps version of the code
-  // to force compiler errors when the Kind for an object hasn't been declared
-      static GCStampEnum const Stamp = STAMP_null; // provide default for weak dependents
-#endif // RUNNING_GC_BUILDER
-#endif // USE_MPS
-#ifdef USE_BOEHM
-#ifdef USE_CXX_DYNAMIC_CAST
-      static GCStampEnum const Stamp = STAMP_null; // minimally define STAMP_null
-#else
-                                            // We don't want a default Kind when compiling the boehm version of the code
-                                            // to force compiler errors when the Kind for an object hasn't been declared
-#endif // USE_CXX_DYNAMIC_CAST
-#endif
     };
 };
 
@@ -812,23 +805,8 @@ namespace core {
 
 namespace gctools {
 
-/*
- * atomic == Object contains no internal tagged pointers, is collectable
- * normal == Object contains internal tagged pointers, is collectable
- * collectable_immobile == Object cannot be moved but is collectable
- * unmanaged == Object cannot be moved and cannot be automatically collected
- */
-  typedef enum { atomic,
-                 normal,
-                 collectable_immobile,
-                 unmanaged } GCInfo_policy;
   
-template <class OT>
-struct GCInfo {
-  static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
-  static bool const NeedsFinalization = false;  // By default, nothing needs finalization
-  static constexpr GCInfo_policy Policy = normal;
-};
+
 };
 
 #include <clasp/gctools/smart_pointers.h>
@@ -936,9 +914,8 @@ namespace gctools {
     size_t _num_entries;
     size_t _capacity;
     /*fnLispCallingConvention* */ void** _function_pointers;
-    void** _function_descriptions;
     size_t _function_pointer_count;
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs, void** fdescs);
+    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs);
     GCRootsInModule(size_t capacity = DefaultCapacity);
     void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
     
@@ -951,7 +928,6 @@ namespace gctools {
     Tagged setTaggedIndex(char tag, size_t index, Tagged val);
     Tagged getTaggedIndex(char tag, size_t index);
     /*fnLispCallingConvention*/ void* lookup_function(size_t index);
-    void* lookup_function_description(size_t index);
     void* address(size_t index) {
       return reinterpret_cast<void*>(&reinterpret_cast<core::T_sp*>(this->_module_memory)[index+1]);
     }
@@ -960,7 +936,7 @@ namespace gctools {
   extern std::atomic<uint64_t> global_NumberOfRootTables;
   extern std::atomic<uint64_t> global_TotalRootTableSize;
   
-void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs, void** fdescs);
+void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_number, void** fptrs);
   core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index);
   void shutdown_gcroots_in_module(GCRootsInModule* gcroots_in_module);
 
@@ -973,6 +949,13 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
     }
     return tagged_object;
   }
+  inline void* ensure_valid_header(void* base) {
+  // Only validate general objects for now
+    Header_s* header = reinterpret_cast<Header_s*>(base);
+    header->quick_validate();
+    return base;
+  }
+
   template <typename OT>
     inline gctools::smart_ptr<OT> ensure_valid_object(gctools::smart_ptr<OT> tagged_object) {
 #ifdef DEBUG_GUARD_VALIDATE
@@ -997,9 +980,11 @@ void gc_release();
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define EVO(x) (gctools::ensure_valid_object(x))
+#define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
 #else
 #define ENSURE_VALID_OBJECT(x) x
 #define EVO(x)
+#define ENSURE_VALID_HEADER(x) x
 #endif
 
 namespace gctools {

@@ -19,7 +19,7 @@
 ;;; DEFGENERIC
 ;;;
 
-(defmacro defgeneric (&whole whole &rest args)
+(defmacro defgeneric (&rest args)
   (multiple-value-bind (function-specifier lambda-list options)
       (parse-defgeneric args)
     (parse-lambda-list lambda-list)
@@ -124,12 +124,13 @@
   (rest (si::process-lambda-list lambda-list t)))
 
 (defmethod shared-initialize :before
-    ((gfun standard-generic-function) slot-names &rest initargs
+    ((gfun standard-generic-function) slot-names
      &key (name nil) (argument-precedence-order nil a-o-p)
        (lambda-list nil l-l-p) (declarations nil)
        (documentation nil) (method-class nil m-c-p)
      &allow-other-keys
      &aux (gfun-name (or (core:function-name gfun) name :anonymous)))
+  (declare (ignore slot-names))
   ;; Check the validity of several fields.
   (when a-o-p
     (unless l-l-p
@@ -173,14 +174,14 @@ Not a valid documentation object ~A"
             (make-array nreq :initial-element nil)))))
 
 (defmethod shared-initialize :after
-    ((gfun standard-generic-function) slot-names &rest initargs
+    ((gfun standard-generic-function) slot-names
      &key (name nil name-p) (lambda-list nil l-l-p)
        (documentation nil documentation-p)
        (argument-precedence-order nil a-o-p)
        ;; Use a CLOS symbol in case someone else wants a :source-position initarg.
        ((source-position spi) nil spi-p)
        &allow-other-keys)
-  (declare (ignore slot-names)
+  (declare (ignore slot-names argument-precedence-order)
            (core:lambda-name shared-initialize.generic-function))
   ;; Coerce a method combination if required.
   (let ((combination (generic-function-method-combination gfun)))

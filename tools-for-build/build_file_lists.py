@@ -184,6 +184,7 @@ def collect_clasp_c_source_files(bld):
                  'insertPoint',
                  'irtests',
                  'llvmoExpose',
+                 'imageSaveLoad',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \
              collect_c_source_files(bld, 'src/mpip/', [
@@ -308,6 +309,8 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/static-gfs/package",
         "src/lisp/kernel/clos/static-gfs/flag",
         "src/lisp/kernel/clos/static-gfs/constructor",
+        "src/lisp/kernel/clos/static-gfs/reinitializer",
+        "src/lisp/kernel/clos/static-gfs/changer",
         "src/lisp/kernel/clos/hierarchy",
         "src/lisp/kernel/clos/cpl",
         "src/lisp/kernel/clos/std-slot-value",
@@ -341,6 +344,9 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/clos/static-gfs/compute-constructor",
         "src/lisp/kernel/clos/static-gfs/dependents",
         "src/lisp/kernel/clos/static-gfs/compiler-macros",
+        "src/lisp/kernel/clos/static-gfs/reinitialize-instance",
+        "src/lisp/kernel/clos/static-gfs/update-instance-for-different-class",
+        "src/lisp/kernel/clos/static-gfs/change-class",
         "src/lisp/kernel/lsp/source-location",
         "src/lisp/kernel/lsp/defvirtual",
         "src/lisp/kernel/clos/conditions",

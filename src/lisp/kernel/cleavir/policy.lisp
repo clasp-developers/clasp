@@ -8,11 +8,16 @@
      (cleavir-policy:optimize-value optimize 'speed)))
 
 (defmethod cleavir-policy:compute-policy-quality
-    ((quality (eql 'cleavir-escape:trust-dynamic-extent))
+    ((quality (eql 'type-check-ftype-arguments))
      optimize
-     (environment clasp-cleavir:clasp-global-environment))
-  (> (cleavir-policy:optimize-value optimize 'space)
-     (cleavir-policy:optimize-value optimize 'safety)))
+     (environment clasp-cleavir::clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'safety) 3))
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'type-check-ftype-return-values))
+     optimize
+     (environment clasp-cleavir::clasp-global-environment))
+  (= (cleavir-policy:optimize-value optimize 'safety) 3))
 
 (defmethod cleavir-policy:compute-policy-quality
     (quality optimize (environment null))
@@ -24,7 +29,9 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (do-dx-analysis boolean t)
+    (type-check-ftype-arguments boolean t)
+    (type-check-ftype-return-values boolean t)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
@@ -32,7 +39,9 @@
     (core::insert-array-bounds-checks boolean t)
     (ext:assume-right-type boolean nil)
     (do-type-inference boolean t)
-    (do-dx-analysis boolean t)))
+    (do-dx-analysis boolean t)
+    (type-check-ftype-arguments boolean t)
+    (type-check-ftype-return-values boolean t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -110,23 +119,6 @@
 
 ;;;
 
-(defun has-policy-p (instruction quality)
-  (cleavir-policy:policy-value (cleavir-ir:policy instruction) quality))
-
 (defun environment-has-policy-p (environment quality)
   (cleavir-policy:policy-value
    (cleavir-env:policy (cleavir-env:optimize-info environment)) quality))
-
-;;; Kildall can only be done on whole functions, due to how control flow in
-;;; HIR works. But do not affect the top level enter instruction most of the time.
-;;; So we have this helper that sees if the policy is in place anywhere at all in
-;;; the function.
-;;; KLUDGE. It should be easier to limit optimizations to lexical regions.
-
-(defun policy-anywhere-p (initial-instruction quality)
-  (cleavir-ir:map-instructions-arbitrary-order
-   (lambda (instruction)
-     (when (has-policy-p instruction quality)
-       (return-from policy-anywhere-p t)))
-   initial-instruction)
-  nil)

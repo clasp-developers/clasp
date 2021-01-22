@@ -13,7 +13,6 @@
 ;;;;
 ;;;; External protocol:
 ;;;;
-;;;; * compile-file or with-compilation-unit or whatever wraps what it does in WITH-LTV.
 ;;;; * When the compiler runs into a literal, it calls REFERENCE-LITERAL. This will
 ;;;;   return, an index into the load-time-values table for run-time.
 ;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
@@ -31,7 +30,7 @@
 #+(or)
 (defmacro llog (fmt &rest args)
   `(format *error-output* ,fmt ,@args))
-(defmacro llog (fmt &rest args) nil)
+(defmacro llog (fmt &rest args) (declare (ignore fmt args)))
 
 (defvar *gcroots-in-module*)
 #+threads(defvar *value-table-id-lock* (mp:make-lock :name '*value-table-id-lock*))
@@ -56,7 +55,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-description)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-info-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -94,7 +93,7 @@
     ((transient-datum-p datum) #\t)
     (t (error "No tag for datum ~a" datum))))
 
-(defun datum-index-tag-kind (datum &key allow-transients)
+(defun datum-index-tag-kind (datum)
   (let ((index (datum-index datum))
         (tag (datum-tag datum))
         (kind (datum-kind datum)))
@@ -144,10 +143,10 @@
 (defun make-similarity-table (test)
   (make-hash-table :test test))
 
-(defun find-similar (object kind table)
+(defun find-similar (object table)
   (gethash object table))
 
-(defun add-similar (object datum kind table)
+(defun add-similar (object datum table)
   (setf (gethash object table) datum))
 
 
@@ -155,7 +154,6 @@
   (run-all-objects (make-array 64 :fill-pointer 0 :adjustable t))
   (table-index 0)
   (function-vector (make-array 16 :fill-pointer 0 :adjustable t))
-  (function-description-vector (make-array 16 :fill-pointer 0 :adjustable t))
   (constant-data '())
   (identity-coalesce (make-similarity-table #'eq))
   (ratio-coalesce (make-similarity-table #'eql))
@@ -177,9 +175,7 @@
 ;;;
 ;;;
 
-(defvar *with-ltv-depth* 0)
-
-(defun new-table-index (&optional (toplevelp t))
+(defun new-table-index ()
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
   (prog1 (literal-machine-table-index *literal-machine*)
@@ -252,12 +248,10 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function (llvm-func &optional (func-desc (llvm-sys:constant-pointer-null-get cmp:%function-description*%)))
-  "Add a function to the (literal-machine-function-vector *literal-machine*) and a function description
-to (literal-machine-function-description-vector *literal-machine*) and return their index - the index will be the same for both."
+(defun register-function (llvm-func)
+  "Add a function to the (literal-machine-function-vector *literal-machine*)"
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
     (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
-    (vector-push-extend func-desc (literal-machine-function-description-vector *literal-machine*))
     (make-function-datum :index function-index)))
 
 ;;; Helper function: we write a few things out as base strings.
@@ -267,17 +261,21 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
     (prin1 object s)))
 
 (defun ltv/nil (object index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (add-named-creator "ltvc_make_nil" index "NIL" object))
 
 (defun ltv/t (object index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (add-named-creator "ltvc_make_t" index "T" object))
 
 (defun ltv/ratio (ratio index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (add-creator "ltvc_make_ratio" index ratio
                (load-time-reference-literal (numerator ratio) read-only-p :toplevelp nil)
                (load-time-reference-literal (denominator ratio) read-only-p :toplevelp nil)))
 
 (defun ltv/cons (cons index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   ;; While the general case (make_cons) works for all cases,
   ;; it is far from the most efficient way to store a list.
   ;; More importantly, for a long list we will recurse deeply and break the stack.
@@ -302,11 +300,13 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
        val))))
 
 (defun ltv/complex (complex index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (add-creator "ltvc_make_complex" index complex
                (load-time-reference-literal (realpart complex) read-only-p :toplevelp nil)
                (load-time-reference-literal (imagpart complex) read-only-p :toplevelp nil)))
 
 (defun ltv/array (array index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (let ((val (add-creator "ltvc_make_array" index array
                           (load-time-reference-literal (array-element-type array) read-only-p :toplevelp nil)
                           (load-time-reference-literal (array-dimensions array) read-only-p :toplevelp nil))))
@@ -319,6 +319,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
     val))
 
 (defun ltv/hash-table (hash-table index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (let ((ht (add-creator "ltvc_make_hash_table" index hash-table
                          (load-time-reference-literal (hash-table-test hash-table) read-only-p :toplevelp nil))))
     (maphash (lambda (key val)
@@ -329,23 +330,27 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
     ht))
 
 (defun ltv/fixnum (fixnum index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p read-only-p))
   (add-creator "ltvc_make_fixnum" index fixnum fixnum))
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
-  (let ((bn-str (prin1-to-base-string bignum)))
-    (add-creator "ltvc_make_next_bignum" index bignum (load-time-reference-literal bn-str read-only-p :toplevelp nil))))
+  (declare (ignore toplevelp))
+  (add-creator "ltvc_make_next_bignum" index bignum bignum))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (let ((bv-str (prin1-to-base-string bitvector)))
     (add-creator "ltvc_make_bitvector" index bitvector
                  (load-time-reference-literal bv-str read-only-p :toplevelp nil))))
 
 (defun ltv/random-state (random-state index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (let ((rs-str (core:random-state-get random-state)))
     (add-creator "ltvc_make_random_state" index random-state
                  (load-time-reference-literal rs-str read-only-p :toplevelp nil))))
 
 (defun ltv/symbol (symbol index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (let ((pkg (symbol-package symbol))
         (sym-str (symbol-name symbol)))
     (add-named-creator "ltvc_make_symbol" index sym-str symbol
@@ -353,13 +358,16 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
                        (load-time-reference-literal pkg read-only-p :toplevelp nil))))
 
 (defun ltv/character (char index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (add-creator "ltvc_make_character" index char
                (char-code char)))
 
 (defun ltv/base-string (str index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (add-creator "ltvc_make_base_string" index str str))
 
 (defun ltv/pathname (pathname index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (add-creator "ltvc_make_pathname" index pathname
                (load-time-reference-literal (pathname-host pathname) read-only-p :toplevelp nil)
                (load-time-reference-literal (pathname-device pathname) read-only-p :toplevelp nil)
@@ -369,14 +377,17 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
                (load-time-reference-literal (pathname-version pathname) read-only-p :toplevelp nil)))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
   (add-creator "ltvc_make_package" index package
                (load-time-reference-literal (package-name package) read-only-p :toplevelp nil)))
 
 (defun ltv/single-float (single index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-single-float-datum :value single)))
     (add-creator "ltvc_make_float" index single constant)))
 
 (defun ltv/double-float (double index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (let* ((constant (make-double-float-datum :value double)))
     (add-creator "ltvc_make_double" index double constant)))
 
@@ -390,6 +401,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
        (every (lambda (f) (constantp f env)) (rest form))))
 
 (defun ltv/mlf (object index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp read-only-p))
   (multiple-value-bind (create initialize)
       (make-load-form object)
     (prog1
@@ -510,35 +522,6 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
   "Convert the args from Lisp form into llvm::Value*'s"
   (mapcar #'fix-arg args))
 
-#+(or)
-(defun generate-run-all-from-literal-nodes (nodes)
-  (cmp::with-make-new-run-all (foo)
-    (dolist (node nodes)
-      (cond
-        ((literal-node-creator-p node)
-         (ensure-creator-llvm-value node))
-        ((literal-node-side-effect-p node)
-         (let* ((fn-name (literal-node-side-effect-name node))
-                (args (literal-node-side-effect-arguments node))
-                (fix-args (fix-args args)))
-           (cmp:irc-intrinsic-call fn-name (list* *gcroots-in-module* fix-args))))
-        ((literal-node-toplevel-funcall-p node)
-         (cmp:irc-intrinsic-call "ltvc_toplevel_funcall"
-                                 (fix-args (literal-node-toplevel-funcall-arguments node))))
-        ((literal-node-closure-p node)
-         (let ((lambda-name (cmp:irc-intrinsic-call
-                             "ltvc_lookup_literal"
-                             (list *gcroots-in-module*
-                                   (fix-arg (literal-node-closure-lambda-name-index node))))))
-           (cmp:irc-intrinsic-call "ltvc_enclose"
-                                   (list *gcroots-in-module*
-                                         (cmp:jit-constant-size_t (literal-node-index node))
-                                         lambda-name
-                                         (fix-arg
-                                          (register-function (literal-node-closure-function node)))))))
-           (t (error "Unknown run-all node ~a" node))))
-    foo))
-
 (defun write-argument-byte-code (arg stream byte-index)
   (llog "    write-argument-byte-code arg: ~s byte-index ~d~%" arg byte-index)
   (cond
@@ -546,6 +529,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
     ((fixnump arg) (core:ltvc-write-size-t arg stream byte-index))
     ((characterp arg) (core:ltvc-write-char arg stream byte-index))
     ((stringp arg) (core:ltvc-write-string arg stream byte-index))
+    ((core:bignump arg) (core:ltvc-write-bignum arg stream byte-index))
     ((immediate-datum-p arg)
      (core:ltvc-write-object #\i (immediate-datum-value arg) stream byte-index))
     ((single-float-datum-p arg) (core:ltvc-write-float (single-float-datum-value arg) stream byte-index))
@@ -591,21 +575,8 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
        (setf byte-index (write-arguments-byte-code arguments fout byte-index))))
     ((literal-node-closure-p node)
      (setf byte-index (core:ltvc-write-char (lookup-byte-code "ltvc_enclose") fout byte-index))
-     (warn "What do I do with the arguments for ~s" node)
+     (error "What do I do with the arguments for ~s" node)
      (core:exit 1)
-     #|         (write-arguments-byte-code (list (literal-node-closure-lambda-name-index node)
-     (let ((lambda-name (cmp:irc-intrinsic-call "ltvc_lookup_literal" ; ; ; ; ; ; ; ;
-     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
-     (fix-arg (literal-node-closure-lambda-name-index node)))))) ; ; ; ; ; ; ; ;
-     (cmp:irc-intrinsic-call "ltvc_enclose" ; ; ; ; ; ; ; ;
-     (list *gcroots-in-module*      ; ; ; ; ; ; ; ;
-     (cmp:jit-constant-size_t (literal-node-index node)) ; ; ; ; ; ; ; ;
-     lambda-name                    ; ; ; ; ; ; ; ;
-     (fix-arg (register-function (literal-node-closure-function node))) ; ; ; ; ; ; ; ;
-     #|(literal-node-closure-source-info-handle node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-filepos node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-lineno node) ; ; ; ; ; ; ; ;
-     (literal-node-closure-column node)|#)))) |#
      )
     (t (warn "Add support for node ~s" node)))
   byte-index)
@@ -623,58 +594,37 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
 
 
 (defun generate-run-time-code-for-closurette (node)
-  ;; Generate calls to ltvc_enclose for closurettes that are created at JIT startup time
+  ;; Generate calls to ltvc_make_closurette for closurettes that are created at JIT startup time
   (let* ((closurette-object (literal-node-creator-object node))
          (function-datum (literal-node-closure-function-index closurette-object))
          (function-index (function-datum-index function-datum))
          (datum (literal-dnode-datum closurette-object))
-         (index (datum-index datum)))
+         (index (datum-index datum))
+         (function-info-ref (literal-node-closure-function-info-ref closurette-object)))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t function-index)))))
+                                  (cmp:jit-constant-size_t function-index)
+                                  (cmp:jit-constant-size_t (cmp:function-info-reference-index function-info-ref))))))
 
 (defparameter *ltv-trap* nil)
 
-(defun do-ltv (type body-fn)
-  "Evaluate body-fn in an environment where load-time-values, literals and constants are
-compiled into a DSL of creators and side-effects that can be used to generate calls
-in the RUN-ALL function to recreate those objects in a constants-table.
-The body-fn must return an llvm::Function object that results from compiling code that
-can be arranged to be evaluated in the RUN-ALL function and that will use all of the values in
-the constants-table."
-  (let ((body-return-fn (funcall body-fn)))
-    (or (llvm-sys:valuep body-return-fn)
-        (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
-    (let ((result (cond
-                    ((eq type :toplevel)
-                     (run-all-add-node (make-literal-node-toplevel-funcall
-                                        :arguments (list *gcroots-in-module*
-                                                         (register-function body-return-fn)
-                                                         (llvm-sys:get-name body-return-fn)))))
-                    ((eq type :ltv) body-return-fn)
-                    (t (error "bad ltv type: ~a" type)))))
-      result)))
-
-(defmacro with-load-time-value (&body body)
-  "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
+(defun load-time-value-from-thunk (thunk)
+  "Arrange to evaluate the thunk into a load-time-value.
 Return the index of the load-time-value"
-  (let ((ltv-func (gensym))
-        (datum (gensym)))
-    `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
-            (,datum (new-datum t))
-            (,ltv-func (do-ltv :ltv (lambda () ,@body))))
-       (add-creator "ltvc_set_ltv_funcall" ,datum nil (register-function ,ltv-func) (llvm-sys:get-name ,ltv-func))
-       (literal-datum-index ,datum))))
+  (let ((datum (new-datum t)))
+    (add-creator "ltvc_set_ltv_funcall" datum nil (register-function thunk) (llvm-sys:get-name thunk))
+    (literal-datum-index datum)))
 
-(defmacro with-top-level-form (&body body)
-  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-ltv :toplevel (lambda () ,@body))))
+(defun arrange-thunk-as-top-level (thunk)
+  "Arrange to evaluate the thunk as the top-level form."
+  (run-all-add-node (make-literal-node-toplevel-funcall
+                     :arguments (list *gcroots-in-module*
+                                      (register-function thunk)
+                                      (llvm-sys:get-name thunk)))))
 
-
-
-(defun setup-literal-machine-function-vectors (the-module)
+(defun setup-literal-machine-function-vectors (the-module &key (id 0))
   (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
                                                         (length (literal-machine-function-vector *literal-machine*))))
          (function-vector (llvm-sys:make-global-variable
@@ -684,26 +634,10 @@ Return the index of the load-time-value"
                            'llvm-sys:internal-linkage
                            (llvm-sys:constant-array-get function-vector-type
                                                         (coerce (literal-machine-function-vector *literal-machine*) 'list))
-                           "function-vector"))
-         (function-descs-type (llvm-sys:array-type-get
-                               cmp:%function-description*%
-                               (length (literal-machine-function-description-vector *literal-machine*))))
-         (function-descs (llvm-sys:make-global-variable
-                          the-module
-                          function-descs-type
-                          nil
-                          'llvm-sys:internal-linkage
-                          (llvm-sys:constant-array-get
-                           function-descs-type
-                           (coerce (literal-machine-function-description-vector *literal-machine*) 'list))
-                          "function-descs")))
-    (values (length (literal-machine-function-vector *literal-machine*)) function-vector function-descs)))
+                           (core:bformat nil "function-vector-%s" id))))
+    (values (length (literal-machine-function-vector *literal-machine*)) function-vector)))
 
-
-
-
-
-(defun do-literal-table (body-fn)
+(defun do-literal-table (id body-fn)
   (llog "do-literal-table~%")
   (let ((*gcroots-in-module*
           (llvm-sys:make-global-variable cmp:*the-module*
@@ -736,7 +670,7 @@ Return the index of the load-time-value"
             (let* ((byte-code-string (write-literal-nodes-byte-code ordered-run-all-nodes))
                    (byte-code-length (length byte-code-string))
                    (byte-code-global (llvm-sys:make-string-global cmp:*the-module* byte-code-string
-                                                                  "startup-byte-code")))
+                                                                  (core:bformat nil "startup-byte-code-%s" id))))
               (cmp:irc-intrinsic-call "cc_invoke_byte_code_interpreter"
                                       (list *gcroots-in-module*
                                             (cmp:irc-bit-cast (cmp:irc-gep byte-code-global (list 0 0))
@@ -755,14 +689,11 @@ Return the index of the load-time-value"
                                                                      (llvm-sys:undef-value-get array-type)
                                                                      real-name))
                  (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*%
-                                                                "bitcast-table"))
-                 (holder-ptr (llvm-sys:create-geparray cmp:*irbuilder* correct-size-holder
-                                                       (list (cmp:jit-constant-size_t 0)
-                                                             (cmp:jit-constant-size_t 0)) "table")))
+                                                                "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (multiple-value-bind (function-vector-length function-vector function-descs)
-                (setup-literal-machine-function-vectors cmp:*the-module*)
+            (multiple-value-bind (function-vector-length function-vector)
+                (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
                   (let ((transient-vector (cmp:alloca-i8* "transients")))
                     (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
@@ -779,18 +710,12 @@ Return the index of the load-time-value"
                                                                 (list (cmp:jit-constant-size_t 0)
                                                                       (cmp:jit-constant-size_t 0)))
                                                    cmp:%i8**%)
-                                                  (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-descs
-                                                                (list (cmp:jit-constant-size_t 0)
-                                                                      (cmp:jit-constant-size_t 0)))
-                                                   cmp:%i8**%))))))
+                                                  )))))
             ;; Erase the dummy holder
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 
-(defmacro with-literal-table (&body body)
-  `(do-literal-table (lambda () ,@body)))
-
-
+(defmacro with-literal-table ((&key id)&body body)
+  `(do-literal-table ,id (lambda () ,@body)))
 
 (defun do-rtv (body-fn)
   (let ((cmp:*generate-compile-file-load-time-values* nil)
@@ -841,7 +766,7 @@ Once the body has evaluated, if there were run-time values accumulated then sort
 global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
 Then erase the global variable in *load-time-value-holder-global-var* whether or not run time values were found
 and  return the sorted values and the constant-table or (values nil nil)."
-  `(funcall #'do-rtv (lambda () (progn ,@body))))
+  `(do-rtv (lambda () (progn ,@body))))
 
 (defun load-time-reference-literal (object read-only-p &key (toplevelp t))
   "If the object is an immediate object return (values immediate nil).
@@ -853,12 +778,13 @@ and  return the sorted values and the constant-table or (values nil nil)."
         (progn
           (llog "immediate-datum ~s~%" immediate-datum)
           (let ((val (immediate-datum-value immediate-datum)))
+            (declare (ignorable val))
             (llog "immediate-datum value ~s~%" val)
             (values immediate-datum nil)))
         (multiple-value-bind (similarity creator)
             (object-similarity-table-and-creator *literal-machine* object read-only-p)
           (llog "non-immediate~%")
-          (let ((existing (if similarity (find-similar object desired-kind similarity) nil)))
+          (let ((existing (if similarity (find-similar object similarity) nil)))
             (llog "Looking for ~s object ~s   existing --> ~s~%" desired-kind object existing)
             (cond
               (existing
@@ -869,7 +795,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                (values (datum-literal-node-creator existing) t))
               ;; Otherwise create a new datum at the current level of transientness
               (t (let ((datum (new-datum toplevelp)))
-                   (when similarity (add-similar object datum desired-kind similarity))
+                   (when similarity (add-similar object datum similarity))
                    (values (funcall creator object datum read-only-p :toplevelp toplevelp) t)))))))))
 
 (defun pretty-load-time-name (object ltv-idx)
@@ -891,16 +817,17 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun run-time-reference-literal (object read-only-p)
   "If the object is an immediate object return (values immediate nil nil).
    Otherwise return (values creator T index)."
+  (declare (ignore read-only-p))
   (let ((immediate-datum (immediate-datum-or-nil object)))
     (if immediate-datum
         (values immediate-datum NIL)
         (let* ((similarity *run-time-coalesce*)
-               (existing (find-similar object :literal similarity)))
+               (existing (find-similar object similarity)))
           (if existing
               (values existing T)
               (values (let* ((datum (new-datum t))
                              (new-obj (make-literal-node-runtime :datum datum :object object)))
-                        (add-similar object new-obj :literal similarity)
+                        (add-similar object new-obj similarity)
                         (run-all-add-node new-obj)
                         new-obj)
                       T))))))
@@ -917,7 +844,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
   (let ((fn (cmp:with-new-function (fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
-                                       :function-form form
                                        :function-info (cmp:make-function-info
                                                        :function-name 'bclasp-top-level-form
                                                        :lambda-list nil
@@ -926,6 +852,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :form nil
                                                        :spi core:*current-source-pos-info*))
               (let* ((given-name (llvm-sys:get-name fn)))
+                (declare (ignorable given-name))
                 ;; Map the function argument names
                 (cmp:cmp-log "Creating ltv thunk with name: %s%N" given-name)
                 (cmp:codegen fn-result form fn-env)))))
@@ -936,7 +863,8 @@ and  return the sorted values and the constant-table or (values nil nil)."
 (defun compile-form (form)
   (if core:*use-cleavir-compiler*
       (progn
-        (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR") form))
+        (funcall (find-symbol "COMPILE-FORM" "CLASP-CLEAVIR")
+                 form))
       (bclasp-compile-form form)))
 
 ;;; ------------------------------------------------------------
@@ -991,11 +919,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function function-description)
+(defun reference-closure (function function-info-ref)
   (let* ((datum (new-datum t))
-         (function-index (register-function function function-description))
-         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-description function-description)))
-    (add-creator "ltvc_make_closurette" datum creator function-index)
+         (function-index (register-function function))
+         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-info-ref function-info-ref)))
+    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:function-info-reference-index function-info-ref))
     (datum-index datum)))
 
 #|  (register-function function function-description))
@@ -1038,7 +966,7 @@ and  return the sorted values and the constant-table or (values nil nil)."
   (multiple-value-bind (data-or-index in-array literal-name)
       (reference-literal literal t)
     (if in-array
-        (values (constants-table-reference data-or-index (pretty-load-time-name literal data-or-index)) literal-name)
+        (values (constants-table-reference data-or-index) literal-name)
         data-or-index)))
 
 (defun codegen-rtv-bclasp (result obj)
@@ -1090,7 +1018,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (let ((fn (cmp:with-new-function (fn fn-env fn-result
                                        :function-name 'bclasp-top-level-form
                                        :parent-env nil
-                                       :function-form form
                                        :function-info (cmp:make-function-info
                                                        :function-name 'bclasp-top-level-form
                                                        :lambda-list nil
@@ -1109,14 +1036,14 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;; Access load-time-values
 ;;;
 
-(defun constants-table-reference (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*) literal-name)
+(defun constants-table-reference (index &optional (holder cmp:*load-time-value-holder-global-var*) literal-name)
   (let ((label (if literal-name
                    (bformat nil "values-table[%d]/%s" index literal-name)
                    (bformat nil "values-table[%d]" index))))
     (llvm-sys:create-const-gep2-64 cmp:*irbuilder* holder 0 index label)))
 
-(defun constants-table-value (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
-  (cmp:irc-load (constants-table-reference index label holder)))
+(defun constants-table-value (index &optional (holder cmp:*load-time-value-holder-global-var*))
+  (cmp:irc-load (constants-table-reference index holder)))
 
 
 
@@ -1142,14 +1069,15 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (set-c++-info 'cmp:%float% "float" "float")
   (set-c++-info 'cmp:%double% "double" "double")
   (set-c++-info 'cmp:%uintptr_t% "uintptr_t" "size_t")
+  (set-c++-info 'cmp::%bignum% "T_O*" "bignum")
   (set-c++-info :unknown "UNKNOWN" "UNKNOWN")
   )
 
 (defun build-one-c++-function (op &optional (stream *standard-output*))
   (destructuring-bind (op-kind name return-type argument-types &key varargs ltvc)
       op
-    (let ((index (second argument-types))
-          (arg-types (nthcdr 2 argument-types)))
+    (declare (ignore op-kind return-type ltvc))
+    (let ((arg-types (nthcdr 2 argument-types)))
       (format stream "void parse_~a(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {~%" name)
       (format stream "  if (log) printf(\"%s:%d:%s parse_~a\\n\", __FILE__, __LINE__, __FUNCTION__);~%" name)
       (let* ((arg-index 0)
@@ -1210,7 +1138,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (let ((code 65))
       (dolist (prim primitives)
         (let ((func-name (second prim)))
-          (setf (gethash (second prim) map) code)
+          (setf (gethash func-name map) code)
           (incf code))))
     map))
 

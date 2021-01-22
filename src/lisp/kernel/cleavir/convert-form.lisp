@@ -1,27 +1,11 @@
-(in-package :cc-generate-ast)
+(in-package #:clasp-cleavir)
 
-#-cst
-(defmethod cleavir-generate-ast:convert-code (lambda-list body env (system clasp-cleavir:clasp) &key block-name )
-  (let ((function-ast (call-next-method)))
-    (multiple-value-bind (declarations documentation forms)
-        (cleavir-code-utilities:separate-function-body body)
-      (declare (ignore documentation)) ; handled by cleavir
-      (let* ((dspecs (reduce #'append (mapcar #'cdr declarations)))
-             (lambda-name (or (cadr (find 'core:lambda-name dspecs :key #'car))
-                              (cleavir-ast:name function-ast)))
-             (origin (or (cleavir-ast:origin function-ast) ; should be nil, but just in case.
-                         core:*current-source-pos-info*)))
-        (setf (cleavir-ast:origin function-ast) origin
-              (cleavir-ast:name function-ast)
-              (or lambda-name
-                  (list 'cl:lambda (cmp::lambda-list-for-name lambda-list))))
-        function-ast))))
-
-#+cst
 (defmethod cleavir-cst-to-ast:convert-code (lambda-list body
-                                            env (system clasp-cleavir:clasp) &key block-name-cst origin)
+                                            env (system clasp-cleavir:clasp)
+                                            &key block-name-cst origin)
+  (declare (ignore env block-name-cst origin))
   (let ((cst:*ordinary-lambda-list-grammar* clasp-cleavir:*clasp-ordinary-lambda-list-grammar*))
-    (multiple-value-bind (declaration-csts documentation form-csts)
+    (multiple-value-bind (declaration-csts documentation)
         (cst:separate-function-body body)
       (declare (ignore documentation)) ; handled by cleavir
       (let* ((dspecs (loop for declaration-cst in declaration-csts

@@ -1,69 +1,25 @@
 (in-package :clasp-cleavir)
 
-#+(or)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setq *echo-repl-read* t))
-
-(defvar *debug-cleavir* nil
-  "controls if graphs are generated as forms are being compiled.")
-(defvar *debug-cleavir-literals* nil
-  "controls if cleavir debugging is carried out on literal compilation. 
-when this is t a lot of graphs will be generated.")
-
-(defvar *form* nil)
-(defvar *ast* nil)
-(defvar *hir* nil)
-(defvar *save-hir* nil)
-(defvar *mir* nil)
-
 ;;; FIXME: Move this earlier
 ;; changed by de/proclaim
 (defvar *ftypes* (make-hash-table :test #'equal))
 
 (defun global-ftype (name)
   (multiple-value-bind (value presentp) (gethash name *ftypes*)
-    (if presentp value 'function)))
+    (if presentp
+        value
+        (load-time-value (cleavir-ctype:function-top *clasp-system*)))))
 
 (defun (setf global-ftype) (type name)
-  (setf (gethash name *ftypes*) type))
+  (setf (gethash name *ftypes*)
+        (cleavir-env:parse-type-specifier type
+                                          *clasp-env*
+                                          *clasp-system*)))
 
 (defmethod cst:reconstruct :around (expression cst (client clasp) &key (default-source nil default-source-p))
   (call-next-method expression cst client :default-source (if default-source-p
                                                               default-source
                                                               (cst:source cst))))
-
-#-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
-  ;; convert fixnum into immediate but bignums return nil
- (core:create-tagged-immediate-value-or-nil n))
-
-#-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n character) environment (system clasp))
-  ;; convert character to an immediate
-  (core:create-tagged-immediate-value-or-nil n))
-
-#-cst
-(defmethod cleavir-generate-ast:convert-constant-to-immediate ((n float) environment (system clasp))
-  ;; single-float's can be converted to immediates, anything else will return nil
-  (core:create-tagged-immediate-value-or-nil n))
-
-;;; ------------------------------------------------------------
-;;;
-;;; cst-to-ast methods for convert-constant-to-immediate
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n integer) environment (system clasp))
-  ;; convert fixnum into immediate but bignums return nil
-  (core:create-tagged-immediate-value-or-nil n))
-
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n character) environment (system clasp))
-  ;; convert character to an immediate
-  (core:create-tagged-immediate-value-or-nil n))
-
-#+cst
-(defmethod cleavir-cst-to-ast:convert-constant-to-immediate ((n float) environment (system clasp))
-  ;; single-float's can be converted to immediates, anything else will return nil
-  (core:create-tagged-immediate-value-or-nil n))
 
 (defmethod cleavir-env:variable-info ((environment clasp-global-environment) symbol)
   (core:stack-monitor)
@@ -97,34 +53,120 @@ when this is t a lot of graphs will be generated.")
   (cleavir-env:variable-info *clasp-env* symbol))
 
 (defvar *fn-attributes* (make-hash-table :test #'equal))
+(defvar *fn-transforms* (make-hash-table :test #'equal))
 
-(macrolet ((set-dyn-calls (&rest names)
-             `(progn ,@(loop for name in names
-                             collect `(set-dyn-call ,name))))
-           (set-dyn-call (name)
+(macrolet ((define-function-attributes (name &rest attributes)
              `(setf (gethash ',name *fn-attributes*)
-                    (cleavir-attributes:make-attributes :dyn-call))))
-  (set-dyn-calls
-   apply funcall
-   every some notevery notany
-   sublis nsublis subst-if subst-if-not nsubst-if nsubst-if-not
-   member member-if member-if-not
-   mapc mapcar mapcan mapl maplist mapcon
-   assoc assoc-if assoc-if-not
-   rassoc rassoc-if rassoc-if-not
-   intersection nintersection adjoin
-   set-difference nset-difference
-   set-exclusive-or nset-exclusive-or subsetp union nunion
-   ;; Can't do most sequence functions, as ext sequence
-   ;; functions can do arbitrary things.
-   map map-into merge
-   cleavir-ast:map-ast-depth-first-preorder
-   cleavir-ir:map-instructions
-   cleavir-ir:map-instructions-with-owner
-   cleavir-ir:map-instructions-arbitrary-order
-   cleavir-ir:filter-instructions
-   cleavir-ir:map-local-instructions
-   cleavir-ir:filter-local-instructions))
+                    (cleavir-attributes:make-attributes ,@attributes))))
+  ;; FIXME: Can't do DX-call for many things like APPLY, FUNCALL, etc.
+  ;; because we don't distinguish between *which* functional argument
+  ;; is DX.
+  (define-function-attributes apply :dyn-call)
+  (define-function-attributes funcall :dyn-call)
+  (define-function-attributes every :dyn-call :dx-call)
+  (define-function-attributes some :dyn-call :dx-call)
+  (define-function-attributes notevery :dyn-call :dx-call)
+  (define-function-attributes notany :dyn-call :dx-call)
+  (define-function-attributes sublis :dyn-call :dx-call)
+  (define-function-attributes nsublis :dyn-call :dx-call)
+  (define-function-attributes subst-if :dyn-call :dx-call)
+  (define-function-attributes subst-if-not :dyn-call :dx-call)
+  (define-function-attributes nsubst-if :dyn-call :dx-call)
+  (define-function-attributes nsubst-if-not :dyn-call :dx-call)
+  (define-function-attributes member :dyn-call :dx-call)
+  (define-function-attributes member-if :dyn-call :dx-call)
+  (define-function-attributes member-if-not :dyn-call :dx-call)
+  (define-function-attributes mapc :dyn-call :dx-call)
+  (define-function-attributes mapcar :dyn-call :dx-call)
+  (define-function-attributes mapcan :dyn-call :dx-call)
+  (define-function-attributes mapl :dyn-call :dx-call)
+  (define-function-attributes maplist :dyn-call :dx-call)
+  (define-function-attributes mapcon :dyn-call :dx-call)
+  (define-function-attributes assoc :dyn-call :dx-call)
+  (define-function-attributes assoc-if :dyn-call :dx-call)
+  (define-function-attributes assoc-if-not :dyn-call :dx-call)
+  (define-function-attributes rassoc :dyn-call :dx-call)
+  (define-function-attributes rassoc-if :dyn-call :dx-call)
+  (define-function-attributes rassoc-if-not :dyn-call :dx-call)
+  (define-function-attributes intersection :dyn-call :dx-call)
+  (define-function-attributes nintersection :dyn-call :dx-call)
+  (define-function-attributes adjoin :dyn-call :dx-call)
+  (define-function-attributes set-difference :dyn-call :dx-call)
+  (define-function-attributes nset-difference :dyn-call :dx-call)
+  (define-function-attributes set-exclusive-or :dyn-call :dx-call)
+  (define-function-attributes nset-exclusive-or :dyn-call :dx-call)
+  (define-function-attributes subsetp :dyn-call :dx-call)
+  (define-function-attributes union :dyn-call :dx-call)
+  (define-function-attributes nunion :dyn-call :dx-call)
+  (define-function-attributes map :dyn-call :dx-call)
+  (define-function-attributes map-into :dyn-call :dx-call)
+  (define-function-attributes merge :dyn-call :dx-call)
+  (define-function-attributes cleavir-ast:map-ast-depth-first-preorder :dyn-call
+    :dx-call)
+  (define-function-attributes cleavir-bir:map-iblocks :dyn-call :dx-call)
+  (define-function-attributes cleavir-bir:map-iblock-instructions :dyn-call
+    :dx-call)
+  ;; Can't do DYN-CALL for most sequence functions, as ext sequence
+  ;; functions can do arbitrary things.
+  (define-function-attributes core:progv-function :dx-call)
+  (define-function-attributes core:funwind-protect :dx-call)
+  (define-function-attributes maphash :dx-call)
+  (define-function-attributes remove :dx-call)
+  (define-function-attributes remove-if :dx-call)
+  (define-function-attributes remove-if-not :dx-call)
+  (define-function-attributes delete :dx-call)
+  (define-function-attributes delete-if :dx-call)
+  (define-function-attributes delete-if-not :dx-call)
+  (define-function-attributes reduce :dx-call)
+  (define-function-attributes remove-duplicates :dx-call)
+  (define-function-attributes delete-duplicates :dx-call)
+  (define-function-attributes substitute :dx-call)
+  (define-function-attributes substitute-if :dx-call)
+  (define-function-attributes substitute-if-not :dx-call)
+  (define-function-attributes nsubstitute :dx-call)
+  (define-function-attributes nsubstitute-if :dx-call)
+  (define-function-attributes nsubstitute-if-not :dx-call)
+  (define-function-attributes count :dx-call)
+  (define-function-attributes count-if :dx-call)
+  (define-function-attributes count-if-not :dx-call)
+  (define-function-attributes find :dx-call)
+  (define-function-attributes find-if :dx-call)
+  (define-function-attributes find-if-not :dx-call)
+  (define-function-attributes position :dx-call)
+  (define-function-attributes position-if :dx-call)
+  (define-function-attributes position-if-not :dx-call)
+  (define-function-attributes mismatch :dx-call)
+  (define-function-attributes search :dx-call)
+  (define-function-attributes sort :dx-call)
+  (define-function-attributes stable-sort :dx-call)
+
+  (define-function-attributes core:two-arg-+ :flushable)
+  (define-function-attributes core:two-arg-- :flushable)
+  (define-function-attributes core:two-arg-* :flushable)
+  (define-function-attributes core:two-arg-/ :flushable)
+  (define-function-attributes core:two-arg-< :flushable)
+  (define-function-attributes core:two-arg-> :flushable)
+  (define-function-attributes core:two-arg-<= :flushable)
+  (define-function-attributes core:two-arg->= :flushable)
+  (define-function-attributes core:two-arg-= :flushable)
+  (define-function-attributes core:two-arg-char-equal :flushable)
+  (define-function-attributes core:two-arg-char-greaterp :flushable)
+  (define-function-attributes core:two-arg-char-lessp :flushable)
+  (define-function-attributes core:two-arg-char-not-greaterp :flushable)
+  (define-function-attributes core:two-arg-char-not-lessp :flushable)
+  (define-function-attributes core:two-arg-char< :flushable)
+  (define-function-attributes core:two-arg-char<= :flushable)
+  (define-function-attributes core:two-arg-char> :flushable)
+  (define-function-attributes core:two-arg-char>= :flushable)
+
+  (define-function-attributes core::map-into-sequence :dyn-call :dx-call)
+  (define-function-attributes core::map-into-sequence/1 :dyn-call :dx-call)
+  (define-function-attributes core::map-for-effect :dyn-call :dx-call)
+  (define-function-attributes core::map-for-effect/1 :dyn-call :dx-call)
+  (define-function-attributes core::map-to-list :dyn-call :dx-call)
+  (define-function-attributes core::map-to-list/1 :dyn-call :dx-call)
+  (define-function-attributes core::every/1 :dyn-call :dx-call)
+  (define-function-attributes core::some/1 :dyn-call :dx-call))
 
 (defun treat-as-special-operator-p (name)
   (cond
@@ -176,20 +218,23 @@ when this is t a lot of graphs will be generated.")
      (let* ((cleavir-ast (inline-ast function-name))
             (inline-status (core:global-inline-status function-name))
             (attr (or (gethash function-name *fn-attributes*)
-                      (cleavir-attributes:default-attributes))))
+                      (cleavir-attributes:default-attributes)))
+            (transforms (gethash function-name *fn-transforms*)))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :type (global-ftype function-name)
                       :compiler-macro (compiler-macro-function function-name)
                       :inline inline-status
                       :ast cleavir-ast
-                      :attributes attr)))
+                      :attributes attr
+                      :transforms transforms)))
     ;; A top-level defun for the function has been seen.
     ;; The expansion calls cmp::register-global-function-def at compile time,
     ;; which is hooked up so that among other things this works.
     ((cmp:known-function-p function-name)
      (make-instance 'cleavir-env:global-function-info
                     :name function-name
+                    :type (global-ftype function-name)
                     :compiler-macro (compiler-macro-function function-name)
                     :inline (core:global-inline-status function-name)
                     :ast (inline-ast function-name)))
@@ -310,21 +355,35 @@ when this is t a lot of graphs will be generated.")
           (values type-specifier nil)))))
 
 (defmethod cleavir-env:type-expand ((environment clasp-global-environment) type-specifier)
-  (loop with ever-expanded = nil
-        do (multiple-value-bind (expansion expanded)
-               (type-expand-1 type-specifier environment)
-             (if expanded
-                 (setf ever-expanded t type-specifier expansion)
-                 (return (values type-specifier ever-expanded))))))
+  ;; BEWARE: bclasp is really bad at unwinding, and mvb creates a
+  ;; lambda, so we write this loop in a way that avoids RETURN. cclasp
+  ;; will contify this and produce more efficient code anyway.
+  (labels ((expand (type-specifier ever-expanded)
+             (multiple-value-bind (expansion expanded)
+                 (type-expand-1 type-specifier environment)
+               (if expanded
+                   (expand expansion t)
+                   (values type-specifier ever-expanded)))))
+    (expand type-specifier nil)))
+
 (defmethod cleavir-env:type-expand ((environment null) type-specifier)
   (cleavir-env:type-expand clasp-cleavir:*clasp-env* type-specifier))
 
 ;;; Needed because the default method ends up with classes,
 ;;; and that causes bootstrapping issues.
+(defmethod cleavir-env:find-class (name environment (system clasp) &optional errorp)
+  (declare (ignore environment errorp))
+  name)
+
 (defmethod cleavir-env:parse-expanded-type-specifier
     ((type-specifier symbol) environment (system clasp))
   (declare (ignore environment))
   type-specifier)
+
+(defmethod cleavir-env:parse-expanded-type-specifier
+    ((type-specifier (eql 'cl:function)) environment (system clasp))
+  (declare (ignore environment))
+  (cleavir-ctype:function-top system))
 
 (defmethod cleavir-env:has-extended-char-p ((environment clasp-global-environment))
   #+unicode t #-unicode nil)
@@ -375,19 +434,19 @@ when this is t a lot of graphs will be generated.")
 
 (defvar *use-ast-interpreter* t)
 
-(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
-  (simple-eval form env
-               (cond (core:*use-interpreter-for-eval*
-                      (lambda (form env)
-                        (core:interpret form (cleavir-env->interpreter env))))
-                     (*use-ast-interpreter* #'ast-interpret-form)
-                     (t #'cclasp-eval-with-env))))
-
 (defmethod cleavir-environment:eval (form env (dispatch-env NULL))
   "Evaluate the form in Clasp's top level environment"
   (cleavir-environment:eval form env *clasp-env*))
 
+(defmethod cleavir-environment:eval (form env (dispatch-env clasp-global-environment))
+  (cleavir-environment:cst-eval (cst:cst-from-expression form) env dispatch-env nil))
+
 (defvar *use-cst-eval* t)
+
+(defun wrap-cst (cst)
+  (cst:list (cst:cst-from-expression 'lambda)
+            (cst:cst-from-expression nil)
+            cst))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env clasp-global-environment)
                                          system)
@@ -403,156 +462,17 @@ when this is t a lot of graphs will be generated.")
                                 (core:interpret (cst:raw cst) (cleavir-env->interpreter env))))
                              (*use-ast-interpreter* #'ast-interpret-cst)
                              (t (lambda (cst env)
-                                  (cclasp-eval-with-env (cst:raw cst) env)))))
+                                  (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
       (cond (core:*use-interpreter-for-eval*
              (core:interpret (cst:raw cst) (cleavir-env->interpreter env)))
             (*use-ast-interpreter* (ast-interpret-cst cst env))
-            (t (cclasp-eval-with-env (cst:raw cst) env)))))
+            (t (funcall (bir-compile-cst-in-env (wrap-cst cst) env))))))
 
 (defmethod cleavir-environment:cst-eval (cst env (dispatch-env null) system)
   (cleavir-environment:cst-eval cst env *clasp-env* system))
 
-(defmethod cmp:compiler-condition-origin ((condition cleavir-cst-to-ast:compilation-condition))
+(defmethod cmp:compiler-condition-origin
+    ((condition cleavir-conditions:program-condition))
   ;; FIXME: ignore-errors is a bit paranoid
-  (ignore-errors (car (cst:source (cleavir-cst-to-ast:cst condition)))))
-
-(defun build-and-draw-ast (filename cst)
-  (let ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env* *clasp-system*)))
-    (cleavir-ast-graphviz:draw-ast ast filename)
-    ast))
-
-(defun build-and-draw-hir (filename cst)
-  (let* ((ast (cleavir-cst-to-ast:cst-to-ast cst *clasp-env*))
-	 (hir (cleavir-ast-to-hir:compile-toplevel ast)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ir-graphviz:draw-flowchart hir stream))))
-
-(defun quick-hir-pathname (&optional (file-name-modifier "hir"))
-  (when *debug-cleavir*
-    (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
-
-(defun quick-draw-hir (hir &optional (file-name-modifier "hir"))
-  (when *debug-cleavir*
-    (let ((pn (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
-      (with-open-file (stream pn :direction :output)
-        (cleavir-ir-graphviz:draw-flowchart hir stream))
-      pn)))
-
-(defun draw-form-cst-hir (form)
-  "Generate a HIR graph for the form using the cst compiler"
-  (let (result)
-    (cmp::with-compiler-env ()
-      (let* ((module (cmp::create-run-time-module-for-compile)))
-        ;; Link the C++ intrinsics into the module
-        (cmp::with-module (:module module
-                           :optimize nil)
-          (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-            (literal:with-rtv
-                (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
-                       (cst (cst:cst-from-expression form))
-                       (ast (cleavir-cst-to-ast:cst-to-ast cst nil clasp-cleavir::*clasp-system*))
-                       (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                       (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                  (setq result hir)
-                  (clasp-cleavir::draw-hir hir "/tmp/foo.dot")))))))
-    result))
-
-#-cst
-(defun draw-form-ast-hir (form)
-  "Generate a HIR graph for the form using the ast compiler"
-  (cmp::with-compiler-env ()
-    (let* ((module (cmp::create-run-time-module-for-compile)))
-      ;; Link the C++ intrinsics into the module
-      (cmp::with-module (:module module
-                         :optimize nil)
-        (cmp:with-debug-info-generator (:module module :pathname "dummy-file")
-          (literal:with-rtv
-              (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-                     (ast (cleavir-generate-ast:generate-ast form nil clasp-cleavir::*clasp-system*))
-                     (hoisted-ast (clasp-cleavir::hoist-ast ast))
-                     (hir (clasp-cleavir::ast->hir hoisted-ast)))
-                (clasp-cleavir::draw-hir hir "/tmp/foo.dot")
-                hir)))))))
-
-(defun draw-ast (&optional (ast *ast*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/ast"))))
-  (let* ((filename (merge-pathnames filename))
-         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream filename :direction :output)
-      (cleavir-ast-graphviz:draw-ast ast dot-pathname))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring dot-pathname)))))
-
-(defun draw-hir (&optional (hir *hir*) filename)
-  (unless filename (setf filename (pathname (core:mkstemp "/tmp/hir"))))
-  (let* ((filename (merge-pathnames filename))
-         (dot-pathname (make-pathname :type "dot" :defaults (pathname filename)))
-	 (pdf-pathname (make-pathname :type "pdf" :defaults dot-pathname)))
-    (with-open-file (stream dot-pathname :direction :output)
-      (cleavir-ir-graphviz:draw-flowchart hir stream))
-    (ext:system (format nil "dot -Tpdf -o~a ~a" (namestring pdf-pathname) (namestring filename)))
-    (ext:system (format nil "open -n ~a" (namestring pdf-pathname)))))
-
-(defun draw-mir (&optional (mir *mir*) (filename "/tmp/mir.dot"))
-  (with-open-file (stream filename :direction :output)
-    (cleavir-ir-graphviz:draw-flowchart mir stream))
-  (ext:system (format nil "dot -Teps -o/tmp/mir.eps ~a" filename))
-  (ext:system "open -n /tmp/mir.eps"))
-
-(defvar *hir-single-step* nil)
-(defun hir-single-step (&optional (on t))
-  (setq *hir-single-step* on))
-
-
-(define-condition continue-hir (condition) ())
-
-(defun do-continue-hir ()
-  (format t "Continuing processing forms~%")
-  (signal 'continue-hir))
-
-(defun dump-hir (initial-instruction &optional (stream t))
-  (let ((all-basic-blocks (cleavir-basic-blocks:basic-blocks initial-instruction))
-        initials)
-    (cleavir-ir:map-instructions
-     (lambda (instr)
-       (when (typep instr 'cleavir-ir:enter-instruction)
-         (push instr initials))) initial-instruction)
-    (dolist (procedure-initial initials)
-      (format stream "====== Procedure: ~a~%" (cc-mir:describe-mir procedure-initial))
-      (let ((basic-blocks (remove procedure-initial
-                                  all-basic-blocks
-                                  :test-not #'eq :key #'cleavir-basic-blocks:owner)))
-        (dolist (bb basic-blocks)
-          (with-accessors ((first cleavir-basic-blocks:first-instruction)
-                           (last cleavir-basic-blocks:last-instruction)
-                           (owner cleavir-basic-blocks:owner))
-              bb
-            (format stream "-------------------basic-block owner: ~a~%" 
-                    (cc-mir:describe-mir owner))
-            (loop for instruction = first
-               then (first (cleavir-ir:successors instruction))
-               until (eq instruction last)
-               do (format stream "~a~%" (cc-mir:describe-mir instruction)))
-            (format stream "~a~%" (cc-mir:describe-mir last))))))))
-
-;;; These should be set up in Cleavir code
-;;; Remove them once beach implements them
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplaca-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplacd-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
-
-
-
-(setf (fdefinition 'cleavir-primop:call-with-variable-bound) 
-            (fdefinition 'core:call-with-variable-bound))
-
-#++
-(defmacro cleavir-primop:call-with-variable-bound (symbol value thunk)
-  `(clasp-cleavir-hir:multiple-value-foreign-call-instruction "call_with_variable_bound" ,symbol ,value ,thunk))
+  (let ((origin (cleavir-conditions:origin condition)))
+    (ignore-errors (if (consp origin) (car origin) origin))))

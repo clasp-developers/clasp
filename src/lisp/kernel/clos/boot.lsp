@@ -26,7 +26,8 @@
 #+(or)
 (defmacro debug-boot (msg &rest args)
   `(format t ,msg ,@args))
-(defmacro debug-boot (msg &rest args))
+(defmacro debug-boot (msg &rest args)
+  (declare (ignore msg args)))
 
 
 ;; This ensures that each new class has its class-for-instances set
@@ -86,7 +87,7 @@
       (debug-boot "      About to get superclasses~%")
       (let ((superclasses (loop for name in direct-superclasses
                              for parent = (find-class name)
-                             do (push class (class-direct-subclasses parent))
+                             do (pushnew class (class-direct-subclasses parent))
                              collect parent)))
         (debug-boot "      Collected superclasses~%")
         (setf (class-direct-superclasses class) superclasses)
@@ -142,6 +143,7 @@
     (defvar +the-funcallable-standard-class+))
 
 (defmacro dbg-boot (fmt &rest fmt-args)
+  (declare (ignore fmt fmt-args))
   nil)
 
 #++

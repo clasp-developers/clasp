@@ -6,10 +6,8 @@
 ;;; compile-thunk (in codegen.lsp) to do the actual compiling.
 
 (defun compile-top-level (form env)
-  (literal:with-top-level-form
-      (dbg-set-current-source-pos form)
-    (let ((fn (compile-thunk 'repl form env t)))
-      fn)))
+  (dbg-set-current-source-pos form)
+  (literal:arrange-thunk-as-top-level (compile-thunk 'repl form env t)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"

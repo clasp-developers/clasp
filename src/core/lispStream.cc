@@ -1569,7 +1569,7 @@ clos_stream_column(T_sp strm) {
   /* FIXME! The Gray streams specifies NIL is a valid
 	 * value but means "unknown". Should we make it
 	 * zero? */
-  return col.nilp() ? 0 : clasp_toSize(col);
+  return col.nilp() ? 0 : clasp_to_integral<int>(col);
 }
 
 static T_sp
@@ -1734,7 +1734,7 @@ str_out_set_position(T_sp strm, T_sp pos) {
   if (pos.nilp()) {
     disp = StringOutputStreamOutputString(strm)->arrayTotalSize();
   } else {
-    disp = clasp_toSize(pos);
+    disp = clasp_to_integral<Fixnum>(pos);
   }
   if (disp < StringFillp(string)) {
     SetStringFillp(string,disp);
@@ -1929,7 +1929,7 @@ str_in_set_position(T_sp strm, T_sp pos) {
   if (pos.nilp()) {
     disp = StringInputStreamInputLimit(strm);
   } else {
-    disp = clasp_toSize(pos);
+    disp = clasp_to_integral<gctools::Fixnum>(pos);
     if (disp >= StringInputStreamInputLimit(strm)) {
       disp = StringInputStreamInputLimit(strm);
     }
@@ -3223,7 +3223,7 @@ struct FileReadBuffer {
        * decoders consume bytes in multiples of the byte size. */ \
       T_sp fp = clasp_file_position(this->__stream);
       if (fp.fixnump()) {
-        clasp_file_position_set(this->__stream,contagen_sub(gc::As_unsafe<Number_sp>(fp),
+        clasp_file_position_set(this->__stream,contagion_sub(gc::As_unsafe<Number_sp>(fp),
                                                   make_fixnum((this->__buffer_end - this->__buffer_pos)/this->__stream->_ByteSize/8)));
       } else {
         SIMPLE_ERROR(BF("clasp_file_position is not a number"));
@@ -5221,9 +5221,9 @@ clasp_normalize_stream_element_type(T_sp element_type) {
   }
   if ((element_type).consp()) {
     if (oCar(element_type) == cl::_sym_UnsignedByte)
-      return clasp_toSize(oCadr(element_type));
+      return clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
     if (oCar(element_type) == cl::_sym_SignedByte)
-      return -clasp_toSize(oCadr(element_type));
+      return -clasp_to_integral<gctools::Fixnum>(oCadr(element_type));
   }
   for (size = 8; 1; size++) {
     T_sp type;
@@ -5598,9 +5598,9 @@ clasp_off_t
 clasp_integer_to_off_t(T_sp offset) {
   clasp_off_t output = 0;
   if (sizeof(clasp_off_t) == sizeof(gctools::Fixnum)) {
-    output = fixint(offset);
+    output = clasp_to_integral<clasp_off_t>(offset);
   } else if (core__fixnump(offset)) {
-    output = fixint(offset);
+    output = clasp_to_integral<clasp_off_t>(offset);
   } else if (core__bignump(offset)) {
     IMPLEMENT_MEF("Implement convert Bignum to clasp_off_t");
   } else {

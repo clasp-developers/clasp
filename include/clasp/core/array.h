@@ -136,6 +136,7 @@ namespace core {
   [[noreturn]] void tooManyIndicesVaListError(VaList_sp indices);
   [[noreturn]] void badAxisNumberError(Symbol_sp fn_name, size_t rank, size_t axisNumber);
   [[noreturn]] void badIndexError(T_sp arr, size_t axis, size_t oneIndex, size_t curDimension);
+  [[noreturn]] void badRMIndexError(T_sp arr, size_t oneIndex, size_t totalSize);
   [[noreturn]] void indexNotFixnumError(T_sp index);
   [[noreturn]] void insufficientIndexListError(List_sp indices);
   [[noreturn]] void insufficientIndexVaListError(VaList_sp indices);
@@ -543,13 +544,13 @@ namespace core {
 
 // FIXME: Iterators are probably very broken for complex bit unit arrays.
 namespace core {
-  template <typename MyLeafType, size_t BitUnitBitWidth, bool signedp>
+  template <typename MyLeafType, size_t BitUnitBitWidth, int Signedp>
     class template_SimpleBitUnitVector : public AbstractSimpleVector_O {
   public:
     typedef AbstractSimpleVector_O Base;
     typedef MyLeafType leaf_type;
     typedef gctools::smart_ptr<leaf_type> leaf_smart_ptr_type;
-    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, signedp> bitunit_array_type;
+    typedef gctools::GCBitUnitArray_moveable<BitUnitBitWidth, Signedp> bitunit_array_type;
     typedef typename bitunit_array_type::value_type value_type;
     typedef value_type simple_element_type;
     // Iterators very hacky.
@@ -561,8 +562,8 @@ namespace core {
     typedef value_type const_reference_type;
   public:
     // E.g., for three bits, we range from -4 to 3 signed, or 0 to 7 unsigned.
-    static const value_type min_value = signedp ? -(1 << (BitUnitBitWidth-1)) : 0;
-    static const value_type max_value = (1 << (BitUnitBitWidth - (signedp ? 1 : 0))) - 1;
+    static const value_type min_value = Signedp ? -(1 << (BitUnitBitWidth-1)) : 0;
+    static const value_type max_value = (1 << (BitUnitBitWidth - (Signedp ? 1 : 0))) - 1;
   public:
     bitunit_array_type _Data;
   template_SimpleBitUnitVector(size_t length, bit_array_word initialElement, bool initialElementSupplied,

@@ -89,23 +89,25 @@ public:
 
 };
 
-#include <clasp/clbind/clbind_tuple.h>
+#include <clasp/clbind/apply.h>
 
 
 namespace clbind {
 
 template <typename Pols , typename RT  ,typename...ARGS>
-class VariadicFunctor<  RT  (*)(ARGS...), Pols> : public core::BuiltinClosure_O {
+class VariadicFunctor< RT(*)(ARGS...), Pols> : public core::BuiltinClosure_O {
 public:
-  typedef VariadicFunctor <  RT  (*)(ARGS...), Pols> MyType;
+  typedef VariadicFunctor < RT(*)(ARGS...), Pols> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
   FuncType fptr;
 public:
+  static constexpr auto inValueMask = clbind::inValueMaskMuple<sizeof...(ARGS),Pols>();
+  
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-  VariadicFunctor(core::FunctionDescription* fdesc, FuncType ptr) : core::BuiltinClosure_O(entry_point,fdesc), fptr(ptr) {};
+  VariadicFunctor(core::FunctionDescription_sp fdesc, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), fptr(ptr) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
@@ -113,14 +115,63 @@ public:
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
     INITIALIZE_VA_LIST();
     INVOCATION_HISTORY_FRAME();
-    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),4);
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
     MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
                                  lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
     core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
     lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
     core::MultipleValues& returnValues = core::lisp_multipleValues();
-    arg_tuple<Pols,ARGS...> all_args(frame->data());
-    return apply_and_return<RT,Pols,FuncType,arg_tuple<Pols,ARGS...>>::go(returnValues,closure->fptr,all_args);
+#ifdef DEBUG_EVALUATE
+    if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+      for (size_t ia=0; ia<sizeof...(ARGS); ++ia) {
+        core::T_sp obj = ((frame->arg(ia)));
+        printf("  apply  arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+      }
+    }
+#endif
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,Pols,ARGS...>::go(frame->arguments());
+    return apply_and_return<RT,Pols,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
+  }
+};
+
+
+  template <typename RT  ,typename...ARGS>
+    class VariadicFunctor< RT(*)(ARGS...), core::policy::clasp> : public core::BuiltinClosure_O {
+public:
+    typedef VariadicFunctor < RT(*)(ARGS...), core::policy::clasp> MyType;
+  typedef core::BuiltinClosure_O TemplatedBase;
+public:
+  typedef RT(*FuncType)(ARGS...);
+  FuncType fptr;
+public:
+  virtual const char* describe() const { return "VariadicFunctor"; };
+  enum { NumParams = sizeof...(ARGS)};
+    VariadicFunctor(core::FunctionDescription_sp fdesc, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), fptr(ptr) {};
+  virtual size_t templatedSizeof() const { return sizeof(*this);};
+  static inline LCC_RETURN LISP_CALLING_CONVENTION()
+  {
+//    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );
+    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
+    INCREMENT_FUNCTION_CALL_COUNTER(closure);
+    INITIALIZE_VA_LIST();
+    INVOCATION_HISTORY_FRAME();
+    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),sizeof...(ARGS));
+    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
+                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
+    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
+//    printf("%s:%d About to create bindings for closure->_lambdaListHandler->%s\n", __FILE__, __LINE__, _rep_(closure->_lambdaListHandler).c_str());
+    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
+#ifdef DEBUG_EVALUATE
+    if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+      for (size_t ia=0; ia<sizeof...(ARGS); ++ia) {
+        core::T_sp obj = ((frame->arg(ia)));
+        printf("  apply  arg[%lu] -> %s\n", ia, _rep_(obj).c_str());
+      }
+    }
+#endif
+    core::MultipleValues& returnValues = core::lisp_multipleValues();
+    std::tuple<translate::from_object<ARGS>...> all_args = arg_tuple<0,policies<>,ARGS...>::go(frame->arguments());
+    return clasp_apply_and_return<RT,core::policy::clasp,decltype(closure->fptr),decltype(all_args)>::go(returnValues,std::move(closure->fptr),std::move(all_args));
   }
 };
 };
@@ -161,8 +212,9 @@ struct function_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
-    core::FunctionDescription* fdesc = makeFunctionDescription(symbol);
-    core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicFunctor<FunctionPointerType, Policies>>::allocate(fdesc,functionPtr));
+    using VariadicType = VariadicFunctor<FunctionPointerType, Policies>;
+    core::FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicType::entry_point);
+    core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());
     core::validateFunctionDescription(__FILE__,__LINE__,functoid);
   }

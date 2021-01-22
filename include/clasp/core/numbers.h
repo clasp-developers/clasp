@@ -165,10 +165,10 @@ namespace core {
 
   typedef double LongFloat;
 
-  Number_sp contagen_add(Number_sp na, Number_sp nb);
-  Number_sp contagen_sub(Number_sp na, Number_sp nb);
-  Number_sp contagen_mul(Number_sp na, Number_sp nb);
-  Number_sp contagen_div(Number_sp na, Number_sp nb);
+  Number_sp contagion_add(Number_sp na, Number_sp nb);
+  Number_sp contagion_sub(Number_sp na, Number_sp nb);
+  Number_sp contagion_mul(Number_sp na, Number_sp nb);
+  Number_sp contagion_div(Number_sp na, Number_sp nb);
   int basic_compare(Number_sp na, Number_sp nb);
 
   SMART(Number);
@@ -180,7 +180,6 @@ namespace core {
     static Number_sp create(gc::Fixnum val);
     //	static Number_sp create(size_t val);
   public:
-    virtual NumberType number_type_() const { SUBIMP(); };
     virtual Number_sp signum_() const {
       SUBCLASS_MUST_IMPLEMENT();
     };
@@ -188,12 +187,6 @@ namespace core {
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual Number_sp abs_() const {
-      SUBCLASS_MUST_IMPLEMENT();
-    };
-    virtual T_sp floor(Number_sp divisor) const {
-      SUBCLASS_MUST_IMPLEMENT();
-    };
-    virtual T_sp ffloor(Number_sp divisor) const {
       SUBCLASS_MUST_IMPLEMENT();
     };
     virtual bool equal(T_sp obj) const override;
@@ -216,19 +209,13 @@ namespace core {
     virtual Number_sp negate_() const { SUBIMP(); };
 
     virtual Number_sp exp_() const { SUBIMP(); };
-/*
-    virtual bool operator<(T_sp obj) const;
-    virtual bool operator<=(T_sp obj) const;
-    virtual bool operator>(T_sp obj) const;
-    virtual bool operator>=(T_sp obj) const;
-*/
+
     virtual uint as_uint_() const { SUBIMP(); }
     virtual LongLongInt as_LongLongInt_() const { SUBIMP(); };
     virtual float as_float_() const { SUBIMP(); };
     virtual double as_double_() const { SUBIMP(); }
     virtual LongFloat as_long_float_() const { SUBIMP(); };
 
-    virtual Number_sp conjugate_() const { SUBIMP(); };
     virtual Number_sp sin_() const { SUBIMP(); };
     virtual Number_sp cos_() const { SUBIMP(); };
     virtual Number_sp tan_() const { SUBIMP(); };
@@ -251,8 +238,6 @@ namespace core {
     // functions shared by all Real
     virtual bool plusp_() const { SUBIMP(); };
     virtual bool minusp_() const { SUBIMP(); };
-
-    virtual Number_sp conjugate_() const override;
 
     Real_O() {};
     virtual ~Real_O() {};
@@ -368,8 +353,7 @@ namespace core {
 namespace core {
 
   Fixnum_sp make_fixnum(gc::Fixnum x);
-  gc::Fixnum get_fixnum(Fixnum_sp x);
-
+  
   class Fixnum_dummy_O : public Integer_O {
     LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
   };
@@ -384,8 +368,7 @@ namespace core {
     LISP_CLASS(core, ClPkg, Float_O, "float",Real_O);
 
   public:
-    CL_LISPIFY_NAME("core:castToInteger");
-    CL_DEFMETHOD   virtual Integer_sp castToInteger() const { SUBIMP(); };
+    virtual Integer_sp castToInteger() const { SUBIMP(); };
 
     virtual bool isnan_() const { SUBIMP(); };
     virtual bool isinf_() const { SUBIMP(); };
@@ -409,7 +392,6 @@ namespace core {
     };
 
   public:
-    NumberType number_type_() const override { return number_ShortFloat; };
     float get() const { return this->_Value; };
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
@@ -477,7 +459,6 @@ namespace core {
   public:
     static Rational_sp rational(double val);
   public:
-    NumberType number_type_() const override { return number_DoubleFloat; };
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
     string __repr__() const override;
@@ -542,7 +523,6 @@ namespace core {
     };
 
   public:
-    NumberType number_type_() const override { return number_LongFloat; };
 
     DEFAULT_CTOR_DTOR(LongFloat_O);
   };
@@ -571,20 +551,14 @@ namespace core {
     }
 
   public:
-    NumberType number_type_() const override { return number_Complex; };
-
     Real_sp real() const { return this->_real; };
     Real_sp imaginary() const { return this->_imaginary; };
-
-    void setf_realpart(Real_sp r) { this->_real = r; };
-    void setf_imagpart(Real_sp i) { this->_imaginary = i; };
 
     void sxhash_(HashGenerator &hg) const override;
     //	virtual Number_sp copy() const;
     string __repr__() const override;
     Number_sp signum_() const override;
     Number_sp abs_() const override;
-    bool isnan_() const;
     Rational_sp rational_() const override { TYPE_ERROR(this->asSmartPtr(),cl::_sym_Real_O);};
   public:
     //	virtual	bool	eqn(T_sp obj) const;
@@ -614,8 +588,8 @@ namespace core {
     virtual Number_sp cosh_() const override;
     virtual Number_sp tanh_() const override;
 
-    virtual Number_sp conjugate_() const override;
     virtual Number_sp reciprocal_() const override;
+    Complex_sp conjugate() const;
 
     virtual void __write__(T_sp strm) const override;
 
@@ -653,7 +627,6 @@ namespace core {
     // Only useful for creating Ratio in fasl files.
     void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
   public:
-    NumberType number_type_() const override { return number_Ratio; };
     virtual bool zerop_() const override { return clasp_zerop(this->_numerator); };
     virtual Number_sp negate_() const override { return Ratio_O::create_primitive(gc::As<Integer_sp>(clasp_negate(this->_numerator)), gc::As<Integer_sp>(this->_denominator)); };
     Integer_sp numerator() const { return this->_numerator; };
@@ -672,8 +645,8 @@ namespace core {
   public:
     virtual bool eql_(T_sp obj) const override;
 
-    Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagen_add(this->_numerator, this->_denominator)), this->_denominator); };
-    Number_sp oneMinus_() const override { return create(gc::As<Integer_sp>(contagen_sub(this->_numerator, this->_denominator)), this->_denominator); };
+    Number_sp onePlus_() const override { return create(gc::As<Integer_sp>(contagion_add(this->_numerator, this->_denominator)), this->_denominator); };
+    Number_sp oneMinus_() const override { return create(gc::As<Integer_sp>(contagion_sub(this->_numerator, this->_denominator)), this->_denominator); };
 
     virtual float as_float_() const override;
     virtual double as_double_() const override;
@@ -695,12 +668,10 @@ namespace core {
     virtual ~Ratio_O() {};
   };
 
-  void clasp_deliver_fpe(int status);
-
-  inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagen_add(na, nb); };
-  inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagen_sub(na, nb); };
-  inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagen_mul(na, nb); };
-  inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagen_div(na, nb); };
+  inline Number_sp clasp_plus(Number_sp na, Number_sp nb) { return contagion_add(na, nb); };
+  inline Number_sp clasp_minus(Number_sp na, Number_sp nb) { return contagion_sub(na, nb); };
+  inline Number_sp clasp_times(Number_sp na, Number_sp nb) { return contagion_mul(na, nb); };
+  inline Number_sp clasp_divide(Number_sp na, Number_sp nb) { return contagion_div(na, nb); };
 
   inline int clasp_number_compare(Number_sp x, Number_sp y) { return basic_compare(x, y); };
 
@@ -815,7 +786,6 @@ namespace core {
   }
 #endif
 
-#define clasp_return2(ENV, n1, n2) return Values(n1, n2);
 #define CLASP_REAL_TYPE_P(y) (gc::IsA<Real_sp>(y))
 
 #define CLASP_FIXNUMP(n) (gc::IsA<Fixnum_sp>(n))
@@ -839,10 +809,6 @@ namespace core {
 #define clasp_greatereq(x, y) (clasp_number_compare((x), (y)) >= 0)
 #define clasp_lower(x, y) (clasp_number_compare((x), (y)) < 0)
 #define clasp_greater(x, y) (clasp_number_compare((x), (y)) > 0)
-
-  cl_index clasp_toSize(T_sp f);
-
-  gctools::Fixnum fixint(T_sp x);
 
 }; // namespace core
 
@@ -989,12 +955,25 @@ namespace core {
   }
 
   inline NumberType clasp_t_of(Number_sp n) {
-    if (n.fixnump()) {
+    if (n.fixnump())
       return number_Fixnum;
-    } else if (n.single_floatp()) {
+    else if (n.single_floatp())
       return number_SingleFloat;
-    }
-    return n->number_type_();
+    else if (gc::IsA<Bignum_sp>(n))
+      return number_Bignum;
+    else if (gc::IsA<Ratio_sp>(n))
+      return number_Ratio;
+    else if (gc::IsA<ShortFloat_sp>(n))
+      return number_ShortFloat;
+    else if (gc::IsA<DoubleFloat_sp>(n))
+      return number_DoubleFloat;
+#ifdef CLASP_LONG_FLOAT
+    else if (gc::IsA<LongFloat_sp>(n))
+      return number_LongFloat;
+#endif
+    else if (gc::IsA<Complex_sp>(n))
+      return number_Complex;
+    UNREACHABLE();
   }
 
   inline Integer_sp clasp_shift(Integer_sp n, Fixnum bits) {
@@ -1069,12 +1048,10 @@ namespace core {
   uint64_t            clasp_to_uint64_t( core::T_sp );
   uintptr_t           clasp_to_uintptr_t( core::T_sp );
   intptr_t            clasp_to_intptr_t( core::T_sp );
-  size_t              clasp_to_size_t( core::T_sp );
   ssize_t             clasp_to_ssize_t( core::T_sp );
   mpz_class           clasp_to_mpz( core::T_sp );
 
   float               clasp_to_float( core::Number_sp );
-  double              clasp_to_double( core::Number_sp );
   LongFloat           clasp_to_long_float( core::Number_sp );
   LongFloat           clasp_to_long_double( core::Number_sp );
 
@@ -1175,11 +1152,9 @@ namespace core {
   }
 
   inline Number_sp clasp_conjugate(Number_sp x) {
-    if (x.fixnump())
-      return x;
-    if (x.single_floatp())
-      return x;
-    return x->conjugate_();
+    if (gc::IsA<Complex_sp>(x))
+      return gc::As_unsafe<Complex_sp>(x)->conjugate();
+    else return x;
   }
 
   inline bool clasp_float_nan_p(Float_sp num) {

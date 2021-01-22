@@ -104,7 +104,8 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    creator = gctools::GC<DummyCreator_O>::allocate(classNameString);
+    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    creator = gctools::GC<DummyCreator_O>::allocate(fdesc,classNameString);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
   crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
@@ -144,7 +145,8 @@ void class_registration::register_() const {
   if (m_bases.size() == 0) {
     // If no base classes are specified then make T a base class from Common Lisp's point of view
     //
-    crep->addInstanceBaseClass(cl::_sym_T_O);
+    crep->addInstanceBaseClass(core::_sym_General_O);
+    crep->addInstanceAsSubClass(core::_sym_General_O);
   } else {
     for (std::vector<base_desc>::iterator i = m_bases.begin();
          i != m_bases.end(); ++i) {
@@ -154,6 +156,7 @@ void class_registration::register_() const {
       ClassRep_sp bcrep = registry->find_class(i->first);
       // Add it to the DirectSuperClass list
       crep->addInstanceBaseClass(bcrep->_className());
+      crep->addInstanceAsSubClass(bcrep->_className());
       crep->add_base_class(core::make_fixnum(0), bcrep);
     }
   }

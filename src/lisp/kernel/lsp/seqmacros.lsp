@@ -41,7 +41,7 @@
 		     (funcall ,',akey ,value))))
        ,@body)))
 
-(defmacro with-tests (&whole whole (test test-not &optional key) &body body)
+(defmacro with-tests ((test test-not &optional key) &body body)
   (with-unique-names (%test %test-not %test-fn)
     `(let* ((,%test ,test)
 	    (,%test-not ,test-not)
@@ -238,6 +238,7 @@
 (defmacro do-subsequence ((elt sequence start end &rest args
                            &key setter index output specialize)
                           &body body)
+  (declare (ignore setter index output specialize))
   (with-unique-names (%sequence)
     (let ((args (list* elt %sequence start end args)))
       `(let ((,%sequence ,sequence))

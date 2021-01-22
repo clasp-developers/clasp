@@ -357,50 +357,39 @@
         (t (error "Add support for this operating system to cmp:generate-link-command"))))
     (truename output-file-name)))
 
-(defun link-bitcode-modules (output-pathname part-pathnames
-                             &key additional-bitcode-pathnames)
+(defun link-bitcode-modules-impl (output-pathname part-pathnames
+                                  &key additional-bitcode-pathnames
+                                    clasp-build-mode)
   "Link a bunch of modules together, return the linked module"
-  (with-compiler-env ()
-    (let* ((module (llvm-create-module (pathname-name output-pathname)))
-           (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
-           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-           (bcnum 0))
-      (with-module ( :module module
-                     :optimize nil)
-        (with-debug-info-generator (:module module :pathname output-pathname)
-          (let* ((linker (llvm-sys:make-linker module))
-                 (part-index 1))
-            ;; Don't enforce .bc extension for additional-bitcode-pathnames
-            ;; This is where I used to link the additional-bitcode-pathnames
-            (dolist (part-pn part-pathnames)
-              (let* ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults part-pn)))
-;;;                (bformat t "Linking %s%N" bc-file)
-                (let* ((part-module (parse-bitcode (namestring (truename bc-file)) (thread-local-llvm-context))))
-                  (incf part-index)
-                  (multiple-value-bind (failure error-msg)
-                      (llvm-sys:link-in-module linker part-module)
-                    #+(or)
-                    (let ((global-ctor (find-global-ctor-function part-module))
-                          (priority part-index))
-                      (remove-llvm.global_ctors-if-exists part-module)
-                      (add-llvm.global_ctors part-module priority global-ctor)
-                      (llvm-sys:link-in-module linker part-module))
-                    (when failure
-                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-            ;; The following links in additional-bitcode-pathnames
-            (dolist (part-pn additional-bitcode-pathnames)
-              (let* ((bc-file part-pn)
-                     (part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) (thread-local-llvm-context))))
-                (multiple-value-bind (failure error-msg)
-                    (llvm-sys:link-in-module linker part-module)
-                  (when failure
-                    (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                  )))
-            (write-bitcode module (core:coerce-to-filename (pathname (if output-pathname
-                                                                         output-pathname
-                                                                         (error "The output pathname is NIL"))))))))
-      module)))
-(export 'link-bitcode-modules)
+  (let* ((module (link-bitcode-modules-together (namestring output-pathname) part-pathnames :clasp-build-mode clasp-build-mode))
+         (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
+         (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*)))
+    (write-bitcode module (core:coerce-to-filename (pathname (if output-pathname
+                                                                 output-pathname
+                                                                 (error "The output pathname is NIL"))))
+                   :output-type (default-library-type clasp-build-mode))
+    module))
+
+(defun link-bitcode-modules (output-pathname part-pathnames &key additional-bitcode-pathnames)
+  (let ((fixed-part-pathnames nil))
+    (dolist (ppn part-pathnames)
+      (let ((bc-file (make-pathname :type (if cmp::*use-human-readable-bitcode* "ll" "bc") :defaults ppn)))
+        (push bc-file fixed-part-pathnames)))
+    (link-bitcode-modules-impl output-pathname (nreverse fixed-part-pathnames)
+                               :additional-bitcode-pathnames additional-bitcode-pathnames
+                               :clasp-build-mode :bitcode)))
+
+(defun link-fasobc-modules (output-pathname part-pathnames &key additional-bitcode-pathnames)
+  (link-bitcode-modules-impl output-pathname part-pathnames :additional-bitcode-pathnames additional-bitcode-pathnames
+                        :clasp-build-mode :fasobc))
+
+(defun link-fasoll-modules (output-pathname part-pathnames &key additional-bitcode-pathnames)
+  (link-bitcode-modules-impl output-pathname part-pathnames :additional-bitcode-pathnames additional-bitcode-pathnames
+                        :clasp-build-mode :fasoll))
+
+(export '(link-bitcode-modules link-fasoll-modules link-fasobc-modules))
+
+
 
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
@@ -434,7 +423,7 @@ Return the **output-pathname**."
          (bformat t "In llvm-link -> link-type :object input-files -> %s%N" input-files))
        (execute-link-object output-pathname input-files :input-type input-type))
       ((eq link-type :bitcode)
-       (link-bitcode-modules output-pathname input-files))
+       (link-bitcode-modules output-pathname input-files :clasp-build-mode :bitcode))
       (t (error "Cannot link format ~a" link-type)))
     (let ((link-time (/ (- (get-internal-real-time) start-time) (float internal-time-units-per-second))))
 ;;;      (format t "llvm-link link-time -> ~a~%" link-time)
@@ -481,9 +470,19 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
 
 (defun build-fasl (out-file &key lisp-files init-name)
   (declare (ignore init-name))
-  (cond
-    ((or *compile-file-parallel* *generate-faso*)
-     (build-faso-parallel out-file :lisp-files lisp-files))
-    (t (build-fasl-serial out-file :lisp-files lisp-files))))
+  (let ((output-name (case *default-object-type*
+                       (:faso
+                        (build-faso-parallel out-file :lisp-files lisp-files))
+                       (:fasoll
+                        (link-fasoll-modules out-file lisp-files)
+                        (truename out-file))
+                       (:fasobc
+                        (link-fasobc-modules out-file lisp-files)
+                        (truename out-file))
+                       (:object
+                        (build-fasl-serial out-file :lisp-files lisp-files)
+                        (truename out-file))
+                       (otherwise (error "Handle *default-object-type* ~a" *default-object-type*)))))
+    output-name))
 
 (export 'build-fasl)

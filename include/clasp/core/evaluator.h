@@ -128,7 +128,7 @@ inline LCC_RETURN funcall(T_sp fn) {
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return func->entry()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
 
 template <class ARG0>
@@ -138,7 +138,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+  return func->entry()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
 }
 
 template <class ARG0, class ARG1>
@@ -148,7 +148,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+  return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }
 
 template <class ARG0, class ARG1, class ARG2>
@@ -158,7 +158,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+  return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
  template <class ARG0, class ARG1, class ARG2, class ARG3>
@@ -168,7 +168,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   Function_sp func = interpreter_lookup_function_or_error(fn, _Nil<T_O>());
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
+  return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
 }
 
 // Do I need a variadic funcall???
@@ -181,7 +181,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   ASSERT(gc::IsA<Function_sp>(func));
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
-  return func->entry.load()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
+  return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
 }
 
 inline LCC_RETURN funcall_function(Function_sp func) {
@@ -189,7 +189,7 @@ inline LCC_RETURN funcall_function(Function_sp func) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
+  return func->entry()(LCC_PASS_ARGS0_ELLIPSIS(func.raw_()));
 }
 
 template <class ARG0>
@@ -198,7 +198,7 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
+  return func->entry()(LCC_PASS_ARGS1_ELLIPSIS(func.raw_(),arg0.raw_()));
 }
 
 template <class ARG0, class ARG1>
@@ -207,7 +207,7 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1) {
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
+  return func->entry()(LCC_PASS_ARGS2_ELLIPSIS(func.raw_(),arg0.raw_(), arg1.raw_()));
 }
 
 template <class ARG0, class ARG1, class ARG2>
@@ -216,7 +216,7 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+  return func->entry()(LCC_PASS_ARGS3_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
  template <class ARG0, class ARG1, class ARG2, class ARG3>
@@ -225,7 +225,7 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 
      need to be made consistent with lispCallingConvention.h */
   ASSERT(4 == LCC_ARGS_IN_REGISTERS);
   ASSERT(gc::IsA<Function_sp>(func));
-  return func->entry.load()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
+  return func->entry()(LCC_PASS_ARGS4_ELLIPSIS(func.raw_(),LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3)));
 }
 
 // Do I need a variadic funcall???
@@ -237,7 +237,7 @@ inline LCC_RETURN funcall_function(Function_sp func, ARG0 arg0, ARG1 arg1, ARG2 
   ASSERT(gc::IsA<Function_sp>(func));
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
-  return func->entry.load()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
+  return func->entry()(func.raw_(), nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), LCC_FROM_SMART_PTR(arg3), std::forward<ARGS>(args).raw_()...);
 }
 
 };

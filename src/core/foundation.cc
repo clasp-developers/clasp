@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/cons.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/corePackage.h>
@@ -997,7 +998,7 @@ void lisp_defineSingleDispatchMethod(T_sp name,
   
   T_sp docStr = _Nil<T_O>();
   if (docstring!="") docStr = SimpleBaseString_O::make(docstring);
-  SingleDispatchGenericFunctionClosure_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
+  FuncallableInstance_sp gfn = core__ensure_single_dispatch_generic_function(name, llhandler,autoExport,single_dispatch_argument_index); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   method_body->finishSetup(llhandler);
   method_body->setf_sourcePathname(_Nil<T_O>());
@@ -1422,8 +1423,8 @@ NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, 
   eval::funcall(_sym_signalSimpleError,
                 core::_sym_simpleProgramError,    //arg0
                 _Nil<T_O>(),              // arg1
-                SimpleBaseString_O::make(fmt.str()), // arg2
-                _Nil<T_O>());
+                SimpleBaseString_O::make("~a"),
+                core::Cons_O::createList(SimpleBaseString_O::make(fmt.str())));
   UNREACHABLE();
 }
 
@@ -1637,21 +1638,35 @@ size_t lisp_general_badge(General_sp object) {
   return header->_header_badge;
 }
 
+size_t lisp_cons_badge(Cons_sp object) {
+  return object->_Badge;
+}
+
 size_t lisp_badge(T_sp object) {
   if (object.consp()) {
-#ifdef USE_BOEHM
-    return (size_t)object.raw_();
-#else
-    // USE_MPS
-# ifdef MPS_CONS_AWL_POOL    
-    return (size_t)object.unsafe_cons();
-# else
-    return (size_t)object.unsafe_cons()->_badge;
-# endif
-#endif    
+    Cons_sp cobject = gc::As_unsafe<Cons_sp>(object);
+    return lisp_cons_badge(cobject);
   }
   return lisp_general_badge(gc::As_unsafe<General_sp>(object));
 }
+
+
+CL_DEFUN size_t core__get_badge(T_sp object)
+{
+  return lisp_badge(object);
+}
+
+CL_DEFUN void core__set_badge(T_sp object, size_t badge)
+{
+  if (object.consp()) {
+    Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
+    cons->_Badge = badge;
+    return;
+  }
+  gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
+  header->_header_badge = badge;
+}
+
 
 
 size_t lisp_random()

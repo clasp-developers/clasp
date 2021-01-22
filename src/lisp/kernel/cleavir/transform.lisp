@@ -94,6 +94,8 @@
                                 (cleavir-env:type info)
                                 'function))
                           'function))
+                     ;; This could be expanded.
+                     ((lambda) 'function)
                      ;; This is really KLUDGEy, but then this whole thing kind of is.
                      ((aref)
                       (if (and (consp form) (consp (cdr form)))
@@ -176,6 +178,7 @@
 (deftransform primop:inlined-two-arg-+ ((x fixnum) (y fixnum))
   'core:two-arg-+-fixnum-fixnum)
 
+#+(or)
 (macrolet ((def-float-op (name op)
              `(progn
                 (deftransform ,name ((x single-float) (y single-float))
@@ -206,6 +209,7 @@
   (def-float-compare primop:inlined-two-arg->  cleavir-primop:float-greater)
   (def-float-compare primop:inlined-two-arg->= cleavir-primop:float-not-less))
 
+#+(or)
 (macrolet ((def-fixnum-compare (name op)
              `(deftransform ,name ((x fixnum) (y fixnum))
                 '(lambda (x y) (if (,op x y) t nil)))))
@@ -215,8 +219,10 @@
   (def-fixnum-compare primop:inlined-two-arg->  cleavir-primop:fixnum-greater)
   (def-fixnum-compare primop:inlined-two-arg->= cleavir-primop:fixnum-not-less))
 
+#+(or)
 (deftransform minusp ((number fixnum))
   '(lambda (n) (if (cleavir-primop:fixnum-less n 0) t nil)))
+#+(or)
 (deftransform plusp ((number fixnum))
   '(lambda (n) (if (cleavir-primop:fixnum-greater n 0) t nil)))
 
@@ -225,17 +231,21 @@
 
 (deftransform array-rank ((a (simple-array * (*)))) '(lambda (a) (declare (ignore a)) 1))
 
+#+(or)
 (deftransform svref/no-bounds-check ((a simple-vector) (index fixnum))
   '(lambda (vector index) (cleavir-primop:aref vector index t t t)))
+#+(or)
 (deftransform (setf svref/no-bounds-check) (value (a simple-vector) (index fixnum))
   '(lambda (value vector index)
     (cleavir-primop:aset vector index value t t t)
     value))
 
-(deftransform length ((s list)) '(lambda (x) (if (cleavir-primop:eq x nil) 0 (core:cons-length x))))
+(deftransform length ((s list)) '(lambda (x) (if x (core:cons-length x) 0)))
 (deftransform length ((s vector)) 'core::vector-length)
 
+#+(or)
 (deftransform elt ((s vector) index) 'vector-read)
+#+(or)
 (deftransform core:setf-elt (value (s vector) index)
   '(lambda (value sequence index) (vector-set sequence index new-value)))
 

@@ -746,6 +746,7 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
 /*! Return a NULL package if there is no conflict */
 Package_sp Package_O::export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym) {
   for (auto use_pkg : this->_PackagesUsedBy) {
+    ASSERT(use_pkg.generalp());
     Symbol_mv x = use_pkg->findSymbol_SimpleString(nameKey);
     Symbol_sp xsym = x;
     Symbol_sp status = gc::As<Symbol_sp>(x.second());

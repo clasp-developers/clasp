@@ -50,7 +50,8 @@
 Return (values cleavir-lambda-list wrapped-code rest-alloc)."
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
       (core:process-lambda-list lambda-list 'function)
-    (let ((creqs (mapcar (lambda (x) (gensym "REQ")) (cdr reqargs)))
+    (let ((creqs (mapcar (lambda (x) (declare (ignore x)) (gensym "REQ"))
+                         (cdr reqargs)))
           (crest (if rest-var (gensym "REST") nil)))
       (multiple-value-bind (copts opt-assign)
           (transform-optionals optargs)

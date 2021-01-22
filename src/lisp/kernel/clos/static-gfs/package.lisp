@@ -2,4 +2,6 @@
   (:use #:cl)
   (:export #:update-constructors)
   (:export #:invalidate-designated-constructors #:invalidate-class-constructors)
-  (:export #:precompile-constructor))
+  (:export #:precompile-constructor)
+  (:export #:invalidate-class-reinitializers*)
+  (:export #:invalidate-class-changers #:invalidate-designated-changers))

@@ -372,7 +372,7 @@ static void obj_pad(mps_addr_t base, size_t size) {
 GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
   mps_addr_t original_client = client;
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+  MPS_SCAN_BEGIN(ss) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
@@ -399,7 +399,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         abort();
       }
     };
-  } MPS_SCAN_END(GC_SCAN_STATE);
+  } MPS_SCAN_END(ss);
   return MPS_RES_OK;
 };
 
@@ -727,8 +727,8 @@ size_t processMpsMessages(size_t& finalizations) {
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
   core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
-  core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
-  core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
+  core::Number_sp deltaTime = core::contagion_mul(core::contagion_sub(endTime,startTime),core::make_fixnum(1000));
+  core::Number_sp deltaSeconds = core::contagion_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
   printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
   fflush(stdout);
 #endif
@@ -1011,16 +1011,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the CONS pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
-#ifdef MPS_CONS_AWL_POOL    // 1 if awl pool
-    res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_awl(), args);
-    printf("%s:%d Using the AWL pool for cons cells\n", __FILE__, __LINE__ );
-#else
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR,1);
     MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
     MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
     res = mps_pool_create_k(&global_cons_pool, global_arena, mps_class_amc(), args);
-#endif
   }
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
@@ -1054,7 +1049,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_MPSPREP
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, weak_obj_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, weak_obj_skip);
@@ -1143,7 +1138,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // printf("%s:%d UNDEF USE_main_thread_roots_scan NUMBER_OF_CORE_SYMBOLS[%d] global_symbol_count[%d]\n", __FILE__, __LINE__, NUMBER_OF_CORE_SYMBOLS, global_symbol_count );
 #endif  
 //  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
-#ifdef RUNNING_GC_BUILDER
+#ifdef RUNNING_MPSPREP
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
   printf("%s:%d   You could run some tests here\n", __FILE__, __LINE__);
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
@@ -1276,17 +1271,8 @@ void ThreadLocalAllocationPoints::initializeAllocationPoints() {
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create mostly_copying_allocation_point");
 
-#ifdef MPS_CONS_AWL_POOL
-  MPS_ARGS_BEGIN(args) {
-    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
-    res = mps_ap_create_k(&this->_cons_allocation_point,
-                          global_cons_pool, args);
-  }
-  MPS_ARGS_END(args);
-#else
   res = mps_ap_create_k(&this->_cons_allocation_point,
                         global_cons_pool, mps_args_none);
-#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_cons_allocation_point");
 

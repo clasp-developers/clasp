@@ -101,6 +101,7 @@ TODO 2: Build a cell system like we do for make-instance.
     (&environment env class instancef slotdf)
   (multiple-value-bind (vars vals stores store-form access-form)
       (get-setf-expansion instancef env)
+    (declare (ignore stores store-form))
     (let ((store (gensym "STORE")))
       (values vars vals (list store)
               (let ((slotd (extract-slotd slotdf)))

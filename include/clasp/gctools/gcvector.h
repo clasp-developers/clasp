@@ -39,7 +39,8 @@ public:
   typedef value_type container_value_type;
   typedef value_type &reference;
 
-  GCVector_moveable(size_t num, size_t e = 0) : _Capacity(num), _End(e){};
+  GCVector_moveable(size_t num, size_t e = 0) : _Capacity(num), _End(e) {
+  };
   size_t _Capacity; // Index one beyond the total number of elements allocated
   size_t _End;
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
@@ -158,9 +159,6 @@ namespace gctools {
 
 template <class T, typename Allocator>
 class GCVector {
-#ifdef USE_MPS
-//        friend GC_RESULT (::obj_scan)(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
-#endif
 public:
   typedef Allocator allocator_type;
   typedef T value_type;
@@ -280,6 +278,8 @@ public:
     Allocator alloc;
 #ifdef DEBUG_ASSERT
     if (this->_Contents->_End > this->_Contents->_Capacity) {
+      printf("%s:%d this@%p this->_Contents -> %p\n", __FILE__, __LINE__, this, this->_Contents.raw_() );
+      printf("%s:%d this->_Contents->_End = %lu  this->_Contents->_Capacity = %lu\n", __FILE__, __LINE__, this->_Contents->_End, this->_Contents->_Capacity);
       throw_hard_error("The end should NEVER be beyond the capacity");
     };
 #endif

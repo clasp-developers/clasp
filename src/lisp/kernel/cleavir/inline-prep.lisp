@@ -23,33 +23,25 @@
 
 (defvar *code-walker* nil)
 
-#+cst
 (defmethod cleavir-cst-to-ast:convert :before (cst environment (system clasp-64bit))
   (declare (ignore system))
   (when *code-walker*
     (let ((form (cst:raw cst)))
       (funcall *code-walker* form environment))))
 
-#-cst
-(defmethod cleavir-generate-ast:convert :before (form environment (system clasp-64bit))
-  (declare (ignore system))
-  (when *code-walker*
-    (funcall *code-walker* form environment)))
-
 (defun code-walk-using-cleavir (code-walker-function form env)
-  (let* (#+cst (cleavir-cst-to-ast:*compiler* 'cl:compile)
-         #-cst (cleavir-generate-ast:*compiler* 'cl:compile)
+  (let* ((cleavir-cst-to-ast:*compiler* 'cl:compile)
          (core:*use-cleavir-compiler* t)
          (*code-walker* code-walker-function))
     (handler-bind
-        ((cleavir-env:no-variable-info
+        ((cleavir-cst-to-ast:no-variable-info
            (lambda (condition)
-             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-special
-                             #-cst 'cleavir-generate-ast:consider-special)))
-         (cleavir-env:no-function-info
+             (declare (ignore condition))
+             (invoke-restart 'cleavir-cst-to-ast:consider-special)))
+         (cleavir-cst-to-ast:no-function-info
            (lambda (condition)
-             (invoke-restart #+cst 'cleavir-cst-to-ast:consider-global
-                             #-cst 'cleavir-generate-ast:consider-global)))
+             (declare (ignore condition))
+             (invoke-restart 'cleavir-cst-to-ast:consider-global)))
          ;; No point printing warnings twice (now, and when the method body
          ;; is actually compiled)
          (warning #'muffle-warning)
@@ -58,10 +50,7 @@
          (error (lambda (e)
                   (declare (ignore e))
                   (return-from code-walk-using-cleavir nil))))
-      #+cst
-      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*)
-      #-cst
-      (cleavir-generate-ast:generate-ast form env *clasp-system*)))
+      (cleavir-cst-to-ast:cst-to-ast (cst:cst-from-expression form) env *clasp-system*)))
   t)
 
 (export 'code-walk-using-cleavir)
@@ -111,12 +100,28 @@
 
 ;;; Incorporated into DEFUN expansion (see lsp/evalmacros.lsp)
 (defun defun-inline-hook (name function-form env)
+  (declare (ignore env))
   (when (core:declared-global-inline-p name)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (when (core:declared-global-inline-p ',name)
          (setf (inline-ast ',name)
                (fix-inline-ast
-                (cleavir-primop:cst-to-ast ,function-form)))))))
+                ;; Must use file compilation semantics here to compile
+                ;; load-time-value correctly.
+                (cleavir-primop:cst-to-ast ,function-form t)))))))
+
+;; When we inline expand, the saved ast will be as if we had a
+;; load-time-value ast. Fix those up if we are not file compiling.
+(defun eval-load-time-value-asts (ast)
+  (cleavir-ast:map-ast-depth-first-preorder
+   (lambda (ast)
+     (when (typep ast 'cleavir-ast:load-time-value-ast)
+       ;; Fixup saved load-time-value asts by evaling them if need be.
+       (unless (eq cleavir-cst-to-ast:*compiler* 'cl:compile-file)
+         (change-class ast 'cleavir-ast:constant-ast
+                       :value (eval (cleavir-ast:form ast))))))
+   ast)
+  ast)
 
 (export '(*code-walker*))
 
@@ -124,8 +129,6 @@
   (setq core:*proclaim-hook* 'proclaim-hook))
 
 ;;; The following code sets up the chain of inlined-at info in AST origins.
-#+cst
-(progn
 
 ;;; Basically we want to recurse until we hit a SPI with no inlined-at,
 ;;; and set its inlined-at to the provided value. Also we clone everything,
@@ -183,12 +186,11 @@
         (when (hash-table-p cmp:*track-inlined-functions*)
           (track-inline-counts cmp:*track-inlinee-name* (cleavir-environment:name info)))
         (return-from cleavir-cst-to-ast:convert-called-function-reference
-          (fix-inline-source-positions
-           (cleavir-ast-transformations:clone-ast ast)
-           (let ((source (cst:source cst)))
-             (cond ((consp source) (car source))
-                   ((null source) core:*current-source-pos-info*)
-                   (t source))))))))
+          (eval-load-time-value-asts
+            (fix-inline-source-positions
+             (cleavir-ast-transformations:clone-ast ast)
+             (let ((source (cst:source cst)))
+               (cond ((consp source) (car source))
+                     ((null source) core:*current-source-pos-info*)
+                     (t source)))))))))
   (call-next-method))
-
-) ; #+cst (progn...)

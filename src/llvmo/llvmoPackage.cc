@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/evaluator.h>
@@ -105,15 +106,31 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
   SIMPLE_ERROR(BF("Could not find llvm-ir file %s with .bc or .ll extension") % _rep_(filename));
 }
 
-LLVMContext_sp getLLVMContext()
+void loadModule(llvmo::Module_sp module, core::T_sp startup_name, const std::string& libname)
 {
-  LLVMContext_sp context = gc::As<LLVMContext_sp>(core::eval::funcall(comp::_sym_thread_local_llvm_context));
-  return context;
-}
-
-void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
-{
-  SIMPLE_ERROR(BF("Deprecated"));
+  ClaspJIT_sp jit = core::compiler__jit_engine();
+  JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
+  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
+  std::vector<std::string> startup_functions;
+  for (auto &F : *module->wrappedPtr()) {
+    std::string function_name = F.getName().str();
+//    printf("%s:%d Function: %s\n", __FILE__, __LINE__, function_name.c_str());
+    if (function_name.substr(0,7)=="StartUp") {
+      startup_functions.push_back(function_name);
+    }
+  }
+  jit->addIRModule(jitDylib,module,tsc);
+  for ( auto name : startup_functions ) {
+//    printf("%s:%d Startup function: %s\n", __FILE__, __LINE__, name.c_str());
+    core::Pointer_sp ptr = jit->lookup(*jitDylib->wrappedPtr(),name);
+    voidStartUp startup = (voidStartUp)ptr->ptr();
+//    printf("%s:%d      ptr->%p\n", __FILE__, __LINE__, startup);
+    (startup)();
+  }
+  size_t num = core::startup_functions_are_waiting();
+//  printf("%s:%d There are %lu startup functions waiting to be evaluated\n", __FILE__, __LINE__, num);
+  core::startup_functions_invoke(NULL);
+//  printf("%s:%d Invoked startup functions - continuing\n", __FILE__, __LINE__ );
 #if 0
   EngineBuilder_sp engineBuilder = EngineBuilder_O::make(module);
   engineBuilder->wrappedPtr()->setUseOrcMCJITReplacement(true);
@@ -130,7 +147,6 @@ void loadModule(llvmo::Module_sp module, core::T_sp startup_name)
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
-  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -141,9 +157,9 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = getLLVMContext();
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   Module_sp m = llvm_sys__parseIRFile(namestring,context);
-  loadModule(m,startup_name);
+  loadModule(m,startup_name,namestring->get_std_string());
   return true;
 }
 
@@ -151,7 +167,6 @@ CL_DEFUN bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
-  SIMPLE_ERROR(BF("Deprecated"));
   core::DynamicScopeManager scope(::cl::_sym_STARpackageSTAR, ::cl::_sym_STARpackageSTAR->symbolValue());
   T_sp tn = cl__truename(filename);
   if ( tn.nilp() ) {
@@ -162,14 +177,15 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
     SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
   }
   core::String_sp namestring = gctools::As<core::String_sp>(tnamestring);
-  LLVMContext_sp context = getLLVMContext();
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
   Module_sp m = llvm_sys__parseBitcodeFile(namestring,context);
-  loadModule(m,startup_name);
+  loadModule(m,startup_name,namestring->get_std_string());
   return true;
 }
 
 CL_DOCSTRING("Load a module into the Common Lisp environment as if it were loaded from a bitcode file");
 
+#if 0
 CL_LAMBDA(filename &optional verbose print external_format);
 CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name )
 {
@@ -178,7 +194,7 @@ CL_DEFUN bool llvm_sys__load_module(Module_sp m, bool verbose, bool print, core:
   loadModule(m,startup_name);
   return true;
 }
-
+#endif
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
   stringstream sout;
@@ -241,14 +257,19 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-BITS"), make_fixnum((int)TAG_BITS)), list );
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM00-TAG"), make_fixnum((int)gctools::fixnum00_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM01-TAG"), make_fixnum((int)gctools::fixnum01_tag)), list);
+#if TAG_BITS==4
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM10-TAG"), make_fixnum((int)gctools::fixnum10_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM11-TAG"), make_fixnum((int)gctools::fixnum11_tag)), list);
+#endif
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-PTAG-MASK"), make_fixnum((int)gctools::vaslist_ptag_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST0-TAG"), make_fixnum((int)gctools::vaslist0_tag)), list);
+#if TAG_BITS==4
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST1-TAG"), make_fixnum((int)gctools::vaslist1_tag)), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-PTAG-MASK"), make_fixnum((int)gctools::vaslist_ptag_mask)), list);
+#endif
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CHARACTER-TAG"), make_fixnum((int)gctools::character_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-TAG"), make_fixnum((int)gctools::single_float_tag)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
@@ -263,7 +284,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("JMP-BUF-SIZE"),make_fixnum(sizeof(jmp_buf))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,entry))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-FUNCTION-DESCRIPTION-OFFSET"),make_fixnum(offsetof(core::Function_O,_FunctionDescription))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FUNCTION-DESCRIPTION-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::FunctionDescription_O, _EntryPoints))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::Vaslist,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
@@ -306,11 +328,11 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-entry-offset ihf contab valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset ihf contab valist register-save-area function-description);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
-                                                        core::Fixnum_sp function_entry_offset,
+                                                        core::Fixnum_sp function_description_offset,
                                                         gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
@@ -335,8 +357,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR(BF("Mismatch between function size[%d] and core::Function_O size[%d]") % unbox_fixnum(functionSize) % Function_O_size);
   }
-  if (function_entry_offset.unsafe_fixnum()!=offsetof(core::Function_O,entry)) {
-    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_entry_offset.unsafe_fixnum() % offsetof(core::Function_O,entry));
+  if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_FunctionDescription)) {
+    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_FunctionDescription));
   }
   int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
   if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {
@@ -374,8 +396,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (tFunctionDescriptionSize.fixnump()) {
     size_t functionDescriptionSize = tFunctionDescriptionSize.unsafe_fixnum();
-    if (functionDescriptionSize != sizeof(core::FunctionDescription)) {
-      SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription) % functionDescriptionSize );
+    if (functionDescriptionSize != sizeof(core::FunctionDescription_O)) {
+      SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription_O) % functionDescriptionSize );
     }
   }
 }
@@ -565,11 +587,11 @@ void initialize_llvm(int argc, char **argv) {
 
 };
 
-#ifdef USE_MPS
+#if defined(USE_MPS)||defined(USE_PRECISE_GC)
 //
 // Include the Kinds
 //
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_MPSPREP
 #define NAMESPACE_llvmo
 #include "clasp_gc.cc"
 #undef NAMESPACE_llvmo

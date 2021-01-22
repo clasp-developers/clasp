@@ -194,7 +194,7 @@ a_p = a_p_temp; a = a_temp;
       (irc-begin-block mismatch)
       (values new old))))
   
-(defun compile-key-arguments (keyargs lambda-list-aokp nremaining cc false true)
+(defun compile-key-arguments (keyargs lambda-list-aokp nremaining calling-conv false true)
   (macrolet ((do-keys ((keyword) &body body)
                `(do* ((cur-key (cdr keyargs) (cddddr cur-key))
                       (,keyword (car cur-key) (car cur-key)))
@@ -231,8 +231,10 @@ a_p = a_p_temp; a = a_temp;
         (irc-cond-br evenp kw-loop odd-kw)
         ;; There have been an odd number of arguments, so signal an error.
         (irc-begin-block odd-kw)
+        (unless (calling-convention-closure calling-conv)
+          (error "The calling-conv ~s does not have a closure" calling-conv))
         (irc-intrinsic-invoke-if-landing-pad-or-call "cc_oddKeywordException"
-                                                     (list *current-function-description*))
+                                                     (list (calling-convention-closure calling-conv)))
         (irc-unreachable))
       ;; Loop starts; welcome hell
       (irc-begin-block kw-loop)
@@ -263,8 +265,8 @@ a_p = a_p_temp; a = a_temp;
           (irc-cond-br zerop after matching))
         (irc-begin-block matching)
         ;; Start matching keywords
-        (let ((key-arg (calling-convention-args.va-arg cc))
-              (value-arg (calling-convention-args.va-arg cc)))
+        (let ((key-arg (calling-convention-args.va-arg calling-conv))
+              (value-arg (calling-convention-args.va-arg calling-conv)))
           (do* ((cur-key (cdr keyargs) (cddddr cur-key))
                 (key (car cur-key) (car cur-key))
                 (suppliedp-phis top-suppliedp-phis (cdr suppliedp-phis))
@@ -338,7 +340,7 @@ a_p = a_p_temp; a = a_temp;
             (irc-intrinsic-invoke-if-landing-pad-or-call
              "cc_ifBadKeywordArgumentException"
              ;; aok was initialized to NIL, regardless of the suppliedp, so this is ok.
-             (list allow-other-keys bad-keyword *current-function-description*))
+             (list allow-other-keys bad-keyword (calling-convention-closure calling-conv)))
             (irc-br kw-assigns)
             (irc-begin-block kw-assigns)))
         (do* ((top-param-phis top-param-phis (cdr top-param-phis))
@@ -386,7 +388,7 @@ a_p = a_p_temp; a = a_temp;
         (compile-error-if-not-enough-arguments wrong-nargs-block creq nargs))
       (compile-required-arguments reqargs calling-conv))
     (let (;; NOTE: Sometimes we don't actually need these.
-          We could save miniscule time by not generating.
+          ;; We could save miniscule time by not generating.
           (iNIL (irc-nil)) (iT (irc-t)))
       (if (or rest-var key-flag)
           ;; We have &key and/or &rest, so parse with that expectation.
@@ -412,9 +414,9 @@ a_p = a_p_temp; a = a_temp;
             (when safep
               (compile-error-if-too-many-arguments wrong-nargs-block cmax nargs)))))))
 
-(defun compile-only-reg-and-opt-arguments (reqargs optargs cc &key argument-out (safep t))
-  (let* ((register-args (calling-convention-register-args cc))
-         (nargs (calling-convention-nargs cc))
+(defun compile-only-reg-and-opt-arguments (reqargs optargs calling-conv &key argument-out (safep t))
+  (let* ((register-args (calling-convention-register-args calling-conv))
+         (nargs (calling-convention-nargs calling-conv))
          (nreq (car reqargs))
          (creq (irc-size_t nreq))
          (nopt (car optargs))
@@ -423,7 +425,7 @@ a_p = a_p_temp; a = a_temp;
            ;; See KLUDGE above
            (when safep
              (compile-wrong-number-arguments-block
-              (calling-convention-closure cc)
+              (calling-convention-closure calling-conv)
               nargs creq cmax))))
     ;; FIXME: It would probably be nicer to generate one switch such that not-enough-arguments
     ;; goes to an error block and too-many goes to another. Then we'll only have one test on
@@ -559,6 +561,7 @@ a_p = a_p_temp; a = a_temp;
   (cmp-log "About to process-cleavir-lambda-list lambda-list: %s%N" lambda-list)
   (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (process-cleavir-lambda-list lambda-list)
+    (declare (ignore unused-auxs))
     (cmp-log "About to calling-convention-use-only-registers%N")
     (cmp-log "    reqargs -> %s%N" reqargs)
     (cmp-log "    optargs -> %s%N" optargs)
@@ -636,8 +639,7 @@ a_p = a_p_temp; a = a_temp;
 ;; Setup the calling convention
 ;;
 (defun setup-calling-convention (arguments
-                                 &key debug-on rest-alloc cleavir-lambda-list
-                                   ignore-arguments)
+                                 &key debug-on rest-alloc cleavir-lambda-list)
   (let ((setup (maybe-alloc-cc-setup cleavir-lambda-list debug-on)))
     (let ((cc (initialize-calling-convention arguments
                                              setup
@@ -653,8 +655,9 @@ a_p = a_p_temp; a = a_temp;
 
 
 (defun bclasp-map-lambda-list-symbols-to-indices (cleavir-lambda-list)
-  (multiple-value-bind (reqs opts rest key-flag keys aok-p auxargs-dummy va-rest-p)
+  (multiple-value-bind (reqs opts rest key-flag keys)
       (process-cleavir-lambda-list cleavir-lambda-list)
+    (declare (ignore key-flag))
     ;; Create the register lexicals using allocas
     (let (bindings
           (index -1))

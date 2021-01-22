@@ -422,9 +422,9 @@ Convert colons to underscores"
 
 (defun generate-mps-poison (sout)
   "Sections that are only applicable to Boehm builds include this to prevent them from compiling in MPS builds"
-  (format sout " #ifdef USE_MPS~%")
-  (format sout "  #error \"Do not include this section when USE_MPS is defined - use the section from clasp_gc_xxx.cc\"~%")
-  (format sout " #endif // USE_MPS~%"))
+  (format sout " #if defined(USE_ANALYSIS)~%")
+  (format sout "  #error \"Do not include this section when USE_ANALYSIS is defined - use the section from clasp_gc_xxx.cc\"~%")
+  (format sout " #endif // USE_ANALYSIS~%"))
 
 (defun gather-all-subclasses-for (class-key inheritance)
   (loop for x in (gethash class-key inheritance)
@@ -589,6 +589,10 @@ Convert colons to underscores"
           (dolist (exposed-class sorted-classes)
             (unless (string= (base% exposed-class) +root-dummy-class+)
               (format sout "~a->addInstanceBaseClassDoNotCalculateClassPrecedenceList(~a::static_classSymbol());~%"
+                      (as-var-name (tags:namespace% (class-tag% exposed-class))
+                                   (tags:name% (class-tag% exposed-class)))
+                      (base% exposed-class))
+              (format sout "~a->addInstanceAsSubClass(~a::static_classSymbol());~%"
                       (as-var-name (tags:namespace% (class-tag% exposed-class))
                                    (tags:name% (class-tag% exposed-class)))
                       (base% exposed-class))))

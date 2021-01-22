@@ -111,6 +111,7 @@ by ALLOW-WITH-INTERRUPTS."
        (locally ,@body))))
 
 (defmacro with-lock ((lock-form &rest options) &body body)
+  (declare (ignore options)) ; none yet
   #-threads
   `(progn ,@body)
   #+threads

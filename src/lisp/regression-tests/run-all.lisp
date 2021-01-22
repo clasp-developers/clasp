@@ -10,6 +10,7 @@
 ;;; ------------------------------------------------------------
 ;;; Run tests
 (reset-clasp-tests)
+(load-if-compiled-correctly "sys:regression-tests;defcallback-native.lisp")
 (load-if-compiled-correctly "sys:regression-tests;fastgf.lisp")
 (load-if-compiled-correctly "sys:regression-tests;stamps.lisp")
 (load-if-compiled-correctly "sys:regression-tests;array0.lisp")
@@ -29,6 +30,8 @@
 (load-if-compiled-correctly "sys:regression-tests;bit-array0.lisp")
 (load-if-compiled-correctly "sys:regression-tests;bit-array1.lisp")
 (load-if-compiled-correctly "sys:regression-tests;character0.lisp")
+#+unicode
+(load-if-compiled-correctly "sys:regression-tests;unicode.lisp")
 (load-if-compiled-correctly "sys:regression-tests;hash-tables0.lisp")
 (load-if-compiled-correctly "sys:regression-tests;misc.lisp")
 (load-if-compiled-correctly "sys:regression-tests;read01.lisp")
@@ -39,14 +42,15 @@
 (load-if-compiled-correctly "sys:regression-tests;control01.lisp")
 (load-if-compiled-correctly "sys:regression-tests;loop.lisp")
 (load-if-compiled-correctly "sys:regression-tests;numbers-core.lisp")
+(load-if-compiled-correctly "sys:regression-tests;unwind.lisp")
 #+unicode
 (load-if-compiled-correctly "sys:regression-tests;encodings.lisp")
 (load-if-compiled-correctly "sys:regression-tests;system-construction.lisp")
 (load-if-compiled-correctly "sys:regression-tests;environment.lisp")
+(load-if-compiled-correctly "sys:regression-tests;conditions.lisp")
 (load-if-compiled-correctly "sys:regression-tests;float-features.lisp")
 (load-if-compiled-correctly "sys:regression-tests;debug.lisp")
 (load-if-compiled-correctly "sys:regression-tests;posix.lisp")
-
 (progn
   (note-test-finished)
   (format t "Passes: ~a~%" *passes*)

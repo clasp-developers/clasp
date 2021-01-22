@@ -246,10 +246,19 @@ template <>
     struct from_object< bool, std::true_type >
   {
     typedef bool DeclareType;
-
     DeclareType _v;
-  from_object( core::T_sp o ) : _v( !o.nilp() ){};
+    from_object( core::T_sp o ) : _v( !o.nilp() ){};
   };
+
+
+  template <>
+    struct from_object< bool&, std::true_type >
+  {
+    typedef bool DeclareType;
+    DeclareType _v;
+    from_object( core::T_sp o ) : _v( !o.nilp() ){};
+  };
+
 
   template <>
     struct from_object< core::T_O *, std::true_type >

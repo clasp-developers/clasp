@@ -83,6 +83,7 @@ namespace core {
       return obj;
     }
     virtual void searcher(){};
+    BuiltInObjectCreator<Instance_O>(core::FunctionDescription_sp fdesc) : Creator_O(fdesc) {};
   };
 };
 

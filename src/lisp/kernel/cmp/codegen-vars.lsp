@@ -36,8 +36,9 @@
     
 ;;#+(or)
 (progn
-  (defmacro cv-log (fmt &rest fmt-args) nil)
+  (defmacro cv-log (fmt &rest fmt-args) (declare (ignore fmt fmt-args)) nil)
   (defmacro cv-log-do (&rest body)
+    (declare (ignore body))
     nil))
 
 
@@ -148,6 +149,7 @@
                (when (eq kind-of-allocate :register-allocate)
                  (multiple-value-bind (env index symbol)
                      (destructure-binding-key register-key)
+                   (declare (ignore index))
                    (let ((register (generate-register-alloca symbol env)))
                      (setf (gethash register-key variable-map) register)))))
              variable-map)
@@ -200,17 +202,21 @@
                    ;;rewrite the allocation to be the optimized size
                    (multiple-value-bind (the-function primitive-info)
                        (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
-                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                            (parent-renv (car (last args))))
-                       (llvm-sys:replace-call the-function
-                                              instr                                      
-                                              (list (jit-constant-i64 closure-size) parent-renv))))
+                     (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                       (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                       (let ((parent-renv (car (last args))))
+                         (if (null parent-renv) (error "The parent-renv cannot be NIL"))
+                         (llvm-sys:replace-call the-function
+                                                instr                                      
+                                                (list (jit-constant-i64 closure-size) parent-renv)))))
                    (progn
                      (core:set-invisible new-env t)
-                     (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                            (parent-renv (car (last args))))
-                       (llvm-sys:replace-all-uses-with instr parent-renv)
-                       (llvm-sys:instruction-erase-from-parent instr))))))
+                     (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
+                       (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                       (let ((parent-renv (car (last args))))
+                         (if (null args) (error "The parent-renvs returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
+                         (llvm-sys:replace-all-uses-with instr parent-renv)
+                         (llvm-sys:instruction-erase-from-parent instr)))))))
            new-value-environment-instructions))
 
 (defun rewrite-lexical-variable-references-for-new-depth (variable-map instructions)
@@ -450,8 +456,7 @@
            (*tagbody-frame-info* (make-hash-table))
            (*throw-return-from-instructions* nil)
            (*block-frame-info* (make-hash-table))
-           (*lexical-function-references* nil)
-           (*lexical-function-frame-makers* nil))
+           (*lexical-function-references* nil))
        (multiple-value-prog1 (progn ,@body)
          (when (and ,optimize *activation-frame-optimize*)
            (let ((,variable-map (optimize-value-environments *lexical-variable-references*)))

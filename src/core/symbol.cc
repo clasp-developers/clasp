@@ -164,32 +164,30 @@ CL_DEFUN Symbol_sp cl__make_symbol(String_sp tstrng) {
 
 namespace core {
 
-core::FunctionDescription* global_unboundSymbolFunctionFunctionDescription = NULL;
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
-  if (global_unboundSymbolFunctionFunctionDescription == NULL) {
-    global_unboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,_Nil<T_O>());
+  if (_lisp->_Roots._UnboundSymbolFunctionFunctionDescription.unboundp()) {
+    _lisp->_Roots._UnboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,unboundFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
                                                               unboundFunctionEntryPoint,
-                                                              global_unboundSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
 }
 
-core::FunctionDescription* global_unboundSetfSymbolFunctionFunctionDescription = NULL;
 ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
-  if (global_unboundSetfSymbolFunctionFunctionDescription == NULL) {
+  if (_lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    global_unboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,_Nil<T_O>());
+    _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,unboundSetfFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
                                                               unboundSetfFunctionEntryPoint,
-                                                              global_unboundSetfSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
@@ -276,7 +274,7 @@ CL_DEFUN Symbol_sp cl__makunbound(Symbol_sp functionName) {
 }
 
 bool Symbol_O::fboundp() const {
-  return symbolFunction()->entry.load() != unboundFunctionEntryPoint;
+  return symbolFunction()->entry() != unboundFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound()
@@ -285,7 +283,7 @@ void Symbol_O::fmakunbound()
 }
 
 bool Symbol_O::fboundp_setf() const {
-  return getSetfFdefinition()->entry.load() != unboundSetfFunctionEntryPoint;
+  return getSetfFdefinition()->entry() != unboundSetfFunctionEntryPoint;
 };
 
 void Symbol_O::fmakunbound_setf()
@@ -310,9 +308,7 @@ void Symbol_O::sxhash_equal(HashGenerator &hg) const
 }
 
 
-CL_LISPIFY_NAME("cl:copy_symbol");
-CL_LAMBDA(symbol &optional copy-properties);
-CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
+Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   Symbol_sp new_symbol = Symbol_O::create(this->_Name);
   if (copy_properties.isTrue()) {
     if (this->boundP())
@@ -326,6 +322,14 @@ CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
   }
   return new_symbol;
 };
+
+
+CL_LISPIFY_NAME("cl:copy_symbol");
+CL_LAMBDA(symbol &optional copy-properties);
+CL_DEFUN Symbol_sp cl__copy_symbol(Symbol_sp symbol, T_sp copy_properties)
+{
+  return symbol->copy_symbol(copy_properties);
+}
 
 
 bool Symbol_O::isKeywordSymbol() {
@@ -356,8 +360,7 @@ void Symbol_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-CL_LISPIFY_NAME("core:asKeywordSymbol");
-CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
+Symbol_sp Symbol_O::asKeywordSymbol() {
   if (this->getPackage().notnilp()) {
     Package_sp pkg = gc::As<Package_sp>(this->getPackage());
     if (pkg->isKeywordPackage())
@@ -366,6 +369,12 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   Symbol_sp kwSymbol = _lisp->internKeyword(this->symbolNameAsString());
   return kwSymbol;
 };
+
+CL_LISPIFY_NAME("core:asKeywordSymbol");
+CL_LAMBDA(symbol);
+CL_DEFUN Symbol_sp core__asKeywordSymbol(Symbol_sp symbol) {
+  return symbol->asKeywordSymbol();
+}
 
 #ifdef SYMBOL_CLASS
 T_sp Symbol_O::find_class() {
@@ -399,9 +408,14 @@ ClassHolder_sp Symbol_O::find_class_holder() {
 }
 #endif
 
-CL_LISPIFY_NAME("core:STARmakeSpecial");
-CL_DEFMETHOD void Symbol_O::makeSpecial() {
+void Symbol_O::makeSpecial() {
   this->setf_specialP(true);
+}
+
+CL_LISPIFY_NAME("core:STARmakeSpecial");
+CL_LAMBDA(symbol);
+CL_DEFUN void core__STARmakeSpecial(Symbol_sp symbol) {
+  symbol->makeSpecial();
 }
 
 T_sp Symbol_O::defconstant(T_sp val) {
@@ -419,9 +433,14 @@ T_sp Symbol_O::defparameter(T_sp val) {
   return result;
 }
 
-CL_LISPIFY_NAME("core:setf_symbolFunction");
-CL_DEFMETHOD void Symbol_O::setf_symbolFunction(Function_sp exec) {
+void Symbol_O::setf_symbolFunction(Function_sp exec) {
   _Function.store(exec, std::memory_order_relaxed);
+}
+
+CL_LISPIFY_NAME("core:setf_symbolFunction");
+CL_LAMBDA(function symbol);
+CL_DEFUN void core__setf_symbolFunction(Function_sp exec, Symbol_sp symbol){
+  symbol->setf_symbolFunction(exec);
 }
 
 string Symbol_O::symbolNameAsString() const {
@@ -503,10 +522,15 @@ string Symbol_O::currentName() const {
   return formattedName;
 }
 
-CL_LISPIFY_NAME("core:fullName");
-CL_DEFMETHOD string Symbol_O::fullName() const {
+string Symbol_O::fullName() const {
   string formattedName = this->formattedName(true);
   return formattedName;
+}
+
+CL_LISPIFY_NAME("core:fullName");
+CL_LAMBDA(symbol);
+CL_DEFUN string core__fullname(Symbol_sp symbol){
+  return symbol->fullName();
 }
 
 T_sp Symbol_O::getPackage() const {

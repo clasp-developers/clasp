@@ -50,8 +50,10 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/genericFunction.h>
+#include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
@@ -78,7 +80,7 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Sh
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
-  FunctionDescription* fdesc = makeFunctionDescription(cl::_sym_lambda);
+  FunctionDescription_sp fdesc = makeFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
   GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
@@ -87,7 +89,7 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
-  FunctionDescription* fdesc = makeFunctionDescription(cl::_sym_lambda);
+  FunctionDescription_sp fdesc = makeFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
   GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc, cl, rack);
   return obj;
 }
@@ -188,7 +190,7 @@ LCC_RETURN FuncallableInstance_O::funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
   // the code for one function but pass it the closure object for another.
   T_sp funcallable_closure = closure->GFUN_DISPATCHER();
   if (lcc_nargs<=LCC_ARGS_IN_REGISTERS) {
-    return (gc::As_unsafe<Function_sp>(funcallable_closure)->entry.load())(funcallable_closure.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
+    return (gc::As_unsafe<Function_sp>(funcallable_closure)->entry())(funcallable_closure.raw_(),lcc_nargs,lcc_fixed_arg0,lcc_fixed_arg1,lcc_fixed_arg2,lcc_fixed_arg3);
   }
   INITIALIZE_VA_LIST();
   // This is where we could decide to compile the dtree and switch the GFUN_DISPATCHER() or not
@@ -227,13 +229,18 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
     if (gc::IsA<ClosureWithSlots_sp>(function)) {
       ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(function);
       if (closure->openP())
-        this->entry.store(closure->entry.load());
-      else this->entry.store(funcallable_entry_point);
-    } else this->entry.store(funcallable_entry_point);
+        this->_FunctionDescription.store(closure->_FunctionDescription.load());
+      else {
+        FunctionDescription_sp fdesc = makeFunctionDescriptionCopy(this->_FunctionDescription,funcallable_entry_point);
+        this->_FunctionDescription.store(fdesc);
+      }
+    } else {
+      FunctionDescription_sp fdesc = makeFunctionDescriptionCopy(this->_FunctionDescription,funcallable_entry_point);
+      this->_FunctionDescription.store(fdesc);
+    }
   } else {
     TYPE_ERROR(function, cl::_sym_function);
   }
-
   return ((this->sharedThis<FuncallableInstance_O>()));
 }
 
@@ -247,9 +254,165 @@ void FuncallableInstance_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
+
+FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_function(T_sp gfname, LambdaListHandler_sp llhandler, size_t singleDispatchArgumentIndex)
+{
+  size_t number_of_required_arguments = llhandler->numberOfRequiredArguments();
+  Rack_sp rack = Rack_O::make(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_SLOTS,_Nil<T_O>(),_Nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,_Nil<T_O>());
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER,llhandler);
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
+                          make_fixnum(singleDispatchArgumentIndex));
+  rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,_Nil<T_O>());
+  FunctionDescription_sp fdesc = makeFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point);
+  Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,fdesc,class_,rack);
+//  gfun->entry = single_dispatch_funcallable_entry_point;
+  return gfun;
+}
+
+LCC_RETURN FuncallableInstance_O::single_dispatch_funcallable_entry_point(LCC_ARGS_ELLIPSIS) {
+  SETUP_CLOSURE(FuncallableInstance_O,closure);
+  INCREMENT_FUNCTION_CALL_COUNTER(closure);
+//  printf("%s:%d:%s  gfun: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(closure->asSmartPtr()).c_str());
+  size_t singleDispatchArgumentIndex = closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX).unsafe_fixnum();
+  Instance_sp dispatchArgClass;
+  // SingleDispatchGenericFunctions can dispatch on the first or second argument
+  // so we need this switch here.
+#ifdef DEBUG_EVALUATE
+  if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+    printf("%s:%d single dispatch arg0 %s\n", __FILE__, __LINE__, _rep_(LCC_ARG0()).c_str());
+  }
+#endif
+  switch (singleDispatchArgumentIndex) {
+  case 0:
+      dispatchArgClass = lisp_instance_class(LCC_ARG0());
+      break;
+  case 1:
+      dispatchArgClass = lisp_instance_class(LCC_ARG1());
+      break;
+  default:
+      SIMPLE_ERROR(BF("Add support to dispatch off of something other than one of the first two arguments - arg: %d") % singleDispatchArgumentIndex);
+  }
+  List_sp callHistory = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY));
+//  printf("%s:%d Handling single dispatch generic function %s  index: %lu dispatchArgClass: %s\n", __FILE__, __LINE__, _rep_(closure->asSmartPtr()).c_str(), singleDispatchArgumentIndex, _rep_(dispatchArgClass).c_str());
+//  printf("%s:%d    dispatch vector = %s\n", __FILE__, __LINE__, _rep_(dispatchVector).c_str());
+  INITIALIZE_VA_LIST();
+  while (callHistory.consp()) {
+    Cons_sp entry = gc::As_unsafe<Cons_sp>(CONS_CAR(callHistory));
+    callHistory = CONS_CDR(callHistory);
+    if (CONS_CAR(entry) == dispatchArgClass) {
+      SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CDR(entry));
+//      printf("%s:%d FOUND Inherited METHOD!!! index: %lu  method: %s\n", __FILE__, __LINE__, ii, _rep_(method).c_str());
+      Function_sp method_function = method->_function;
+      return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+    }
+  }
+  // There wasn't a direct match in the call history - so search the class-precedence list of the
+  // argument to see if any of the ancestor classes are handled by this single dispatch generic function
+  // This is the slow path for discriminating functions.
+  // Update the call-history with what we find.
+  List_sp classPrecedenceList = dispatchArgClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST);
+  List_sp methods = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS));
+  while (classPrecedenceList.consp()) {
+    Instance_sp class_ = gc::As<Instance_sp>(CONS_CAR(classPrecedenceList));
+    classPrecedenceList = CONS_CDR(classPrecedenceList);
+    List_sp curMethod = methods;
+    while (curMethod.consp()) {
+      SingleDispatchMethod_sp method = gc::As_unsafe<SingleDispatchMethod_sp>(CONS_CAR(curMethod));
+      curMethod = CONS_CDR(curMethod);
+      Instance_sp methodClass = method->receiver_class();
+      if (methodClass == class_) {
+#if 0
+        printf("%s:%d  Dispatching to method using the slow path for gfun: %s  argumentClass: %s  call-history entries: %lu\n", __FILE__, __LINE__, _rep_(closure->asSmartPtr()).c_str(), _rep_(class_).c_str(), cl__length(gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY))));
+        printf("%s:%d     singleDispatchArgumentIndex = %lu  lcc_nargs = %lu\n", __FILE__, __LINE__, singleDispatchArgumentIndex, lcc_nargs);
+        printf("%s:%d     class precedence list -> %s\n", __FILE__, __LINE__, _rep_(dispatchArgClass->instanceRef(Instance_O::REF_CLASS_CLASS_PRECEDENCE_LIST)).c_str());
+        if (lcc_nargs>0) {
+          printf("%s:%d     argument0: %s\n", __FILE__, __LINE__, _rep_(LCC_ARG0()).c_str());
+          if (lcc_nargs>1) {
+            printf("%s:%d     argument1: %s\n", __FILE__, __LINE__, _rep_(LCC_ARG1()).c_str());
+          }
+        }
+#endif
+        // Update the call-history using CAS
+        T_sp expected;
+        Cons_sp entry = Cons_O::create(dispatchArgClass,method);
+        Cons_sp callHistoryEntry = Cons_O::create(entry,_Nil<T_O>());
+        do {
+          expected = closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
+          callHistoryEntry->rplacd(expected);
+        } while (!closure->_Rack->low_level_rack_compare_exchange_weak(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY,expected,callHistoryEntry));
+#if 0
+        printf("%s:%d  updated call-history \n", __FILE__, __LINE__ );
+        List_sp callHistory = gc::As_unsafe<List_sp>(closure->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY));
+        while (callHistory.consp()) {
+          T_sp entry = CONS_CAR(callHistory);
+          callHistory = CONS_CDR(callHistory);
+          printf("      %s -> %s\n", _rep_(CONS_CAR(entry)).c_str(), _rep_(CONS_CDR(entry)).c_str());
+        }
+#endif
+        // printf("%s:%d FOUND Inherited METHOD!!! index: %lu  method: %s\n", __FILE__, __LINE__, ii, _rep_(method).c_str());
+        Function_sp method_function = method->_function;
+        return (method_function->entry())(LCC_PASS_ARGS_VASLIST(method_function.raw_(),lcc_vargs));
+      }
+    }
+  }
+  SIMPLE_ERROR(BF("This single dispatch generic function %s does not recognize argument class %s") % _rep_(closure->asSmartPtr()) % _rep_(dispatchArgClass));
+}
+
+
+T_sp FuncallableInstance_O::lambdaListHandler() const
+{
+#if 0
+  FUNCTION_DESCRIPTION_ERROR();
+  SIMPLE_ERROR(BF("What do we do with entry"));
+#else
+  if (this->entry() == single_dispatch_funcallable_entry_point) {
+    return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_LAMBDA_LIST_HANDLER);
+  }
+#endif
+  SIMPLE_ERROR(BF("Implement lambdaListHandler"));
+}
+
+T_sp FuncallableInstance_O::callHistory() const
+{
+#if 1
+  FUNCTION_DESCRIPTION_ERROR();
+  SIMPLE_ERROR(BF("What do we do with entry"));
+#else
+  if (this->entry == FuncallableInstance_O::single_dispatch_funcallable_entry_point) {
+    return this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_CALL_HISTORY);
+  }
+#endif
+  SIMPLE_ERROR(BF("Implement me callHistory"));
+}
+
+void FuncallableInstance_O::addSingleDispatchMethod(SingleDispatchMethod_sp method)
+{
+#if 0
+  FUNCTION_DESCRIPTION_ERROR();
+  SIMPLE_ERROR(BF("What do we do with entry"));
+#else
+  if (this->entry() == single_dispatch_funcallable_entry_point) {
+//    printf("%s:%d Adding method to single dispatch method for function %s receiver-class %s\n", __FILE__, __LINE__, _rep_(method->singleDispatchMethodName()).c_str(), _rep_(receiverClass).c_str());
+//    printf("%s:%d      receiver_class->%s\n", __FILE__, __LINE__, _rep_(receiverClass).c_str());
+        // Update the methods using CAS
+    T_sp expected;
+    Cons_sp entry = Cons_O::create(method,_Nil<T_O>());
+    do {
+      expected = this->_Rack->low_level_rackRef(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS);
+      entry->rplacd(expected);
+    } while (!this->_Rack->low_level_rack_compare_exchange_weak(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,expected,entry));
+    return;
+  }
+#endif
+  SIMPLE_ERROR(BF("Implement me addSingleDispatchMethod"));
+}
+
+
 CL_DEFUN T_mv clos__getFuncallableInstanceFunction(T_sp obj) {
   if (FuncallableInstance_sp iobj = obj.asOrNull<FuncallableInstance_O>()) {
-    return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry.load()));
+    return Values(_lisp->_true(),Pointer_O::create((void*)iobj->entry()));
   } else return Values(_Nil<T_O>(),_Nil<T_O>());
 };
 
@@ -516,7 +679,7 @@ CL_DEFUN T_mv clos__interpret_dtree_program(SimpleVector_sp program, T_sp generi
         DTIDO(dump_Vaslist_ptr(monitor_file("dtree-interp"),&*args));
         Instance_sp instance((gc::Tagged)args->next_arg().raw_());
         Cons_sp cell = gc::As_unsafe<Cons_sp>(location);
-        T_sp value = oCar(cell);
+        T_sp value = CONS_CAR(cell);
         if (value.unboundp())
           return core::eval::funcall(cl::_sym_slot_unbound,
                                      lisp_instance_class(instance),

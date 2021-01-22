@@ -16,12 +16,12 @@ class LldbInterface(Interface):
         tptr = self._process.ReadUnsignedFromMemory(address,len,err)
         return tptr
     
-global_Debugger = None
-global_Process = None
-global_DataTypes = {}
-global_Kinds = {}
-global_Structs = {}
-global_HeaderStruct = None
+global_debugger = None
+global_process = None
+global_dataTypes = {}
+global_kinds = {}
+global_structs = {}
+global_headerStruct = None
 
 class StructType:
     def __init__(self,name,sizeof,fields):
@@ -136,14 +136,14 @@ class ConsPtr(TPtr):
     def consp(self):
         return True
     def car(self):
-        global global_Process
+        global global_process
         err = lldb.SBError()
-        value = global_Process.ReadUnsignedFromMemory(self._address,8,err)
+        value = global_process.ReadUnsignedFromMemory(self._address,8,err)
         return value
     def cdr(self):
-        global global_Process
+        global global_process
         err = lldb.SBError()
-        value = global_Process.ReadUnsignedFromMemory(self._address+8,8,err)
+        value = global_process.ReadUnsignedFromMemory(self._address+8,8,err)
         return value
     def __repr__(self):
         car = object(self.car())
@@ -155,17 +155,17 @@ class ConsPtr(TPtr):
         
 class GeneralPtr(TPtr):
     def __init__(self,address):
-        global global_Process
+        global global_process
         if (generalp(address)):
             address = untag_general(address)
         verify_not_tagged(address)
         self._address = address
-        self._header_ptr = address - global_HeaderStruct._sizeof
+        self._header_ptr = address - global_headerStruct._sizeof
         err = lldb.SBError()
-        header = global_Process.ReadUnsignedFromMemory(self._header_ptr,8,err)
+        header = global_process.ReadUnsignedFromMemory(self._header_ptr,8,err)
         if (err.Success()):
             self._stamp = header>>4
-            self._class = global_Kinds[self._stamp]
+            self._class = global_kinds[self._stamp]
             self._className = self._class._name
     def generalp(self):
         return True
@@ -179,50 +179,50 @@ def Init_test(msg):
     print("Init_test -> %s" % msg)
 
 def Init_struct(name,sizeof,fields):
-    global global_Structs
-    global_Structs[name] = StructType(name,sizeof,fields)
+    global global_structs
+    global_structs[name] = StructType(name,sizeof,fields)
     
 def Init_data_type(data_type,name,sizeof):
-    global global_DataTypes
-    global_DataTypes[data_type] = DataType(data_type,name,sizeof)
+    global global_dataTypes
+    global_dataTypes[data_type] = DataType(data_type,name,sizeof)
 
 def Init_class_kind(stamp, name, size):
-    global global_Kinds
+    global global_kinds
     # print("Init__class_kind stamp = %d\n" % stamp)
-    global_Kinds[stamp] = ClassKind(stamp,name,size)
+    global_kinds[stamp] = ClassKind(stamp,name,size)
 
 def Init_templated_kind(stamp, name, size):
     # print("Init__templated_kind stamp = %d\n" % stamp)
-    global_Kinds[stamp] = TemplatedKind(stamp,name,size)
+    global_kinds[stamp] = TemplatedKind(stamp,name,size)
 
 def Init_container_kind(stamp, name, size):
     # print("Init__container_kind stamp = %d\n" % stamp)
-    global_Kinds[stamp] = ContainerKind(stamp,name,size)
+    global_kinds[stamp] = ContainerKind(stamp,name,size)
 
 
 def Init_bitunit_container_kind(stamp, name, size, bits_per_bitunit):
     # print("Init__bitunit_container_kind stamp = %d\n" % stamp)
-    global_Kinds[stamp] = BitunitContainerKind(stamp,name,size,bits_per_bitunit)
+    global_kinds[stamp] = BitunitContainerKind(stamp,name,size,bits_per_bitunit)
     
 def Init__fixed_field(stamp,index,data_type,field_name,field_offset):
     # print("Init__fixed_field stamp = %d\n" % stamp)
-    classKind = global_Kinds[stamp]
+    classKind = global_kinds[stamp]
     field = FixedField(index,data_type,field_name,field_offset)
     classKind._fields[index] = field
 
 def Init__variable_array0(stamp,name,offset):
     # print("Init__variable_array0 stamp = %d\n" % stamp)
-    classKind = global_Kinds[stamp]
+    classKind = global_kinds[stamp]
     classKind._variable_array0 = VariableArray0(name,offset)
 
 def Init__variable_capacity(stamp,element_size,end_offset,capacity_offset):
     # print("Init__variable_capacity stamp = %d\n" % stamp)
-    classKind = global_Kinds[stamp]
+    classKind = global_kinds[stamp]
     classKind._variable_capacity = VariableCapacity(element_size,end_offset,capacity_offset)
 
 def Init__variable_field(stamp,index,data_type,field_name,field_offset):
     # print("Init__variable_field stamp=%d\n" % stamp)
-    classKind = global_Kinds[stamp]
+    classKind = global_kinds[stamp]
     field = VariableField(index,data_type,field_name,field_offset)
     classKind._variable_fields[index] = field
 
@@ -297,12 +297,12 @@ def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
 def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False):
     if (generalp(obj)):
         base = untag_general(obj)
-        header_ptr = base - global_HeaderStruct._sizeof;
+        header_ptr = base - global_headerStruct._sizeof;
         header = debugger.read_memory(header_ptr,8)
         if (err.Success()):
             stamp = header>>4
             if (not toplevel and verbose): debugger.print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
-            class_ = global_Kinds[stamp]
+            class_ = global_kinds[stamp]
             name = class_._name
             if (name=="core::SimpleBaseString_O"):
                 if (not toplevel and verbose): debugger.print("class_ = %s" % class_.__dict__)
@@ -315,12 +315,12 @@ def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False
 def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
     if (generalp(tptr)):
         base = untag_general
-        header_ptr = base - global_HeaderStruct._sizeof
+        header_ptr = base - global_headerStruct._sizeof
         header = debugger.read_memory(header_ptr,8)
         if (err.Success()):
             stamp = header>>4
             if (verbose): debugger.print("header@%x stamp = %d" % (header_ptr,stamp))
-            class_ = global_Kinds[stamp]
+            class_ = global_kinds[stamp]
             name = class_._name
             printed = print_shallow_object_type(debugger,verbose,0,tptr,toplevel)
             if (printed): return
@@ -366,18 +366,18 @@ def inspect(debugger,command,result,internal_dict):
 
 
 def do_lldb_init_module(debugger,prefix):
-    global global_HeaderStruct
-    global global_Debugger
-    global global_Process
-    global_Process = debugger.GetSelectedTarget().GetProcess()
-    global_Debugger = debugger
+    global global_headerStruct
+    global global_debugger
+    global global_process
+    global_process = debugger.GetSelectedTarget().GetProcess()
+    global_debugger = debugger
     debugger.print("In clasp_inspect")
     filename = "/tmp/clasp-layout.py"
     with open(filename, "rb") as source_file:
         code = compile(source_file.read(), filename, "exec")
     exec(code)
-    global_HeaderStruct = global_Structs["gctools::Header_s"]
-    if (global_HeaderStruct==None):
+    global_headerStruct = global_structs["gctools::Header_s"]
+    if (global_headerStruct==None):
         raise "Could not find gctools::Header_s struct"
     prefix = "%s.clasp_inspect" % prefix
     debugger.HandleCommand('command script add -f %s.inspect il' % prefix)

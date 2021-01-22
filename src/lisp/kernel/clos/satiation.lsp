@@ -402,6 +402,7 @@ a list (EQL object) - just like DEFMETHOD."
   (let ((generic-function (fdefinition generic-function-name)))
     (multiple-value-bind (call-history all-methods)
         (apply #'compile-time-call-history generic-function lists-of-specializer-names)
+      (declare (ignore all-methods))
       `(let* ((gf (fdefinition ',generic-function-name)))
          (append-generic-function-call-history
           gf ,(call-history-producer call-history (gf-arg-info generic-function)))

@@ -32,30 +32,36 @@ PREFIX = '/opt/clasp/'
 #INCLUDES = "/opt/boost_1_62_0/include"
 #LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
 
-CPPFLAGS = [ "-isystem", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1",  "-Wno-nullability-completeness", "-Wno-nonnull"]
-INCLUDES = [  "/opt/llvm-project-tot/include", "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1" ]
+# This turns on build with address sanitizer
+# ADDRESS_SANITIZER = True
 
-# default
-CLASP_BUILD_MODE = "faso"
-# default
-USE_COMPILE_FILE_PARALLEL = True
+# Set if on macOS libffi is required.   On macOS we can build with brew installed llvm
+# but brew installed llvm has libffi as a dependency and doesn't report that when you invoke llvm-config --libs!!!
+# This is a bug in llvm-config and has to be fixed upstream.
+# Default = True
+# REQUIRE_LIBFFI = True
 
-BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE = True
 
-DEBUG_OPTIONS = [
-#                  "SOURCE_DEBUG",
-#                  "CST",
-                  "DEBUG_JIT_LOG_SYMBOLS",
-                  "DEBUG_SLOW",
-                  "DEBUG_ASSERT_TYPE_CAST",
-                  "DEBUG_RELEASE",
-    "DEBUG_CCLASP_LISP",
-    "DEBUG_BCLASP_LISP",
-    "DEBUG_MONITOR",
-                  "USE_HUMAN_READABLE_BITCODE",
-#    "SOURCE_DEBUG",
+# CLASP_BUILD_MODE (which replaced LTO_OPTION) can be "bitcode" or "object" (default)
+# This controls if object files are generated and linked (fast build time)
+# or bitcode is generated and lto linked (slow build time).
+#
+# CLASP_BUILD_MODE = "faso"
+
+# Turn on debug options that slow down clasp while checking for various things.
+# info on the various options is in wscript
+DEBUG_OPTIONS = [ "DEBUG_RELEASE",
+                  "DEBUG_BCLASP_LISP",
+                  "DEBUG_CCLASP_LISP",
+                  # other useful options for debugging
+#                  "DEBUG_SLOW",
+#                  "DEBUG_VERIFY_MODULES"
+#                  "DEBUG_JIT_LOG_SYMBOLS",
+#                  "DEBUG_ASSERT_TYPE_CAST",
+                  # options specific to MPS                  
 #                  "DEBUG_MPS_SIZE",
 #                  "CONFIG_VAR_COOL",
+#                  "DEBUG_ALLOC_ALIGNMENT",
 #                  "DEBUG_GUARD",
 #                  "DEBUG_GUARD_VALIDATE",
 #                  "DEBUG_GUARD_EXHAUSTIVE_VALIDATE",

@@ -605,12 +605,11 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
-  printf("%s:%d This should never be reached\n", __FILE__, __LINE__ );
-  abort();
+  UNREACHABLE();
 };
 
 CL_DOCSTRING("functionWrongTypeArgument");
-CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
@@ -635,12 +634,13 @@ CL_DEFUN void core__function_wrong_type_argument(Symbol_sp function, T_sp value,
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING("wrongTypeArgument");
-CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
@@ -665,12 +665,13 @@ CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Sy
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
 CL_DECLARE();
 CL_DOCSTRING("wrongTypeNthArg");
-CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
+[[noreturn]] CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
@@ -696,6 +697,7 @@ CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Sym
                   kw::_sym_expected_type, type,
                   kw::_sym_datum, value);
   }
+  UNREACHABLE();
 };
 
 CL_LAMBDA(source-file lineno function narg value type);
@@ -711,8 +713,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
         "In an anonymous function, "
         "the ~:R index into the object~% ~A~%"
         "takes a value ~D out of the range ~A.";
-    T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
-    T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
+    T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,
@@ -731,8 +732,7 @@ CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp 
         "In function ~A, "
         "the ~:R index into the object~% ~A~%"
         "takes a value ~D out of the range ~A.";
-    T_sp limit = Integer_O::create((gc::Fixnum)(nonincl_limit - 1));
-    T_sp type = Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), limit);
+    T_sp type = Integer_O::makeIntegerType(0, (gc::Fixnum)(nonincl_limit - 1));
     const char *msg = (which < 0) ? message1 : message2;
     SimpleBaseString_sp message = SimpleBaseString_O::make(msg);
     eval::funcall(_sym_signalSimpleError,

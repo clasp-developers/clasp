@@ -183,6 +183,9 @@ class Lisp_O {
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
+    std::atomic<T_sp> _ObjectFiles;
+    FunctionDescription_sp _UnboundSymbolFunctionFunctionDescription;
+    FunctionDescription_sp _UnboundSetfSymbolFunctionFunctionDescription;
     T_sp _TerminalIO;
     //! Threads
 #ifdef CLASP_THREADS
@@ -254,11 +257,10 @@ class Lisp_O {
     Package_sp _KeywordPackage;
     Package_sp _CommonLispPackage;
     HashTableEq_sp _SpecialForms;
-    /*! Store a table of generic functions - should this be a HashTable?  What about (setf XXX) generic functions? Aug2013 */
-    HashTableEqual_sp _SingleDispatchGenericFunctionHashTableEqual;
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _SingleDispatchGenericFunctionHashTableEqualMutex;
-#endif
+    /*! Store a list of all of the _SingleDispatchGenericFunction names
+     *  We will use this once the compiler is up and running to compile their discriminating functions.
+     */
+    std::atomic<T_sp> _SingleDispatchGenericFunctions;
 
 #ifdef DEBUG_MONITOR_SUPPORT
     mutable mp::SharedMutex _MonitorMutex;
@@ -317,7 +319,6 @@ public:
 
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-  static const int SingleDispatchMethodCacheSize;
 
 public:
   void initialize();
@@ -504,8 +505,6 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-  Cache_sp singleDispatchMethodCachePtr() const { return my_thread->_SingleDispatchMethodCachePtr; };
-public:
   /*! Setup makePackage and exportSymbol callbacks */
   void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
 
@@ -680,16 +679,6 @@ public:
 public:
   bool isInteractive() { return this->_Interactive; };
   void setInteractive(bool b) { this->_Interactive = b; };
-
-  /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionHashTableEqual by name
-	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
-	 found otherwise return nil */
-  static SingleDispatchGenericFunctionClosure_sp find_single_dispatch_generic_function(T_sp gfName, bool errorp = true);
-  /*! Associate a generic function with a symbol by name */
-  static SingleDispatchGenericFunctionClosure_sp setf_find_single_dispatch_generic_function(T_sp gfName, SingleDispatchGenericFunctionClosure_sp gf);
-  /*! Clear all generic functions */
-  static void forget_all_single_dispatch_generic_functions();
-  HashTableEqual_sp singleDispatchGenericFunctionHashTableEqual() const { return this->_Roots._SingleDispatchGenericFunctionHashTableEqual; };
 
 private:
   static void setupSpecialSymbols();
@@ -951,7 +940,7 @@ public:
 
 namespace core {
 
-  void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
+  T_sp cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments);
   T_mv cl__macroexpand_1(T_sp form, T_sp env);
   T_mv cl__macroexpand(T_sp form, T_sp env);
 

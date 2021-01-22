@@ -30,39 +30,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
 
-namespace core {
-
-  FORWARD(SingleDispatchMethodFunction);  
-  class SingleDispatchMethodFunction_O : public Closure_O {
-    LISP_CLASS(core,CorePkg,SingleDispatchMethodFunction_O,"SingleDispatchMethodFunction",Closure_O);
-  public:
-    const char *describe() const { return "SingleDispatchMethodFunction"; };
-  public:
-    Function_sp _body;
-  public:
-    core::T_sp lambda_list() const { return _Nil<T_O>(); };
-  SingleDispatchMethodFunction_O(FunctionDescription* fdesc, Function_sp body) : Base(entry_point,fdesc), _body(body) {};
-    static LCC_RETURN LISP_CALLING_CONVENTION();
-  };
-
-};
-
-namespace core {
-
-
-  /*! A CxxMethodFunction_O is invoked with two arguments (args next-emfun)
-      It will invoke the method body using the args and ignore the next-emfun) */
-    
-  class CxxMethodFunction_O : public SingleDispatchMethodFunction_O {
-    LISP_CLASS(core,CorePkg,CxxMethodFunction_O,"CxxMethodFunction",SingleDispatchMethodFunction_O);
-  public:
-    const char *describe() const { return "CxxMethodFunction"; };
-  public:
-  CxxMethodFunction_O(FunctionDescription* fdesc, Function_sp body) : Base(fdesc,body) {};
-  };
-};
-
-
 
 template <>
 struct gctools::GCInfo<core::SingleDispatchMethod_O> {
@@ -77,13 +44,9 @@ class SingleDispatchMethod_O : public General_O {
   LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",General_O);
   //    DECLARE_ARCHIVE();
 public:
-  friend class SingleDispatchMethodPrimitive_O;
   friend class SingleDispatchGeneralFunction_O;
-  friend class Lambda_emf;
-  friend class Lambda_method_function;
-
 public: // Simple default ctor/dtor
-  SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _argument_handler(llh), _declares(declares), _docstring(docstring), _body(gc::As<SingleDispatchMethodFunction_sp>(body)) {};
+ SingleDispatchMethod_O(T_sp name, Instance_sp receiverClass, LambdaListHandler_sp llh, List_sp declares, T_sp docstring, Function_sp body) : _name(name), _receiver_class(receiverClass), _argument_handler(llh), _declares(declares), _docstring(docstring), _function(body) {};
  public:
            /*! Store the generic function name */
   T_sp _name;
@@ -96,7 +59,7 @@ public: // Simple default ctor/dtor
   /*! Store the docstring */
   T_sp _docstring;
   /*! Store the body of the method */
-  SingleDispatchMethodFunction_sp       _body;
+  Function_sp       _function;
 public: // creation function
   // The creates above are depreciated
   static SingleDispatchMethod_sp create(T_sp name,
@@ -135,7 +98,7 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-void core__ensure_single_dispatch_method(SingleDispatchGenericFunctionClosure_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
+void core__ensure_single_dispatch_method(FuncallableInstance_sp gfunction, T_sp gfname, Instance_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, core::T_sp docstring, Function_sp body);
 
 
 };

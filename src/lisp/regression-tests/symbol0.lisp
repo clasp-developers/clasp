@@ -21,7 +21,7 @@
 
 (test-expect-error makunbound-1
                    (let ((foo 23))
-                     (makunbound 23))
+                     (makunbound foo))
                    :type type-error)
                    
 (test-expect-error gensym-2
@@ -77,6 +77,7 @@
 (test 978-symbols-common-lisp-exported
       (let ((sum 0))
         (do-external-symbols (sym (find-package :cl))
+          (declare (ignore sym))
           (incf sum))
         (= 978 sum)))
 
