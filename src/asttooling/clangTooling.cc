@@ -542,7 +542,7 @@ core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
     clang::ast_matchers::BoundNodes::IDToNodeMap::const_iterator it;
     for (it = nodemap.begin(); it != nodemap.end(); it++) {
       const string &key = it->first;
-      const clang::ast_type_traits::DynTypedNode &dtn = it->second;
+      const clang::DynTypedNode &dtn = it->second;
       core::T_sp value;
       if (const clang::Decl *decl = dtn.get<clang::Decl>()) {
         value = mostDerivedDecl(decl);

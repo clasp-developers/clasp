@@ -36,7 +36,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-
+#if 0
 CL_LISPIFY_NAME(DebugLoc_get);
 CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
   GC_ALLOCATE(DebugLoc_O, oip);
@@ -44,6 +44,7 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, MDNode_sp scope) {
   oip->_DebugLoc = dl;
   return oip;
 }
+#endif
 
 CL_LISPIFY_NAME(DebugLoc_make);
 CL_DEFUN DebugLoc_sp DebugLoc_O::make(const llvm::DebugLoc& dl) {

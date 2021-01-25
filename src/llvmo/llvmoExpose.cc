@@ -2453,7 +2453,7 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int 
                                                                             DINode_sp scope) {
   this->_CurrentDebugLocationSet = true;
   llvm::MDNode *mdnode = scope->operator llvm::MDNode *();
-  llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);
+  llvm::DILocation* dl = llvm::DILocation::get(mdnode->getContext(),line, col, mdnode);
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
 }
 
@@ -3879,7 +3879,22 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {
     DEBUG_OBJECT_FILES(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
   }
-  
+
+  llvm::Error  notifyFailed(llvm::orc::MaterializationResponsibility& MR) {
+    DEBUG_OBJECT_FILES(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
+    return Error::success();
+  }
+
+  llvm::Error notifyRemovingResources(ResourceKey K) {
+    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+    return Error::success();
+  }
+
+  void notifyTransferringResources(ResourceKey DstKey, ResourceKey SrcKey) {
+    printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+
+
 #ifdef _TARGET_OS_DARWIN    
 #define TEXT_NAME "__text"
 #define STACKMAPS_NAME "__llvm_stackmaps"
@@ -4312,10 +4327,11 @@ CL_DEFUN void llvm_sys__jitFinalizeRunCxxFunction(ClaspJIT_sp jit, JITDylib_sp d
 namespace llvmo {
 
 
-void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
+#if 0
+/void handleObjectEmitted(VModuleKey K, std::unique_ptr<MemoryBuffer> O) {
 //  printf("%s:%d:%s Received emitted object buffer obj@%p\n", __FILE__,__LINE__, __FUNCTION__, (void*)O->getBufferStart());
 }
-
+#endif
 
 
 
@@ -4339,7 +4355,7 @@ ClaspJIT_O::ClaspJIT_O() {
                      .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
 //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
                                                      auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
-                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                                                      ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                                                      ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                                                      return ObjLinkingLayer;
