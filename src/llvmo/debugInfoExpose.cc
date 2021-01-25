@@ -407,7 +407,7 @@ namespace llvmo {
 void save_object_file_info(ObjectFile_sp ofi)
 {
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-//  printf("%s:%d:%s register object file %s\n", __FILE__, __LINE__, __FUNCTION__, faso_filename);
+  DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, ofi->_FasoName.c_str()));
   ofi->_text_segment_start = my_thread->_text_segment_start;
   ofi->_text_segment_size = my_thread->_text_segment_size;
   ofi->_text_segment_SectionID = my_thread->_text_segment_SectionID;
@@ -427,15 +427,16 @@ Return NIL if none or (values offset-from-start object-file). The index-from-sta
 CL_LISPIFY_NAME(object_file_for_instruction_pointer);
 CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruction_pointer, bool verbose)
 {
+  printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__);
   core::T_sp cur = _lisp->_Roots._ObjectFiles.load();
   size_t count;
   char* ptr = (char*)instruction_pointer->ptr();
+  printf("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr, cur.raw_());
   if ((cur.nilp()) && verbose){
     core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)ptr);
   }
   while (cur.consp()) {
-    core::Cons_sp entry = gc::As_unsafe<core::Cons_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
-    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(entry));
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
     if (ptr>=(char*)ofi->_text_segment_start&&ptr<((char*)ofi->_text_segment_start+ofi->_text_segment_size)) {
       // Here is the info for the SectionedAddress
       uintptr_t sectionID = ofi->_text_segment_SectionID;
@@ -443,7 +444,8 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruc
       core::T_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
       // now the object file
       llvm::StringRef sbuffer((const char*)ofi->_Start, ofi->_Size);
-      llvm::StringRef name("object-file-buffer");
+      std::string uniqueName = uniqueMemoryBufferName("object-file-buffer",(void*)ofi->_Start,ofi->_Size);
+      llvm::StringRef name(uniqueName);
       std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
       llvm::MemoryBufferRef mbuf_ref(*mbuf);
       auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);
@@ -493,7 +495,9 @@ CL_LAMBDA(object-file);
 CL_LISPIFY_NAME(createDwarfContext);
 CL_DEFUN DWARFContext_sp DWARFContext_O::createDwarfContext(ObjectFile_sp ofi) {
   llvm::StringRef sbuffer((const char*)ofi->_Start, ofi->_Size);
-  llvm::StringRef name("object-file-buffer");
+  std::string uniqueName = uniqueMemoryBufferName("object-file-buffer",(void*)ofi->_Start,ofi->_Size);
+  llvm::StringRef name(uniqueName);
+  printf("%s:%d uniqueName = %s\n", __FILE__, __LINE__, uniqueName.c_str());
   std::unique_ptr<llvm::MemoryBuffer> mbuf = llvm::MemoryBuffer::getMemBuffer(sbuffer, name, false);
   llvm::MemoryBufferRef mbuf_ref(*mbuf);
   auto eom = llvm::object::ObjectFile::createObjectFile(mbuf_ref);

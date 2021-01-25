@@ -465,7 +465,7 @@ This is to ensure that the RUN-ALL functions are evaluated in the correct order.
   (progn
     (format t "Linking ~s --> ~s~%" lisp-files out-file)
     (format t "About to do link of ~s to ~s~%" lisp-files out-file))
-  (core:link-faso-files out-file lisp-files)
+  b(core:link-faso-files out-file lisp-files)
   (truename out-file))
 
 (defun build-fasl (out-file &key lisp-files init-name)

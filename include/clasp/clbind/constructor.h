@@ -168,42 +168,6 @@ namespace clbind {
 
 template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O;
 
-template <typename Pols, typename Pointer, typename T ,typename... ARGS >
-class VariadicConstructorFunction_O
-< Pols, Pointer, T, constructor<ARGS...> >
-: public core::BuiltinClosure_O {
-public:
-  typedef VariadicConstructorFunction_O< Pols, Pointer, T, constructor<ARGS...> > MyType;
-  typedef core::BuiltinClosure_O TemplatedBase;
-  typedef arg_tuple<Pols,ARGS...> ArgTuple;
-public:
-  typedef Wrapper<T,Pointer>  WrapperType;
-  typedef gctools::smart_ptr<WrapperType> SmartWrapperType;
-  typedef gctools::smart_ptr<WrapperType>(*FuncType)(ARGS&&...);
-public:
-  virtual const char* describe() const { return "VariadicConstructorFunctor"; };
-  enum { NumParams = sizeof...(ARGS) };
-  VariadicConstructorFunction_O(core::FunctionDescription* fdesc) : core::BuiltinClosure_O(entry_point,fdesc) {};
-  virtual size_t templatedSizeof() const { return sizeof(*this);};
-  static inline LCC_RETURN LISP_CALLING_CONVENTION()
-  {
-    MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
-    INCREMENT_FUNCTION_CALL_COUNTER(closure);
-    INITIALIZE_VA_LIST();
-    INVOCATION_HISTORY_FRAME();
-    MAKE_STACK_FRAME(frame,closure->asSmartPtr().raw_(),1);
-    MAKE_SPECIAL_BINDINGS_HOLDER(numSpecialBindings, specialBindingsVLA,
-                                 lisp_lambda_list_handler_number_of_specials(closure->_lambdaListHandler));
-    core::StackFrameDynamicScopeManager scope(numSpecialBindings,specialBindingsVLA,frame);
-    lambdaListHandler_createBindings(closure->asSmartPtr(),closure->_lambdaListHandler,scope,LCC_PASS_ARGS_LLH);
-    core::MultipleValues& returnValues = core::lisp_multipleValues();
-    ArgTuple all_args(frame->data());
-    T* naked_ptr = construct_from_tuple<T,ArgTuple>(all_args);
-    gctools::smart_ptr<WrapperType> retval = WrapperType::make_wrapper(naked_ptr,reg::registered_class<T>::id);
-    return LCC_RETURN(retval.raw_(),1);
-  }
-};
-
 template <typename Policies, typename Pointer, typename ConstructType ,typename... ARGS >
 class VariadicConstructorFunction_O < Policies, Pointer, ConstructType, constructor<ARGS...> > : public core::BuiltinClosure_O {
 public:

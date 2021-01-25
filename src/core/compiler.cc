@@ -739,18 +739,18 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
   llvmo::JITDylib_sp jitDylib;
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
     if (!jitDylib || header->_ObjectFiles[ofi]._ObjectID==0) {
-      if (jitDylib) {
-        jit->runInitializers(*jitDylib->wrappedPtr());
-      }
-      jitDylib = jit->createAndRegisterJITDylib(filename->get_std_string());
+      jitDylib = jit->createAndRegisterJITDylib(filename);
     }
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
     llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(of_start,of_length,header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
     jit->addObjectFile(of,print.notnilp());
+    T_mv startupName = core__startup_function_name_and_linkage(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
+    String_sp str = gc::As<String_sp>(startupName);
+    DEBUG_OBJECT_FILES(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
+    jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string());
   }
-  jit->runInitializers(*jitDylib->wrappedPtr());
   return _lisp->_true();
 }
 
@@ -806,7 +806,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
-    write_bf_stream(BF("Object file %d  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+    write_bf_stream(BF("Object file[%d] ObjectID: %lu  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._ObjectID % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
   }
 }
     
@@ -873,7 +873,10 @@ CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp pref
   ss << id;
   Symbol_sp linkage_type;
 #if 1
-  linkage_type = llvmo::_sym_InternalLinkage;
+  // With LLJIT we will search for an internal symbol to startup
+  // linkage_type = llvmo::_sym_InternalLinkage;
+  // BUT!!!! We need a symbol to lookup to materialize the code - initializers don't do it yet.
+  linkage_type = llvmo::_sym_ExternalLinkage;
 #else
   if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp() && !(comp::_sym_STARforce_global_ctorsSTAR->symbolValue().notnilp())) {
     linkage_type = llvmo::_sym_ExternalLinkage;

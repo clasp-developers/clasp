@@ -128,7 +128,8 @@
                           (namestring file-name)
                           (namestring dir-name)
                           nil
-                          nil)))
+                          "difile-source" ; source
+                          )))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)
   (let ((path (gensym)))

@@ -123,8 +123,9 @@ mygetsectiondata(
 }
 
 SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, uintptr_t header, uintptr_t exec_header) {
-  printf("%s:%d:%s is_executable(%d) filename= %s  header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, filename, (void*)header, (void*)exec_header);
+//  printf("%s:%d:%s is_executable(%d) filename= %s  header = %p  exec_header = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, filename, (void*)header, (void*)exec_header);
   int baddigit = 0;
+  size_t lineno = 0;
   SymbolTable symbol_table;
   struct stat buf;
   if (stat(filename,&buf)!=0) {
@@ -151,15 +152,17 @@ SymbolTable load_macho_symbol_table(bool is_executable, const char* filename, ui
     while (!feof(fnm)) {
       int result = getline(&buf,&buf_len,fnm);
       if (result==-1) {
-        printf("%s:%d Error reading from %s errno->(%d/%s)\n", __FILE__, __LINE__, filename, errno, strerror(errno));
+        if (feof(fnm)) break;
+        printf("%s:%d Error reading from %s errno->(%d/%s) after %lu lines\n", __FILE__, __LINE__, filename, errno, strerror(errno), lineno);
       }
+      lineno++;
       if (feof(fnm)) break;
       if (!buf) {
         printf("%s:%d buf is 0x0 when reading output from %s\n", __FILE__, __LINE__, nm_cmd.str().c_str());
         break;
       }
       const char* cur = buf;
-      // printf("%s:%d:%s Read line: %s\n", __FILE__, __LINE__, __FUNCTION__, cur);
+      // printf("%s:%d:%s Read line: %s", __FILE__, __LINE__, __FUNCTION__, cur);
       // Read the address
       uintptr_t address = 0;
       uintptr_t digit;

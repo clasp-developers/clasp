@@ -25,167 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
-typedef bool _Bool;
+
 #ifndef SCRAPING // #endif at bottom
-#include <clasp/core/foundation.h>
-#include <type_traits>
-//#include <llvm/Support/system_error.h>
-#include <llvm/ExecutionEngine/GenericValue.h>
-//#include <llvm/ExecutionEngine/SectionMemoryManager.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/LinkAllPasses.h>
-#include <llvm/CodeGen/LinkAllCodegenComponents.h>
-#include <llvm/Bitcode/BitcodeReader.h>
-#include <llvm/Bitcode/BitcodeWriter.h>
-#include <llvm/Support/raw_ostream.h>
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/DebugInfoMetadata.h>
-#include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/Constants.h>
-#include <llvm/IR/GlobalVariable.h>
-#include <llvm/IR/Function.h>
-#include <llvm/IR/CallingConv.h>
-#include <llvm/IR/BasicBlock.h>
-#include <llvm/IR/Instructions.h>
-#include <llvm/Transforms/Instrumentation.h>
-#include <llvm/Transforms/IPO.h>
-#include <llvm/IR/InlineAsm.h>
-#include <llvm/CodeGen/TargetPassConfig.h>
-#include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/TargetRegistry.h>
-#include <llvm/Support/MathExtras.h>
-#include <llvm/Pass.h>
-#include <llvm/IR/LegacyPassManager.h>
-#include <llvm/ADT/SmallVector.h>
-#include <llvm/IR/Verifier.h>
-#include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
-//#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
-#include <clang/Frontend/ASTUnit.h>
-#include <clang/AST/Comment.h>
-#include <clang/AST/DeclTemplate.h>
-#include <clang/AST/DeclFriend.h>
-#include <clang/AST/DeclOpenMP.h>
-#include <clang/AST/Stmt.h>
-#include <clang/AST/StmtCXX.h>
-#include <clang/AST/ExprObjC.h>
-#include <clang/AST/StmtObjC.h>
-#include <clang/AST/StmtOpenMP.h>
+#include <clasp/gctools/exposeCommon.h>
 
-#include <clang/Basic/Version.h>
-#include <clang/Tooling/JSONCompilationDatabase.h>
-#include <clang/AST/RecursiveASTVisitor.h>
-#include <clang/AST/Comment.h>
-#include <clang/Tooling/Tooling.h>
-#include <clang/Tooling/Refactoring.h>
-#include <clang/Frontend/CompilerInstance.h>
-#include <clang/Frontend/FrontendActions.h>
-#include <clang/AST/ASTConsumer.h>
-#include <clang/AST/ASTContext.h>
-#include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Lex/Lexer.h>
-#include <clang/Lex/Preprocessor.h>
-#include <clang/ASTMatchers/Dynamic/VariantValue.h>
-#include <clang/ASTMatchers/ASTMatchFinder.h>
-
-#include <clasp/core/symbolTable.h>
-
-#include <clasp/gctools/gctoolsPackage.h>
-#include <clasp/core/metaClass.h>
-#include <clasp/gctools/gcStack.h>
-#include <clasp/gctools/containers.h>
-#include <clasp/core/weakPointer.h>
-#include <clasp/core/random.h>
-#include <clasp/core/mpPackage.h>
-#include <clasp/core/unixfsys.h>
-#include <clasp/core/weakHashTable.h>
-#include <clasp/core/smallMultimap.h>
-//#include "core/symbolVector.h"
-#include <clasp/core/designators.h>
-#include <clasp/core/hashTable.h>
-#include <clasp/core/hashTableEq.h>
-#include <clasp/core/hashTableEql.h>
-#include <clasp/core/hashTableEqual.h>
-#include <clasp/core/hashTableEqualp.h>
-#include <clasp/core/userData.h>
-#include <clasp/core/loadTimeValues.h>
-#include <clasp/core/specialForm.h>
-#include <clasp/core/instance.h>
-#include <clasp/core/funcallableInstance.h>
-#include <clasp/core/singleDispatchGenericFunction.h>
-#include <clasp/core/arguments.h>
-#include <clasp/core/serialize.h>
-#include <clasp/core/bootStrapCoreSymbolMap.h>
-#include <clasp/core/corePackage.h>
-#include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/package.h>
-#include <clasp/core/character.h>
-//#include <clasp/core/reader.h>
-//#include <clasp/core/regex.h>
-#include <clasp/core/array.h>
-#include <clasp/core/readtable.h>
-#include <clasp/core/nativeVector.h>
-#include <clasp/core/lispStream.h>
-#include <clasp/core/primitives.h>
-#include <clasp/core/singleDispatchMethod.h>
-#include <clasp/core/fileSystem.h>
-#include <clasp/core/null.h>
-#include <clasp/core/multiStringBuffer.h>
-#include <clasp/core/posixTime.h>
-#include <clasp/core/pointer.h>
-#include <clasp/core/debugger.h> // Frame_O
-#include <clasp/core/smallMap.h>
-#include <clasp/core/pathname.h>
-#include <clasp/core/sharpEqualWrapper.h>
-#include <clasp/core/weakHashTable.h>
-#include <clasp/core/intArray.h>
-#include <clasp/core/fli.h>
-#include <clasp/gctools/gc_boot.h>
-
-#include <clasp/mpip/claspMpi.h>
-
-#include <clasp/clbind/clbind.h>
-
-#include <clasp/llvmo/intrinsics.h>
-#include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/llvmo/imageSaveLoad.h>
-#include <clasp/llvmo/debugLoc.h>
-#include <clasp/llvmo/insertPoint.h>
-#include <clasp/llvmo/debugInfoExpose.h>
-
-#include <clasp/asttooling/astExpose.h>
-#include <clasp/asttooling/clangTooling.h>
-#include <clasp/asttooling/astVisitor.h>
-#include <clasp/asttooling/example.h>
-//#include <clasp/asttooling/Registry.h>
-//#include <clasp/asttooling/Diagnostics.h>
-//#include <clasp/asttooling/Marshallers.h>
-
-#ifdef BUILD_EXTENSION
-#define GC_INTERFACE_INCLUDES
-#include <project_headers.h>
-#undef GC_INTERFACE_INCLUDES
-#endif
-
-#define NAMESPACE_gctools
-#define NAMESPACE_core
-#include <clasp/gctools/gc_interface.h>
-#undef NAMESPACE_gctools
-#undef NAMESPACE_core
-
-/*! Template types with commas in them can't be passed
-to macros unless they are wrapped in this.
-eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
-*/
-#define SAFE_TYPE_MACRO(...) __VA_ARGS__
-
-#ifdef _TARGET_OS_DARWIN
-// The OS X offsetof macro is defined as __offsetof which is defined as __builtin_offsetof - take out one level of macro so that the MACRO_SAFE_TYPE hack works
-#undef offsetof
-#define offsetof(t,x) __builtin_offsetof(t,x)
-#endif
 
 namespace gctools {
 
@@ -208,37 +52,8 @@ Layout_code* get_stamp_layout_codes() {
 };
 };
 
-/* ----------------------------------------------------------------------
- *
- *  Expose functions
- *
- */
 
-#define BAD_HEADER(msg,hdr) \
-  printf("%s:%d Illegal header@%p in %s  header->header=%" PRIxPTR "  header->data[0]=%" PRIxPTR "  header->data[1]=%" PRIxPTR "\n", __FILE__, __LINE__, &hdr, msg, hdr.header._value, hdr.additional_data[0], hdr.additional_data[1]);
-
-template <typename RT, typename...ARGS>
-NOINLINE void expose_function(const std::string& pkg_sym,
-                              RT (*fp)(ARGS...),
-                              const std::string& lambdaList)
-{
-  std::string pkgName;
-  std::string symbolName;
-  core::colon_split(pkg_sym,pkgName,symbolName);
-//  printf("%s:%d  expose_function   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
-  core::wrap_function(pkgName,symbolName,fp,lambdaList);
-}
-
-template <typename RT, typename...ARGS>
-NOINLINE void expose_function_setf(const std::string& pkg_sym,
-                                   RT (*fp)(ARGS...),
-                                   const std::string& lambdaList)
-{
-  std::string pkgName;
-  std::string symbolName;
-  core::colon_split(pkg_sym,pkgName,symbolName);
-  core::wrap_function_setf(pkgName,symbolName,fp,lambdaList);
-}
+#if 0 /// Moved to exposeFunctions1.cc
 
 
 #ifndef SCRAPING
@@ -254,7 +69,14 @@ NOINLINE void expose_function_setf(const std::string& pkg_sym,
   #undef EXPOSE_FUNCTION_BINDINGS_HELPERS
 #endif
 
-void initialize_functions()
+extern "C" {
+
+#ifndef SCRAPING
+#include C_WRAPPERS
+#endif
+};
+
+void initialize_exposeFunctions1()
 {
 //  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
 #ifndef SCRAPING
@@ -263,6 +85,22 @@ void initialize_functions()
   #undef EXPOSE_FUNCTION_BINDINGS
 #endif
 };
+
+
+#endif // Moved to exposeFunctions1.cc
+
+extern void initialize_exposeFunctions1();
+extern void initialize_exposeFunctions2();
+extern void initialize_exposeFunctions3();
+
+void initialize_functions()
+{
+//  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
+  initialize_exposeFunctions1();
+  initialize_exposeFunctions2();
+  initialize_exposeFunctions3();
+};
+
 
 
 extern "C" {
@@ -633,6 +471,15 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 #undef ALLOCATE_ALL_SYMBOLS
 };
 
+
+
+
+
+
+
+
+
+#if 0 // expose classes
 template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
   ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
@@ -850,15 +697,22 @@ void initialize_enums()
 };
 
 
+
+#endif // #if 0  expose classes
+
+
+extern void initialize_exposeClasses1();
+extern void initialize_exposeClasses2();
+extern void initialize_exposeClasses3();
+
 void initialize_classes_and_methods()
 {
-#ifndef SCRAPING
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
- #define EXPOSE_CLASSES_AND_METHODS
- #include INIT_CLASSES_INC_H
- #undef EXPOSE_CLASSES_AND_METHODS
-#endif
+  initialize_exposeClasses1();
+  initialize_exposeClasses2();
+  initialize_exposeClasses3();
 }
+
+
 
 #if 0
 #define MPS_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, x);
@@ -866,15 +720,6 @@ void initialize_classes_and_methods()
 #define MPS_LOG(x)
 #endif
 
-void initialize_clasp_Kinds()
-{
-#ifndef SCRAPING
-// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
- #define SET_CLASS_KINDS
- #include INIT_CLASSES_INC_H
- #undef SET_CLASS_KINDS
-#endif
-}
 
 void dumpBoehmLayoutTables(FILE* fout) {
 #define Init_class_kind(_class_) \
@@ -959,7 +804,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::VaList_dummy_O);
      Init_class_kind(core::Unused_dummy_O);
      Init_class_kind(core::ClassHolder_O);
-     Init_class_kind(core::FdSet_O);
      Init_class_kind(core::SymbolToEnumConverter_O);
      Init_class_kind(llvmo::Attribute_O);
      Init_class_kind(core::LambdaListHandler_O);
@@ -1114,8 +958,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(llvmo::TargetSubtargetInfo_O);
      Init_class_kind(llvmo::Type_O);
      Init_class_kind(llvmo::FunctionType_O);
-     Init_class_kind(llvmo::CompositeType_O);
-     Init_class_kind(llvmo::SequentialType_O);
      Init_class_kind(llvmo::PointerType_O);
      Init_class_kind(llvmo::ArrayType_O);
      Init_class_kind(llvmo::VectorType_O);
@@ -1291,6 +1133,20 @@ void dumpBoehmLayoutTables(FILE* fout) {
 };
 
 
+void initialize_enums()
+{
+// include INIT_CLASSES_INC_H despite USE_PRECISE_GC
+#ifndef SCRAPING
+ #define ALL_ENUMS
+ #include <generated/enum_inc.h>
+ #undef ALL_ENUMS
+#endif
+};
+
+
+
+extern void initialize_allocate_metaclasses(core::BootStrapCoreSymbolMap& bootStrapCoreSymbolMap);
+
 void initialize_clasp()
 {
   // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
@@ -1305,102 +1161,12 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
-  ShiftedStamp TheClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClass_stamp));
-  ShiftedStamp TheBuiltInClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheBuiltInClass_stamp));
-  ShiftedStamp TheStandardClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheStandardClass_stamp));
-  ShiftedStamp TheStructureClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheStructureClass_stamp));
-  ShiftedStamp TheDerivableCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheDerivableCxxClass_stamp));
-  ShiftedStamp TheClbindCxxClass_stamp = gctools::NextStampWtag(gctools::Header_s::rack_wtag);
-  ASSERT(Header_s::StampWtagMtag::is_rack_shifted_stamp(TheClbindCxxClass_stamp));
-//  global_TheClassRep_stamp = gctools::GCStamp<clbind::ClassRep_O>::Stamp;
-  _lisp->_Roots._TheClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheClass_stamp,cl::_sym_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheBuiltInClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheBuiltInClass_stamp,cl::_sym_built_in_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStandardClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStandardClass_stamp,cl::_sym_standard_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheStructureClass = allocate_one_metaclass<core::StandardClassCreator_O>(TheStructureClass_stamp,cl::_sym_structure_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheDerivableCxxClass = allocate_one_metaclass<core::DerivableCxxClassCreator_O>(TheDerivableCxxClass_stamp,core::_sym_derivable_cxx_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheClbindCxxClass = allocate_one_metaclass<core::ClassRepCreator_O>(TheClbindCxxClass_stamp,core::_sym_clbind_cxx_class,_Unbound<core::Instance_O>());
-  _lisp->_Roots._TheClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheBuiltInClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheStandardClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheStructureClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheDerivableCxxClass->_Class = _lisp->_Roots._TheStandardClass;
-  _lisp->_Roots._TheClbindCxxClass->_Class = _lisp->_Roots._TheStandardClass;
-  MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
-  #ifndef SCRAPING
-  // include despite USE_PRECISE_GC
-   #define ALLOCATE_ALL_CLASSES
-    #include INIT_CLASSES_INC_H
-   #undef ALLOCATE_ALL_CLASSES
-  #endif
-  core_T_O_var->setInstanceBaseClasses(_Nil<core::T_O>());
-  // ClassRep_O is initialized like other class objects - but we need to save it in a special system-wide variable
-//  _lisp->_Roots._TheClassRep = clbind_ClassRep_O_var;
+  // Initialize metaclasses
+  initialize_allocate_metaclasses(bootStrapCoreSymbolMap);
   
-  create_packages();
-  // have to do this before symbols are finalized so that keywords are all bound properly.
-  gc::As<core::Package_sp>(_lisp->findPackage("KEYWORD"))->setKeywordPackage(true);
-  
-  define_builtin_cxx_classes();
-
-  bootStrapCoreSymbolMap.finish_setup_of_symbols();
-
-  // Define base classes
-  #ifndef SCRAPING
-   // import despite USE_PRECISE_GC
-   #define SET_BASES_ALL_CLASSES
-    #include INIT_CLASSES_INC_H
-   #undef SET_BASES_ALL_CLASSES
-  #endif
-
-    // Define base classes
-  #ifndef SCRAPING
-   // import despite USE_PRECISE_GC
-   #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
-    #include INIT_CLASSES_INC_H
-   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
-  #endif
-
-  _lisp->_Roots._TheClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheBuiltInClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStandardClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheStructureClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheDerivableCxxClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheDerivableCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClbindCxxClass->stamp_set(TheStandardClass_stamp);
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DIRECT_SLOTS,_Nil<core::T_O>());
-  _lisp->_Roots._TheClbindCxxClass->instanceSet(core::Instance_O::REF_CLASS_DEFAULT_INITARGS,_Nil<core::T_O>());
-
-  _lisp->_Roots._TheBuiltInClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
-  _lisp->_Roots._TheStandardClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
-  _lisp->_Roots._TheStructureClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
-  _lisp->_Roots._TheDerivableCxxClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
-  _lisp->_Roots._TheClbindCxxClass->setInstanceBaseClasses(core::Cons_O::createList(_lisp->_Roots._TheClass));
-
-  reg::lisp_registerClassSymbol<core::Character_I>(cl::_sym_character);
-  reg::lisp_registerClassSymbol<core::Fixnum_I>(cl::_sym_fixnum);
-  reg::lisp_registerClassSymbol<core::SingleFloat_I>(cl::_sym_single_float);
-
   initialize_enums();
+
+  
 
 // Moved to lisp.cc
 //  initialize_functions();
@@ -1408,12 +1174,6 @@ void initialize_clasp()
 //  initialize_source_info();
 };
 
-extern "C" {
-
-#ifndef SCRAPING
-#include C_WRAPPERS
-#endif
-};
 #endif // #ifndef SCRAPING at top
 
 

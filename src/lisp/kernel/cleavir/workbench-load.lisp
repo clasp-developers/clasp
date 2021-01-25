@@ -1,7 +1,5 @@
 ;;; Set up everything to start cleavir
 
-;;; Do you want CST?
-(pushnew :cst *features*)
 (progn
   (load "sys:kernel;clasp-builder.lsp")
   (defun cleavir-system ()

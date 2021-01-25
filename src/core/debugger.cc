@@ -1324,7 +1324,7 @@ void low_level_backtrace(bool with_args) {
   printf("----Done\n");
 }
 
-CL_LAMBDA(&optional with_args);
+CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {

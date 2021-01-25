@@ -126,7 +126,7 @@
             make-function-metadata
             function-info
             make-function-info
-            irc-create-call
+            irc-create-call-wft
             irc-create-invoke
             irc-calculate-entry
             irc-calculate-real-args

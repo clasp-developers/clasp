@@ -85,7 +85,7 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-LLVM_VERSION = 1
+LLVM_VERSION = 12
 CLANG_SPECIFIC_VERSION = "11.0.0git"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
@@ -1524,10 +1524,10 @@ def build(bld):
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
     bld_task = bld.program(source = clasp_c_source_files,
+                           features='cxx cxxprogram c cprogram increase_weight',
                            includes = include_dirs,
                            target = [bld.iclasp_executable],
                            install_path = '${PREFIX}/bin')
-
     #make_run_dsymutil_task(bld, 'i', iclasp_lto_o)
 
     if (bld.stage_val <= -1):
@@ -2256,3 +2256,17 @@ def postprocess_all_c_tasks(self):
                      all_o_nodes,
                      cxx_all_bitcode_node)
     install('lib/clasp/', cxx_all_bitcode_node)
+
+
+@TaskGen.feature('increase_weight')
+@TaskGen.after('process_source')
+def increase_weight(self):
+    for task in self.tasks:
+        if (task.__str__().find("src/asttooling/astExpose")!=-1 ):
+            task.weight = 4
+            print("Increased weight of task: %s to %d" % (task, task.weight))
+        if (task.__str__().find("src/gctools/exposeFunctions")!=-1
+            or task.__str__().find("src/gctools/exposeClasses")!=-1
+            or task.__str__().find("src/gctools/gc_interface")!=-1 ):
+            task.weight = 3
+            print("Increased weight of task: %s to %d" % (task, task.weight))

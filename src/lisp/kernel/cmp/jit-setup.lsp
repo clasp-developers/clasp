@@ -604,9 +604,7 @@ The passed module is modified as a side-effect."
     (cond
       ((and (eq target-faso-file :faso) (null jit))
        (progn
-         (if (>= llvm-version-val 10)
-             (warn "By llvm-version 10 we should not need to use the code-model-large"))
-         'llvm-sys:code-model-large
+         'llvm-sys:code-model-small ;; If it crashes switch to llvm-sys:code-model-large
          ))
       ((eq target-faso-file :object)
        (progn
@@ -808,6 +806,7 @@ The passed module is modified as a side-effect."
                          (core:bformat t "Done dump module%N")
                          ))
                    (mp:get-lock *jit-lock*)
+                   #+(or)(llvm-sys:dump-module module)
                    (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context*)
                    (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
               (progn

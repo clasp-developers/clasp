@@ -82,26 +82,6 @@ namespace core {
     int sigset_sigaddset(SignalEnum sym);
   }; // Sigset class
 
-#if 0
-  FORWARD(FdSet);
-  class FdSet_O : public General_O {
-    CL_DOCSTRING(R"(Wraps the unix fdset data type used by select.)");
-    LISP_CLASS(core, CorePkg, FdSet_O, "FdSet", General_O);
-  public: // Simple default ctor/dtor
-    FdSet_O();
-  public: // instance variables here
-    fd_set _fd_set;
-  public: // Functions here
-    
-    void fd_clr_(int fd);
-    void fd_set_(int fd);
-    void fd_copy_(FdSet_sp copy);
-    bool fd_isset_(int fd);
-    void fd_zero_();
-    
-  }; // fdset class
-#endif
-  
 }; // core namespace
 
 

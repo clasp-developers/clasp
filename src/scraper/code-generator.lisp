@@ -1,11 +1,22 @@
 (in-package :cscrape)
 
+(define-constant *batch-classes* 3)
+(defparameter *function-partitions* 3)
+
 (define-constant +root-dummy-class+ "::_RootDummyClass" :test 'equal)
 
 (define-condition bad-c++-name (error)
   ((name :initarg :name :accessor name))
   (:report (lambda (condition stream)
              (format stream "Bad C++ function name: ~a" (name condition)))))
+
+
+(defun file-line (object)
+  ;;; Displaying the line number causes trivial changes to the code that move lines
+  ;;; to recompile a lot of code
+  (format nil "~a" (file% object))
+  #+(or) (format nil "~a:~a" (file% object) (line% object)))
+
 
 (defun validate-va-rest (lambda-list function-name)
   (unless (stringp lambda-list)
@@ -18,6 +29,25 @@
     (when (search "&rest" lambda-list)
       (error "Possible core:&va-rest consistency problem!!!!!~% A function-name ~s contains VaList_sp but the function takes a &rest argument"
              function-name))))
+
+(defun partition-list (list parts &key (last-part-longer nil))
+  ;; Partition LIST into PARTS parts.  They will all be the same
+  ;; length except the last one which will be shorter or, if
+  ;; LAST-PART-LONGER is true, longer.  Doesn't deal with the case
+  ;; where there are less than PARTS elements in LIST at all (it does
+  ;; something, but it may not be sensible).
+  (loop with size = (if last-part-longer
+                        (floor (length list) parts)
+                      (ceiling (length list) parts))
+        and tail = list
+        for part upfrom 1
+        while tail
+        collect (loop for pt on tail
+                      for i upfrom 0
+                      while (or (and last-part-longer (= part parts))
+                                (< i size))
+                      collect (first pt)
+                      finally (setf tail pt))))
 
 (defun group-expose-functions-by-namespace (functions)
   (declare (optimize (speed 3)))
@@ -62,7 +92,7 @@
       (format nil "(~a)" ll)
       ll))
 
-(defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
+(defun generate-expose-function-bindings (sout ns-grouped-expose-functions start-index)
   (declare (optimize (speed 3)))
   (flet ((expose-one (f ns index)
            (let ((name (format nil "expose_function_~d_helper" index)))
@@ -81,7 +111,7 @@
                         (function-name% f)
                         (maybe-wrap-lambda-list (lambda-list% f))))
                (expose-extern-defun
-                (format sout "  // ~a:~a~%" (file% f) (line% f))
+                (format sout "  // ~a~%" (file-line f))
                 (format sout "  /* expose-extern-defun */ expose_function(~a,~a,~s);~%"
                         (lisp-name% f)
                         (pointer% f)
@@ -90,7 +120,8 @@
                             ""))))
              (format sout "}~%")
              (cons name f))))
-    (let (helpers (index 0))
+    (let (helpers
+          (index start-index))
       (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS_HELPERS~%")
       (maphash (lambda (ns funcs-ht)
                  (maphash (lambda (name f)
@@ -107,7 +138,8 @@
              (sorted-helpers (stable-sort unsorted-helpers #'< :key (lambda (x) (priority% (cdr x))))))
         (dolist (helper sorted-helpers)
           (format sout "  ~a(); // ~a[~a]~%" (car helper) (lisp-name% (cdr helper)) (priority% (cdr helper)))))
-      (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%"))))
+      (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%")
+      index)))
 
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
@@ -179,12 +211,21 @@
                          (princ buffer sout))
                        tags-data-ht)))))
 
-(defun generate-code-for-init-functions (functions)
+(defun generate-code-for-init-functions (all-functions)
   (declare (optimize (speed 3)))
-  (with-output-to-string (sout)
-    (let ((ns-grouped (group-expose-functions-by-namespace functions)))
-      (generate-expose-function-signatures sout ns-grouped)
-      (generate-expose-function-bindings sout ns-grouped))))
+  (let ((partitions (partition-list all-functions *function-partitions*))
+        (index 0))
+    (with-output-to-string (sout)
+      (loop for functions in partitions
+            for batch-num from 1
+            do (progn
+                 (format sout "#ifdef EXPOSE_FUNCTION_BATCH~a~%" batch-num)
+                 (let ((ns-grouped (group-expose-functions-by-namespace functions)))
+                   (generate-expose-function-signatures sout ns-grouped)
+                   (format sout "// starting with index ~a~%" index)
+                   (setf index (generate-expose-function-bindings sout ns-grouped index))
+                   )
+                 (format sout "#endif // EXPOSE_FUNCTION_BATCH~a~%" batch-num))))))
 
 (defun mangle-and-wrap-name (name arg-types)
   "* Arguments
@@ -220,9 +261,9 @@ Convert colons to underscores"
             (format c-code "// Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
             (format c-code "// return-type -> ~s~%" return-type)
             (format c-code "// arg-types -> ~s~%" arg-types)
-            (format c-code "//  Found at ~a:~a-----------~%" (file% func) (line% func))
+            (format c-code "//  Found at ~a-----------~%" (file-line func))
             (format c-code-info "// Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
-            (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+            (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
             (format c-code "~a~%" one-func-code)
             (format cl-code ";;; Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
             (format cl-code-info ";;; Generating code for ~a::~a~%" (function-ptr-namespace function-ptr) (function-name% func))
@@ -244,7 +285,7 @@ Convert colons to underscores"
                                        return-type arg-types)))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
-      (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+      (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
       (format c-code "~a~%" one-func-code)
       (format cl-code ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format cl-code-info ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
@@ -265,7 +306,7 @@ Convert colons to underscores"
                                        return-type arg-types)))
       (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format c-code-info "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
-      (format c-code-info "//            Found at ~a:~a~%-----------~%" (file% func) (line% func))
+      (format c-code-info "//            Found at ~a~%-----------~%" (file-line func))
       (format c-code "~a~%" one-func-code)
       (format cl-code ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
       (format cl-code-info ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
@@ -479,6 +520,11 @@ Convert colons to underscores"
 ;;;         (format t "---> stamp in header~%")
              (logior (ash (stamp% class) +stamp-shift+) +header-wtag+)))))
 
+
+
+
+
+
 (defparameter *all-subclasses* nil)
 (defun generate-code-for-init-classes-and-methods (exposed-classes gc-managed-types)
   (declare (optimize (speed 0) (debug 3)))
@@ -607,29 +653,22 @@ Convert colons to underscores"
                       (tags:namespace% (class-tag% exposed-class))
                       (tags:name% (class-tag% exposed-class)))))
           (format sout "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
-        (progn
-          (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
-          (dolist (exposed-class sorted-classes)
-            (format sout "~a::~a::expose_to_clasp();~%"
-                    (tags:namespace% (class-tag% exposed-class))
-                    (tags:name% (class-tag% exposed-class))))
-          (format sout "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%"))
-        (progn
-          (format sout "#ifdef EXPOSE_CLASSES~%")
-          (dolist (exposed-class sorted-classes)
-            (when (string/= cur-package (package% exposed-class))
-              (when cur-package (format sout "#endif~%"))
-              (setf cur-package (package% exposed-class))
-              (format sout "#ifdef Use_~a~%" cur-package))
-            (format sout "DO_CLASS(~a,~a,~a,~a,~a,~a);~%"
-                    (tags:namespace% (class-tag% exposed-class))
-                    (subseq (class-key% exposed-class) (+ 2 (search "::" (class-key% exposed-class))))
-                    (package% exposed-class)
-                    (lisp-name% exposed-class)
-                    (base% exposed-class)
-                    (meta-class% exposed-class)))
-          (format sout "#endif~%")
-          (format sout "#endif // EXPOSE_CLASSES~%"))
+        #+(or)(progn
+                (format sout "#ifdef EXPOSE_CLASSES~%")
+                (dolist (exposed-class sorted-classes)
+                  (when (string/= cur-package (package% exposed-class))
+                    (when cur-package (format sout "#endif~%"))
+                    (setf cur-package (package% exposed-class))
+                    (format sout "#ifdef Use_~a~%" cur-package))
+                  (format sout "DO_CLASS(~a,~a,~a,~a,~a,~a);~%"
+                          (tags:namespace% (class-tag% exposed-class))
+                          (subseq (class-key% exposed-class) (+ 2 (search "::" (class-key% exposed-class))))
+                          (package% exposed-class)
+                          (lisp-name% exposed-class)
+                          (base% exposed-class)
+                          (meta-class% exposed-class)))
+                (format sout "#endif~%")
+                (format sout "#endif // EXPOSE_CLASSES~%"))
         (progn
           (format sout "#ifdef EXPOSE_STATIC_CLASS_VARIABLES~%")
           (dolist (exposed-class sorted-classes)
@@ -638,63 +677,76 @@ Convert colons to underscores"
               (format sout "  gctools::Header_s::StampWtagMtag ~a::static_StampWtagMtag;~%" (tags:name% class-tag))
               (format sout "};~%")))
           (format sout "#endif // EXPOSE_STATIC_CLASS_VARIABLES~%"))
-        (progn
-          (format sout "#ifdef EXPOSE_METHODS~%")
-          (dolist (exposed-class sorted-classes)
-            (let ((class-tag (class-tag% exposed-class)))
-              (format sout "namespace ~a {~%" (tags:namespace% class-tag))
-              (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
-              (format sout "// ~a:~a~%" (file% exposed-class) (line% exposed-class))
-              (format sout "    ~a<~a>()~%"
-                      (if (typep exposed-class 'exposed-external-class)
-                          "core::externalClass_"
-                          "core::class_")
-                      (tags:name% class-tag))
-              (dolist (method (methods% exposed-class))
-                (if (typep method 'expose-defmethod)
-                    (let* ((lisp-name (lisp-name% method))
-                           (class-name (tags:name% class-tag))
-                           (method-name (method-name% method))
-                           (lambda-list (lambda-list% method))
-                           (declare-form (declare% method)))
-                      (format sout "// ~a:~a~%" (file% method) (line% method))
-                      (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                              lisp-name
-                              class-name
-                              method-name
-                              (if (string/= lambda-list "")
-                                  (format nil "(~a)" lambda-list)
-                                  lambda-list)
-                              declare-form))
-                    (let* ((lisp-name (lisp-name% method))
-                           (pointer (pointer% method))
-                           (lambda-list (lambda-list% method))
-                           (declare-form (declare% method)))
-                      (format sout "// ~a:~a~%" (file% method) (line% method))
-                      (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
-                              lisp-name
-                              pointer
-                              (if (string/= lambda-list "")
-                                  (format nil "(~a)" lambda-list)
-                                  lambda-list)
-                              declare-form))))
-              (format sout "     ;~%")
-              (dolist (class-method (class-methods% exposed-class))
-                (if (typep class-method 'expose-def-class-method)
-                    (let* ((lisp-name (lisp-name% class-method))
-                           (class-name (tags:name% class-tag))
-                           (method-name (method-name% class-method))
-                           (lambda-list (lambda-list% class-method))
-                           (declare-form (declare% class-method)))
-                      (declare (ignore declare-form))
-                      (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
-                              lisp-name
-                              class-name
-                              method-name
-                              (maybe-wrap-lambda-list lambda-list)))))
-              (format sout "}~%")
-              (format sout "};~%")))
-          (format sout "#endif // EXPOSE_METHODS~%"))))))
+        (let ((partitions (partition-list sorted-classes *batch-classes*)))
+          (loop for partition in partitions
+                for batch-num from 1
+                do (format sout "#ifdef BATCH~a~%" batch-num)
+                   (progn
+                     (format sout "#ifdef EXPOSE_METHODS~%")
+                     (dolist (exposed-class partition)
+                       (let ((class-tag (class-tag% exposed-class)))
+                         (format sout "namespace ~a {~%" (tags:namespace% class-tag))
+                         (format sout "void ~a::expose_to_clasp() {~%" (tags:name% class-tag))
+                         (format sout "// ~a~%" (file-line exposed-class))
+                         (format sout "    ~a<~a>()~%"
+                                 (if (typep exposed-class 'exposed-external-class)
+                                     "core::externalClass_"
+                                     "core::class_")
+                                 (tags:name% class-tag))
+                         (dolist (method (methods% exposed-class))
+                           (if (typep method 'expose-defmethod)
+                               (let* ((lisp-name (lisp-name% method))
+                                      (class-name (tags:name% class-tag))
+                                      (method-name (method-name% method))
+                                      (lambda-list (lambda-list% method))
+                                      (declare-form (declare% method)))
+                                 (format sout "// ~a~%" (file-line method))
+                                 (format sout "        .def(~a,&~a::~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+                                         lisp-name
+                                         class-name
+                                         method-name
+                                         (if (string/= lambda-list "")
+                                             (format nil "(~a)" lambda-list)
+                                             lambda-list)
+                                         declare-form))
+                               (let* ((lisp-name (lisp-name% method))
+                                      (pointer (pointer% method))
+                                      (lambda-list (lambda-list% method))
+                                      (declare-form (declare% method)))
+                                 (format sout "// ~a~%" (file-line method))
+                                 (format sout "        .def(~a,~a,R\"lambda(~a)lambda\",R\"decl(~a)decl\")~%"
+                                         lisp-name
+                                         pointer
+                                         (if (string/= lambda-list "")
+                                             (format nil "(~a)" lambda-list)
+                                             lambda-list)
+                                         declare-form))))
+                         (format sout "     ;~%")
+                         (dolist (class-method (class-methods% exposed-class))
+                           (if (typep class-method 'expose-def-class-method)
+                               (let* ((lisp-name (lisp-name% class-method))
+                                      (class-name (tags:name% class-tag))
+                                      (method-name (method-name% class-method))
+                                      (lambda-list (lambda-list% class-method))
+                                      (declare-form (declare% class-method)))
+                                 (declare (ignore declare-form))
+                                 (format sout " expose_function(~a,&~a::~a,R\"lambda(~a)lambda\");~%"
+                                         lisp-name
+                                         class-name
+                                         method-name
+                                         (maybe-wrap-lambda-list lambda-list)))))
+                         (format sout "}~%")
+                         (format sout "};~%")))
+                     (format sout "#endif // EXPOSE_METHODS~%"))
+                do (progn
+                     (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")
+                     (dolist (exposed-class partition)
+                       (format sout "~a::~a::expose_to_clasp();~%"
+                               (tags:namespace% (class-tag% exposed-class))
+                               (tags:name% (class-tag% exposed-class))))
+                     (format sout "#endif //#ifdef EXPOSE_CLASSES_AND_METHODS~%"))
+                do (format sout "#endif // BATCH~a~%" batch-num)))
+        ))))
 
 (defparameter *symbols-by-package* nil)
 (defparameter *symbols-by-namespace* nil)
@@ -928,6 +980,11 @@ Convert colons to underscores"
           (format t   "| -------- | There are no changes to ~a.~%" pn)
           (progn
             (format t "| UPDATING | There are changes to ~a.~%" pn)
+            (let ((opn (make-pathname :type "bak" :defaults pn)))
+              (when (probe-file opn)
+                (delete-file opn))
+              (when (probe-file pn)
+                (rename-file pn opn)))
             (with-open-file (stream pn :direction :output :if-exists :supersede :external-format :utf-8)
               (write-sequence code stream)))))))
 

@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
-#include <clasp/clbind/clbind_tuple.h>
 namespace clbind {
 
 template <typename Policies, typename OT, typename MethodPtrType>

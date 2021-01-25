@@ -21,6 +21,7 @@ namespace llvmo { // ObjectFile_O
 ObjectFile_sp ObjectFile_O::create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
 {
   GC_ALLOCATE_VARIADIC(ObjectFile_O,of,start,size,startupID,jitdylib,fasoName,fasoIndex);
+  DEBUG_OBJECT_FILES(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
   return of;
 }
 

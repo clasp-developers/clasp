@@ -149,10 +149,10 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      fnLispCallingConvention* fptrs )
 {NO_UNWIND_BEGIN();
   my_thread->_GCRootsInModule = holder;
-  initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s holder@%p  root_address@%p  num_roots %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots );
+    printf("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data );
   }
+  initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   NO_UNWIND_END();
 }
 

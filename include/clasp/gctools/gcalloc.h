@@ -154,9 +154,9 @@ inline container_pointer do_boehm_weak_bucket_allocate(size_t size) {
 #endif
   // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
 #ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #endif
   return myAddress;
 }
@@ -182,9 +182,9 @@ inline container_pointer do_boehm_weak_mapping_allocate(size_t size) {
 #endif
   // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
 #ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #endif
   return myAddress;
 }
@@ -210,9 +210,9 @@ inline container_pointer do_boehm_weak_pointer_allocate(size_t size) {
 #endif
   // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
 #ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC_ATOMIC(size);
+  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
 #endif
   return myAddress;
 }

@@ -2183,48 +2183,6 @@ void error_bad_fd(int fd) {
   SIMPLE_ERROR(BF("Invalid file-descriptor %d") % fd);
 }
 
-FdSet_O::FdSet_O() {
-  fd_set * fdsetp = &(this->_fd_set);
-  FD_ZERO(fdsetp);
-};
-
-CL_LISPIFY_NAME(fd_clr);
-CL_DEFMETHOD void FdSet_O::fd_clr_(int fd) {
-  SIMPLE_ERROR(BF("FD_CLR causes problems with Xcode 11.4 - remove this message once it works again"));
-#if 0
-  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
-  FD_CLR(fd,&this->_fd_set);
-#endif
-}
-
-CL_LISPIFY_NAME(fd_set);
-CL_DEFMETHOD void FdSet_O::fd_set_(int fd) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this message once it works again"));
-#if 0
-  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
-  FD_SET(fd,&this->_fd_set);
-#endif
-}
-
-CL_LISPIFY_NAME(fd_copy);
-CL_DEFMETHOD void FdSet_O::fd_copy_(FdSet_sp copy) {
-  FD_COPY(&this->_fd_set,&copy->_fd_set);
-}
-
-CL_LISPIFY_NAME(fd_isset);
-CL_DEFMETHOD bool FdSet_O::fd_isset_(int fd) {
-  SIMPLE_ERROR(BF("FD_SET causes problems with Xcode 11.4 - remove this message once it works again"));
-#if 0
-  if (fd <0 || fd >= FD_SETSIZE) { error_bad_fd(fd); };
-  return FD_ISSET(fd,&this->_fd_set);
-#endif
-}
-
-CL_LISPIFY_NAME(fd_zero);
-CL_DEFMETHOD void FdSet_O::fd_zero_() {
-  fd_set * fdsetp = &(this->_fd_set);
-  FD_ZERO(fdsetp);
-}
 
 CL_DOCSTRING("See unix select");
 CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_sp errorfds,  size_t seconds, size_t microseconds )

@@ -389,7 +389,7 @@ public:
 };
 
 
- core::Vector_sp weak_key_hash_table_pairs(const WeakKeyHashTable& ht);
+core::Vector_sp weak_key_hash_table_pairs(const gctools::WeakKeyHashTable& ht);
 
 
 class StrongKeyHashTable {

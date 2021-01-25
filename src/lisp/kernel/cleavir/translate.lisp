@@ -1115,12 +1115,14 @@
       (cmp:with-debug-info-source-position
           ((core:make-source-pos-info "no-source-info-available" 999905 999905 999905))
         (cmp:irc-ret
-         (let ((c
-                 (cmp:irc-create-call
-                  (main-function llvm-function-info)
-                  ;; Augment the environment lexicals as a local call would.
-                  (nconc environment-values
-                         (mapcar #'in (arguments llvm-function-info))))))
+         (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
+                (c
+                  (cmp:irc-create-call-wft
+                   function-type
+                   (main-function llvm-function-info)
+                   ;; Augment the environment lexicals as a local call would.
+                   (nconc environment-values
+                          (mapcar #'in (arguments llvm-function-info))))))
            (llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
            c)))))
   the-function)

@@ -141,6 +141,14 @@ def collect_c_source_files(bld, path, files, extension = '.cc'):
 def collect_clasp_c_source_files(bld):
     result = collect_c_source_files(bld, 'src/gctools/', [
                  'gc_interface',
+                 'exposeFunctions0',
+                 'exposeFunctions1',
+                 'exposeFunctions2',
+                 'exposeFunctions3',
+                 'exposeClasses0',
+                 'exposeClasses1',
+                 'exposeClasses2',
+                 'exposeClasses3',
                  'boehmGarbageCollection',
                  'mpsGarbageCollection',
                  'hardErrors',
@@ -192,7 +200,8 @@ def collect_clasp_c_source_files(bld):
              ]) + \
              collect_c_source_files(bld, 'src/asttooling/', [
                  'astVisitor',
-                 'astExpose',
+                 'astExpose0',
+                 'astExpose1',
                  'clangTooling',
                  'asttoolingPackage',
                  'clangCompiler']) + \

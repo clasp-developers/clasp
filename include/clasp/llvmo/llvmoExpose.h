@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Constants.h>
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include <llvm/ExecutionEngine/JITLink/JITLink.h>
 #include <llvm/ExecutionEngine/Orc/CompileUtils.h>
 #include <llvm/ExecutionEngine/Orc/IRCompileLayer.h>
 #include <llvm/ExecutionEngine/Orc/IRTransformLayer.h>
@@ -4434,10 +4435,9 @@ struct from_object<const llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
   DeclareType _v;
   string _Storage;
-  from_object(T_P object) {
-    this->_Storage = gc::As<core::String_sp>(object)->get_std_string();
-    this->_v = llvm::StringRef(this->_Storage);
-  }
+  from_object(T_P object) : _Storage(gc::As<core::String_sp>(object)->get_std_string()), _v(this->_Storage) {};
+  from_object(const from_object& orig) = delete;
+  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(_Storage) {};
 };
 
 template <>
@@ -4583,31 +4583,27 @@ FORWARD(ClaspJIT);
 class ClaspJIT_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, ClaspJIT_O, "clasp-jit", core::General_O);
 public:
-  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib& getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
+  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   void addObjectFile(ObjectFile_sp of, bool print=false);
-  void runInitializers(JITDylib& dylib);
+  /*! Return a pointer to a function WHAT FUNCTION???????
+        llvm_sys__jitFinalizeReplFunction needs to build a closure over it
+   */
+  void* runStartupCode(JITDylib& dylib, const std::string& startupName, T_O* initialDataOrNull = NULL );
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
-  llvm::org::JITLinker* _LinkLayer;
-  #if _TARGET_OS_DARWIN
+//  llvm::jitlink::JITLink* _LinkLayer;
+#if _TARGET_OS_DARWIN
   llvm::orc::ObjectLinkingLayer *LinkLayer;
-  #else
+#else
   llvm::orc::RTDyldObjectLinkingLayer *LinkLayer;
-  #endif
 #endif
-  llvm::DataLayout* _DataLayout;
-  llvm::orc::ExecutionSession *_ES;
-  llvm::orc::RTDyldObjectLinkingLayer *_LinkLayer;
-  llvm::orc::ConcurrentIRCompiler *_Compiler;
-  llvm::orc::IRCompileLayer *_CompileLayer;
-======= end
 };
 
 
@@ -4707,6 +4703,8 @@ struct from_object<llvm::Optional<T>> {
      this->_v = val;
      return;
    }
+   from_object(const from_object& orig) = delete;
+   from_object(from_object&& orig) : _v(std::move(orig._v)) {};
  };
 }
 
@@ -4714,6 +4712,10 @@ namespace llvmo {
 void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
+ std::string uniqueMemoryBufferName(const std::string& prefix, void* start, size_t size);
+ 
 };
 
+
+#define DEBUG_OBJECT_FILES(msg) if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
 #endif //]

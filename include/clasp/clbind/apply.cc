@@ -434,7 +434,7 @@ struct prepare_argument {};
 template <int Index, typename Type>
 struct prepare_argument<Val<Index>,Type> {
   using type = translate::from_object<Type,std::true_type>;
-  constexpr static translate::from_object<Type,std::true_type> go(gctools::Frame::ElementType* frame) {
+  static translate::from_object<Type,std::true_type> go(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type,std::true_type>(gctools::smart_ptr<core::T_O>((gctools::Tagged)(frame[Index])));
   }
@@ -443,13 +443,14 @@ struct prepare_argument<Val<Index>,Type> {
 template <typename Type>
 struct prepare_argument<Val<32767>,Type> {
   using type = translate::from_object<Type,std::false_type>;
-  constexpr static translate::from_object<Type,std::false_type> go(gctools::Frame::ElementType* frame) {
+  static translate::from_object<Type,std::false_type> go(gctools::Frame::ElementType* frame) {
     // Return an initialized from_object for the argument
     return translate::from_object<Type,std::false_type>(_Nil<core::T_O>());
   }
 };
 
 namespace detail {
+
 template <typename MupleIndices, typename SequenceIndices, typename...Types>
 struct arg_tuple_impl {};
 
@@ -469,7 +470,7 @@ struct arg_tuple {
   using type = typename detail::arg_tuple_impl<indexMuple,
                                                std::index_sequence_for<ARGS...>,
                                                ARGS...>::type;
-  constexpr static type go(gctools::Frame::ElementType* frame) {
+  static type go(gctools::Frame::ElementType* frame) {
     return detail::arg_tuple_impl<indexMuple,
                                   std::index_sequence_for<ARGS...>,
                                   ARGS...>::go(frame);
