@@ -331,6 +331,13 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
+CL_DOCSTRING("function-descriptionp");
+CL_DEFUN bool core__function_descriptionp(T_sp obj) {
+  return gc::IsA<FunctionDescription_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
 CL_DOCSTRING("pathnamep");
 CL_DEFUN bool cl__pathnamep(T_sp obj) {
   return gc::IsA<Pathname_sp>(obj);

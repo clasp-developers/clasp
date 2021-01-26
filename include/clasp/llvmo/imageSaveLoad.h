@@ -86,22 +86,11 @@ FORWARD(Code);
 class Code_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", core::CxxObject_O);
  public:
-  static Code_sp make(uintptr_t CodeSize,
-                      uint32_t CodeAlign,
-                      uintptr_t RODataSize,
-                      uint32_t RODataAlign,
-                      uintptr_t RWDataSize,
-                      uint32_t RWDataAlign);
+  static Code_sp make(uintptr_t scanSize, uintptr_t size);
  public:
   typedef uint8_t value_type;
  public:
   // Store the allocation sizes and alignments
-  uintptr_t     _CodeSize;
-  uint32_t      _CodeAlign;
-  uintptr_t     _RODataSize;
-  uint32_t      _RODataAlign;
-  uintptr_t     _RWDataSize;
-  uint32_t      _RWDataAlign;
   // Keep track of the Head and Tail indices of the memory in _Data;
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
@@ -111,23 +100,10 @@ class Code_O : public core::CxxObject_O {
   void* allocateHead(uintptr_t size, uint32_t align);
   void* allocateTail(uintptr_t size, uint32_t align);
 
- Code_O( uintptr_t TotalSize,
-         uintptr_t CodeSize,
-         uint32_t CodeAlign,
-         uintptr_t RODataSize,
-         uint32_t RODataAlign,
-         uintptr_t RWDataSize,
-         uint32_t RWDataAlign) :
-  _CodeSize(CodeSize)
-    , _CodeAlign(CodeAlign)
-    , _RODataSize(RODataSize)
-    , _RODataAlign(RODataAlign)
-    , _RWDataSize(RWDataSize)
-    , _RWDataAlign(RWDataAlign)
-    , _HeadOffset(0)
-    , _TailOffset(TotalSize)
+ Code_O(uintptr_t totalSize ) :
+  _TailOffset(totalSize)
     , _ObjectFile(_Unbound<ObjectFile_O>())
-    , _DataCode(TotalSize,0,true) {};
+    , _DataCode(totalSize,0,true) {};
            
 };
   
@@ -160,6 +136,121 @@ namespace llvmo {
   };
 
 };
+
+
+
+
+namespace llvmo {
+using namespace llvm;
+using namespace llvm::jitlink;
+
+class ClaspAllocator final : public JITLinkMemoryManager {
+public:
+  ClaspAllocator() {
+  }
+public:
+  static Expected<std::unique_ptr<ClaspAllocator>>
+  Create() {
+    Error Err = Error::success();
+    std::unique_ptr<ClaspAllocator> Allocator(
+        new ClaspAllocator());
+    return std::move(Allocator);
+  }
+
+  Expected<std::unique_ptr<JITLinkMemoryManager::Allocation>>
+  allocate(const JITLinkDylib *JD, const SegmentsRequestMap &Request) override {
+
+    using AllocationMap = DenseMap<unsigned, sys::MemoryBlock>;
+
+    // Local class for allocation.
+    class IPMMAlloc : public Allocation {
+    public:
+    IPMMAlloc(ClaspAllocator &Parent, AllocationMap SegBlocks)
+      : Parent(Parent), SegBlocks(std::move(SegBlocks)) {}
+      MutableArrayRef<char> getWorkingMemory(ProtectionFlags Seg) override {
+        printf("%s:%d:%s Seg = 0x%x base = %p  size = %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg, static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize() );
+        assert(SegBlocks.count(Seg) && "No allocation for segment");
+        return {static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize()};
+      }
+      JITTargetAddress getTargetMemory(ProtectionFlags Seg) override {
+        assert(SegBlocks.count(Seg) && "No allocation for segment");
+        printf("%s:%d:%s Seg = 0x%x Returning %p\n", __FILE__, __LINE__, __FUNCTION__, Seg, (void*)pointerToJITTargetAddress(SegBlocks[Seg].base())); 
+        return pointerToJITTargetAddress(SegBlocks[Seg].base());
+      }
+      void finalizeAsync(FinalizeContinuation OnFinalize) override {
+        OnFinalize(applyProtections());
+      }
+      Error deallocate() override {
+        for (auto &KV : SegBlocks)
+          if (auto EC = sys::Memory::releaseMappedMemory(KV.second))
+            return errorCodeToError(EC);
+        return Error::success();
+      }
+
+    private:
+      Error applyProtections() {
+        for (auto &KV : SegBlocks) {
+          auto &Prot = KV.first;
+          auto &Block = KV.second;
+          if (Prot & sys::Memory::MF_EXEC)
+            if (auto EC = sys::Memory::protectMappedMemory(Block,Prot))
+              return errorCodeToError(EC);
+            sys::Memory::InvalidateInstructionCache(Block.base(),
+                                                    Block.allocatedSize());
+        }
+        return Error::success();
+      }
+
+      ClaspAllocator &Parent;
+      AllocationMap SegBlocks;
+    };
+
+    AllocationMap Blocks;
+
+    printf("%s:%d:%s  Interating Request\n", __FILE__, __LINE__, __FUNCTION__ );
+    size_t totalSize = 0;
+    size_t scanSize = 0;
+    for (auto &KV : Request) {
+      auto &Seg = KV.second;
+      uint64_t ZeroFillStart = Seg.getContentSize();
+      uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
+      printf("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, Seg.getAlignment(), Seg.getContentSize(), Seg.getZeroFillSize());
+      // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
+      if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
+        // We have to scan the entire RW data region (sigh) for pointers
+        scanSize = SegmentSize;
+      }
+      totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
+    }
+    printf("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize);
+    Code_sp codeObject = Code_O::make(scanSize,totalSize);
+    my_thread->_Code = codeObject;
+    for (auto &KV : Request) {
+      auto &Seg = KV.second;
+      uint64_t ZeroFillStart = Seg.getContentSize();
+      size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.getZeroFillSize(),Seg.getAlignment());
+      void* base;
+      if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
+        base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
+        printf("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base );
+      } else {
+        base = codeObject->allocateTail(SegmentSize,Seg.getAlignment());
+        printf("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base );
+      }
+      sys::MemoryBlock SegMem(base,SegmentSize);
+        // Zero out the zero-fill memory
+      memset(static_cast<char*>(SegMem.base())+ZeroFillStart, 0,
+             Seg.getZeroFillSize());
+        // Record the block for this segment
+      Blocks[KV.first] = std::move(SegMem);
+    }
+    return std::unique_ptr<InProcessMemoryManager::Allocation>(new IPMMAlloc(*this, std::move(Blocks)));
+  }
+
+};
+
+};
+
 
 #endif // imageSaveLoad_H
 

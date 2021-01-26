@@ -89,10 +89,11 @@ public:
   T_sp _functionName;                         //  4 function-name
   T_sp _lambdaList;                           //  5 lambda-list 
   T_sp _docstring;                            //  6 docstring
-  llvmo::ObjectFile_sp _ObjectFile;           //  7 object-file
-  int lineno;                                 //  8 lineno
-  int column;                                 //  9 column
-  int filepos;                                // 10 filepos
+  T_sp _declares;                             //  7 declares
+  llvmo::ObjectFile_sp _ObjectFile;           //  8 object-file
+  int lineno;                                 //  9 lineno
+  int column;                                 // 10 column
+  int filepos;                                // 11 filepos
 public:
   // Accessors
   T_sp sourcePathname() const;
@@ -103,16 +104,18 @@ public:
   void setf_lambdaList(T_sp);
   T_sp docstring() const;
   void setf_docstring(T_sp);
+  T_sp declares() const;
+  void setf_declares(T_sp);
   FunctionDescription_O(claspFunction entry_point) : _EntryPoints{(void*)entry_point} {};
 //  FunctionDescription_O() {};
 };
 
-FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
+FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp declares=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
 
 
 FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point=NULL);
 
-FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information, claspFunction entry_point=NULL);
+FunctionDescription_sp setFunctionDescriptionEntryPoint(FunctionDescription_sp function_info, claspFunction entry_point=NULL);
 
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
 
@@ -168,6 +171,9 @@ namespace core {
     }
     void setf_docstring(T_sp x) const {
       this->fdesc()->setf_docstring(x);
+    }
+    void setf_declares(T_sp x) const {
+      this->fdesc()->setf_declares(x);
     }
     size_t filePos() const {
       return this->fdesc()->filepos;

@@ -4354,7 +4354,7 @@ ClaspJIT_O::ClaspJIT_O() {
                      .setPlatformSetUp(orc::setUpMachOPlatform)
                      .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
 //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
-                                                     auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+                                                     auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                                                      ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                                                      ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                                                      ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code

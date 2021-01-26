@@ -42,7 +42,7 @@ Could return more functions that provide lambda-list for swank for example"
       (let ((name (core:extract-lambda-name-from-declares
                    declares (or given-name
                                 `(cl:lambda ,(lambda-list-for-name lambda-list))))))
-        (multiple-value-bind (fn function-info-reference)
+        (multiple-value-bind (fn function-description-reference)
             (with-new-function (fn fn-env result
                                    :function-name name
                                    :parent-env env-around-lambda
@@ -52,7 +52,6 @@ Could return more functions that provide lambda-list for swank for example"
                                                    :lambda-list lambda-list
                                                    :docstring docstring
                                                    :declares declares
-                                                   :form code
                                                    :spi core:*current-source-pos-info*))
               (cmp-log "Starting new function name: %s%N" name)
               ;; The following injects a debugInspectT_sp at the start of the body
@@ -81,7 +80,7 @@ Could return more functions that provide lambda-list for swank for example"
           (unless *suppress-llvm-output* (irc-verify-function fn))
           ;; Return the llvm Function and the symbol/setf name
           (if (null name) (error "The lambda name is nil"))
-          (values fn name lambda-list function-info-reference))))))
+          (values fn name lambda-list function-description-reference))))))
 
 ;;; Given a lambda list, return a lambda list suitable for display purposes.
 ;;; This means only the external interface is required.
@@ -159,9 +158,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (with-lexical-variable-optimizer (t)
-    (multiple-value-bind (fn function-kind wrapped-env lambda-name function-info-reference)
+    (multiple-value-bind (fn function-kind wrapped-env lambda-name function-description-reference)
         (with-debug-info-generator (:module *the-module* :pathname pathname)
-          (multiple-value-bind (llvm-function-from-lambda lambda-name function-info-reference)
+          (multiple-value-bind (llvm-function-from-lambda lambda-name function-description-reference)
               (compile-lambda-function definition env :linkage linkage)
             (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
             (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
@@ -171,7 +170,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       (potentially-save-module)
       (cmp-log "fn --> %s%N" fn)
       (cmp-log-dump-module *the-module*)
-      (values fn function-kind wrapped-env lambda-name function-info-reference))))
+      (values fn function-kind wrapped-env lambda-name function-description-reference))))
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)
@@ -360,7 +359,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :lambda-list nil
                                                               :docstring nil
                                                               :declares nil
-                                                              :form form
                                                               :spi core:*current-source-pos-info*))
                             (let* ((given-name (llvm-sys:get-name fn)))
                               ;; Map the function argument names

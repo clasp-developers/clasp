@@ -46,16 +46,10 @@ struct gctools::GCInfo<llvmo::Code_O> {
 namespace llvmo {
 
 
-Code_sp Code_O::make(uintptr_t CodeSize,
-                     uint32_t CodeAlign,
-                     uintptr_t RODataSize,
-                     uint32_t RODataAlign,
-                     uintptr_t RWDataSize,
-                     uint32_t RWDataAlign) {
-  uintptr_t totalSize = gctools::AlignUp(CodeSize,CodeAlign) + gctools::AlignUp(RODataSize,RODataAlign) + gctools::AlignUp(RWDataSize,RWDataAlign);
-  uintptr_t dataScanSize = gctools::AlignUp(RWDataSize,RWDataAlign);
-  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(dataScanSize, totalSize, CodeSize, CodeAlign, RODataSize, RODataAlign, RWDataSize, RWDataAlign );
-  printf("%s:%d:%s  dataScanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, dataScanSize, totalSize );
+Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize) {
+  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
+  printf("%s:%d:%s  dataScanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize );
+  printf("%s:%d:%s  Code_O start = %p  end = %p\n", __FILE__, __LINE__, __FUNCTION__, &*code,&code->_DataCode[totalSize]);
   return code;
 }
 
@@ -115,44 +109,13 @@ void dumpObjectFile(size_t num, const char* start, size_t size) {
   fout.close();
 }
 
+};
 
 // #define USE_CODE_O 1
 
-void ClaspSectionMemoryManager::reserveAllocationSpace(uintptr_t CodeSize,
-                                                       uint32_t CodeAlign,
-                                                       uintptr_t RODataSize,
-                                                       uint32_t RODataAlign,
-                                                       uintptr_t RWDataSize,
-                                                       uint32_t RWDataAlign) {
-  printf("%s:%d:%s  CodeSize: %lu CodeAlign: %u RODataSize: %lu RODataAlign: %u RWDataSize: %lu RWDataAlign: %u \n", __FILE__, __LINE__, __FUNCTION__, CodeSize, CodeAlign, RODataSize, RODataAlign, RWDataSize, RWDataAlign );
-#ifdef USE_CODE_O
-  Code_sp code = Code_O::make(CodeSize,CodeAlign,RODataSize,RODataAlign,RWDataSize,RWDataAlign);
-  my_thread->_Code = code;
-  printf("%s:%d  Created code object\n", __FILE__, __LINE__);
-#else
-    this->SectionMemoryManager::reserveAllocationSpace( CodeSize, CodeAlign, RODataSize, RODataAlign, RWDataSize, RWDataAlign );
-#endif
-  }
+#if 0
 
-uint8_t* ClaspSectionMemoryManager::allocateCodeSection( uintptr_t Size, unsigned Alignment,
-                                                         unsigned SectionID,
-                                                         StringRef SectionName ) {
-#ifdef USE_CODE_O
-  uint8_t* ptr = (uint8_t*)my_thread->_Code->allocateTail(Size,Alignment);
-  this->_CodeStart = ptr;
-  this->_CodeSize = Size;
-#else
-  uint8_t* ptr = this->SectionMemoryManager::allocateCodeSection(Size,Alignment,SectionID,SectionName);
-#endif
-    my_thread->_text_segment_start = (void*)ptr;
-    my_thread->_text_segment_size = Size;
-    my_thread->_text_segment_SectionID = SectionID;
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      printf("%s", ( BF("%s:%d  allocateCodeSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % (void*)ptr ).str().c_str());
-    }
-    return ptr;
-  }
-
+namespace llvmo {
 #ifdef _TARGET_OS_DARWIN    
 #define STACKMAPS_NAME "__llvm_stackmaps"
 #elif defined(_TARGET_OS_LINUX)
@@ -304,7 +267,7 @@ bool ClaspSectionMemoryManager::finalizeMemory(std::string* ErrMsg ) {
 
 
 
-
+#endif
 
 
 

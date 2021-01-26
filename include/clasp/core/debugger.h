@@ -81,6 +81,8 @@ public: // NOTE: Use the accessors. Non-public only for GC reasons.
   T_sp closure;
   T_sp up;
   T_sp down;
+public:
+  std::string __repr__() const;
 };
 
 T_sp core__backtrace_frame_type(Frame_sp frame);

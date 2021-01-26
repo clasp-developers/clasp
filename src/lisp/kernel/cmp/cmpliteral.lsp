@@ -55,7 +55,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-info-ref)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-description-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -165,6 +165,7 @@
   (symbol-coalesce (make-similarity-table #'eq))
   (base-string-coalesce (make-similarity-table #'equal))
   (pathname-coalesce (make-similarity-table #'equal))
+  (function-description-coalesce (make-similarity-table #'equal))
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
   (llvm-values (make-hash-table))
@@ -376,6 +377,19 @@ rewrite the slot in the literal table to store a closure."
                (load-time-reference-literal (pathname-type pathname) read-only-p :toplevelp nil)
                (load-time-reference-literal (pathname-version pathname) read-only-p :toplevelp nil)))
 
+(defun ltv/function-description (function-description index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
+  (warn "What do we do with the function entry-point????")
+  (add-creator "ltvc_make_function_description" index function-description
+               (load-time-reference-literal (sys:function-description-source-pathname function-description) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-function-name function-description) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-lambda-list function-description) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-docstring function-description) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-declares function-description) read-only-p :toplevelp nil)
+               (sys:function-description-lineno function-description)
+               (sys:function-description-column function-description)
+               (sys:function-description-filepos function-description)))
+
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
   (add-creator "ltvc_make_package" index package
@@ -460,6 +474,7 @@ rewrite the slot in the literal table to store a closure."
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-hash-table-coalesce literal-machine)) #'ltv/hash-table))
     ((bignump object) (values (literal-machine-bignum-coalesce literal-machine) #'ltv/bignum))
     ((pathnamep object) (values (literal-machine-pathname-coalesce literal-machine) #'ltv/pathname))
+    ((function-descriptionp object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((packagep object) (values (literal-machine-package-coalesce literal-machine) #'ltv/package))
     ((complexp object) (values (literal-machine-complex-coalesce literal-machine) #'ltv/complex))
     ((random-state-p object) (values (literal-machine-identity-coalesce literal-machine) #'ltv/random-state))
@@ -600,13 +615,13 @@ rewrite the slot in the literal table to store a closure."
          (function-index (function-datum-index function-datum))
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum))
-         (function-info-ref (literal-node-closure-function-info-ref closurette-object)))
+         (function-description-ref (literal-node-closure-function-description-ref closurette-object)))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
                                   (cmp:jit-constant-size_t function-index)
-                                  (cmp:jit-constant-size_t (cmp:function-info-reference-index function-info-ref))))))
+                                  (cmp:jit-constant-size_t (cmp:function-description-reference-index function-description-ref))))))
 
 (defparameter *ltv-trap* nil)
 
@@ -849,7 +864,6 @@ and  return the sorted values and the constant-table or (values nil nil)."
                                                        :lambda-list nil
                                                        :docstring nil
                                                        :declares nil
-                                                       :form nil
                                                        :spi core:*current-source-pos-info*))
               (let* ((given-name (llvm-sys:get-name fn)))
                 (declare (ignorable given-name))
@@ -919,11 +933,11 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function function-info-ref)
+(defun reference-closure (function function-description-ref)
   (let* ((datum (new-datum t))
          (function-index (register-function function))
-         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-info-ref function-info-ref)))
-    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:function-info-reference-index function-info-ref))
+         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-description-ref function-description-ref)))
+    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:function-description-reference-index function-description-ref))
     (datum-index datum)))
 
 #|  (register-function function function-description))
@@ -1023,7 +1037,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                                        :lambda-list nil
                                                        :docstring nil
                                                        :declares nil
-                                                       :form nil
                                                        :spi core:*current-source-pos-info*))
               (let ((given-name (llvm-sys:get-name fn)))
                 (cmp:codegen fn-result form fn-env)))))

@@ -844,8 +844,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (let ((irbuilder-alloca (gensym))
         (temp (gensym))
         (irbuilder-body (gensym))
-        (function-info-ref (gensym)))
-    `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-info-ref)
+        (function-description-ref (gensym)))
+    `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-description-ref)
          (irc-bclasp-function-create ,function-name ,parent-env
                                      :function-type ,function-type
                                      :argument-names ,argument-names
@@ -877,7 +877,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
            (if ,return-void
                (llvm-sys:create-ret-void *irbuilder*)
                (llvm-sys:create-ret *irbuilder* (irc-load ,result)))
-           (values ,fn ,function-info-ref))))))
+           (values ,fn ,function-description-ref))))))
 
 (defun function-description-name (function)
   (let ((function-name (llvm-sys:get-name function)))
@@ -936,14 +936,13 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defstruct (function-info (:type list) :named
                           (:constructor %make-function-info
-                              (function-name lambda-list docstring declares form
+                              (function-name lambda-list docstring declares
                                source-pathname lineno column filepos)))
   function-name
   lambda-list docstring declares
-  source-pathname lineno column filepos
-  form)
+  source-pathname lineno column filepos)
 
-(defun make-function-info (&key function-name lambda-list docstring declares form spi)
+(defun make-function-info (&key function-name lambda-list docstring declares spi)
   (let ((lineno 0) (column 0) (filepos 0) (source-pathname "-unknown-file-"))
     (when spi
       (setf source-pathname (core:file-scope-pathname
@@ -953,15 +952,15 @@ But no irbuilders or basic-blocks. Return the fn."
             ;; FIXME: Why 1+?
             column (1+ (core:source-pos-info-column spi))
             filepos (core:source-pos-info-filepos spi)))
-    (%make-function-info function-name lambda-list docstring declares form
+    (%make-function-info function-name lambda-list docstring declares
                          source-pathname lineno column filepos)))
 
 (defconstant +maxi32+ 4294967295)
 
-(defstruct (function-info-reference (:type vector) :named)
+(defstruct (function-description-reference (:type vector) :named)
   index)
   
-(defun irc-create-function-info-reference (llvm-function-name fn module function-info)
+(defun irc-create-function-description-reference (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
     Otherwise we are code-walking - and do something else that is appropriate."
   (unless function-info
@@ -997,40 +996,18 @@ But no irbuilders or basic-blocks. Return the fn."
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let ((index (literal:reference-literal function-info)))
-;;;        (core:bformat t " irc-create-function-info-reference function-info -> %s   index: %d%N" function-info index)
-        (make-function-info-reference :index index))
-      #+(or)
-      (let* ((source-pathname.function-name-index (literal:reference-literal (cons source-pathname function-name)))
-             (lambda-list.docstring-index (literal:reference-literal (cons lambda-list docstring))))
-        #+(or)
-        (progn
-          (core:bformat t "source-pathname.function-name-index: %s%N" source-pathname.function-name-index)
-          (core:bformat t "lambda-list.docstring-index: %s%N" lambda-list.docstring-index))
-        (unless lambda-list.docstring-index (error "There is no lambda-list.docstring-index"))
-        (unless lineno (error "There is no lineno"))
-        (unless column (error "There is no column"))
-        (unless filepos (error "There is no filepos"))
-        (llvm-sys:make-global-variable
-         module
-         %function-description%
-         t
-         'llvm-sys:internal-linkage
-         (llvm-sys:constant-struct-get %function-description%
-                                       (progn
-                                         (progn
-                                           (when (> lineno +maxi32+) (error "lineno ~a out of bounds for i32" lineno))
-                                           (when (> column +maxi32+) (error "column ~a out of bounds for i32" column))
-                                           (when (> filepos +maxi32+) (error "filepos ~a out of bounds for i32" filepos)))
-                                         (list
-                                          fn
-                                          literal::*gcroots-in-module*
-                                          (jit-constant-size_t source-pathname.function-name-index)
-                                          (jit-constant-size_t lambda-list.docstring-index)
-                                          (jit-constant-i32 lineno)
-                                          (jit-constant-i32 column)
-                                          (jit-constant-i32 filepos))))
-         (function-description-name fn))))))
+      (let* ((fdesc (sys:make-function-description :function-name function-name
+                                                   :source-pathname source-pathname
+                                                   :lambda-list lambda-list
+                                                   :docstring docstring
+                                                   :declares declares
+                                                   :lineno lineno
+                                                   :column column
+                                                   :filepos filepos))
+             (index (literal:reference-literal fdesc)))
+;;;        (core:bformat t " irc-create-function-description-reference function-info -> %s   index: %d%N" function-info index)
+        (make-function-description-reference :index index))
+)))
 
 
 
@@ -1054,36 +1031,36 @@ and then the irbuilder-alloca, irbuilder-body."
                                          linkage
                                          *the-module*
                                          :function-attributes function-attributes
-                                         :argument-names argument-names))
-         (fn-description-ref (irc-create-function-info-reference
-                              llvm-function-name
-                              fn
-                              *the-module*
-                              function-info))
-         (*current-function* fn)
-	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
-         traceid
-	 (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-	 (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-	 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
-    (let ((entry-bb (irc-basic-block-create "entry" fn)))
-      (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
-    ;; Setup exception handling and cleanup landing pad
-    (irc-set-function-for-environment func-env fn)
-    (with-irbuilder (irbuilder-cur)
-      (let* ((body-bb (irc-basic-block-create "body" fn))
-	     (entry-branch (irc-br body-bb)))
-	(irc-set-insert-point-instruction entry-branch irbuilder-alloca)
-	(irc-set-insert-point-basic-block body-bb irbuilder-body)))
-    (setf-metadata func-env :cleanup ())
-    (let ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result"))))
-      (values fn func-env irbuilder-alloca irbuilder-body result fn-description-ref))))
+                                         :argument-names argument-names)))
+    (let* ((fn-description-ref (irc-create-function-description-reference
+                                llvm-function-name
+                                fn
+                                *the-module*
+                                function-info))
+           (*current-function* fn)
+	   (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
+           traceid
+	   (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	   (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+	   (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
+      (let ((entry-bb (irc-basic-block-create "entry" fn)))
+        (irc-set-insert-point-basic-block entry-bb irbuilder-cur))
+      ;; Setup exception handling and cleanup landing pad
+      (irc-set-function-for-environment func-env fn)
+      (with-irbuilder (irbuilder-cur)
+        (let* ((body-bb (irc-basic-block-create "body" fn))
+	       (entry-branch (irc-br body-bb)))
+	  (irc-set-insert-point-instruction entry-branch irbuilder-alloca)
+	  (irc-set-insert-point-basic-block body-bb irbuilder-body)))
+      (setf-metadata func-env :cleanup ())
+      (let ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result"))))
+        (values fn func-env irbuilder-alloca irbuilder-body result fn-description-ref)))))
 
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)
   "Create a function and a function description for a cclasp function"
   (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
-         (fn-description-reference (irc-create-function-info-reference llvm-function-name fn module function-info)))
+         (fn-description-reference (irc-create-function-description-reference llvm-function-name fn module function-info)))
     (values fn fn-description-reference)))
 
 (defun irc-verify-no-function-environment-cleanup (env)

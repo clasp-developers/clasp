@@ -741,10 +741,11 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %t*%                   ;  4 function-name
                                     %t*%                   ;  5 lambda-list
                                     %t*%                   ;  6 docstring
-                                    %t*%                   ;  7 object-file
-                                    %i32%                  ;  8 lineno
-                                    %i32%                  ;  9 column
-                                    %i32%                  ; 10filepos
+                                    %t*%                   ;  7 declares
+                                    %t*%                   ;  8 object-file
+                                    %i32%                  ;  9 lineno
+                                    %i32%                  ; 10 column
+                                    %i32%                  ; 11 filepos
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 

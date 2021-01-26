@@ -417,9 +417,9 @@ void save_object_file_info(ObjectFile_sp ofi)
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {
-    expected = _lisp->_Roots._ObjectFiles.load();
+    expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
-  } while (!_lisp->_Roots._ObjectFiles.compare_exchange_weak(expected,entry));
+  } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
 }
 
 CL_DOCSTRING(R"doc(Identify the object file whose generated code range contains the instruction-pointer.
@@ -428,15 +428,16 @@ CL_LISPIFY_NAME(object_file_for_instruction_pointer);
 CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruction_pointer, bool verbose)
 {
   printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__);
-  core::T_sp cur = _lisp->_Roots._ObjectFiles.load();
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count;
   char* ptr = (char*)instruction_pointer->ptr();
-  printf("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr, cur.raw_());
+  DEBUG_OBJECT_FILES(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr, cur.raw_()));
   if ((cur.nilp()) && verbose){
     core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)ptr);
   }
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
+    DEBUG_OBJECT_FILES(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)ofi->_text_segment_start, (char*)((char*)ofi->_text_segment_start+ofi->_text_segment_size)));
     if (ptr>=(char*)ofi->_text_segment_start&&ptr<((char*)ofi->_text_segment_start+ofi->_text_segment_size)) {
       // Here is the info for the SectionedAddress
       uintptr_t sectionID = ofi->_text_segment_SectionID;
@@ -465,7 +466,7 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruc
 
 CL_LISPIFY_NAME(number_of_object_files);
 CL_DEFUN size_t number_of_object_files() {
-  core::T_sp cur = _lisp->_Roots._ObjectFiles.load();
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count;
   while (cur.consp()) {
     cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
@@ -476,7 +477,7 @@ CL_DEFUN size_t number_of_object_files() {
 
 CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
 CL_DEFUN size_t total_memory_allocated_for_object_files() {
-  core::T_sp cur = _lisp->_Roots._ObjectFiles.load();
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count;
   size_t sz;
   while (cur.consp()) {

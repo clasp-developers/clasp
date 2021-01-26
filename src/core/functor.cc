@@ -62,11 +62,33 @@ FunctionDescription_sp ensureEntryPoint(FunctionDescription_sp fdesc, claspFunct
   return fdesc;
 }
 
+CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname lineno column filepos);
+CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
+                                                              T_sp lambdaList,
+                                                              T_sp docstring,
+                                                              T_sp declares,
+                                                              T_sp sourcePathname,
+                                                              int lineno,
+                                                              int column,
+                                                              int filePos) {
+  return makeFunctionDescription(functionName,
+                                 NULL,
+                                 lambdaList,
+                                 docstring,
+                                 declares,
+                                 sourcePathname,
+                                 lineno,
+                                 column,
+                                 filePos);
+}
+  
+                                                     
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                claspFunction entry_point,
                                                T_sp lambda_list,
                                                T_sp docstring,
+                                               T_sp declares,
                                                T_sp sourcePathname,
                                                int lineno,
                                                int column,
@@ -76,6 +98,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
   fdesc->_functionName = functionName;
   fdesc->_lambdaList = lambda_list;
   fdesc->_docstring = docstring;
+  fdesc->_declares = declares;
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
@@ -89,12 +112,20 @@ FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp origin
   fdesc->_functionName = original->_functionName;
   fdesc->_lambdaList = original->_lambdaList;
   fdesc->_docstring = original->_docstring;
+  fdesc->_declares = original->_declares;
   fdesc->lineno = original->lineno;
   fdesc->column = original->column;
   fdesc->filepos = original->filepos;
   return fdesc;
 }
+FunctionDescription_sp setFunctionDescriptionEntryPoint(FunctionDescription_sp fdesc,
+                                                        claspFunction entry_point)
+{
+  fdesc->_EntryPoints[0] = (void*)entry_point;
+  return fdesc;
+}
 
+#if 0
 FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
                                                        claspFunction entry_point)
 {
@@ -120,10 +151,45 @@ FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
                                  column,
                                  filepos);
 }
+#endif
+
+
+CL_DEFUN T_sp core__FunctionDescription_sourcePathname(FunctionDescription_sp fdesc) {
+  return fdesc->_sourcePathname;
+}
+
+CL_DEFUN T_sp core__FunctionDescription_functionName(FunctionDescription_sp fdesc) {
+  return fdesc->_functionName;
+}
+
+CL_DEFUN T_sp core__FunctionDescription_lambdaList(FunctionDescription_sp fdesc) {
+  return fdesc->_lambdaList;
+}
+
+CL_DEFUN T_sp core__FunctionDescription_docstring(FunctionDescription_sp fdesc) {
+  return fdesc->_docstring;
+}
+CL_DEFUN T_sp core__FunctionDescription_declares(FunctionDescription_sp fdesc) {
+  return fdesc->_declares;
+}
+CL_DEFUN T_sp core__FunctionDescription_ObjectFile(FunctionDescription_sp fdesc) {
+  return fdesc->_ObjectFile;
+}
+
+CL_DEFUN size_t core__FunctionDescription_lineno(FunctionDescription_sp fdesc) {
+  return fdesc->lineno;
+}
+CL_DEFUN size_t core__FunctionDescription_column(FunctionDescription_sp fdesc) {
+  return fdesc->column;
+}
+CL_DEFUN size_t core__FunctionDescription_filepos(FunctionDescription_sp fdesc) {
+  return fdesc->filepos;
+}
 
 T_sp FunctionDescription_O::sourcePathname() const {
   return this->_sourcePathname;
 }
+
 
 void FunctionDescription_O::setf_sourcePathname(T_sp sourceFileName) {
   this->_sourcePathname = sourceFileName;
@@ -147,6 +213,10 @@ void FunctionDescription_O::setf_lambdaList(T_sp lambda_list) {
 
 T_sp FunctionDescription_O::docstring() const {
   return this->_docstring;
+}
+
+T_sp FunctionDescription_O::declares() const {
+  return this->_declares;
 }
 
 void FunctionDescription_O::setf_docstring(T_sp x) {
@@ -174,25 +244,19 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 }
 };
 
-extern "C" void dumpFunctionDescription(core::FunctionDescription_sp vfdesc)
+extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
 {
-#if 1
-  FUNCTION_DESCRIPTION_ERROR();
-  SIMPLE_ERROR(BF("Handle vfdesc"));
-#else
-  core::FunctionDescription* fdesc = (core::FunctionDescription*)vfdesc;
-  core::write_bf_stream(BF("FunctionDescription @%p\n") % (void*)fdesc);
-  core::Cons_sp sourcePathname_functionName((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->sourcePathname_functionName_Index));
-  core::Cons_sp lambdaList_docstring((gctools::Tagged)fdesc->gcrootsInModule->getTaggedIndex(LITERAL_TAG_CHAR,fdesc->lambdaList_docstring_Index));
-  core::write_bf_stream(BF("sourcePathname CAR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CAR(sourcePathname_functionName)));
-  core::write_bf_stream(BF("functionName CDR[%lu] = %s\n") % fdesc->sourcePathname_functionName_Index % _rep_(CONS_CDR(sourcePathname_functionName)));
-  core::write_bf_stream(BF("lambdaList CAR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CAR(lambdaList_docstring)));
-  core::write_bf_stream(BF("docstring CDR[%lu] = %s\n") % fdesc->lambdaList_docstring_Index % _rep_(CONS_CDR(lambdaList_docstring)));
-  core::write_bf_stream(BF("lineno = %d\n") % fdesc->lineno);
-  core::write_bf_stream(BF("column = %d\n") % fdesc->column);
-  core::write_bf_stream(BF("filepos = %d\n") % fdesc->filepos);
-#endif
-};
+  core::write_bf_stream(BF("sourcePathname = %s\n") % _rep_(fdesc->sourcePathname()) );
+  core::write_bf_stream(BF("functionName = %s\n") % _rep_(fdesc->functionName()));
+  core::write_bf_stream(BF("lambdaList = %s\n") % _rep_(fdesc->lambdaList()));
+  core::write_bf_stream(BF("docstring = %s\n") % _rep_(fdesc->docstring()));
+  core::write_bf_stream(BF("declares = %s\n") % _rep_(fdesc->declares()));
+  core::write_bf_stream(BF("ObjectFile = %s\n") % core::_rep_(fdesc->_ObjectFile));
+  core::write_bf_stream(BF("lineno = %lu\n") % fdesc->lineno);
+  core::write_bf_stream(BF("column = %lu\n") % fdesc->column);
+  core::write_bf_stream(BF("filepos = %lu\n") % fdesc->filepos);
+  core::write_bf_stream(BF("entryPoint = %p\n") % (void*)fdesc->_EntryPoints[0]);
+} ;
 
 namespace core {
 
@@ -238,7 +302,7 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
     
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  FunctionDescription_sp interpretedFunctionDescription = makeFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,sfi,lineno,column,filePos);
+  FunctionDescription_sp interpretedFunctionDescription = makeFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,declares,sfi,lineno,column,filePos);
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               INTERPRETED_CLOSURE_SLOTS,

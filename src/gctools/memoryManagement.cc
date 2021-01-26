@@ -529,10 +529,14 @@ GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_
   this->_capacity = num_entries;
   this->_boehm_shadow_memory = shadow_mem;
   this->_module_memory = module_mem;
+  printf("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,this->_module_memory, (char*)this->_module_memory+this->_capacity);
   this->setup_transients(transient_alloca, transient_entries);
 }
 
-/*! For the interpreter */
+/*!
+ For the interpreter.
+ We can allocate the literals anywhere.
+ */
 GCRootsInModule::GCRootsInModule(size_t capacity) {
   this->_function_pointer_count = 0;
   this->_function_pointers = NULL;
@@ -548,6 +552,7 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
 #endif
   this->_boehm_shadow_memory = shadow_mem;
   this->_module_memory = module_mem;
+  printf("%s:%d:%s Interpreted code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,this->_module_memory, (char*)this->_module_memory+this->_capacity);
   memset(module_mem, 0, sizeof(core::T_O*)*this->_capacity);
 #ifdef USE_MPS
   // MPS registers the roots with the GC and doesn't need a shadow table

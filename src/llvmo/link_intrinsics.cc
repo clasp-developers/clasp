@@ -177,8 +177,8 @@ LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size
 {NO_UNWIND_BEGIN();
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
   gc::Tagged tfunctionInfo = holder->getLiteral(function_info_index);
-  core::Cons_sp functionInfo(tfunctionInfo);
-  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(functionInfo,llvm_func);
+  core::FunctionDescription_sp functionDesc(tfunctionInfo);
+  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(functionDesc,llvm_func);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               llvm_func,
@@ -403,6 +403,22 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t
                                         core::T_sp(version_t),
                                         kw::_sym_local,
                                               core::T_sp(host_t).notnilp());
+  LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
+  NO_UNWIND_END();
+}
+
+
+LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
+{NO_UNWIND_BEGIN();
+  core::T_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
+                                                 NULL,
+                                                 core::T_sp(lambdaList_t),
+                                                 core::T_sp(docstring_t),
+                                                 core::T_sp(declares_t),
+                                                 core::T_sp(sourcePathname_t),
+                                                 lineno,
+                                                 column,
+                                                 filepos);
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -669,15 +685,15 @@ extern "C" {
 
 
 core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
-                                core::T_O* functionDescriptionInfo,
+                                core::T_O* functionDesc,
                                 core::T_O* frameP
                                 )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
-  core::Cons_sp fi((gctools::Tagged)functionDescriptionInfo);
-//  printf("%s:%d:%s  functionDescriptionInfo list -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str());
-  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(fi,funcPtr);
+  core::FunctionDescription_sp fi((gctools::Tagged)functionDesc);
+  printf("%s:%d:%s  functionDescription -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str());
+  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(fi,funcPtr);
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
@@ -1151,8 +1167,8 @@ core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       core::T_O* functionDescriptionInfo,
                       std::size_t numCells)
 {
-  core::Cons_sp fi((gctools::Tagged)functionDescriptionInfo);
-  core::FunctionDescription_sp functionDescription = core::makeFunctionDescriptionFromFunctionInfo(fi,llvm_func);
+  core::FunctionDescription_sp fi((gctools::Tagged)functionDescriptionInfo);
+  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(fi,llvm_func);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                                , llvm_func

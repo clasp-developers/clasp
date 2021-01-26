@@ -1371,6 +1371,15 @@ void operating_system_backtrace(std::vector<BacktraceEntry>& backtrace_)
 }
 
 
+#if 0
+CL_DEFUN core__operating_system_backtrace() {
+  std::vector<BacktraceEntry>& backtrace_;
+  operating_system_backtrace(backtrace_);
+  for ( size_t ii = 0; ii<backtrace_.size(); ii++ ) {
+    
+#endif
+
+    
 bool maybe_demangle(const std::string& fnName, std::string& output)
 {
   char *funcname = (char *)malloc(1024);
@@ -1660,6 +1669,15 @@ Frame_sp lisp_frame_from_backtrace_entry(BacktraceEntry& entry, bool args_as_poi
                        Pointer_O::create((void*)entry._FunctionStart),
                        Pointer_O::create((void*)entry._FunctionEnd),
                        funcDesc, arguments, closure);
+}
+
+std::string Frame_O::__repr__() const {
+  stringstream ss;
+  ss << "#<Frame " << ":return-address " << (void*)gc::As<Pointer_sp>(this->return_address)->ptr();
+  ss << " :function-name " << _rep_(this->function_name) << ">";
+  ss << " :function-start-address " << (void*)gc::As<Pointer_sp>(this->function_start_address)->ptr();
+  ss << ">";
+  return ss.str();
 }
 
 List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_as_pointers)

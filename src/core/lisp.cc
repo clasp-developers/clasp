@@ -196,7 +196,7 @@ public:
 // Constructor
 //
 Lisp_O::GCRoots::GCRoots() :
-  _ObjectFiles(_Nil<T_O>()),
+  _AllObjectFiles(_Nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
     _UnboundSetfSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),

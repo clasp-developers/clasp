@@ -105,7 +105,7 @@
             %gcroots-in-module*%
             %function-description%
             %function-description*%
-            function-info-reference-index
+            function-description-reference-index
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             jit-remove-module
