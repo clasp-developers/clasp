@@ -271,6 +271,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core::%array-dimension) t)
          ((eq sym 'cleavir-primop:car) t)
          ((eq sym 'cleavir-primop:cdr) t)
+         ((eq sym 'core::car-atomic) t)
+         ((eq sym 'core::cdr-atomic) t)
          ((eq sym 'cleavir-primop:funcall) t)
          ((eq sym 'cleavir-primop:unreachable) t)
          ((eq sym 'cleavir-primop:case) t)

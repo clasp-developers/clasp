@@ -38,6 +38,8 @@
     (core::%array-dimension codegen-%array-dimension)
     (cleavir-primop:car codegen-car)
     (cleavir-primop:cdr codegen-cdr)
+    (core::car-atomic codegen-atomic-car)
+    (core::cdr-atomic codegen-atomic-cdr)
     (cleavir-primop:funcall codegen-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable)
     (cleavir-primop:case codegen-primop-case)
@@ -1035,6 +1037,40 @@ jump to blocks within this tagbody."
     (irc-t*-result (irc-load-atomic (gen-memref-address
                                      (irc-load cons-alloca)
                                      (- +cons-cdr-offset+ +cons-tag+)))
+                   result)))
+
+;;; ATOMIC CAR, CDR
+
+(defun order-spec->order (order-spec)
+  (case order-spec
+    ((:unordered) 'llvm-sys:unordered)
+    ((:relaxed) 'llvm-sys:monotonic)
+    ((:acquire) 'llvm-sys:acquire)
+    ((:release) 'llvm-sys:release)
+    ((:acquire-release) 'llvm-sys:acquire-release)
+    ((:sequentially-consistent) 'llvm-sys:sequentially-consistent)
+    (t (error "BUG: Unknown atomic order specifier ~a" order-spec))))
+
+(defun codegen-atomic-car (result rest env)
+  (let ((cons-form (first rest))
+        (order (order-spec->order (second rest)))
+        (cons-alloca (alloca-t* "cons")))
+    (codegen cons-alloca cons-form env)
+    (irc-t*-result (irc-load-atomic (gen-memref-address
+                                     (irc-load cons-alloca)
+                                     (- +cons-car-offset+ +cons-tag+))
+                                    :order order)
+                   result)))
+
+(defun codegen-atomic-cdr (result rest env)
+  (let ((cons-form (first rest))
+        (order (order-spec->order (second rest)))
+        (cons-alloca (alloca-t* "cons")))
+    (codegen cons-alloca cons-form env)
+    (irc-t*-result (irc-load-atomic (gen-memref-address
+                                     (irc-load cons-alloca)
+                                     (- +cons-cdr-offset+ +cons-tag+))
+                                    :order order)
                    result)))
 
 ;;; CLEAVIR-PRIMOP:FUNCALL
