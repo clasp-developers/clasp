@@ -244,8 +244,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (cmp-log "About to set source pos%N")
   (dbg-set-current-source-pos rest)
   (cmp-log "About to do case on head: %s%N" head)
-  (let* ((functions (gethash head *special-operator-dispatch* 'nil))
-         (function (cadr functions)))
+  (let ((function (gethash head *special-operator-dispatch* 'nil)))
     (if function
 	(funcall function result rest env)
 	(error "Unknown special operator : ~a" head))))
