@@ -488,7 +488,7 @@ representing a tagged fixnum."
     (irc-struct-gep %instance% instance* +instance.rack-index+)))
 
 (defun irc-rack (instance-tagged)
-  (irc-load-atomic (irc-rack-address instance-tagged) "rack-tagged"))
+  (irc-load-atomic (irc-rack-address instance-tagged) :label "rack-tagged"))
 
 (defun irc-rack-set (instance-tagged rack)
   (irc-store-atomic rack (irc-rack-address instance-tagged)))
@@ -566,16 +566,20 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data)
+                   :label "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset)
+                   :label "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size)
+                   :label "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank)
+                   :label "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
@@ -690,12 +694,12 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-load-atomic (source &optional (label "") (align 8))
+(defun irc-load-atomic (source
+                        &key (label "") (align 8) (order 'llvm-sys:monotonic))
   (let ((inst (irc-load source label)))
-    (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    ;; atomic loads require an explicit alignment.
+    (llvm-sys:set-alignment inst align)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
@@ -718,12 +722,12 @@ Otherwise do a variable shift."
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
-(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil) (align 8))
+(defun irc-store-atomic (val destination
+                         &key (label "") (is-volatile nil) (align 8)
+                           (order 'llvm-sys:monotonic))
   (let ((inst (irc-store val destination label is-volatile)))
     (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-%cmpxchg (ptr cmp new)
