@@ -40,6 +40,8 @@
     (cleavir-primop:cdr codegen-cdr)
     (core::car-atomic codegen-atomic-car)
     (core::cdr-atomic codegen-atomic-cdr)
+    (core::rplaca-atomic codegen-atomic-rplaca)
+    (core::rplacd-atomic codegen-atomic-rplacd)
     (cleavir-primop:funcall codegen-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable)
     (cleavir-primop:case codegen-primop-case)
@@ -1039,7 +1041,7 @@ jump to blocks within this tagbody."
                                      (- +cons-cdr-offset+ +cons-tag+)))
                    result)))
 
-;;; ATOMIC CAR, CDR
+;;; ATOMIC CAR, CDR, RPLACA, RPLACD
 
 (defun order-spec->order (order-spec)
   (case order-spec
@@ -1072,6 +1074,36 @@ jump to blocks within this tagbody."
                                      (- +cons-cdr-offset+ +cons-tag+))
                                     :order order)
                    result)))
+
+(defun codegen-atomic-rplaca (result rest env)
+  (let ((nv-form (first rest))
+        (cons-form (second rest))
+        (order (order-spec->order (third rest)))
+        (cons-alloca (alloca-t* "cons"))
+        (nv-alloca (alloca-t* "nv")))
+    (codegen nv-alloca nv-form env)
+    (codegen cons-alloca cons-form env)
+    (let ((nv (irc-load nv-alloca)))
+      (irc-store-atomic nv (gen-memref-address
+                            (irc-load cons-alloca)
+                            (- +cons-car-offset+ +cons-tag+))
+                        :order order)
+      (irc-t*-result nv result))))
+
+(defun codegen-atomic-rplacd (result rest env)
+  (let ((nv-form (first rest))
+        (cons-form (second rest))
+        (order (order-spec->order (third rest)))
+        (cons-alloca (alloca-t* "cons"))
+        (nv-alloca (alloca-t* "nv")))
+    (codegen nv-alloca nv-form env)
+    (codegen cons-alloca cons-form env)
+    (let ((nv (irc-load nv-alloca)))
+      (irc-store-atomic nv (gen-memref-address
+                            (irc-load cons-alloca)
+                            (- +cons-cdr-offset+ +cons-tag+))
+                        :order order)
+      (irc-t*-result nv result))))
 
 ;;; CLEAVIR-PRIMOP:FUNCALL
 
