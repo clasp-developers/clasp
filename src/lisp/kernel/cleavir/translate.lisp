@@ -523,13 +523,13 @@
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            enclosed-function
-                           (literal:constants-table-value (cmp:function-info-reference-index function-info-ref))
+                           (literal:constants-table-value (cmp:function-description-reference-index function-info-ref))
                            sninputs)))
                    (:indefinite
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list enclosed-function
-                           (literal:constants-table-value (cmp:function-info-reference-index function-info-ref))
+                           (literal:constants-table-value (cmp:function-description-reference-index function-info-ref))
                            sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
