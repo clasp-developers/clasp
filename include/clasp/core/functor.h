@@ -110,7 +110,7 @@ public:
 //  FunctionDescription_O() {};
 };
 
-FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp declares=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1);
+ FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp declares=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1, llvmo::ObjectFile_sp of = _Unbound<llvmo::ObjectFile_O>());
 
 
 FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point=NULL);

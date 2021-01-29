@@ -410,15 +410,16 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t
 
 LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
 {NO_UNWIND_BEGIN();
-  core::T_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
-                                                 NULL,
-                                                 core::T_sp(lambdaList_t),
-                                                 core::T_sp(docstring_t),
-                                                 core::T_sp(declares_t),
-                                                 core::T_sp(sourcePathname_t),
-                                                 lineno,
-                                                 column,
-                                                 filepos);
+  core::FunctionDescription_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
+                                                                   NULL,
+                                                                   core::T_sp(lambdaList_t),
+                                                                   core::T_sp(docstring_t),
+                                                                   core::T_sp(declares_t),
+                                                                   core::T_sp(sourcePathname_t),
+                                                                   lineno,
+                                                                   column,
+                                                                   filepos,
+                                                                   my_thread->topObjectFile());
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }

@@ -92,7 +92,8 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                T_sp sourcePathname,
                                                int lineno,
                                                int column,
-                                               int filePos) {
+                                               int filePos,
+                                               llvmo::ObjectFile_sp ofi) {
   GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point );
   fdesc->_sourcePathname = sourcePathname;
   fdesc->_functionName = functionName;
@@ -102,6 +103,7 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
+  fdesc->_ObjectFile = ofi;
   return fdesc;
 }
 
