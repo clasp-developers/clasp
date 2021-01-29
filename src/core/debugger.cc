@@ -763,6 +763,7 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 
 void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 {
+//  printf("%s:%d:%s  fixme \n", __FILE__, __LINE__, __FUNCTION__ );
   BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
   size_t num = 0;
   WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
@@ -780,46 +781,17 @@ void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 }
 
 
+#if 0
 void register_jitted_object(const std::string& name, uintptr_t address, int size) {
   BT_LOG((buf,"Starting\n" ));
   LOG(BF("STACKMAP_LOG  %s name: %s %p %d\n") % __FUNCTION__ % name % (void*)address % size );
   WITH_READ_WRITE_LOCK(debugInfo()._JittedObjectsLock);
   debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
 }
+#endif
 
-void search_jitted_objects(std::vector<BacktraceEntry>& backtrace, bool searchFunctionDescriptions)
-{
-  BT_LOG((buf,"Starting search_jitted_objects\n" ));
-  WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
-  for ( auto entry : debugInfo()._JittedObjects ) {
-    BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
-    if (backtrace.size()==0 && !searchFunctionDescriptions) {
-      WRITE_DEBUG_IO(BF("Jitted-object object-start %p object-end %p name %s\n") % (void*)entry._ObjectPointer % (void*)(entry._ObjectPointer+entry._Size) % entry._Name);
-    }
-    for (size_t j=0; j<backtrace.size(); ++j ) {
-      BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
-      if (!searchFunctionDescriptions) { // searching for functions
-        if (entry._ObjectPointer<=backtrace[j]._ReturnAddress && backtrace[j]._ReturnAddress<(entry._ObjectPointer+entry._Size)) {
-          backtrace[j]._Stage = lispFrame; // jitted functions are lisp functions
-          backtrace[j]._FunctionStart = entry._ObjectPointer;
-          backtrace[j]._FunctionEnd = entry._ObjectPointer+entry._Size;
-          backtrace[j]._SymbolName = entry._Name;
-          BT_LOG((buf,"MATCHED!!!\n"));
-        }
-      }
-      if (searchFunctionDescriptions) { // searching for function descriptions
-        size_t btlen = backtrace[j]._SymbolName.size();
-        if (entry._Name.compare(0,btlen,backtrace[j]._SymbolName)==0) {
-          if (entry._Name.compare(btlen,5,"^DESC")==0) {
-            backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
-            backtrace[j]._FunctionDescription = entry._ObjectPointer;
-            BT_LOG((buf,"MATCHED!!!\n"));
-          }
-        }
-      }
-    }
-  }
-}
+
+
 
 
 void add_dynamic_library_using_handle(const std::string& libraryName, void* handle) {
@@ -1506,9 +1478,9 @@ void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace) {
   walk_loaded_objects(backtrace,symbol_table_memory);
     // Now search the jitted objects
 //  printf("%s:%d:%s search_jitted_objects false\n", __FILE__, __LINE__, __FUNCTION__);
-  search_jitted_objects(backtrace,false);
+  llvmo::search_jitted_objects(backtrace,false);
 //  printf("%s:%d:%s search_jitted_objects true\n", __FILE__, __LINE__, __FUNCTION__);
-  search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
+  llvmo::search_jitted_objects(backtrace,true); // Search them twice to find all FunctionDescription objects
 //  printf("%s:%d:%s search_jitted_stackmaps\n", __FILE__, __LINE__, __FUNCTION__);
   search_jitted_stackmaps(backtrace);
   if (backtrace.size()==0) {

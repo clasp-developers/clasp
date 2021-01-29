@@ -744,7 +744,11 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
     if (print.notnilp()) write_bf_stream(BF("%s:%d Adding faso %s object file %d to jit\n") % __FILE__ % __LINE__ % filename % ofi);
-    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(of_start,of_length,header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
+    llvm::StringRef sbuffer((const char*)of_start, of_length);
+    std::string uniqueName = llvmo::uniqueMemoryBufferName("buffer",header->_ObjectFiles[ofi]._ObjectID, ofi);
+    llvm::StringRef name(uniqueName);
+    std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
+    llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
     jit->addObjectFile(of,print.notnilp());
     T_mv startupName = core__startup_function_name_and_linkage(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);

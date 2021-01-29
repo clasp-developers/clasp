@@ -13,6 +13,8 @@
 #include <clasp/core/array.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/imageSaveLoad.h>
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
@@ -137,6 +139,7 @@ ThreadLocalState::ThreadLocalState() :
   , _PendingInterrupts(_Nil<core::T_O>())
   , _CatchTags(_Nil<core::T_O>())
   , _ObjectFileStartUp(NULL)
+  , _ObjectFiles(_Nil<core::T_O>())
   , _CleanupFunctions(NULL)
 {
   my_thread = this;
@@ -172,6 +175,22 @@ size_t ThreadLocalState::random() {
   return this->_xorshf_z;
 }
 
+void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {
+  this->_ObjectFiles = core::Cons_O::create(of,this->_ObjectFiles);
+}
+
+llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
+  return gc::As<llvmo::ObjectFile_sp>(CONS_CAR(this->_ObjectFiles));
+}
+
+void ThreadLocalState::popObjectFile() {
+  if (this->_ObjectFiles.consp()) {
+    this->_ObjectFiles = CONS_CDR(this->_ObjectFiles);
+    return;
+  }
+  SIMPLE_ERROR(BF("There were no more object files"));
+}
+
 ThreadLocalState::~ThreadLocalState() {
 }
 
@@ -202,10 +221,6 @@ inline void registerTypesAllocated(size_t bytes) {
 }
 
 void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize_GCRoots=true ) {
-  if (initialize_GCRoots) {
-    // The main process needs to initialize _GCRoots before classes are initialized.
-    this->_GCRoots = new gctools::GCRootsInModule();
-  }
 //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);
   this->_Process = process;
   process->_ThreadInfo = this;

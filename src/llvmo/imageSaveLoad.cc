@@ -18,17 +18,17 @@
 
 namespace llvmo { // ObjectFile_O
 
-ObjectFile_sp ObjectFile_O::create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
+ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
 {
-  GC_ALLOCATE_VARIADIC(ObjectFile_O,of,start,size,startupID,jitdylib,fasoName,fasoIndex);
-  DEBUG_OBJECT_FILES(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
+  DEBUG_OBJECT_FILES(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
+  ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(std::move(buffer),startupID,jitdylib,fasoName,fasoIndex);
   return of;
 }
 
 
 ObjectFile_O::~ObjectFile_O() {
-  printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
-  printf("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule );
+  DEBUG_OBJECT_FILES(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
+  DEBUG_OBJECT_FILES(("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule ));
 }
 
 }; // namespace llvmo, ObjectFile_O
@@ -47,26 +47,25 @@ namespace llvmo {
 
 
 Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize) {
-  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
-  printf("%s:%d:%s  dataScanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize );
-  printf("%s:%d:%s  Code_O start = %p  end = %p\n", __FILE__, __LINE__, __FUNCTION__, &*code,&code->_DataCode[totalSize]);
+//  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
+  Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
+  DEBUG_OBJECT_FILES(("%s:%d:%s  dataScanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize ));
+  DEBUG_OBJECT_FILES(("%s:%d:%s  Code_O start = %p  end = %p\n", __FILE__, __LINE__, __FUNCTION__, &*code,&code->_DataCode[totalSize]));
   return code;
 }
 
 void* Code_O::allocateHead(uintptr_t size, uint32_t align) {
-  const unsigned char* head = this->_DataCode.data()+this->_HeadOffset+size;
+  const unsigned char* head = this->_DataCode.data()+this->_HeadOffset;
   head = (const unsigned char*)gctools::AlignUp((uintptr_t)head,align);
-  uintptr_t headOffset = (uintptr_t)head-(uintptr_t)this->_DataCode.data();
+  uintptr_t headOffset = (uintptr_t)head-(uintptr_t)this->_DataCode.data()+size;
   if (headOffset > this->_TailOffset) {
     SIMPLE_ERROR(BF("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") % this->_DataCode.size() % (headOffset-this->_TailOffset));
   }
-  intptr_t delta = headOffset-this->_HeadOffset;
-  if (delta<size) {
-    printf("%s:%d Bad allocation\n", __FILE__, __LINE__ );
+  const unsigned char* tail = this->_DataCode.data()+this->_TailOffset;
+  if (tail<head) {
+    printf("%s:%d Bad allocation tail@%p is less than head@%p\n", __FILE__, __LINE__, tail, head );
     abort();
   }
-  const unsigned char* tail = this->_DataCode.data()+this->_TailOffset;
-  printf("%s:%d   head %p   tail %p\n", __FILE__, __LINE__, head, tail );
   return (void*)head;
 }
 
@@ -77,18 +76,21 @@ void* Code_O::allocateTail(uintptr_t size, uint32_t align) {
   if (this->_HeadOffset > tailOffset) {
     SIMPLE_ERROR(BF("There is not enough memory in the Code_O object - current size: %lu and we are over by %lu\n") % this->_DataCode.size() % (this->_HeadOffset-tailOffset));
   }
-  intptr_t delta = tailOffset-this->_TailOffset;
-  if (delta<size) {
-    printf("%s:%d Bad allocation\n", __FILE__, __LINE__ );
-    abort();
-  }
   this->_TailOffset = tailOffset;
   const unsigned char* head = this->_DataCode.data()+this->_HeadOffset;
-  printf("%s:%d   head %p   tail %p\n", __FILE__, __LINE__, head, tail );
+  if (tail<head) {
+    printf("%s:%d Bad allocation tail@%p is less than head@%p\n", __FILE__, __LINE__, tail, head );
+    abort();
+  }
   return (void*)tail;
 }
 
 
+void Code_O::describe() const
+{
+  core::write_bf_stream(BF("Code start: %p  stop: %p  size: %lu\n") % (void*)this % (void*)&this->_DataCode[this->_DataCode.size()] % (uintptr_t)((char*)&this->_DataCode[this->_DataCode.size()]-(char*)this));
+};
+  
 
 };
 
@@ -196,7 +198,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
       auto reloc = section.getRelocatedSection();
       stackmap = (uintptr_t)reloc->getAddress();
       stackmap_size = (size_t)reloc->getSize();
-      printf("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size);
+      DEBUG_OBJECT_FILES(("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size));
     }
   }
   unsigned long section_size = 0;

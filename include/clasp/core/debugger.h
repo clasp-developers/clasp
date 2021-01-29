@@ -200,7 +200,14 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
-  BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0), _InvocationHistoryFrameAddress(0) {};
+  BacktraceEntry() : _Stage(undefined),_ReturnAddress(0),_FunctionStart(0),_FunctionEnd(~0),_BasePointer(0),_InstructionOffset(0),_FrameSize(0),_FrameOffset(0), _FunctionDescription(0),
+                     _InvocationHistoryFrameAddress(0),
+                     _FileName(""),
+                     _StartFileName(""),
+                     _LineNo(0),
+                     _Column(0),
+                     _StartLine(0),
+                     _Discriminator(0)  {};
   BacktraceFrameEnum   _Stage;
   uintptr_t            _ReturnAddress;
   uintptr_t            _FunctionStart;
@@ -210,8 +217,15 @@ struct BacktraceEntry {
   int                  _FrameSize;
   int                  _FrameOffset;
   std::string          _SymbolName;
-  uintptr_t            _FunctionDescription;
   uintptr_t            _InvocationHistoryFrameAddress;
+  std::string          _FileName;
+  std::string          _StartFileName;
+  uint32_t             _LineNo;
+  uint32_t             _Column;
+  uint32_t             _StartLine;
+  uint32_t             _Discriminator;
+  // Maybe useless
+  uintptr_t            _FunctionDescription;
 };
 
 };

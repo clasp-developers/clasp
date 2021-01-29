@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/llvmo/llvmoExpose.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
@@ -523,13 +524,13 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
 }
 
 GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
+  DEBUG_OBJECT_FILES(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
   this->_num_entries = num_entries;
   this->_capacity = num_entries;
   this->_boehm_shadow_memory = shadow_mem;
   this->_module_memory = module_mem;
-  printf("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,this->_module_memory, (char*)this->_module_memory+this->_capacity);
   this->setup_transients(transient_alloca, transient_entries);
 }
 
@@ -538,21 +539,21 @@ GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_
  We can allocate the literals anywhere.
  */
 GCRootsInModule::GCRootsInModule(size_t capacity) {
-  this->_function_pointer_count = 0;
-  this->_function_pointers = NULL;
-  this->_num_entries = 0;
-  this->_capacity = capacity;
 #if defined(USE_BOEHM)
-  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(this->_capacity));
+  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
   core::T_O** module_mem = shadow_mem;
 #endif
 #ifdef USE_MPS
   core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(0);
-  core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*this->_capacity));
+  core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
 #endif
+  printf("%s:%d:%s Interpreted code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+capacity);
+  this->_function_pointer_count = 0;
+  this->_function_pointers = NULL;
+  this->_num_entries = 0;
+  this->_capacity = capacity;
   this->_boehm_shadow_memory = shadow_mem;
   this->_module_memory = module_mem;
-  printf("%s:%d:%s Interpreted code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,this->_module_memory, (char*)this->_module_memory+this->_capacity);
   memset(module_mem, 0, sizeof(core::T_O*)*this->_capacity);
 #ifdef USE_MPS
   // MPS registers the roots with the GC and doesn't need a shadow table

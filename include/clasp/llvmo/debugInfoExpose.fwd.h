@@ -40,5 +40,8 @@ FORWARD(DIBuilder);
 
 core::T_mv llvm_sys__address_information(void* address, bool verbose);
 
+void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool searchFunctionDescriptions);
+
+
 };
 #endif

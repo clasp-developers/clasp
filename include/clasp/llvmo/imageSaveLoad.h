@@ -28,7 +28,7 @@ FORWARD(ObjectFile);
 class ObjectFile_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", core::CxxObject_O);
 public:
-  void*         _Start;
+  std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
   size_t        _Size;
   size_t        _StartupID;
   JITDylib_sp   _JITDylib;
@@ -42,8 +42,8 @@ public:
   Code_sp       _Code;
   gctools::GCRootsInModule* _GCRootsInModule;
 public:
-  static ObjectFile_sp create(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
- ObjectFile_O(void* start, size_t size, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _Start(start), _Size(size), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
+  static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+  ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
   ~ObjectFile_O();
 }; // ObjectFile_O class def
 }; // llvmo
@@ -95,10 +95,18 @@ class Code_O : public core::CxxObject_O {
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
   ObjectFile_sp _ObjectFile;
+  void*         _TextSegmentStart;
+  void*         _TextSegmentEnd;
+  uintptr_t     _TextSegmentSectionId;
+  void*         _StackmapStart;
+  uintptr_t     _StackmapSize;
+  void*         _LiteralVectorStart;
+  size_t        _LiteralVectorLength;
   gctools::GCArray_moveable<uint8_t> _DataCode;
 
   void* allocateHead(uintptr_t size, uint32_t align);
   void* allocateTail(uintptr_t size, uint32_t align);
+  void describe() const;
 
  Code_O(uintptr_t totalSize ) :
   _TailOffset(totalSize)
@@ -168,13 +176,13 @@ public:
     IPMMAlloc(ClaspAllocator &Parent, AllocationMap SegBlocks)
       : Parent(Parent), SegBlocks(std::move(SegBlocks)) {}
       MutableArrayRef<char> getWorkingMemory(ProtectionFlags Seg) override {
-        printf("%s:%d:%s Seg = 0x%x base = %p  size = %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg, static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize() );
+        DEBUG_OBJECT_FILES(("%s:%d:%s Seg = 0x%x base = %p  size = %lu\n", __FILE__, __LINE__, __FUNCTION__, Seg, static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize() ));
         assert(SegBlocks.count(Seg) && "No allocation for segment");
         return {static_cast<char *>(SegBlocks[Seg].base()), SegBlocks[Seg].allocatedSize()};
       }
       JITTargetAddress getTargetMemory(ProtectionFlags Seg) override {
         assert(SegBlocks.count(Seg) && "No allocation for segment");
-        printf("%s:%d:%s Seg = 0x%x Returning %p\n", __FILE__, __LINE__, __FUNCTION__, Seg, (void*)pointerToJITTargetAddress(SegBlocks[Seg].base())); 
+        DEBUG_OBJECT_FILES(("%s:%d:%s Seg = 0x%x Returning %p\n", __FILE__, __LINE__, __FUNCTION__, Seg, (void*)pointerToJITTargetAddress(SegBlocks[Seg].base()))); 
         return pointerToJITTargetAddress(SegBlocks[Seg].base());
       }
       void finalizeAsync(FinalizeContinuation OnFinalize) override {
@@ -193,7 +201,7 @@ public:
           auto &Prot = KV.first;
           auto &Block = KV.second;
           if (Prot & sys::Memory::MF_EXEC)
-            if (auto EC = sys::Memory::protectMappedMemory(Block,Prot))
+            if (auto EC = sys::Memory::protectMappedMemory(Block,sys::Memory::MF_RWE_MASK))
               return errorCodeToError(EC);
             sys::Memory::InvalidateInstructionCache(Block.base(),
                                                     Block.allocatedSize());
@@ -207,14 +215,14 @@ public:
 
     AllocationMap Blocks;
 
-    printf("%s:%d:%s  Interating Request\n", __FILE__, __LINE__, __FUNCTION__ );
+    DEBUG_OBJECT_FILES(("%s:%d:%s  Interating Request\n", __FILE__, __LINE__, __FUNCTION__ ));
     size_t totalSize = 0;
     size_t scanSize = 0;
     for (auto &KV : Request) {
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
       uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
-      printf("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, Seg.getAlignment(), Seg.getContentSize(), Seg.getZeroFillSize());
+      DEBUG_OBJECT_FILES(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, Seg.getAlignment(), Seg.getContentSize(), Seg.getZeroFillSize()));
       // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
       if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
         // We have to scan the entire RW data region (sigh) for pointers
@@ -222,9 +230,10 @@ public:
       }
       totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
     }
-    printf("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize);
+    DEBUG_OBJECT_FILES(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
     Code_sp codeObject = Code_O::make(scanSize,totalSize);
-    my_thread->_Code = codeObject;
+    // Associate the Code object with the current ObjectFile
+    my_thread->topObjectFile()->_Code = codeObject;
     for (auto &KV : Request) {
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
@@ -232,10 +241,10 @@ public:
       void* base;
       if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
         base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
-        printf("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base );
+        DEBUG_OBJECT_FILES(("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
       } else {
         base = codeObject->allocateTail(SegmentSize,Seg.getAlignment());
-        printf("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base );
+        DEBUG_OBJECT_FILES(("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
       }
       sys::MemoryBlock SegMem(base,SegmentSize);
         // Zero out the zero-fill memory

@@ -45,7 +45,7 @@ template <class T>
 class tagged_ptr {
 public:
   typedef T Type;
-  Type *theObject;
+  __attribute__((address_space (1))) Type *theObject;
 
 public:
   //Default constructor, set theObject to NULL

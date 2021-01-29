@@ -74,7 +74,7 @@ namespace core {
     inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
-    gctools::GCRootsInModule*  _GCRoots;
+//    gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;
     size_t  _unwinds;
     stack_t _original_stack;
@@ -89,8 +89,7 @@ namespace core {
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     void*             _ObjectFileStartUp;
-    llvmo::ObjectFile_sp _ObjectFile;
-    llvmo::Code_sp       _Code;
+    core::T_sp        _ObjectFiles;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
@@ -124,6 +123,9 @@ namespace core {
     StringOutputStream_sp _BFormatStringOutputStream;
     StringOutputStream_sp _WriteToStringOutputStream;
     size_t random();
+    void pushObjectFile(llvmo::ObjectFile_sp of);
+    llvmo::ObjectFile_sp topObjectFile();
+    void popObjectFile();
     ~ThreadLocalState();
   };
 

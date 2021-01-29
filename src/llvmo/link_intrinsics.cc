@@ -692,7 +692,7 @@ core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
   core::FunctionDescription_sp fi((gctools::Tagged)functionDesc);
-  printf("%s:%d:%s  functionDescription -> %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str());
+//  DEBUG_OBJECT_FILES(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
   core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(fi,funcPtr);
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,

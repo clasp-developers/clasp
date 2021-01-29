@@ -455,7 +455,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
 
   my_thread->create_sigaltstack();
-  my_thread->_GCRoots = new gctools::GCRootsInModule();
   Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_tagged_Symbol_OP_nil);
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();

@@ -379,7 +379,7 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/function-description (function-description index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  (warn "What do we do with the function entry-point????")
+  #+(or)(warn "What do we do with the function entry-point????")
   (add-creator "ltvc_make_function_description" index function-description
                (load-time-reference-literal (sys:function-description-source-pathname function-description) read-only-p :toplevelp nil)
                (load-time-reference-literal (sys:function-description-function-name function-description) read-only-p :toplevelp nil)

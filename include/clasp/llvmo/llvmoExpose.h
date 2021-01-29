@@ -4562,7 +4562,7 @@ namespace llvmo {
   using namespace llvm;
   using namespace llvm::orc;
 
-  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
+//  void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info);
 };
 
 // Don't allow the object to move, but maybe I'll need to collect it
@@ -4585,7 +4585,7 @@ public:
   bool do_lookup(JITDylib& dylib, const std::string& Name, void*& pointer);
   core::Pointer_sp lookup(JITDylib& dylib, const std::string& Name);
   core::T_sp lookup_all_dylibs(const std::string& Name);
-  JITDylib& getMainJITDylib();
+  JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   void addObjectFile(ObjectFile_sp of, bool print=false);
@@ -4596,6 +4596,7 @@ public:
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
+  JITDylib_sp _MainJITDylib;
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
 //  llvm::jitlink::JITLink* _LinkLayer;
 #if _TARGET_OS_DARWIN
@@ -4711,7 +4712,7 @@ namespace llvmo {
 void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
- std::string uniqueMemoryBufferName(const std::string& prefix, void* start, size_t size);
+ std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
  
 };
 

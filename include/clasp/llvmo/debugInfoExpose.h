@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/array.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/ql.h>
 //#include "llvm/DataLayout.h"
 
@@ -1006,12 +1007,13 @@ ENUM_FROM_OBJECT_TRANSLATOR(llvm::DICompileUnit::DebugNameTableKind,llvmo::_sym_
 
 
 namespace llvmo {
-void save_object_file_info( ObjectFile_sp of );
-core::T_mv object_file_for_instruction_pointer(core::Pointer_sp instruction_pointer, bool verbose);
+void save_object_file_and_code_info( ObjectFile_sp of );
+core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose);
 
 size_t number_of_object_files();
 
 size_t total_memory_allocated_for_object_files();
+
 
 };
 

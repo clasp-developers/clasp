@@ -29,6 +29,7 @@ void* obj_skip(void*);
 namespace gctools {
 
 int              global_cons_kind;
+int              global_code_kind;
 int              global_container_proc_index;
 int              global_container_kind;
 size_t           global_stamp_max;
@@ -372,6 +373,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   uintptr_t class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
   uintptr_t container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
 #endif
+  uintptr_t code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   uintptr_t atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);
   global_container_kind = container_kind;
   for ( cur_stamp=0; cur_stamp<local_stamp_max; ++cur_stamp ) {
@@ -382,6 +384,10 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 #endif
       if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Lisp_O) ) {
         local_stamp_layout[cur_stamp].boehm._kind = lisp_kind;
+        local_stamp_layout[cur_stamp].boehm._kind_defined = true;
+      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_llvmo__Code_O) ) {
+        local_stamp_layout[cur_stamp].boehm._kind = code_kind;
+        global_code_kind = code_kind;
         local_stamp_layout[cur_stamp].boehm._kind_defined = true;
       } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O) ) {
         local_stamp_layout[cur_stamp].boehm._kind = cons_kind;

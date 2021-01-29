@@ -146,10 +146,10 @@ llvm::Value* llvm_cast_error_ptr;
 
 namespace llvmo {
 
-std::string uniqueMemoryBufferName(const std::string& prefix, void* start, size_t size) {
+std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size) {
   stringstream ss;
   ss << prefix;
-  ss << "@" << start << "s" << size;
+  ss << "@" << start << "-" << size;
 //  printf("%s:%d uniqueMemoryBufferName -> %s\n", __FILE__, __LINE__, ss.str().c_str());
   return ss.str();
 }
@@ -3934,13 +3934,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {
-      if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-        printf("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal());
-      }
+      DEBUG_OBJECT_FILES(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       if (S.getName().str() == TEXT_NAME) {
         llvm::jitlink::SectionRange range(S);
+        Code_sp currentCode = my_thread->topObjectFile()->_Code;
         my_thread->_text_segment_start = (void*)range.getStart();
         my_thread->_text_segment_size = range.getSize();
+        currentCode->_TextSegmentStart = (void*)range.getStart();
+        currentCode->_TextSegmentEnd = (void*)((char*)range.getStart()+range.getSize());
+        currentCode->_TextSegmentSectionId = 0;
+        DEBUG_OBJECT_FILES(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
         my_thread->_text_segment_SectionID = 0;
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
@@ -4006,9 +4009,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 };
 
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  DEBUG_OBJECT_FILES(("%s:%d:%s You OWN MemoryBuffer @%p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
-  my_thread->_object_file_start = (void*)const_cast<char*>(buffer->getBufferStart());
-  my_thread->_object_file_size = buffer->getBufferSize();
+  DEBUG_OBJECT_FILES(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
+                      __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
+  // Grab the buffer and put it in the current ObjectFile
+  my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
+  save_object_file_and_code_info(my_thread->topObjectFile());
+  buffer.reset();
 }
 
 void register_symbol_with_libunwind(const std::string& name, uint64_t start, size_t size) {
@@ -4029,6 +4035,7 @@ void register_symbol_with_libunwind(const std::string& name, uint64_t start, siz
 #endif
 }
 
+#if 0
 void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::RuntimeDyld::LoadedObjectInfo& loaded_object_info)
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
@@ -4073,6 +4080,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
     }
   }
 }
+#endif
 
 
 CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
@@ -4263,15 +4271,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                                                                               kw::_sym_function,
                                                                               _Nil<core::T_O>(),
                                                                               _Nil<core::T_O>() );
-  if (my_thread->_object_file_start) {
-    DEBUG_OBJECT_FILES(("%s:%d:%s   I don't think I should save_object_file_info here - I think I should capture the ObjectFile from the LLJIT and save it\n", __FILE__, __LINE__, __FUNCTION__ ));
-    JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&jit->_LLJIT->getMainJITDylib());
-    ObjectFile_sp of = ObjectFile_O::create((char*)my_thread->_object_file_start, my_thread->_object_file_size, 0, dylib_sp, "REPL", 0 );
-    save_object_file_info(of);
-    my_thread->_object_file_start = NULL;
-  } else {
-    printf("%s:%d There is no object file info to register\n", __FILE__, __LINE__ );
-  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
   return functoid;
 }
 
@@ -4348,20 +4348,25 @@ ClaspJIT_O::ClaspJIT_O() {
   JTMB.setCodeModel(CodeModel::Small);
   JTMB.setRelocationModel(Reloc::Model::PIC_);
 //  orc::enableObjCRegistration("libobjc.dylib");
-  auto J = ExitOnErr(
+auto J = ExitOnErr(
                      LLJITBuilder()
                      .setJITTargetMachineBuilder(std::move(JTMB))
                      .setPlatformSetUp(orc::setUpMachOPlatform)
                      .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
 //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
-                                                     auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-                                                     ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
-                                                     ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-                                                     ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
-                                                     return ObjLinkingLayer;
-                                                   })
+#if 1 //def USE_MPS
+                       auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
+#else
+                       auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
+#endif
+                       ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+                       ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+                       ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
+                       return ObjLinkingLayer;
+                     })
                      .create());
   this->_LLJIT =  std::move(J);
+  this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
   printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
 }
@@ -4406,8 +4411,8 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
     core::T_sp jcur = _lisp->_Roots._JITDylibs.load();
     void* ptr;
     while (jcur.consp()) {
-        JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
-        JITDylib& jd = *jitdylib->wrappedPtr();
+      JITDylib_sp jitdylib = gc::As<JITDylib_sp>(CONS_CAR(jcur));
+      JITDylib& jd = *jitdylib->wrappedPtr();
         bool found = this->do_lookup(jd,name,ptr);
         if (found) {
             clasp_ffi::ForeignData_sp sp_sym = clasp_ffi::ForeignData_O::create(ptr);
@@ -4421,13 +4426,13 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
             
         
     
-
-
 CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
 //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
-//  printf("%s:%d:%s  module added name: %s\n", __FILE__, __LINE__, __FUNCTION__, module->wrappedPtr()->getModuleIdentifier().c_str());
+ std::unique_ptr<llvm::MemoryBuffer> empty;
+  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), 0, this->getMainJITDylib() ,"REPL", 0);
+  my_thread->pushObjectFile(of);
   ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
 
@@ -4435,25 +4440,13 @@ CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, T
 void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
 {
   // Create an llvm::MemoryBuffer for the ObjectFile bytes
-//  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
-  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)of->_Start % of->_Size );
-  llvm::StringRef sbuffer((const char*)of->_Start, of->_Size);
-  std::string uniqueName = uniqueMemoryBufferName("buffer",(void*)of->_Start, of->_Size);
-  llvm::StringRef name(uniqueName);
-  std::unique_ptr<llvm::MemoryBuffer> mbuffer = llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false);
+  //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
+  if (print) core::write_bf_stream(BF("%s:%d Adding object file at %p  %lu bytes\n")  % __FILE__ % __LINE__  % (void*)of->_MemoryBuffer->getBufferStart() % of->_MemoryBuffer->getBufferSize() );
   // Force the object file to be linked using MaterializationUnit::doMaterialize(...)
   if (print) core::write_bf_stream(BF("%s:%d Materializing\n") % __FILE__ % __LINE__ );
   llvm::ExitOnError ExitOnErr;
-  ExitOnErr(this->_LLJIT->addObjectFile(*of->_JITDylib->wrappedPtr(),std::move(mbuffer)));
-//  printf("%s:%d Added object file %s:%zu:%zu\n", __FILE__, __LINE__, faso_filename, startupID, faso_index );
-#if 0
-  if (erro) {
-    printf("%s:%d Could not addObjectFile\n", __FILE__, __LINE__ );
-  } else {
-    printf("%s:%d Added object file %s:%zu:%zu\n", __FILE__, __LINE__, faso_filename, startupID, faso_index );
-  }
-#endif
-  save_object_file_info(of);
+  my_thread->pushObjectFile(of);
+  ExitOnErr(this->_LLJIT->addObjectFile(*of->_JITDylib->wrappedPtr(),std::move(of->_MemoryBuffer)));
 }
 
 /*
@@ -4479,19 +4472,24 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
 #endif
   if (initialDataOrNull) {
     DEBUG_OBJECT_FILES(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
+    // Clear out the current ObjectFile and Code
+    my_thread->popObjectFile();
     return (void*)replPtrRaw;
   }
   // Running the ObjectFileStartUp function registers the startup functions - now we can invoke them
   if (core::startup_functions_are_waiting()) {
+    // This is where we can take the my_thread->_ObjectFile and my_thread->_Code and write it into the FunctionDescription_O objects that are bound to functions.
     void* result = core::startup_functions_invoke(NULL);
     DEBUG_OBJECT_FILES(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
+    // Clear out the current ObjectFile and Code
+    my_thread->popObjectFile();
     return result;
   }
   SIMPLE_ERROR(BF("No startup functions are waiting after runInitializers\n"));
 }
 
-CL_DEFMETHOD JITDylib& ClaspJIT_O::getMainJITDylib() {
-  return this->_LLJIT->getMainJITDylib();
+CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
+  return this->_MainJITDylib;
 }
 
 std::atomic<size_t> global_JITDylibCounter;
