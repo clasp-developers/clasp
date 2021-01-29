@@ -329,7 +329,7 @@
           (never-entry-processor dynenv)
           (dynenv-needs-cleanup-p dynenv)
           (%intrinsic-call
-           "llvm.frameaddress" (list (%i32 0)) "frame"))))
+           "llvm.frameaddress.p0i8" (list (%i32 0)) "frame"))))
       (never-entry-landing-pad dynenv)))
 
 ;;; never-entry landing pads, for when we always end with a resume.

@@ -312,7 +312,7 @@
      (translate-sjlj-catch instruction next))
     (t
      ;; Assign the catch the continuation.
-     (out (%intrinsic-call "llvm.frameaddress" (list (%i32 0)) "frame")
+     (out (%intrinsic-call "llvm.frameaddress.p0i8" (list (%i32 0)) "frame")
           instruction)
      ;; Unconditional branch to the normal successor;
      ;; dynamic environment stuff is handled in layout-iblock.

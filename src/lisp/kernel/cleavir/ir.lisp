@@ -68,7 +68,8 @@
   (llvm-sys:get-parent (llvm-sys:get-parent instr)))
 
 (defun %intrinsic-call (function-name args &optional (label ""))
-  (let* ((info (gethash function-name (cmp::get-primitives)))
+  (let* ((info (or (gethash function-name (cmp::get-primitives))
+                   (error "BUG: Not a primitive: ~a" function-name)))
          (does-not-throw (getf (cmp::primitive-properties info) :does-not-throw)))
     (when (and (null does-not-throw)) ; it's not cc_throw
       ;; If we are using llvm CALL to call the intrinsic but it can
