@@ -574,8 +574,9 @@
            (let* ((arguments
                     (parse-local-call-arguments callee lisp-arguments))
                   (function (main-function callee-info))
+                  (function-type (llvm-sys:get-function-type function))
                   (result-in-registers
-                    (cmp::irc-call-or-invoke function arguments)))
+                    (cmp::irc-call-or-invoke function-type function arguments)))
              (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
              result-in-registers)))))
 
@@ -684,8 +685,9 @@
                 opt-phis
                 (when rest-var (list rest-phi))))
              (function (main-function callee-info))
+             (function-type (llvm-sys:get-function-type function))
              (call
-               (cmp::irc-call-or-invoke function arguments)))
+               (cmp::irc-call-or-invoke function-type function arguments)))
         (llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
         call)))))
 
