@@ -1086,7 +1086,6 @@
      :lambda-list (cleavir-bir:original-lambda-list irfunction)
      :docstring (cleavir-bir:docstring irfunction)
      :declares nil
-     :form nil
      :spi spi)))
 
 (defun iblock-name (iblock)
