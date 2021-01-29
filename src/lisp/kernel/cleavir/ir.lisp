@@ -180,7 +180,7 @@ And convert everything to JIT constants."
 
 (defun closure-call-or-invoke (closure arguments &key (label ""))
   (let* ((entry-point (cmp:irc-calculate-entry closure arguments))
-         (function-type (llvm-sys:get-function-type entry-point))
+         (function-type cmp::%fn-prototype%)
          (real-args (cmp:irc-calculate-real-args arguments))
          (args (list* closure
                       (%size_t (length arguments))
