@@ -32,6 +32,11 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/InitializePasses.h"
+#if 0
+#undef NDEBUG
+#include "llvm/Support/Debug.h"
+#endif
+
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/fileSystem.h>
@@ -536,6 +541,14 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
   };
       break;
   case candoGlobals: {
+#if 0
+    {
+      const char* DebugTypes[] = { "orc", "jitlink"};
+      llvm::DebugFlag = 1;
+      llvm::setCurrentDebugTypes(DebugTypes,2);
+      printf("%s:%d:%s Turning on llvm debugging\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
+#endif
     initialize_intrinsics(); //<< comment this out - symbols disappear
     initialize_link_intrinsics();
     llvm::InitializeNativeTarget();
@@ -583,6 +596,7 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 
 void initialize_llvm(int argc, char **argv) {
 //  InitLLVM X(argc,argv);
+  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
 }
 
 };

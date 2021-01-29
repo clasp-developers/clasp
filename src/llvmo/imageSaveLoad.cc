@@ -31,6 +31,15 @@ ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES(("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule ));
 }
 
+
+void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, size_t size) {
+  std::ofstream outfile;
+  outfile.open(fileName, std::ios::binary | std::ios::out);
+  outfile.write(start,size);
+  outfile.close();
+}
+
+
 }; // namespace llvmo, ObjectFile_O
 
 

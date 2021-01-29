@@ -1,3 +1,5 @@
+#+(or)(eval-when (:compile-toplevel :execute)
+  (setq *echo-repl-read* t))
 ;;
 ;; Clasp builder code
 ;;

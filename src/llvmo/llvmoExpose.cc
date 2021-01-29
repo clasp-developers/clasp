@@ -3861,6 +3861,15 @@ namespace llvmo {
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR, const llvm::Triple &TT,
                         llvm::jitlink::PassConfiguration &Config) override {
+    Config.PrePrunePasses.push_back(
+                                    [this](jitlink::LinkGraph &G) -> Error {
+                                      for (auto &Sec : G.sections())
+                                        if (Sec.getName() == ".eh_frame")
+                                          for (auto *S : Sec.symbols()) {
+                                            S->setLive(true);
+                                          }
+                                      return Error::success();
+                                    });
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
       DEBUG_OBJECT_FILES(("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__));
       keepAliveStackmap(G);
@@ -3897,12 +3906,15 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 #ifdef _TARGET_OS_DARWIN    
 #define TEXT_NAME "__text"
+#define EH_FRAME_NAME "__eh_frame"
 #define STACKMAPS_NAME "__llvm_stackmaps"
 #elif defined(_TARGET_OS_LINUX)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #elif defined(_TARGET_OS_FREEBSD)
 #define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
 #define STACKMAPS_NAME ".llvm_stackmaps"
 #else
 #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
@@ -3945,6 +3957,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSegmentSectionId = 0;
         DEBUG_OBJECT_FILES(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
         my_thread->_text_segment_SectionID = 0;
+        DEBUG_OBJECT_FILES(("%s:%d:%s   text section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), range.getSize()));
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
@@ -3963,6 +3976,11 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             }
           }
         }
+      } else if (S.getName().str() == EH_FRAME_NAME) {
+        llvm::jitlink::SectionRange range(S);
+        void* start = (void*)range.getStart();
+        uintptr_t size = range.getSize();
+        DEBUG_OBJECT_FILES(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (S.getName().str() == STACKMAPS_NAME) {
         llvm::jitlink::SectionRange range(S);
         my_thread->_stackmap = (uintptr_t)range.getStart();
@@ -4008,9 +4026,18 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
 };
 
+std::atomic<size_t> global_object_file_number;
+
+
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   DEBUG_OBJECT_FILES(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
                       __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
+  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue() == kw::_sym_dump_repl_object_files) {
+    stringstream ss;
+    ss << "/tmp/clasp_repl_object_file_" << ++global_object_file_number << ".o";
+    DEBUG_OBJECT_FILES(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
+    ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
+  }
   // Grab the buffer and put it in the current ObjectFile
   my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
   save_object_file_and_code_info(my_thread->topObjectFile());
@@ -4237,8 +4264,9 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 }
 
 
-SYMBOL_EXPORT_SC_(CorePkg,repl);
 
+SYMBOL_EXPORT_SC_(CorePkg,repl);
+SYMBOL_EXPORT_SC_(KeywordPkg, dump_repl_object_files);
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData) {
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
@@ -4343,17 +4371,17 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 }
 
 ClaspJIT_O::ClaspJIT_O() {
-  llvm::ExitOnError ExitOnErr;
-  auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
-  JTMB.setCodeModel(CodeModel::Small);
-  JTMB.setRelocationModel(Reloc::Model::PIC_);
-//  orc::enableObjCRegistration("libobjc.dylib");
-auto J = ExitOnErr(
-                     LLJITBuilder()
-                     .setJITTargetMachineBuilder(std::move(JTMB))
-                     .setPlatformSetUp(orc::setUpMachOPlatform)
-                     .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
-//                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
+        llvm::ExitOnError ExitOnErr;
+        auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
+        JTMB.setCodeModel(CodeModel::Small);
+        JTMB.setRelocationModel(Reloc::Model::PIC_);
+        //  orc::enableObjCRegistration("libobjc.dylib");
+        auto J = ExitOnErr(
+                           LLJITBuilder()
+                           .setJITTargetMachineBuilder(std::move(JTMB))
+                           .setPlatformSetUp(orc::setUpMachOPlatform)
+                           .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
+                               //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
 #if 1 //def USE_MPS
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
 #else
@@ -4370,6 +4398,7 @@ auto J = ExitOnErr(
   printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
 }
+
 
 ClaspJIT_O::~ClaspJIT_O()
 {

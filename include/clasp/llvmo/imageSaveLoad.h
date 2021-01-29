@@ -45,6 +45,7 @@ public:
   static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
   ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
   ~ObjectFile_O();
+  static void writeToFile(const std::string& filename, const char* start, size_t size);
 }; // ObjectFile_O class def
 }; // llvmo
 /* from_object translators */
