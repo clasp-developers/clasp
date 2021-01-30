@@ -1024,10 +1024,12 @@ def configure(cfg):
         cfg.env.FORCE_STARTUP_EXTERNAL_LINKAGE = False
 
     cur_clang_version = run_llvm_config(cfg, "--version")
-    log.debug("cur_clang_version = %s", cur_clang_version)
+    log.info("cur_clang_version = %s", cur_clang_version)
+    log.info("LLVM_VERSION_OVERRIDE = %s" % cfg.env["LLVM_VERSION_OVERRIDE"])
+    log.info("LLVM_VERSION = %s" % LLVM_VERSION )
     llvm_version_test = not ("LLVM_VERSION_OVERRIDE" in cfg.env)
     if (llvm_version_test and (int(cur_clang_version.split('.')[0]) != LLVM_VERSION)):
-        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version[0]) )
+        raise Exception("You must have clang/llvm version %d installed - you have %s" % (LLVM_VERSION, cur_clang_version.split('.')[0]) )
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
