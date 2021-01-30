@@ -523,44 +523,16 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
   }
 }
 
-GCRootsInModule::GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
+GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   DEBUG_OBJECT_FILES(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
   this->_num_entries = num_entries;
   this->_capacity = num_entries;
-  this->_boehm_shadow_memory = shadow_mem;
   this->_module_memory = module_mem;
   this->setup_transients(transient_alloca, transient_entries);
 }
 
-/*!
- For the interpreter.
- We can allocate the literals anywhere.
- */
-GCRootsInModule::GCRootsInModule(size_t capacity) {
-#if defined(USE_BOEHM)
-  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(capacity));
-  core::T_O** module_mem = shadow_mem;
-#endif
-#ifdef USE_MPS
-  core::T_O** shadow_mem = reinterpret_cast<core::T_O**>(0);
-  core::T_O** module_mem = reinterpret_cast<core::T_O**>(malloc(sizeof(core::T_O*)*capacity));
-#endif
-  printf("%s:%d:%s Interpreted code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+capacity);
-  this->_function_pointer_count = 0;
-  this->_function_pointers = NULL;
-  this->_num_entries = 0;
-  this->_capacity = capacity;
-  this->_boehm_shadow_memory = shadow_mem;
-  this->_module_memory = module_mem;
-  memset(module_mem, 0, sizeof(core::T_O*)*this->_capacity);
-#ifdef USE_MPS
-  // MPS registers the roots with the GC and doesn't need a shadow table
-  mps_register_roots(reinterpret_cast<void*>(module_mem),capacity);
-#endif
-  this->setup_transients(NULL,0); // Does nothing
-}
 
 
 /*! initial_data is a gctools::Tagged pointer to a List of tagged pointers.
@@ -568,10 +540,6 @@ GCRootsInModule::GCRootsInModule(size_t capacity) {
 void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_address, size_t num_roots, gctools::Tagged initial_data, core::SimpleVector_O** transientAlloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
   global_TotalRootTableSize += num_roots;
   global_NumberOfRootTables++;
-  core::T_O** shadow_mem = NULL;
-#ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(num_roots));
-#endif
   // Get the address of the memory space in the llvm::Module
   uintptr_t address = reinterpret_cast<uintptr_t>(root_address);
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
@@ -581,7 +549,7 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
-  new (roots) GCRootsInModule(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
+  new (roots) GCRootsInModule(reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
   size_t i = 0;
   if (initial_data != 0 ) {
     core::List_sp args((gctools::Tagged)initial_data);
@@ -604,12 +572,6 @@ core::T_O* read_gcroots_in_module(GCRootsInModule* roots, size_t index) {
 
 void shutdown_gcroots_in_module(GCRootsInModule* roots) {
   roots->_TransientAlloca = NULL;
-#ifdef USE_BOEHM
-  GC_FREE(roots->_boehm_shadow_memory);
-#endif
-#ifdef USE_MPS
-  printf("%s:%d   Here deallocate the roots and tell the GC that they don't need to be tracked anymore\n", __FILE__, __LINE__ );
-#endif
 }
 
 CL_DEFUN Fixnum gctools__nextStampValue() {
@@ -618,18 +580,14 @@ CL_DEFUN Fixnum gctools__nextStampValue() {
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
-  core::T_O** shadow_mem = NULL;
   size_t nargs = core::cl__length(args);
-#ifdef USE_BOEHM
-  shadow_mem = reinterpret_cast<core::T_O**>(boehm_create_shadow_table(nargs));
-#endif
   // Get the address of the memory space in the llvm::Module
   uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
   core::T_O** module_mem = reinterpret_cast<core::T_O**>(address);
 //  printf("%s:%d:%s address=%p nargs=%" PRu "\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
   // Create a ConstantsTable structure to write the constants with
-  GCRootsInModule ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL);
+  GCRootsInModule ct(reinterpret_cast<void*>(module_mem),nargs,NULL,0,0,NULL);
   size_t i = 0;
   for ( auto c : args ) {
     core::T_sp arg = oCar(c);
@@ -685,12 +643,6 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);
   BOUNDS_ASSERT(raw_index<this->_num_entries);
-#ifdef USE_BOEHM
-  // shadow_memory is only used by Boehm
-  if (this->_boehm_shadow_memory != this->_module_memory) {
-    reinterpret_cast<core::T_O**>(this->_boehm_shadow_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
-  }
-#endif
   reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }

@@ -423,12 +423,22 @@ Boehm and MPS use a single pointer"
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-c++-struct %gcroots-in-module% +general-tag+
   ((%size_t%  :index-offset)
-   (%i8*%  :boehm-shadow-memory)
-   (%i8*%  :module-memory)
+   (%i8*%     :module-memory)
    (%size_t%  :num-entries)
    (%size_t%  :capacity)
-   (%i8**%  :function-pointers)
+   (%i8**%    :function-pointers)
    (%size_t%  :number-of-functions)))
+
+(defparameter *gcroots-in-module-initial-value*
+  (llvm-sys:constant-struct-get %gcroots-in-module%
+                                (list
+                                 (jit-constant-size_t 0)
+                                 (llvm-sys:constant-pointer-null-get %i8*%)
+                                 (jit-constant-size_t 0)
+                                 (jit-constant-size_t 0)
+                                 (llvm-sys:constant-pointer-null-get %i8**%)
+                                 (jit-constant-size_t 0)
+                                 )))
 
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
@@ -960,7 +970,7 @@ and initialize it with an array consisting of one function pointer."
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
                                                   :function-description-offset function-description-offset
-                                                  :contab gcroots-in-module-size
+                                                  :gcroots-in-module gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size

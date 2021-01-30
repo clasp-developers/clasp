@@ -45,8 +45,8 @@
 
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
-      (bformat nil "%s-%s%d" suffix core:+contab-name+ (incf-value-table-id-value))
-      (bformat nil "%s%d" core:+contab-name+ (incf-value-table-id-value))))
+      (bformat nil "%s-%s%d" suffix core:+literals-name+ (incf-value-table-id-value))
+      (bformat nil "%s%d" core:+literals-name+ (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
@@ -496,7 +496,7 @@ rewrite the slot in the literal table to store a closure."
                                          (cmp:jit-constant-size_t index)
                                          (fix-args (literal-node-creator-arguments obj)))))))))
 (defun lookup-arg (creator)
-  (labels ((object-label (creator idx &optional (prefix core:+contab-name+))
+  (labels ((object-label (creator idx &optional (prefix core:+literals-name+))
              (if (literal-node-creator-literal-name creator)
                  (bformat nil "%s[%d]/%s" prefix idx (literal-node-creator-literal-name creator))
                  (bformat nil "%s[%d]%t*" prefix idx))))
@@ -659,9 +659,9 @@ Return the index of the load-time-value"
                                          cmp:%gcroots-in-module% ; type
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
-                                         (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
+                                         cmp:*gcroots-in-module-initial-value* ;; (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                          ;; nil ; initializer
-                                         (core:bformat nil "constants-table*%d" (core:next-number))))
+                                         (core:bformat nil "%s*%d" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
@@ -697,11 +697,15 @@ Return the index of the load-time-value"
           ;; We have a new table, replace the old one and generate code to register the new one
           ;; and gc roots tabl
           (let* ((array-type (llvm-sys:array-type-get cmp:%t*% literal-entries))
+                 (array-of-nulls (let (vals)
+                                   (dotimes (idx literal-entries)
+                                     (push (llvm-sys:constant-pointer-null-get cmp:%t*%) vals))
+                                   vals))
                  (correct-size-holder (llvm-sys:make-global-variable cmp:*the-module*
                                                                      array-type
                                                                      nil ; isConstant
                                                                      'llvm-sys:internal-linkage
-                                                                     (llvm-sys:undef-value-get array-type)
+                                                                     (llvm-sys:constant-array-get array-type array-of-nulls)
                                                                      real-name))
                  (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*%
                                                                 "bitcast-table")))

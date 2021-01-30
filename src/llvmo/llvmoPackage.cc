@@ -333,12 +333,12 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset ihf contab valist register-save-area function-description);
+CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset ihf gcroots-in-module valist register-save-area function-description);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
                                                         core::Fixnum_sp function_description_offset,
-                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp contabSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
+                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp gcRootsInModuleSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -371,14 +371,14 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
                     " and sizeof(InvocationHistoryFrame)=[%d]") %
                  _rep_(givenIhfSize) % InvocationHistoryFrame_size);
   }
-  if ( contabSize.notnilp() ) {
-    int contab_size = sizeof(gctools::GCRootsInModule);
-    if (contabSize.fixnump()) {
-      if (contab_size != contabSize.unsafe_fixnum()) {
-        SIMPLE_ERROR(BF("GCRootsInModule size %d mismatch with Common Lisp code %d") % contab_size % contabSize.unsafe_fixnum());
+  if ( gcRootsInModuleSize.notnilp() ) {
+    int gcRootsInModule_size = sizeof(gctools::GCRootsInModule);
+    if (gcRootsInModuleSize.fixnump()) {
+      if (gcRootsInModule_size != gcRootsInModuleSize.unsafe_fixnum()) {
+        SIMPLE_ERROR(BF("GCRootsInModule size %d mismatch with Common Lisp code %d") % gcRootsInModule_size % gcRootsInModuleSize.unsafe_fixnum());
       }
     } else {
-      SIMPLE_ERROR(BF("contab keyword argument expects a fixnum"));
+      SIMPLE_ERROR(BF("gcRootsInModule keyword argument expects a fixnum"));
     }
   }
   if (tvalistsize.fixnump()) {

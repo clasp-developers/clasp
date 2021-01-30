@@ -220,9 +220,9 @@ const char* my_LLVMSymbolLookupCallback (void *DisInfo, uint64_t ReferenceValue,
     if (ReferenceValue!=start) {
       ss << "+" << (ReferenceValue-start);
     }
-    if (symbol[0]=='_'
-        && strlen(symbol)>strlen(CONTAB_NAME)
-        && strncmp(CONTAB_NAME,symbol+1,strlen(CONTAB_NAME))==0) {
+    if (symbol[0]==LITERALS_NAME[0]
+        && strlen(symbol)>strlen(LITERALS_NAME)
+        && strncmp(LITERALS_NAME,symbol+1,strlen(LITERALS_NAME))==0) {
       ss << "["<< dbg_safe_repr((uintptr_t)*(uintptr_t*)ReferenceValue)<<"]";
     }
     ss << "}";
@@ -3957,7 +3957,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSegmentSectionId = 0;
         DEBUG_OBJECT_FILES(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
         my_thread->_text_segment_SectionID = 0;
-        DEBUG_OBJECT_FILES(("%s:%d:%s   text section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), range.getSize()));
+        DEBUG_OBJECT_FILES(("%s:%d:%s   text section segment_start = %p  segment_size = %llu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), (unsigned long long)range.getSize()));
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();

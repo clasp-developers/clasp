@@ -103,6 +103,7 @@
             %double%
             %gcroots-in-module%
             %gcroots-in-module*%
+            *gcroots-in-module-initial-value*
             %function-description%
             %function-description*%
             function-description-reference-index

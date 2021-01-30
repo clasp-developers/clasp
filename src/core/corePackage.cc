@@ -130,7 +130,8 @@ SYMBOL_EXPORT_SC_(CorePkg, fixnump);
 SYMBOL_EXPORT_SC_(CorePkg, single_float_p);
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 SYMBOL_EXPORT_SC_(CorePkg, STARstack_top_hintSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, _PLUS_contab_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_gcroots_in_module_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_literals_name_PLUS_);
 SYMBOL_EXPORT_SC_(KeywordPkg,object);
 SYMBOL_EXPORT_SC_(KeywordPkg,fasl);
 SYMBOL_EXPORT_SC_(KeywordPkg,faso);
@@ -1195,7 +1196,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARallow_with_interruptsSTAR->defparameter(_lisp->_true());
   _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
   clos::_sym__PLUS_the_standard_class_PLUS_->defparameter(_lisp->_Roots._TheStandardClass);
-  core::_sym__PLUS_contab_name_PLUS_->defparameter(SimpleBaseString_O::make(CONTAB_NAME));
+  core::_sym__PLUS_gcroots_in_module_name_PLUS_->defparameter(SimpleBaseString_O::make(GCROOTS_IN_MODULE_NAME));
+  core::_sym__PLUS_literals_name_PLUS_->defparameter(SimpleBaseString_O::make(LITERALS_NAME));
   _sym_STARdebug_threadsSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_fastgfSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARdebug_dispatchSTAR->defparameter(_Nil<core::T_O>());
