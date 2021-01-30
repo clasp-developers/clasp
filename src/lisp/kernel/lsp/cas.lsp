@@ -46,6 +46,16 @@ Experimental."
 (defmacro atomic-decf (place &optional (delta 1))
   `(atomic-update ,place #'(lambda (y x) (- x y)) ,delta))
 
+(defmacro atomic-push (item place &environment env)
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    `(let* (,@(mapcar #'list vars vals)
+            (,old ,read)
+            (,new (cons ,item ,old)))
+       (loop until (eq ,old (setf ,old ,cas))
+             do (setf (cdr ,new) ,old)
+             finally (return ,new)))))
+
 (defun get-cas-expansion (place &optional env)
   "Analogous to GET-SETF-EXPANSION. Returns the following six values:
 * list of temporary variables, which will be bound as if by LET*
