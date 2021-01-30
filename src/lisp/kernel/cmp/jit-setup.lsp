@@ -604,7 +604,7 @@ The passed module is modified as a side-effect."
     (cond
       ((and (eq target-faso-file :faso) (null jit))
        (progn
-         'llvm-sys:code-model-large
+         'llvm-sys:code-model-small
          ))
       ((eq target-faso-file :object)
        (progn
