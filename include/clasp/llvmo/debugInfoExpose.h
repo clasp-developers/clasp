@@ -863,11 +863,11 @@ struct from_object<llvm::Optional<llvm::DIFile::ChecksumInfo<llvm::StringRef>>, 
   from_object(const from_object& orig) = delete;
   from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(orig._v) {
     if (this->_v.hasValue()) {
-      printf("%s:%d:%s from_object move ctor\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s from_object move ctor\n", __FILE__, __LINE__, __FUNCTION__ );
       llvm::DIFile::ChecksumInfo<llvm::StringRef> checksum(this->_v->Kind,this->_Storage);
       this->_v = checksum;
     } else {
-      printf("%s:%d:%s from_object move ctor NIL\n", __FILE__, __LINE__, __FUNCTION__ );
+      // printf("%s:%d:%s from_object move ctor NIL\n", __FILE__, __LINE__, __FUNCTION__ );
     }
   }
 };
