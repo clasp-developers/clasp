@@ -59,6 +59,8 @@
     (core:instance-rack-set codegen-instance-rack-set)
     (core:rack-ref codegen-rack-ref)
     (core:rack-set codegen-rack-set)
+    (core::atomic-rack-read codegen-atomic-rack-read)
+    (core::atomic-rack-write codegen-atomic-rack-write)
     (llvm-inline codegen-llvm-inline)
     (:gc-profiling codegen-gc-profiling)
     (core::debug-message codegen-debug-message)
@@ -1054,8 +1056,8 @@ jump to blocks within this tagbody."
     (t (error "BUG: Unknown atomic order specifier ~a" order-spec))))
 
 (defun codegen-atomic-car (result rest env)
-  (let ((cons-form (first rest))
-        (order (order-spec->order (second rest)))
+  (let ((order (order-spec->order (first rest)))
+        (cons-form (second rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
     (irc-t*-result (irc-load-atomic (gen-memref-address
@@ -1065,8 +1067,8 @@ jump to blocks within this tagbody."
                    result)))
 
 (defun codegen-atomic-cdr (result rest env)
-  (let ((cons-form (first rest))
-        (order (order-spec->order (second rest)))
+  (let ((order (order-spec->order (first rest)))
+        (cons-form (second rest))
         (cons-alloca (alloca-t* "cons")))
     (codegen cons-alloca cons-form env)
     (irc-t*-result (irc-load-atomic (gen-memref-address
@@ -1076,9 +1078,9 @@ jump to blocks within this tagbody."
                    result)))
 
 (defun codegen-atomic-rplaca (result rest env)
-  (let ((nv-form (first rest))
-        (cons-form (second rest))
-        (order (order-spec->order (third rest)))
+  (let ((order (order-spec->order (first rest)))
+        (nv-form (second rest))
+        (cons-form (third rest))
         (cons-alloca (alloca-t* "cons"))
         (nv-alloca (alloca-t* "nv")))
     (codegen nv-alloca nv-form env)
@@ -1091,9 +1093,9 @@ jump to blocks within this tagbody."
       (irc-t*-result nv result))))
 
 (defun codegen-atomic-rplacd (result rest env)
-  (let ((nv-form (first rest))
-        (cons-form (second rest))
-        (order (order-spec->order (third rest)))
+  (let ((order (order-spec->order (first rest)))
+        (nv-form (second rest))
+        (cons-form (third rest))
         (cons-alloca (alloca-t* "cons"))
         (nv-alloca (alloca-t* "nv")))
     (codegen nv-alloca nv-form env)
@@ -1377,6 +1379,38 @@ jump to blocks within this tagbody."
     (irc-t*-result
      (gen-rack-set (irc-load rackt) (irc-load indext) (irc-load valuet))
      result)))
+
+;;; CORE::ATOMIC-RACK-READ, CORE::ATOMIC-RACK-WRITE
+
+(defun codegen-atomic-rack-read (result rest env)
+  (let ((order (order-spec->order (first rest)))
+        (rack (second rest)) (index (third rest))
+        (rackt (alloca-t* "rack-ref-rack"))
+        (indext (alloca-t* "rack-ref-index")))
+    (codegen rackt rack env)
+    (codegen indext index env)
+    (irc-t*-result (irc-rack-read
+                    (irc-load rackt)
+                    (irc-untag-fixnum
+                     (irc-load indext) %size_t% "slot-location")
+                    :order order)
+                   result)))
+
+(defun codegen-atomic-rack-write (result rest env)
+  (let ((order (order-spec->order (first rest)))
+        (nv (second rest)) (rack (third rest)) (index (fourth rest))
+        (nvt (alloca-t* "rack-set-value"))
+        (rackt (alloca-t* "rack-set-rack"))
+        (indext (alloca-t* "rack-set-index")))
+    (codegen nvt nv env)
+    (codegen rackt rack env)
+    (codegen indext index env)
+    (let ((nv (irc-load nvt)))
+      (irc-rack-write (irc-load rack)
+                      (irc-untag-fixnum
+                       (irc-load indext) %size_t% "slot-location")
+                      nv)
+      (irc-t*-result nv result))))
 
 ;;; DBG-i32
 

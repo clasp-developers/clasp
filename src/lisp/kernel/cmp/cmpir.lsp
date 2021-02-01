@@ -503,11 +503,11 @@ representing a tagged fixnum."
   "Return a %t**% a pointer to a slot in the rack of an instance"
   (irc-rack-slot-address (irc-rack instance) index))
 
-(defun irc-rack-read (rack index)
-  (irc-load-atomic (irc-rack-slot-address rack index)))
+(defun irc-rack-read (rack index &key (order 'llvm-sys:monotonic))
+  (irc-load-atomic (irc-rack-slot-address rack index) :order order))
 
-(defun irc-rack-write (rack index value)
-  (irc-store-atomic value (irc-rack-slot-address rack index)))
+(defun irc-rack-write (rack index value &key (order 'llvm-sys:monotonic))
+  (irc-store-atomic value (irc-rack-slot-address rack index) :order order))
 
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
