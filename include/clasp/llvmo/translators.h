@@ -43,8 +43,13 @@ struct from_object<llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
   string _Storage; // Store the string here so it won't get wiped out before its used by the callee
   DeclareType _v;
-  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()),
-    _v(llvm::StringRef(this->_Storage)) {};
+  from_object(T_P o) : _Storage(gc::As<core::String_sp>(o)->get_std_string()), _v(_Storage) {};
+  from_object(const from_object& orig) : _Storage(orig._Storage), _v(_Storage) {
+    printf("%s:%d:%s copy ctor from_object@%p orig@%p  _Storage = %s  this->_v@%p(len=%lu) = %s\n", __FILE__, __LINE__, __FUNCTION__, this, &orig, this->_Storage.c_str(), this->_v.data(), this->_v.size(), this->_v.str().c_str());
+  };
+  from_object(from_object&& orign) noexcept :
+    _Storage(std::move(orign._Storage)),
+    _v(_Storage) {}
 };
 
 #if 0

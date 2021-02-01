@@ -4517,10 +4517,9 @@ struct from_object<const llvm::StringRef, std::true_type> {
   typedef llvm::StringRef DeclareType;
   DeclareType _v;
   string _Storage;
-  from_object(T_P object) {
-    this->_Storage = gc::As<core::String_sp>(object)->get_std_string();
-    this->_v = llvm::StringRef(this->_Storage);
-  }
+  from_object(T_P object) : _Storage(gc::As<core::String_sp>(object)->get_std_string()), _v(this->_Storage) {};
+  from_object(const from_object& orig) = delete;
+  from_object(from_object&& orig) : _Storage(std::move(orig._Storage)), _v(_Storage) {};
 };
 
 template <>
@@ -4848,6 +4847,8 @@ struct from_object<llvm::Optional<T>> {
      this->_v = val;
      return;
    }
+   from_object(const from_object& orig) = delete;
+   from_object(from_object&& orig) : _v(std::move(orig._v)) {};
  };
 }
 
