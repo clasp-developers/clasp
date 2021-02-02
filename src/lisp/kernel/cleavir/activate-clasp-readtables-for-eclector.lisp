@@ -97,8 +97,7 @@
     (eclector.reader:read-from-string string eof-error-p eof-value
                                       :start start :end end :preserve-whitespace preserve-whitespace)))
 
-;;;does not work yet properly
-#+(or)
+;;; Fixed in https://github.com/s-expressionists/Eclector/commit/19d2d903bb04e3e59ff0557051e134e8ee6195c7
 (defun cl:read-delimited-list (char &optional (input-stream *standard-input*) recursive-p)
   (let ((eclector.readtable:*readtable* cl:*readtable*)
         (eclector.reader:*client* *clasp-normal-eclector-client*))
