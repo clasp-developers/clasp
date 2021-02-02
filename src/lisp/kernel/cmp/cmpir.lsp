@@ -730,7 +730,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
-(defun irc-%cmpxchg (ptr cmp new)
+(defun irc-%cmpxchg (ptr cmp new order)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
   (let ((cmp-type (llvm-sys:get-type cmp)))
     (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
@@ -739,18 +739,22 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
-                                   ptr cmp new
-                                   'llvm-sys:sequentially-consistent
-                                   'llvm-sys:sequentially-consistent
+                                   ptr cmp new order order
                                    1 #+(or)'llvm-sys:system))
 
-(defun irc-cmpxchg (ptr cmp new &optional (label ""))
+(defun irc-cmpxchg (ptr cmp new
+                    &key (label "") (order 'llvm-sys:sequentially-consistent))
+  ;; cmpxchg instructions involve two memory orders: First, the "success" order
+  ;; for the RMW operation, and second, the "failure" order for only the read
+  ;; in case the comparison fails. I don't honestly know how this works at the
+  ;; machine level. For now we only allow passing in one order, which is used
+  ;; for both.
   ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
-  ;; since we're doing a strong exchange, value = cmp iff the swap was done too,
-  ;; so we don't really need the flag.
+  ;; since we're doing a strong exchange (for now), value = cmp iff the swap
+ ;;; was done too, so we don't really need the flag.
   ;; Of course we might want to work with the flag directly instead, but that's
   ;; a reorganization at a higher level.
-  (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
+  (irc-extract-value (irc-%cmpxchg ptr cmp new order) (list 0) label))
 
 (defun translate-rmw-op (op)
   (cond ((eq op :xchg) 'llvm-sys:xchg)
