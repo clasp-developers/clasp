@@ -30,6 +30,15 @@
   (unless orderp (setf keys (list* :order :sequentially-consistent keys)))
   (etypecase place
     (symbol
+     ;; KLUDGE: This will not work in bclasp at all, and the cleavir interface
+     ;; may not be great for this.
+     #-cclasp
+     (multiple-value-bind (expansion expanded)
+         (macroexpand-1 place environment)
+       (if expanded
+           (apply #'get-atomic-expansion expansion keys)
+           (error "CAS on variables not supported yet")))
+     #+cclasp
      (let ((info (cleavir-env:variable-info environment place)))
        (etypecase info
          (cleavir-env:symbol-macro-info
