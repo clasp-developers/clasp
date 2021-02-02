@@ -42,6 +42,8 @@
     (core::cdr-atomic codegen-atomic-cdr)
     (core::rplaca-atomic codegen-atomic-rplaca)
     (core::rplacd-atomic codegen-atomic-rplacd)
+    (core::cas-car codegen-cas-car)
+    (core::cas-cdr codegen-cas-cdr)
     (cleavir-primop:funcall codegen-primop-funcall)
     (cleavir-primop:unreachable codegen-unreachable)
     (cleavir-primop:case codegen-primop-case)
@@ -1043,7 +1045,7 @@ jump to blocks within this tagbody."
                                      (- +cons-cdr-offset+ +cons-tag+)))
                    result)))
 
-;;; ATOMIC CAR, CDR, RPLACA, RPLACD
+;;; ATOMIC CAR, CDR, RPLACA, RPLACD, plus CAS
 
 (defun order-spec->order (order-spec)
   (case order-spec
@@ -1106,6 +1108,38 @@ jump to blocks within this tagbody."
                             (- +cons-cdr-offset+ +cons-tag+))
                         :order order)
       (irc-t*-result nv result))))
+
+(defun codegen-cas-car (result rest env)
+  (let ((order (order-spec->order (first rest)))
+        (cmp-form (second rest)) (nv-form (third rest))
+        (cons-form (fourth rest))
+        (cmp-alloca (alloca-t* "cmp")) (nv-alloca (alloca-t* "nv"))
+        (cons-alloca (alloca-t* "cons")))
+    (codegen cmp-alloca cmp-form env)
+    (codegen nv-alloca nv-form env)
+    (codegen cons-alloca cons-form env)
+    (irc-t*-result
+     (irc-cmpxchg (gen-memref-address (irc-load cons-alloca)
+                                      (- +cons-car-offset+ +cons-tag+))
+                  (irc-load cmp-alloca) (irc-load nv-alloca)
+                  :order order)
+     result)))
+
+(defun codegen-cas-cdr (result rest env)
+  (let ((order (order-spec->order (first rest)))
+        (cmp-form (second rest)) (nv-form (third rest))
+        (cons-form (fourth rest))
+        (cmp-alloca (alloca-t* "cmp")) (nv-alloca (alloca-t* "nv"))
+        (cons-alloca (alloca-t* "cons")))
+    (codegen cmp-alloca cmp-form env)
+    (codegen nv-alloca nv-form env)
+    (codegen cons-alloca cons-form env)
+    (irc-t*-result
+     (irc-cmpxchg (gen-memref-address (irc-load cons-alloca)
+                                      (- +cons-cdr-offset+ +cons-tag+))
+                  (irc-load cmp-alloca) (irc-load nv-alloca)
+                  :order order)
+     result)))
 
 ;;; CLEAVIR-PRIMOP:FUNCALL
 
