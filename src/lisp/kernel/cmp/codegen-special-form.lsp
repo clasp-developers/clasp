@@ -63,6 +63,7 @@
     (core:rack-set codegen-rack-set)
     (core::atomic-rack-read codegen-atomic-rack-read)
     (core::atomic-rack-write codegen-atomic-rack-write)
+    (core::cas-rack codegen-cas-rack)
     (llvm-inline codegen-llvm-inline)
     (:gc-profiling codegen-gc-profiling)
     (core::debug-message codegen-debug-message)
@@ -1445,6 +1446,25 @@ jump to blocks within this tagbody."
                        (irc-load indext) %size_t% "slot-location")
                       nv)
       (irc-t*-result nv result))))
+
+(defun codegen-cas-rack (result rest env)
+  (let ((order (order-spec->order (first rest)))
+        (old (second rest)) (nv (third rest))
+        (rack (fourth rest)) (index (fifth rest))
+        (oldt (alloca-t* "old")) (newt (alloca-t* "new"))
+        (rackt (alloca-t* "rack")) (indext (alloca-t* "index")))
+    (codegen oldt old env)
+    (codegen newt nv env)
+    (codegen rackt rack env)
+    (codegen index index env)
+    (irc-t*-result
+     (irc-cmpxchg (irc-rack-slot-address (irc-load rackt)
+                                         (irc-untag-fixnum
+                                          (irc-load indext)
+                                          %size_t% "slot-location"))
+                  (irc-load oldt) (irc-load newt)
+                  :order order)
+     result)))
 
 ;;; DBG-i32
 
