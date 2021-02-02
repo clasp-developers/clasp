@@ -125,6 +125,7 @@
             cas
             get-cas-expansion define-cas-expander
             ;; atomic operations
+            atomic get-atomic-expansion define-atomic-expander
             atomic-update
             atomic-incf atomic-decf atomic-push atomic-pushnew
             ))
