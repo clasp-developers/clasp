@@ -1441,7 +1441,7 @@ jump to blocks within this tagbody."
     (codegen rackt rack env)
     (codegen indext index env)
     (let ((nv (irc-load nvt)))
-      (irc-rack-write (irc-load rack)
+      (irc-rack-write (irc-load rackt)
                       (irc-untag-fixnum
                        (irc-load indext) %size_t% "slot-location")
                       nv)
