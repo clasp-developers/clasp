@@ -49,12 +49,43 @@ Experimental."
 (defmacro atomic-push (item place &environment env)
   (multiple-value-bind (vars vals old new cas read)
       (get-cas-expansion place env)
-    `(let* (,@(mapcar #'list vars vals)
-            (,old ,read)
-            (,new (cons ,item ,old)))
-       (loop until (eq ,old (setf ,old ,cas))
-             do (setf (cdr ,new) ,old)
-             finally (return ,new)))))
+    (let ((gitem (gensym "ITEM")))
+      `(let* ((,gitem ,item) ; evaluate left-to-right (CLHS 5.1.1.1)
+              ,@(mapcar #'list vars vals)
+              (,old ,read)
+              (,new (cons ,item ,old)))
+         (loop until (eq ,old (setf ,old ,cas))
+               do (setf (cdr ,new) ,old)
+               finally (return ,new))))))
+
+(defmacro atomic-pushnew (item place &rest keys &key key test test-not
+                          &environment env)
+  (declare (ignore key test test-not))
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    (let ((gitem (gensym "ITEM")) (bname (gensym "ATOMIC-PUSHNEW"))
+          gkeybinds gkeys)
+      ;; Ensuring CLHS 5.1.1.1 evaluation order is weird here. We'd like to
+      ;; only evaluate the keys one time, but we want the adjoin to get
+      ;; constant keywords the compiler transformations can work with.
+      (loop for thing in keys
+            if (constantp thing env)
+              do (push (ext:constant-form-value thing env) gkeys)
+            else
+              do (let ((gkey (gensym "K")))
+                   (push gkey gkeys)
+                   (push `(,gkey ,thing) gkeybinds))
+            finally (setf gkeys (nreverse gkeys)
+                          gkeybinds (nreverse gkeybinds)))
+      ;; Actual expansion
+      `(let* ((,gitem ,item)
+              ,@(mapcar #'list vars vals)
+              ,@gkeybinds
+              (,old ,read))
+         (loop named ,bname
+               for ,new = (adjoin ,gitem ,old ,@gkeys)
+               until (eq ,old (setf ,old ,cas))
+               finally (return-from ,bname ,new))))))
 
 (defun get-cas-expansion (place &optional env)
   "Analogous to GET-SETF-EXPANSION. Returns the following six values:

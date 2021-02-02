@@ -126,7 +126,7 @@
             get-cas-expansion define-cas-expander
             ;; atomic operations
             atomic-update
-            atomic-incf atomic-decf atomic-push
+            atomic-incf atomic-decf atomic-push atomic-pushnew
             ))
   (core:select-package "CORE"))
 
