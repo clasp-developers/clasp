@@ -14,7 +14,7 @@
 #include <clasp/core/glue.h>
 
 
-#include <clasp/clbind/apply.cc>
+#include <clasp/clbind/apply_impl.h>
 
 
 namespace clbind {
