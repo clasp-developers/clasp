@@ -476,7 +476,7 @@ CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
   string outstr;
   llvm::raw_string_ostream sout(outstr);
   module->wrappedPtr()->print(sout,NULL);
-  core::clasp_write_string(outstr,stream);
+  core::clasp_write_string(sout.str(),stream);
 }
 
 CL_LAMBDA(func &optional (stream t));
