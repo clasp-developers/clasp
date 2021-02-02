@@ -1012,8 +1012,6 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
   p_sym = dlsym( p_handle, pc_symbol );
   if( p_sym == nullptr ) {
     str_error = dlerror();
-    fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
-             __FILE__, __LINE__, p_handle, str_error.c_str() );
   }
   return std::make_tuple( p_sym, str_error );
 }
