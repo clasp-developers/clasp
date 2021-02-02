@@ -178,6 +178,13 @@ bound before the operation.
 If there is a CHANGE-CLASS concurrent with this operation the
 consequences are not defined.")
 
+#+threads
+(mp:define-atomic-expander clos:standard-instance-access (instance location)
+    (&rest keys)
+  (apply #'mp:get-atomic-expansion
+         `(core:rack-ref (core:instance-rack ,instance) ,location)
+         keys))
+
 ;;; On Clasp, funcallable instances and regular instances store
 ;;; their slots identically, at the moment.
 (defun funcallable-standard-instance-access (instance location)
@@ -326,3 +333,28 @@ consequences are not defined.")
 If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
 with operation = mp:cas, and new-value a list of OLD and NEW.
 If SLOT-MISSING returns, its primary value is returned.")
+
+#+threads
+(mp:define-atomic-expander slot-value (object slot-name) (&rest keys)
+  (let ((gobject (gensym "OBJECT")) (gsname (gensym "SLOT-NAME"))
+        (gslotd (gensym "SLOTD")) (gclass (gensym "CLASS")))
+    (multiple-value-bind (vars vals cmpv newv read write cas)
+        (apply #'mp:get-atomic-expansion
+               `(slot-value-using-class ,gclass ,gobject ,gsname)
+               keys)
+      (values (list* gobject gsname gclass gslotd vars)
+              (list* object slot-name `(class-of ,gobject)
+                     `(find ,gsname (class-slots ,gclass)
+                            :key #'slot-definition-name)
+                     vals)
+              cmpv newv
+              `(if ,gslotd
+                   ,read
+                   (slot-missing ,gclass ,gobject ,gsname 'slot-value))
+              `(if ,gslotd
+                   ,write
+                   (slot-missing ,gclass ,gobject ,gsname 'setf ,newv))
+              `(if ,gslotd
+                   ,cas
+                   (slot-missing ,gclass ,gobject ,gsname
+                                 'cas (list ,cmpv ,newv)))))))

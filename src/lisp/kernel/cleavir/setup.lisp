@@ -170,6 +170,12 @@
 
 (defun treat-as-special-operator-p (name)
   (cond
+    ((eq name 'core::car-atomic) nil)
+    ((eq name 'core::cdr-atomic) nil)
+    ((eq name 'core::rplaca-atomic) nil)
+    ((eq name 'core::rplacd-atomic) nil)
+    ((eq name 'core::atomic-rack-read) nil)
+    ((eq name 'core::atomic-rack-write) nil)
     ((cmp:treat-as-special-operator-p name) t)
     ((eq name 'cleavir-primop::call-with-variable-bound) nil)
     ((eq name 'unwind-protect) t)
