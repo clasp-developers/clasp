@@ -58,6 +58,15 @@ Experimental."
                do (setf (cdr ,new) ,old)
                finally (return ,new))))))
 
+(defmacro atomic-pop (place &environment env)
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    `(let* (,@(mapcar #'list vars vals)
+            (,old ,read))
+       (loop (let ((,new (cdr ,old)))
+               (when (eq ,old (setf ,old ,cas))
+                 (return (car ,old))))))))
+
 (defmacro atomic-pushnew (item place &rest keys &key key test test-not
                           &environment env)
   (declare (ignore key test test-not))
