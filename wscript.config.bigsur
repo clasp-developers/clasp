@@ -1,0 +1,10 @@
+#-*- mode: python; coding: utf-8-unix -*-
+#LLVM_CONFIG_BINARY = "/opt/clasp/bin/llvm-config"
+PREFIX = "/opt/clasp"
+USE_PARALLEL_BUILD = True
+USE_LLD = True
+LINKFLAGS = ["-L/opt/clasp/lib", "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform//Developer/SDKs/MacOSX.sdk/usr/lib/"]
+CPPFLAGS = [ "-isysroot",
+             "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"]
+
+DEBUG_OPTIONS = [ "DEBUG_CCLASP_LISP", "DEBUG_VERIFY_MODULES", "DEBUG_ASSERT_TYPE_CAST", "DEBUG_JIT_LOG_SYMBOLS" ]
