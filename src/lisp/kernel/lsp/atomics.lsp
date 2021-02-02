@@ -116,7 +116,7 @@
 (define-simple-atomic-expander cdr (list)
   core::cdr-atomic core::rplacd-atomic core:cas-cdr)
 
-(define-simple-atomic-expander core:rack-ref (rack)
+(define-simple-atomic-expander core:rack-ref (rack index)
   core::atomic-rack-read core::atomic-rack-write core::cas-rack)
 
 #+(or)
