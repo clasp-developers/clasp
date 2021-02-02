@@ -366,9 +366,9 @@ template <class T>
     return reinterpret_cast<T>((ch << character_shift) | character_tag);
   }
   template <class T>
-    inline int untag_character(T ptr) {
+    inline claspCharacter untag_character(T ptr) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == character_tag);
-    return (int)(reinterpret_cast<uintptr_t>(ptr) >> character_shift);
+    return (claspCharacter)(reinterpret_cast<uintptr_t>(ptr) >> character_shift);
   }
   template <class T>
     inline bool tagged_characterp(T ptr) {
