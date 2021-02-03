@@ -217,8 +217,8 @@ of a symbol can only be used for synchronization through this accessor if there
 are no bindings (in which case the global, thread-shared value is used.")
 (define-simple-cas-expander symbol-plist core:cas-symbol-plist (symbol))
 
-(define-simple-cas-expander car core:cas-car (cons))
-(define-simple-cas-expander cdr core:cas-cdr (cons))
+(define-simple-cas-expander car core::cas-car (cons))
+(define-simple-cas-expander cdr core::cas-cdr (cons))
 
 (define-cas-expander first (cons &environment env)
   (get-cas-expansion `(car ,cons) env))
