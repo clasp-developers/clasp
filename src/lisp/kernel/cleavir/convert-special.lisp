@@ -250,18 +250,44 @@
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
 (define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
 
-(define-functionlike-special-form core:cas-car cc-ast:cas-car-ast
-  (:cmp-ast :value-ast :cons-ast))
-(define-functionlike-special-form core:cas-cdr cc-ast:cas-cdr-ast
-  (:cmp-ast :value-ast :cons-ast))
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; CASs are mostly functionlike, except for the order.
+;;; CASs and other atomic ops are mostly functionlike, except for the order.
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::car-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cr order cons) cst
+    (declare (ignore cr))
+    (make-instance 'cc-ast:atomic-car-ast
+      :order (cst:raw order)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cdr-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cr order cons) cst
+    (declare (ignore cr))
+    (make-instance 'cc-ast:atomic-cdr-ast
+      :order (cst:raw order)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::rplaca-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (rp order nv cons) cst
+    (declare (ignore rp))
+    (make-instance 'cc-ast:atomic-rplaca-ast
+      :order (cst:raw order)
+      :object-ast (cleavir-cst-to-ast:convert nv env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::rplacd-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (rp order nv cons) cst
+    (declare (ignore rp))
+    (make-instance 'cc-ast:atomic-rplacd-ast
+      :order (cst:raw order)
+      :object-ast (cleavir-cst-to-ast:convert nv env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::cas-car)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cas order cmp value cons) cst

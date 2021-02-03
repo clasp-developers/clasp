@@ -225,6 +225,8 @@
            :type (member :relaxed :acquire :release :acquire-release
                          :sequentially-consistent))))
 
+(cleavir-io:define-save-info atomic-ast (:order order))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Class CAS-AST
@@ -238,9 +240,19 @@
    (%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
 
 (cleavir-io:define-save-info cas-ast
-    (:order cas-order) (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
+    (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
 
 (cleavir-ast:define-children cas-ast (cmp-ast cleavir-ast:value-ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Classes ATOMIC-CAR-AST, ATOMIC-CDR-AST, ATOMIC-RPLACA-AST, ATOMIC-RPLACD-AST
+;;;
+
+(defclass atomic-car-ast (atomic-ast cleavir-ast:car-ast) ())
+(defclass atomic-cdr-ast (atomic-ast cleavir-ast:cdr-ast) ())
+(defclass atomic-rplaca-ast (atomic-ast cleavir-ast:rplaca-ast) ())
+(defclass atomic-rplacd-ast (atomic-ast cleavir-ast:rplacd-ast) ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

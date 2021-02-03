@@ -135,6 +135,66 @@
 ;;; atomics
 ;;; we just make the bmir directly.
 
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-car-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs args
+                      :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))))
+      (list (cleavir-ast-to-bir:insert
+             inserter
+             (make-instance 'cc-bmir:load
+               :order (cc-ast:order ast) :inputs (list memref2)))))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-cdr-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs args
+                      :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))))
+      (list (cleavir-ast-to-bir:insert
+             inserter
+             (make-instance 'cc-bmir:load
+               :order (cc-ast:order ast) :inputs (list memref2)))))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rplaca-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:object-ast ast)
+                                                (cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object :object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs (list (second args))
+                      :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))))
+      (list (cleavir-ast-to-bir:insert
+             inserter
+             (make-instance 'cc-bmir:store
+               :order (cc-ast:order ast)
+               :inputs (list (first args) memref2)))))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rplacd-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:object-ast ast)
+                                                (cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object :object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs (list (second args))
+                      :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))))
+      (list (cleavir-ast-to-bir:insert
+             inserter
+             (make-instance 'cc-bmir:store
+               :order (cc-ast:order ast)
+               :inputs (list (first args) memref2)))))))
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:cas-car-ast)
                                            inserter system)
   (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)

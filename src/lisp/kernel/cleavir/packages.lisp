@@ -66,6 +66,7 @@
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
+   #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
    #:cmp-ast #:order
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:bind-ast
