@@ -93,7 +93,7 @@
                      collect `(,stemp (gensym "TEMP"))))
          (values (list ,@stemps) (list ,@params) scmp snew
                  (list ',reader order ,@stemps)
-                 (list ',writer order snew ,@stemps)
+                 (list 'progn (list ',writer order snew ,@stemps) snew)
                  (list ',casser order scmp snew ,@stemps))))))
 
 ;;;
