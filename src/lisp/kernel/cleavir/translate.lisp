@@ -922,6 +922,7 @@
      cast
      (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
 
+#+(or)
 (defmethod translate-simple-instruction ((inst cc-bir:acas) abi)
   (let ((et (cc-bir:element-type inst))
         (inputs (cleavir-bir:inputs inst)))

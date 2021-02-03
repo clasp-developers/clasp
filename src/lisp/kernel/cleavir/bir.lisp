@@ -232,15 +232,18 @@
           :order (cc-ast:order ast)
           :inputs (list memref2 (first args) (second args))))))))
 
+#+(or)
 (defclass acas (atomic cleavir-bir:computation)
   ((%element-type :initarg :element-type :reader element-type)
    (%simple-p :initarg :simple-p :reader simple-p)
    (%boxed-p :initarg :boxed-p :reader boxed-p)))
+#+(or)
 (defmethod cleavir-bir:rtype ((d acas))
   (case (element-type d)
     ((t) :object)
     (otherwise (error "BUG: CAS only of general vectors is supported as of yet, sorry!"))))
 
+#+(or)
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:acas-ast)
                                            inserter system)
   (let ((boxed-p (cleavir-ast:boxed-p ast)))
