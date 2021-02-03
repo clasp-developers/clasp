@@ -818,12 +818,21 @@
 
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
-  (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))))
+  (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))
+                       :order (cmp::order-spec->order (cc-bmir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
   (declare (ignore abi))
   (cmp:irc-store-atomic (in (first (cleavir-bir:inputs inst)))
-                        (in (second (cleavir-bir:inputs inst)))))
+                        (in (second (cleavir-bir:inputs inst)))
+                        :order (cmp::order-spec->order (cc-bmir:order inst))))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:cas) abi)
+  (declare (ignore abi))
+  (cmp:irc-cmpxchg (in (first (cleavir-bir:inputs inst)))
+                   (in (second (cleavir-bir:inputs inst)))
+                   (in (third (cleavir-bir:inputs inst)))
+                   :order (cmp::order-spec->order (cc-bmir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop) abi)
   (declare (ignore abi))

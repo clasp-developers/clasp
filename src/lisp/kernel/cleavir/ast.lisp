@@ -215,18 +215,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class ATOMIC-AST
+;;;
+;;; Abstract. Superclass for atomic operations.
+
+(defclass atomic-ast (cleavir-ast:ast)
+  (;; The ordering.
+   (%order :initarg :order :reader order
+           :type (member :relaxed :acquire :release :acquire-release
+                         :sequentially-consistent))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class CAS-AST
 ;;;
 ;;; Abstract. Class for compare-and-swap ASTs.
 
-(defclass cas-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
+(defclass cas-ast (cleavir-ast:one-value-ast-mixin atomic-ast)
   (;; The "old" value being compared to the loaded one.
    (%cmp-ast :initarg :cmp-ast :reader cmp-ast)
    ;; The "new" value that's maybe being stored.
    (%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
 
 (cleavir-io:define-save-info cas-ast
-    (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
+    (:order cas-order) (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
 
 (cleavir-ast:define-children cas-ast (cmp-ast cleavir-ast:value-ast))
 

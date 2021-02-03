@@ -132,7 +132,47 @@
       (cleavir-ast-to-bir:terminate inserter hsc)
       (copy-list ibs))))
 
-(defclass acas (cleavir-bir:computation)
+;;; atomics
+;;; we just make the bmir directly.
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:cas-car-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
+                                                (cleavir-ast:value-ast ast)
+                                                (cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object :object :object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs (list (third args))
+                      :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))))
+      (list
+       (cleavir-ast-to-bir:insert
+        inserter
+        (make-instance 'cc-bmir:cas
+          :order (cc-ast:order ast)
+          :inputs (list memref2 (first args) (second args))))))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:cas-cdr-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
+                                                (cleavir-ast:value-ast ast)
+                                                (cleavir-ast:cons-ast ast))
+                                               inserter system
+                                               (:object :object :object))
+    (let ((memref2 (cleavir-ast-to-bir:insert
+                    inserter
+                    (make-instance 'cc-bmir:memref2
+                      :inputs (list (third args))
+                      :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))))
+      (list
+       (cleavir-ast-to-bir:insert
+        inserter
+        (make-instance 'cc-bmir:cas
+          :order (cc-ast:order ast)
+          :inputs (list memref2 (first args) (second args))))))))
+
+(defclass acas (atomic cleavir-bir:computation)
   ((%element-type :initarg :element-type :reader element-type)
    (%simple-p :initarg :simple-p :reader simple-p)
    (%boxed-p :initarg :boxed-p :reader boxed-p)))

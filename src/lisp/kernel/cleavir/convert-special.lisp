@@ -257,6 +257,30 @@
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; CASs are mostly functionlike, except for the order.
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-car)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp value cons) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-car-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert value env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-cdr)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp value cons) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-cdr-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert value env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::ACAS

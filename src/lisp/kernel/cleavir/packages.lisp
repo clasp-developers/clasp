@@ -66,7 +66,7 @@
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
-   #:cmp-ast
+   #:cmp-ast #:order
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
    #:bind-ast
    #:unwind-protect-ast #:cleanup-ast
@@ -82,6 +82,7 @@
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
+           #:cas-car #:cas-cdr
            #:acas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:cc-bir-to-bmir
@@ -118,4 +119,4 @@
   (:shadow #:characterp #:consp #:load)
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
-  (:export #:memref2 #:offset #:load #:store))
+  (:export #:memref2 #:offset #:load #:store #:cas #:order))
