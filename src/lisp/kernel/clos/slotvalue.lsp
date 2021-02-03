@@ -48,7 +48,7 @@
   (let ((loc (slot-definition-location slotd)))
     (ecase (slot-definition-allocation slotd)
       ((:instance) (core::instance-cas old new object loc))
-      ((:class) (core::cas-car old new loc)))))
+      ((:class) (core::cas-car :sequentially-consistent old new loc)))))
 
 #+threads
 (mp::define-simple-cas-expander clos:slot-value-using-class
