@@ -819,20 +819,20 @@
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
   (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))
-                       :order (cmp::order-spec->order (cc-bmir:order inst))))
+                       :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
   (declare (ignore abi))
   (cmp:irc-store-atomic (in (first (cleavir-bir:inputs inst)))
                         (in (second (cleavir-bir:inputs inst)))
-                        :order (cmp::order-spec->order (cc-bmir:order inst))))
+                        :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:cas) abi)
   (declare (ignore abi))
   (cmp:irc-cmpxchg (in (first (cleavir-bir:inputs inst)))
                    (in (second (cleavir-bir:inputs inst)))
                    (in (third (cleavir-bir:inputs inst)))
-                   :order (cmp::order-spec->order (cc-bmir:order inst))))
+                   :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop) abi)
   (declare (ignore abi))
@@ -909,6 +909,23 @@
           "cc_setSymbolValue" (mapcar #'in (cleavir-bir:inputs inst))))
         (t
          (error "BUG: Don't know how to translate primop ~a" name))))
+
+(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
+  (cmp:gen-rack-ref (in (first (cleavir-bir:inputs inst)))
+                    (in (second (cleavir-bir:inputs inst)))
+                    :order (cmp::order-spec->order (cc-bir:order inst))))
+(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
+  (cmp:gen-rack-set (in (first (cleavir-bir:inputs inst)))
+                    (in (second (cleavir-bir:inputs inst)))
+                    (in (third (cleavir-bir:inputs inst)))
+                    :order (cmp::order-spec->order (cc-bir:order inst))))
+(defmethod translate-simple-instruction ((inst cc-bir:cas-rack) abi)
+  (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
+                    (in (third (cleavir-bir:inputs inst)))
+                    (in (fourth (cleavir-bir:inputs inst))))
+                   (in (first (cleavir-bir:inputs inst)))
+                   (in (second (cleavir-bir:inputs inst)))
+                   :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to

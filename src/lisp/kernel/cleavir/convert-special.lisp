@@ -307,6 +307,36 @@
       :value-ast (cleavir-cst-to-ast:convert value env system)
       :cons-ast (cleavir-cst-to-ast:convert cons env system))))
 
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-rack-read)) cst env
+     (system clasp-cleavir:clasp))
+  (cst:db origin (read order rack index) cst
+    (declare (ignore read))
+    (make-instance 'cc-ast:atomic-rack-read-ast
+      :order (cst:raw order)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert rack env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-rack-write)) cst env
+     (system clasp-cleavir:clasp))
+  (cst:db origin (wr order nv rack index) cst
+    (declare (ignore wr))
+    (make-instance 'cc-ast:atomic-rack-write-ast
+      :order (cst:raw order)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-rack)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp new rack index) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-rack-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert new env system)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::ACAS

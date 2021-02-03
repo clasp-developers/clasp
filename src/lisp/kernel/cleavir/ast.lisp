@@ -298,6 +298,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Classes ATOMIC-RACK-READ-AST, ATOMIC-RACK-WRITE-AST, CAS-RACK-AST
+;;;
+
+(defclass rack-ref-ast (cleavir-ast:ast) ; abstract
+  ((%rack-ast :initarg :rack-ast :reader rack-ast)
+   (%slot-number-ast :initarg :slot-number-ast
+                     :reader cleavir-ast:slot-number-ast)))
+
+(cleavir-io:define-save-info rack-ref-ast
+    (:rack-ast rack-ast) (:slot-number-ast cleavir-ast:slot-number-ast))
+
+(defclass atomic-rack-read-ast (atomic-ast rack-ref-ast) ())
+(defclass atomic-rack-write-ast (atomic-ast rack-ref-ast)
+  ((%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
+
+(cleavir-ast:define-children atomic-rack-read-ast
+    (rack-ast cleavir-ast:slot-number-ast))
+(cleavir-ast:define-children atomic-rack-write-ast
+    (cleavir-ast:value-ast rack-ast cleavir-ast:slot-number-ast))
+
+(defclass cas-rack-ast (cas-ast rack-ref-ast) ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class SLOT-CAS-AST
 ;;;
 ;;; Compare-and-swap an instance slot.

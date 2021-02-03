@@ -298,6 +298,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:rack-set) t)
          ((eq sym 'core::atomic-rack-read) t)
          ((eq sym 'core::atomic-rack-write) t)
+         ((eq sym 'core::cas-rack) t)
          ((eq sym 'core:defcallback) t)
          (t (special-operator-p sym)))))
 

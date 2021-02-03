@@ -1385,8 +1385,9 @@ jump to blocks within this tagbody."
 
 ;;; CORE:RACK-REF
 
-(defun gen-rack-ref (rack index)
-  (irc-rack-read rack (irc-untag-fixnum index %size_t% "slot-location")))
+(defun gen-rack-ref (rack index &key (order 'llvm-sys:monotonic))
+  (irc-rack-read rack (irc-untag-fixnum index %size_t% "slot-location")
+                 :order order))
 
 (defun codegen-rack-ref (result rest env)
   (let ((rack (first rest)) (index (second rest))
@@ -1399,8 +1400,9 @@ jump to blocks within this tagbody."
 
 ;;; CORE:RACK-SET
 
-(defun gen-rack-set (rack index value)
-  (irc-rack-write rack (irc-untag-fixnum index %size_t% "slot-location") value)
+(defun gen-rack-set (rack index value &key (order 'llvm-sys:monotonic))
+  (irc-rack-write rack (irc-untag-fixnum index %size_t% "slot-location") value
+                  :order order)
   value)
 
 (defun codegen-rack-set (result rest env)

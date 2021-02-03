@@ -174,11 +174,12 @@
                     (make-instance 'cc-bmir:memref2
                       :inputs (list (second args))
                       :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))))
-      (list (cleavir-ast-to-bir:insert
-             inserter
-             (make-instance 'cc-bmir:store
-               :order (cc-ast:order ast)
-               :inputs (list (first args) memref2)))))))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:store
+         :order (cc-ast:order ast)
+         :inputs (list (first args) memref2)))))
+  ())
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rplacd-ast)
                                            inserter system)
   (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:object-ast ast)
@@ -190,11 +191,12 @@
                     (make-instance 'cc-bmir:memref2
                       :inputs (list (second args))
                       :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))))
-      (list (cleavir-ast-to-bir:insert
-             inserter
-             (make-instance 'cc-bmir:store
-               :order (cc-ast:order ast)
-               :inputs (list (first args) memref2)))))))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:store
+         :order (cc-ast:order ast)
+         :inputs (list (first args) memref2)))))
+  ())
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:cas-car-ast)
                                            inserter system)
   (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
@@ -231,6 +233,57 @@
         (make-instance 'cc-bmir:cas
           :order (cc-ast:order ast)
           :inputs (list memref2 (first args) (second args))))))))
+
+;;; cept for these
+
+(defclass atomic (cleavir-bir:instruction)
+  ((%order :initarg :order :reader order :initform :relaxed
+           :type (member :relaxed :acquire :release :acquire-release
+                         :sequentially-consistent))))
+(defclass atomic-rack-read (atomic cleavir-bir:computation) ())
+(defmethod cleavir-bir:rtype ((d atomic-rack-read)) :object)
+(defclass atomic-rack-write (atomic cleavir-bir:operation) ())
+(defclass cas-rack (atomic cleavir-bir:computation) ())
+(defmethod cleavir-bir:rtype ((d cas-rack)) :object)
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rack-read-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:rack-ast ast)
+                                                (cleavir-ast:slot-number-ast
+                                                 ast))
+                                               inserter system
+                                               (:object :object))
+    (list
+     (cleavir-ast-to-bir:insert
+      inserter
+      (make-instance 'atomic-rack-read
+        :order (cc-ast:order ast) :inputs args)))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rack-write-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:value-ast ast)
+                                                (cc-ast:rack-ast ast)
+                                                (cleavir-ast:slot-number-ast
+                                                 ast))
+                                               inserter system
+                                               (:object :object :object))
+    (cleavir-ast-to-bir:insert
+     inserter
+     (make-instance 'atomic-rack-write :order (cc-ast:order ast) :inputs args)))
+  ())
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:cas-rack-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
+                                                (cleavir-ast:value-ast ast)
+                                                (cc-ast:rack-ast ast)
+                                                (cleavir-ast:slot-number-ast
+                                                 ast))
+                                               inserter system
+                                               (:object :object
+                                                :object :object))
+    (list
+     (cleavir-ast-to-bir:insert
+      inserter
+      (make-instance 'cas-rack :order (cc-ast:order ast) :inputs args)))))
 
 #+(or)
 (defclass acas (atomic cleavir-bir:computation)
