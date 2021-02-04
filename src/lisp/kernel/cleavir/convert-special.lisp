@@ -315,7 +315,7 @@
     (make-instance 'cc-ast:atomic-rack-read-ast
       :order (cst:raw order)
       :rack-ast (cleavir-cst-to-ast:convert rack env system)
-      :slot-number-ast (cleavir-cst-to-ast:convert rack env system))))
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
 (defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::atomic-rack-write)) cst env
      (system clasp-cleavir:clasp))
