@@ -299,10 +299,9 @@
 
 (defun defstruct-class-cas-body (structure-name element-type location)
   (declare (ignore structure-name element-type))
-  `(mp::get-cas-expansion (list 'clos::standard-instance-access
-                                object
-                                ,location)
-                          env))
+  `(apply #'mp:get-atomic-expansion
+          (list 'clos::standard-instance-access object ,location)
+          keys))
 
 (defun defstruct-vector-reader-body (structure-name element-type location)
   (declare (ignore element-type) ; maybe later.
@@ -342,7 +341,7 @@
             `(defun (setf ,accessor) (new object)
                ,(funcall gen-write structure-name element-type location))
             (when gen-cas
-              `((mp::define-cas-expander ,accessor (object &environment env)
+              `((mp:define-atomic-expander ,accessor (object) (&rest keys)
                   ,(funcall gen-cas structure-name element-type location)))))))))))
 
 (defun process-boa-lambda-list (original-lambda-list slot-descriptions)
