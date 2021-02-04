@@ -202,9 +202,14 @@
 (define-simple-atomic-expander core:rack-ref (rack index)
   core::atomic-rack-read core::atomic-rack-write core::cas-rack)
 
-#+(or)
-(define-simple-atomic-expander symbol-value (symbol)
-  core:atomic-symbol-value core:atomic-setf-symbol-value core:cas-symbol-value)
+;; Ignores order specification for the moment.
+(define-atomic-expander symbol-value (symbol) (&key order environment)
+  (declare (ignore order environment))
+  (let ((gs (gensym "SYMBOL")) (cmp (gensym "CMP")) (new (gensym "NEW")))
+    (values (list gs) (list symbol) cmp new
+            `(core:atomic-symbol-value ,gs)
+            `(progn (core:atomic-set-symbol-value ,new ,gs) ,new)
+            `(core:cas-symbol-value ,cmp ,new ,gs))))
 
 #+(or)
 (define-simple-atomic-expander svref (vector index)
