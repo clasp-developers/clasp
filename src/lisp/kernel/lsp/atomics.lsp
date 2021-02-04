@@ -152,7 +152,7 @@ not guaranteed to be in any sense atomic with the swap, and likely won't be.
 PLACE must be a CAS-able place. CAS-able places are either symbol macros,
 special variables,
 or accessor forms with a CAR of
-SYMBOL-VALUE, SYMBOL-PLIST, SVREF, CLOS:STANDARD-INSTANCE-ACCESS, THE,
+SYMBOL-VALUE, SYMBOL-PLIST, CLOS:STANDARD-INSTANCE-ACCESS, THE,
 SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
 or macro forms that expand into CAS-able places,
 or an accessor defined with DEFINE-ATOMIC-EXPANDER.
