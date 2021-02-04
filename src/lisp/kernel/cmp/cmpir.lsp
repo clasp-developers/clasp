@@ -730,6 +730,13 @@ the type LLVMContexts don't match - so they were defined in different threads!"
     (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
+(defun reduce-failure-order (order)
+  (case order
+    ((llvm-sys:sequentially-consistent llvm-sys:acquire llvm-sys:monotonic)
+     order)
+    ((llvm-sys:acquire-release) 'llvm-sys:acquire)
+    ((llvm-sys:release) 'llvm-sys:monotonic)))
+
 (defun irc-%cmpxchg (ptr cmp new order)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
   (let ((cmp-type (llvm-sys:get-type cmp)))
@@ -739,7 +746,8 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
-                                   ptr cmp new order order
+                                   ptr cmp new order
+                                   (reduce-failure-order order)
                                    1 #+(or)'llvm-sys:system))
 
 (defun irc-cmpxchg (ptr cmp new
@@ -748,7 +756,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   ;; for the RMW operation, and second, the "failure" order for only the read
   ;; in case the comparison fails. I don't honestly know how this works at the
   ;; machine level. For now we only allow passing in one order, which is used
-  ;; for both.
+  ;; for both (except we have to reduce it...)
   ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
   ;; since we're doing a strong exchange (for now), value = cmp iff the swap
  ;;; was done too, so we don't really need the flag.

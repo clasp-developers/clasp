@@ -92,6 +92,20 @@ beyond that is your extension."
            ,(expand-atomic-expander
              accessor place-lambda-list expander-lambda-list body))))
 
+;;; RELEASE and ACQUIRE-RELEASE don't really make sense for writes
+(defun reduce-read-order (order)
+  (ecase order
+    ((:sequentially-consistent :acquire :relaxed) order)
+    ((:acquire-release) :acquire)
+    ((:release) :relaxed)))
+
+;;; same idea
+(defun reduce-write-order (order)
+  (ecase order
+    ((:sequentially-consistent :release :relaxed) order)
+    ((:acquire-release) :release)
+    ((:acquire) :relaxed)))
+
 (defmacro define-simple-atomic-expander (name (&rest params)
                                          reader writer casser
                                          &optional documentation)
@@ -101,10 +115,12 @@ beyond that is your extension."
        ,@(when documentation (list documentation))
        (let ((scmp (gensym "CMP")) (snew (gensym "NEW"))
              ,@(loop for stemp in stemps
-                     collect `(,stemp (gensym "TEMP"))))
+                     collect `(,stemp (gensym "TEMP")))
+             (read-order (reduce-read-order order))
+             (write-order (reduce-write-order order)))
          (values (list ,@stemps) (list ,@params) scmp snew
-                 (list ',reader order ,@stemps)
-                 (list 'progn (list ',writer order snew ,@stemps) snew)
+                 (list ',reader read-order ,@stemps)
+                 (list 'progn (list ',writer write-order snew ,@stemps) snew)
                  (list ',casser order scmp snew ,@stemps))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
