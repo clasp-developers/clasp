@@ -14,6 +14,16 @@
 (defun get-atomic-expansion (place &rest keys
                              &key environment (order nil orderp)
                              &allow-other-keys)
+  "Analogous to GET-SETF-EXPANSION. Returns the following seven values:
+* a list of temporary variables, which will be bound as if by LET*
+* a list of forms, whose results will be bound to the variables
+* a variable for the old value of PLACE, for use in CAS
+* a variable for the new value of PLACE, for use in CAS and SETF
+* a form to atomically read the value of PLACE
+* a form to atomically write the value of PLACE
+* a form to perform an atomic compare-and-swap of PLACE
+The keyword arguments are passed unmodified to the expander, except that
+defaulting of ORDER is applied."
   (declare (ignore order))
   ;; Default the order parameter. KLUDGEy.
   (unless orderp (setf keys (list* :order :sequentially-consistent keys)))
@@ -65,6 +75,18 @@
 (defmacro define-atomic-expander (accessor
                                   place-lambda-list expander-lambda-list
                                   &body body)
+  "Analogous to DEFINE-SETF-EXPANDER; defines how to access (accessor ...)
+places atomically.
+The body must return the seven values of GET-ATOMIC-EXPANSION.
+It is up to you the definer to ensure the swap is performed atomically.
+This means you will almost certainly need Clasp's synchronization operators
+(e.g., CAS on some other place).
+Unlike setf expanders, atomic expanders can take arbitrary keyword arguments.
+These correspond to any keyword arguments used in an ATOMIC place, plus the
+keyword :environment which holds the environment, and the defaulting of :order
+to :sequentially-consistent. The EXPANDER-LAMBDA-LIST is this lambda list.
+All expanders should be prepared to accept :order and :environment. Anything
+beyond that is your extension."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (setf (atomic-expander ',accessor)
            ,(expand-atomic-expander
@@ -92,6 +114,14 @@
 
 (defmacro atomic (place &rest keys &key order &allow-other-keys
                   &environment env)
+  "(ATOMIC place &key order &allow-other-keys)
+Atomically read from PLACE. ORDER is an atomic ordering specifier, i.e. one of
+the keywords:
+:RELAXED :ACQUIRE :RELEASE :ACQUIRE-RELEASE :SEQUENTIALLY-CONSISTENT
+The default is the last. The meanings of these match the C++ standard (more
+detailed explanation forthcoming elsewhere).
+Other keywords are passed to the atomic expander function.
+Experimental."
   (declare (ignore order))
   (multiple-value-bind (temps values old new read write cas)
       (apply #'get-atomic-expansion place :environment env keys)
@@ -124,9 +154,9 @@ or accessor forms with a CAR of
 SYMBOL-VALUE, SYMBOL-PLIST, SVREF, CLOS:STANDARD-INSTANCE-ACCESS, THE,
 SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
 or macro forms that expand into CAS-able places,
-or an accessor defined with DEFINE-CAS-EXPANDER.
+or an accessor defined with DEFINE-ATOMIC-EXPANDER.
 Some CAS accessors have additional semantic constraints.
-You can see their documentation with e.g. (documentation 'slot-value 'mp:cas)
+You can see their documentation with e.g. (documentation 'slot-value 'mp:atomic)
 This is planned to be expanded to include variables,
 possibly other simple vectors, and slot accessors.
 Experimental."
@@ -158,6 +188,9 @@ Experimental."
   `(atomic-update ,place #'(lambda (y x) (- x y)) ,delta))
 
 (defmacro atomic-push (item place &environment env)
+  "As CL:PUSH, but as an atomic RMW operation.
+ITEM and the subforms of PLACE are evaluated exactly once in the same order as
+they are for CL:PUSH, specified in CLHS 5.1.1.1."
   (multiple-value-bind (vars vals old new read write cas)
       (get-atomic-expansion place :environment env)
     (declare (ignore write))
@@ -171,6 +204,7 @@ Experimental."
                finally (return ,new))))))
 
 (defmacro atomic-pop (place &environment env)
+  "As CL:POP, but as an atomic RMW operation."
   (multiple-value-bind (vars vals old new read write cas)
       (get-atomic-expansion place :environment env)
     (declare (ignore write))
@@ -182,6 +216,9 @@ Experimental."
 
 (defmacro atomic-pushnew (item place &rest keys &key key test test-not
                           &environment env)
+  "As CL:PUSHNEW, but as an atomic RMW operation.
+ITEM, the subforms of PLACE, and the keywords are evaluated exactly once in the
+same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."
   (declare (ignore key test test-not))
   (multiple-value-bind (vars vals old new read write cas)
       (get-atomic-expansion place :environment env)
