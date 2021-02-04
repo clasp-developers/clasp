@@ -25,7 +25,7 @@
 ;;; Add a portion of call history into a gf's existing call history.
 ;;; If any entry to be added duplicates an existing entry, the new entry prevails.
 (defun append-generic-function-call-history (generic-function new-entries)
-  (loop for call-history = (safe-gf-call-history generic-function)
+  (loop for call-history = (mp:atomic (safe-gf-call-history generic-function))
         ;; By keeping the new entry, remove-if will return immediately in the
         ;; usual case that the existing history is empty.
         for cleaned-call-history = (remove-if (lambda (entry)
@@ -33,8 +33,8 @@
                                                  new-entries (car entry)))
                                               call-history)
         for new-history = (append new-entries cleaned-call-history)
-        for exchange = (safe-gf-call-history-cas
-                        generic-function call-history new-history)
+        for exchange = (mp:cas (safe-gf-call-history generic-function)
+                               call-history new-history)
         until (eq exchange call-history)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
