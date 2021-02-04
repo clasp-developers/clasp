@@ -1,26 +1,15 @@
 (in-package "MP")
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; DEFINE-ATOMIC-EXPANSION, GET-ATOMIC-EXPANSION
+;;;
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun atomic-expander (symbol)
     (core:get-sysprop symbol 'atomic-expander))
   (defun (setf atomic-expander) (expander symbol)
     (core:put-sysprop symbol 'atomic-expander expander)))
-
-(defmacro atomic (place &rest keys &key order &allow-other-keys
-                  &environment env)
-  (declare (ignore order))
-  (multiple-value-bind (temps values old new read write cas)
-      (apply #'get-atomic-expansion place :environment env keys)
-    (declare (ignore old new write cas))
-    `(let* (,@(mapcar #'list temps values)) ,read)))
-
-(define-setf-expander atomic (place &rest keys &key order &allow-other-keys
-                              &environment env)
-  (declare (ignore order))
-  (multiple-value-bind (temps vals old new read write cas)
-      (apply #'get-atomic-expansion place :environment env keys)
-    (declare (ignore old cas))
-    (values temps vals `(,new) write read)))
 
 (defun get-atomic-expansion (place &rest keys
                              &key environment (order nil orderp)
@@ -37,7 +26,7 @@
          (macroexpand-1 place environment)
        (if expanded
            (apply #'get-atomic-expansion expansion keys)
-           (error "CAS on variables not supported yet")))
+           (error "Atomic operations on lexical variables not supported yet")))
      #+cclasp
      (let ((info (cleavir-env:variable-info environment place)))
        (etypecase info
@@ -96,6 +85,100 @@
                  (list 'progn (list ',writer order snew ,@stemps) snew)
                  (list ',casser order scmp snew ,@stemps))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; ATOMIC itself
+;;;
+
+(defmacro atomic (place &rest keys &key order &allow-other-keys
+                  &environment env)
+  (declare (ignore order))
+  (multiple-value-bind (temps values old new read write cas)
+      (apply #'get-atomic-expansion place :environment env keys)
+    (declare (ignore old new write cas))
+    `(let* (,@(mapcar #'list temps values)) ,read)))
+
+(define-setf-expander atomic (place &rest keys &key order &allow-other-keys
+                              &environment env)
+  (declare (ignore order))
+  (multiple-value-bind (temps vals old new read write cas)
+      (apply #'get-atomic-expansion place :environment env keys)
+    (declare (ignore old cas))
+    (values temps vals `(,new) write read)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Derived operators
+;;;
+
+(defmacro atomic-update (place update-fn &rest arguments &environment env)
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    `(let* (,@(mapcar #'list vars vals)
+            (,old ,read))
+       (loop for ,new = (funcall ,update-fn ,@arguments ,old)
+             until (eq ,old (setf ,old ,cas))
+             finally (return ,new)))))
+
+(defmacro atomic-incf (place &optional (delta 1))
+  `(atomic-update ,place #'+ ,delta))
+
+(defmacro atomic-decf (place &optional (delta 1))
+  `(atomic-update ,place #'(lambda (y x) (- x y)) ,delta))
+
+(defmacro atomic-push (item place &environment env)
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    (let ((gitem (gensym "ITEM")))
+      `(let* ((,gitem ,item) ; evaluate left-to-right (CLHS 5.1.1.1)
+              ,@(mapcar #'list vars vals)
+              (,old ,read)
+              (,new (cons ,item ,old)))
+         (loop until (eq ,old (setf ,old ,cas))
+               do (setf (cdr ,new) ,old)
+               finally (return ,new))))))
+
+(defmacro atomic-pop (place &environment env)
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    `(let* (,@(mapcar #'list vars vals)
+            (,old ,read))
+       (loop (let ((,new (cdr ,old)))
+               (when (eq ,old (setf ,old ,cas))
+                 (return (car ,old))))))))
+
+(defmacro atomic-pushnew (item place &rest keys &key key test test-not
+                          &environment env)
+  (declare (ignore key test test-not))
+  (multiple-value-bind (vars vals old new cas read)
+      (get-cas-expansion place env)
+    (let ((gitem (gensym "ITEM")) (bname (gensym "ATOMIC-PUSHNEW"))
+          gkeybinds gkeys)
+      ;; Ensuring CLHS 5.1.1.1 evaluation order is weird here. We'd like to
+      ;; only evaluate the keys one time, but we want the adjoin to get
+      ;; constant keywords the compiler transformations can work with.
+      (loop for thing in keys
+            if (constantp thing env)
+              do (push (ext:constant-form-value thing env) gkeys)
+            else
+              do (let ((gkey (gensym "K")))
+                   (push gkey gkeys)
+                   (push `(,gkey ,thing) gkeybinds))
+            finally (setf gkeys (nreverse gkeys)
+                          gkeybinds (nreverse gkeybinds)))
+      ;; Actual expansion
+      `(let* ((,gitem ,item)
+              ,@(mapcar #'list vars vals)
+              ,@gkeybinds
+              (,old ,read))
+         (loop named ,bname
+               for ,new = (adjoin ,gitem ,old ,@gkeys)
+               until (eq ,old (setf ,old ,cas))
+               finally (return-from ,bname ,new))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Particular atomic expanders
 ;;;
 
 (define-atomic-expander the (type place) (&rest keys)
