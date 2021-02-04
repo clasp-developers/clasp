@@ -488,7 +488,7 @@ representing a tagged fixnum."
     (irc-struct-gep %instance% instance* +instance.rack-index+)))
 
 (defun irc-rack (instance-tagged)
-  (irc-load-atomic (irc-rack-address instance-tagged) "rack-tagged"))
+  (irc-load-atomic (irc-rack-address instance-tagged) :label "rack-tagged"))
 
 (defun irc-rack-set (instance-tagged rack)
   (irc-store-atomic rack (irc-rack-address instance-tagged)))
@@ -503,11 +503,11 @@ representing a tagged fixnum."
   "Return a %t**% a pointer to a slot in the rack of an instance"
   (irc-rack-slot-address (irc-rack instance) index))
 
-(defun irc-rack-read (rack index)
-  (irc-load-atomic (irc-rack-slot-address rack index)))
+(defun irc-rack-read (rack index &key (order 'llvm-sys:monotonic))
+  (irc-load-atomic (irc-rack-slot-address rack index) :order order))
 
-(defun irc-rack-write (rack index value)
-  (irc-store-atomic value (irc-rack-slot-address rack index)))
+(defun irc-rack-write (rack index value &key (order 'llvm-sys:monotonic))
+  (irc-store-atomic value (irc-rack-slot-address rack index) :order order))
 
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
@@ -566,16 +566,20 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data)
+                   :label "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset)
+                   :label "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size)
+                   :label "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank)
+                   :label "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
@@ -690,12 +694,12 @@ Otherwise do a variable shift."
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-load-atomic (source &optional (label "") (align 8))
+(defun irc-load-atomic (source
+                        &key (label "") (align 8) (order 'llvm-sys:monotonic))
   (let ((inst (irc-load source label)))
-    (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    ;; atomic loads require an explicit alignment.
+    (llvm-sys:set-alignment inst align)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
@@ -718,15 +722,15 @@ Otherwise do a variable shift."
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
-(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil) (align 8))
+(defun irc-store-atomic (val destination
+                         &key (label "") (is-volatile nil) (align 8)
+                           (order 'llvm-sys:monotonic))
   (let ((inst (irc-store val destination label is-volatile)))
     (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
-(defun irc-%cmpxchg (ptr cmp new)
+(defun irc-%cmpxchg (ptr cmp new order)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
   (let ((cmp-type (llvm-sys:get-type cmp)))
     (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
@@ -735,18 +739,22 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
-                                   ptr cmp new
-                                   'llvm-sys:sequentially-consistent
-                                   'llvm-sys:sequentially-consistent
+                                   ptr cmp new order order
                                    1 #+(or)'llvm-sys:system))
 
-(defun irc-cmpxchg (ptr cmp new &optional (label ""))
+(defun irc-cmpxchg (ptr cmp new
+                    &key (label "") (order 'llvm-sys:sequentially-consistent))
+  ;; cmpxchg instructions involve two memory orders: First, the "success" order
+  ;; for the RMW operation, and second, the "failure" order for only the read
+  ;; in case the comparison fails. I don't honestly know how this works at the
+  ;; machine level. For now we only allow passing in one order, which is used
+  ;; for both.
   ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
-  ;; since we're doing a strong exchange, value = cmp iff the swap was done too,
-  ;; so we don't really need the flag.
+  ;; since we're doing a strong exchange (for now), value = cmp iff the swap
+ ;;; was done too, so we don't really need the flag.
   ;; Of course we might want to work with the flag directly instead, but that's
   ;; a reorganization at a higher level.
-  (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
+  (irc-extract-value (irc-%cmpxchg ptr cmp new order) (list 0) label))
 
 (defun translate-rmw-op (op)
   (cond ((eq op :xchg) 'llvm-sys:xchg)

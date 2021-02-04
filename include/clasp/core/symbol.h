@@ -153,6 +153,8 @@ public:
 
   inline T_sp globalValue() const { return _GlobalValue.load(std::memory_order_relaxed); }
   inline void set_globalValue(T_sp val) { _GlobalValue.store(val, std::memory_order_relaxed); }
+  inline T_sp globalValueSeqCst() const { return _GlobalValue.load(std::memory_order_seq_cst); }
+  inline void set_globalValueSeqCst(T_sp val) { _GlobalValue.store(val, std::memory_order_seq_cst); }
   inline T_sp cas_globalValue(T_sp cmp, T_sp new_value) {
     _GlobalValue.compare_exchange_strong(cmp, new_value);
     return cmp;
@@ -200,6 +202,23 @@ public:
     T_sp val = symbolValueUnsafe();
     if (val.unboundp()) this->symbolUnboundError();
     return val;
+  }
+
+  // Above note on thread local bindings applies to these as well.
+  inline T_sp atomicSymbolValue() const {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      return threadLocalSymbolValue();
+#endif
+    return globalValueSeqCst();
+  }
+
+  inline void set_atomicSymbolValue(T_sp nv) {
+#ifdef CLASP_THREADS
+    if (my_thread->_Bindings.thread_local_boundp(this))
+      set_threadLocalSymbolValue(nv);
+#endif
+    return set_globalValueSeqCst(nv);
   }
 
   inline T_sp casSymbolValue(T_sp cmp, T_sp new_value) {

@@ -66,8 +66,10 @@
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
-   #:cmp-ast
+   #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
+   #:cmp-ast #:order
    #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
+   #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
    #:bind-ast
    #:unwind-protect-ast #:cleanup-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
@@ -82,6 +84,7 @@
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
+           #:atomic #:order #:atomic-rack-read #:atomic-rack-write #:cas-rack
            #:acas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:cc-bir-to-bmir
@@ -118,4 +121,4 @@
   (:shadow #:characterp #:consp #:load)
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
-  (:export #:memref2 #:offset #:load #:store))
+  (:export #:memref2 #:offset #:load #:store #:cas))

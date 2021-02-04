@@ -651,6 +651,14 @@ This is due to either a problem in foreign code (e.g., C++), or a bug in Clasp i
   (:report "Attempted to return or go to an expired block or tagbody tag."))
 
 #+threads
+(define-condition mp:not-atomic (error)
+  ((place :initarg :place :reader mp:not-atomic-place))
+  (:report
+   (lambda (condition stream)
+     (format stream "Don't know how to atomically access the place ~a"
+             (mp:not-atomic-place condition)))))
+
+#+threads
 (define-condition mp:process-error (error)
   ((process :initarg :process :reader mp:process-error-process))
   (:documentation "Superclass of errors relating to processes."))

@@ -138,6 +138,20 @@ CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   return arg->symbolValue();
 };
 
+CL_LAMBDA(symbol);
+CL_DECLARE();
+CL_DOCSTRING("Sequentially-consistent atomic read of SYMBOL-VALUE.");
+CL_DEFUN T_sp core__atomic_symbol_value(Symbol_sp arg) {
+  return arg->atomicSymbolValue();
+}
+
+CL_LAMBDA(nv symbol);
+CL_DECLARE();
+CL_DOCSTRING("Sequentially-consistent atomic write of SYMBOL-VALUE.");
+CL_DEFUN void core__atomic_set_symbol_value(T_sp nv, Symbol_sp arg) {
+  arg->set_atomicSymbolValue(nv);
+}
+
 CL_LAMBDA(cmp new-value symbol);
 CL_DECLARE();
 CL_DOCSTRING("Compare-and-swap of SYMBOL-VALUE.");

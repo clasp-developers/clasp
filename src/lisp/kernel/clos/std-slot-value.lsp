@@ -170,13 +170,16 @@
   (setf (core:rack-ref (core:instance-rack instance) location) val))
 
 #+threads
-(mp::define-simple-cas-expander clos:standard-instance-access core::instance-cas
-  (instance location)
+(mp:define-atomic-expander clos:standard-instance-access (instance location)
+    (&rest keys)
   "The requirements of the normal STANDARD-INSTANCE-ACCESS writer
 must be met, including that the slot has allocation :instance, and is
 bound before the operation.
-If there is a CHANGE-CLASS concurrent with this operation the
-consequences are not defined.")
+If there is a CHANGE-CLASS conflicting with this operation the
+consequences are not defined."
+  (apply #'mp:get-atomic-expansion
+         `(core:rack-ref (core:instance-rack ,instance) ,location)
+         keys))
 
 ;;; On Clasp, funcallable instances and regular instances store
 ;;; their slots identically, at the moment.
@@ -312,17 +315,41 @@ consequences are not defined.")
           (if location
               (core::instance-cas old new object location)
               (slot-missing class object slot-name
-                            'cas (list old new))))
+                            'mp:cas (list old new))))
         (let ((slotd (find slot-name (clos:class-slots class)
                            :key #'clos:slot-definition-name)))
           (if slotd
               (cas-slot-value-using-class old new class object slotd)
               (slot-missing class object slot-name
-                            'cas (list old new)))))))
+                            'mp:cas (list old new)))))))
 
 #+threads
-(mp::define-simple-cas-expander slot-value cas-slot-value (object slot-name)
+(mp:define-atomic-expander slot-value (object slot-name) (&rest keys)
   "See SLOT-VALUE-USING-CLASS documentation for constraints.
 If no slot with the given SLOT-NAME exists, SLOT-MISSING will be called,
 with operation = mp:cas, and new-value a list of OLD and NEW.
-If SLOT-MISSING returns, its primary value is returned.")
+If SLOT-MISSING returns, its primary value is returned."
+  (let ((gobject (gensym "OBJECT")) (gsname (gensym "SLOT-NAME"))
+        (gslotd (gensym "SLOTD")) (gclass (gensym "CLASS")))
+    (multiple-value-bind (vars vals cmpv newv read write cas)
+        (apply #'mp:get-atomic-expansion
+               `(slot-value-using-class ,gclass ,gobject ,gslotd)
+               keys)
+      (values (list* gobject gsname gclass gslotd vars)
+              (list* object slot-name `(class-of ,gobject)
+                     `(find ,gsname (class-slots ,gclass)
+                            :key #'slot-definition-name)
+                     vals)
+              cmpv newv
+              `(if ,gslotd
+                   ,read
+                   (slot-missing ,gclass ,gobject ,gsname 'slot-value))
+              `(if ,gslotd
+                   ,write
+                   (slot-missing ,gclass ,gobject ,gsname 'setf ,newv))
+              #+(or)
+              `(cas-slot-value ,cmpv ,newv ,gobject ,gsname)
+              `(if ,gslotd
+                   ,cas
+                   (slot-missing ,gclass ,gobject ,gsname
+                                 'cas (list ,cmpv ,newv)))))))
