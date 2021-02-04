@@ -108,7 +108,7 @@
 
 (defun irc-new-function-value-environment (old-env &key functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
-  (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions))))
+  (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions) :label label)))
     (dolist (fn functions)
       (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
     new-env))
@@ -123,7 +123,7 @@
 
 (defun irc-new-tagbody-environment (old-env &key (label "function-frame"))
   "Create a new tagbody environment and a new runtime environment"
-  (let ((new-env (irc-new-unbound-tagbody-environment old-env )))
+  (let ((new-env (irc-new-unbound-tagbody-environment old-env :label label)))
     new-env))
 
 (defun irc-new-macrolet-environment (old-env)
@@ -179,7 +179,6 @@
 (defun irc-make-block-environment-set-parent (name parent-env)
   (let* ((block-env (make-block-environment name parent-env))
          (new-renv (alloca-af* :label "block-renv"))
-         (size (jit-constant-size_t 1))
          (visible-ancestor-environment (current-visible-environment parent-env t))
          (parent-renv-ref (if (core:function-container-environment-p visible-ancestor-environment)
                               (let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
@@ -302,7 +301,7 @@
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
 
-(defun irc-do-unwind-environment (env &optional verbose)
+(defun irc-do-unwind-environment (env)
   "Unwind the environment and return whatever was unwound"
   (cmp-log "irc-do-unwind-environment for: %s%N" env)
   (let ((unwind (local-metadata env :unwind)))
@@ -311,6 +310,7 @@
 	(cond
 	  ((eq head 'symbolValueRestore)
            (destructuring-bind (cmd symbol alloca) cc
+             (declare (ignore cmd))
              (cmp-log "popDynamicBinding of %s%N" symbol)
              (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
@@ -376,7 +376,7 @@
       nil))
 
 
-(defun irc-begin-landing-pad-block (theblock &optional (function *current-function*))
+(defun irc-begin-landing-pad-block (theblock)
   "This doesn't invoke low-level-trace - it would interfere with the landing pad"
   (or (llvm-sys:get-parent theblock) (error "irc-begin-landing-pad-block>> The block ~a doesn't have a parent" theblock))
   #+(or)(irc-append-basic-block function theblock)
@@ -434,10 +434,11 @@
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function) :label label))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
+                   :label label))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
@@ -555,8 +556,7 @@ representing a tagged fixnum."
         (error "There must be an instruction to insert before"))))
 
 (defun irc-insert-bclasp-lexical-reference (instruction depth index start-renv)
-  (let ((irbuilder (irc-make-irbuilder-insert-before-instruction instruction))
-        (renv start-renv))
+  (let ((irbuilder (irc-make-irbuilder-insert-before-instruction instruction)))
     (with-irbuilder (irbuilder)
       (irc-depth-index-value-frame-reference start-renv depth index))))
 
@@ -781,6 +781,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         (t (error "Unknown atomic RMW operation: ~s" op))))
 
 (defun irc-atomicrmw (pointer value operation &optional (label "old"))
+  (declare (ignore label)) ; LLVM can't name atomic RMWs for whatever reason?
   (llvm-sys:create-atomic-rmw *irbuilder*
                               (translate-rmw-op operation)
                               pointer value
@@ -809,11 +810,11 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (llvm-sys:create-vaarg *irbuilder* valist* type name))
 
 (defun irc-vaslist-va_list-address (vaslist &optional (label "va_list_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'va_list))
+  (c++-field-ptr info.%vaslist% vaslist 'va_list label))
 
 (defun irc-vaslist-remaining-nargs-address (vaslist
                                             &optional (label "va_list_remaining_nargs_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs))
+  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs label))
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("no-frame-pointer-elim" "true")
@@ -855,7 +856,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (declare (ignore function-attributes-p argument-names-p function-type-p))
   (cmp-log "Expanding with-new-function name: %s%N" function-name)
   (let ((irbuilder-alloca (gensym))
-        (temp (gensym))
         (irbuilder-body (gensym))
         (function-description (gensym)))
     `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-description)
@@ -1068,7 +1068,6 @@ and then the irbuilder-alloca, irbuilder-body."
                           function-info))
          (*current-function* fn)
 	 (func-env (make-function-container-environment env (car (llvm-sys:get-argument-list fn)) fn))
-         traceid
 	 (irbuilder-cur (llvm-sys:make-irbuilder (thread-local-llvm-context)))
 	 (irbuilder-alloca (llvm-sys:make-irbuilder (thread-local-llvm-context)))
 	 (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context))))
@@ -1302,7 +1301,6 @@ and then the irbuilder-alloca, irbuilder-body."
   (let* ((info (gethash fn-name (get-primitives)))
          (_ (unless info
               (error "Unknown primitive ~a" fn-name)))
-         (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
          (passed-args-ty (mapcar #'(lambda (x)
                                      (if (llvm-sys:llvm-value-p x)
@@ -1367,10 +1365,10 @@ and then the irbuilder-alloca, irbuilder-body."
                               ((and landing-pad function-throws)
                                (irc-create-invoke the-function args landing-pad label))
                               (t
-                               (irc-create-call the-function args label))))
-           (_               (when (llvm-sys:does-not-return the-function)
-                              (irc-unreachable)
-                              (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))))
+                               (irc-create-call the-function args label)))))
+      (when (llvm-sys:does-not-return the-function)
+        (irc-unreachable)
+        (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
       #+(or)(warn "Does add-param-attr work yet")
       ;;; FIXME: Do I need to add attributes to the return value of the call
       (dolist (index-attributes (primitive-argument-attributes primitive-info))
@@ -1468,6 +1466,7 @@ and then the irbuilder-alloca, irbuilder-body."
         (values func info)))))
 
 (defun irc-global-symbol (sym env)
+  (declare (ignore env))
   "Return an llvm GlobalValue for a symbol"
   (multiple-value-bind (ref literal-name)
       (literal:compile-reference-to-literal sym)
@@ -1477,6 +1476,7 @@ and then the irbuilder-alloca, irbuilder-body."
       (values (irc-load ref label) label))))
 
 (defun irc-global-setf-symbol (sym env)
+  (declare (ignore env))
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
   (irc-load (literal:compile-reference-to-literal sym)))
