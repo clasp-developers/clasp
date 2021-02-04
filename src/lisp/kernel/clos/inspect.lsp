@@ -486,15 +486,3 @@ q (or Q):             quits the inspection.~%~
     (if exp
         (setf (documentation exp t) new)
         new)))
-
-#+threads
-(defmethod documentation ((object symbol) (doc-type (eql 'mp:cas)))
-  (let ((exp (mp::cas-expander object)))
-    (when exp (documentation exp t))))
-
-#+threads
-(defmethod (setf documentation) (new (object symbol) (doc-type (eql 'mp:cas)))
-  (let ((exp (mp::cas-expander object)))
-    (if exp
-        (setf (documentation exp t) new)
-        new)))
