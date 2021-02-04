@@ -287,5 +287,14 @@ are no bindings (in which case the global, thread-shared value is used."
             `(core:cas-symbol-value ,cmp ,new ,gs))))
 
 #+(or)
+(define-atomic-expander symbol-plist (symbol) (&key order environment)
+  (declare (ignore order environment))
+  (let ((gs (gensym "SYMBOL")) (cmp (gensym "CMP")) (new (gensym "NEW")))
+    (values (list gs) (list symbol) cmp new
+            `(core:atomic-symbol-plist ,gs)
+            `(progn (core:atomic-set-symbol-plist ,new ,gs) ,new)
+            `(core:cas-symbol-plist ,cmp ,new ,gs))))
+
+#+(or)
 (define-simple-atomic-expander svref (vector index)
   core:atomic-svref core:atomic-svset core:cas-svref)
