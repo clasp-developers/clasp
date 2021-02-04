@@ -418,27 +418,23 @@
       (compute-outcome
        generic-function method-combination methods actual-specializers)))
 
-(defun update-call-history-for-add-method (generic-function orig-call-history method)
+(defun update-call-history-for-add-method (call-history method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to."
-  (let ((call-history (copy-list orig-call-history)))
-    (loop for entry in call-history
-          for specializers = (coerce (car entry) 'list)
-          unless (fuzzed-applicable-method-p method specializers)
-            collect entry)))
+  (loop for entry in call-history
+        for specializers = (coerce (car entry) 'list)
+        unless (fuzzed-applicable-method-p method specializers)
+          collect entry))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (mp:atomic (safe-gf-call-history generic-function))
-        for new-call-history = (update-call-history-for-add-method
-                                generic-function call-history method)
-        for exchange = (mp:cas (safe-gf-call-history generic-function)
-                               call-history new-call-history)
-        until (eq exchange call-history)))
+  (mp:atomic-update (safe-gf-call-history generic-function)
+                    #'update-call-history-for-add-method
+                    method))
 
-(defun update-call-history-for-remove-method (generic-function call-history method)
+(defun update-call-history-for-remove-method (call-history method)
   (let (new-call-history)
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
@@ -452,12 +448,9 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     AND if that means there are no methods left that apply to the specializers
      then remove the entry from the list.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (mp:atomic (safe-gf-call-history generic-function))
-        for new-call-history = (update-call-history-for-remove-method
-                                generic-function call-history method)
-        for exchange = (mp:cas (safe-gf-call-history generic-function)
-                               call-history new-call-history)
-        until (eq exchange call-history)))
+  (mp:atomic-update (safe-gf-call-history generic-function)
+                    #'update-call-history-for-remove-method
+                    method))
 
 ;;; FIXME: Replace with atomic setf
 (defun erase-generic-function-call-history (generic-function)
