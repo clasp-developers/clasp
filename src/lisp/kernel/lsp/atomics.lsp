@@ -141,7 +141,8 @@ Experimental."
 ;;; CAS
 ;;;
 
-(defmacro cas (place old new &environment env)
+(defmacro cas (place old new &rest keys &key order &allow-other-keys
+               &environment env)
   "(CAS place old new)
 Atomically store NEW in PLACE if OLD matches the current value of PLACE.
 Matching is as if by EQ.
@@ -159,9 +160,11 @@ Some CAS accessors have additional semantic constraints.
 You can see their documentation with e.g. (documentation 'slot-value 'mp:atomic)
 This is planned to be expanded to include variables,
 possibly other simple vectors, and slot accessors.
+Keys are passed to GET-ATOMIC-EXPANSION.
 Experimental."
+  (declare (ignore order))
   (multiple-value-bind (temps values oldvar newvar read write cas)
-      (get-atomic-expansion place :environment env)
+      (apply #'get-atomic-expansion place :environment env keys)
     (declare (ignore read write))
     `(let* (,@(mapcar #'list temps values)
             (,oldvar ,old) (,newvar ,new))
