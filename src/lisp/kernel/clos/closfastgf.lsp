@@ -631,54 +631,51 @@ Return true iff a new entry was added; so for example it will return false if an
                 (gf-log-dispatch-miss "Cannot memoize call" generic-function arguments)
                 nil)))))))
 
-(defun do-dispatch-miss (generic-function arguments)
-  "This effectively does what compute-discriminating-function does and maybe memoizes the result
-and calls the effective-method-function that is calculated.
-It takes the arguments in two forms, as a vaslist and as a list of arguments."
+(defun check-gf-argcount (generic-function nargs)
   (multiple-value-bind (min max)
       (generic-function-min-max-args generic-function)
-    (let ((nargs (length arguments)))
-      (when (or (< nargs min) (and max (> nargs max)))
-        (error 'core:wrong-number-of-arguments
-               :called-function generic-function :given-nargs nargs
-               :min-nargs min :max-nargs max))))
-  (let (#+debug-fastgf
-        (*dispatch-miss-start-time* (get-internal-real-time)))
-    (multiple-value-bind (outcome new-ch-entries)
-        (dispatch-miss-info generic-function arguments)
-      (when (memoize-calls generic-function new-ch-entries)
-        (force-dispatcher generic-function))
-      (gf-log "Performing outcome %s%N" outcome)
-      #+debug-fastgf
-      (let ((results (multiple-value-list
-                      (perform-outcome outcome arguments))))
-        (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-        (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
-        (values-list results))
-      #-debug-fastgf
-      (perform-outcome outcome arguments))))
+    (when (or (< nargs min) (and max (> nargs max)))
+      (error 'core:wrong-number-of-arguments
+             :called-function generic-function :given-nargs nargs
+             :min-nargs min :max-nargs max))))
 
 (defun dispatch-miss (generic-function &rest arguments)
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
-                                         (clos::generic-function-name generic-function))))
+  (core:stack-monitor
+   (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
+                      (clos::generic-function-name generic-function))))
   (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
+         (check-gf-argcount generic-function (length arguments))
          ;; Update any invalid instances
-         (let ((invalid-instance (maybe-update-instances arguments)))
-           (if invalid-instance
-               (apply generic-function arguments)
-               (progn
-                 #+debug-fastgf
-                 (progn
-                   (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
-                   (dolist (arg arguments)
-                     (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
-                   (gf-log-noindent "%N"))
-                 (do-dispatch-miss generic-function arguments)))))
-    (decf-debug-fastgf-indent)))
+         (when (maybe-update-instances arguments)
+           (return-from dispatch-miss (apply generic-function arguments)))
+         ;; OK, real miss.
+         #+debug-fastgf
+         (progn
+           (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
+           (dolist (arg arguments)
+             (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
+           (gf-log-noindent "%N"))
+         (let (#+debug-fastgf
+               (*dispatch-miss-start-time* (get-internal-real-time)))
+           (multiple-value-bind (outcome new-ch-entries)
+               (dispatch-miss-info generic-function arguments)
+             (when (memoize-calls generic-function new-ch-entries)
+               (force-dispatcher generic-function))
+             (gf-log "Performing outcome %s%N" outcome)
+             #+debug-fastgf
+             (let ((results (multiple-value-list
+                             (perform-outcome outcome arguments))))
+               (gf-log "+-+-+-+-+-+-+-+-+ dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
+               (values-list results))
+             #-debug-fastgf
+             (perform-outcome outcome arguments))))
+       (decf-debug-fastgf-indent)))
 
-;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
+;;; Called from the dtree interpreter,
+;;; because APPLY from C++ is kind of annoying.
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
