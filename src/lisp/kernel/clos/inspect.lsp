@@ -475,6 +475,19 @@ q (or Q):             quits the inspection.~%~
     (setf (slot-value object 'docstring) new-value)))
 
 #+threads
+(defmethod documentation ((object symbol) (doc-type (eql 'mp:atomic)))
+  (let ((exp (mp::atomic-expander object)))
+    (when exp (documentation exp t))))
+
+#+threads
+(defmethod (setf documentation)
+    (new (object symbol) (doc-type (eql 'mp:atomic)))
+  (let ((exp (mp::atomic-expander object)))
+    (if exp
+        (setf (documentation exp t) new)
+        new)))
+
+#+threads
 (defmethod documentation ((object symbol) (doc-type (eql 'mp:cas)))
   (let ((exp (mp::cas-expander object)))
     (when exp (documentation exp t))))
