@@ -509,7 +509,7 @@ Return true iff a new entry was added; so for example it will return false if an
       ;; so return false.
       nil))
 
-(defun perform-outcome (outcome arguments vaslist-arguments)
+(defun perform-outcome (outcome arguments)
   (cond
     ((optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
@@ -527,7 +527,7 @@ Return true iff a new entry was added; so for example it will return false if an
     ((effective-method-outcome-p outcome)
      (let ((function (effective-method-outcome-function outcome)))
        (assert (not (null function))) ; FIXME: REMOVE
-       (apply function vaslist-arguments)))
+       (apply function arguments)))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
@@ -631,11 +631,12 @@ Return true iff a new entry was added; so for example it will return false if an
                 (gf-log-dispatch-miss "Cannot memoize call" generic-function arguments)
                 nil)))))))
 
-(defun do-dispatch-miss (generic-function vaslist-arguments arguments)
+(defun do-dispatch-miss (generic-function arguments)
   "This effectively does what compute-discriminating-function does and maybe memoizes the result
 and calls the effective-method-function that is calculated.
 It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
+  (multiple-value-bind (min max)
+      (generic-function-min-max-args generic-function)
     (let ((nargs (length arguments)))
       (when (or (< nargs min) (and max (> nargs max)))
         (error 'core:wrong-number-of-arguments
@@ -650,32 +651,31 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
       (gf-log "Performing outcome %s%N" outcome)
       #+debug-fastgf
       (let ((results (multiple-value-list
-                      (perform-outcome outcome arguments vaslist-arguments))))
+                      (perform-outcome outcome arguments))))
         (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
         (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
         (values-list results))
       #-debug-fastgf
-      (perform-outcome outcome arguments vaslist-arguments))))
+      (perform-outcome outcome arguments))))
 
-(defun dispatch-miss (generic-function core:&va-rest valist-args)
+(defun dispatch-miss (generic-function &rest arguments)
   (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
                                          (clos::generic-function-name generic-function))))
   (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
          ;; Update any invalid instances
-         (let* ((arguments (core:list-from-va-list valist-args))
-                (invalid-instance (maybe-update-instances arguments)))
+         (let ((invalid-instance (maybe-update-instances arguments)))
            (if invalid-instance
-               (apply generic-function valist-args)
+               (apply generic-function arguments)
                (progn
                  #+debug-fastgf
                  (progn
                    (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
-                   (dolist (arg (core:list-from-va-list valist-args))
+                   (dolist (arg arguments)
                      (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
                    (gf-log-noindent "%N"))
-                 (do-dispatch-miss generic-function valist-args arguments)))))
+                 (do-dispatch-miss generic-function arguments)))))
     (decf-debug-fastgf-indent)))
 
 ;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
