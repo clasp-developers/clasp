@@ -21,7 +21,7 @@
 * a variable for the new value of PLACE, for use in CAS and SETF
 * a form to atomically read the value of PLACE
 * a form to atomically write the value of PLACE
-* a form to perform an atomic compare-and-swap of PLACE
+* a form to perform an atomic EQ-based compare-and-swap of PLACE
 The keyword arguments are passed unmodified to the expander, except that
 defaulting of ORDER is applied."
   (declare (ignore order))
@@ -192,19 +192,31 @@ Experimental."
 ;;;
 
 (defmacro atomic-update (place update-fn &rest arguments &environment env)
-  (multiple-value-bind (vars vals old new cas read)
+  "Perform an atomic update of PLACE. In more detail, the value of PLACE is
+set to (funcall UPDATE-FN VALUE ARGUMENTS...), where VALUE is the old value of
+PLACE. This is analogous to what DEFINE-MODIFY-MACRO expansions do.
+Evaluation order is left to right as specified in CLHS 5.1.1.1. Note that this
+is different from the SBCL macro of the same name, which may perform multiple
+evaluations of the update-fn and arguments, and passes arguments to the update
+function in a different order."
+  (multiple-value-bind (vars vals old new read write cas)
       (get-atomic-expansion place :environment env)
-    `(let* (,@(mapcar #'list vars vals)
-            (,old ,read))
-       (loop for ,new = (funcall ,update-fn ,@arguments ,old)
-             until (eq ,old (setf ,old ,cas))
-             finally (return ,new)))))
+    (declare (ignore write))
+    (let ((gfn (gensym "UPDATE-FN"))
+          (asyms (loop repeat (length arguments) collect (gensym "ARG"))))
+      `(let* (,@(mapcar #'list vars vals)
+              (,gfn ,update-fn)
+              ,@(mapcar #'list asyms arguments)
+              (,old ,read))
+         (loop for ,new = (funcall ,gfn ,old ,@asyms)
+               until (eq ,old (setf ,old ,cas))
+               finally (return ,new))))))
 
 (defmacro atomic-incf (place &optional (delta 1))
   `(atomic-update ,place #'+ ,delta))
 
 (defmacro atomic-decf (place &optional (delta 1))
-  `(atomic-update ,place #'(lambda (y x) (- x y)) ,delta))
+  `(atomic-update ,place #'- ,delta))
 
 (defmacro atomic-push (item place &environment env)
   "As CL:PUSH, but as an atomic RMW operation.
