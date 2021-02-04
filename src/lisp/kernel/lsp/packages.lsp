@@ -121,11 +121,9 @@
   (core:select-package "MP"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(;; compare and swap
-            cas
-            get-cas-expansion define-cas-expander
-            ;; atomic operations
-            atomic get-atomic-expansion define-atomic-expander
+  (export '(;; atomic operations
+            atomic cas get-atomic-expansion define-atomic-expander
+            not-atomic not-atomic-place
             atomic-update
             atomic-incf atomic-decf atomic-push atomic-pop
             atomic-pushnew

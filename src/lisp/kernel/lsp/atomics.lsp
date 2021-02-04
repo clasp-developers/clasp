@@ -46,7 +46,7 @@ defaulting of ORDER is applied."
           (apply #'get-atomic-expansion `(symbol-value ',place) keys))
          (cleavir-env:lexical-variable-info
           ;; TODO
-          (error 'operation-not-atomic :place place))
+          (error 'not-atomic :place place))
          (null
           (error "Unknown variable ~a" place)))))
     (cons
@@ -58,7 +58,7 @@ defaulting of ORDER is applied."
                (macroexpand-1 place environment)
              (if expanded
                  (apply #'get-atomic-expansion expansion keys)
-                 (error 'operation-not-atomic :place place))))))))
+                 (error 'not-atomic :place place))))))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun expand-atomic-expander (name place-ll expander-ll body)
