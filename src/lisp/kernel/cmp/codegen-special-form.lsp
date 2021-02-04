@@ -1458,7 +1458,7 @@ jump to blocks within this tagbody."
     (codegen oldt old env)
     (codegen newt nv env)
     (codegen rackt rack env)
-    (codegen index index env)
+    (codegen indext index env)
     (irc-t*-result
      (irc-cmpxchg (irc-rack-slot-address (irc-load rackt)
                                          (irc-untag-fixnum
