@@ -289,7 +289,6 @@ are no bindings (in which case the global, thread-shared value is used."
             `(progn (core:atomic-set-symbol-value ,new ,gs) ,new)
             `(core:cas-symbol-value ,cmp ,new ,gs))))
 
-#+(or)
 (define-atomic-expander symbol-plist (symbol) (&key order environment)
   (declare (ignore order environment))
   (let ((gs (gensym "SYMBOL")) (cmp (gensym "CMP")) (new (gensym "NEW")))

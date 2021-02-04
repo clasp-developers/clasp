@@ -137,6 +137,12 @@ public:
   void setf_plist(List_sp plist) {
     _PropertyList.store(plist, std::memory_order_relaxed);
   }
+  List_sp atomic_plist() const {
+    return gc::As_unsafe<List_sp>(_PropertyList.load(std::memory_order_seq_cst));
+  }
+  void atomic_setf_plist(List_sp plist) {
+    _PropertyList.store(plist, std::memory_order_seq_cst);
+  }
   List_sp cas_plist(List_sp cmp, List_sp new_plist) {
     T_sp tcmp = cmp;
     T_sp tnew_plist = new_plist;

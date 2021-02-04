@@ -66,6 +66,20 @@ CL_DEFUN_SETF List_sp core__set_symbol_plist(List_sp plist, Symbol_sp sym) {
   return plist;
 }
 
+CL_LAMBDA(sym);
+CL_DECLARE();
+CL_DOCSTRING("Sequentially consistent atomic load of the symbol-plist");
+CL_DEFUN List_sp core__atomic_symbol_plist(Symbol_sp sym) {
+  return sym->atomic_plist();
+}
+
+CL_LAMBDA(nv symbol);
+CL_DECLARE();
+CL_DOCSTRING("Sequentially consistent atomic store of the symbol-plist");
+CL_DEFUN void core__atomic_set_symbol_plist(List_sp nv, Symbol_sp symbol) {
+  symbol->atomic_setf_plist(nv);
+}
+
 CL_LAMBDA(cmp newv sym);
 CL_DECLARE();
 CL_DOCSTRING("Compare-and-swap the symbol-plist");
