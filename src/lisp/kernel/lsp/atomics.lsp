@@ -108,12 +108,43 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; CAS
+;;;
+
+(defmacro cas (place old new &environment env)
+  "(CAS place old new)
+Atomically store NEW in PLACE if OLD matches the current value of PLACE.
+Matching is as if by EQ.
+Returns the previous value of PLACE; if it's EQ to OLD the swap happened.
+Only the swap is atomic. Evaluation of PLACE's subforms, OLD, and NEW is
+not guaranteed to be in any sense atomic with the swap, and likely won't be.
+PLACE must be a CAS-able place. CAS-able places are either symbol macros,
+special variables,
+or accessor forms with a CAR of
+SYMBOL-VALUE, SYMBOL-PLIST, SVREF, CLOS:STANDARD-INSTANCE-ACCESS, THE,
+SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
+or macro forms that expand into CAS-able places,
+or an accessor defined with DEFINE-CAS-EXPANDER.
+Some CAS accessors have additional semantic constraints.
+You can see their documentation with e.g. (documentation 'slot-value 'mp:cas)
+This is planned to be expanded to include variables,
+possibly other simple vectors, and slot accessors.
+Experimental."
+  (multiple-value-bind (temps values oldvar newvar read write cas)
+      (get-atomic-expansion place :environment env)
+    (declare (ignore read write))
+    `(let* (,@(mapcar #'list temps values)
+            (,oldvar ,old) (,newvar ,new))
+       ,cas)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Derived operators
 ;;;
 
 (defmacro atomic-update (place update-fn &rest arguments &environment env)
   (multiple-value-bind (vars vals old new cas read)
-      (get-cas-expansion place env)
+      (get-atomic-expansion place :environment env)
     `(let* (,@(mapcar #'list vars vals)
             (,old ,read))
        (loop for ,new = (funcall ,update-fn ,@arguments ,old)
@@ -127,20 +158,22 @@
   `(atomic-update ,place #'(lambda (y x) (- x y)) ,delta))
 
 (defmacro atomic-push (item place &environment env)
-  (multiple-value-bind (vars vals old new cas read)
-      (get-cas-expansion place env)
+  (multiple-value-bind (vars vals old new read write cas)
+      (get-atomic-expansion place :environment env)
+    (declare (ignore write))
     (let ((gitem (gensym "ITEM")))
       `(let* ((,gitem ,item) ; evaluate left-to-right (CLHS 5.1.1.1)
               ,@(mapcar #'list vars vals)
               (,old ,read)
-              (,new (cons ,item ,old)))
+              (,new (cons ,gitem ,old)))
          (loop until (eq ,old (setf ,old ,cas))
                do (setf (cdr ,new) ,old)
                finally (return ,new))))))
 
 (defmacro atomic-pop (place &environment env)
-  (multiple-value-bind (vars vals old new cas read)
-      (get-cas-expansion place env)
+  (multiple-value-bind (vars vals old new read write cas)
+      (get-atomic-expansion place :environment env)
+    (declare (ignore write))
     `(let* (,@(mapcar #'list vars vals)
             (,old ,read))
        (loop (let ((,new (cdr ,old)))
@@ -150,8 +183,9 @@
 (defmacro atomic-pushnew (item place &rest keys &key key test test-not
                           &environment env)
   (declare (ignore key test test-not))
-  (multiple-value-bind (vars vals old new cas read)
-      (get-cas-expansion place env)
+  (multiple-value-bind (vars vals old new read write cas)
+      (get-atomic-expansion place :environment env)
+    (declare (ignore write))
     (let ((gitem (gensym "ITEM")) (bname (gensym "ATOMIC-PUSHNEW"))
           gkeybinds gkeys)
       ;; Ensuring CLHS 5.1.1.1 evaluation order is weird here. We'd like to
@@ -182,6 +216,7 @@
 ;;;
 
 (define-atomic-expander the (type place) (&rest keys)
+  "(cas (the y x) o n) = (cas x (the y o) (the y n))"
   (multiple-value-bind (vars vals old new read write cas)
       (apply #'get-atomic-expansion place keys)
     (values vars vals old new
@@ -205,6 +240,9 @@
 ;; Ignores order specification for the moment.
 (define-atomic-expander symbol-value (symbol) (&key order environment)
   (declare (ignore order environment))
+  "Because special variable bindings are always thread-local, the symbol-value
+of a symbol can only be used for synchronization through this accessor if there
+are no bindings (in which case the global, thread-shared value is used."
   (let ((gs (gensym "SYMBOL")) (cmp (gensym "CMP")) (new (gensym "NEW")))
     (values (list gs) (list symbol) cmp new
             `(core:atomic-symbol-value ,gs)

@@ -47,18 +47,8 @@
      (slotd standard-effective-slot-definition))
   (let ((loc (slot-definition-location slotd)))
     (ecase (slot-definition-allocation slotd)
-      ((:instance) (core::instance-cas old new object loc))
-      ((:class) (core::cas-car :sequentially-consistent old new loc)))))
-
-#+threads
-(mp::define-simple-cas-expander clos:slot-value-using-class
-  cas-slot-value-using-class
-  (class instance slotd)
-  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can
-have allocation :class.
-Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
-(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
-In the future, this may be customizable with a generic function.")
+      ((:instance) (mp:cas (standard-instance-access object loc) old new))
+      ((:class) (mp:cas (car loc) old new)))))
 
 ;;; FIXME: Should these even be methods? Semantics getting weird here.
 ;;; FIXME: Anyway they force sequentially consistent order, eck.
@@ -66,10 +56,13 @@ In the future, this may be customizable with a generic function.")
 #+threads
 (defmethod atomic-slot-value-using-class
     ((class std-class) object (slotd standard-effective-slot-definition))
-  (let ((loc (slot-definition-location slotd)))
-    (ecase (slot-definition-allocation slotd)
-      ((:instance) (mp:atomic (standard-instance-access object loc)))
-      ((:class) (mp:atomic (car loc))))))
+  (let* ((loc (slot-definition-location slotd))
+         (v (ecase (slot-definition-allocation slotd)
+              ((:instance) (mp:atomic (standard-instance-access object loc)))
+              ((:class) (mp:atomic (car loc))))))
+    (if (si:sl-boundp v)
+        v
+        (values (slot-unbound class object (slot-definition-name slotd))))))
 
 #+threads
 (defmethod (setf atomic-slot-value-using-class)
@@ -83,7 +76,12 @@ In the future, this may be customizable with a generic function.")
 
 #+threads
 (mp:define-atomic-expander slot-value-using-class (class object slotd)
-    (&rest keys)
+  (&rest keys)
+  "Same requirements as STANDARD-INSTANCE-ACCESS, except the slot can have
+allocation :class.
+Also, methods on SLOT-VALUE-USING-CLASS, SLOT-BOUNDP-USING-CLASS, and
+(SETF SLOT-VALUE-USING-CLASS) are ignored (not invoked).
+In the future, the CAS behavior may be customizable with a generic function."
   (declare (ignore keys))
   (let ((gclass (gensym "CLASS")) (gobject (gensym "OBJECT"))
         (gslotd (gensym "SLOTD")) (oldv (gensym "OLD")) (newv (gensym "NEWV")))
