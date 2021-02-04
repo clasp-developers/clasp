@@ -498,7 +498,7 @@
 (defmacro safe-gf-call-history (gf)
   (let ((idx (position 'call-history +standard-generic-function-slots+
                        :key #'car)))
-    `(standard-instance-access ,gf ,idx)))
+    `(funcallable-standard-instance-access ,gf ,idx)))
 
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)

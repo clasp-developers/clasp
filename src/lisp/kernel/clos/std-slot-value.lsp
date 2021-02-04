@@ -189,6 +189,14 @@ consequences are not defined."
 (defun (setf funcallable-standard-instance-access) (val instance location)
   (setf (core:rack-ref (core:instance-rack instance) location) val))
 
+#+threads
+(mp:define-atomic-expander clos:funcallable-standard-instance-access
+    (instance location) (&rest keys)
+  "See STANDARD-INSTANCE-ACCESS for requirements."
+  (apply #'mp:get-atomic-expansion
+         `(core:rack-ref (core:instance-rack ,instance) ,location)
+         keys))
+
 ;;; This works on both class locations (conses) and instance ones.
 (defun standard-location-access (instance location)
   (if (core:fixnump location)
