@@ -233,7 +233,7 @@
          (ftype (function (t symbol) t)
                 slot-boundp slot-exists-p slot-makunbound slot-value)
          (ftype (function
-                 (class t symbol (member setf slot-boundp slot-makunbound slot-value) &optional t)
+                 (class t symbol (member setf slot-boundp slot-makunbound slot-value #+clasp mp:cas) &optional t)
                  t)
                 slot-missing)
          (ftype (function (class t symbol) t) slot-unbound)
