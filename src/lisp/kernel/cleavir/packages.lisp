@@ -93,30 +93,6 @@
   (:export #:reduce-module-typeqs)
   (:export #:reduce-module-primops))
 
-(defpackage #:cc-mir
-  (:use #:common-lisp)
-  (:export
-   #:characterp-instruction
-   #:make-characterp-instruction
-   #:single-float-p-instruction
-   #:make-single-float-p-instruction
-   #:generalp-instruction
-   #:make-generalp-instruction
-   #:headerq-instruction
-   #:header-value-min-max
-   #:make-headerq-instruction
-   #:save-frame-instruction
-   #:make-save-frame-instruction
-   #:clasp-save-values-instruction
-   #:clasp-load-values-instruction
-   #:memcas2-instruction
-   #:enter-instruction
-   #:typed-lexical-location #:lexical-location-type
-   #:closure-pointer-dynamic-lexical-location
-   #:describe-mir
-   #+stealth-gids #:assign-mir-instruction-datum-ids
-   ))
-
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp #:load)
