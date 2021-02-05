@@ -296,38 +296,54 @@
       inserter
       (make-instance 'cas-rack :order (cc-ast:order ast) :inputs args)))))
 
-#+(or)
-(defclass acas (atomic cleavir-bir:computation)
-  ((%element-type :initarg :element-type :reader element-type)
-   (%simple-p :initarg :simple-p :reader simple-p)
-   (%boxed-p :initarg :boxed-p :reader boxed-p)))
-#+(or)
-(defmethod cleavir-bir:rtype ((d acas))
-  (case (element-type d)
-    ((t) :object)
-    (otherwise (error "BUG: CAS only of general vectors is supported as of yet, sorry!"))))
+(defclass abstract-vref (cleavir-bir:instruction)
+  ((%element-type :initarg :element-type :reader element-type)))
+(defclass vref (atomic abstract-vref cleavir-bir:computation) ())
+(defmethod cleavir-bir:rtype ((d vref)) :object)
+(defclass vset (atomic abstract-vref cleavir-bir:operation) ())
+(defclass vcas (atomic abstract-vref cleavir-bir:computation) ())
+(defmethod cleavir-bir:rtype ((d vcas)) :object)
 
-#+(or)
-(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:acas-ast)
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-vref-ast)
                                            inserter system)
-  (let ((boxed-p (cleavir-ast:boxed-p ast)))
-    (unless boxed-p
-      (error "BUG: CAS of only vectors with boxed elements is supported as of yet, sorry!"))
-    (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:array-ast ast)
-                                                  (cleavir-ast:index-ast ast)
-                                                  (cc-ast:cmp-ast ast)
-                                                  (cleavir-ast:value-ast ast))
-                                                 inserter system
-                                                 (:object :object
-                                                  :object :object))
-      (list
-       (cleavir-ast-to-bir:insert
-        inserter
-        (make-instance 'acas
-          :inputs args
-          :element-type (cleavir-ast:element-type ast)
-          :simple-p (cleavir-ast:simple-p ast)
-          :boxed-p boxed-p))))))
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:array-ast ast)
+                                                (cleavir-ast:index-ast ast))
+                                               inserter system
+                                               (:object :object))
+    (list
+     (cleavir-ast-to-bir:insert
+      inserter
+      (make-instance 'vref
+        :order (cc-ast:order ast)
+        :element-type (cleavir-ast:element-type ast) :inputs args)))))
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-vset-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:value-ast ast)
+                                                (cleavir-ast:array-ast ast)
+                                                (cleavir-ast:index-ast ast))
+                                               inserter system
+                                               (:object :object :object))
+    (cleavir-ast-to-bir:insert
+     inserter
+     (make-instance 'vset
+       :order (cc-ast:order ast)
+       :element-type (cleavir-ast:element-type ast) :inputs args)))
+  ())
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:vcas-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:with-compiled-asts (args ((cc-ast:cmp-ast ast)
+                                                (cleavir-ast:value-ast ast)
+                                                (cleavir-ast:array-ast ast)
+                                                (cleavir-ast:index-ast ast))
+                                               inserter system
+                                               (:object :object
+                                                :object :object))
+    (list
+     (cleavir-ast-to-bir:insert
+      inserter
+      (make-instance 'vcas
+        :order (cc-ast:order ast)
+        :element-type (cleavir-ast:element-type ast) :inputs args)))))
 
 ;;;
 

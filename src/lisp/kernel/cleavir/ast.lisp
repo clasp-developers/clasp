@@ -357,35 +357,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class ACAS-AST
+;;; Class ATOMIC-VREF-AST, ATOMIC-VSET-AST, VCAS-AST
 ;;;
-;;; Compare-and-swap an array element.
+;;; Atomic operations on an element of a (simple-array * (*))
 
-(defclass acas-ast (cas-ast)
-  ((%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
-   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)
-   (%element-type :initarg :element-type :reader cleavir-ast:element-type)
-   (%simple-p :initarg :simple-p :reader cleavir-ast:simple-p)
-   (%boxed-p :initarg :boxed-p :reader cleavir-ast:boxed-p)))
+(defclass vref-ast (cleavir-ast:ast) ; abstract
+  ((%element-type :initarg :element-type :reader cleavir-ast:element-type)
+   (%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
+   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)))
 
-(cleavir-io:define-save-info acas-ast
-    (:array-ast cleavir-ast:array-ast)
-  (:index-ast cleavir-ast:index-ast)
-  (:element-type cleavir-ast:element-type)
-  (:simple-p cleavir-ast:simple-p)
-  (:boxed-p cleavir-ast:boxed-p))
+(cleavir-io:define-save-info vref-ast
+    (:element-type cleavir-ast:element-type)
+  (:array-ast cleavir-ast:array-ast)
+  (:index-ast cleavir-ast:index-ast))
 
-(defmethod cleavir-ast-graphviz::label ((ast acas-ast)) "acas")
+(defclass atomic-vref-ast (cleavir-ast:one-value-ast-mixin atomic-ast vref-ast)
+  ())
 
-(defmethod cleavir-ast:children ((ast acas-ast))
-  (list* (cleavir-ast:array-ast ast)
-         (cleavir-ast:index-ast ast)
-         (call-next-method)))
+(defclass atomic-vset-ast (cleavir-ast:no-value-ast-mixin atomic-ast vref-ast)
+  ((%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
+(cleavir-io:define-save-info atomic-vset-ast (:value-ast cleavir-ast:value-ast))
 
-(defmethod cleavir-ast:map-children (function (ast acas-ast))
-  (funcall function (cleavir-ast:array-ast ast))
-  (funcall function (cleavir-ast:index-ast ast))
-  (call-next-method))
+(defclass vcas-ast (cas-ast vref-ast) ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

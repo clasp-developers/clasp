@@ -343,24 +343,33 @@
       :rack-ast (cleavir-cst-to-ast:convert rack env system)
       :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Converting CORE::ACAS
-;;;
-
 (defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::acas)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (acas array index cmp value type simple-p boxed-p) cst
-    (declare (ignore acas))
-    (make-instance 'cc-ast:acas-ast
-      :array-ast (cleavir-cst-to-ast:convert array env system)
-      :index-ast (cleavir-cst-to-ast:convert index env system)
-      :cmp-ast   (cleavir-cst-to-ast:convert cmp env system)
-      :value-ast (cleavir-cst-to-ast:convert value env system)
-      :element-type (cst:raw type)
-      :simple-p (cst:raw simple-p)
-      :boxed-p (cst:raw boxed-p)
-      :origin origin)))
+    ((symbol (eql 'core::atomic-vref)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:atomic-vref-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-vset)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet nv vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:atomic-vset-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::vcas)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet cmp nv vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:vcas-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

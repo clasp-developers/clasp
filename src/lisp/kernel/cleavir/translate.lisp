@@ -945,16 +945,30 @@
      cast
      (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
 
-#+(or)
-(defmethod translate-simple-instruction ((inst cc-bir:acas) abi)
+(defmethod translate-simple-instruction ((inst cc-bir:vref) abi)
+  (let ((inputs (cleavir-bir:inputs inst)))
+    (cmp:irc-load-atomic
+     (gen-vector-effective-address
+      (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
+      (%default-int-type abi))
+     :order (cmp::order-spec->order (cc-bir:order inst)))))
+(defmethod translate-simple-instruction ((inst cc-bir:vset) abi)
+  (let ((inputs (cleavir-bir:inputs inst)))
+    (cmp:irc-store-atomic
+     (in (first inputs))
+     (gen-vector-effective-address
+      (in (second inputs)) (in (third inputs)) (cc-bir:element-type inst)
+      (%default-int-type abi))
+     :order (cmp::order-spec->order (cc-bir:order inst)))))
+(defmethod translate-simple-instruction ((inst cc-bir:vcas) abi)
   (let ((et (cc-bir:element-type inst))
         (inputs (cleavir-bir:inputs inst)))
     (cmp:irc-cmpxchg
      ;; This will err if et = bit or the like.
      (gen-vector-effective-address
-      (in (first inputs)) (in (second inputs)) et
+      (in (third inputs)) (in (fourth inputs)) et
       (%default-int-type abi))
-     (in (third inputs)) (in (fourth inputs)))))
+     (in (first inputs)) (in (second inputs)))))
 
 (defun values-collect-multi (inst)
   (loop with seen-non-save = nil

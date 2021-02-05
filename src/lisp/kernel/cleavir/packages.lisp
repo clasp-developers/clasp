@@ -68,7 +68,8 @@
    #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
    #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
    #:fence-ast #:cmp-ast #:order
-   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
+   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
+   #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
    #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
    #:bind-ast
    #:unwind-protect-ast #:cleanup-ast
@@ -86,7 +87,7 @@
            #:mv-foreign-call #:function-name
            #:atomic #:order #:fence
            #:atomic-rack-read #:atomic-rack-write #:cas-rack
-           #:acas #:element-type #:simple-p #:boxed-p))
+           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
