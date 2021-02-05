@@ -122,7 +122,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(;; atomic operations
-            atomic cas get-atomic-expansion define-atomic-expander
+            atomic fence cas get-atomic-expansion define-atomic-expander
             not-atomic not-atomic-place
             atomic-update
             atomic-incf atomic-decf atomic-push atomic-pop

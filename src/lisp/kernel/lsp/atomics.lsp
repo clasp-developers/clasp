@@ -188,6 +188,22 @@ Experimental."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; FENCE
+;;;
+
+(defmacro fence (order)
+  "Establish a fence that prevents the compiler or CPU from reordering some
+accesses across it. Returns no values.
+ORDER is the same as accepted by ATOMIC, except that :relaxed does not make
+sense for fences and will be rejected."
+  (ecase order
+    ((:unordered :relaxed)
+     (error "~a is not a valid ordering for a fence" order))
+    ((:acquire :release :acquire-release :sequentially-consistent)))
+  `(progn (core::fence ,order) (values)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Derived operators
 ;;;
 
