@@ -691,6 +691,9 @@ Otherwise do a variable shift."
       (llvm-sys:create-ashr-value-value
        cmp:*irbuilder* value shift label exact)))
 
+(defun irc-fence (order &optional (label ""))
+  (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 

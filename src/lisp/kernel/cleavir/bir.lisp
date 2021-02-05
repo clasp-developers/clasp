@@ -133,7 +133,24 @@
       (copy-list ibs))))
 
 ;;; atomics
-;;; we just make the bmir directly.
+
+(defclass atomic (cleavir-bir:instruction)
+  ((%order :initarg :order :reader order :initform :relaxed
+           :type (member :relaxed :acquire :release :acquire-release
+                         :sequentially-consistent))))
+
+(defclass fence (atomic cleavir-bir::no-input cleavir-bir::no-output
+                 cleavir-bir:operation)
+  ())
+
+;;; we just make the bmir directly for atomic car and cdr
+
+(defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:fence-ast)
+                                           inserter system)
+  (cleavir-ast-to-bir:insert
+   inserter
+   (make-instance 'cc-bir:fence :order (cc-ast:order ast)))
+  ())
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-car-ast)
                                            inserter system)
@@ -234,12 +251,6 @@
           :order (cc-ast:order ast)
           :inputs (list memref2 (first args) (second args))))))))
 
-;;; cept for these
-
-(defclass atomic (cleavir-bir:instruction)
-  ((%order :initarg :order :reader order :initform :relaxed
-           :type (member :relaxed :acquire :release :acquire-release
-                         :sequentially-consistent))))
 (defclass atomic-rack-read (atomic cleavir-bir:computation) ())
 (defmethod cleavir-bir:rtype ((d atomic-rack-read)) :object)
 (defclass atomic-rack-write (atomic cleavir-bir:operation) ())

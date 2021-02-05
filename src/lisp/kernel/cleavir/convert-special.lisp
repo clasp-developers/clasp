@@ -259,6 +259,12 @@
 ;;; CASs and other atomic ops are mostly functionlike, except for the order.
 
 (defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::fence)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (f order) cst
+    (declare (ignore f))
+    (make-instance 'cc-ast:fence-ast :order (cst:raw order))))
+
+(defmethod cleavir-cst-to-ast:convert-special
     ((symbol (eql 'core::car-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cr order cons) cst
     (declare (ignore cr))

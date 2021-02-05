@@ -827,6 +827,10 @@
                         (in (second (cleavir-bir:inputs inst)))
                         :order (cmp::order-spec->order (cc-bir:order inst))))
 
+(defmethod translate-simple-instruction ((inst cc-bir:fence) abi)
+  (declare (ignore abi))
+  (cmp::gen-fence (cc-bir:order inst)))
+
 (defmethod translate-simple-instruction ((inst cc-bmir:cas) abi)
   (declare (ignore abi))
   (cmp:irc-cmpxchg (in (first (cleavir-bir:inputs inst)))

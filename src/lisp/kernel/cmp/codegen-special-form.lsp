@@ -36,6 +36,7 @@
     (symbol-macrolet  codegen-symbol-macrolet)
     (core::vector-length codegen-vector-length)
     (core::%array-dimension codegen-%array-dimension)
+    (core::fence codegen-fence)
     (cleavir-primop:car codegen-car)
     (cleavir-primop:cdr codegen-cdr)
     (core::car-atomic codegen-atomic-car)
@@ -1017,6 +1018,27 @@ jump to blocks within this tagbody."
     (irc-t*-result (gen-%array-dimension (irc-load array-alloca) (irc-load axis-alloca))
                    result)))
 
+;;; FENCE
+
+(defun order-spec->order (order-spec)
+  (case order-spec
+    ((:unordered) 'llvm-sys:unordered)
+    ((:relaxed) 'llvm-sys:monotonic)
+    ((:acquire) 'llvm-sys:acquire)
+    ((:release) 'llvm-sys:release)
+    ((:acquire-release) 'llvm-sys:acquire-release)
+    ((:sequentially-consistent) 'llvm-sys:sequentially-consistent)
+    (t (error "BUG: Unknown atomic order specifier ~a" order-spec))))
+
+(defun gen-fence (order-spec)
+  (when (or (eq order-spec :unordered) (eq order-spec :relaxed))
+    (error "Can't generate a fence with ~a ordering" order-spec))
+  (irc-fence (order-spec->order order-spec)))
+
+(defun codegen-fence (result rest env)
+  (declare (ignore result env))
+  (gen-fence (first rest)))
+
 ;;; CLEAVIR-PRIMOP:CAR, CLEAVIR-PRIMOP:CDR
 
 (defun gen-memref-address (tpointer offset)
@@ -1047,16 +1069,6 @@ jump to blocks within this tagbody."
                    result)))
 
 ;;; ATOMIC CAR, CDR, RPLACA, RPLACD, plus CAS
-
-(defun order-spec->order (order-spec)
-  (case order-spec
-    ((:unordered) 'llvm-sys:unordered)
-    ((:relaxed) 'llvm-sys:monotonic)
-    ((:acquire) 'llvm-sys:acquire)
-    ((:release) 'llvm-sys:release)
-    ((:acquire-release) 'llvm-sys:acquire-release)
-    ((:sequentially-consistent) 'llvm-sys:sequentially-consistent)
-    (t (error "BUG: Unknown atomic order specifier ~a" order-spec))))
 
 (defun codegen-atomic-car (result rest env)
   (let ((order (order-spec->order (first rest)))

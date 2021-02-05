@@ -269,6 +269,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
          ((eq sym 'core:bind-va-list) t)         ;; bind-va-list
          ((eq sym 'core::vector-length) t)
          ((eq sym 'core::%array-dimension) t)
+         ((eq sym 'core::fence) t)
          ((eq sym 'cleavir-primop:car) t)
          ((eq sym 'cleavir-primop:cdr) t)
          ((eq sym 'core::car-atomic) t)
