@@ -169,7 +169,7 @@ PLACE must be a CAS-able place. CAS-able places are either symbol macros,
 special variables,
 or accessor forms with a CAR of
 SYMBOL-VALUE, SYMBOL-PLIST, CLOS:STANDARD-INSTANCE-ACCESS, THE,
-SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST,
+SLOT-VALUE, CLOS:SLOT-VALUE-USING-CLASS, CAR, CDR, FIRST, REST, SVREF,
 or macro forms that expand into CAS-able places,
 or an accessor defined with DEFINE-ATOMIC-EXPANDER.
 Some CAS accessors have additional semantic constraints.
@@ -340,6 +340,30 @@ are no bindings (in which case the global, thread-shared value is used."
             `(core:atomic-symbol-plist ,gs)
             `(progn (core:atomic-set-symbol-plist ,new ,gs) ,new)
             `(core:cas-symbol-plist ,cmp ,new ,gs))))
+
+(define-atomic-expander svref (simple-vector index) (&key order environment)
+  (declare (ignore environment))
+  (let ((gv (gensym "VECTOR")) (gi (gensym "INDEX"))
+        (cmp (gensym "CMP")) (new (gensym "NEW"))
+        (read-order (reduce-read-order order))
+        (write-order (reduce-write-order order)))
+    (values (list gv gi)
+            (list `(let ((,gv ,simple-vector))
+                     (unless (typep ,gv 'simple-vector)
+                       (error 'type-error
+                              :datum ,gv :expected-type 'simple-vector))
+                     ,gv)
+                  `(let ((,gi ,index))
+                     (unless (array-in-bounds-p ,gv ,gi)
+                       (error 'core:sequence-out-of-bounds
+                              :datum ,gi
+                              :expected-type (list 'integer 0 (length ,gv))
+                              :object ,gv))
+                     ,gi))
+            cmp new
+            `(core::atomic-vref ,read-order T ,gv ,gi)
+            `(progn (core::atomic-vset ,write-order T ,new ,gv ,gi) ,new)
+            `(core::vcas ,order T ,cmp ,new ,gv ,gi))))
 
 #+(or)
 (define-simple-atomic-expander svref (vector index)
