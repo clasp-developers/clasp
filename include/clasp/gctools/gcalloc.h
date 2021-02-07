@@ -769,7 +769,7 @@ namespace gctools {
 #ifdef USE_BOEHM
 template <class OT>
 void BoehmFinalizer(void *base, void *data) {
-  //        printf("%s:%d Finalizing ptr=%p\n", __FILE__, __LINE__, obj);
+//  printf("%s:%d Finalizing base=%p\n", __FILE__, __LINE__, base);
   OT *client = BasePtrToMostDerivedPtr<OT>(base);
   boehm_general_finalizer_from_BoehmFinalizer((void*)client,data);
   client->~OT();
@@ -784,7 +784,7 @@ struct GCObjectFinalizer {
 #ifdef USE_BOEHM
     void *dummyData;
     BoehmFinalizerFn dummyFn;
-//    printf("%s:%d About to finalize sp -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
+//    printf("%s:%d About to register finalize base -> %p\n", __FILE__, __LINE__, (void*)sp.tagged_());
     GC_register_finalizer_no_order(SmartPtrToBasePtr(sp),
                                    BoehmFinalizer<OT>, NULL,
                                    &dummyFn, &dummyData);

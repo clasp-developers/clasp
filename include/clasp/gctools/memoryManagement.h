@@ -60,6 +60,10 @@ typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &m
 
 namespace gctools {
 
+  // The clasp pointer type.
+  // This was introduced very late - but we can use it to recognize pointers that need fixup in save/load
+  typedef unsigned char* clasp_ptr_t;
+  
 };
 
 // ----------------------------------------------------------------------
@@ -623,15 +627,6 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
 
 
 
-#if  defined(USE_BOEHM)
-#include <clasp/gctools/boehmGarbageCollection.h>
-#endif
-
-#ifdef USE_MPS
-#include <clasp/gctools/mpsGarbageCollection.h>
-#endif
-
-
 namespace core {
   class BuiltinClosure_O;
 };
@@ -733,6 +728,7 @@ inline size_t sizeof_container_with_header(size_t num) {
 };
 
 
+
 namespace gctools {
 #ifdef DEBUG_GUARD_VALIDATE
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
@@ -769,6 +765,18 @@ namespace gctools {
     return ptr;
   }
 };
+
+
+
+#if  defined(USE_BOEHM)
+#include <clasp/gctools/boehmGarbageCollection.h>
+#endif
+
+#ifdef USE_MPS
+#include <clasp/gctools/mpsGarbageCollection.h>
+#endif
+
+
 
 
 extern "C" {
@@ -896,11 +904,6 @@ namespace gctools {
 
   /*! Maintains pointers to arrays of roots that are stored in LLVM Modules
       we add and remove during runtime as Modules are compiled and (in the future) removed.
-      MPS and Boehm have different needs to keep track of roots.
-      MPS just needs one pointer to memory in the module and
-      Boehm needs to maintain a shadow copy in the Boehm managed memory because
-        I wasn't able to get GC_add_roots to work properly.
-        TODO: get GC_add_roots to work
    */
 
 
@@ -909,14 +912,12 @@ namespace gctools {
     static size_t const DefaultCapacity = 256;
     // Fields
     core::SimpleVector_O** _TransientAlloca;
-    void* _boehm_shadow_memory;
     void* _module_memory;
     size_t _num_entries;
     size_t _capacity;
     /*fnLispCallingConvention* */ void** _function_pointers;
     size_t _function_pointer_count;
-    GCRootsInModule(void* shadow_mem, void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs);
-    GCRootsInModule(size_t capacity = DefaultCapacity);
+    GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs);
     void setup_transients(core::SimpleVector_O** transient_alloca, size_t transient_entries);
     
     size_t remainingCapacity() { return this->_capacity - this->_num_entries;};

@@ -1,5 +1,5 @@
 /*
-    File: imageSaveLoad.cc
+    File: code.cc
 
 */
 
@@ -13,10 +13,20 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
-#include <clasp/llvmo/imageSaveLoad.h>
+#include <clasp/llvmo/code.h>
 
 
 namespace llvmo { // ObjectFile_O
+
+#if 0
+LibraryFile_sp LibraryFile_O::createLibrary(const std::string& libraryName)
+{
+  DEBUG_OBJECT_FILES(("%s:%d:%s Creating empty ObjectFile_O\n", __FILE__, __LINE__, __FUNCTION__));
+  LibraryFile_sp of = gc::GC<LibraryFile_O>::allocate(libraryName);
+  return of;
+}
+#endif
+
 
 ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
 {
@@ -28,7 +38,13 @@ ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, s
 
 ObjectFile_O::~ObjectFile_O() {
   DEBUG_OBJECT_FILES(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
-  DEBUG_OBJECT_FILES(("%s:%d       GCRootsInModule -> %p\n", __FILE__, __LINE__, this->_GCRootsInModule ));
+  printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
+  this->_Code = _Unbound<Code_O>();
+}
+
+Code_O::~Code_O() {
+  DEBUG_OBJECT_FILES(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
+  printf("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this );
 }
 
 
@@ -40,16 +56,28 @@ void ObjectFile_O::writeToFile(const std::string& fileName, const char* start, s
 }
 
 
+std::string Code_O::__repr__() const {
+  stringstream ss;
+  ss << "#<CODE @" << (void*)this << this->_ObjectFile->__repr__() << ">";
+  return ss.str();
+};
+
+std::string ObjectFile_O::__repr__() const {
+  stringstream ss;
+  ss << "#<OBJECT-FILE " << this->_FasoName << " @" << (void*)this << ">";
+  return ss.str();
+};
+
+std::string Library_O::__repr__() const {
+  stringstream ss;
+  ss << "#<LIBRARY @" << (void*)this << " :start " << (void*)this->_Start << " :end " << (void*)this->_End << " " << this->_Name->get_std_string() << ">";
+  return ss.str();
+};
+
+
 }; // namespace llvmo, ObjectFile_O
 
 
-
-template <>
-struct gctools::GCInfo<llvmo::Code_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = collectable_immobile;
-};
 
 
 namespace llvmo {
@@ -58,8 +86,7 @@ namespace llvmo {
 Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize) {
 //  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
   Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
-  DEBUG_OBJECT_FILES(("%s:%d:%s  dataScanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize ));
-  DEBUG_OBJECT_FILES(("%s:%d:%s  Code_O start = %p  end = %p\n", __FILE__, __LINE__, __FUNCTION__, &*code,&code->_DataCode[totalSize]));
+  // Don't put DEBUG_OBJECT_FILES in here - this is called too early
   return code;
 }
 
@@ -104,8 +131,79 @@ void Code_O::describe() const
 };
 
 
+namespace llvmo {
 
+Library_sp Library_O::make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name) {
+  GC_ALLOCATE_VARIADIC(Library_O, lib, start, end );
+  lib->_Name = core::SimpleBaseString_O::make(name);
+  return lib;
+}
 
+};
+
+namespace llvmo {
+
+/*
+ * Identify the CodeBase_O object for the entry-point.
+ * 1. Search the _lisp->_AllLibraries list for a Library_O.
+ * 2. If not found check if the address is in a dynamic library and create
+ *      a Library_O object for it and add it to the _AllLibraries list
+ * 3. Treat the entry_point as an interior pointer and return the Code_O
+ *     object that it corresponds to.
+ * 4. If it's not one of the above then we have an entry point that
+ *       I didn't think about or a serious error.
+ */
+CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
+
+  //
+  // 1. Search the _lisp->_AllLibraries list
+  //
+  core::T_sp allLibraries = _lisp->_Roots._AllLibraries.load();
+  for ( core::T_sp cur = allLibraries; cur.consp(); cur = CONS_CDR(cur) ) {
+    Library_sp lib = gc::As<Library_sp>(CONS_CAR(cur));
+    if (lib->_Start <= entry_point && entry_point < lib->_End) {
+//      printf("%s:%d:%s Returning library found in _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(lib).c_str());
+      return lib;
+    }
+  }
+
+  //
+  // 2. Look the entry point up in the dlopen libraries.
+  //    If we find it, push an entry into the _lisp->_AllLibraries list
+    
+  gctools::clasp_ptr_t start, end;
+  std::string libraryName;
+  bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName );
+  if (foundLibrary) {
+    // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
+    Library_sp newlib = Library_O::make(reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end),libraryName);
+    core::T_sp expected;
+    core::Cons_sp entry = core::Cons_O::create(newlib,_Nil<core::T_O>());
+    do {
+      expected = _lisp->_Roots._AllLibraries.load();
+      entry->rplacd(expected);
+    } while (!_lisp->_Roots._AllLibraries.compare_exchange_weak(expected,entry));
+    // printf("%s:%d:%s Returning new library added to _lisp->_Roots._AllLibraries entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(newlib).c_str());
+    return newlib;
+  }
+  
+  //
+  // 3. Treat the entry_point like an interior pointer and lookup the base Code_sp object
+  //
+  gctools::Tagged taggedCodePointer;
+  bool foundBase = gctools::tagged_pointer_from_interior_pointer<Code_O>( entry_point, taggedCodePointer );
+  Code_sp codeObject(taggedCodePointer);
+  if (foundBase) {
+//    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(codeObject).c_str());
+    return codeObject;
+  }
+
+  //
+  // 4. We have hit an unidentifiable entry_point - what is it
+  SIMPLE_ERROR(BF("We have hit an unidentifiable entry_point at %p - figure out what it is") % (void*)entry_point);
+}
+
+};
 
 namespace llvmo {
 std::atomic<size_t> fileNum;
@@ -161,16 +259,13 @@ uint8_t* ClaspSectionMemoryManager::allocateDataSection( uintptr_t Size, unsigne
       LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
     }
-    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-      core::write_bf_stream(BF("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") % __FILE__% __LINE__% Size% Alignment% SectionID% SectionName.str() % isReadOnly% (void*)ptr );
+    DEBUG_OBJECT_FILES(("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr ));
     }
     return ptr;
   }
 
 void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
-  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ );
-  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
 #if 0
       // DONT DELETE DONT DELETE DONT DELETE
       // This is trying to use the gdb jit interface described here.
@@ -247,9 +342,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
 
 bool ClaspSectionMemoryManager::finalizeMemory(std::string* ErrMsg ) {
 #ifdef USE_CODE_O
-  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-    printf("%s:%d finalizeMemory\n", __FILE__, __LINE__);
-  }
+  DEBUG_OBJECT_FILES(("%s:%d finalizeMemory\n", __FILE__, __LINE__));
   LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
   llvm::sys::MemoryBlock block(this->_CodeStart,this->_CodeSize);
   llvm::sys::Memory::protectMappedMemory(block,

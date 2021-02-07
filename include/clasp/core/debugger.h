@@ -196,7 +196,10 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
  
  void startup_register_loaded_objects();
 
-bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
+ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName );
+ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
+
+ llvmo::Code_sp lookup_code(uintptr_t address);
 
  typedef enum {undefined,symbolicated,lispFrame,cFrame} BacktraceFrameEnum ;
 struct BacktraceEntry {
@@ -359,8 +362,9 @@ struct OpenDynamicLibraryInfo {
   std::string    _Filename;
   void*          _Handle;
   SymbolTable    _SymbolTable;
-  uintptr_t      _LibraryOrigin;
-  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, uintptr_t liborig) : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryOrigin(liborig) {};
+  gctools::clasp_ptr_t      _LibraryStart;
+  gctools::clasp_ptr_t      _LibraryEnd;
+OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t libend) : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryStart(libstart), _LibraryEnd(libend) {};
   OpenDynamicLibraryInfo() {};
 };
 
@@ -400,6 +404,9 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
 void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle);
 DebugInfo& debugInfo();
+
+
+ void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace);
 
 
 

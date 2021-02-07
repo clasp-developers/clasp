@@ -12,7 +12,9 @@
    (%xep-function :initarg :xep-function :reader xep-function)
    (%xep-function-description :initarg :xep-function-description :reader xep-function-description)
    (%main-function :initarg :main-function :reader main-function)
-   (%main-function-description :initarg :main-function-description :reader main-function-description)))
+   ;; karlosz added main-function-description - but it isn't used by anything
+   ;;  so I (meister) removed it
+   #+(or)(%main-function-description :initarg :main-function-description :reader main-function-description)))
 
 (defun lambda-list-too-hairy-p (lambda-list)
   (multiple-value-bind (reqargs optargs rest-var
@@ -56,18 +58,17 @@
                         (push (third item) arglist)))
                      (push item arglist))))
              (nreverse arglist))))
-    (multiple-value-bind (the-function function-info-ref)
-        (cmp:irc-cclasp-function-create
-         (llvm-sys:function-type-get
-          cmp::%tmv%
-          (make-list (+ (cleavir-set:size (cleavir-bir:environment function))
-                        (length arguments))
-                     :initial-element cmp::%t*%))
-         'llvm-sys:private-linkage
-         llvm-function-name
-         cmp:*the-module*
-         function-info)
-      (multiple-value-bind (xep-function xep-function-info-ref)
+    (let ((the-function (cmp:irc-cclasp-local-function-create
+                         (llvm-sys:function-type-get
+                          cmp::%tmv%
+                          (make-list (+ (cleavir-set:size (cleavir-bir:environment function))
+                                        (length arguments))
+                                     :initial-element cmp::%t*%))
+                         'llvm-sys:private-linkage
+                         llvm-function-name
+                         cmp:*the-module*
+                         function-info)))
+      (multiple-value-bind (xep-function xep-function-description)
           (if (xep-needed-p function)
               (cmp:irc-cclasp-function-create
                cmp:%fn-prototype%
@@ -77,12 +78,11 @@
                function-info)
               (values :xep-unallocated :xep-unallocated))
         (make-instance 'llvm-function-info
-          :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
-          :main-function the-function
-          :main-function-description function-info-ref
-          :xep-function xep-function
-          :xep-function-description xep-function-info-ref
-          :arguments arguments)))))
+                       :environment (cleavir-set:set-to-list (cleavir-bir:environment function))
+                       :main-function the-function
+                       :xep-function xep-function
+                       :xep-function-description xep-function-description
+                       :arguments arguments)))))
 
 ;;; For a computation, return its llvm value (for the :around method).
 ;;; For other instructions, return value is unspecified/irrelevant.
@@ -508,7 +508,7 @@
 (defun enclose (code-info extent &optional (delay t))
   (let* ((environment (environment code-info))
          (enclosed-function (xep-function code-info))
-         (function-info-ref (xep-function-description code-info)))
+         (function-description (xep-function-description code-info)))
     (when (eq enclosed-function :xep-unallocated)
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (if environment
@@ -523,13 +523,13 @@
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            enclosed-function
-                           (literal:constants-table-value (cmp:function-description-reference-index function-info-ref))
+                           (literal:constants-table-value (cmp:function-description-reference-index function-description))
                            sninputs)))
                    (:indefinite
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list enclosed-function
-                           (literal:constants-table-value (cmp:function-description-reference-index function-info-ref))
+                           (literal:constants-table-value (cmp:function-description-reference-index function-description))
                            sninputs))))))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
@@ -548,7 +548,7 @@
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
-        (%closurette-value enclosed-function function-info-ref))))
+        (%closurette-value enclosed-function function-description))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:local-call)
                                          abi)
@@ -1205,7 +1205,7 @@
          (llvm-function-type cmp:%fn-prototype%)
          (function-info (find-llvm-function-info function))
          (the-function (main-function function-info))
-         (function-description (main-function-description function-info))
+         #+(or)(function-description (main-function-description function-info))
          (cmp:*current-function* the-function)
          (entry-block (cmp:irc-basic-block-create "entry" the-function))
          (*function-current-multiple-value-array-address*

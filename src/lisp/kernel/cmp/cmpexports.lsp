@@ -26,6 +26,7 @@
             %ltv*%
             irc-function-create
             irc-bclasp-function-create
+            irc-cclasp-local-function-create
             irc-cclasp-function-create
             +c++-stamp-max+
             %fn-prototype%
@@ -103,6 +104,7 @@
             %double%
             %gcroots-in-module%
             %gcroots-in-module*%
+            gcroots-in-module-initial-value
             %function-description%
             %function-description*%
             function-description-reference-index
@@ -353,6 +355,8 @@
           make-literal-node-creator
           setup-literal-machine-function-vectors
           run-all-add-node
+          register-function
+          register-function-index
           literal-node-runtime-p
           literal-node-runtime-index
           literal-node-runtime-object

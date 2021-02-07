@@ -77,6 +77,40 @@ namespace core {
 //////////////////////////////////////////////////////////////////////
 #if defined(_TARGET_OS_DARWIN)
 
+
+void mygetsegmentsize( void* vmhp,
+                       const char *segname,
+                       gctools::clasp_ptr_t& segment_start,
+                       uintptr_t& segment_size
+                       )
+{
+  const struct mach_header_64* mhp = (const struct mach_header_64*)vmhp;
+  struct segment_command_64 *sgp;
+  struct section_64 *sp;
+  uint32_t i, j;
+  intptr_t slide;
+    
+  slide = 0;
+  sp = 0;
+  sgp = (struct segment_command_64 *)
+    ((char *)mhp + sizeof(struct mach_header_64));
+  for(i = 0; i < mhp->ncmds; i++, sgp = (struct segment_command_64 *)((char *)sgp + sgp->cmdsize)){
+    if(sgp->cmd == LC_SEGMENT_64){
+      if(strcmp(sgp->segname, "__TEXT") == 0){
+        slide = (uintptr_t)mhp - sgp->vmaddr;
+      }
+//      printf("%s:%d:%s Looking at segment: %s\n", __FILE__, __LINE__, __FUNCTION__, sgp->segname);
+      if (strcmp(sgp->segname, segname) == 0){
+        segment_start = (gctools::clasp_ptr_t)sgp->vmaddr;
+        segment_size = sgp->vmsize;
+        return;
+      }
+    }
+  }
+  printf("%s:%d:%s Could not find segment %s\n", __FILE__, __LINE__, __FUNCTION__, segname );
+  abort();
+}
+
 uint8_t * 
 mygetsectiondata(
                  void* vmhp,
@@ -270,7 +304,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 
 void startup_register_loaded_objects() {
-// printf("%s:%d:%s handle macos\n", __FILE__, __LINE__, __FUNCTION__);
+ printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
   for ( size_t idx = 0; idx<num_loaded; ++idx ) {
@@ -288,25 +322,28 @@ void startup_register_loaded_objects() {
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
 void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
-  // printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+//  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
 // Get the start of the library and the symbol_table
   if (!use_origin) {
-//    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
+    printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
     uint32_t num_loaded = _dyld_image_count();
     for ( size_t idx = 0; idx<num_loaded; ++idx ) {
       const char* filename = _dyld_get_image_name(idx);
 //      printf("%s:%d:%s Comparing to library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
       if (strcmp(filename,libraryName.c_str())==0) {
-//        printf("%s:%d:%s Found library: %s\n", __FILE__, __LINE__, __FUNCTION__, filename);
+        printf("%s:%d:%s Found library: %s !!!! I need the size!!!!!!\n", __FILE__, __LINE__, __FUNCTION__, filename);
         library_origin = (uintptr_t)_dyld_get_image_header(idx);
         break;
       }
     }
+  } else {
+    //printf("%s:%d:%s library: %s given library_origin @%p !!!! I need the size!!!!!!\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), (void*)library_origin);
   }
+    
   uintptr_t exec_header;
 //  printf("%s:%d:%s library_origin %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin);
   dlerror();
@@ -340,7 +377,14 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     symbol_table._StackmapEnd = p_section+section_size;
   }    
   BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,library_origin);
+  gctools::clasp_ptr_t text_segment_start;
+  uintptr_t text_segment_size;
+  mygetsegmentsize( (void*)library_origin,
+                    "__TEXT",
+                    text_segment_start,
+                    text_segment_size);
+  //printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
+  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,reinterpret_cast<gctools::clasp_ptr_t>(library_origin),reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size));
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 

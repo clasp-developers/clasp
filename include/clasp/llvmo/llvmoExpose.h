@@ -4592,7 +4592,7 @@ public:
   /*! Return a pointer to a function WHAT FUNCTION???????
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
-  void* runStartupCode(JITDylib& dylib, const std::string& startupName, T_O* initialDataOrNull = NULL );
+  void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
   ClaspJIT_O();
   ~ClaspJIT_O();
 public:
@@ -4717,5 +4717,5 @@ LLVMContext_sp llvm_sys__thread_local_llvm_context();
 };
 
 
-#define DEBUG_OBJECT_FILES(msg) if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
+#define DEBUG_OBJECT_FILES(msg) if ( llvmo::_sym_STARdebugObjectFilesSTAR && !llvmo::_sym_STARdebugObjectFilesSTAR.unboundp() && !llvmo::_sym_STARdebugObjectFilesSTAR->symbolValueUnsafe().unboundp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
 #endif //]

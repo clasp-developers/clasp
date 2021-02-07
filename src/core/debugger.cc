@@ -834,6 +834,24 @@ CL_DEFUN List_sp core__dynamic_library_handles() {
   return result.cons();
 }
 
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName )
+{
+#ifdef CLASP_THREADS
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+#endif
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+//    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
+    if (entry.second._LibraryStart <= address && address < entry.second._LibraryEnd ) {
+      libraryName = entry.second._Filename;
+      start = entry.second._LibraryStart;
+      end = entry.second._LibraryEnd;
+      return true;
+    }
+  }
+  return false;
+}
+
 bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type, bool& foundLibrary, std::string& libraryName, uintptr_t& libraryStart )
 {
   foundLibrary = false;
@@ -846,7 +864,7 @@ bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& star
     if (symtab.findSymbolForAddress(address,symbol,start,end,type,index)) {
       foundLibrary = true;
       libraryName = entry.second._Filename;
-      libraryStart = entry.second._LibraryOrigin;
+      libraryStart = (uintptr_t)(entry.second._LibraryStart);
       return true;
     }
   }
@@ -874,6 +892,8 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
   uintptr_t libraryStart;  
   return lookup_address_main(address,symbol,start,end,type,libraryFound,libraryName,libraryStart);
 }
+
+
 
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {

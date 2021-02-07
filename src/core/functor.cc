@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/core/debugger.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -45,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 // to avoid Generic to_object include headers here
 #include <clasp/core/wrappers.h>
+#include <clasp/llvmo/code.h>
 
 
 
@@ -56,12 +58,38 @@ std::atomic<uint64_t> global_interpreted_closure_calls;
 
 FunctionDescription_sp ensureEntryPoint(FunctionDescription_sp fdesc, claspFunction entry_point ) {
   if (entry_point!=(claspFunction)fdesc->_EntryPoints[0]) {
-    printf("%s:%d The entry_point %p does not match the one in fdesc %p\n", __FILE__, __LINE__, (void*)entry_point, (void*)fdesc->_EntryPoints[0]);
+    printf("%s:%d The fdesc@%p entry_point %p does not match the one in fdesc %p (offset %lu)\n", __FILE__, __LINE__, (void*)fdesc.raw_(), (void*)entry_point, (void*)fdesc->_EntryPoints[0], offsetof(FunctionDescription_O,_EntryPoints[0]));
     SIMPLE_ERROR(BF("The entry_point %p does not match the one in fdesc %p") % (void*)entry_point % (void*)fdesc->_EntryPoints[0]);
   }
   return fdesc;
 }
 
+CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname lineno column filepos entry-point-functions);
+CL_DEFUN FunctionDescriptionGenerator_sp core__makeFunctionDescriptionGenerator(T_sp functionName,
+                                                                                T_sp lambdaList,
+                                                                                T_sp docstring,
+                                                                                T_sp declares,
+                                                                                T_sp sourcePathname,
+                                                                                int lineno,
+                                                                                int column,
+                                                                                int filePos,
+                                                                                T_sp entryPointFunctions) {
+  GC_ALLOCATE_VARIADIC(FunctionDescriptionGenerator_O,fdesc);
+  fdesc->_sourcePathname = sourcePathname;
+  fdesc->_functionName = functionName;
+  fdesc->_lambdaList = lambdaList;
+  fdesc->_docstring = docstring;
+  fdesc->_declares = declares;
+  fdesc->lineno = lineno;
+  fdesc->column = column;
+  fdesc->filepos = filePos;
+  fdesc->_EntryPointFunctions = entryPointFunctions;
+//  printf("%s:%d:%s  fdesc-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)fdesc.raw_());
+  return fdesc;
+}
+
+
+#if 0
 CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname lineno column filepos);
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                                               T_sp lambdaList,
@@ -70,7 +98,8 @@ CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                                               T_sp sourcePathname,
                                                               int lineno,
                                                               int column,
-                                                              int filePos) {
+                                                              int filePos,
+                                                              claspFunction entryPoint) {
   return makeFunctionDescription(functionName,
                                  NULL,
                                  lambdaList,
@@ -81,8 +110,21 @@ CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                  column,
                                  filePos);
 }
-  
-                                                     
+#endif
+
+
+
+llvmo::Code_sp identifyCode(claspFunction entry_point)
+{
+  void* address = (void*)entry_point;
+  std::vector<BacktraceEntry> fill;
+  BacktraceEntry entry;
+  entry._ReturnAddress = (uintptr_t) address;
+  fill.push_back(entry);
+  fill_backtrace_or_dump_info(fill);
+  printf("%s:%d:%s Finish implementing for address %p found name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, fill[0]._SymbolName.c_str() );
+  SIMPLE_ERROR(BF("Finish implementing me"));
+}
 
 FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                claspFunction entry_point,
@@ -92,9 +134,12 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                T_sp sourcePathname,
                                                int lineno,
                                                int column,
-                                               int filePos,
-                                               llvmo::ObjectFile_sp ofi) {
-  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point );
+                                               int filePos) {
+  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  if (entry_point) {
+    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+  }
+  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point,code);
   fdesc->_sourcePathname = sourcePathname;
   fdesc->_functionName = functionName;
   fdesc->_lambdaList = lambda_list;
@@ -103,13 +148,14 @@ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
   fdesc->lineno = lineno;
   fdesc->column = column;
   fdesc->filepos = filePos;
-  fdesc->_ObjectFile = ofi;
+//  printf("%s:%d:%s @ %p   entry_point %p fdesc->_EntryPoints[0] = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)fdesc.raw_(), (void*)entry_point, (void*)fdesc->_EntryPoints[0]);
   return fdesc;
 }
 
 
 FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point) {
-  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point);
+  llvmo::CodeBase_sp code = original->_Code;
+  GC_ALLOCATE_VARIADIC(FunctionDescription_O, fdesc,entry_point, code);
   fdesc->_sourcePathname = original->_sourcePathname;
   fdesc->_functionName = original->_functionName;
   fdesc->_lambdaList = original->_lambdaList;
@@ -120,10 +166,30 @@ FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp origin
   fdesc->filepos = original->filepos;
   return fdesc;
 }
-FunctionDescription_sp setFunctionDescriptionEntryPoint(FunctionDescription_sp fdesc,
-                                                        claspFunction entry_point)
-{
-  fdesc->_EntryPoints[0] = (void*)entry_point;
+
+FunctionDescription_sp makeFunctionDescriptionFromGenerator(FunctionDescriptionGenerator_sp original, void** entry_points) {
+  if (!original->_EntryPointFunctions.consp()){
+    SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points") % _rep_(original));
+  }
+  T_sp firstEntryPoint = CONS_CAR(original->_EntryPointFunctions);
+  if (!firstEntryPoint.fixnump()) {
+    SIMPLE_ERROR(BF("The FunctionDescriptionGenerator %s does not have entry-points indices") % _rep_(original));
+  }
+  size_t entryPointIndex = firstEntryPoint.unsafe_fixnum();
+  claspFunction entry_point = (claspFunction)(entry_points[entryPointIndex]);
+  llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
+  if (entry_point) {
+    code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
+  }
+  GC_ALLOCATE_VARIADIC( FunctionDescription_O, fdesc, entry_point, code);
+  fdesc->_sourcePathname = original->_sourcePathname;
+  fdesc->_functionName = original->_functionName;
+  fdesc->_lambdaList = original->_lambdaList;
+  fdesc->_docstring = original->_docstring;
+  fdesc->_declares = original->_declares;
+  fdesc->lineno = original->lineno;
+  fdesc->column = original->column;
+  fdesc->filepos = original->filepos;
   return fdesc;
 }
 
@@ -156,72 +222,81 @@ FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
 #endif
 
 
-CL_DEFUN T_sp core__FunctionDescription_sourcePathname(FunctionDescription_sp fdesc) {
+CL_DEFUN T_sp core__FunctionDescriptionBase_sourcePathname(FunctionDescriptionBase_sp fdesc) {
   return fdesc->_sourcePathname;
 }
 
-CL_DEFUN T_sp core__FunctionDescription_functionName(FunctionDescription_sp fdesc) {
+CL_DEFUN T_sp core__FunctionDescriptionBase_functionName(FunctionDescriptionBase_sp fdesc) {
   return fdesc->_functionName;
 }
 
-CL_DEFUN T_sp core__FunctionDescription_lambdaList(FunctionDescription_sp fdesc) {
+CL_DEFUN T_sp core__FunctionDescriptionBase_lambdaList(FunctionDescriptionBase_sp fdesc) {
   return fdesc->_lambdaList;
 }
 
-CL_DEFUN T_sp core__FunctionDescription_docstring(FunctionDescription_sp fdesc) {
+CL_DEFUN T_sp core__FunctionDescriptionBase_docstring(FunctionDescriptionBase_sp fdesc) {
   return fdesc->_docstring;
 }
-CL_DEFUN T_sp core__FunctionDescription_declares(FunctionDescription_sp fdesc) {
+CL_DEFUN T_sp core__FunctionDescriptionBase_declares(FunctionDescriptionBase_sp fdesc) {
   return fdesc->_declares;
 }
-CL_DEFUN T_sp core__FunctionDescription_ObjectFile(FunctionDescription_sp fdesc) {
-  return fdesc->_ObjectFile;
+CL_DEFUN T_sp core__FunctionDescription_Code(FunctionDescription_sp fdesc) {
+  return fdesc->_Code;
 }
 
-CL_DEFUN size_t core__FunctionDescription_lineno(FunctionDescription_sp fdesc) {
+CL_DEFUN size_t core__FunctionDescriptionBase_lineno(FunctionDescriptionBase_sp fdesc) {
   return fdesc->lineno;
 }
-CL_DEFUN size_t core__FunctionDescription_column(FunctionDescription_sp fdesc) {
+CL_DEFUN size_t core__FunctionDescriptionBase_column(FunctionDescriptionBase_sp fdesc) {
   return fdesc->column;
 }
-CL_DEFUN size_t core__FunctionDescription_filepos(FunctionDescription_sp fdesc) {
+CL_DEFUN size_t core__FunctionDescriptionBase_filepos(FunctionDescriptionBase_sp fdesc) {
   return fdesc->filepos;
 }
 
-T_sp FunctionDescription_O::sourcePathname() const {
+CL_DEFUN T_sp core__FunctionDescriptionGenerator_entry_point_functions(FunctionDescriptionGenerator_sp fdesc) {
+  return fdesc->_EntryPointFunctions;
+}
+
+CL_DEFUN T_sp core__set_FunctionDescriptionGenerator_entry_point_functions(FunctionDescriptionGenerator_sp fdesc, T_sp entry_point_functions) {
+  return fdesc->_EntryPointFunctions = entry_point_functions;
+}
+
+
+T_sp FunctionDescriptionBase_O::sourcePathname() const {
   return this->_sourcePathname;
 }
 
 
-void FunctionDescription_O::setf_sourcePathname(T_sp sourceFileName) {
+void FunctionDescriptionBase_O::setf_sourcePathname(T_sp sourceFileName) {
   this->_sourcePathname = sourceFileName;
 }
 
-T_sp FunctionDescription_O::functionName() const {
+T_sp FunctionDescriptionBase_O::functionName() const {
   return this->_functionName;
 }
 
-void FunctionDescription_O::setf_functionName(T_sp name) {
+void FunctionDescriptionBase_O::setf_functionName(T_sp name) {
   this->_functionName = name;
 }
 
-T_sp FunctionDescription_O::lambdaList() const {
+T_sp FunctionDescriptionBase_O::lambdaList() const {
   return this->_lambdaList;
 }
 
-void FunctionDescription_O::setf_lambdaList(T_sp lambda_list) {
+void FunctionDescriptionBase_O::setf_lambdaList(T_sp lambda_list) {
   this->_lambdaList = lambda_list;
 }
 
-T_sp FunctionDescription_O::docstring() const {
+T_sp FunctionDescriptionBase_O::docstring() const {
   return this->_docstring;
 }
 
-T_sp FunctionDescription_O::declares() const {
+T_sp FunctionDescriptionBase_O::declares() const {
   return this->_declares;
 }
 
-void FunctionDescription_O::setf_docstring(T_sp x) {
+void FunctionDescriptionBase_O::setf_docstring(T_sp x) {
   this->_docstring = x;
 }
 
@@ -248,12 +323,13 @@ void validateFunctionDescription(const char* filename, size_t lineno, Function_s
 
 extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
 {
+  core::write_bf_stream(BF("FunctionDescription@%p\n") % (void*)fdesc.raw_());
   core::write_bf_stream(BF("sourcePathname = %s\n") % _rep_(fdesc->sourcePathname()) );
   core::write_bf_stream(BF("functionName = %s\n") % _rep_(fdesc->functionName()));
   core::write_bf_stream(BF("lambdaList = %s\n") % _rep_(fdesc->lambdaList()));
   core::write_bf_stream(BF("docstring = %s\n") % _rep_(fdesc->docstring()));
   core::write_bf_stream(BF("declares = %s\n") % _rep_(fdesc->declares()));
-  core::write_bf_stream(BF("ObjectFile = %s\n") % core::_rep_(fdesc->_ObjectFile));
+  core::write_bf_stream(BF("Code = %s\n") % core::_rep_(fdesc->_Code));
   core::write_bf_stream(BF("lineno = %lu\n") % fdesc->lineno);
   core::write_bf_stream(BF("column = %lu\n") % fdesc->column);
   core::write_bf_stream(BF("filepos = %lu\n") % fdesc->filepos);
@@ -304,7 +380,7 @@ CL_DEFUN void core__verify_closure_with_slots(T_sp alist)
     
 ClosureWithSlots_sp ClosureWithSlots_O::make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO) {
   FileScope_sp sfi = gc::As<FileScope_sp>(core__file_scope(core::make_fixnum(sourceFileInfoHandle)));
-  FunctionDescription_sp interpretedFunctionDescription = makeFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,declares,sfi,lineno,column,filePos);
+  FunctionDescription_sp interpretedFunctionDescription = makeFunctionDescription(name,interpretedClosureEntryPoint,lambda_list,docstring,declares,sfi,lineno,column,filePos );
   ClosureWithSlots_sp closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,
                                                               INTERPRETED_CLOSURE_SLOTS,
@@ -340,6 +416,7 @@ ClosureWithSlots_sp ClosureWithSlots_O::make_bclasp_closure(T_sp name, claspFunc
 }
 
 ClosureWithSlots_sp ClosureWithSlots_O::make_cclasp_closure(T_sp name, claspFunction ptr, T_sp type, T_sp lambda_list, SOURCE_INFO) {
+  printf("%s:%d:%s What are you going to do with an unbound Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
   core::FunctionDescription_sp fdesc = makeFunctionDescription(name,ptr,lambda_list);
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,

@@ -2,19 +2,21 @@
 
 ;;;; implementation of load-time-value and literal logic in compile-file and compile
 ;;;;
-;;;; Conceptually, there are two separate components, the "compiler" and this ("LTV").
+;;;; Conceptually, there are two separate components, the "compiler" of ltv bytecode and
+;;;;  the ltv bytecode interpreter.
 ;;;; The compiler compiles common lisp forms. Whenever it runs into a literal it can't
 ;;;;  handle, it calls LTV. When LTV needs some code compiled, it calls the compiler.
-;;;; LTV forms code in the @RUN-ALL function to create, at load time,
+;;;; LTV forms code in bytecode that is evaluated from the @RUN-ALL function to create, at load time,
 ;;;; a table (vector) with all the values the rest of the code needs to run.
 ;;;; Once it's done compiling, the compiler checks with LTV to get a table size and
-;;;;  the table-initializing code to run, which is injected into the start of
-;;;;  @RUN-ALL function.
+;;;;  the table-initializing bytecode to run, which is injected into a couple of global variables
+;;;;  in the module.
 ;;;;
 ;;;; External protocol:
 ;;;;
 ;;;; * When the compiler runs into a literal, it calls REFERENCE-LITERAL. This will
 ;;;;   return, an index into the load-time-values table for run-time.
+;;;; * The compiler can generate literals as structs and then the literal compiler can recognize 
 ;;;; * When the compiler runs into load-time-value, it calls REFERENCE-LOAD-TIME-VALUE,  *****WRONG????
 ;;;;   which also returns an index into the load-time-values table that will etc.
 ;;;; * The compiler provides a function COMPILE-CST-OR-FORM that LTV can call. COMPILE-FORM
@@ -45,8 +47,8 @@
 
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
-      (bformat nil "%s-%s%d" suffix core:+contab-name+ (incf-value-table-id-value))
-      (bformat nil "%s%d" core:+contab-name+ (incf-value-table-id-value))))
+      (bformat nil "%s-%s%d" suffix core:+literals-name+ (incf-value-table-id-value))
+      (bformat nil "%s%d" core:+literals-name+ (incf-value-table-id-value))))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
@@ -251,9 +253,24 @@ rewrite the slot in the literal table to store a closure."
 
 (defun register-function (llvm-func)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
+  #+(or)(format t "register-function type: ~s~%" (llvm-sys:get-type llvm-func))
+  (unless (llvm-sys:type-equal (llvm-sys:get-type llvm-func) cmp:%fn-prototype*%)
+    (error "You are trying to register a function ~s with type ~s and expected type is: ~s"
+           llvm-func
+           (llvm-sys:get-type llvm-func)
+           cmp:%fn-prototype%))
+  (dotimes (idx (length (literal-machine-function-vector *literal-machine*)))
+    (when (eq llvm-func (elt (literal-machine-function-vector *literal-machine*) idx))
+      (return-from register-function idx)))
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
     (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
     (make-function-datum :index function-index)))
+
+
+(defun register-function-index (llvm-func)
+  "Add a function to the (literal-machine-function-vector *literal-machine*)"
+  (let ((function-datum (register-function llvm-func)))
+    (function-datum-index function-datum)))
 
 ;;; Helper function: we write a few things out as base strings.
 ;;; FIXME: Use a more efficient representation.
@@ -377,18 +394,22 @@ rewrite the slot in the literal table to store a closure."
                (load-time-reference-literal (pathname-type pathname) read-only-p :toplevelp nil)
                (load-time-reference-literal (pathname-version pathname) read-only-p :toplevelp nil)))
 
-(defun ltv/function-description (function-description index read-only-p &key (toplevelp t))
+(defun ltv/function-description (fdesc-ph index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  #+(or)(warn "What do we do with the function entry-point????")
-  (add-creator "ltvc_make_function_description" index function-description
-               (load-time-reference-literal (sys:function-description-source-pathname function-description) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-function-name function-description) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-lambda-list function-description) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-docstring function-description) read-only-p :toplevelp nil)
-               (load-time-reference-literal (sys:function-description-declares function-description) read-only-p :toplevelp nil)
-               (sys:function-description-lineno function-description)
-               (sys:function-description-column function-description)
-               (sys:function-description-filepos function-description)))
+  ;;;(warn "What do we do with the function entry-point??? fdesc-ph-> ~s function -> ~s" fdesc-ph (cmp:function-description-placeholder-function fdesc-ph))
+  ;;; You would use more entry-points for multiple entry-points
+  (let ((function-index (first (sys:function-description-generator-entry-point-functions fdesc-ph))))
+    ;;;(warn "ltv/function-description function-index -> ~a" function-index)
+    (add-creator "ltvc_make_function_description" index fdesc-ph
+                 function-index
+                 (load-time-reference-literal (sys:function-description-base-source-pathname fdesc-ph) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:function-description-base-function-name fdesc-ph) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:function-description-base-lambda-list fdesc-ph) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:function-description-base-docstring fdesc-ph) read-only-p :toplevelp nil)
+                 (load-time-reference-literal (sys:function-description-base-declares fdesc-ph) read-only-p :toplevelp nil)
+                 (sys:function-description-base-lineno fdesc-ph)
+                 (sys:function-description-base-column fdesc-ph)
+                 (sys:function-description-base-filepos fdesc-ph))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -465,6 +486,7 @@ rewrite the slot in the literal table to store a closure."
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
     ((core:ratio-p object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
+    ((sys:function-description-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))
@@ -474,11 +496,11 @@ rewrite the slot in the literal table to store a closure."
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-hash-table-coalesce literal-machine)) #'ltv/hash-table))
     ((bignump object) (values (literal-machine-bignum-coalesce literal-machine) #'ltv/bignum))
     ((pathnamep object) (values (literal-machine-pathname-coalesce literal-machine) #'ltv/pathname))
-    ((function-descriptionp object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
     ((packagep object) (values (literal-machine-package-coalesce literal-machine) #'ltv/package))
     ((complexp object) (values (literal-machine-complex-coalesce literal-machine) #'ltv/complex))
     ((random-state-p object) (values (literal-machine-identity-coalesce literal-machine) #'ltv/random-state))
-    (t (values (literal-machine-identity-coalesce literal-machine) #'ltv/mlf))))
+    (t #+(or)(warn "object-similarity-table-and-creator object -> ~s" object)
+       (values (literal-machine-identity-coalesce literal-machine) #'ltv/mlf))))
 
 (defun ensure-creator-llvm-value (obj)
   "Lookup or create the llvm::Value for obj"
@@ -496,7 +518,7 @@ rewrite the slot in the literal table to store a closure."
                                          (cmp:jit-constant-size_t index)
                                          (fix-args (literal-node-creator-arguments obj)))))))))
 (defun lookup-arg (creator)
-  (labels ((object-label (creator idx &optional (prefix core:+contab-name+))
+  (labels ((object-label (creator idx &optional (prefix core:+literals-name+))
              (if (literal-node-creator-literal-name creator)
                  (bformat nil "%s[%d]/%s" prefix idx (literal-node-creator-literal-name creator))
                  (bformat nil "%s[%d]%t*" prefix idx))))
@@ -611,8 +633,7 @@ rewrite the slot in the literal table to store a closure."
 (defun generate-run-time-code-for-closurette (node)
   ;; Generate calls to ltvc_make_closurette for closurettes that are created at JIT startup time
   (let* ((closurette-object (literal-node-creator-object node))
-         (function-datum (literal-node-closure-function-index closurette-object))
-         (function-index (function-datum-index function-datum))
+         (function-index (literal-node-closure-function-index closurette-object))
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum))
          (function-description-ref (literal-node-closure-function-description-ref closurette-object)))
@@ -659,9 +680,9 @@ Return the index of the load-time-value"
                                          cmp:%gcroots-in-module% ; type
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
-                                         (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
+                                         (cmp:gcroots-in-module-initial-value) ;; (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
                                          ;; nil ; initializer
-                                         (core:bformat nil "constants-table*%d" (core:next-number))))
+                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
@@ -695,13 +716,17 @@ Return the index of the load-time-value"
       (let ((literal-entries (literal-machine-table-index *literal-machine*)))
         (when (> literal-entries 0)
           ;; We have a new table, replace the old one and generate code to register the new one
-          ;; and gc roots tabl
+          ;; and gc roots table
           (let* ((array-type (llvm-sys:array-type-get cmp:%t*% literal-entries))
+                 (array-of-nulls (let (vals)
+                                   (dotimes (idx literal-entries)
+                                     (push (llvm-sys:constant-pointer-null-get cmp:%t*%) vals))
+                                   vals))
                  (correct-size-holder (llvm-sys:make-global-variable cmp:*the-module*
                                                                      array-type
                                                                      nil ; isConstant
                                                                      'llvm-sys:internal-linkage
-                                                                     (llvm-sys:undef-value-get array-type)
+                                                                     (llvm-sys:constant-array-get array-type array-of-nulls)
                                                                      real-name))
                  (bitcast-correct-size-holder (cmp:irc-bit-cast correct-size-holder cmp:%t*[DUMMY]*%
                                                                 "bitcast-table")))
@@ -739,9 +764,9 @@ Return the index of the load-time-value"
                                          cmp:%gcroots-in-module% ; type
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
-                                         (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
+                                         (cmp:gcroots-in-module-initial-value)
                                          ;; nil ; initializer
-                                         (core:bformat nil "constants-table*%d" (core:next-number))))
+                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[0]% ; type

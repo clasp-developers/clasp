@@ -67,6 +67,33 @@ namespace gctools {
 
 namespace gctools {
 
+  // Given an interior_pointer
+  // Return true and the base object if the interior_pointer points into an object
+  // Return false and undefined for object if it does not.
+  // This is the General_O object case
+  template <typename GeneralType>
+    inline bool tagged_pointer_from_interior_pointer( clasp_ptr_t interior_pointer, Tagged& tagged_pointer ) {
+    void* base = GC_base(static_cast<void*>(interior_pointer));
+    if (base) {
+      GeneralType* client = BasePtrToMostDerivedPtr<GeneralType>(base);
+      tagged_pointer = (gctools::Tagged)tag_general<GeneralType*>(client);
+      return true;
+    }
+    return false;
+  }
+
+  // core::Cons_sp specializer
+  template <>
+    inline bool tagged_pointer_from_interior_pointer<core::Cons_O>( clasp_ptr_t interior_pointer, Tagged& tagged_pointer ) {
+    void* base = GC_base(static_cast<void*>(interior_pointer));
+    if (base) {
+      core::Cons_O* client = BasePtrToMostDerivedPtr<core::Cons_O>(base);
+      tagged_pointer = (gctools::Tagged)tag_cons<core::Cons_O*>(client);
+      return true;
+    }
+    return false;
+  }
+  
   void boehm_set_finalizer_list(gctools::Tagged object, gctools::Tagged finalizers );
   void boehm_clear_finalizer_list(gctools::Tagged object);
 

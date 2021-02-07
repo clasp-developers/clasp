@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/IR/LLVMContext.h>
-#include <clasp/llvmo/imageSaveLoad.h>
+#include <clasp/llvmo/code.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 
 #/*
@@ -407,13 +407,6 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
 {
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
   DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, ofi->_FasoName.c_str()));
-  ofi->_stackmap_start = (void*)my_thread->_stackmap;
-  ofi->_stackmap_size = my_thread->_stackmap_size;
-  DEBUG_OBJECT_FILES(("%s:%d:%s ofi->_stackmap_start = %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_stackmap_start ));
-  DEBUG_OBJECT_FILES(("%s:%d:%s ofi->_stackmap_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, ofi->_stackmap_size ));
-
-
-  ofi->_GCRootsInModule = my_thread->_GCRootsInModule;
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {
@@ -460,6 +453,12 @@ CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointe
     count++;
   }
   return Values(_Nil<core::T_O>());
+}
+
+CL_LISPIFY_NAME(release_object_files);
+CL_DEFUN void release_object_files() {
+  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+  core::write_bf_stream(BF("ObjectFiles have been released\n"));
 }
 
 CL_LISPIFY_NAME(number_of_object_files);

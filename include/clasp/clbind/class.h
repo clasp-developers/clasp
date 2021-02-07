@@ -564,49 +564,49 @@ template <class Class, class Policies>
 template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
-  property_registration(
-      const string &name,
-      Get const &get,
-      GetPolicies const &get_policies,
-      Set const &set = Set(),
-      SetPolicies const &set_policies = SetPolicies(),
-      string const &arguments = "",
-      string const &declares = "",
-      string const &docstring = "")
-      : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
+ property_registration(
+                       const string &name,
+                       Get const &get,
+                       GetPolicies const &get_policies,
+                       Set const &set = Set(),
+                       SetPolicies const &set_policies = SetPolicies(),
+                       string const &arguments = "",
+                       string const &declares = "",
+                       string const &docstring = "")
+ : m_name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
-  void register_() const {
-    LOG_SCOPE(("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() ));
-      const string n(m_name);
+ void register_() const {
+     LOG_SCOPE(("%s:%d class_ register_ %s\n", __FILE__, __LINE__, this->m_name.c_str() ));
+     const string n(m_name);
     //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
-      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-      core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-      using VariadicGetterType = GetterMethoid<reg::null_type, Class, Get>;
-      core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicGetterType::entry_point);
-      auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
-      core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(raw_getter);
-      lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
-      core::validateFunctionDescription(__FILE__,__LINE__,getter);
-      core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
-      using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
-      core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription(setf_name,VariadicSetterType::entry_point);
-      core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(fdesc_setf, set));
-      lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
-      core::validateFunctionDescription(__FILE__,__LINE__,setter);
+     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
+     using VariadicGetterType = GetterMethoid<reg::null_type, Class, Get>;
+     core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicGetterType::entry_point);
+     auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
+     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(raw_getter);
+     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
+     core::validateFunctionDescription(__FILE__,__LINE__,getter);
+     core::T_sp setf_name = core::Cons_O::createList(cl::_sym_setf,sym);
+     using VariadicSetterType = SetterMethoid<reg::null_type, Class, Set>;
+     core::FunctionDescription_sp fdesc_setf = core::makeFunctionDescription(setf_name,VariadicSetterType::entry_point);
+     core::BuiltinClosure_sp setter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicSetterType>::allocate(fdesc_setf, set));
+     lisp_defineSingleDispatchMethod(setf_name, classSymbol, setter, 1, true, m_arguments, m_declares, m_docstring, true, 2);
+     core::validateFunctionDescription(__FILE__,__LINE__,setter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
-  }
-  virtual std::string name() const { return this->m_name;}
-  virtual std::string kind() const { return "property_registration"; };
-  std::string m_name;
-  Get get;
-  GetPolicies get_policies;
-  Set set;
-  SetPolicies set_policies;
-  string m_arguments;
-  string m_declares;
-  string m_docstring;
+ }
+ virtual std::string name() const { return this->m_name;}
+ virtual std::string kind() const { return "property_registration"; };
+ std::string m_name;
+ Get get;
+ GetPolicies get_policies;
+ Set set;
+ SetPolicies set_policies;
+ string m_arguments;
+ string m_declares;
+ string m_docstring;
 };
 
 

@@ -192,7 +192,7 @@ def collect_clasp_c_source_files(bld):
                  'insertPoint',
                  'irtests',
                  'llvmoExpose',
-                 'imageSaveLoad',
+                 'code',
                  'llvmoPackage',
                  'clbindLlvmExpose']) + \
              collect_c_source_files(bld, 'src/mpip/', [

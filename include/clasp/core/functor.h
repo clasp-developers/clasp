@@ -78,46 +78,86 @@ I used a virtual function because different subclasses store the FunctionDescrip
 pointer at different offsets so that FuncallableInstance_O can have its _Class and _Rack
 fields at the same offset as Instance_O.
    */
-FORWARD(FunctionDescription);
-class FunctionDescription_O : public General_O {
-  LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
-  static const size_t Roots = 2;
-public:
-  /* vtable */                                //  1 vtable from General_O
-  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS]; //  2 entry-points
-  T_sp _sourcePathname;                       //  3 source-info
-  T_sp _functionName;                         //  4 function-name
-  T_sp _lambdaList;                           //  5 lambda-list 
-  T_sp _docstring;                            //  6 docstring
-  T_sp _declares;                             //  7 declares
-  llvmo::ObjectFile_sp _ObjectFile;           //  8 object-file
-  int lineno;                                 //  9 lineno
-  int column;                                 // 10 column
-  int filepos;                                // 11 filepos
-public:
+ FORWARD(FunctionDescriptionBase);
+ class FunctionDescriptionBase_O : public General_O {
+   LISP_CLASS(core,CorePkg,FunctionDescriptionBase_O,"FunctionDescriptionBase",General_O);
+ public:
+  /* vtable */                                 //  1 vtable from General_O
+   T_sp _sourcePathname;                       //  2 source-info
+   T_sp _functionName;                         //  3 function-name
+   T_sp _lambdaList;                           //  4 lambda-list 
+   T_sp _docstring;                            //  5 docstring
+   T_sp _declares;                             //  6 declares
+   int lineno;                                 //  7 lineno
+   int column;                                 //  8 column
+   int filepos;                                //  9 filepos
+ public:
   // Accessors
-  T_sp sourcePathname() const;
-  void setf_sourcePathname(T_sp);
-  T_sp functionName() const;
-  void setf_functionName(T_sp);
-  T_sp lambdaList() const;
-  void setf_lambdaList(T_sp);
-  T_sp docstring() const;
-  void setf_docstring(T_sp);
-  T_sp declares() const;
-  void setf_declares(T_sp);
-  FunctionDescription_O(claspFunction entry_point) : _EntryPoints{(void*)entry_point} {};
-//  FunctionDescription_O() {};
-};
+   T_sp sourcePathname() const;
+   void setf_sourcePathname(T_sp);
+   T_sp functionName() const;
+   void setf_functionName(T_sp);
+   T_sp lambdaList() const;
+   void setf_lambdaList(T_sp);
+   T_sp docstring() const;
+   void setf_docstring(T_sp);
+   T_sp declares() const;
+   void setf_declares(T_sp);
+   FunctionDescriptionBase_O() {};
+ };
 
- FunctionDescription_sp makeFunctionDescription(T_sp functionName, claspFunction entry_point=NULL, T_sp lambda_list=_Unbound<T_O>(), T_sp docstring=_Nil<T_O>(), T_sp declares=_Nil<T_O>(), T_sp sourcePathname=_Nil<T_O>(), int lineno=-1, int column=-1, int filePos=-1, llvmo::ObjectFile_sp of = _Unbound<llvmo::ObjectFile_O>());
+
+ FORWARD(FunctionDescription);
+ class FunctionDescription_O : public FunctionDescriptionBase_O {
+   LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",FunctionDescriptionBase_O);
+ public:
+  llvmo::CodeBase_sp _Code;                       //  10 code
+  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];     //  11 entry-points
+ public:
+  // Accessors
+ FunctionDescription_O(claspFunction entry_point, llvmo::CodeBase_sp code) : _EntryPoints{(void*)entry_point}, _Code(code) {  };
+//  FunctionDescription_O() {};
+ };
+
+
+
+
+
+
+ 
+ FunctionDescription_sp makeFunctionDescription(T_sp functionName,
+                                                claspFunction entry_point=NULL,
+                                                T_sp lambda_list=_Unbound<T_O>(),
+                                                T_sp docstring=_Nil<T_O>(),
+                                                T_sp declares=_Nil<T_O>(),
+                                                T_sp sourcePathname=_Nil<T_O>(),
+                                                int lineno=-1,
+                                                int column=-1,
+                                                int filePos=-1);
 
 
 FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point=NULL);
-
-FunctionDescription_sp setFunctionDescriptionEntryPoint(FunctionDescription_sp function_info, claspFunction entry_point=NULL);
-
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
+
+};
+
+
+namespace core {
+  FORWARD(FunctionDescriptionGenerator);
+  /*! 
+   * This class is used by the literal compiler to generate FunctionDescription_O objects at loadtime.
+   * It stores a list of entry points that are llvm::Function objects.
+   */
+  class FunctionDescriptionGenerator_O : public FunctionDescriptionBase_O {
+    LISP_CLASS(core,CorePkg,FunctionDescriptionGenerator_O,"FunctionDescriptionGenerator",FunctionDescriptionBase_O);
+  public:
+    T_sp  _EntryPointFunctions; // This is a list
+  public:
+  };
+
+
+   FunctionDescription_sp makeFunctionDescriptionFromGenerator(FunctionDescriptionGenerator_sp original, void** entry_points);
+
 
 };
 

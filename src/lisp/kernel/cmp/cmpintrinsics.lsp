@@ -423,12 +423,22 @@ Boehm and MPS use a single pointer"
 ;; This structure must match the gctools::GCRootsInModule structure
 (define-c++-struct %gcroots-in-module% +general-tag+
   ((%size_t%  :index-offset)
-   (%i8*%  :boehm-shadow-memory)
-   (%i8*%  :module-memory)
+   (%i8*%     :module-memory)
    (%size_t%  :num-entries)
    (%size_t%  :capacity)
-   (%i8**%  :function-pointers)
+   (%i8**%    :function-pointers)
    (%size_t%  :number-of-functions)))
+
+(defun gcroots-in-module-initial-value ()
+  (llvm-sys:constant-struct-get %gcroots-in-module%
+                                (list
+                                 (jit-constant-size_t 0)
+                                 (llvm-sys:constant-pointer-null-get %i8*%)
+                                 (jit-constant-size_t 0)
+                                 (jit-constant-size_t 0)
+                                 (llvm-sys:constant-pointer-null-get %i8**%)
+                                 (jit-constant-size_t 0)
+                                 )))
 
 (define-symbol-macro %gcroots-in-module*% (llvm-sys:type-get-pointer-to %gcroots-in-module%))
 
@@ -736,16 +746,16 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
                               (list %i8*%                  ;  1 vtable
-                                    %entry-points-vector%  ;  2 entry-points
-                                    %t*%                   ;  3 source-info
-                                    %t*%                   ;  4 function-name
-                                    %t*%                   ;  5 lambda-list
-                                    %t*%                   ;  6 docstring
-                                    %t*%                   ;  7 declares
-                                    %t*%                   ;  8 object-file
-                                    %i32%                  ;  9 lineno
-                                    %i32%                  ; 10 column
-                                    %i32%                  ; 11 filepos
+                                    %t*%                   ;  2 source-info
+                                    %t*%                   ;  3 function-name
+                                    %t*%                   ;  4 lambda-list
+                                    %t*%                   ;  5 docstring
+                                    %t*%                   ;  6 declares
+                                    %i32%                  ;  7 lineno
+                                    %i32%                  ;  8 column
+                                    %i32%                  ;  9 filepos
+                                    %t*%                   ; 10 code
+                                    %entry-points-vector%  ; 11 entry-points
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
@@ -960,7 +970,7 @@ and initialize it with an array consisting of one function pointer."
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
                                                   :function-description-offset function-description-offset
-                                                  :contab gcroots-in-module-size
+                                                  :gcroots-in-module gcroots-in-module-size
                                                   :valist vaslist-size
                                                   :ihf invocation-history-frame-size
                                                   :register-save-area register-save-area-size

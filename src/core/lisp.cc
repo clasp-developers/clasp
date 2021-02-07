@@ -135,6 +135,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/code.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/core/wrappers.h>
 #ifdef CLASP_THREADS
@@ -197,6 +198,7 @@ public:
 //
 Lisp_O::GCRoots::GCRoots() :
   _AllObjectFiles(_Nil<T_O>()),
+  _AllLibraries(_Nil<T_O>()),
 #ifdef CLASP_THREADS
     _UnboundSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
     _UnboundSetfSymbolFunctionFunctionDescription(_Unbound<FunctionDescription_O>()),
@@ -443,6 +445,7 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+  
 #ifdef DEBUG_FLAGS_SET
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
 #endif
@@ -454,7 +457,19 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     global_debug_byte_code = true;
   }
 
+  // Setup the ExecutableObjectFile and ExecutableCode
+    
   my_thread->create_sigaltstack();
+
+
+  //
+  // Walk all of the loaded dynamic libraries
+  //
+  startup_register_loaded_objects();
+
+  //
+  // Initialize the symbols
+  //
   Symbol_sp symbol_nil = gctools::smart_ptr<Symbol_O>((gc::Tagged)gctools::global_tagged_Symbol_OP_nil);
   symbol_nil->fmakunbound();
   symbol_nil->fmakunbound_setf();
@@ -490,6 +505,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       printf("%s:%d  Trapping intern of %s:%s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(),this->_TrapInternName.c_str());
     }
   }
+  //
+  // Define the _lisp global
+  //
   ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
   //	initializeProfiler(this->profiler(),_lisp);
   this->_TraceLevel = 0;
@@ -502,6 +520,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_EnvironmentId = 0;
   this->_Roots._CommandLineArguments.reset_();
   this->_Bundle = bundle;
+  //
+  // Setup the core package aka the sys package
+  //
   CoreExposer_sp coreExposer;
   {
     _BLOCK_TRACE("Initialize core classes");
@@ -577,7 +598,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   {
     // Setup the pathname translation
     this->_Bundle->setup_pathname_translations();
-
   }
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);
@@ -626,7 +646,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
-  startup_register_loaded_objects();
+
+  //
+  // Pause if CLASP_PAUSE_STARTUP environment variable is defined
+  //
   {
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
@@ -635,8 +658,15 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       getchar();
     }
   }
+  //
+  // Create the first process
+  //
+  mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
+  this->add_process(my_thread->_Process);
+  my_thread->_Process->_Phase = mp::Active;
+  gctools::initialize_unix_signal_handlers();
+  this->_Roots._Booted = true;
   
-//  process_llvm_stackmaps();
 }
 
 /*! Get a Str8Ns buffer string from the BufferStr8NsPool.*/
@@ -2468,17 +2498,17 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   global_options = new CommandLineOptions(argc, argv);
   // Call the initializers here so that they can edit the global_options structure
   Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
+
+  // Start up lisp
   this->_Lisp->startupLispEnvironment(bundle);
-  mp::_sym_STARcurrent_processSTAR->defparameter(my_thread->_Process);
-  this->_Lisp->add_process(my_thread->_Process);
-  my_thread->_Process->_Phase = mp::Active;
-  gctools::initialize_unix_signal_handlers();
-  _lisp->_Roots._Booted = true;
+
+  // Run the initializers
 #ifndef SCRAPING
-#define ALL_INITIALIZERS_CALLS
-#include INITIALIZERS_INC_H
-#undef ALL_INITIALIZERS_CALLS
+# define ALL_INITIALIZERS_CALLS
+# include INITIALIZERS_INC_H
+# undef ALL_INITIALIZERS_CALLS
 #endif
+
   // The initializers may have changed the function that processes global_options
   (global_options->_ProcessArguments)(global_options);
   _lisp->parseCommandLineArguments(argc, argv, *global_options);

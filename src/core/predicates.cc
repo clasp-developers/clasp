@@ -331,8 +331,15 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("function-descriptionp");
-CL_DEFUN bool core__function_descriptionp(T_sp obj) {
+CL_DOCSTRING("function-description-generator-p");
+CL_DEFUN bool core__function_description_generator_p(T_sp obj) {
+  return gc::IsA<FunctionDescriptionGenerator_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("function-description-p");
+CL_DEFUN bool core__function_description_p(T_sp obj) {
   return gc::IsA<FunctionDescription_sp>(obj);
 };
 

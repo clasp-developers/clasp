@@ -14,7 +14,7 @@
 #include <clasp/core/debugger.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/llvmo/imageSaveLoad.h>
+#include <clasp/llvmo/code.h>
 
 
 THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
@@ -180,7 +180,11 @@ void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {
 }
 
 llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
-  return gc::As<llvmo::ObjectFile_sp>(CONS_CAR(this->_ObjectFiles));
+  core::T_sp of = this->_ObjectFiles;
+  if (of.nilp()) {
+    return _Unbound<llvmo::ObjectFile_O>();
+  }
+  return gc::As<llvmo::ObjectFile_sp>(CONS_CAR(of));
 }
 
 void ThreadLocalState::popObjectFile() {

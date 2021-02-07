@@ -29,6 +29,11 @@
 ;; Don't use FORMAT here use BFORMAT 
 ;; otherwise you will have problems when format.lsp is bootstrapped
 
+#+(or)
+(eval-when (:compile-toplevel :execute)
+  (setq core:*debug-eval* t))
+
+
 (in-package :cmp)
 
 (defparameter *print-implicit-compile-form* nil)
