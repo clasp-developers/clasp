@@ -181,6 +181,11 @@ void Array_O::__write__(T_sp stream) const {
   else write_array_unreadable(this->asSmartPtr(), adims, stream);
 }
 
+void Array_O::__writeString(size_t istart, size_t iend, T_sp stream) const {
+ // Linker seems to require that
+  SUBIMP();
+}
+
 // This separate method is necessary because we need to account for fill pointers -
 // the basic stuff above uses array dimensions, so it's not appropriate.
 void ComplexVector_O::__write__(T_sp stream) const {
@@ -275,6 +280,34 @@ void StrWNs_O::__write__(T_sp stream) const {
   this->asAbstractSimpleVectorRange(str,start,end);
   SimpleCharacterString_sp sc = gc::As<SimpleCharacterString_sp>(str);
   unsafe_write_SimpleCharacterString(sc,start,end,stream);
+}
+
+void StrWNs_O::__writeString (size_t istart, size_t iend, T_sp stream) const {
+  size_t start, end;
+  AbstractSimpleVector_sp str;
+  this->asAbstractSimpleVectorRange(str,start,end);
+  SimpleCharacterString_sp sc = gc::As<SimpleCharacterString_sp>(str);
+  sc->__writeString(istart, iend, stream);
+}
+
+void Str8Ns_O::__writeString (size_t istart, size_t iend, T_sp stream) const {
+  size_t start, end;
+  AbstractSimpleVector_sp str;
+  this->asAbstractSimpleVectorRange(str,start,end);
+  SimpleBaseString_sp sb = gc::As<SimpleBaseString_sp>(str);
+  sb->__writeString(istart, iend, stream);
+}
+
+void SimpleBaseString_O::__writeString (size_t start, size_t end, T_sp stream) const {
+  for (cl_index ndx = start; ndx < end; ndx++) {
+    clasp_write_char((* this)[ndx],stream);
+  }
+}
+
+void SimpleCharacterString_O::__writeString (size_t start, size_t end, T_sp stream) const {
+  for (cl_index ndx = start; ndx < end; ndx++) {
+      clasp_write_char((* this)[ndx],stream);
+  }
 }
 
 }; // namespace core

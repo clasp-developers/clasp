@@ -6300,12 +6300,19 @@ CL_DEFUN String_sp clasp_writeString(String_sp str, T_sp stream, int istart, T_s
     Fixnum_sp fnstart = make_fixnum(istart);
     return eval::funcall(gray::_sym_stream_write_string, stream, str, fnstart, end);
   }
-  int iend = cl__length(str);
-  if (end.notnilp()) {
-    iend = MIN(iend, unbox_fixnum(gc::As<Fixnum_sp>(end)));
-  }
-  int ilen = iend - istart;
-  clasp_write_characters(&(str->get_std_string().c_str()[istart]), ilen, stream);
+  /*
+  Beware that we might have unicode characters in str (or a non simple string)
+  Don't use clasp_write_characters, since that operates on chars and 
+  might fail miserably with unicode strings, see issue 1134
+
+  Best to audit in clasp every use of c_str() or even get_std_string() to see whether
+  Strings might be clobbered.
+ 
+  Write-String is not specified to respect print_escape and print_readably
+  */
+  // Verify no OutOfBound Access
+  size_t_pair p = sequenceStartEnd(cl::_sym_writeString,str->length(),istart,end);
+  str->__writeString(p.start,p.end, stream);
   return str;
 }
 
