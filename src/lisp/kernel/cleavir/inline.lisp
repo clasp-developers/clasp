@@ -89,7 +89,11 @@
 (deftype readtable-designator () '(or null readtable))
 
 (deftype radix () '(integer 2 36))
-(deftype boole-spec () 't) ; implementation defined
+(deftype boole-spec ()
+  `(member ,BOOLE-1 ,BOOLE-2 ,BOOLE-AND ,BOOLE-ANDC1 ,BOOLE-ANDC2
+           ,BOOLE-C1 ,BOOLE-C2 ,BOOLE-CLR ,BOOLE-EQV ,BOOLE-IOR
+           ,BOOLE-NAND ,BOOLE-NOR ,BOOLE-ORC1 ,BOOLE-ORC2 ,BOOLE-SET ,BOOLE-XOR))
+
 (deftype byte-specifier () 't) ; implementation defined
 
 (deftype character-code () `(integer 0 (,char-code-limit)))
