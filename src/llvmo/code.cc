@@ -146,10 +146,10 @@ namespace llvmo {
 /*
  * Identify the CodeBase_O object for the entry-point.
  * 1. Search the _lisp->_AllLibraries list for a Library_O.
- * 2. If not found check if the address is in a dynamic library and create
- *      a Library_O object for it and add it to the _AllLibraries list
- * 3. Treat the entry_point as an interior pointer and return the Code_O
+ * 2. Treat the entry_point as an interior pointer and look for the Code_O
  *     object that it corresponds to.
+ * 3. If not found check if the address is in a dynamic library and create
+ *      a Library_O object for it and add it to the _AllLibraries list
  * 4. If it's not one of the above then we have an entry point that
  *       I didn't think about or a serious error.
  */
@@ -168,7 +168,18 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   }
 
   //
-  // 2. Look the entry point up in the dlopen libraries.
+  // 2. Treat the entry_point like an interior pointer and lookup the base Code_sp object
+  //
+  gctools::Tagged taggedCodePointer;
+  bool foundBase = gctools::tagged_pointer_from_interior_pointer<Code_O>( entry_point, taggedCodePointer );
+  Code_sp codeObject(taggedCodePointer);
+  if (foundBase) {
+//    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(codeObject).c_str());
+    return codeObject;
+  }
+
+  //
+  // 3. Look the entry point up in the dlopen libraries.
   //    If we find it, push an entry into the _lisp->_AllLibraries list
     
   gctools::clasp_ptr_t start, end;
@@ -187,17 +198,7 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
     return newlib;
   }
   
-  //
-  // 3. Treat the entry_point like an interior pointer and lookup the base Code_sp object
-  //
-  gctools::Tagged taggedCodePointer;
-  bool foundBase = gctools::tagged_pointer_from_interior_pointer<Code_O>( entry_point, taggedCodePointer );
-  Code_sp codeObject(taggedCodePointer);
-  if (foundBase) {
-//    printf("%s:%d:%s Returning Code_sp object entry_point @%p  -> %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, _rep_(codeObject).c_str());
-    return codeObject;
-  }
-
+  
   //
   // 4. We have hit an unidentifiable entry_point - what is it
   SIMPLE_ERROR(BF("We have hit an unidentifiable entry_point at %p - figure out what it is") % (void*)entry_point);
