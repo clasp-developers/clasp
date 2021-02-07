@@ -79,6 +79,8 @@ namespace llvmo {
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdebugObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
+SYMBOL_EXPORT_SC_(KeywordPkg, dumpObjectFiles );
+SYMBOL_EXPORT_SC_(KeywordPkg, debugObjectFiles );
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARjit_engineSTAR);
 
@@ -338,7 +340,11 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
                                                         core::Fixnum_sp symbolSize, core::Fixnum_sp symbol_function_offset, core::Fixnum_sp symbol_setf_function_offset,
                                                         core::Fixnum_sp functionSize,
                                                         core::Fixnum_sp function_description_offset,
-                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize, core::T_sp gcRootsInModuleSize, core::T_sp tvalistsize, core::T_sp tRegisterSaveAreaSize, core::T_sp tFunctionDescriptionSize ) {
+                                                        gc::Nilable<core::Fixnum_sp> givenIhfSize,
+                                                        core::T_sp gcRootsInModuleSize,
+                                                        core::T_sp tvalistsize,
+                                                        core::T_sp tRegisterSaveAreaSize,
+                                                        core::T_sp tFunctionDescriptionSize ) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -401,6 +407,7 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   }
   if (tFunctionDescriptionSize.fixnump()) {
     size_t functionDescriptionSize = tFunctionDescriptionSize.unsafe_fixnum();
+//    printf("%s:%d:%s Checked function-description size\n", __FILE__, __LINE__, __FUNCTION__ );
     if (functionDescriptionSize != sizeof(core::FunctionDescription_O)) {
       SIMPLE_ERROR(BF("function-description size %lu mismatch with Common Lisp code %lu") % sizeof(core::FunctionDescription_O) % functionDescriptionSize );
     }
@@ -578,7 +585,8 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
 #endif
     GC_ALLOCATE(ClaspJIT_O,jit_engine);
     llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);
-    llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(_Nil<core::T_O>());
+    llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
+    llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);

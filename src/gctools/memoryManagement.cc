@@ -550,14 +550,24 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
   new (roots) GCRootsInModule(reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
-  size_t i = 0;
+  size_t idx = 0;
   if (initial_data != 0 ) {
     core::List_sp args((gctools::Tagged)initial_data);
     for ( auto c : args ) {
-      core::T_sp arg = oCar(c);
-      roots->setLiteral(i,arg.tagged_());
-    //if (debug) write_bf_stream(BF("Filling roots table[%d]@%p -> %p\n") % i % ct.address(i) % (void*)arg.tagged_());
-      ++i;
+      core::T_sp arg = CONS_CAR(c);
+
+      //
+      // This is where we translate some literals
+      // This is like load-time
+      //
+      if (gc::IsA<core::FunctionDescriptionGenerator_sp>(arg)) {
+        core::FunctionDescriptionGenerator_sp fdgen = gc::As_unsafe<core::FunctionDescriptionGenerator_sp>(arg);
+//        printf("%s:%d:%s Hit a FunctionDescriptionGenerator@%p  funcs -> %s\n", __FILE__, __LINE__, __FUNCTION__, fdgen.raw_(), core::_rep_(fdgen->_EntryPointFunctions).c_str());
+        arg = core::makeFunctionDescriptionFromGenerator(fdgen,fptrs);
+      }
+      
+      roots->setLiteral(idx,arg.tagged_());
+      ++idx;
     }
   }
 #ifdef USE_MPS

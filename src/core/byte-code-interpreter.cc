@@ -163,15 +163,16 @@ void parse_ltvc_make_function_description(gctools::GCRootsInModule* roots, T_sp 
   if (log) printf("%s:%d:%s parse_ltvc_make_function_description\n", __FILE__, __LINE__, __FUNCTION__);
   char tag = ltvc_read_char( fin, log, byte_index );
   size_t index = ltvc_read_size_t( fin, log, byte_index );
-  T_O* arg2 = ltvc_read_object(roots,  fin, log, byte_index );
+  size_t arg2 = ltvc_read_size_t( fin, log, byte_index );
   T_O* arg3 = ltvc_read_object(roots,  fin, log, byte_index );
   T_O* arg4 = ltvc_read_object(roots,  fin, log, byte_index );
   T_O* arg5 = ltvc_read_object(roots,  fin, log, byte_index );
   T_O* arg6 = ltvc_read_object(roots,  fin, log, byte_index );
-  size_t arg7 = ltvc_read_size_t( fin, log, byte_index );
+  T_O* arg7 = ltvc_read_object(roots,  fin, log, byte_index );
   size_t arg8 = ltvc_read_size_t( fin, log, byte_index );
   size_t arg9 = ltvc_read_size_t( fin, log, byte_index );
-  ltvc_make_function_description( roots, tag, index, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+  size_t arg10 = ltvc_read_size_t( fin, log, byte_index );
+  ltvc_make_function_description( roots, tag, index, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 };
 void parse_ltvc_make_random_state(gctools::GCRootsInModule* roots, T_sp fin, bool log, size_t& byte_index) {
   if (log) printf("%s:%d:%s parse_ltvc_make_random_state\n", __FILE__, __LINE__, __FUNCTION__);

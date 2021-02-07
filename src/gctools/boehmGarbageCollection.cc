@@ -98,7 +98,8 @@ void run_finalizers(core::T_sp obj, void* data)
 
 void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 {
-//  printf("%s:%d general_finalizer for %p\n", __FILE__, __LINE__, (void*)base);
+  gctools::Header_s* header = (gctools::Header_s*)((char*)client - sizeof(gctools::Header_s));
+//  printf("%s:%d general_finalizer for client: %p stamp: %lu\n", __FILE__, __LINE__, (void*)client, header->_stamp_wtag_mtag.stamp());
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
     abort();

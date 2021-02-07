@@ -63,6 +63,15 @@ namespace clbind {
 class ClassRep_O;
 typedef gc::smart_ptr<ClassRep_O> ClassRep_sp;
 };
+
+namespace llvmo {
+  class LibraryFile_O;
+  class ObjectFile_O;
+  FORWARD(LibraryFile);
+  FORWARD(ObjectFile);
+};
+
+
 namespace core {
 
 
@@ -183,7 +192,8 @@ class Lisp_O {
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
-    std::atomic<T_sp> _AllObjectFiles;
+    std::atomic<T_sp>    _AllObjectFiles;
+    std::atomic<T_sp>    _AllLibraries;
     FunctionDescription_sp _UnboundSymbolFunctionFunctionDescription;
     FunctionDescription_sp _UnboundSetfSymbolFunctionFunctionDescription;
     T_sp _TerminalIO;

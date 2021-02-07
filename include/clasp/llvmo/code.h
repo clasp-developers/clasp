@@ -6,8 +6,8 @@
 // #define USE_JITLINKER 1
 
 
-#ifndef imageSaveLoad_H //[
-#define imageSaveLoad_H
+#ifndef code_H //[
+#define code_H
 
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -23,31 +23,39 @@ struct gctools::GCInfo<llvmo::ObjectFile_O> {
 
 // ObjectFile_O
 namespace llvmo {
+
+
+  FORWARD(LibraryBase);
+  class LibraryBase_O : public core::CxxObject_O {
+    LISP_CLASS(llvmo, LlvmoPkg, LibraryBase_O, "LibraryBase", core::CxxObject_O);
+  public:
+  };
+
+  
+
   FORWARD(Code);
-FORWARD(ObjectFile);
-class ObjectFile_O : public core::CxxObject_O {
-  LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", core::CxxObject_O);
-public:
-  std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
-  size_t        _Size;
-  size_t        _StartupID;
-  JITDylib_sp   _JITDylib;
-  std::string   _FasoName;
-  size_t        _FasoIndex;
-  void*         _text_segment_start;
-  size_t        _text_segment_size;
-  size_t        _text_segment_SectionID;
-  void*         _stackmap_start;
-  size_t        _stackmap_size;
-  Code_sp       _Code;
-  gctools::GCRootsInModule* _GCRootsInModule;
-public:
-  static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
+  FORWARD(ObjectFile);
+  class ObjectFile_O : public LibraryBase_O {
+    LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", LibraryBase_O);
+  public:
+    std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
+    size_t         _Size;
+    size_t         _StartupID;
+    JITDylib_sp    _JITDylib;
+    std::string    _FasoName;
+    size_t         _FasoIndex;
+    Code_sp        _Code;
+  public:
+    static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
   ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
-  ~ObjectFile_O();
-  static void writeToFile(const std::string& filename, const char* start, size_t size);
-}; // ObjectFile_O class def
+    ~ObjectFile_O();
+    std::string __repr__() const;
+    static void writeToFile(const std::string& filename, const char* start, size_t size);
+  }; // ObjectFile_O class def
 }; // llvmo
+
+
+
 /* from_object translators */
 
 #if 0
@@ -74,6 +82,60 @@ struct to_object<llvm::object::ObjectFile *> {
 #endif
 
 
+
+
+namespace llvmo {
+  FORWARD(Code);
+  FORWARD(ObjectFile);
+  FORWARD(LibraryFile);
+  class LibraryFile_O : public LibraryBase_O {
+    LISP_CLASS(llvmo, LlvmoPkg, LibraryFile_O, "LibraryFile", LibraryBase_O);
+  public:
+  LibraryFile_O(const std::string& name) : _Library(name) {};
+  public:
+    std::string       _Library;
+  public:
+    static LibraryFile_sp createLibrary(const std::string& libraryName);
+  };
+
+
+
+};
+
+
+
+
+
+namespace llvmo {
+  class CodeBase_O;
+  FORWARD(CodeBase);
+  class CodeBase_O : public core::CxxObject_O {
+    LISP_CLASS(llvmo, LlvmoPkg, CodeBase_O, "CodeBase", core::CxxObject_O);
+  public:
+
+  };
+ 
+};
+
+
+
+
+
+
+
+
+
+
+
+template <>
+struct gctools::GCInfo<llvmo::Code_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = collectable_immobile;
+};
+
+
+
 namespace llvmo {
 
 
@@ -84,8 +146,8 @@ namespace llvmo {
    * We place the RWData at the top of the object so we can scan it for GC managed pointers.
    */
 FORWARD(Code);
-class Code_O : public core::CxxObject_O {
-  LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", core::CxxObject_O);
+class Code_O : public CodeBase_O {
+  LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", CodeBase_O);
  public:
   static Code_sp make(uintptr_t scanSize, uintptr_t size);
  public:
@@ -96,6 +158,7 @@ class Code_O : public core::CxxObject_O {
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
   ObjectFile_sp _ObjectFile;
+  gctools::GCRootsInModule* _gcroots;
   void*         _TextSegmentStart;
   void*         _TextSegmentEnd;
   uintptr_t     _TextSegmentSectionId;
@@ -109,15 +172,41 @@ class Code_O : public core::CxxObject_O {
   void* allocateTail(uintptr_t size, uint32_t align);
   void describe() const;
 
+  std::string __repr__() const;
  Code_O(uintptr_t totalSize ) :
   _TailOffset(totalSize)
     , _ObjectFile(_Unbound<ObjectFile_O>())
+    , _gcroots(NULL)
     , _DataCode(totalSize,0,true) {};
-           
+
+  ~Code_O();
 };
   
 };
 
+
+
+template <>
+struct gctools::GCInfo<llvmo::Library_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace llvmo {
+  FORWARD(Library);
+class Library_O : public CodeBase_O {
+  LISP_CLASS(llvmo, LlvmoPkg, Library_O, "Library", CodeBase_O);
+ public:
+  gctools::clasp_ptr_t   _Start;
+  gctools::clasp_ptr_t   _End;
+  core::SimpleBaseString_sp _Name;
+ public:
+ Library_O(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end) : _Start(start), _End(end) {};
+  static Library_sp make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name );
+  std::string __repr__() const;
+};
+};
 
 
 namespace llvmo {
@@ -234,7 +323,9 @@ public:
     DEBUG_OBJECT_FILES(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
     Code_sp codeObject = Code_O::make(scanSize,totalSize);
     // Associate the Code object with the current ObjectFile
+    codeObject->_ObjectFile = my_thread->topObjectFile();
     my_thread->topObjectFile()->_Code = codeObject;
+    // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
     for (auto &KV : Request) {
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
@@ -262,7 +353,12 @@ public:
 };
 
 
-#endif // imageSaveLoad_H
+
+namespace llvmo {
+  CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point);
+};
+
+#endif // code_H
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister

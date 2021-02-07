@@ -563,7 +563,7 @@ Convert colons to underscores"
                                 (sort sc #'< :key #'stamp%))))
           (format sout "#ifdef GC_ENUM~%")
           (dolist (c sorted-classes)
-            (format sout "STAMP_~a = ADJUST_STAMP(~a), // unshifted 0x~x  shifted 0x~x~%" (build-enum-name (class-key% c)) (stamp-value c) (stamp-value c) (* 4 (stamp-value c)))
+            (format sout "STAMP_~a = ADJUST_STAMP(~a), // stamp ~d unshifted 0x~x  shifted 0x~x~%" (build-enum-name (class-key% c)) (stamp-value c) (ash (stamp-value c) -2) (stamp-value c) (* 4 (stamp-value c)))
             (setf stamp-max (max stamp-max (stamp-value c))))
           (maphash (lambda (key type)
                      (format sout "STAMP_~a = ADJUST_STAMP(~a),~%" (build-enum-name (c++type% type)) (stamp-value type))

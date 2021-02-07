@@ -437,23 +437,28 @@ void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *cli
   for ( void** cur = (void**)ptr ; cur < (void**)((void**)ptr+(sz/8)); cur += 1 ) {
     void* tp = *cur;
     uintptr_t tag = (uintptr_t)tp&0xf;
-    void* obj = gctools::untag_object(tp);
-    uintptr_t addr = (uintptr_t)obj;
-    void* base = gctools::ClientPtrToBasePtr(obj);
-    if (addr>1024 && (tag==GENERAL_TAG || tag==CONS_TAG)) {
+    if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
+      void* obj = gctools::untag_object(tp);
+      uintptr_t addr = (uintptr_t)obj;
+      void* base = gctools::ClientPtrToBasePtr(obj);
+#if 0
       printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
       printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
       printf("%s:%d           base->%p\n", __FILE__, __LINE__, base);
       printf("%s:%d        pointer->%p\n", __FILE__, __LINE__, findOwner->_pointer);
-    }
-    if (base == findOwner->_pointer ) {
-      findOwner->_addresses.push_back(ptr);
+#endif
+      if (base == findOwner->_pointer ) {
+        uintptr_t* uptr = (uintptr_t*)ptr;
+#ifdef USE_BOEHM
+        printf("%p  %s\n", ptr, obj_name((*uptr)>>4));
+#endif
+        findOwner->_addresses.push_back((void*)uptr);
+        }
+      }
     }
   }
 }
 
-
-};
 
 template <typename T>
 size_t dumpResults(const std::string &name, const std::string &shortName, T *data) {
@@ -862,7 +867,8 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #endif
 #ifdef USE_BOEHM
   if (obj.fixnump()) {
-    FindOwner findOwner((void*)obj.unsafe_fixnum());
+    void* base = GC_base((void*)obj.unsafe_fixnum());
+    FindOwner findOwner(base);
 #if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
     GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object_find_owners, (void*)&findOwner);
 #else
@@ -870,8 +876,7 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 #endif
     core::List_sp result = _Nil<core::T_O>();
     for ( size_t ii=0; ii<findOwner._addresses.size(); ii++ ) {
-      core::Pointer_sp ptr = core::Pointer_O::create((void*)findOwner._addresses[ii]);
-      result = core::Cons_O::create(ptr,result);
+      result = core::Cons_O::create(core::Pointer_O::create(findOwner._addresses[ii]),result);
     }
     return result;
   }

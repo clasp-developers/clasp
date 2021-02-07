@@ -68,6 +68,7 @@ extern "C" {
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 #include <clasp/core/exceptions.h>
 
@@ -149,9 +150,7 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      fnLispCallingConvention* fptrs )
 {NO_UNWIND_BEGIN();
   my_thread->_GCRootsInModule = holder;
-  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data );
-  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data ));
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   NO_UNWIND_END();
 }
@@ -177,8 +176,7 @@ LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size
 {NO_UNWIND_BEGIN();
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
   gc::Tagged tfunctionInfo = holder->getLiteral(function_info_index);
-  core::FunctionDescription_sp functionDesc(tfunctionInfo);
-  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(functionDesc,llvm_func);
+  core::FunctionDescription_sp functionDescription(tfunctionInfo);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               llvm_func,
@@ -408,18 +406,25 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t
 }
 
 
-LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
+LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
 {NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
-                                                                   NULL,
+                                                                   llvm_func,
                                                                    core::T_sp(lambdaList_t),
                                                                    core::T_sp(docstring_t),
                                                                    core::T_sp(declares_t),
                                                                    core::T_sp(sourcePathname_t),
                                                                    lineno,
                                                                    column,
-                                                                   filepos,
-                                                                   my_thread->topObjectFile());
+                                                                   filepos);
+//  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
+  if (!gc::IsA<core::FunctionDescription_sp>(val)) {
+    SIMPLE_ERROR(BF("The object is not a FunctionDescription %s") % core::_rep_(val));
+  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -692,9 +697,11 @@ core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
-  core::FunctionDescription_sp fi((gctools::Tagged)functionDesc);
+  core::FunctionDescription_sp functionDescription((gctools::Tagged)functionDesc);
+  if (!gc::IsA<core::FunctionDescription_sp>(functionDescription)) {
+    printf("%s:%d:%s You must pass a function-description - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(functionDescription).c_str());
+  };
 //  DEBUG_OBJECT_FILES(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
-  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(fi,funcPtr);
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
@@ -1168,8 +1175,7 @@ core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
                       core::T_O* functionDescriptionInfo,
                       std::size_t numCells)
 {
-  core::FunctionDescription_sp fi((gctools::Tagged)functionDescriptionInfo);
-  core::FunctionDescription_sp functionDescription = core::setFunctionDescriptionEntryPoint(fi,llvm_func);
+  core::FunctionDescription_sp functionDescription((gctools::Tagged)functionDescriptionInfo);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                                , llvm_func

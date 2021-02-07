@@ -154,7 +154,7 @@ namespace core {
   inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string& filename,  const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
     Symbol_sp symbol = lispify_intern(name, packageName);
     using VariadicType = TranslationFunctor_O;
-    FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicType::entry_point);
+    FunctionDescription_sp fdesc = makeFunctionDescription( symbol, VariadicType::entry_point);
     BuiltinClosure_sp f = gctools::GC<VariadicType>::allocate(fdesc,fp);
     lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, 1 );
     validateFunctionDescription(__FILE__,__LINE__,f);
@@ -166,9 +166,9 @@ namespace core {
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    Symbol_sp symbol = _lisp->intern(name, packageName);
-   using VariadicFunctorType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
-   FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicFunctorType::entry_point);
-   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicFunctorType>::allocate(fdesc,fp));
+   using VariadicType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+   FunctionDescription_sp fdesc = makeFunctionDescription( symbol, VariadicType::entry_point);
+   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(fdesc,fp));
    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
    validateFunctionDescription(__FILE__,__LINE__,f);
  }
@@ -177,9 +177,9 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
   template <typename RT, typename... ARGS>
 void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  using VariadicFunctorType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
-  FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicFunctorType::entry_point);
-  BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicFunctorType>::allocate(fdesc,fp));
+  using VariadicType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+  FunctionDescription_sp fdesc = makeFunctionDescription( symbol, VariadicType::entry_point);
+  BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(fdesc,fp));
   lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
   validateFunctionDescription(__FILE__,__LINE__,f);
   }
@@ -209,7 +209,7 @@ class Function_O;
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
   Symbol_sp symbol = lispify_intern(name, packageName);
   using VariadicType = clbind::VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp>;
-  FunctionDescription_sp fdesc = makeFunctionDescription(symbol,VariadicType::entry_point);
+  FunctionDescription_sp fdesc = makeFunctionDescription( symbol,VariadicType::entry_point);
   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc,mp));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
   validateFunctionDescription(__FILE__,__LINE__,f);

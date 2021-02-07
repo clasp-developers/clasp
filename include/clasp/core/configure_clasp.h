@@ -59,6 +59,7 @@ THE SOFTWARE.
 
 #if defined( _ADDRESS_MODEL_64 )
 
+#define CLASP_OBJECT_FILE_STARTUP "__claspObjectFileStartup"
 #define GCROOTS_IN_MODULE_NAME "__clasp_gcroots_in_module_"
 #define LITERALS_NAME "__clasp_literals_"
 #define INTPTR_BITS 64

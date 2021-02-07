@@ -959,7 +959,11 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defstruct (function-description-reference (:type vector) :named)
   index)
-  
+
+(defstruct (function-description-placeholder (:type vector) :named)
+  function function-name source-pathname lambda-list docstring declares lineno column filepos
+  )
+
 (defun irc-create-function-description-reference (llvm-function-name fn module function-info)
   "If **generate-code** then create a function-description block from function info.
     Otherwise we are code-walking - and do something else that is appropriate."
@@ -996,14 +1000,16 @@ But no irbuilders or basic-blocks. Return the fn."
         (core:bformat t "lineno: %s%N" lineno)
         (core:bformat t "column: %s%N" column)
         (core:bformat t "filepos: %s%N" filepos))
-      (let* ((fdesc (sys:make-function-description :function-name function-name
-                                                   :source-pathname source-pathname
-                                                   :lambda-list lambda-list
-                                                   :docstring docstring
-                                                   :declares declares
-                                                   :lineno lineno
-                                                   :column column
-                                                   :filepos filepos))
+      (let* ((entry-point-indices (mapcar (lambda (func) (literal:register-function-index fn)) (list fn)))
+             (fdesc (sys:make-function-description-generator :entry-point-functions entry-point-indices
+                                                             :function-name function-name
+                                                             :source-pathname source-pathname
+                                                             :lambda-list lambda-list
+                                                             :docstring docstring
+                                                             :declares declares
+                                                             :lineno lineno
+                                                             :column column
+                                                             :filepos filepos))
              (index (literal:reference-literal fdesc)))
 ;;;        (core:bformat t " irc-create-function-description-reference function-info -> %s   index: %d%N" function-info index)
         (make-function-description-reference :index index))
@@ -1056,6 +1062,11 @@ and then the irbuilder-alloca, irbuilder-body."
       (let ((result (let ((*irbuilder-function-alloca* irbuilder-alloca)) (alloca-tmv "result"))))
         (values fn func-env irbuilder-alloca irbuilder-body result fn-description-ref)))))
 
+
+(defun irc-cclasp-local-function-create (llvm-function-type linkage llvm-function-name module function-info)
+  "Create a local function and no function description is needed"
+  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module)))
+    fn))
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)
   "Create a function and a function description for a cclasp function"

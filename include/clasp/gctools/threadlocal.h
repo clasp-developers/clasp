@@ -49,6 +49,8 @@ struct CleanupFunctionNode {
 namespace llvmo {
 class ObjectFile_O;
 typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
+class CodeBae_O;
+typedef gctools::smart_ptr<CodeBase_O> CodeBase_sp;
 class Code_O;
 typedef gctools::smart_ptr<Code_O> Code_sp;
 
@@ -63,6 +65,7 @@ namespace core {
     void destroy_sigaltstack();
     void pushCatchTag(T_sp);
 
+    core::T_sp _ObjectFiles;
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
@@ -89,7 +92,6 @@ namespace core {
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
     void*             _ObjectFileStartUp;
-    core::T_sp        _ObjectFiles;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];
@@ -123,28 +125,30 @@ namespace core {
     StringOutputStream_sp _BFormatStringOutputStream;
     StringOutputStream_sp _WriteToStringOutputStream;
     size_t random();
-    void pushObjectFile(llvmo::ObjectFile_sp of);
+
     llvmo::ObjectFile_sp topObjectFile();
+    void pushObjectFile(llvmo::ObjectFile_sp of);
     void popObjectFile();
+    
     ~ThreadLocalState();
   };
 
 
 // Thing to maintain the list of valid catch tags correctly.
-struct CatchTagPusher {
-  ThreadLocalState* mthread;
-  List_sp catch_tag_state;
-  CatchTagPusher(ThreadLocalState* thread, T_sp tag) {
-    mthread = thread;
-    catch_tag_state = thread->catchTags();
-    thread->pushCatchTag(tag);
-  }
-  ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
-};
+  struct CatchTagPusher {
+    ThreadLocalState* mthread;
+    List_sp catch_tag_state;
+    CatchTagPusher(ThreadLocalState* thread, T_sp tag) {
+      mthread = thread;
+      catch_tag_state = thread->catchTags();
+      thread->pushCatchTag(tag);
+    }
+    ~CatchTagPusher() { mthread->setCatchTags(this->catch_tag_state); }
+  };
 
 
-void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
-void thread_local_invoke_and_clear_cleanup();
+  void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
+  void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 

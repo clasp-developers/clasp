@@ -122,7 +122,7 @@ typedef bool _Bool;
 
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
-#include <clasp/llvmo/imageSaveLoad.h>
+#include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugInfoExpose.h>

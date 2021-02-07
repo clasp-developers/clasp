@@ -429,7 +429,7 @@ Boehm and MPS use a single pointer"
    (%i8**%    :function-pointers)
    (%size_t%  :number-of-functions)))
 
-(defparameter *gcroots-in-module-initial-value*
+(defun gcroots-in-module-initial-value ()
   (llvm-sys:constant-struct-get %gcroots-in-module%
                                 (list
                                  (jit-constant-size_t 0)
@@ -746,16 +746,16 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-symbol-macro %function-description%
     (llvm-sys:struct-type-get (thread-local-llvm-context)
                               (list %i8*%                  ;  1 vtable
-                                    %entry-points-vector%  ;  2 entry-points
-                                    %t*%                   ;  3 source-info
-                                    %t*%                   ;  4 function-name
-                                    %t*%                   ;  5 lambda-list
-                                    %t*%                   ;  6 docstring
-                                    %t*%                   ;  7 declares
-                                    %t*%                   ;  8 object-file
-                                    %i32%                  ;  9 lineno
-                                    %i32%                  ; 10 column
-                                    %i32%                  ; 11 filepos
+                                    %t*%                   ;  2 source-info
+                                    %t*%                   ;  3 function-name
+                                    %t*%                   ;  4 lambda-list
+                                    %t*%                   ;  5 docstring
+                                    %t*%                   ;  6 declares
+                                    %i32%                  ;  7 lineno
+                                    %i32%                  ;  8 column
+                                    %i32%                  ;  9 filepos
+                                    %t*%                   ; 10 code
+                                    %entry-points-vector%  ; 11 entry-points
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 

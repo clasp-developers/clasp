@@ -60,6 +60,10 @@ typedef int (*MainFunctionType)(int argc, char *argv[], bool &mpiEnabled, int &m
 
 namespace gctools {
 
+  // The clasp pointer type.
+  // This was introduced very late - but we can use it to recognize pointers that need fixup in save/load
+  typedef unsigned char* clasp_ptr_t;
+  
 };
 
 // ----------------------------------------------------------------------
@@ -623,15 +627,6 @@ inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STA
 
 
 
-#if  defined(USE_BOEHM)
-#include <clasp/gctools/boehmGarbageCollection.h>
-#endif
-
-#ifdef USE_MPS
-#include <clasp/gctools/mpsGarbageCollection.h>
-#endif
-
-
 namespace core {
   class BuiltinClosure_O;
 };
@@ -733,6 +728,7 @@ inline size_t sizeof_container_with_header(size_t num) {
 };
 
 
+
 namespace gctools {
 #ifdef DEBUG_GUARD_VALIDATE
 #define EXHAUSTIVE_VALIDATE(ptr) (ptr)->quick_validate();
@@ -769,6 +765,18 @@ namespace gctools {
     return ptr;
   }
 };
+
+
+
+#if  defined(USE_BOEHM)
+#include <clasp/gctools/boehmGarbageCollection.h>
+#endif
+
+#ifdef USE_MPS
+#include <clasp/gctools/mpsGarbageCollection.h>
+#endif
+
+
 
 
 extern "C" {
