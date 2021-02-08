@@ -38,7 +38,7 @@ namespace core {
 double maybeFixRehashThreshold(double rt);
 #define DEFAULT_REHASH_THRESHOLD 0.7
 
-T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>());
+T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>(), T_sp thread_safe = _Nil<T_O>(), T_sp hashf = _Nil<T_O>());
 
 size_t next_hash_table_id();
 
@@ -55,7 +55,7 @@ struct KeyValuePair {
   FORWARD(HashTable);
   class HashTable_O : public HashTableBase_O {
     struct metadata_bootstrap_class {};
-    friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe);
+    friend T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe, T_sp hashf);
     friend class HashTableReadLock;
     friend class HashTableWriteLock;
     LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",HashTableBase_O);
@@ -78,6 +78,7 @@ struct KeyValuePair {
     friend class HashTableEql_O;
     friend class HashTableEqual_O;
     friend class HashTableEqualp_O;
+    friend class HashTableCustom_O;
     friend T_sp cl__maphash(T_sp function_desig, HashTable_sp hash_table);
     friend T_sp cl__clrhash(HashTable_sp hash_table);
   public: // instance variables here

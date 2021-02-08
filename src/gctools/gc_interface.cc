@@ -110,6 +110,7 @@ typedef bool _Bool;
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/hashTableCustom.h>
 #include <clasp/core/userData.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/specialForm.h>
