@@ -597,8 +597,9 @@
                (case type-base
                  (structure-object (values #'defstruct-class-reader-body
                                            #'defstruct-class-writer-body
-                                           #+cclasp #'defstruct-class-cas-body
-                                           #-cclasp nil
+                                           #+(or bclasp cclasp)
+                                           #'defstruct-class-cas-body
+                                           #-(or bclasp cclasp) nil
                                            name))
                  (vector (values #'defstruct-vector-reader-body
                                  #'defstruct-vector-writer-body
