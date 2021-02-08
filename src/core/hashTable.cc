@@ -233,7 +233,7 @@ void HashTable_O::set_thread_safe(bool thread_safe)
 
 CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug thread-safe hash-function);
 CL_DECLARE();
-CL_DOCSTRING("see CLHS");
+CL_DOCSTRING("See CLHS for most behavior. As an extension, Clasp allows a TEST other than the four standard ones to be passed. In this case it must be a designator for a function of two arguments, and a :HASH-FUNCTION must be passed as well; this should be a designator of a function analogous to SXHASH, i.e. it accepts one argument, returns a nonnegative fixnum, and (TEST x y) implies (= (HASH x) (HASH y)).");
 CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
                                   Number_sp rehash_size,
                                   Real_sp orehash_threshold,
