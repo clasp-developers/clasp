@@ -138,11 +138,11 @@ names to offsets."
 (defun c++-struct*-type (struct-info)
   (llvm-sys:type-get-pointer-to (funcall (c++-struct-type-getter struct-info))))
   
-(defun c++-field-ptr (struct-info tagged-object field-name)
+(defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
   (let* ((tagged-object-i8* tagged-object)
          (field* (irc-gep tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
-         (field-ptr (irc-bit-cast field* (funcall field-type-getter))))
+         (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
 
                                      

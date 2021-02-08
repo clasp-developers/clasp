@@ -144,14 +144,9 @@
          (kp (changer-keys-params changer))
          (keys (car kp)) (params (cdr kp))
          (form (change-class-form from-class to-class 'instance keys params)))
-    (loop for old-ch = (changer-call-history changer)
-          for new-ch = (if (assoc from-class old-ch)
-                           ;; added by another thread: quit
-                           (return)
-                           (acons from-class form old-ch))
-          for c = (mp:cas (slot-value changer '%call-history)
-                          old-ch new-ch)
-          until (eq c old-ch))
+    (mp:atomic-pushnew (cons from-class form)
+                       (slot-value changer '%call-history)
+                       :key #'car)
     (update-class-changer-function changer)
     (apply changer instance args)))
 

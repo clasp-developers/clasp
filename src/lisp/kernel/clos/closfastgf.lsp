@@ -129,7 +129,7 @@
     (bformat-indent "------- DIDX:%d %s%N" (debug-fastgf-didx) msg)
     (bformat-indent "Dispatch miss #%d for %s%N" (debug-fastgf-miss-count gf)
                     (generic-function-name gf))
-       (let* ((call-history (safe-gf-call-history gf))
+       (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
               (specializer-profile (safe-gf-specializer-profile gf)))
          (bformat-indent "    args (num args -> %d):  %N" (length args))
          (let ((arg-index -1))
@@ -141,7 +141,7 @@
            (bformat-indent " raw call-history (length -> %d):%N" (length call-history))
            (dolist (entry call-history)
              (gf-print-entry index entry)))
-         (let* ((call-history (safe-gf-call-history gf))
+         (let* ((call-history (mp:atomic (safe-gf-call-history gf)))
                 (specializer-profile (safe-gf-specializer-profile gf))
                 (index 0))
            (bformat-indent "    call-history (length -> %d):%N" (length call-history))
@@ -413,30 +413,28 @@
 
 (defun outcome
     (generic-function method-combination methods actual-specializers)
-  (or (find-existing-outcome (safe-gf-call-history generic-function)
+  (or (find-existing-outcome (mp:atomic (safe-gf-call-history generic-function))
                              methods)
       (compute-outcome
        generic-function method-combination methods actual-specializers)))
 
-(defun update-call-history-for-add-method (generic-function orig-call-history method)
+(defun update-call-history-for-add-method (call-history method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to."
-  (let ((call-history (copy-list orig-call-history)))
-    (loop for entry in call-history
-          for specializers = (coerce (car entry) 'list)
-          unless (fuzzed-applicable-method-p method specializers)
-            collect entry)))
+  (loop for entry in call-history
+        for specializers = (coerce (car entry) 'list)
+        unless (fuzzed-applicable-method-p method specializers)
+          collect entry))
 
 (defun update-generic-function-call-history-for-add-method (generic-function method)
   "When a method is added then we update the effective-method-functions for
    those call-history entries with specializers that the method would apply to.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (safe-gf-call-history generic-function)
-     for new-call-history = (update-call-history-for-add-method generic-function call-history method)
-     for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
-     until (eq exchange call-history)))
+  (mp:atomic-update (safe-gf-call-history generic-function)
+                    #'update-call-history-for-add-method
+                    method))
 
-(defun update-call-history-for-remove-method (generic-function call-history method)
+(defun update-call-history-for-remove-method (call-history method)
   (let (new-call-history)
     (loop for entry in call-history
           for specializers = (coerce (car entry) 'list)
@@ -450,17 +448,13 @@ FIXME!!!! This code will have problems with multithreading if a generic function
     AND if that means there are no methods left that apply to the specializers
      then remove the entry from the list.
 FIXME!!!! This code will have problems with multithreading if a generic function is in flight. "
-  (loop for call-history = (safe-gf-call-history generic-function)
-        for new-call-history = (update-call-history-for-remove-method generic-function call-history method)
-        for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
-        until (eq exchange call-history)))
+  (mp:atomic-update (safe-gf-call-history generic-function)
+                    #'update-call-history-for-remove-method
+                    method))
 
 ;;; FIXME: Replace with atomic setf
 (defun erase-generic-function-call-history (generic-function)
-  (loop for call-history = (safe-gf-call-history generic-function)
-        for new-call-history = nil
-        for exchange = (safe-gf-call-history-cas generic-function call-history new-call-history)
-        until (eq exchange call-history)))
+  (setf (mp:atomic (safe-gf-call-history generic-function)) nil))
 
 (defun specializer-key-match (key1 key2)
   (declare (type simple-vector key1 key2))
@@ -491,28 +485,9 @@ Return true iff a new entry was added; so for example it will return false if an
       (unless (= (length memoized-key) (length specializer-profile))
         (error "The memoized-key ~a is not the same length as the specializer-profile ~a for ~a"
                memoized-key specializer-profile generic-function))
-      (loop for call-history = (safe-gf-call-history generic-function)
-            for found-key = (call-history-find-key call-history memoized-key)
-            for new-call-history = (if found-key
-                                       (progn
-                                         (gf-log "For generic function: %s - the key was already in the history - either bad dtree, incorrect lowering to llvm-ir or maybe (unlikely) put there by another thread.%N"
-                                                 (generic-function-name generic-function))
-                                         (return-from memoize-call nil))
-                                       (progn
-                                         (gf-log "Pushing entry into call history%N")
-                                         (cons new-entry call-history)))
-            for exchanged = (safe-gf-call-history-cas
-                             generic-function call-history new-call-history)
-            do (progn
-                 #+debug-fastgf
-                 (let ((specializer-profile
-                         (safe-gf-specializer-profile generic-function)))
-                   (when call-history
-                     (gf-log "The dtree calculated for the call-history/specializer-profile:%N")
-                     (gf-log "%s%N" (basic-tree call-history specializer-profile)))))
-            when exchanged
-              do (gf-log "Successfully exchanged call history%N")
-            until (eq exchanged call-history))
+      (mp:atomic-pushnew new-entry (safe-gf-call-history generic-function)
+                         :key #'car
+                         :test #'specializer-key-match)
       (loop for idx from 0 below (length memoized-key)
             for specializer = (svref memoized-key idx)
             unless (eql-specializer-p specializer)
@@ -534,7 +509,7 @@ Return true iff a new entry was added; so for example it will return false if an
       ;; so return false.
       nil))
 
-(defun perform-outcome (outcome arguments vaslist-arguments)
+(defun perform-outcome (outcome arguments)
   (cond
     ((optimized-slot-reader-p outcome)
      ;; Call is like (name instance)
@@ -552,7 +527,7 @@ Return true iff a new entry was added; so for example it will return false if an
     ((effective-method-outcome-p outcome)
      (let ((function (effective-method-outcome-function outcome)))
        (assert (not (null function))) ; FIXME: REMOVE
-       (apply function vaslist-arguments)))
+       (apply function arguments)))
     (t (error "BUG: Bad thing to be an outcome: ~a" outcome))))
 
 #+debug-fastgf
@@ -656,60 +631,57 @@ Return true iff a new entry was added; so for example it will return false if an
                 (gf-log-dispatch-miss "Cannot memoize call" generic-function arguments)
                 nil)))))))
 
-(defun do-dispatch-miss (generic-function vaslist-arguments arguments)
-  "This effectively does what compute-discriminating-function does and maybe memoizes the result
-and calls the effective-method-function that is calculated.
-It takes the arguments in two forms, as a vaslist and as a list of arguments."
-  (multiple-value-bind (min max) (generic-function-min-max-args generic-function)
-    (let ((nargs (length arguments)))
-      (when (or (< nargs min) (and max (> nargs max)))
-        (error 'core:wrong-number-of-arguments
-               :called-function generic-function :given-nargs nargs
-               :min-nargs min :max-nargs max))))
-  (let (#+debug-fastgf
-        (*dispatch-miss-start-time* (get-internal-real-time)))
-    (multiple-value-bind (outcome new-ch-entries)
-        (dispatch-miss-info generic-function arguments)
-      (when (memoize-calls generic-function new-ch-entries)
-        (force-dispatcher generic-function))
-      (gf-log "Performing outcome %s%N" outcome)
-      #+debug-fastgf
-      (let ((results (multiple-value-list
-                      (perform-outcome outcome arguments vaslist-arguments))))
-        (gf-log "+-+-+-+-+-+-+-+-+ do-dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
-        (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
-        (values-list results))
-      #-debug-fastgf
-      (perform-outcome outcome arguments vaslist-arguments))))
+(defun check-gf-argcount (generic-function nargs)
+  (multiple-value-bind (min max)
+      (generic-function-min-max-args generic-function)
+    (when (or (< nargs min) (and max (> nargs max)))
+      (error 'core:wrong-number-of-arguments
+             :called-function generic-function :given-nargs nargs
+             :min-nargs min :max-nargs max))))
 
-(defun dispatch-miss (generic-function core:&va-rest valist-args)
-  (core:stack-monitor (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
-                                         (clos::generic-function-name generic-function))))
+(defun dispatch-miss (generic-function &rest arguments)
+  (core:stack-monitor
+   (lambda () (format t "In clos::dispatch-miss with generic function ~a~%"
+                      (clos::generic-function-name generic-function))))
   (#+debug-fastgf unwind-protect #-debug-fastgf multiple-value-prog1
        (progn
          (incf-debug-fastgf-indent)
+         (check-gf-argcount generic-function (length arguments))
          ;; Update any invalid instances
-         (let* ((arguments (core:list-from-va-list valist-args))
-                (invalid-instance (maybe-update-instances arguments)))
-           (if invalid-instance
-               (apply generic-function valist-args)
-               (progn
-                 #+debug-fastgf
-                 (progn
-                   (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
-                   (dolist (arg (core:list-from-va-list valist-args))
-                     (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
-                   (gf-log-noindent "%N"))
-                 (do-dispatch-miss generic-function valist-args arguments)))))
-    (decf-debug-fastgf-indent)))
+         (when (maybe-update-instances arguments)
+           (return-from dispatch-miss (apply generic-function arguments)))
+         ;; OK, real miss.
+         #+debug-fastgf
+         (progn
+           (gf-log "----{---- A dispatch-miss occurred[(1- (core:next-number))->%s]  -> %s  %N" (1- (core:next-number)) (clos::generic-function-name generic-function))
+           (dolist (arg arguments)
+             (gf-log "%s[%s/%d] " (core:safe-repr arg) (core:safe-repr (class-of arg)) (core:instance-stamp arg)))
+           (gf-log-noindent "%N"))
+         (let (#+debug-fastgf
+               (*dispatch-miss-start-time* (get-internal-real-time)))
+           (multiple-value-bind (outcome new-ch-entries)
+               (dispatch-miss-info generic-function arguments)
+             (when (memoize-calls generic-function new-ch-entries)
+               (force-dispatcher generic-function))
+             (gf-log "Performing outcome %s%N" outcome)
+             #+debug-fastgf
+             (let ((results (multiple-value-list
+                             (perform-outcome outcome arguments))))
+               (gf-log "+-+-+-+-+-+-+-+-+ dispatch-miss done real time: %f seconds%N" (/ (float (- (get-internal-real-time) *dispatch-miss-start-time*)) internal-time-units-per-second))
+               (gf-log "----}---- Completed call to effective-method-function for %s results -> %s%N" (clos::generic-function-name generic-function) results)
+               (values-list results))
+             #-debug-fastgf
+             (perform-outcome outcome arguments))))
+       (decf-debug-fastgf-indent)))
 
-;;; Called from the dtree interpreter, because APPLY from C++ is kind of annoying.
+;;; Called from the dtree interpreter,
+;;; because APPLY from C++ is kind of annoying.
 (defun dispatch-miss-va (generic-function valist-args)
   (apply #'dispatch-miss generic-function valist-args))
 
 (defvar *fastgf-force-compiler* nil)
 (defun calculate-fastgf-dispatch-function (generic-function &key compile)
-  (if (safe-gf-call-history generic-function)
+  (if (mp:atomic (safe-gf-call-history generic-function))
       (let ((timer-start (get-internal-real-time)))
         (unwind-protect
              (if (or *fastgf-force-compiler* compile)
@@ -768,7 +740,7 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
               (core:low-level-standard-generic-function-name generic-function))
       (gf-log "Entered invalidated-dispatch-function - avoiding generic function calls until return!!!%N"))
   (gf-log "Specializer profile is %s%N" (safe-gf-specializer-profile generic-function))
-  (if (safe-gf-call-history generic-function)
+  (if (mp:atomic (safe-gf-call-history generic-function))
       (progn
         (force-dispatcher generic-function)
         (apply generic-function valist-args))
@@ -795,14 +767,14 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
 
 #+(or)
 (defun call-history-after-method-with-specializers-change (gf method-specializers)
-  (loop for entry in (safe-gf-call-history gf)
+  (loop for entry in (mp:atomic (safe-gf-call-history gf))
      unless (call-history-entry-involves-method-with-specializers entry method-specializers)
        collect entry))
 
 #+(or)
 (defun call-history-after-class-change (gf class)
 ;;;  (format t "call-history-after-class-change  start: gf->~a  call-history ->~a~%" gf (clos::generic-function-cal-history gf))
-  (loop for entry in (safe-gf-call-history gf)
+  (loop for entry in (mp:atomic (safe-gf-call-history gf))
      unless (loop for subclass in (subclasses* class)
                thereis (call-history-entry-key-contains-specializer (car entry) subclass))
      collect entry))
@@ -867,12 +839,13 @@ It takes the arguments in two forms, as a vaslist and as a list of arguments."
           do (gf-log "generic function: %s%N" (clos:generic-function-name gf))
              (gf-log "    (clos:get-funcallable-instance-function gf) -> %s%N"
                      (clos:get-funcallable-instance-function gf))
-             (loop for call-history = (safe-gf-call-history gf)
+             (loop for call-history = (mp:atomic (safe-gf-call-history gf))
                    for new-call-history
                      = (generic-function-call-history-separate-entries-with-specializers
                         gf call-history all-subclasses)
                    for exchange
-                     = (safe-gf-call-history-cas gf call-history new-call-history)
+                     = (mp:cas (safe-gf-call-history gf)
+                               call-history new-call-history)
                    until (eq exchange call-history)
                    finally (gf-log "    edited call history%N")
                            (gf-log "%s%N" new-call-history)

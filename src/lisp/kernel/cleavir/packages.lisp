@@ -66,8 +66,11 @@
    #:header-stamp-ast #:rack-stamp-ast
    #:wrapped-stamp-ast #:derivable-stamp-ast
    #:bind-va-list-ast #:rest-alloc #:make-bind-va-list-ast #:va-list-ast
-   #:cmp-ast
-   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast #:acas-ast
+   #:atomic-car-ast #:atomic-cdr-ast #:atomic-rplaca-ast #:atomic-rplacd-ast
+   #:fence-ast #:cmp-ast #:order
+   #:cas-car-ast #:cas-cdr-ast #:slot-cas-ast
+   #:atomic-vref-ast #:atomic-vset-ast #:vcas-ast
+   #:atomic-rack-read-ast #:atomic-rack-write-ast #:cas-rack-ast #:rack-ast
    #:bind-ast
    #:unwind-protect-ast #:cleanup-ast
    #:invoke-ast #:multiple-value-invoke-ast #:destinations
@@ -82,40 +85,18 @@
            #:foreign-call-pointer #:foreign-types
            #:defcallback #:defcallback-args
            #:mv-foreign-call #:function-name
-           #:acas #:element-type #:simple-p #:boxed-p))
+           #:atomic #:order #:fence
+           #:atomic-rack-read #:atomic-rack-write #:cas-rack
+           #:vref #:vset #:vcas #:element-type #:simple-p #:boxed-p))
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
   (:export #:reduce-module-typeqs)
   (:export #:reduce-module-primops))
 
-(defpackage #:cc-mir
-  (:use #:common-lisp)
-  (:export
-   #:characterp-instruction
-   #:make-characterp-instruction
-   #:single-float-p-instruction
-   #:make-single-float-p-instruction
-   #:generalp-instruction
-   #:make-generalp-instruction
-   #:headerq-instruction
-   #:header-value-min-max
-   #:make-headerq-instruction
-   #:save-frame-instruction
-   #:make-save-frame-instruction
-   #:clasp-save-values-instruction
-   #:clasp-load-values-instruction
-   #:memcas2-instruction
-   #:enter-instruction
-   #:typed-lexical-location #:lexical-location-type
-   #:closure-pointer-dynamic-lexical-location
-   #:describe-mir
-   #+stealth-gids #:assign-mir-instruction-datum-ids
-   ))
-
 (defpackage #:clasp-cleavir-bmir
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp #:load)
   (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
            #:headerq #:info)
-  (:export #:memref2 #:offset #:load #:store))
+  (:export #:memref2 #:offset #:load #:store #:cas))

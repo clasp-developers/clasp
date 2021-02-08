@@ -1014,6 +1014,12 @@ collected result will be returned as the value of the LOOP."
 		(loop-error "Duplicated variable ~S in LOOP parallel binding." name)))
 	 (unless (symbolp name)
 	   (loop-error "Bad variable ~S somewhere in LOOP." name))
+         ;; Mark every variable ignorable. There's no way to
+         ;; affirmatively declare ignorability, and we default to silence
+         ;; to avoid pointless compiler diagnostics.
+         ;; Most obviously, without this, for-as-hash will result in
+         ;; style-warnings for our internal variables.
+         (push `(ignorable ,name) *loop-declarations*)
          (let ((init (or initialization (loop-typed-init dtype))))
            ;;; the init-value of the loop variable better fits the dtype
            ;;; verify in loop-declare-variable

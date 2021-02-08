@@ -494,19 +494,17 @@
   (with-early-accessors (+standard-generic-function-slots+)
     (generic-function-specializer-profile gf)))
 
-(defun safe-gf-call-history (gf)
-  (with-early-accessors (+standard-generic-function-slots+)
-    (generic-function-call-history gf)))
-
-(defun safe-gf-call-history-cas (gf expected new)
-  (with-early-accessors (+standard-generic-function-slots+)
-    (mp:cas (generic-function-call-history gf) expected new)))
+;;; This is a macro to make CAS and stuff work smoothly.
+(defmacro safe-gf-call-history (gf)
+  (let ((idx (position 'call-history +standard-generic-function-slots+
+                       :key #'car)))
+    `(funcallable-standard-instance-access ,gf ,idx)))
 
 (defun generate-discriminator (generic-function)
   (multiple-value-bind (min max)
       (generic-function-min-max-args generic-function)
     (generate-discriminator-from-data
-     (safe-gf-call-history generic-function)
+     (mp:atomic (safe-gf-call-history generic-function))
      (safe-gf-specializer-profile generic-function)
      generic-function min max
      :generic-function-name (core:function-name generic-function))))

@@ -160,7 +160,7 @@ typedef int32_t    Fixnum; // Signed Fixnum immediate value
 // ----------------------------------------------------------------------------
 
 typedef unsigned char claspChar;
-typedef int  claspCharacter;
+typedef unsigned int  claspCharacter;
 #define CLASP_CHAR(x) ((x)&0xff)
 
 // ----------------------------------------------------------------------------

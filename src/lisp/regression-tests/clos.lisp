@@ -117,6 +117,14 @@
 (test clos-lambda-list-congruent-allow-other-keys
       (defmethod congruent-gf (a &key)
         a))
+
+(defgeneric q (object))
+(defmethod q ((list list)))
+(defmethod q ((s symbol)))
+(defmethod q ((true (eql t))) t)
+(defmethod q ((n (eql nil))) t)
+(test eql-specializers-from-irc
+      (q t))
  
 
 

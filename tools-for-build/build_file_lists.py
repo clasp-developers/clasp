@@ -313,7 +313,7 @@ def collect_bclasp_lisp_files(**kwargs):
         "src/lisp/kernel/lsp/format",
         "src/lisp/kernel/lsp/debug",
         "src/lisp/kernel/lsp/mp",
-        "src/lisp/kernel/lsp/cas",
+        "src/lisp/kernel/lsp/atomics",
         "src/lisp/kernel/clos/package",
         "src/lisp/kernel/clos/static-gfs/package",
         "src/lisp/kernel/clos/static-gfs/flag",

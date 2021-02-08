@@ -3528,7 +3528,7 @@ CL_LISPIFY_NAME(createLICMPass);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Monotonic);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Acquire);
   SYMBOL_EXPORT_SC_(LlvmoPkg, Release);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, AcquireRelease);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
   CL_BEGIN_ENUM(llvm::AtomicOrdering,_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering");
   CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
@@ -3536,7 +3536,7 @@ CL_LISPIFY_NAME(createLICMPass);
   CL_VALUE_ENUM(_sym_Monotonic, llvm::AtomicOrdering::Monotonic);
   CL_VALUE_ENUM(_sym_Acquire, llvm::AtomicOrdering::Acquire);
   CL_VALUE_ENUM(_sym_Release, llvm::AtomicOrdering::Release);
-      //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
+  CL_VALUE_ENUM(_sym_AcquireRelease, llvm::AtomicOrdering::AcquireRelease);
   CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
 

@@ -643,7 +643,8 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
 		    (append vals (list (list 'cons item access-form))))
        ,store-form)))
 
-(defmacro pushnew (&environment env item place &rest rest)
+(defmacro pushnew (&environment env item place
+                   &rest rest &key test test-not key)
   "Syntax: (pushnew form place {keyword-form value-form}*)
 Evaluates FORM first.  If the value is already in the list stored in PLACE,
 does nothing.  Else, conses the value onto the list and makes the result the
@@ -651,6 +652,7 @@ new value of PLACE.  Returns NIL.  KEYWORD-FORMs and VALUE-FORMs are used to
 check if the value of FORM is already in PLACE as if their values are passed
 to MEMBER."
   (declare (notinline mapcar))
+  (declare (ignore test test-not key))
   (multiple-value-bind (vars vals stores store-form access-form)
       (get-setf-expansion place env)
     (when (trivial-setf-form place vars stores store-form access-form)

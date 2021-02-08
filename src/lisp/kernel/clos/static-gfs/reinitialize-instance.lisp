@@ -107,13 +107,9 @@
          (kp (reinitializer-keys-params reinitializer))
          (keys (car kp)) (params (cdr kp))
          (form (reinitialize-instance-form class 'instance keys params)))
-    (loop for old-ch = (reinitializer-call-history reinitializer)
-          for new-ch = (if (assoc class old-ch)
-                           ;; added by another thread: quit
-                           (return)
-                           (cons (cons class form) old-ch))
-          for c = (mp:cas (slot-value reinitializer '%call-history) old-ch new-ch)
-          until (eq c old-ch))
+    (mp:atomic-pushnew (cons class form)
+                       (slot-value reinitializer '%call-history)
+                       :key #'car)
     (update-reinitializer-function reinitializer)
     (apply reinitializer instance args)))
 

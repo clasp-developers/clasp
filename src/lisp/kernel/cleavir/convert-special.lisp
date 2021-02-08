@@ -250,31 +250,126 @@
 (define-functionlike-special-form core::wrapped-stamp cc-ast:wrapped-stamp-ast (:arg))
 (define-functionlike-special-form core::derivable-stamp cc-ast:derivable-stamp-ast (:arg))
 
-(define-functionlike-special-form core:cas-car cc-ast:cas-car-ast
-  (:cmp-ast :value-ast :cons-ast))
-(define-functionlike-special-form core:cas-cdr cc-ast:cas-cdr-ast
-  (:cmp-ast :value-ast :cons-ast))
 (define-functionlike-special-form core::instance-cas cc-ast:slot-cas-ast
   (:cmp-ast :value-ast :object-ast :slot-number-ast))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE::ACAS
-;;;
+;;; CASs and other atomic ops are mostly functionlike, except for the order.
 
 (defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::acas)) cst env (system clasp-cleavir:clasp))
-  (cst:db origin (acas array index cmp value type simple-p boxed-p) cst
-    (declare (ignore acas))
-    (make-instance 'cc-ast:acas-ast
-      :array-ast (cleavir-cst-to-ast:convert array env system)
-      :index-ast (cleavir-cst-to-ast:convert index env system)
-      :cmp-ast   (cleavir-cst-to-ast:convert cmp env system)
+    ((symbol (eql 'core::fence)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (f order) cst
+    (declare (ignore f))
+    (make-instance 'cc-ast:fence-ast :order (cst:raw order))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::car-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cr order cons) cst
+    (declare (ignore cr))
+    (make-instance 'cc-ast:atomic-car-ast
+      :order (cst:raw order)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cdr-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cr order cons) cst
+    (declare (ignore cr))
+    (make-instance 'cc-ast:atomic-cdr-ast
+      :order (cst:raw order)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::rplaca-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (rp order nv cons) cst
+    (declare (ignore rp))
+    (make-instance 'cc-ast:atomic-rplaca-ast
+      :order (cst:raw order)
+      :object-ast (cleavir-cst-to-ast:convert nv env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::rplacd-atomic)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (rp order nv cons) cst
+    (declare (ignore rp))
+    (make-instance 'cc-ast:atomic-rplacd-ast
+      :order (cst:raw order)
+      :object-ast (cleavir-cst-to-ast:convert nv env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-car)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp value cons) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-car-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
       :value-ast (cleavir-cst-to-ast:convert value env system)
-      :element-type (cst:raw type)
-      :simple-p (cst:raw simple-p)
-      :boxed-p (cst:raw boxed-p)
-      :origin origin)))
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-cdr)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp value cons) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-cdr-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert value env system)
+      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-rack-read)) cst env
+     (system clasp-cleavir:clasp))
+  (cst:db origin (read order rack index) cst
+    (declare (ignore read))
+    (make-instance 'cc-ast:atomic-rack-read-ast
+      :order (cst:raw order)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-rack-write)) cst env
+     (system clasp-cleavir:clasp))
+  (cst:db origin (wr order nv rack index) cst
+    (declare (ignore wr))
+    (make-instance 'cc-ast:atomic-rack-write-ast
+      :order (cst:raw order)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::cas-rack)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (cas order cmp new rack index) cst
+    (declare (ignore cas))
+    (make-instance 'cc-ast:cas-rack-ast
+      :order (cst:raw order)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert new env system)
+      :rack-ast (cleavir-cst-to-ast:convert rack env system)
+      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-vref)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:atomic-vref-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::atomic-vset)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet nv vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:atomic-vset-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
+(defmethod cleavir-cst-to-ast:convert-special
+    ((symbol (eql 'core::vcas)) cst env (system clasp-cleavir:clasp))
+  (cst:db origin (vr order uaet cmp nv vector index) cst
+    (declare (ignore vr))
+    (make-instance 'cc-ast:vcas-ast
+      :order (cst:raw order) :element-type (cst:raw uaet)
+      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
+      :value-ast (cleavir-cst-to-ast:convert nv env system)
+      :array-ast (cleavir-cst-to-ast:convert vector env system)
+      :index-ast (cleavir-cst-to-ast:convert index env system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

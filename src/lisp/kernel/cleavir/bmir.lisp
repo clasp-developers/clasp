@@ -16,7 +16,11 @@
   ((%offset :initarg :offset :reader offset :type integer)))
 (defmethod cleavir-bir:rtype ((mr memref2)) :address)
 
-(defclass load (cleavir-bir::one-input cleavir-bir:computation) ())
+(defclass load (cc-bir:atomic cleavir-bir::one-input cleavir-bir:computation)
+  ())
 (defmethod cleavir-bir:rtype ((l load)) :object)
 
-(defclass store (cleavir-bir::no-output cleavir-bir:operation) ())
+(defclass store (cc-bir:atomic cleavir-bir::no-output cleavir-bir:operation) ())
+
+(defclass cas (cc-bir:atomic cleavir-bir:computation) ())
+(defmethod cleavir-bir:rtype ((c cas)) :object)

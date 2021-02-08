@@ -3478,10 +3478,7 @@ CL_DECLARE();
 CL_DOCSTRING("char_code");
 CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
   claspCharacter ch = clasp_as_claspCharacter(och);
-  if (ch < CHAR_CODE_LIMIT) {
-    return make_fixnum((Fixnum)ch);
-  }
-  SIMPLE_ERROR(BF("Character is beyond CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
+  return make_fixnum((Fixnum)ch);
 };
 
 CL_LAMBDA(och);

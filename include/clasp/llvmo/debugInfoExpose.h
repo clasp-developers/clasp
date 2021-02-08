@@ -881,15 +881,11 @@ struct from_object<llvm::Optional<llvm::StringRef>, std::true_type> {
   std::string _Storage;
   DeclareType _v;
   from_object(core::T_sp object) {
-//    printf("%s:%d:%s source string: \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(object).c_str());
-    if (object.nilp()) {
-      this->_v.reset();
-      // nothing
-    } else if (core::String_sp so = object.asOrNull<core::String_O>()) {
+    if (core::String_sp so = object.asOrNull<core::String_O>()) {
       this->_Storage = gc::As<core::String_sp>(so)->get_std_string();
       this->_v = this->_Storage;
     } else {
-      SIMPLE_ERROR_SPRINTF("You must pass nil or a String");
+      SIMPLE_ERROR_SPRINTF("You must pass a String");
     }
   }
   from_object(const from_object& orig) = delete;

@@ -215,11 +215,25 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class ATOMIC-AST
+;;;
+;;; Abstract. Superclass for atomic operations.
+
+(defclass atomic-ast (cleavir-ast:ast)
+  (;; The ordering.
+   (%order :initarg :order :reader order
+           :type (member :relaxed :acquire :release :acquire-release
+                         :sequentially-consistent))))
+
+(cleavir-io:define-save-info atomic-ast (:order order))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class CAS-AST
 ;;;
 ;;; Abstract. Class for compare-and-swap ASTs.
 
-(defclass cas-ast (cleavir-ast:one-value-ast-mixin cleavir-ast:ast)
+(defclass cas-ast (cleavir-ast:one-value-ast-mixin atomic-ast)
   (;; The "old" value being compared to the loaded one.
    (%cmp-ast :initarg :cmp-ast :reader cmp-ast)
    ;; The "new" value that's maybe being stored.
@@ -229,6 +243,24 @@
     (:cmp-ast cmp-ast) (:value-ast cleavir-ast:value-ast))
 
 (cleavir-ast:define-children cas-ast (cmp-ast cleavir-ast:value-ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class FENCE-AST
+
+(defclass fence-ast (cleavir-ast:no-value-ast-mixin atomic-ast) ())
+
+(cleavir-ast:define-children fence-ast ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Classes ATOMIC-CAR-AST, ATOMIC-CDR-AST, ATOMIC-RPLACA-AST, ATOMIC-RPLACD-AST
+;;;
+
+(defclass atomic-car-ast (atomic-ast cleavir-ast:car-ast) ())
+(defclass atomic-cdr-ast (atomic-ast cleavir-ast:cdr-ast) ())
+(defclass atomic-rplaca-ast (atomic-ast cleavir-ast:rplaca-ast) ())
+(defclass atomic-rplacd-ast (atomic-ast cleavir-ast:rplacd-ast) ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -274,6 +306,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Classes ATOMIC-RACK-READ-AST, ATOMIC-RACK-WRITE-AST, CAS-RACK-AST
+;;;
+
+(defclass rack-ref-ast (cleavir-ast:ast) ; abstract
+  ((%rack-ast :initarg :rack-ast :reader rack-ast)
+   (%slot-number-ast :initarg :slot-number-ast
+                     :reader cleavir-ast:slot-number-ast)))
+
+(cleavir-io:define-save-info rack-ref-ast
+    (:rack-ast rack-ast) (:slot-number-ast cleavir-ast:slot-number-ast))
+
+(defclass atomic-rack-read-ast (atomic-ast rack-ref-ast) ())
+(defclass atomic-rack-write-ast (atomic-ast rack-ref-ast)
+  ((%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
+
+(cleavir-ast:define-children atomic-rack-read-ast
+    (rack-ast cleavir-ast:slot-number-ast))
+(cleavir-ast:define-children atomic-rack-write-ast
+    (cleavir-ast:value-ast rack-ast cleavir-ast:slot-number-ast))
+
+(defclass cas-rack-ast (cas-ast rack-ref-ast) ())
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class SLOT-CAS-AST
 ;;;
 ;;; Compare-and-swap an instance slot.
@@ -301,35 +357,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class ACAS-AST
+;;; Class ATOMIC-VREF-AST, ATOMIC-VSET-AST, VCAS-AST
 ;;;
-;;; Compare-and-swap an array element.
+;;; Atomic operations on an element of a (simple-array * (*))
 
-(defclass acas-ast (cas-ast)
-  ((%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
-   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)
-   (%element-type :initarg :element-type :reader cleavir-ast:element-type)
-   (%simple-p :initarg :simple-p :reader cleavir-ast:simple-p)
-   (%boxed-p :initarg :boxed-p :reader cleavir-ast:boxed-p)))
+(defclass vref-ast (cleavir-ast:ast) ; abstract
+  ((%element-type :initarg :element-type :reader cleavir-ast:element-type)
+   (%array-ast :initarg :array-ast :reader cleavir-ast:array-ast)
+   (%index-ast :initarg :index-ast :reader cleavir-ast:index-ast)))
 
-(cleavir-io:define-save-info acas-ast
-    (:array-ast cleavir-ast:array-ast)
-  (:index-ast cleavir-ast:index-ast)
-  (:element-type cleavir-ast:element-type)
-  (:simple-p cleavir-ast:simple-p)
-  (:boxed-p cleavir-ast:boxed-p))
+(cleavir-io:define-save-info vref-ast
+    (:element-type cleavir-ast:element-type)
+  (:array-ast cleavir-ast:array-ast)
+  (:index-ast cleavir-ast:index-ast))
 
-(defmethod cleavir-ast-graphviz::label ((ast acas-ast)) "acas")
+(defclass atomic-vref-ast (cleavir-ast:one-value-ast-mixin atomic-ast vref-ast)
+  ())
 
-(defmethod cleavir-ast:children ((ast acas-ast))
-  (list* (cleavir-ast:array-ast ast)
-         (cleavir-ast:index-ast ast)
-         (call-next-method)))
+(defclass atomic-vset-ast (cleavir-ast:no-value-ast-mixin atomic-ast vref-ast)
+  ((%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
+(cleavir-io:define-save-info atomic-vset-ast (:value-ast cleavir-ast:value-ast))
 
-(defmethod cleavir-ast:map-children (function (ast acas-ast))
-  (funcall function (cleavir-ast:array-ast ast))
-  (funcall function (cleavir-ast:index-ast ast))
-  (call-next-method))
+(defclass vcas-ast (cas-ast vref-ast) ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -110,7 +110,7 @@
 
 (defun irc-new-function-value-environment (old-env &key functions (label "function-frame"))
   "Create a new function environment and a new runtime environment"
-  (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions))))
+  (let ((new-env (irc-new-unbound-function-value-environment old-env :number-of-functions (length functions) :label label)))
     (dolist (fn functions)
       (bind-function new-env (car fn) #'(lambda () (print "Dummy func"))))
     new-env))
@@ -125,7 +125,7 @@
 
 (defun irc-new-tagbody-environment (old-env &key (label "function-frame"))
   "Create a new tagbody environment and a new runtime environment"
-  (let ((new-env (irc-new-unbound-tagbody-environment old-env )))
+  (let ((new-env (irc-new-unbound-tagbody-environment old-env :label label)))
     new-env))
 
 (defun irc-new-macrolet-environment (old-env)
@@ -181,7 +181,6 @@
 (defun irc-make-block-environment-set-parent (name parent-env)
   (let* ((block-env (make-block-environment name parent-env))
          (new-renv (alloca-af* :label "block-renv"))
-         (size (jit-constant-size_t 1))
          (visible-ancestor-environment (current-visible-environment parent-env t))
          (parent-renv-ref (if (core:function-container-environment-p visible-ancestor-environment)
                               (let ((closure (core:function-container-environment-closure visible-ancestor-environment)))
@@ -304,7 +303,7 @@
     (codegen unwind-result unwind-form (get-parent-environment env))
     ))
 
-(defun irc-do-unwind-environment (env &optional verbose)
+(defun irc-do-unwind-environment (env)
   "Unwind the environment and return whatever was unwound"
   (cmp-log "irc-do-unwind-environment for: %s%N" env)
   (let ((unwind (local-metadata env :unwind)))
@@ -313,6 +312,7 @@
 	(cond
 	  ((eq head 'symbolValueRestore)
            (destructuring-bind (cmd symbol alloca) cc
+             (declare (ignore cmd))
              (cmp-log "popDynamicBinding of %s%N" symbol)
              (irc-intrinsic "popDynamicBinding" (irc-global-symbol symbol env) alloca)))
 	  (t (error (bformat nil "Unknown cleanup code: %s" cc))))))))
@@ -378,7 +378,7 @@
       nil))
 
 
-(defun irc-begin-landing-pad-block (theblock &optional (function *current-function*))
+(defun irc-begin-landing-pad-block (theblock)
   "This doesn't invoke low-level-trace - it would interfere with the landing pad"
   (or (llvm-sys:get-parent theblock) (error "irc-begin-landing-pad-block>> The block ~a doesn't have a parent" theblock))
   #+(or)(irc-append-basic-block function theblock)
@@ -436,10 +436,11 @@
   (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
 
 (defun irc-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :function) :label label))
 
 (defun irc-setf-fdefinition (symbol &optional (label ""))
-  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)))
+  (irc-load-atomic (c++-field-ptr info.%symbol% symbol :setf-function)
+                   :label label))
 
 (defun irc-untag-general (tagged-ptr &optional (type %t**%))
   #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
@@ -490,7 +491,7 @@ representing a tagged fixnum."
     (irc-struct-gep %instance% instance* +instance.rack-index+)))
 
 (defun irc-rack (instance-tagged)
-  (irc-load-atomic (irc-rack-address instance-tagged) "rack-tagged"))
+  (irc-load-atomic (irc-rack-address instance-tagged) :label "rack-tagged"))
 
 (defun irc-rack-set (instance-tagged rack)
   (irc-store-atomic rack (irc-rack-address instance-tagged)))
@@ -505,11 +506,11 @@ representing a tagged fixnum."
   "Return a %t**% a pointer to a slot in the rack of an instance"
   (irc-rack-slot-address (irc-rack instance) index))
 
-(defun irc-rack-read (rack index)
-  (irc-load-atomic (irc-rack-slot-address rack index)))
+(defun irc-rack-read (rack index &key (order 'llvm-sys:monotonic))
+  (irc-load-atomic (irc-rack-slot-address rack index) :order order))
 
-(defun irc-rack-write (rack index value)
-  (irc-store-atomic value (irc-rack-slot-address rack index)))
+(defun irc-rack-write (rack index value &key (order 'llvm-sys:monotonic))
+  (irc-store-atomic value (irc-rack-slot-address rack index) :order order))
 
 (defun irc-read-slot (instance index)
   "Read a value from the rack of an instance"
@@ -557,8 +558,7 @@ representing a tagged fixnum."
         (error "There must be an instruction to insert before"))))
 
 (defun irc-insert-bclasp-lexical-reference (instruction depth index start-renv)
-  (let ((irbuilder (irc-make-irbuilder-insert-before-instruction instruction))
-        (renv start-renv))
+  (let ((irbuilder (irc-make-irbuilder-insert-before-instruction instruction)))
     (with-irbuilder (irbuilder)
       (irc-depth-index-value-frame-reference start-renv depth index))))
 
@@ -568,16 +568,20 @@ representing a tagged fixnum."
 ;;;
 
 (defun irc-real-array-displacement (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data) "real-array-displacement"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :data)
+                   :label "real-array-displacement"))
 
 (defun irc-real-array-index-offset (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset) "real-array-displaced-index"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :displaced-index-offset)
+                   :label "real-array-displaced-index"))
 
 (defun irc-array-total-size (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size) "array-total-size"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :array-total-size)
+                   :label "array-total-size"))
 
 (defun irc-array-rank (tarray)
-  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank) "array-rank"))
+  (irc-load-atomic (c++-field-ptr info.%mdarray% tarray :rank)
+                   :label "array-rank"))
 
 (defun irc-array-dimension (tarray axis)
   (let* ((dims (c++-field-ptr info.%mdarray% tarray :dimensions))
@@ -689,15 +693,18 @@ Otherwise do a variable shift."
       (llvm-sys:create-ashr-value-value
        cmp:*irbuilder* value shift label exact)))
 
+(defun irc-fence (order &optional (label ""))
+  (llvm-sys:create-fence *irbuilder* order 1 #+(or)'llvm-sys:system label))
+
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
-(defun irc-load-atomic (source &optional (label "") (align 8))
+(defun irc-load-atomic (source
+                        &key (label "") (align 8) (order 'llvm-sys:monotonic))
   (let ((inst (irc-load source label)))
-    (llvm-sys:set-alignment inst align) ; atomic loads require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    ;; atomic loads require an explicit alignment.
+    (llvm-sys:set-alignment inst align)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
 (defun irc-store (val destination &optional (label "") (is-volatile nil))
@@ -721,15 +728,22 @@ Otherwise do a variable shift."
 the type LLVMContexts don't match - so they were defined in different threads!"
                   val-type dest-contained-type)))))
 
-(defun irc-store-atomic (val destination &optional (label "") (is-volatile nil) (align 8))
+(defun irc-store-atomic (val destination
+                         &key (label "") (is-volatile nil) (align 8)
+                           (order 'llvm-sys:monotonic))
   (let ((inst (irc-store val destination label is-volatile)))
     (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
-    (llvm-sys:set-atomic inst
-                         'llvm-sys:monotonic
-                         1 #+(or)'llvm-sys:system)
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
     inst))
 
-(defun irc-%cmpxchg (ptr cmp new)
+(defun reduce-failure-order (order)
+  (case order
+    ((llvm-sys:sequentially-consistent llvm-sys:acquire llvm-sys:monotonic)
+     order)
+    ((llvm-sys:acquire-release) 'llvm-sys:acquire)
+    ((llvm-sys:release) 'llvm-sys:monotonic)))
+
+(defun irc-%cmpxchg (ptr cmp new order)
   ;; Sanity check I'm putting in when this is new that should maybe be removed, future reader
   (let ((cmp-type (llvm-sys:get-type cmp)))
     (unless (and (llvm-sys:type-equal cmp-type (llvm-sys:get-type new))
@@ -738,18 +752,23 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
-                                   ptr cmp new
-                                   'llvm-sys:sequentially-consistent
-                                   'llvm-sys:sequentially-consistent
+                                   ptr cmp new order
+                                   (reduce-failure-order order)
                                    1 #+(or)'llvm-sys:system))
 
-(defun irc-cmpxchg (ptr cmp new &optional (label ""))
+(defun irc-cmpxchg (ptr cmp new
+                    &key (label "") (order 'llvm-sys:sequentially-consistent))
+  ;; cmpxchg instructions involve two memory orders: First, the "success" order
+  ;; for the RMW operation, and second, the "failure" order for only the read
+  ;; in case the comparison fails. I don't honestly know how this works at the
+  ;; machine level. For now we only allow passing in one order, which is used
+  ;; for both (except we have to reduce it...)
   ;; cmpxchg returns [value, flag] where flag is true iff the swap was done.
-  ;; since we're doing a strong exchange, value = cmp iff the swap was done too,
-  ;; so we don't really need the flag.
+  ;; since we're doing a strong exchange (for now), value = cmp iff the swap
+ ;;; was done too, so we don't really need the flag.
   ;; Of course we might want to work with the flag directly instead, but that's
   ;; a reorganization at a higher level.
-  (irc-extract-value (irc-%cmpxchg ptr cmp new) (list 0) label))
+  (irc-extract-value (irc-%cmpxchg ptr cmp new order) (list 0) label))
 
 (defun translate-rmw-op (op)
   (cond ((eq op :xchg) 'llvm-sys:xchg)
@@ -768,6 +787,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
         (t (error "Unknown atomic RMW operation: ~s" op))))
 
 (defun irc-atomicrmw (pointer value operation &optional (label "old"))
+  (declare (ignore label)) ; LLVM can't name atomic RMWs for whatever reason?
   (llvm-sys:create-atomic-rmw *irbuilder*
                               (translate-rmw-op operation)
                               pointer value
@@ -796,11 +816,11 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (llvm-sys:create-vaarg *irbuilder* valist* type name))
 
 (defun irc-vaslist-va_list-address (vaslist &optional (label "va_list_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'va_list))
+  (c++-field-ptr info.%vaslist% vaslist 'va_list label))
 
 (defun irc-vaslist-remaining-nargs-address (vaslist
                                             &optional (label "va_list_remaining_nargs_address"))
-  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs))
+  (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs label))
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
                                               ("no-frame-pointer-elim" "true")
@@ -842,7 +862,6 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (declare (ignore function-attributes-p argument-names-p function-type-p))
   (cmp-log "Expanding with-new-function name: %s%N" function-name)
   (let ((irbuilder-alloca (gensym))
-        (temp (gensym))
         (irbuilder-body (gensym))
         (function-description-ref (gensym)))
     `(multiple-value-bind (,fn ,fn-env ,irbuilder-alloca ,irbuilder-body ,result ,function-description-ref)
@@ -1275,7 +1294,6 @@ and then the irbuilder-alloca, irbuilder-body."
   (let* ((info (gethash fn-name (get-primitives)))
          (_ (unless info
               (error "Unknown primitive ~a" fn-name)))
-         (return-ty (primitive-return-type info))
          (required-args-ty (primitive-argument-types info))
          (passed-args-ty (mapcar #'(lambda (x)
                                      (if (llvm-sys:llvm-value-p x)
@@ -1443,6 +1461,7 @@ and then the irbuilder-alloca, irbuilder-body."
         (values func info)))))
 
 (defun irc-global-symbol (sym env)
+  (declare (ignore env))
   "Return an llvm GlobalValue for a symbol"
   (multiple-value-bind (ref literal-name)
       (literal:compile-reference-to-literal sym)
@@ -1452,6 +1471,7 @@ and then the irbuilder-alloca, irbuilder-body."
       (values (irc-load ref label) label))))
 
 (defun irc-global-setf-symbol (sym env)
+  (declare (ignore env))
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
   (irc-load (literal:compile-reference-to-literal sym)))

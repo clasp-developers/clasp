@@ -820,12 +820,25 @@
 
 (defmethod translate-simple-instruction ((inst cc-bmir:load) abi)
   (declare (ignore abi))
-  (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))))
+  (cmp:irc-load-atomic (in (first (cleavir-bir:inputs inst)))
+                       :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cc-bmir:store) abi)
   (declare (ignore abi))
   (cmp:irc-store-atomic (in (first (cleavir-bir:inputs inst)))
-                        (in (second (cleavir-bir:inputs inst)))))
+                        (in (second (cleavir-bir:inputs inst)))
+                        :order (cmp::order-spec->order (cc-bir:order inst))))
+
+(defmethod translate-simple-instruction ((inst cc-bir:fence) abi)
+  (declare (ignore abi))
+  (cmp::gen-fence (cc-bir:order inst)))
+
+(defmethod translate-simple-instruction ((inst cc-bmir:cas) abi)
+  (declare (ignore abi))
+  (cmp:irc-cmpxchg (in (first (cleavir-bir:inputs inst)))
+                   (in (second (cleavir-bir:inputs inst)))
+                   (in (third (cleavir-bir:inputs inst)))
+                   :order (cmp::order-spec->order (cc-bir:order inst))))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:vprimop) abi)
   (declare (ignore abi))
@@ -903,6 +916,25 @@
         (t
          (error "BUG: Don't know how to translate primop ~a" name))))
 
+(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-read) abi)
+  (cmp:gen-rack-ref (in (first (cleavir-bir:inputs inst)))
+                    (in (second (cleavir-bir:inputs inst)))
+                    :order (cmp::order-spec->order (cc-bir:order inst))))
+(defmethod translate-simple-instruction ((inst cc-bir:atomic-rack-write) abi)
+  (cmp:gen-rack-set (in (second (cleavir-bir:inputs inst)))
+                    (in (third (cleavir-bir:inputs inst)))
+                    (in (first (cleavir-bir:inputs inst)))
+                    :order (cmp::order-spec->order (cc-bir:order inst))))
+(defmethod translate-simple-instruction ((inst cc-bir:cas-rack) abi)
+  (cmp:irc-cmpxchg (cmp::irc-rack-slot-address
+                    (in (third (cleavir-bir:inputs inst)))
+                    (cmp::irc-untag-fixnum
+                     (in (fourth (cleavir-bir:inputs inst)))
+                     cmp:%size_t% "slot-location"))
+                   (in (first (cleavir-bir:inputs inst)))
+                   (in (second (cleavir-bir:inputs inst)))
+                   :order (cmp::order-spec->order (cc-bir:order inst))))
+
 (defun gen-vector-effective-address (array index element-type fixnum-type)
   (let* ((type (llvm-sys:type-get-pointer-to
                 (cmp::simple-vector-llvm-type element-type)))
@@ -915,15 +947,30 @@
      cast
      (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) untagged) "aref")))
 
-(defmethod translate-simple-instruction ((inst cc-bir:acas) abi)
+(defmethod translate-simple-instruction ((inst cc-bir:vref) abi)
+  (let ((inputs (cleavir-bir:inputs inst)))
+    (cmp:irc-load-atomic
+     (gen-vector-effective-address
+      (in (first inputs)) (in (second inputs)) (cc-bir:element-type inst)
+      (%default-int-type abi))
+     :order (cmp::order-spec->order (cc-bir:order inst)))))
+(defmethod translate-simple-instruction ((inst cc-bir:vset) abi)
+  (let ((inputs (cleavir-bir:inputs inst)))
+    (cmp:irc-store-atomic
+     (in (first inputs))
+     (gen-vector-effective-address
+      (in (second inputs)) (in (third inputs)) (cc-bir:element-type inst)
+      (%default-int-type abi))
+     :order (cmp::order-spec->order (cc-bir:order inst)))))
+(defmethod translate-simple-instruction ((inst cc-bir:vcas) abi)
   (let ((et (cc-bir:element-type inst))
         (inputs (cleavir-bir:inputs inst)))
     (cmp:irc-cmpxchg
      ;; This will err if et = bit or the like.
      (gen-vector-effective-address
-      (in (first inputs)) (in (second inputs)) et
+      (in (third inputs)) (in (fourth inputs)) et
       (%default-int-type abi))
-     (in (third inputs)) (in (fourth inputs)))))
+     (in (first inputs)) (in (second inputs)))))
 
 (defun values-collect-multi (inst)
   (loop with seen-non-save = nil
