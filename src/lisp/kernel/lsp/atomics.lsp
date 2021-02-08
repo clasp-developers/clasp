@@ -207,16 +207,12 @@ sense for fences and will be rejected."
 ;;; Derived operators
 ;;;
 
-(defmacro atomic-update (place update-fn &rest arguments &environment env)
-  "Perform an atomic update of PLACE. In more detail, the value of PLACE is
-set to (funcall UPDATE-FN VALUE ARGUMENTS...), where VALUE is the old value of
-PLACE. This is analogous to what DEFINE-MODIFY-MACRO expansions do.
-Evaluation order is left to right as specified in CLHS 5.1.1.1. Note that this
-is different from the SBCL macro of the same name, which may perform multiple
-evaluations of the update-fn and arguments, and passes arguments to the update
-function in a different order."
+(defmacro atomic-update-explicit (place update-fn
+                                  (&rest keys &key order &allow-other-keys)
+                                  &rest arguments &environment env)
+  (declare (ignore order))
   (multiple-value-bind (vars vals old new read write cas)
-      (get-atomic-expansion place :environment env)
+      (apply #'get-atomic-expansion place :environment env keys)
     (declare (ignore write))
     (let ((gfn (gensym "UPDATE-FN"))
           (asyms (loop repeat (length arguments) collect (gensym "ARG"))))
@@ -228,18 +224,28 @@ function in a different order."
                until (eq ,old (setf ,old ,cas))
                finally (return ,new))))))
 
+(defmacro atomic-update (place update-fn &rest arguments)
+  "Perform an atomic update of PLACE. In more detail, the value of PLACE is
+set to (funcall UPDATE-FN VALUE ARGUMENTS...), where VALUE is the old value of
+PLACE. This is analogous to what DEFINE-MODIFY-MACRO expansions do.
+Evaluation order is left to right as specified in CLHS 5.1.1.1. Note that this
+is different from the SBCL macro of the same name, which may perform multiple
+evaluations of the update-fn and arguments, and passes arguments to the update
+function in a different order."
+  `(atomic-update-explicit ,place ,update-fn () ,@arguments))
+
 (defmacro atomic-incf (place &optional (delta 1))
   `(atomic-update ,place #'+ ,delta))
 
 (defmacro atomic-decf (place &optional (delta 1))
   `(atomic-update ,place #'- ,delta))
 
-(defmacro atomic-push (item place &environment env)
-  "As CL:PUSH, but as an atomic RMW operation.
-ITEM and the subforms of PLACE are evaluated exactly once in the same order as
-they are for CL:PUSH, specified in CLHS 5.1.1.1."
+(defmacro atomic-push (item place
+                       &rest keys &key order &allow-other-keys
+                       &environment env)
+  (declare (ignore order))
   (multiple-value-bind (vars vals old new read write cas)
-      (get-atomic-expansion place :environment env)
+      (apply #'get-atomic-expansion place :environment env keys)
     (declare (ignore write))
     (let ((gitem (gensym "ITEM")))
       `(let* ((,gitem ,item) ; evaluate left-to-right (CLHS 5.1.1.1)
@@ -250,10 +256,11 @@ they are for CL:PUSH, specified in CLHS 5.1.1.1."
                do (setf (cdr ,new) ,old)
                finally (return ,new))))))
 
-(defmacro atomic-pop (place &environment env)
+(defmacro atomic-pop (place &rest keys &key order &allow-other-keys
+                      &environment env)
   "As CL:POP, but as an atomic RMW operation."
   (multiple-value-bind (vars vals old new read write cas)
-      (get-atomic-expansion place :environment env)
+      (apply #'get-atomic-expansion place :environment env keys)
     (declare (ignore write))
     `(let* (,@(mapcar #'list vars vals)
             (,old ,read))
@@ -261,14 +268,14 @@ they are for CL:PUSH, specified in CLHS 5.1.1.1."
                (when (eq ,old (setf ,old ,cas))
                  (return (car ,old))))))))
 
-(defmacro atomic-pushnew (item place &rest keys &key key test test-not
-                          &environment env)
-  "As CL:PUSHNEW, but as an atomic RMW operation.
-ITEM, the subforms of PLACE, and the keywords are evaluated exactly once in the
-same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."
-  (declare (ignore key test test-not))
+(defmacro atomic-pushnew-explicit (item place
+                                   (&rest place-keys
+                                    &key order &allow-other-keys)
+                                   &rest keys &key key test test-not
+                                   &environment env)
+  (declare (ignore key test test-not) (ignore order))
   (multiple-value-bind (vars vals old new read write cas)
-      (get-atomic-expansion place :environment env)
+      (apply #'get-atomic-expansion place :environment env place-keys)
     (declare (ignore write))
     (let ((gitem (gensym "ITEM")) (bname (gensym "ATOMIC-PUSHNEW"))
           gkeybinds gkeys)
@@ -293,6 +300,12 @@ same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."
                for ,new = (adjoin ,gitem ,old ,@gkeys)
                until (eq ,old (setf ,old ,cas))
                finally (return-from ,bname ,new))))))
+
+(defmacro atomic-pushnew (item place &rest keys &key test test-not key)  
+  "As CL:PUSHNEW, but as an atomic RMW operation.
+ITEM, the subforms of PLACE, and the keywords are evaluated exactly once in the
+same order as they are for CL:PUSHNEW, specified in CLHS 5.1.1.1."
+  `(atomic-pushnew-explicit ,item ,place () ,@keys))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
