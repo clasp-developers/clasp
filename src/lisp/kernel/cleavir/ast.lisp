@@ -278,12 +278,7 @@
 (defmethod cleavir-ast-graphviz::label ((ast cas-car-ast))
   "cas-car")
 
-(defmethod cleavir-ast:children ((ast cas-car-ast))
-  (list* (cleavir-ast:cons-ast ast) (call-next-method)))
-
-(defmethod cleavir-ast:map-children (function (ast cas-car-ast))
-  (funcall function (cleavir-ast:cons-ast ast))
-  (call-next-method))
+(cleavir-ast:define-children cas-car-ast (cleavir-ast:cons-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -300,9 +295,7 @@
 (defmethod cleavir-ast-graphviz::label ((ast cas-cdr-ast))
   "cas-cdr")
 
-(defmethod cleavir-ast:map-children (function (ast cas-cdr-ast))
-  (funcall function (cleavir-ast:cons-ast ast))
-  (call-next-method))
+(cleavir-ast:define-children cas-cdr-ast (cleavir-ast:cons-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -316,6 +309,9 @@
 
 (cleavir-io:define-save-info rack-ref-ast
     (:rack-ast rack-ast) (:slot-number-ast cleavir-ast:slot-number-ast))
+
+(cleavir-ast:define-children rack-ref-ast
+    (rack-ast cleavir-ast:slot-number-ast))
 
 (defclass atomic-rack-read-ast (atomic-ast rack-ref-ast) ())
 (defclass atomic-rack-write-ast (atomic-ast rack-ref-ast)
@@ -345,15 +341,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast slot-cas-ast))
   "slot-cas")
 
-(defmethod cleavir-ast:children ((ast slot-cas-ast))
-  (list* (cleavir-ast:object-ast ast)
-         (cleavir-ast:slot-number-ast ast)
-         (call-next-method)))
-
-(defmethod cleavir-ast:map-children (function (ast slot-cas-ast))
-  (funcall function (cleavir-ast:object-ast ast))
-  (funcall function (cleavir-ast:slot-number-ast ast))
-  (call-next-method))
+(cleavir-ast:define-children slot-cas-ast
+    (cleavir-ast:object-ast cleavir-ast:slot-number-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -371,12 +360,16 @@
   (:array-ast cleavir-ast:array-ast)
   (:index-ast cleavir-ast:index-ast))
 
+(cleavir-ast:define-children vref-ast
+    (cleavir-ast:array-ast cleavir-ast:index-ast))
+
 (defclass atomic-vref-ast (cleavir-ast:one-value-ast-mixin atomic-ast vref-ast)
   ())
 
 (defclass atomic-vset-ast (cleavir-ast:no-value-ast-mixin atomic-ast vref-ast)
   ((%value-ast :initarg :value-ast :reader cleavir-ast:value-ast)))
 (cleavir-io:define-save-info atomic-vset-ast (:value-ast cleavir-ast:value-ast))
+(cleavir-ast:define-children atomic-vset-ast (cleavir-ast:value-ast))
 
 (defclass vcas-ast (cas-ast vref-ast) ())
 
@@ -425,7 +418,8 @@
 (defmethod cleavir-ast-graphviz::label ((ast unwind-protect-ast))
   "unwind-protect")
 
-(cleavir-ast:define-children unwind-protect-ast (cleavir-ast:body-ast cleanup-ast))
+(cleavir-ast:define-children unwind-protect-ast
+    (cleavir-ast:body-ast cleanup-ast))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -455,7 +449,7 @@
   (:body-ast cleavir-ast:body-ast)
   (:rest-alloc rest-alloc))
 
-(defmethod cleavir-ast:children ((ast bind-va-list-ast))
+(defmethod cleavir-ast:children append ((ast bind-va-list-ast))
   (list* (va-list-ast ast)
          (cleavir-ast:body-ast ast)
          (loop for entry in (cleavir-ast:lambda-list ast)
@@ -466,7 +460,7 @@
                                  (cdr entry)))
                             (t (list entry))))))
 
-(defmethod cleavir-ast:map-children (function (ast bind-va-list-ast))
+(defmethod cleavir-ast:map-children progn (function (ast bind-va-list-ast))
   (funcall function (va-list-ast ast))
   (funcall function (cleavir-ast:body-ast ast))
   (dolist (entry (cleavir-ast:lambda-list ast))
