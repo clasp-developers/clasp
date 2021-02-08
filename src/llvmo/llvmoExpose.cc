@@ -3963,7 +3963,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           std::string name = sym->getName().str();
           void* address = (void*)sym->getAddress();
           size_t size = sym->getSize();
-          printf("%s:%d:%s    %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size);
+          printf("%s:%d:%s  section: %s  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size);
           if (name.substr(0,gcroots_name.size()) == gcroots_name) {
             my_thread->topObjectFile()->_Code->_gcroots = (gctools::GCRootsInModule*) address;
             gotGcroots = true;
