@@ -210,10 +210,12 @@ namespace llvmo {
 std::atomic<size_t> fileNum;
 
 
-void dumpObjectFile(size_t num, const char* start, size_t size) {
+void dumpObjectFile(const char* start, size_t size) {
+  size_t num = fileNum++;
   std::stringstream filename;
   filename << "object-file-" << num << ".o";
   std::ofstream fout;
+  printf("%s:%d:%s dumping object file to %s\n", __FILE__, __LINE__, __FUNCTION__, filename.str().c_str());
   fout.open(filename.str(), std::ios::out | std::ios::binary );
   fout.write(start,size);
   fout.close();
@@ -337,7 +339,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
   }
   if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
     llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-    dumpObjectFile(fileNum++,mem.getBufferStart(),mem.getBufferSize());
+    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
   }
 }
 

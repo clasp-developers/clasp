@@ -312,7 +312,7 @@ public:
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
       uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
-      DEBUG_OBJECT_FILES(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, Seg.getAlignment(), Seg.getContentSize(), Seg.getZeroFillSize()));
+      DEBUG_OBJECT_FILES(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize()));
       // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
       if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
         // We have to scan the entire RW data region (sigh) for pointers
@@ -349,6 +349,9 @@ public:
   }
 
 };
+
+
+void dumpObjectFile(const char* start, size_t size);
 
 };
 

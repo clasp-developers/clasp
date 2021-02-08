@@ -413,6 +413,10 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
     expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
   } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
+  if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+    llvm::MemoryBufferRef mem = *(ofi->_MemoryBuffer);
+    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
+  }
 }
 
 CL_DOCSTRING("For an instruction pointer inside of code generated from an object file - return the relative address (the sectioned address)");

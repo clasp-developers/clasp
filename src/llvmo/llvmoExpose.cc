@@ -3728,7 +3728,7 @@ using namespace llvm;
 using namespace llvm::orc;
 
 //#define MONITOR_JIT_MEMORY_MANAGER 1    // monitor SectionMemoryManager
-//#define DUMP_OBJECT_FILES 1
+#define DUMP_OBJECT_FILES 1
 
 
 ////////////////////////////////////////////////////////////
@@ -3954,16 +3954,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     DEBUG_OBJECT_FILES(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    bool gotGcroots = false;
     for (auto &S : G.sections()) {
       DEBUG_OBJECT_FILES(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
-      if (S.getName().str() == BSS_NAME) {
+      if (S.getName().str() == BSS_NAME || S.getName().str() == DATA_NAME) {
         llvm::jitlink::SectionRange range(S);
-        bool gotGcroots = false;
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
           void* address = (void*)sym->getAddress();
           size_t size = sym->getSize();
-//          printf("%s:%d:%s    %s  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, BSS_NAME, name.c_str(), address, size);
+          printf("%s:%d:%s    %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size);
           if (name.substr(0,gcroots_name.size()) == gcroots_name) {
             my_thread->topObjectFile()->_Code->_gcroots = (gctools::GCRootsInModule*) address;
             gotGcroots = true;
@@ -3978,11 +3978,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             }
           }
         }
-        if (!gotGcroots) {
-          SIMPLE_ERROR(BF("A module/object file was added that did not have GCRootsInModule - this should not be possible"));
-        }
       } else if (S.getName().str() == DATA_NAME) {
 #if 0
+        // If we want to handle the .data section differently than .bss then add more code here
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           // If we need to grab symbols from DATA_NAME segment do it here
@@ -4027,6 +4025,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         my_thread->_stackmap = (uintptr_t)range.getStart();
         my_thread->_stackmap_size = (size_t)range.getSize();
       }
+    }
+    if (!gotGcroots) {
+      printf("%s:%d:%s A module/object file was added that did not have GCRootsInModule prefixed with %s - this should not be possible\n", __FILE__, __LINE__, __FUNCTION__, gcroots_name.c_str());
     }
   }
   

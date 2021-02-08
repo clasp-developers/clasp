@@ -795,11 +795,12 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 
 void add_dynamic_library_using_handle(const std::string& libraryName, void* handle) {
-  add_dynamic_library_impl(false,libraryName, false, 0, handle);
+  printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
+  add_dynamic_library_impl(false,libraryName, false, 0, handle, NULL, NULL );
 }
 
-void add_dynamic_library_using_origin(bool is_executable,const std::string& libraryName, uintptr_t origin) {
-  add_dynamic_library_impl(is_executable,libraryName, true, origin, NULL);
+void add_dynamic_library_using_origin(bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
+  add_dynamic_library_impl(is_executable,libraryName, true, origin, NULL, text_start, text_end );
 }
 
 bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
@@ -842,10 +843,10 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
-    if (entry.second._LibraryStart <= address && address < entry.second._LibraryEnd ) {
+    if (entry.second._TextStart <= address && address < entry.second._TextEnd ) {
       libraryName = entry.second._Filename;
-      start = entry.second._LibraryStart;
-      end = entry.second._LibraryEnd;
+      start = entry.second._TextStart;
+      end = entry.second._TextEnd;
       return true;
     }
   }

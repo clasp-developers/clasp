@@ -192,7 +192,7 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
  void add_dynamic_library_using_handle(const std::string& libraryName, void* handle);
- void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin);
+void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd);
  
  void startup_register_loaded_objects();
 
@@ -363,8 +363,15 @@ struct OpenDynamicLibraryInfo {
   void*          _Handle;
   SymbolTable    _SymbolTable;
   gctools::clasp_ptr_t      _LibraryStart;
-  gctools::clasp_ptr_t      _LibraryEnd;
-OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t libend) : _Filename(f), _Handle(h), _SymbolTable(symbol_table), _LibraryStart(libstart), _LibraryEnd(libend) {};
+  gctools::clasp_ptr_t      _TextStart;
+  gctools::clasp_ptr_t      _TextEnd;
+  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd) :
+    _Filename(f),
+    _Handle(h),
+    _SymbolTable(symbol_table),
+    _LibraryStart(libstart),
+    _TextStart(textStart),
+    _TextEnd(textEnd) {};
   OpenDynamicLibraryInfo() {};
 };
 
@@ -402,7 +409,7 @@ void startup_register_loaded_objects();
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
-void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle);
+void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end );
 DebugInfo& debugInfo();
 
 

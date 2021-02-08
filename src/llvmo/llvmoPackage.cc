@@ -587,7 +587,12 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
-    llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(_Nil<core::T_O>());
+    if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {
+      printf("%s:%d:%s llvm-sys:*debugObjectFiles* is true\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
+    if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+      printf("%s:%d:%s llvm-sys:*dumpObjectFiles* is true\n", __FILE__, __LINE__, __FUNCTION__ );
+    }
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
   };

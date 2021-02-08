@@ -187,6 +187,9 @@ int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, vo
   BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
   if (strcmp(libname,search_callback_info->_Name)==0) {
     search_callback_info->_Address = (void*)info->dlpi_addr;
+    BT_LOG((buf,"%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_addr ));
+    BT_LOG((buf,"%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_phdr ));
+    BT_LOG((buf,"%s:%d:%s dlpi_phnum = %d\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_phnum ));
   }
   search_callback_info->_Index++;
   return 0;
@@ -228,7 +231,32 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
     libname = info->dlpi_name;
     is_executable = false;
   }
-  add_dynamic_library_using_origin(is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr);
+  gctools::clasp_ptr_t text_start;
+  gctools::clasp_ptr_t text_end;
+  for (int j = 0; j < info->dlpi_phnum; j++) {
+    int p_type = info->dlpi_phdr[j].p_type;
+#if 0
+    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
+      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_NOTE) ? "PT_NOTE" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_PHDR) ? "PT_PHDR" :
+      (p_type == PT_TLS) ? "PT_TLS" :
+      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
+      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
+      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
+    printf("    %2d: [%14p; memsz:%7jx] flags: %#jx; ", j,
+           (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
+           (uintmax_t) info->dlpi_phdr[j].p_memsz,
+           (uintmax_t) info->dlpi_phdr[j].p_flags);
+#endif
+    if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
+      text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
+      text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
+    }
+  }
+  add_dynamic_library_using_origin(is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,text_start,text_end);
   scan_callback_info->_Index++;
   return 0;
 }
@@ -245,6 +273,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 
 void* find_base_of_loaded_object(const char* name)
 {
+  BT_LOG((buf,"%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ ));
   SearchInfo search(name);
   dl_iterate_phdr(elf_search_loaded_object_callback,&search);
   return search._Address;
@@ -262,8 +291,12 @@ void startup_register_loaded_objects()
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle) {
-  // printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
+void add_dynamic_library_impl(bool is_executable,
+                              const std::string& libraryName,
+                              bool use_origin,
+                              uintptr_t library_origin,
+                              void* handle,
+                              gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -311,7 +344,8 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
     abort();
   }
   BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,library_origin);
+  gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
+  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 
