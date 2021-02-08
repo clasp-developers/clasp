@@ -249,6 +249,7 @@ namespace core {
   /*! Return the value at the indices */
     virtual T_sp replaceArray(T_sp other) = 0;
     virtual void __write__(T_sp strm) const override;
+    virtual void __writeString(size_t istart, size_t iend, T_sp stream) const; 
     virtual string __repr__() const override;
   // ------------------------------------------------------------
   //
