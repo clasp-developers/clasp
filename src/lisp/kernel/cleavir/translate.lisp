@@ -344,7 +344,7 @@
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
            ;; `+ because we can't pass 0 to longjmp.
-           "longjmp" (list bufp (%i32 (1+ destination-id)))))
+           "_longjmp" (list bufp (%i32 (1+ destination-id)))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
                                (cleavir-bir:dynamic-environment instruction))

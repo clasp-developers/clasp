@@ -281,7 +281,7 @@
          (primitive-unwinds "cc_oddKeywordException" %void% (list %function-description*%))
          (primitive         "cc_multipleValuesArrayAddress" %t*[0]*% nil)
          (primitive         "_setjmp" %i32% (list %jmp-buf-tag*%))
-         (primitive-unwinds "longjmp" %void% (list %jmp-buf-tag*% %i32%))
+         (primitive-unwinds "_longjmp" %void% (list %jmp-buf-tag*% %i32%))
          (primitive-unwinds "cc_unwind" %void% (list %t*% %size_t%))
          (primitive-unwinds "cc_throw" %void% (list %t*%) :does-not-return t)
          (primitive         "cc_saveMultipleValue0" %void% (list %tmv%))

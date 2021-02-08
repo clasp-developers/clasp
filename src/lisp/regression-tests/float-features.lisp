@@ -7,7 +7,6 @@
          (ext:with-float-traps-masked (:divide-by-zero)
            (/ (bar) (foo))))))
 
-#+(or)
 (test float-features-1b
       (handler-case
           (flet ((foo () (if (> 10 (random 20)) 0.0 0.0))
@@ -30,7 +29,6 @@
          (let ((n (random 100)))
            (+ (foo-ext-1 n) (bar-ext-1 n))))))
 
-#+(or)
 (test float-features-4
       (handler-case
           (let ((n (random 100)))
@@ -51,7 +49,6 @@
          (let ((n (random 100)))
            (+ (foo-ext-2 n) (bar-ext-2 n))))))
 
-#+(or)
 (test float-features-6
       (handler-case
           (let ((n (random 100)))
@@ -74,7 +71,6 @@
          (let ((n (random 100)))
            (/ (foo-ext-3 n) (bar-ext-3 n))))))
 
-#+(or)
 (test float-features-8
       (handler-case
           (ext:with-float-traps-masked ()
