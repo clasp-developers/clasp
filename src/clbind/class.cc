@@ -104,8 +104,8 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
-    creator = gctools::GC<DummyCreator_O>::allocate(fdesc,classNameString);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,classNameString);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
   crep->initializeClassSlots(creator,gctools::NextStampWtag(where));

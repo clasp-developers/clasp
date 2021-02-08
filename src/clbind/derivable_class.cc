@@ -105,8 +105,8 @@ void derivable_class_registration::register_() const {
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
-    creator = gctools::GC<DummyCreator_O>::allocate(fdesc,classNameString);
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
+    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,classNameString);
   }
   crep->initializeClassSlots(creator,gctools::NextStampWtag(gctools::Header_s::derivable_wtag));
   core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());

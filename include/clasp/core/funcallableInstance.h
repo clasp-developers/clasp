@@ -56,16 +56,16 @@ namespace core {
     // Changes to the structure here must be reflected there.
   public: // ctor/dtor for classes with shared virtual base
     // entry_point is the LISP_CALLING_CONVENTION() macro
-  FuncallableInstance_O(FunctionDescription_sp fdesc) :
+  FuncallableInstance_O(GlobalEntryPoint_sp fdesc) :
       Base(ENSURE_ENTRY_POINT(fdesc,funcallable_entry_point))
       , _Class(_Nil<Instance_O>())
     , _CompiledDispatchFunction(_Nil<T_O>()) {}
-    explicit FuncallableInstance_O(FunctionDescription_sp fdesc,Instance_sp metaClass, size_t slots) :
+    explicit FuncallableInstance_O(GlobalEntryPoint_sp fdesc,Instance_sp metaClass, size_t slots) :
         Base(fdesc)
         , _Class(metaClass)
         , _CompiledDispatchFunction(_Nil<T_O>())
     {};
-    FuncallableInstance_O(FunctionDescription_sp fdesc, Instance_sp cl, Rack_sp rack)
+    FuncallableInstance_O(GlobalEntryPoint_sp fdesc, Instance_sp cl, Rack_sp rack)
         : Base(fdesc),
           _Class(cl),
           _Rack(rack),

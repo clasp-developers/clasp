@@ -957,16 +957,14 @@ But no irbuilders or basic-blocks. Return the fn."
 
 (defconstant +maxi32+ 4294967295)
 
-(defstruct (function-description-reference (:type vector) :named)
+(defstruct (entry-point-reference (:type vector) :named)
   index)
 
 (defstruct (function-description-placeholder (:type vector) :named)
   function function-name source-pathname lambda-list docstring declares lineno column filepos
   )
 
-(defun irc-create-function-description-reference (llvm-function-name fn module function-info)
-  "If **generate-code** then create a function-description block from function info.
-    Otherwise we are code-walking - and do something else that is appropriate."
+(defun irc-create-entry-point-reference (kind llvm-function-name fn module function-info)
   (unless function-info
     (error "function info is NIL for ~a" llvm-function-name))
   (let ((function-name (function-info-function-name function-info))
@@ -985,36 +983,28 @@ But no irbuilders or basic-blocks. Return the fn."
         (when l (setf lineno l))
         (when c (setf column c))
         (when f (setf filepos f)))
-      #+(or)
-      (progn
-        (core:bformat t "--------------------------%N")
-        (core:bformat t "found-source-info: %s%N" found-source-info)
-        (core:bformat t "source-pathname: %s%N" source-pathname)
-        (core:bformat t "source-info-name: %s%N" source-info-name)
-        (core:bformat t "llvm-function-name: %s%N" llvm-function-name)
-        (core:bformat t "function-name: %s%N" function-name)
-        (core:bformat t "declares: %s%N" declares)
-        (core:bformat t "form: %s%N" (function-info-form function-info))
-        (core:bformat t "lambda-list: %s%N" lambda-list)
-        (core:bformat t "docstring: %s%N" docstring)
-        (core:bformat t "lineno: %s%N" lineno)
-        (core:bformat t "column: %s%N" column)
-        (core:bformat t "filepos: %s%N" filepos))
       (let* ((entry-point-indices (mapcar (lambda (func) (literal:register-function-index fn)) (list fn)))
-             (fdesc (sys:make-function-description-generator :entry-point-functions entry-point-indices
-                                                             :function-name function-name
-                                                             :source-pathname source-pathname
-                                                             :lambda-list lambda-list
-                                                             :docstring docstring
-                                                             :declares declares
-                                                             :lineno lineno
-                                                             :column column
-                                                             :filepos filepos))
-             (index (literal:reference-literal fdesc)))
-;;;        (core:bformat t " irc-create-function-description-reference function-info -> %s   index: %d%N" function-info index)
-        (make-function-description-reference :index index))
-)))
-
+             (fdesc (sys:make-function-description :function-name function-name
+                                                   :source-pathname source-pathname
+                                                   :lambda-list lambda-list
+                                                   :docstring docstring
+                                                   :declares declares
+                                                   :lineno lineno
+                                                   :column column
+                                                   :filepos filepos))
+             (entry-point-generator (cond
+                                      ((eq kind :global)
+                                       (sys:make-global-entry-point-generator
+                                        :entry-point-functions entry-point-indices
+                                        :function-description fdesc))
+                                      ((eq kind :local)
+                                       (sys:make-local-entry-point-generator
+                                        :entry-point-functions entry-point-indices
+                                        :function-description fdesc))
+                                      (t (error "Unknown entry-point kind: ~a" kind))))
+             (index (literal:reference-literal entry-point-generator)))
+        (make-entry-point-reference :index index))
+      )))
 
 
 (defun irc-bclasp-function-create (lisp-function-name env
@@ -1038,7 +1028,8 @@ and then the irbuilder-alloca, irbuilder-body."
                                          *the-module*
                                          :function-attributes function-attributes
                                          :argument-names argument-names)))
-    (let* ((fn-description-ref (irc-create-function-description-reference
+    (let* ((fn-description-ref (irc-create-entry-point-reference
+                                :global
                                 llvm-function-name
                                 fn
                                 *the-module*
@@ -1065,14 +1056,15 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-cclasp-local-function-create (llvm-function-type linkage llvm-function-name module function-info)
   "Create a local function and no function description is needed"
-  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module)))
-    fn))
+  (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
+         (entry-point-reference (irc-create-entry-point-reference :local llvm-function-name fn module function-info)))         
+    (values fn entry-point-reference)))
 
 (defun irc-cclasp-function-create (llvm-function-type linkage llvm-function-name module function-info)
   "Create a function and a function description for a cclasp function"
   (let* ((fn (irc-function-create llvm-function-type linkage llvm-function-name module))
-         (fn-description-reference (irc-create-function-description-reference llvm-function-name fn module function-info)))
-    (values fn fn-description-reference)))
+         (entry-point-reference (irc-create-entry-point-reference :global llvm-function-name fn module function-info)))
+    (values fn entry-point-reference)))
 
 (defun irc-verify-no-function-environment-cleanup (env)
   (let ((unwind (local-metadata env :unwind)))
@@ -1220,13 +1212,13 @@ and then the irbuilder-alloca, irbuilder-body."
 
 (defun irc-calculate-entry (closure arguments &optional (label "entry-point-gep"))
   (let* ((closure-i8*           (irc-bit-cast closure %i8*%))
-         (function-description-addr-i8*  (irc-gep closure-i8* (list (- +closure-function-description-offset+ +general-tag+))))
-         (function-description-i8** (irc-bit-cast function-description-addr-i8* %i8**%))
-         (function-description-i8* (irc-load function-description-i8**))
-         (entry-point-addr-i8*  (irc-gep function-description-i8* (list (- +function-description-entry-points-offset+ +general-tag+))))
-         (entry-point-addr-fp** (irc-bit-cast entry-point-addr-i8* %fn-prototype**%))
-         (entry-point           (irc-load entry-point-addr-fp** (core:bformat nil "%s-gep" label))))
-    entry-point))
+         (entry-point-addr-i8*  (irc-gep closure-i8* (list (- +closure-entry-point-offset+ +general-tag+))))
+         (entry-point-i8** (irc-bit-cast entry-point-addr-i8* %i8**%))
+         (entry-point-i8* (irc-load entry-point-i8**))
+         (call-addr-i8*  (irc-gep entry-point-i8* (list (- +global-entry-point-entry-points-offset+ +general-tag+))))
+         (call-addr-fp** (irc-bit-cast call-addr-i8* %fn-prototype**%))
+         (call           (irc-load call-addr-fp** (core:bformat nil "%s-gep" label))))
+    call))
 
 
 #+(or)

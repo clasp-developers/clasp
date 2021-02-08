@@ -93,8 +93,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
   // If instance class already has an allocator then leave it alone
   if (instance->CLASS_has_creator()) return instance->CLASS_get_creator();
   if (metaclass->_className() == clos::_sym_funcallable_standard_class) {
-    FunctionDescription_sp fdesc = makeFunctionDescription(kw::_sym_creator,FuncallableInstanceCreator_O::entry_point);
-    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(fdesc,instance);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(kw::_sym_creator,FuncallableInstanceCreator_O::entry_point);
+    Creator_sp funcallableInstanceCreator = gc::GC<FuncallableInstanceCreator_O>::allocate(entryPoint,instance);
     return funcallableInstanceCreator;
   };
   Instance_sp aCxxDerivableAncestorClass_unsafe; // The constructor will initialize this pointer to NULL.
@@ -133,8 +133,8 @@ CL_DEFUN T_sp core__compute_instance_creator(T_sp tinstance, T_sp tmetaclass, Li
 #ifdef DEBUG_CLASS_INSTANCE
     printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(instance->name()).c_str());
 #endif
-    FunctionDescription_sp fdesc = makeFunctionDescription( kw::_sym_creator,InstanceCreator_O::entry_point,_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(),_Nil<core::T_O>(), 0, 0, 0 );
-    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(fdesc,instance);
+    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( kw::_sym_creator,InstanceCreator_O::entry_point);
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(entryPoint,instance);
     return instanceAllocator;
   }
 }

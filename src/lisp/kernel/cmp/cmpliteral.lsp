@@ -57,7 +57,7 @@
 (defstruct (literal-node-creator (:type vector) (:include literal-dnode) :named)
   name literal-name object arguments)
 (defstruct (literal-node-runtime (:type vector) (:include literal-dnode) :named) object)
-(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function function-description-ref)
+(defstruct (literal-node-closure (:type vector) (:include literal-dnode) :named) function-index function entry-point-ref)
 
 (defstruct (function-datum (:type vector) :named) index)
 (defstruct (single-float-datum (:type vector) :named) value)
@@ -168,6 +168,7 @@
   (base-string-coalesce (make-similarity-table #'equal))
   (pathname-coalesce (make-similarity-table #'equal))
   (function-description-coalesce (make-similarity-table #'equal))
+  (entry-point-coalesce (make-similarity-table #'eq))
   (package-coalesce (make-similarity-table #'eq))
   (double-float-coalesce (make-similarity-table #'eql))
   (llvm-values (make-hash-table))
@@ -251,17 +252,11 @@ rewrite the slot in the literal table to store a closure."
     (run-all-add-node rase)
     rase))
 
-(defun register-function (llvm-func)
+(defun register-function->function-datum (llvm-func)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  #+(or)(format t "register-function type: ~s~%" (llvm-sys:get-type llvm-func))
-  (unless (llvm-sys:type-equal (llvm-sys:get-type llvm-func) cmp:%fn-prototype*%)
-    (error "You are trying to register a function ~s with type ~s and expected type is: ~s"
-           llvm-func
-           (llvm-sys:get-type llvm-func)
-           cmp:%fn-prototype%))
   (dotimes (idx (length (literal-machine-function-vector *literal-machine*)))
     (when (eq llvm-func (elt (literal-machine-function-vector *literal-machine*) idx))
-      (return-from register-function idx)))
+      (return-from register-function->function-datum (make-function-datum :index idx))))
   (let ((function-index (length (literal-machine-function-vector *literal-machine*))))
     (vector-push-extend llvm-func (literal-machine-function-vector *literal-machine*))
     (make-function-datum :index function-index)))
@@ -269,7 +264,7 @@ rewrite the slot in the literal table to store a closure."
 
 (defun register-function-index (llvm-func)
   "Add a function to the (literal-machine-function-vector *literal-machine*)"
-  (let ((function-datum (register-function llvm-func)))
+  (let ((function-datum (register-function->function-datum llvm-func)))
     (function-datum-index function-datum)))
 
 ;;; Helper function: we write a few things out as base strings.
@@ -396,20 +391,29 @@ rewrite the slot in the literal table to store a closure."
 
 (defun ltv/function-description (fdesc-ph index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
-  ;;;(warn "What do we do with the function entry-point??? fdesc-ph-> ~s function -> ~s" fdesc-ph (cmp:function-description-placeholder-function fdesc-ph))
-  ;;; You would use more entry-points for multiple entry-points
-  (let ((function-index (first (sys:function-description-generator-entry-point-functions fdesc-ph))))
-    ;;;(warn "ltv/function-description function-index -> ~a" function-index)
-    (add-creator "ltvc_make_function_description" index fdesc-ph
+  (add-creator "ltvc_make_function_description" index fdesc-ph
+               (load-time-reference-literal (sys:function-description-source-pathname fdesc-ph) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-function-name fdesc-ph) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-lambda-list fdesc-ph) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-docstring fdesc-ph) read-only-p :toplevelp nil)
+               (load-time-reference-literal (sys:function-description-declares fdesc-ph) read-only-p :toplevelp nil)
+               (sys:function-description-lineno fdesc-ph)
+               (sys:function-description-column fdesc-ph)
+               (sys:function-description-filepos fdesc-ph)))
+
+(defun ltv/local-entry-point (entry-point index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
+  (let ((function-index (first (sys:local-entry-point-generator-entry-point-indices entry-point))))
+    (add-creator "ltvc_make_local_entry_point" index entry-point
                  function-index
-                 (load-time-reference-literal (sys:function-description-base-source-pathname fdesc-ph) read-only-p :toplevelp nil)
-                 (load-time-reference-literal (sys:function-description-base-function-name fdesc-ph) read-only-p :toplevelp nil)
-                 (load-time-reference-literal (sys:function-description-base-lambda-list fdesc-ph) read-only-p :toplevelp nil)
-                 (load-time-reference-literal (sys:function-description-base-docstring fdesc-ph) read-only-p :toplevelp nil)
-                 (load-time-reference-literal (sys:function-description-base-declares fdesc-ph) read-only-p :toplevelp nil)
-                 (sys:function-description-base-lineno fdesc-ph)
-                 (sys:function-description-base-column fdesc-ph)
-                 (sys:function-description-base-filepos fdesc-ph))))
+                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil))))
+
+(defun ltv/global-entry-point (entry-point index read-only-p &key (toplevelp t))
+  (declare (ignore toplevelp))
+  (let ((function-index (first (sys:global-entry-point-generator-entry-point-indices entry-point))))
+    (add-creator "ltvc_make_global_entry_point" index entry-point
+                 function-index
+                 (load-time-reference-literal (sys:entry-point-base-function-description entry-point) read-only-p :toplevelp nil))))
 
 (defun ltv/package (package index read-only-p &key (toplevelp t))
   (declare (ignore toplevelp))
@@ -454,7 +458,7 @@ rewrite the slot in the literal table to store a closure."
           (t (let* ((fn (compile-form create))
                     (name (llvm-sys:get-name fn)))
                (add-creator "ltvc_set_mlf_creator_funcall"
-                            index object (register-function fn) name))))
+                            index object (register-function->function-datum fn) name))))
       (when initialize
         ;; If the form is a call to a named function, with all constant arguments,
         ;; special case that to avoid the compiler. This covers e.g. the
@@ -471,7 +475,7 @@ rewrite the slot in the literal table to store a closure."
             ;; General case.
             (let* ((fn (compile-form initialize))
                    (name (llvm-sys:get-name fn)))
-              (add-side-effect-call "ltvc_mlf_init_funcall" (register-function fn) name)))))))
+              (add-side-effect-call "ltvc_mlf_init_funcall" (register-function->function-datum fn) name)))))))
 
 (defun object-similarity-table-and-creator (literal-machine object read-only-p)
   ;; Note: If an object has modifiable sub-parts, if we are not read-only-p
@@ -486,7 +490,9 @@ rewrite the slot in the literal table to store a closure."
     ((symbolp object) (values (literal-machine-symbol-coalesce literal-machine) #'ltv/symbol))
     ((double-float-p object) (values (literal-machine-double-float-coalesce literal-machine) #'ltv/double-float))
     ((core:ratio-p object) (values (literal-machine-ratio-coalesce literal-machine) #'ltv/ratio))
-    ((sys:function-description-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
+    ((sys:function-description-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/function-description))
+    ((sys:local-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/local-entry-point))
+    ((sys:global-entry-point-generator-p object) (values (literal-machine-function-description-coalesce literal-machine) #'ltv/global-entry-point))
     ((bit-vector-p object) (values nil #'ltv/bitvector))
     ((core:base-string-p object)
      (values (if read-only-p (literal-machine-identity-coalesce literal-machine) (literal-machine-base-string-coalesce literal-machine)) #'ltv/base-string))
@@ -636,13 +642,16 @@ rewrite the slot in the literal table to store a closure."
          (function-index (literal-node-closure-function-index closurette-object))
          (datum (literal-dnode-datum closurette-object))
          (index (datum-index datum))
-         (function-description-ref (literal-node-closure-function-description-ref closurette-object)))
+         (entry-point-ref (literal-node-closure-entry-point-ref closurette-object)))
     (cmp:irc-intrinsic-call "ltvc_make_closurette"
                             (list *gcroots-in-module*
                                   (cmp:jit-constant-i8 cmp:+literal-tag-char-code+)
                                   (cmp:jit-constant-size_t index)
-                                  (cmp:jit-constant-size_t function-index)
-                                  (cmp:jit-constant-size_t (cmp:function-description-reference-index function-description-ref))))))
+                                  (cmp:jit-constant-size_t  (cond
+                                                              ((fixnump function-index)
+                                                               function-index)
+                                                              (t (error "The function-index is not a fixnum it's a ~s of class ~s" function-index (class-of function-index)))))
+                                  (cmp:jit-constant-size_t (cmp:entry-point-reference-index entry-point-ref))))))
 
 (defparameter *ltv-trap* nil)
 
@@ -650,28 +659,30 @@ rewrite the slot in the literal table to store a closure."
   "Arrange to evaluate the thunk into a load-time-value.
 Return the index of the load-time-value"
   (let ((datum (new-datum t)))
-    (add-creator "ltvc_set_ltv_funcall" datum nil (register-function thunk) (llvm-sys:get-name thunk))
+    (add-creator "ltvc_set_ltv_funcall" datum nil (register-function->function-datum thunk) (llvm-sys:get-name thunk))
     (literal-datum-index datum)))
 
 (defun arrange-thunk-as-top-level (thunk)
   "Arrange to evaluate the thunk as the top-level form."
   (run-all-add-node (make-literal-node-toplevel-funcall
                      :arguments (list *gcroots-in-module*
-                                      (register-function thunk)
+                                      (register-function->function-datum thunk)
                                       (llvm-sys:get-name thunk)))))
 
 (defun setup-literal-machine-function-vectors (the-module &key (id 0))
-  (let* ((function-vector-type (llvm-sys:array-type-get cmp:%fn-prototype*%
-                                                        (length (literal-machine-function-vector *literal-machine*))))
-         (function-vector (llvm-sys:make-global-variable
-                           the-module
-                           function-vector-type
-                           nil
-                           'llvm-sys:internal-linkage
-                           (llvm-sys:constant-array-get function-vector-type
-                                                        (coerce (literal-machine-function-vector *literal-machine*) 'list))
-                           (core:bformat nil "function-vector-%s" id))))
-    (values (length (literal-machine-function-vector *literal-machine*)) function-vector)))
+  (let* ((function-vector-length (length (literal-machine-function-vector *literal-machine*)))
+         (function-vector-type (llvm-sys:array-type-get cmp:%opaque-fn-prototype*% function-vector-length))
+         (function-vector-global (llvm-sys:make-global-variable
+                                  the-module
+                                  function-vector-type
+                                  nil
+                                  'llvm-sys:internal-linkage
+                                  (llvm-sys:constant-array-get function-vector-type
+                                                               (mapcar (lambda (fn)
+                                                                         (cmp:irc-bit-cast fn cmp:%opaque-fn-prototype*%))
+                                                                       (coerce (literal-machine-function-vector *literal-machine*) 'list)))
+                                  (core:bformat nil "function-vector-%s" id))))
+    (values function-vector-length function-vector-global)))
 
 (defun do-literal-table (id body-fn)
   (llog "do-literal-table~%")
@@ -958,14 +969,18 @@ and  return the sorted values and the constant-table or (values nil nil)."
 ;;; We could also add the capability to dump actual closures, though
 ;;;  I'm not sure why we'd want to do so.
 
-(defun reference-closure (function function-description-ref)
+(defun reference-closure (function entry-point-ref)
   (let* ((datum (new-datum t))
-         (function-index (register-function function))
-         (creator (make-literal-node-closure :datum datum :function-index function-index :function function :function-description-ref function-description-ref)))
-    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:function-description-reference-index function-description-ref))
+         (function-datum (register-function->function-datum function))
+         (function-index (function-datum-index function-datum))
+         (creator (make-literal-node-closure :datum datum
+                                             :function-index function-index
+                                             :function function
+                                             :entry-point-ref entry-point-ref)))
+    (add-creator "ltvc_make_closurette" datum creator function-index (cmp:entry-point-reference-index entry-point-ref))
     (datum-index datum)))
 
-#|  (register-function function function-description))
+#|  (register-function function entry-point))
 
   (if (cmp:generate-load-time-values)
       (multiple-value-bind (lambda-name-node in-array)

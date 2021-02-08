@@ -72,7 +72,12 @@ LtvcReturn ltvc_make_base_string(gctools::GCRootsInModule* holder, char tag, siz
 LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* host_t,core::T_O* device_t,core::T_O* directory_t,core::T_O* name_t,core::T_O* type_t,core::T_O* version_t );
 
 
-LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t, core::T_O* declares_t, size_t lineno, size_t column, size_t filepos);
+LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t, core::T_O* declares_t, size_t lineno, size_t column, size_t filepos);
+
+LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
+
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t );
+
 
 
 LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t );

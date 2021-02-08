@@ -331,9 +331,16 @@ CL_DEFUN bool core__proper_list_p(T_sp arg) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("function-description-generator-p");
-CL_DEFUN bool core__function_description_generator_p(T_sp obj) {
-  return gc::IsA<FunctionDescriptionGenerator_sp>(obj);
+CL_DOCSTRING("global-entry-point-generator-p");
+CL_DEFUN bool core__global_entry_point_generator_p(T_sp obj) {
+  return gc::IsA<GlobalEntryPointGenerator_sp>(obj);
+};
+
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("local-entry-point-generator-p");
+CL_DEFUN bool core__local_entry_point_generator_p(T_sp obj) {
+  return gc::IsA<LocalEntryPointGenerator_sp>(obj);
 };
 
 CL_LAMBDA(arg);

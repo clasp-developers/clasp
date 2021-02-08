@@ -291,8 +291,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("JMP-BUF-SIZE"),make_fixnum(sizeof(jmp_buf))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-FUNCTION-DESCRIPTION-OFFSET"),make_fixnum(offsetof(core::Function_O,_FunctionDescription))),list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FUNCTION-DESCRIPTION-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::FunctionDescription_O, _EntryPoints))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"),make_fixnum(offsetof(core::Function_O,_EntryPoint))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GLOBAL-ENTRY-POINT-ENTRY-POINTS-OFFSET"),make_fixnum(offsetof(core::GlobalEntryPoint_O, _EntryPoints))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-REMAINING-NARGS-OFFSET"),make_fixnum(offsetof(core::Vaslist,_remaining_nargs))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"),make_fixnum(sizeof(size_t)*8)),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
@@ -368,8 +368,8 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
   if (unbox_fixnum(functionSize) != Function_O_size) {
     SIMPLE_ERROR(BF("Mismatch between function size[%d] and core::Function_O size[%d]") % unbox_fixnum(functionSize) % Function_O_size);
   }
-  if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_FunctionDescription)) {
-    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_FunctionDescription));
+  if (function_description_offset.unsafe_fixnum()!=offsetof(core::Function_O,_EntryPoint)) {
+    SIMPLE_ERROR(BF("Mismatch between function entry offset[%d] and core::Function_O.entry offset[%d]") % function_description_offset.unsafe_fixnum() % offsetof(core::Function_O,_EntryPoint));
   }
   int InvocationHistoryFrame_size = sizeof(core::InvocationHistoryFrame);
   if (givenIhfSize.notnilp() && unbox_fixnum(givenIhfSize) != InvocationHistoryFrame_size) {

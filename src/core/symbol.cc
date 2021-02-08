@@ -166,13 +166,13 @@ namespace core {
 
 ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 {
-  if (_lisp->_Roots._UnboundSymbolFunctionFunctionDescription.unboundp()) {
-    _lisp->_Roots._UnboundSymbolFunctionFunctionDescription = makeFunctionDescription(name,unboundFunctionEntryPoint);
+  if (_lisp->_Roots._UnboundSymbolFunctionEntryPoint.unboundp()) {
+    _lisp->_Roots._UnboundSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(name,unboundFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,1,
                                                               unboundFunctionEntryPoint,
-                                                              _lisp->_Roots._UnboundSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSymbolFunctionEntryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;
@@ -180,14 +180,14 @@ ClosureWithSlots_sp make_unbound_symbol_function(Symbol_sp name)
 
 ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 {
-  if (_lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription.unboundp()) {
+  if (_lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint.unboundp()) {
     List_sp sname = Cons_O::createList(cl::_sym_setf,name);
-    _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription = makeFunctionDescription(sname,unboundSetfFunctionEntryPoint);
+    _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint = makeGlobalEntryPointAndFunctionDescription(sname,unboundSetfFunctionEntryPoint);
   }
   ClosureWithSlots_sp closure = 
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, 1,
                                                               unboundSetfFunctionEntryPoint,
-                                                              _lisp->_Roots._UnboundSetfSymbolFunctionFunctionDescription,
+                                                              _lisp->_Roots._UnboundSetfSymbolFunctionEntryPoint,
                                                               ClosureWithSlots_O::cclaspClosure);
   (*closure)[0] = name;
   return closure;

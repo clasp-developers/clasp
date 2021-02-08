@@ -60,7 +60,7 @@ public: // initialize
   T_mv evaluate(List_sp args, T_sp environment);
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 
-  SpecialForm_O(FunctionDescription_sp fdesc) : Base(ENSURE_ENTRY_POINT(fdesc,specialFormDummyEntryPoint)) {};
+  SpecialForm_O(GlobalEntryPoint_sp fdesc) : Base(ENSURE_ENTRY_POINT(fdesc,specialFormDummyEntryPoint)) {};
   virtual ~SpecialForm_O() {};
 };
 };

@@ -172,15 +172,15 @@ void cc_remove_gcroots_in_module(gctools::GCRootsInModule* holder)
 typedef void LtvcReturn;
 #define LTVCRETURN /* Nothing return for void */
 
-LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t function_info_index)
+LtvcReturn ltvc_make_closurette(gctools::GCRootsInModule* holder, char tag, size_t index, size_t function_index, size_t entry_point_index)
 {NO_UNWIND_BEGIN();
   fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(function_index);
-  gc::Tagged tfunctionInfo = holder->getLiteral(function_info_index);
-  core::FunctionDescription_sp functionDescription(tfunctionInfo);
+  gc::Tagged tentrypoint = holder->getLiteral(entry_point_index);
+  core::GlobalEntryPoint_sp entryPoint(tentrypoint);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false,0,
                                                               llvm_func,
-                                                              functionDescription,
+                                                              entryPoint,
                                                               core::ClosureWithSlots_O::cclaspClosure);
   LTVCRETURN holder->setTaggedIndex(tag,index, functoid.tagged_());
   NO_UNWIND_END();
@@ -406,11 +406,9 @@ LtvcReturn ltvc_make_pathname(gctools::GCRootsInModule* holder, char tag, size_t
 }
 
 
-LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
+LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* sourcePathname_t, core::T_O* functionName_t, core::T_O* lambdaList_t, core::T_O* docstring_t,core::T_O* declares_t, size_t lineno, size_t column, size_t filepos)
 {NO_UNWIND_BEGIN();
-  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
   core::FunctionDescription_sp val = core::makeFunctionDescription(core::T_sp(functionName_t),
-                                                                   llvm_func,
                                                                    core::T_sp(lambdaList_t),
                                                                    core::T_sp(docstring_t),
                                                                    core::T_sp(declares_t),
@@ -428,6 +426,39 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
+
+LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
+{NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
+  core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
+  core::LocalEntryPoint_sp entryPoint = core::makeLocalEntryPoint(fdesc,llvm_func);
+//  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
+  if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
+    SIMPLE_ERROR(BF("The object is not a LocalEntryPoint %s") % core::_rep_(entryPoint));
+  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  NO_UNWIND_END();
+}
+
+LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char tag, size_t index, size_t functionIndex, core::T_O* functionDescription_t )
+{NO_UNWIND_BEGIN();
+  fnLispCallingConvention llvm_func = (fnLispCallingConvention)holder->lookup_function(functionIndex);
+  core::FunctionDescription_sp fdesc((gctools::Tagged)functionDescription_t);
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPoint(fdesc,llvm_func);
+//  printf("%s:%d:%s Created FunctionDescription_sp @%p entry_point = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)val.raw_(), (void*)llvm_func);
+  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
+    SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
+  }
+  DEBUG_OBJECT_FILES(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+  LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
+  NO_UNWIND_END();
+}
+
 
 LtvcReturn ltvc_make_package(gctools::GCRootsInModule* holder, char tag, size_t index, core::T_O* package_name_t )
 {
@@ -691,21 +722,21 @@ extern "C" {
 
 
 core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
-                                core::T_O* functionDesc,
+                                core::T_O* tentrypoint,
                                 core::T_O* frameP
                                 )
 {NO_UNWIND_BEGIN();
   // TODO: If a pointer to an integer was passed here we could write the sourceName FileScope_sp index into it for source line debugging
   core::T_sp frame((gctools::Tagged)frameP);
-  core::FunctionDescription_sp functionDescription((gctools::Tagged)functionDesc);
-  if (!gc::IsA<core::FunctionDescription_sp>(functionDescription)) {
-    printf("%s:%d:%s You must pass a function-description - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(functionDescription).c_str());
+  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)tentrypoint);
+  if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
+    printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
   };
 //  DEBUG_OBJECT_FILES(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,
-                                                              functionDescription,
+                                                              entryPoint,
                                                               core::ClosureWithSlots_O::bclaspClosure);
   (*toplevel_closure)[BCLASP_CLOSURE_ENVIRONMENT_SLOT] = frame;
   return toplevel_closure.raw_();
@@ -1172,15 +1203,15 @@ __attribute__((optnone)) void cc_error_case_failure(T_O* datum, T_O* expected_ty
 }
 
 core::T_O *cc_enclose(fnLispCallingConvention llvm_func,
-                      core::T_O* functionDescriptionInfo,
+                      core::T_O* entryPointInfo,
                       std::size_t numCells)
 {
-  core::FunctionDescription_sp functionDescription((gctools::Tagged)functionDescriptionInfo);
+  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container( false, numCells
                                                                , llvm_func
-                                                               , functionDescription,
-                                                               core::ClosureWithSlots_O::cclaspClosure);
+                                                               , entryPoint
+                                                               , core::ClosureWithSlots_O::cclaspClosure);
   return functoid.raw_();
 }
 

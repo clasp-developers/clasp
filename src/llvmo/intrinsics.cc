@@ -254,7 +254,7 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_O *resultP, core::T_O *par
 
 ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                           fnLispCallingConvention llvm_func,
-                                          core::T_O* functionDescriptionInfo,
+                                          core::T_O* entryPointInfo,
                                           std::size_t numCells)
 {NO_UNWIND_BEGIN();
   ASSERT(((uintptr_t)(closure_address)&0x7)==0); //
@@ -267,11 +267,11 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 #else
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_header);
 #endif
-  core::FunctionDescription_sp functionDescription((gctools::Tagged)functionDescriptionInfo);
+  core::GlobalEntryPoint_sp entryPoint((gctools::Tagged)entryPointInfo);
   auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
   new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)( numCells,
                                                                            llvm_func,
-                                                                           functionDescription,
+                                                                           entryPoint,
                                                                            core::ClosureWithSlots_O::cclaspClosure);
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
 //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(), functoid->stack_closure_p());

@@ -703,6 +703,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 (error "Define calling convention for system")
 
 ;;; This is the normal C-style prototype for a function
+(define-symbol-macro %opaque-fn-prototype*% %i8*%)
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)
 ;;; This is the C-style prototype with an extra argument that contains the vaslist for all arguments
@@ -754,16 +755,23 @@ eg:  (f closure-ptr nargs a b c d ...)
                                     %i32%                  ;  7 lineno
                                     %i32%                  ;  8 column
                                     %i32%                  ;  9 filepos
-                                    %t*%                   ; 10 code
-                                    %entry-points-vector%  ; 11 entry-points
                                     ) nil ))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
 
+(define-c++-struct %global-entry-point% +general-tag+
+    ((%i8*% vtable)
+     (%t*% function-description)
+     (%entry-points-vector% data0)
+     (%t*% code)
+     ))
+    
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%)))
 
 (define-c++-struct %closure-with-slots% +general-tag+
   ((%i8*% vtable)
-   (%i8*% function-description)
+   (%t*% entry-point)
    (%i32% closure-type)
    (%size_t% data-length)
    (%tsp[0]% data0))

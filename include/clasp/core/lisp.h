@@ -194,8 +194,8 @@ class Lisp_O {
   {
     std::atomic<T_sp>    _AllObjectFiles;
     std::atomic<T_sp>    _AllLibraries;
-    FunctionDescription_sp _UnboundSymbolFunctionFunctionDescription;
-    FunctionDescription_sp _UnboundSetfSymbolFunctionFunctionDescription;
+    GlobalEntryPoint_sp _UnboundSymbolFunctionEntryPoint;
+    GlobalEntryPoint_sp _UnboundSetfSymbolFunctionEntryPoint;
     T_sp _TerminalIO;
     //! Threads
 #ifdef CLASP_THREADS

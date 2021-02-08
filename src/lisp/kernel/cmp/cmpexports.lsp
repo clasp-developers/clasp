@@ -29,6 +29,7 @@
             irc-cclasp-local-function-create
             irc-cclasp-function-create
             +c++-stamp-max+
+            %opaque-fn-prototype*%
             %fn-prototype%
             +fn-prototype-argument-names+
             %fn-prototype*%
@@ -107,7 +108,7 @@
             gcroots-in-module-initial-value
             %function-description%
             %function-description*%
-            function-description-reference-index
+            entry-point-reference-index
             function-type-create-on-the-fly
             evaluate-foreign-arguments
             jit-remove-module
@@ -355,7 +356,7 @@
           make-literal-node-creator
           setup-literal-machine-function-vectors
           run-all-add-node
-          register-function
+          register-function->function-datum
           register-function-index
           literal-node-runtime-p
           literal-node-runtime-index

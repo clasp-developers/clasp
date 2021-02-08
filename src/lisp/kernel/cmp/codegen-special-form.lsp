@@ -79,20 +79,20 @@
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
-  (multiple-value-bind (compiled-fn lambda-name lambda-list function-description-ref)
+  (multiple-value-bind (compiled-fn lambda-name lambda-list entry-point-ref)
       (compile-lambda-function lambda-or-lambda-block env)
     (declare (ignore lambda-list))
     (if (null lambda-name) (error "The lambda doesn't have a name"))
     (if result
         (let ((llvm-function-name (llvm-sys:get-name compiled-fn)))
-          (unless function-description-ref
-            (error "Could not find function-description-ref for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
+          (unless entry-point-ref
+            (error "Could not find entry-point-ref for function name: ~a lambda: ~a" llvm-function-name lambda-or-lambda-block))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (let* ((runtime-environment (irc-load (irc-renv env)))
                  (fnptr (irc-intrinsic "makeCompiledFunction" 
                                        compiled-fn
-                                       (literal:constants-table-value (cmp:function-description-reference-index function-description-ref)) #+(or)(cmp:irc-bit-cast function-description %i8*%) ; pass info for FunctionDescription
+                                       (literal:constants-table-value (cmp:entry-point-reference-index entry-point-ref)) 
                                        runtime-environment)))
             (irc-t*-result fnptr result))
           (values compiled-fn lambda-name)))))

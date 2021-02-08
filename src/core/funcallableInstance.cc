@@ -80,8 +80,8 @@ void FuncallableInstance_O::initializeClassSlots(Creator_sp creator, gctools::Sh
 CL_LAMBDA(class slot-count);
 CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
                                                            size_t slot_count) {
-  FunctionDescription_sp fdesc = makeFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint);
   obj->_Class = cl;
   obj->initializeSlots(cl->CLASS_stamp_for_instances(), cl->slots(), slot_count);
   return obj;
@@ -89,8 +89,8 @@ CL_DEFUN T_sp core__allocate_funcallable_standard_instance(Instance_sp cl,
 
 CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance_sp cl,
                                                                         Rack_sp rack) {
-  FunctionDescription_sp fdesc = makeFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, fdesc, cl, rack);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(cl::_sym_lambda,FuncallableInstance_O::funcallable_entry_point);
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O, obj, entryPoint, cl, rack);
   return obj;
 }
 
@@ -229,14 +229,14 @@ T_sp FuncallableInstance_O::setFuncallableInstanceFunction(T_sp function) {
     if (gc::IsA<ClosureWithSlots_sp>(function)) {
       ClosureWithSlots_sp closure = gc::As_unsafe<ClosureWithSlots_sp>(function);
       if (closure->openP())
-        this->_FunctionDescription.store(closure->_FunctionDescription.load());
+        this->_EntryPoint.store(closure->_EntryPoint.load());
       else {
-        FunctionDescription_sp fdesc = makeFunctionDescriptionCopy(this->_FunctionDescription,funcallable_entry_point);
-        this->_FunctionDescription.store(fdesc);
+        GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointCopy(this->_EntryPoint,funcallable_entry_point);
+        this->_EntryPoint.store(entryPoint);
       }
     } else {
-      FunctionDescription_sp fdesc = makeFunctionDescriptionCopy(this->_FunctionDescription,funcallable_entry_point);
-      this->_FunctionDescription.store(fdesc);
+      GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointCopy(this->_EntryPoint,funcallable_entry_point);
+      this->_EntryPoint.store(entryPoint);
     }
   } else {
     TYPE_ERROR(function, cl::_sym_function);
@@ -264,9 +264,9 @@ FuncallableInstance_sp FuncallableInstance_O::create_single_dispatch_generic_fun
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_DISPATCH_ARGUMENT_INDEX,
                           make_fixnum(singleDispatchArgumentIndex));
   rack->low_level_rackSet(Instance_O::REF_SINGLE_DISPATCH_SPECIALIZER_METHODS,_Nil<T_O>());
-  FunctionDescription_sp fdesc = makeFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point);
+  GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(gfname,FuncallableInstance_O::single_dispatch_funcallable_entry_point);
   Instance_sp class_ = gc::As<Instance_sp>(cl__find_class(_sym_SingleDispatchGenericFunctionClosure_O));
-  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,fdesc,class_,rack);
+  GC_ALLOCATE_VARIADIC(FuncallableInstance_O,gfun,entryPoint,class_,rack);
 //  gfun->entry = single_dispatch_funcallable_entry_point;
   return gfun;
 }

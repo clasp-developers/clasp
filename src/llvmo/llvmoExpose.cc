@@ -4344,7 +4344,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                                                                               _Nil<core::T_O>(),
                                                                               _Nil<core::T_O>() );
 //  printf("%s:%d:%s writing into function-description@%p  functionName: %s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, functoid->fdesc().raw_(), _rep_(functoid->fdesc()->_functionName).c_str(), _rep_(codeObject).c_str());
-  functoid->_FunctionDescription.load()->_Code = codeObject;
+  functoid->_EntryPoint.load()->_Code = codeObject;
   DEBUG_OBJECT_FILES(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
   
   return functoid;

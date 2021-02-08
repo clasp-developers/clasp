@@ -15,6 +15,8 @@ namespace cl {
 };
 
 namespace core {
+  FORWARD(GlobalEntryPoint);
+  FORWARD(LocalEntryPoint);
   FORWARD(Function);
   FORWARD(Closure);
   FORWARD(BuiltinClosure);
@@ -45,7 +47,14 @@ struct gctools::GCInfo<core::BuiltinClosure_O> {
 #endif
 
 template <>
-struct gctools::GCInfo<core::FunctionDescription_O> {
+struct gctools::GCInfo<core::GlobalEntryPoint_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = collectable_immobile;
+};
+
+template <>
+struct gctools::GCInfo<core::LocalEntryPoint_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
@@ -53,9 +62,9 @@ struct gctools::GCInfo<core::FunctionDescription_O> {
 
 namespace core {
 FORWARD(FunctionDescription);
-FunctionDescription_sp ensureEntryPoint(FunctionDescription_sp fdesc, claspFunction entry_point);
+GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry_point);
 };
-#define ENSURE_ENTRY_POINT(_fdesc_,_entry_point_) core::ensureEntryPoint(_fdesc_,_entry_point_)
+#define ENSURE_ENTRY_POINT(_ep_,_entry_point_) core::ensureEntryPoint(_ep_,_entry_point_)
 
 namespace core {
 
@@ -78,9 +87,9 @@ I used a virtual function because different subclasses store the FunctionDescrip
 pointer at different offsets so that FuncallableInstance_O can have its _Class and _Rack
 fields at the same offset as Instance_O.
    */
- FORWARD(FunctionDescriptionBase);
- class FunctionDescriptionBase_O : public General_O {
-   LISP_CLASS(core,CorePkg,FunctionDescriptionBase_O,"FunctionDescriptionBase",General_O);
+ FORWARD(FunctionDescription);
+ class FunctionDescription_O : public General_O {
+   LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",General_O);
  public:
   /* vtable */                                 //  1 vtable from General_O
    T_sp _sourcePathname;                       //  2 source-info
@@ -103,30 +112,75 @@ fields at the same offset as Instance_O.
    void setf_docstring(T_sp);
    T_sp declares() const;
    void setf_declares(T_sp);
-   FunctionDescriptionBase_O() {};
+   FunctionDescription_O() {};
  };
 
 
- FORWARD(FunctionDescription);
- class FunctionDescription_O : public FunctionDescriptionBase_O {
-   LISP_CLASS(core,CorePkg,FunctionDescription_O,"FunctionDescription",FunctionDescriptionBase_O);
+ FORWARD(EntryPointBase);
+ class EntryPointBase_O : public General_O {
+   LISP_CLASS(core,CorePkg,EntryPointBase_O,"EntryPointBase",General_O);
  public:
-  llvmo::CodeBase_sp _Code;                       //  10 code
-  void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];     //  11 entry-points
+   FunctionDescription_sp _FunctionDescription;
  public:
   // Accessors
- FunctionDescription_O(claspFunction entry_point, llvmo::CodeBase_sp code) : _EntryPoints{(void*)entry_point}, _Code(code) {  };
-//  FunctionDescription_O() {};
+   EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
+ };
+
+ FORWARD(LocalEntryPoint);
+ class LocalEntryPoint_O : public EntryPointBase_O {
+   LISP_CLASS(core,CorePkg,LocalEntryPoint_O,"LocalEntryPoint",EntryPointBase_O);
+ public:
+   void* _EntryPoint;
+   llvmo::CodeBase_sp _Code;                       //  10 code
+ public:
+  // Accessors
+   LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : EntryPointBase_O(fdesc), _EntryPoint(entry_point), _Code(code) {};
+ };
+
+FORWARD(LocalEntryPointGenerator);
+class LocalEntryPointGenerator_O : public EntryPointBase_O {
+   LISP_CLASS(core,CorePkg,LocalEntryPointGenerator_O,"LocalEntryPointGenerator",EntryPointBase_O);
+ public:
+  T_sp _entry_point_indices;
+ public:
+  // Accessors
+  LocalEntryPointGenerator_O( FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
+ };
+
+FORWARD(GlobalEntryPoint);
+ class GlobalEntryPoint_O : public EntryPointBase_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",EntryPointBase_O);
+ public:
+   void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
+   llvmo::CodeBase_sp _Code;                       //  10 code
+ public:
+  // Accessors
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _EntryPoints{entry_point}, _Code(code) {};
+ };
+
+FORWARD(GlobalEntryPointGenerator);
+class GlobalEntryPointGenerator_O : public EntryPointBase_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPointGenerator_O,"GlobalEntryPointGenerator",EntryPointBase_O);
+ public:
+  T_sp _entry_point_indices;
+ public:
+  // Accessors
+  GlobalEntryPointGenerator_O(FunctionDescription_sp fdesc, T_sp entry_point_indices ) : EntryPointBase_O(fdesc), _entry_point_indices(entry_point_indices) {};
  };
 
 
+GlobalEntryPoint_sp makeGlobalEntryPointAndFunctionDescription(T_sp functionName,
+                                                               claspFunction entryPoint,
+                                                               T_sp lambda_list=_Unbound<T_O>(),
+                                                               T_sp docstring=_Nil<T_O>(),
+                                                               T_sp declares=_Nil<T_O>(),
+                                                               T_sp sourcePathname=_Nil<T_O>(),
+                                                               int lineno=-1,
+                                                               int column=-1,
+                                                               int filePos=-1);
 
 
-
-
- 
- FunctionDescription_sp makeFunctionDescription(T_sp functionName,
-                                                claspFunction entry_point=NULL,
+FunctionDescription_sp makeFunctionDescription(T_sp functionName,
                                                 T_sp lambda_list=_Unbound<T_O>(),
                                                 T_sp docstring=_Nil<T_O>(),
                                                 T_sp declares=_Nil<T_O>(),
@@ -136,28 +190,20 @@ fields at the same offset as Instance_O.
                                                 int filePos=-1);
 
 
-FunctionDescription_sp makeFunctionDescriptionCopy(FunctionDescription_sp original, claspFunction entry_point=NULL);
+GlobalEntryPoint_sp makeGlobalEntryPoint( FunctionDescription_sp fdesc,
+                                          claspFunction      entry_point
+                                          );
+
+LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
+                                       claspFunction      entry_point
+                                       );
+
+GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_sp ep, void** fptrs);
+LocalEntryPoint_sp makeLocalEntryPointFromGenerator(LocalEntryPointGenerator_sp ep, void** fptrs);
+
+
+GlobalEntryPoint_sp makeGlobalEntryPointCopy(GlobalEntryPoint_sp original, claspFunction entry_point=NULL);
 void validateFunctionDescription(const char* filename, size_t lineno, Function_sp function);
-
-};
-
-
-namespace core {
-  FORWARD(FunctionDescriptionGenerator);
-  /*! 
-   * This class is used by the literal compiler to generate FunctionDescription_O objects at loadtime.
-   * It stores a list of entry points that are llvm::Function objects.
-   */
-  class FunctionDescriptionGenerator_O : public FunctionDescriptionBase_O {
-    LISP_CLASS(core,CorePkg,FunctionDescriptionGenerator_O,"FunctionDescriptionGenerator",FunctionDescriptionBase_O);
-  public:
-    T_sp  _EntryPointFunctions; // This is a list
-  public:
-  };
-
-
-   FunctionDescription_sp makeFunctionDescriptionFromGenerator(FunctionDescriptionGenerator_sp original, void** entry_points);
-
 
 };
 
@@ -168,13 +214,13 @@ namespace core {
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
-    std::atomic<FunctionDescription_sp>    _FunctionDescription;
+    std::atomic<GlobalEntryPoint_sp>    _EntryPoint;
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-  Function_O(FunctionDescription_sp ptr)
-      : _FunctionDescription(ptr)
+  Function_O(GlobalEntryPoint_sp ptr)
+      : _EntryPoint(ptr)
     {
 #ifdef _DEBUG_BUILD
       if (!ptr.generalp()) {
@@ -183,11 +229,11 @@ namespace core {
       }
 #endif
     };
-    claspFunction entry() const { return (claspFunction)(this->_FunctionDescription.load()->_EntryPoints[0]); }
-    virtual FunctionDescription_sp fdesc() const { return this->_FunctionDescription.load(); };
+    claspFunction entry() const { return (claspFunction)(this->_EntryPoint.load()->_EntryPoints[0]); }
+    virtual FunctionDescription_sp fdesc() const { return this->_EntryPoint.load()->_FunctionDescription; };
     // Rewrite the function-description pointer - used in direct-calls.lsp
     
-    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
+//    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
     CL_LISPIFY_NAME("core:functionName");
@@ -278,7 +324,7 @@ namespace core {
 class Closure_O : public Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
   public:
-  Closure_O(FunctionDescription_sp fdesc ) : Base(fdesc) {};
+  Closure_O(GlobalEntryPoint_sp ep ) : Base(ep) {};
   public:
     virtual const char *describe() const override { return "Closure"; };
     void describeFunction() const;
@@ -295,10 +341,10 @@ namespace core {
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:
-  BuiltinClosure_O(FunctionDescription_sp fdesc)
-    : Closure_O(fdesc), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
-  BuiltinClosure_O(FunctionDescription_sp fdesc, LambdaListHandler_sp llh)
-    : Closure_O(fdesc), _lambdaListHandler(llh)  {};
+  BuiltinClosure_O(GlobalEntryPoint_sp ep)
+    : Closure_O(ep), _lambdaListHandler(_Unbound<LambdaListHandler_O>())  {};
+  BuiltinClosure_O(GlobalEntryPoint_sp ep, LambdaListHandler_sp llh)
+    : Closure_O(ep), _lambdaListHandler(llh)  {};
     void finishSetup(LambdaListHandler_sp llh) {
       this->_lambdaListHandler = llh;
     }
@@ -347,9 +393,9 @@ namespace core {
   public:
   ClosureWithSlots_O(size_t capacity,
                      claspFunction functionPtr,
-                     FunctionDescription_sp functionDescription,
+                     GlobalEntryPoint_sp ep,
                      ClosureType nclosureType)
-      : Base(ENSURE_ENTRY_POINT(functionDescription,functionPtr)),
+      : Base(ENSURE_ENTRY_POINT(ep,functionPtr)),
         closureType(nclosureType),
         _Slots(capacity,_Unbound<T_O>(),true) {};
     virtual string __repr__() const override;

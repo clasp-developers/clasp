@@ -166,7 +166,7 @@ class DummyCreator_O : public core::Creator_O {
   string _name;
 
 public:
-  DummyCreator_O(core::FunctionDescription_sp fdesc, const string &name) : core::Creator_O(fdesc), _name(name){};
+  DummyCreator_O(core::GlobalEntryPoint_sp ep, const string &name) : core::Creator_O(ep), _name(name){};
 
 public:
   virtual size_t templatedSizeof() const  override{ return sizeof(*this); };
@@ -175,8 +175,8 @@ public:
     SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", this->_name.c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
-    return gc::GC<DummyCreator_O>::allocate(fdesc,core::lisp_symbolNameAsString(className));
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
+    return gc::GC<DummyCreator_O>::allocate(entryPoint,core::lisp_symbolNameAsString(className));
   }
 };
 
@@ -399,8 +399,8 @@ struct memfun_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicType::method_entry_point);
-    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc,methodPtr));
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::method_entry_point);
+    core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,methodPtr));
     lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
                                     m_arguments, m_declares, m_docstring,
                                     true,
@@ -430,8 +430,8 @@ struct iterator_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
     using VariadicType = IteratorMethoid<Policies, Class, Begin, End>;
-    core::FunctionDescription_sp fdesc = makeFunctionDescription(sym,VariadicType::entry_point);
-    core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc, beginPtr, endPtr));
+    core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
+    core::BuiltinClosure_sp methoid = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, beginPtr, endPtr));
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, true, m_arguments, m_declares, m_docstring, true, 1); // one argument required for iterator - the object that has the sequence
@@ -489,8 +489,8 @@ struct constructor_registration_base : public registration {
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
     using VariadicType = VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>;
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicType::entry_point);
-    core::BuiltinClosure_sp func = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc));
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
+    core::BuiltinClosure_sp func = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(ep));
     lisp_defun(sym, core::lisp_currentPackageName(),func, m_arguments, m_declares, m_docstring, "=external=", 0, CountConstructorArguments<Signature>::value);
     core::validateFunctionDescription( __FILE__, __LINE__, func );
   }
@@ -521,8 +521,8 @@ template <class Class, class Pointer, class Policies>
   struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, Pointer>::entry_point);
-    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate(fdesc));
+    core::GlobalEntryPoint_sp ep = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DefaultConstructorCreator_O<Class, Pointer>::entry_point);
+    core::Creator_sp allocator = gc::As<core::Creator_sp>(gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate(ep));
     return allocator;
   }
 };
@@ -632,8 +632,8 @@ struct property_registration : registration {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
     using VariadicType = GetterMethoid<reg::null_type, Class, Get>;
-    core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicType::entry_point);
-    core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(fdesc, get));
+    core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
+    core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);
     core::validateFunctionDescription(__FILE__, __LINE__, getter);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, m_name);
