@@ -847,17 +847,6 @@ void formatted_objects_stepper(mps_addr_t addr, mps_fmt_t fmt, mps_pool_t pool, 
   walker.output->write(real_addr,size);
 }
 
-void save_lisp_and_die(const std::string& filename)
-{
-  std::ofstream fout;
-  fout.open(filename,std::ios::out|std::ios::binary);
-  Walker walker(&fout);
-  mps_arena_collect(global_arena);
-  mps_arena_formatted_objects_walk(global_arena,formatted_objects_stepper,(void*)&walker,0);
-  fout.close();
-  printf("%s:%d There were %zu objects\n", __FILE__, __LINE__, walker.objects);
-}
-
 void run_quick_tests()
 {
   core::List_sp l1 = core::Cons_O::create(core::clasp_make_fixnum(1),_Nil<core::T_O>());
@@ -1162,9 +1151,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     try {
       exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
     } catch (core::SaveLispAndDie& ee) {
-      printf("%s:%d    SaveLispAndDie...\n", __FILE__, __LINE__ );
       save_lisp_and_die(ee._FileName);
-      printf("%s:%d    Dying.\n", __FILE__, __LINE__);
+      exit_code = 0;
     }
 #else
     printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );

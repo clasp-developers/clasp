@@ -7,13 +7,25 @@
   (load #P"sys:modules;clasp-analyzer;clasp-analyzer.fasp")
   (format t "Done Loading clasp-analyzer~%"))
 (in-package :clasp-analyzer)
+
+
+
+(progn
+  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                      (pathname *compile-commands*)
+                      :selection-pattern "bignum.cc"
+                      ))
+)
+
+  
 ;;; ------------------------------------------------------------
 ;;; To load and analyze one file in the project
 (progn
   (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
   (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-                (pathname *compile-commands*)
-                ))
+                      (pathname *compile-commands*)
+                      ))
   (time (clasp-analyzer:serial-search/generate-code *db*))
   (format t "Done searching project~%"))))
 

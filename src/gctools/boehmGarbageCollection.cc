@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/compiler.h>
 
@@ -314,7 +315,14 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
 #ifdef DEBUG_COUNT_ALLOCATIONS
   maybe_initialize_mythread_backtrace_allocations();
 #endif
-  int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  int exitCode;
+  try {
+    exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  } catch (core::SaveLispAndDie& ee) {
+    gctools::save_lisp_and_die(ee._FileName);
+    exitCode = 0;
+  }
+    
 #if 0
   GC_unregister_my_thread();
 #endif
