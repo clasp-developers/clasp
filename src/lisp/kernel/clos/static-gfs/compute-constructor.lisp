@@ -1,7 +1,7 @@
 (in-package #:static-gfs)
 
 
-(defvar *compute-constructor-calls* (ext:make-atomic-fixnum 0))
+(defvar *compute-constructor-calls* 0)
 
 (defun compute-constructor-for-class (class class-form keys)
   ;; FIXME: Better types?
@@ -21,7 +21,7 @@
 ;;; So it should return something immediately valid or error.
 (defun compute-constructor (class-designator keys)
   ;; NOTE: For recursion reasons, this function MUST NOT return invalidated-constructor.
-  (core:atomic-fixnum-incf-unsafe *compute-constructor-calls*)
+  (mp:atomic-incf (symbol-value '*compute-constructor-calls*))
   (typecase class-designator
     (symbol
      (let ((class (find-class class-designator nil)))
