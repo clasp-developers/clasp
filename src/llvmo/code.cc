@@ -221,7 +221,124 @@ void dumpObjectFile(const char* start, size_t size) {
   fout.close();
 }
 
+
+
+
+
 };
+
+
+namespace llvmo {
+
+
+void save_object_file_and_code_info(ObjectFile_sp ofi)
+{
+//  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
+  DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, ofi->_FasoName.c_str()));
+  core::T_sp expected;
+  core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
+  do {
+    expected = _lisp->_Roots._AllObjectFiles.load();
+    entry->rplacd(expected);
+  } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
+  if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+    llvm::MemoryBufferRef mem = *(ofi->_MemoryBuffer);
+    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
+  }
+}
+
+
+CL_DOCSTRING("For an instruction pointer inside of code generated from an object file - return the relative address (the sectioned address)");
+CL_LISPIFY_NAME(object_file_sectioned_address);
+CL_DEFUN SectionedAddress_sp object_file_sectioned_address(void* instruction_pointer, ObjectFile_sp ofi, bool verbose) {
+        // Here is the info for the SectionedAddress
+  uintptr_t sectionID = ofi->_Code->_TextSegmentSectionId;
+  uintptr_t offset = ((char*)instruction_pointer - (char*)ofi->_Code->_TextSegmentStart);
+  SectionedAddress_sp sectioned_address = SectionedAddress_O::create(sectionID, offset);
+      // now the object file
+  if (verbose) {
+    core::write_bf_stream(BF("faso-file: %s  object-file-position: %lu  objectID: %lu\n") % ofi->_FasoName % ofi->_FasoIndex % ofi->_StartupID);
+    core::write_bf_stream(BF("SectionID: %lu    memory offset: %lu\n") % ofi->_FasoIndex % offset );
+  }
+  return sectioned_address;
+}
+
+CL_DOCSTRING(R"doc(Identify the object file whose generated code range contains the instruction-pointer.
+Return NIL if none or (values offset-from-start object-file). The index-from-start is the number of bytes of the instruction-pointer from the start of the code range.)doc");
+CL_LISPIFY_NAME(object_file_for_instruction_pointer);
+CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose)
+{
+  printf("%s:%d:%s entered looking for instruction_pointer@%p you should search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer );
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  size_t count;
+  DEBUG_OBJECT_FILES(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
+  if ((cur.nilp()) && verbose){
+    core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)instruction_pointer);
+  }
+  while (cur.consp()) {
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
+    DEBUG_OBJECT_FILES(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
+    if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSegmentStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSegmentEnd)) {
+      core::T_sp sectionedAddress = object_file_sectioned_address(instruction_pointer,ofi,verbose);
+      return Values(sectionedAddress,ofi);
+    }
+    cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
+    count++;
+  }
+  return Values(_Nil<core::T_O>());
+}
+
+CL_LISPIFY_NAME(release_object_files);
+CL_DEFUN void release_object_files() {
+  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+  core::write_bf_stream(BF("ObjectFiles have been released\n"));
+}
+
+CL_LISPIFY_NAME(number_of_object_files);
+CL_DEFUN size_t number_of_object_files() {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  size_t count = 0;
+  while (cur.consp()) {
+    cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
+    count++;
+  }
+  return count;
+}
+
+CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
+CL_DEFUN size_t total_memory_allocated_for_object_files() {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  size_t count = 0;
+  size_t sz = 0;
+  while (cur.consp()) {
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+    sz += ofi->_MemoryBuffer->getBufferSize();
+    count++;
+    cur = CONS_CDR(cur);
+  }
+  return sz;
+}
+
+CL_LISPIFY_NAME(describe_code);
+CL_DEFUN void describe_code() {
+  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+  size_t count = 0;
+  size_t sz = 0;
+  while (cur.consp()) {
+    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+    Code_sp code = ofi->_Code;
+    core::write_bf_stream(BF("ObjectFile start: %p  size: %lu\n") % (void*)ofi->_MemoryBuffer->getBufferStart() % ofi->_MemoryBuffer->getBufferSize());
+    code->describe();
+    sz += ofi->_MemoryBuffer->getBufferSize();
+    count++;
+    cur = CONS_CDR(cur);
+  }
+  core::write_bf_stream(BF("Total number of object files: %lu\n") % count);
+  core::write_bf_stream(BF("  Total size of object files: %lu\n") % sz);
+}
+
+};
+
 
 // #define USE_CODE_O 1
 
