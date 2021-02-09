@@ -364,15 +364,15 @@
   "Keep track of tagbody special operators that were seen and those that were rewritten to be removed")
   
 (defvar *rewrite-tagbody* t)
-(defvar *tagbody-rewrite-counter-total* (ext:make-atomic-fixnum 0))
-(defvar *tagbody-rewrite-counter-removed* (ext:make-atomic-fixnum 0))
+(defvar *tagbody-rewrite-counter-total* 0)
+(defvar *tagbody-rewrite-counter-removed* 0)
 
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
     (maphash (lambda (env tagbody-info)
-               (core:atomic-fixnum-incf-unsafe *tagbody-rewrite-counter-total*)
+               (atomic-incf-symbol-value '*tagbody-rewrite-counter-total*)
                (unless (tagbody-frame-info-needed tagbody-info)
-                 (core:atomic-fixnum-incf-unsafe *tagbody-rewrite-counter-removed*)
+                 (atomic-incf-symbol-value '*tagbody-rewrite-counter-removed*)
                  (core:set-invisible (tagbody-frame-info-tagbody-environment tagbody-info) t)
                  (let ((itc (car (tagbody-frame-info-initialize-tagbody-closure tagbody-info))))
                    (llvm-sys:replace-all-uses-with itc (llvm-sys:constant-pointer-null-get %t*%))
