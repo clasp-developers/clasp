@@ -261,16 +261,8 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 };
 
 namespace gctools  {
-#if 0
-// This doesn't work because Boehm has an arbitrary 2048 limit on the number
-// of root sets
-void boehm_register_roots(void* root_address, size_t num_roots)
-{
-  void* high_address_plus_1 = reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(core::T_sp) + 1);
-  GC_add_roots(root_address,high_address_plus_1);
-}
-#endif
 
+#if 0
 void* boehm_create_shadow_table(size_t nargs)
 {
   // Boehm uses a shadow table in the UNCOLLECTABLE space
@@ -281,6 +273,9 @@ void* boehm_create_shadow_table(size_t nargs)
   }
   return reinterpret_cast<void*>(shadow_mem);
 };
+#endif
+
+
 
 };
 

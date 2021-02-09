@@ -405,9 +405,9 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 (define-c++-struct %cons% +cons-tag+
-  ((%t*% :car)
-   (%t*% :cdr)
-   (%size_t% :badge)))
+  ( (%size_t% :badge)
+    (%t*% :car)
+    (%t*% :cdr)))
 
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
@@ -417,7 +417,7 @@ Boehm and MPS use a single pointer"
        (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
        (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
-      (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
+  (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
 
 
 ;; This structure must match the gctools::GCRootsInModule structure

@@ -2412,6 +2412,9 @@ int Lisp_O::run() {
     exit_code = 0;
   } catch (core::ExitProgramException &ee) {
     exit_code = ee.getExitResult();
+  } catch (core::SaveLispAndDie &ee) {
+    gctools::save_lisp_and_die(ee._FileName);
+    exit_code = 0;
   }
   return exit_code;
 };

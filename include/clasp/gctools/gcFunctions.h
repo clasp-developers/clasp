@@ -16,6 +16,7 @@ Fixnum core__header_kind(core::T_sp obj);
 Fixnum core__header_stamp(core::T_sp obj);
 core::T_mv gctools__ensure_valid_object(core::T_mv obj);
 
+ void save_lisp_and_die(const std::string& filename);
 
 };
 

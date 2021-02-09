@@ -384,7 +384,7 @@ Instance_sp Instance_O::createClassUncollectable(gctools::ShiftedStamp stamp, In
     printf("       The metaClass was UNBOUND !!!!! I need a stamp for the class slots!!!!!!\n");
   }
 #endif
-  GC_ALLOCATE_UNCOLLECTABLE(Instance_O, oclass, metaClass /*, number_of_slots*/);
+  GC_ALLOCATE_VARIADIC(Instance_O, oclass, metaClass /*, number_of_slots*/);
   oclass->_Class = metaClass;
   gctools::ShiftedStamp class_stamp = 0;
   T_sp sig = _Unbound<T_O>();

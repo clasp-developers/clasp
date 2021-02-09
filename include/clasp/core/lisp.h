@@ -187,6 +187,17 @@ public:
 template <typename oclass>
 class class_;
 
+};
+
+template <>
+struct gctools::GCInfo<core::Lisp_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+
+
+namespace core {
 class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();

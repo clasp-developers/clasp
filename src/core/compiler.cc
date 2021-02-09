@@ -1108,7 +1108,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
   T_sp sourcePosInfo = _Nil<T_O>();
   stringstream ss;
-  ss << "repl" << _lisp->nextReplCounter();
+  ss << "THE-IMPLICIT-COMPILE-REPL"; // << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
   ClosureWithSlots_sp ic = ClosureWithSlots_O::make_interpreted_closure(name,
                                                                         kw::_sym_function,

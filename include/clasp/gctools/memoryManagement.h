@@ -1,32 +1,27 @@
-/*
-    File: memoryManagement.h
-*/
-
-/*
-Copyright (c) 2014, Christian E. Schafmeister
- 
-CLASP is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public
-License as published by the Free Software Foundation; either
-version 2 of the License, or (at your option) any later version.
- 
-See directory 'clasp/licenses' for full details.
- 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
 /* -^- */
 #pragma once
 //#ifndef _clasp_memoryManagement_H
 //#define _clasp_memoryManagement_H
+
+
+/* Roots
+ * 
+ * The following are garbage collector roots
+ *
+ * DEFINED in gctools/memoryManagement.h
+ *   Lisp_O* ::_lisp
+ *  This is a tagged pointer to a Lisp_O object
+ *
+ * DEFINED in include/clasp/gctools/globals.h
+ *    extern core::Symbol_O* gctools::global_core_symbols[NUMBER_OF_CORE_SYMBOLS]
+ *   These are tagged pointers to Symbol_O objects
+ *
+ * DEFINED in include/clasp/gctools/exposeFunctions.h
+ *   extern gctools::smart_ptr<core::Symbol_O>  gctools::global_symbols[global_symbol_count];
+ */
+
+
+
 
 // Define compile-time flags that effect structure sizes
 //
@@ -86,7 +81,9 @@ extern size_t _global_stack_max_size;
 
 #define STAMP_MTAG   0b00
 #define INVALID_MTAG        0b01
+#define CONS_MTAG           INVALID_MTAG
 #define FWD_MTAG            0b10
+#define MASK_MTAG           0b11
 #define STAMP_SHIFT  2
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<STAMP_SHIFT)|STAMP_MTAG)
 #define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>STAMP_SHIFT)
@@ -262,6 +259,7 @@ namespace gctools {
               whether there is an extended-stamp and where to find the extended-stamp.
       #B01 == (unused) This is an illegal value for the two lsbs,
               it indictates that this is not a valid header.
+              This pattern is used to indicate a CONS header
       #B10 == (MPS specific) FWD_MTAG - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
@@ -1000,3 +998,29 @@ struct SafeGCPark {
 };
 
 //#endif // _clasp_memoryManagement_H
+
+/*
+    File: memoryManagement.h
+*/
+
+/*
+Copyright (c) 2014, Christian E. Schafmeister
+ 
+CLASP is free software; you can redistribute it and/or
+modify it under the terms of the GNU Library General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+ 
+See directory 'clasp/licenses' for full details.
+ 
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/

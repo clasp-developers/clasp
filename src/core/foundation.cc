@@ -1639,7 +1639,7 @@ size_t lisp_general_badge(General_sp object) {
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
-  return object->_Badge;
+  return object->_BadgeMtag;
 }
 
 size_t lisp_badge(T_sp object) {
@@ -1660,7 +1660,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
     Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
-    cons->_Badge = badge;
+    cons->_BadgeMtag = (badge^MASK_MTAG)|CONS_MTAG;
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));

@@ -193,11 +193,13 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 //
 
 
+#define ADJUST_SYMBOL_INDEX(_xx_) (_xx_+NUMBER_OF_CORE_SYMBOLS)
 #define DECLARE_ALL_SYMBOLS
 #ifndef SCRAPING
 #include SYMBOLS_SCRAPED_INC_H
 #endif
 #undef DECLARE_ALL_SYMBOLS
+#undef ADJUST_SYMBOL_INDEX
 
 
 

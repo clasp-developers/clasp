@@ -379,7 +379,7 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
   gctools::GCStampEnum stamp = h->stamp_();
   if (!valid_stamp(stamp)) {
-    if (sz==32) {
+    if (sz==sizeof(core::Cons_O)) {
       stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
 //      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
@@ -478,7 +478,7 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
     // Does that print? If so should go to the OutputStream
     size_t sz = it.print(shortName);
     totalSize += sz;
-    if (sz < 96) break;
+    if (sz < 1) break;
     idx += 1;
 #if 0
     if ( idx % 100 == 0 ) {
@@ -809,7 +809,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   size_t totalSize(0);
   OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  OutputStream << "Skipping objects with less than 96 total_size\n";
   OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
   OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
   OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
@@ -820,16 +819,92 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
   delete static_ReachableClassKinds;
 #endif
-  if (llvmo::_sym_STARjit_engineSTAR->symbolValue().boundp()) {
-    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(llvmo::_sym_STARjit_engineSTAR->symbolValue());
-    OutputStream << "Number of object files: " << llvmo::number_of_object_files() << "   total memory: " << llvmo::total_memory_allocated_for_object_files() << std::endl;
-  }
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());
 };
 };
 
 namespace gctools {
+
+
+CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
+  throw(core::SaveLispAndDie(filename));
+}
+
+
+
+void save_lisp_and_die(const std::string& filename)
+{
+  //
+  // Release object files
+  //
+  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+
+  //
+  // Run 10 GC cycles and force finalizers to run (do I need to run finalizers more than once?)
+  //
+  for (int i=0; i<10; i++ ) {
+    gctools__garbage_collect();
+#ifdef USE_BOEHM
+    int num = GC_invoke_finalizers(); // maybe not necessary
+#endif
+#ifdef USE_MPS
+    // Do something here
+#endif
+
+  }
+
+  //
+  // For now run ROOM
+  //
+  cl__room(_Nil<core::T_O>());
+
+  //
+  // For real save-lisp-and-die do the following (a simple 19 step plan)
+  //
+  // 1. Walk all objects in memory and sum their size
+  // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
+  // 3. Walk all objects in memory
+  //     (a) copy them to next position in intermediate-buffer
+  //     (b) Set a forwarding pointer in the original object
+  // 4. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
+  // 5. Copy roots into intermediate-buffer
+  // 6. Fixup pointers in roots
+  //
+  //   Steps 7-14 are an attempt to eliminate objects that made it into the save-image
+  //      but are garbage.  I'm not sure the GC is cleaning up enough garbage.
+  //      It's basically a mark-and-sweep garbage collection cycle.
+  //      Steps 8-13 are identical to 1-6, they just walk different objects.
+  //
+  // 7. Mark objects in intermediate-buffer accessible from roots
+  // 
+  // 8. Walk all marked objects and sum their size
+  // 9. Allocate that amount of space + space-for roots -> save-buffer
+  // 10. Walk all marked objects from intermediate-buffer
+  //       (a) copy them to next position in save-buffer
+  //       (b) Set a forwarding pointer in the intermediate-buffer object
+  // 11. Fixup pointers in save-buffer
+  // 12. Copy roots into save-buffer
+  // 13. Fixup roots in save-buffer
+  //
+  //   C++-fixup bytecode fixes up things like std::string and std::vector that
+  //     have stuff stored in C++ malloc space.   It's better to eliminate these
+  //     as much as possible by redesigning the classes that contain them.
+  //     Change std::string to SimpleBaseString_sp and so on.
+  //     Every class that needs c++-fixup will provide a function that will generate
+  //     c++-fixup bytecode that when evaluated will create C++ objects in malloc memory
+  //     and write pointers to those objects into the loaded objects.
+  //     Every object except for Cons_O cells will need to have it's vtable pointer fixed up.
+  //
+  // 15. Generate c++-fixup bytecode for each object that needs it
+  // 17. Generate table of contents
+  // 18. Write table of contents and save-buffer
+  // 19. DIE
+
+}
+
+  
+
 
 CL_LAMBDA(stamp);
 CL_DECLARE();
@@ -889,10 +964,6 @@ CL_DEFUN core::T_sp gctools__objects_that_own(core::T_sp obj) {
 
 namespace gctools {
 #ifdef USE_MPS
-CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename)
-{
-  throw(core::SaveLispAndDie(filename));
-}
 CL_DEFUN void gctools__enable_underscanning(bool us)
 {
   global_underscanning = us;
