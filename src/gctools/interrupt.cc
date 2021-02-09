@@ -130,7 +130,7 @@ void clasp_interrupt_process(mp::Process_sp process, core::T_sp function)
          * If FUNCTION is NIL, we just intend to wake up the process
          * from some call to ecl_musleep() Queue the interrupt for any
          * process stage that can potentially receive a signal  */
-  if (function.notnilp() && (process->_Phase >= mp::Booting)) {
+  if (function.notnilp() && (process->_Phase >= mp::Nascent)) {
     printf("%s:%d clasp_interrupt_process queuing signal\n", __FILE__, __LINE__);
     function = core::coerce::functionDesignator(function);
     queue_signal_or_interrupt(process->_ThreadInfo, function, true);
