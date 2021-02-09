@@ -52,6 +52,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
 #include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/hashTableCustom.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/array.h>
 #include <clasp/core/instance.h>
@@ -230,10 +231,14 @@ void HashTable_O::set_thread_safe(bool thread_safe)
 }
 #endif
 
-CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug thread-safe);
+CL_LAMBDA(&key (test (function eql)) (size 0) (rehash-size 2.0) (rehash-threshold 0.7) weakness debug thread-safe hash-function);
 CL_DECLARE();
-CL_DOCSTRING("see CLHS");
-CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug, T_sp thread_safe) {
+CL_DOCSTRING("See CLHS for most behavior. As an extension, Clasp allows a TEST other than the four standard ones to be passed. In this case it must be a designator for a function of two arguments, and a :HASH-FUNCTION must be passed as well; this should be a designator of a function analogous to SXHASH, i.e. it accepts one argument, returns a nonnegative fixnum, and (TEST x y) implies (= (HASH x) (HASH y)).");
+CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size,
+                                  Number_sp rehash_size,
+                                  Real_sp orehash_threshold,
+                                  Symbol_sp weakness, T_sp debug,
+                                  T_sp thread_safe, T_sp hashf) {
   SYMBOL_EXPORT_SC_(KeywordPkg, key);
   if (weakness.notnilp()) {
     if (weakness == INTERN_(kw, key)) {
@@ -262,7 +267,10 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   } else if (test == cl::_sym_equalp || test == cl::_sym_equalp->symbolFunction()) {
     table = HashTableEqualp_O::create(isize, rehash_size, rehash_threshold);
   } else {
-    SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
+    Function_sp comparator = coerce::functionDesignator(test);
+    Function_sp hasher = coerce::functionDesignator(hashf);
+    table = HashTableCustom_O::create(isize, rehash_size, rehash_threshold,
+                                      comparator, hasher);
   }
   if (thread_safe.notnilp()) {
     table->setupThreadSafeHashTable();

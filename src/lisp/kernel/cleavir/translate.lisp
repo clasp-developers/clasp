@@ -344,7 +344,7 @@
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
            ;; `+ because we can't pass 0 to longjmp.
-           "longjmp" (list bufp (%i32 (1+ destination-id)))))
+           "_longjmp" (list bufp (%i32 (1+ destination-id)))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
                                (cleavir-bir:dynamic-environment instruction))
@@ -1416,14 +1416,14 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defvar *dis* nil)
 
-(defun bir-transformations (module)
+(defun bir-transformations (module system)
   (when *dis*
     (cleavir-bir::print-disasm
      (cleavir-bir:disassemble module)))
   (cleavir-bir-transformations:module-eliminate-catches module)
   (cleavir-bir-transformations:find-module-local-calls module)
   (cleavir-bir-transformations:module-optimize-variables module)
-  (cleavir-bir-transformations:meta-evaluate-module module)
+  (cleavir-bir-transformations:meta-evaluate-module module system)
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (cleavir-bir-transformations:module-generate-type-checks module)
@@ -1441,7 +1441,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (let* ((bir (ast->bir ast system))
          (module (cleavir-bir:module bir)))
     ;;(cleavir-bir:verify module)
-    (bir-transformations module)
+    (bir-transformations module system)
     (cleavir-bir:verify module)
     (translate bir :abi abi :linkage linkage)))
 

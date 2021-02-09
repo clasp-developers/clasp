@@ -142,6 +142,22 @@
               (gethash key-2 ht))
           (and value present-p))))
 
+;;; Custom tables (extension)
+
+(defun car-equal (x y) (equal (car x) (car y)))
+(defun car-sxhash (x) (sxhash (car x)))
+
+(test custom-hash-table-1
+      (let ((key1 (list 'a 'b))
+            (key2 (list 'a 'c))
+            (table (make-hash-table :test #'car-equal
+                                    :hash-function #'car-sxhash)))
+        (setf (gethash key1 table) t)
+        (multiple-value-bind (value presentp) (gethash key2 table)
+          (and value presentp))))
+
+;;;
+
 (test test-issue-946
       (and
        (hash-table-p (make-hash-table))

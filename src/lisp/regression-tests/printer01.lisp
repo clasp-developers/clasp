@@ -496,3 +496,99 @@ wrong
             (write #(12345 12345 12345 12345 12345 12345 12345 12345 12345 12345 12345)
                    :ESCAPE T :PRETTY T :CIRCLE T :LINES 1 :RIGHT-MARGIN 28 :readably nil :stream stream))))
        0))
+
+(test write-string-happy-path
+      (string-equal
+       "ABABĀĀĀĀ » "
+       (with-output-to-string (stream)
+               ;;; SimpleBaseString_O
+         (write-string
+          (MAKE-ARRAY 2
+                      :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
+                      :ELEMENT-TYPE 'base-char)
+          stream)
+        ;;; Str8Ns_O
+         (write-string
+          (MAKE-ARRAY 2
+                      :INITIAL-CONTENTS (list (code-char 65) (code-char 66))
+                      :adjustable t
+                      :ELEMENT-TYPE 'base-char)
+          stream)
+        ;;;  SimpleCharacterString_O
+         (write-string 
+          (MAKE-ARRAY 2
+                      :INITIAL-CONTENTS
+                      (list (code-char 256) (code-char 256))
+                      :ELEMENT-TYPE 'character)
+          stream)
+        ;;;  StrWNs_O
+         (write-string
+          (MAKE-ARRAY 2
+                      :INITIAL-CONTENTS
+                      (list (code-char 256) (code-char 256))
+                      :adjustable t
+                      :ELEMENT-TYPE 'character)
+          stream)
+         (write-string " » " stream))))
+
+(let ((string "1234567890"))
+  (with-output-to-string (stream)
+    (test-expect-error write-string-error-1
+                       (write-string string stream :start nil) :type type-error)
+    (test-expect-error write-string-error-2
+                       (write-string string stream :start -1) :type type-error)
+    (test-expect-error write-string-error-2a
+                       (write-string string stream :start 100) :type type-error)
+    (test-expect-error write-string-error-3
+                       (write-string string stream :start (make-hash-table)) :type type-error)
+    (test-expect-error write-string-error-4
+                       (write-string string stream :end nil) :type type-error)
+    (test-expect-error write-string-error-5
+                       (write-string string stream :end -1) :type type-error)
+    (test-expect-error write-string-error-5a
+                       (write-string string stream :end 100) :type type-error)
+    (test-expect-error write-string-error-6
+                       (write-string string stream :end (make-hash-table)) :type type-error)
+    (test-expect-error write-string-error-7
+                       (write-string string stream :start 2 :end 1) :type type-error)))
+
+(test write-string-subseq-SimpleBaseString_O
+      (let ((string "12345")
+            (from 1)
+            (to 4))
+        (string= (subseq string from to)
+                 (with-output-to-string (stream)
+                   (write-string string stream :start from :end to)))))
+
+(test write-string-subseq-SimpleCharacterString_O
+      (let ((string "12»45")
+            (from 1)
+            (to 4))
+        (string= (subseq string from to)
+                 (with-output-to-string (stream)
+                   (write-string string stream :start from :end to)))))
+
+(test write-string-subseq-Str8Ns_O
+      (let ((string (MAKE-ARRAY 5
+                                :INITIAL-CONTENTS (list #\1 #\2 #\3 #\4 #\5)
+                                :adjustable t
+                                :ELEMENT-TYPE 'base-char))
+            (from 1)
+            (to 4))
+        (string= (subseq string from to)
+                 (with-output-to-string (stream)
+                   (write-string string stream :start from :end to)))))
+
+(test write-string-subseq-StrWNs_O
+      (let ((string (MAKE-ARRAY 5
+                                :INITIAL-CONTENTS (list #\1 #\2 (char "12»45" 2) #\4 #\5)
+                                :adjustable t
+                                :ELEMENT-TYPE 'base-char))
+            (from 1)
+            (to 4))
+        (string= (subseq string from to)
+                 (with-output-to-string (stream)
+                   (write-string string stream :start from :end to)))))
+
+
+

@@ -35,6 +35,7 @@ SRC_CORE_FILES = \
         'hashTableEql',
         'hashTableEqual',
         'hashTableEqualp',
+        'hashTableCustom',
         'numbers',
         'numerics',
         'num_arith',
