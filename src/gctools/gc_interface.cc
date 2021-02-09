@@ -1220,7 +1220,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(llvmo::Attribute_O);
      Init_class_kind(core::LambdaListHandler_O);
      Init_class_kind(llvmo::AttributeSet_O);
-     Init_class_kind(core::AtomicT_Holder_O);
      Init_class_kind(core::ClassRepCreator_O);
      Init_class_kind(core::DerivableCxxClassCreator_O);
      Init_class_kind(core::FuncallableInstanceCreator_O);
@@ -1484,7 +1483,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::ValueFrame_O);
      Init_class_kind(core::FunctionFrame_O);
      Init_class_kind(core::RandomState_O);
-     Init_class_kind(core::AtomicFixnumHolder_O);
      Init_class_kind(core::HashTableBase_O);
      Init_class_kind(core::WeakKeyHashTable_O);
      Init_class_kind(core::HashTable_O);
