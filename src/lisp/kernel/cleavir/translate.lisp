@@ -237,8 +237,8 @@
 (defmethod translate-simple-instruction
     ((instruction cleavir-bir:conditional-test) abi)
   (declare (ignore instruction abi))
-  ;; Don't do anything besides assert that it is used by an IF.
-  (assert (typep (cleavir-bir:use instruction) 'cleavir-bir:ifi)))
+  ;; Don't do anything besides assert that it is used by an IF if at all.
+  (assert (typep (cleavir-bir:use instruction) '(or null cleavir-bir:ifi))))
 
 (defmethod translate-terminator ((instruction cleavir-bir:case) abi next)
   (declare (ignore abi))
