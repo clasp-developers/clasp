@@ -1076,7 +1076,7 @@ Generate offsets for every array element that exposes the fields in elements."
        (list (make-instance 'pointer-offset :base base :offset-type x)))
       ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
       (t
-       ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
+       (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
        nil))))
 
 ;; \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
