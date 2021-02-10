@@ -41,7 +41,6 @@ CL_DECLARE();
 CL_DOCSTRING("put_sysprop - returns value");
 CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-//  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   bool foundHashTable = false;
   T_mv values = sysprops->gethash(area);
@@ -63,7 +62,6 @@ CL_DECLARE();
 CL_DOCSTRING("get_sysprop - returns (values val foundp)");
 CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-//  WITH_READ_LOCK(_lisp->_Roots._SyspropMutex);
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   if (sysprops.notnilp()) {
     T_mv values = sysprops->gethash(area, _Nil<T_O>());
@@ -81,7 +79,6 @@ CL_DECLARE();
 CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   ASSERT(_lisp->_Roots._Sysprop.notnilp());
-//  WITH_READ_WRITE_LOCK(_lisp->_Roots._SyspropMutex);
   HashTableEql_sp sysprops = gc::As_unsafe<HashTableEql_sp>(_lisp->_Roots._Sysprop);
   T_mv mv_values = sysprops->gethash(area, _Nil<T_O>());
   HashTableEql_sp hashTable = gc::As<HashTableEql_sp>(mv_values);

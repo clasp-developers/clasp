@@ -621,22 +621,14 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
-//  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
   global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
-  { // Debugging info
-    size_t alignment = Alignment();
-#if 0
-    printf("%s:%d Alignment() = %" PRu "\n", __FILE__, __LINE__, alignment);
-#ifdef USE_MPS
-    printf("%s:%d Align(1) = %" PRu "\n", __FILE__, __LINE__, Align(1));
-    printf("%s:%d Align(Alignment()) = %" PRu "\n", __FILE__, __LINE__, Align(Alignment()));
-#endif
-    printf("%s:%d Alignup(1) = %" PRu "\n", __FILE__, __LINE__, AlignUp(1));
-    printf("%s:%d Alignup(Alignment()) = %" PRu "\n", __FILE__, __LINE__, AlignUp(Alignment()));
-    printf("%s:%d global_alignup_sizeof_header = %" PRu "\n", __FILE__, __LINE__, global_alignup_sizeof_header );
-#endif
-  }
+
+  //
+  // Walk the stamp field layout tables.
+  //
+  
   walk_stamp_field_layout_tables(mps_info);
+  
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2
 #else

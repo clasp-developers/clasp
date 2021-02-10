@@ -203,67 +203,26 @@ class Lisp_O {
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
   {
-    std::atomic<T_sp>    _AllObjectFiles;
-    std::atomic<T_sp>    _AllLibraries;
-    GlobalEntryPoint_sp _UnboundSymbolFunctionEntryPoint;
-    GlobalEntryPoint_sp _UnboundSetfSymbolFunctionEntryPoint;
-    T_sp _TerminalIO;
-    //! Threads
-#ifdef CLASP_THREADS
+    T_sp                       _TrueObject; // The True object
+    std::atomic<T_sp>          _AllObjectFiles;
+    std::atomic<T_sp>          _AllLibraries;
+    GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
+    GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
+    T_sp                       _TerminalIO;
     List_sp _ActiveThreads;
-    mutable mp::SharedMutex _ActiveThreadsMutex;
     List_sp _DefaultSpecialBindings;
-    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
-#endif
-    // FIXME: Remove this mutex - I've switched to thread-safe hash tables
-    //        and its not needed
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _SyspropMutex;
-    mutable mp::SharedMutex _FinalizersMutex;
-#endif
     WeakKeyHashTable_sp _Finalizers;
     HashTable_sp _Sysprop;
-    // ---------
-    //! Associate class names with classes
-#ifdef CLASP_THREADS
-    //! Protect _ClassTable
-    mutable mp::SharedMutex _ClassTableMutex;
-#endif
     HashTable_sp _ClassTable;
     Integer_sp _IntegerOverflowAdjust;
-    CharacterInfo charInfo;
+    CharacterInfo charInfo; // Contains GC managed pointers
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolderUnshiftedNowhere;
     gctools::Vec0<Instance_sp> staticClassesUnshiftedNowhere;
     gctools::Vec0<Symbol_sp> staticClassSymbolsUnshiftedNowhere;
     gctools::Vec0<Creator_sp> staticInstanceCreatorsUnshiftedNowhere;
     std::atomic<T_sp>    _JITDylibs; // Maintain a list of loaded JITDylibs 
-//    DynamicBindingStack _Bindings;
     gctools::Vec0<FileScope_sp> _SourceFiles;
-    map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;
-#ifdef CLASP_THREADS
-    //! Protect _SourceFiles
-    mutable mp::SharedMutex _SourceFilesMutex;
-#endif
-
-    /*! Store CATCH info */
-// THREAD_CHANGE    List_sp _CatchInfo;
-    /* The global class table that maps class symbols to classes */
-    gctools::Vec0<SymbolClassHolderPair> bootClassTable;
-    //	    SymbolDict<Instance_O>		_BootClassTable;
-    /*! When compiled files are loaded, they need to create
-	      LOAD-TIME-VALUEs and QUOTEd objects using C++ calls at runtime.
-	      Those objects are stored here as a map on the compiled file name. */
-//    HashTableEqual_sp _LoadTimeValueArrays; // map<string,LoadTimeValues_sp> _LoadTimeValueArrays;
-    List_sp _CommandLineArguments;
-    //! Package names to packages
-    gctools::Vec0<Package_sp> _Packages;
-    map<string, int> _PackageNameIndexMap;
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _PackagesMutex;
-#endif
-    bool _MpiEnabled;
-    int _MpiRank;
-    int _MpiSize;
+    gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
     mpip::Mpi_sp  _MpiWorld;
     //! Class_map
     gctools::Vec0<clbind::ClassRep_sp> _ClassMap;
@@ -283,21 +242,13 @@ class Lisp_O {
      */
     std::atomic<T_sp> _SingleDispatchGenericFunctions;
 
-#ifdef DEBUG_MONITOR_SUPPORT
-    mutable mp::SharedMutex _MonitorMutex;
-    std::ofstream _MonitorStream;
-#endif
-    
-    /*! True object */
-    T_sp _TrueObject;
+    //! Package names to packages
+    gctools::Vec0<Package_sp> _Packages;
     //-----
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
     T_sp _NullStream;
     List_sp _ThePathnameTranslations; /* alist */
-#ifdef CLASP_THREADS
-    mutable mp::SharedMutex _ThePathnameTranslationsMutex;
-#endif
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
@@ -313,9 +264,27 @@ class Lisp_O {
     LongFloat_sp _LongFloatPlusZero;
     LongFloat_sp _LongFloatOne;
 #endif // ifdef CLASP_LONG_FLOAT
-    bool _Booted;
-    mutable mp::SharedMutex _UnixSignalHandlersMutex;
     List_sp _UnixSignalHandlers;
+    List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
+    size_t  _all_taggedptr_barrier; // Put all taggedptrs before this 
+    mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
+    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
+    mutable mp::SharedMutex _FinalizersMutex;
+//    DynamicBindingStack _Bindings;
+    map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;
+    mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
+    map<string, int> _PackageNameIndexMap;
+    mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
+    bool _MpiEnabled;
+    int _MpiRank;
+    int _MpiSize;
+    mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
+    mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+    bool _Booted;
+#ifdef DEBUG_MONITOR_SUPPORT
+    mutable mp::SharedMutex _MonitorMutex;
+    std::ofstream _MonitorStream;
+#endif
     GCRoots();
   };
 
@@ -344,26 +313,18 @@ public:
 public:
   void initialize();
 public:
-  GCRoots _Roots;
+  GCRoots        _Roots;   // Always make this first - so it's close to the front of the object
   // Trap INTERN of a specific symbol to help resolve symbol conflicts
-  bool _TrapIntern;
-  std::string _TrapInternPackage;
-  std::string _TrapInternName;
-  uint _StackWarnSize;
-  uint _StackSampleCount;
-  uint _StackSampleSize;
-  uint _StackSampleMax;
-
-public:
-  bool _PrintSymbolsProperly;
-
-public:
-  typedef char *Argv[];
-  /*!Raw argc*/
-  int _Argc;
-  /*! Raw argv */
-  vector<string> _Argv;
-
+  bool           _TrapIntern;
+  std::string    _TrapInternPackage;
+  std::string    _TrapInternName;
+  uint           _StackWarnSize;
+  uint           _StackSampleCount;
+  uint           _StackSampleSize;
+  uint           _StackSampleMax;
+  bool           _PrintSymbolsProperly;
+  int            _Argc; //! Raw argc
+  vector<string> _Argv; // Raw argv
  public:
 #ifdef CLASP_THREADS
   void add_process(mp::Process_sp process);

@@ -11,7 +11,7 @@
 #include <gc/gc_mark.h>
 #endif
 
-//#define DUMP_GC_BOOT 1
+#define DUMP_GC_BOOT 1
 //#define DUMP_PRECISE_CALC 1
 
 
@@ -174,9 +174,16 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         // Handle Lisp_O object specially
         // There is a corresponding change to obj_scan.cc
+        size_t field_bit;
+        uintptr_t field_bitmap;
         if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMP_core__Lisp_O)) {
-          size_t field_bit = bitmap_field_index(63,field_offset);
-          uintptr_t field_bitmap = bitmap_field_bitmap(field_bit);
+          field_bit = bitmap_field_index(63,field_offset);
+          field_bitmap = bitmap_field_bitmap(field_bit);
+          local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
+        } else {
+          // Do the same for STAMP_core__Lisp_O - but if it doesn't fit in a 64bit word then we will skip this.
+          field_bit = bitmap_field_index(63,field_offset);
+          field_bitmap = bitmap_field_bitmap(field_bit);
           local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
         }
         if ( local_stamp_layout[cur_stamp].field_layout_start == NULL )

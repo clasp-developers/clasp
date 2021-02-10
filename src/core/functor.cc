@@ -81,7 +81,7 @@ CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(Function
 }
 
 
-CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname lineno column filepos);
+CL_LAMBDA(&key function-name lambda-list docstring declares source-pathname (lineno 0) (column 0) (filepos 0));
 CL_DEFUN FunctionDescription_sp core__makeFunctionDescription(T_sp functionName,
                                                               T_sp lambdaList,
                                                               T_sp docstring,
@@ -300,6 +300,35 @@ CL_DEFUN T_sp core__set_LocalEntryPoint_entry_point_indices(LocalEntryPointGener
   return fdesc->_entry_point_indices = entry_point_indices;
 }
 
+CL_LISPIFY_NAME(function-description-equal);
+CL_DEFMETHOD bool FunctionDescription_O::function_description_equal(T_sp other) const {
+  if (gc::IsA<FunctionDescription_sp>(other)) {
+    FunctionDescription_sp fdother = gc::As_unsafe<FunctionDescription_sp>(other);
+    return this->filepos == fdother->filepos
+        && this->lineno == fdother->lineno
+        && this->column == fdother->column
+        && cl__equal(this->_sourcePathname, fdother->_sourcePathname)
+        && cl__equal(this->_functionName, fdother->_functionName)
+        && cl__equal(this->_docstring, fdother->_docstring)
+        && cl__equal(this->_declares, fdother->_declares)
+        && cl__equal(this->_lambdaList, fdother->_lambdaList);
+  }
+  return false;
+}
+
+CL_LISPIFY_NAME(function-description-sxhash-equal);
+CL_DEFMETHOD Fixnum FunctionDescription_O::function_description_sxhash_equal() const {
+  HashGenerator hg;
+  hg.addValue(this->filepos);
+  hg.addValue(this->lineno);
+  hg.addValue(this->column);
+  clasp_sxhash(this->_sourcePathname,hg);
+  clasp_sxhash(this->_functionName,hg);
+  clasp_sxhash(this->_docstring,hg);
+  clasp_sxhash(this->_declares,hg);
+  clasp_sxhash(this->_lambdaList,hg);
+  return hg.rawhash();
+}
 
 T_sp FunctionDescription_O::sourcePathname() const {
   return this->_sourcePathname;
@@ -374,10 +403,16 @@ extern "C" void dumpFunctionDescription(core::FunctionDescription_sp fdesc)
 
 namespace core {
 
-CL_DEFUN void core__dumpFunctionDescription(Function_sp func)
+CL_DEFUN void core__dumpFunctionDescription(T_sp func)
 {
-  FunctionDescription_sp fdesc = func->fdesc();
-  dumpFunctionDescription(fdesc);
+  if (gc::IsA<Function_sp>(func)) {
+    FunctionDescription_sp fdesc = gc::As<Function_sp>(func)->fdesc();
+    dumpFunctionDescription(fdesc);
+  } else if (gc::IsA<FunctionDescription_sp>(func)) {
+    dumpFunctionDescription(gc::As<FunctionDescription_sp>(func));
+  } else {
+    SIMPLE_ERROR(BF("You can only dump function-descriptions from functions or function-descriptions"));
+  }
 }
 
 CL_LISPIFY_NAME("core:functionSourcePos");

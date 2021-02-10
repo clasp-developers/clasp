@@ -101,6 +101,8 @@ fields at the same offset as Instance_O.
    int column;                                 //  8 column
    int filepos;                                //  9 filepos
  public:
+   FunctionDescription_O() {};
+ public:
   // Accessors
    T_sp sourcePathname() const;
    void setf_sourcePathname(T_sp);
@@ -112,7 +114,10 @@ fields at the same offset as Instance_O.
    void setf_docstring(T_sp);
    T_sp declares() const;
    void setf_declares(T_sp);
-   FunctionDescription_O() {};
+ public:
+   // Custom hash-tables need an equality and hashing function
+   bool function_description_equal(T_sp other) const;
+   Fixnum function_description_sxhash_equal() const;
  };
 
 
