@@ -542,14 +542,12 @@ wrong
     (test-expect-error write-string-error-3
                        (write-string string stream :start (make-hash-table)) :type type-error)
     (test-expect-error write-string-error-4
-                       (write-string string stream :end nil) :type type-error)
-    (test-expect-error write-string-error-5
                        (write-string string stream :end -1) :type type-error)
-    (test-expect-error write-string-error-5a
+    (test-expect-error write-string-error-4a
                        (write-string string stream :end 100) :type type-error)
-    (test-expect-error write-string-error-6
+    (test-expect-error write-string-error-5
                        (write-string string stream :end (make-hash-table)) :type type-error)
-    (test-expect-error write-string-error-7
+    (test-expect-error write-string-error-6
                        (write-string string stream :start 2 :end 1) :type type-error)))
 
 (test write-string-subseq-SimpleBaseString_O
