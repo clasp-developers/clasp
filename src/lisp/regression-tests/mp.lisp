@@ -122,25 +122,80 @@
         (eq thread (mp:process-error-process
                     (nth-value 1 (ignore-errors (mp:process-join thread)))))))
 
+(test-expect-error not-atomic-1
+                   (macroexpand-1 `(mp:atomic (,(gensym))))
+                   :type mp:not-atomic)
+(test not-atomic-2
+      (let ((place (list (gensym))))
+        (handler-case (macroexpand-1 `(mp:atomic ,place))
+          (mp:not-atomic (e)
+            (eq (mp:not-atomic-place e) place)))))
+
+(macrolet ((atomic-place-test (name place create)
+             `(test ,name
+                    (let ((object ,create) (s (gensym)))
+                      (setf (mp:atomic ,place) s)
+                      (eq (mp:atomic ,place) s)))))
+  (atomic-place-test atomic-car (car object) (list nil))
+  (atomic-place-test atomic-cdr (cdr object) (list nil))
+  (atomic-place-test atomic-first (first object) (list nil))
+  (atomic-place-test atomic-rest (rest object) (list nil))
+  (atomic-place-test atomic-symbol-value-1 (symbol-value object) (gensym))
+  (atomic-place-test atomic-svref (svref object 0) (vector nil)))
+
+(test atomic-symbol-value-2
+      (let ((x nil) (s (gensym)))
+        (declare (special x))
+        (setf (mp:atomic x) s)
+        (eq (mp:atomic x) s)))
+
+(defun spam-processes (nthreads thunk)
+  (let ((threads (loop repeat nthreads
+                       collect (mp:process-run-function nil thunk))))
+    (mapcar #'mp:process-join threads)))
+
+(test atomic-acquire-release
+      (let ((lock (list nil))
+            (value 0)
+            (nthreads 7))
+        (labels ((acquire ()
+                   (loop until (null (mp:cas (car lock) nil t
+                                             :order :acquire-release))))
+                 (release ()
+                   (setf (mp:atomic (car lock) :order :release) nil))
+                 (thunk ()
+                   (acquire)
+                   (unwind-protect (incf value) (release))))
+          (spam-processes nthreads #'thunk)
+          (= value nthreads))))
+
+(test atomic-incf
+      (let ((x (list 0)))
+        (mp:atomic-incf (car x) 319)
+        (= (car x) 319)))
+
 (test atomic-counter-effect
-      (let* ((counter (list 0))
-             (nthreads 7)
-             (threads
-               (loop repeat nthreads
-                     collect (mp:process-run-function
-                              nil
-                              (lambda () (mp:atomic-incf (car counter)))))))
-        (mapc #'mp:process-join threads)
+      (let ((counter (list 0))
+            (nthreads 7))
+        (spam-processes nthreads
+                        (lambda ()
+                          (mp:atomic-incf-explicit ((car counter)
+                                                    :order :relaxed))))
         (eql (car counter) nthreads)))
 
 (test atomic-counter-value
-      (let* ((counter (list 0))
-             (nthreads 7)
-             (threads
-               (loop repeat nthreads
-                     collect (mp:process-run-function
-                              nil
-                              (lambda () (mp:atomic-incf (car counter)))))))
-        (equal (sort (mapcar #'mp:process-join threads) #'<)
-               '(1 2 3 4 5 6 7))))
+      (let ((counter (list 0))
+            (nthreads 7))
+        (equal (sort (spam-processes
+                      nthreads
+                      (lambda ()
+                        (mp:atomic-incf-explicit ((car counter)
+                                                  :order :relaxed))))
+                     #'<)
+               (loop repeat nthreads for i from 1 collect i))))
 
+(test atomic-push
+      (let ((place (list nil))
+            (nthreads 7))
+        (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
+        (equal (car place) (make-list nthreads))))
