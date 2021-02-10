@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/serialize.fwd.h>
 
+#if 0
 namespace core {
 
 FORWARD(Serializer);
@@ -48,5 +49,5 @@ FORWARD(Serializer);
     string __repr__() const;
   };
 };
-
+#endif
 #endif

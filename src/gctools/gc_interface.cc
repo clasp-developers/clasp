@@ -832,7 +832,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::NativeVector_double_O);
      Init_class_kind(core::NativeVector_int_O);
      Init_class_kind(llvmo::FunctionCallee_O);
-     Init_class_kind(core::Serializer_O);
      Init_class_kind(llvmo::DINodeArray_O);
      Init_class_kind(mp::Mutex_O);
      Init_class_kind(mp::RecursiveMutex_O);

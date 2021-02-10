@@ -19,18 +19,20 @@
 namespace llvmo { // ObjectFile_O
 
 #if 0
-LibraryFile_sp LibraryFile_O::createLibrary(const std::string& libraryName)
+LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
 {
   DEBUG_OBJECT_FILES(("%s:%d:%s Creating empty ObjectFile_O\n", __FILE__, __LINE__, __FUNCTION__));
+  core::SimpleBaseString_sp libraryName = core::SimpleBaseString_O::make(slibraryName);
   LibraryFile_sp of = gc::GC<LibraryFile_O>::allocate(libraryName);
   return of;
 }
 #endif
 
 
-ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex)
+ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex)
 {
   DEBUG_OBJECT_FILES(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
+  core::SimpleBaseString_sp fasoName = core::SimpleBaseString_O::make(sFasoName);
   ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(std::move(buffer),startupID,jitdylib,fasoName,fasoIndex);
   return of;
 }
@@ -234,7 +236,7 @@ namespace llvmo {
 void save_object_file_and_code_info(ObjectFile_sp ofi)
 {
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-  DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, ofi->_FasoName.c_str()));
+  DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(ofi->_FasoName).c_str()));
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {

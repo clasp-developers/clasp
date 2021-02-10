@@ -109,14 +109,14 @@ public:
     printf("%s:%d:%s  create class\n", __FILE__, __LINE__, __FUNCTION__ );
   };
 
-  ClassRep_O(core::Instance_sp class_, type_id const &type, const std::string &name, bool derivable);
+  ClassRep_O(core::Instance_sp class_, type_id const &type, core::Symbol_sp name, bool derivable);
 
 #if 0
   ClassRep_O(const std::string &name, bool derivable);
 #endif
 
 public:
-  static ClassRep_sp create(core::Instance_sp class_, type_id const &mtype, const std::string &name, bool derivable) {
+  static ClassRep_sp create(core::Instance_sp class_, type_id const &mtype, core::Symbol_sp name, bool derivable) {
     GC_ALLOCATE_VARIADIC(ClassRep_O, val, class_, mtype, name, derivable);
     return val;
   }
@@ -127,7 +127,7 @@ public:
   void set_type(type_id const &t) { m_type = t; }
   type_id const &type() const throw() { return m_type; }
 
-  std::string name_() const throw() { return m_name; }
+  std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
   detail::cast_graph const &casts() const {
     return *m_casts;
@@ -151,7 +151,7 @@ public:
   gctools::Vec0<core::Cons_sp> m_bases;
 
   // the class' name (as given when registered to lua with class_)
-  std::string m_name;
+  core::Symbol_sp m_name;
 
   detail::cast_graph *m_casts;
   /* What does this store???? */

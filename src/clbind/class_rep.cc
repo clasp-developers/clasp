@@ -65,7 +65,7 @@ using namespace clbind::detail;
 
 namespace clbind {
 
-ClassRep_O::ClassRep_O(core::Instance_sp class_, type_id const &type, const std::string &name, bool derivable)
+ClassRep_O::ClassRep_O(core::Instance_sp class_, type_id const &type, core::Symbol_sp name, bool derivable)
   : Instance_O(class_/*,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS*/ ),
     m_type(type),
     m_name(name)

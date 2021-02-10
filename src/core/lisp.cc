@@ -2524,6 +2524,7 @@ LispHolder::~LispHolder() {
 }
 
 Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName) {
+  this->_PackageName = SimpleBaseString_O::make(packageName);
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
     list<string> lpkgs;
@@ -2531,7 +2532,6 @@ Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName) {
   } else {
     this->_Package = gc::As<Package_sp>(lisp->findPackage(packageName, true));
   }
-  this->_PackageName = packageName;
 }
 
 Exposer_O::~Exposer_O(){};

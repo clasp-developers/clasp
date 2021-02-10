@@ -163,20 +163,18 @@ namespace clbind {
 
 class DummyCreator_O : public core::Creator_O {
   LISP_CLASS(clbind,ClbindPkg,DummyCreator_O,"DummyCreator",core::Creator_O);
-  string _name;
-
+  core::T_sp _name;
 public:
-  DummyCreator_O(core::GlobalEntryPoint_sp ep, const string &name) : core::Creator_O(ep), _name(name){};
-
+  DummyCreator_O(core::GlobalEntryPoint_sp ep, core::T_sp name) : core::Creator_O(ep), _name(name){};
 public:
   virtual size_t templatedSizeof() const  override{ return sizeof(*this); };
   virtual bool allocates() const  override{ return false; };
   virtual core::T_sp creator_allocate()  override{
-    SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", this->_name.c_str());
+    SIMPLE_ERROR_SPRINTF("This class named: %s cannot allocate instances", core::_rep_(this->_name).c_str());
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className)  override{
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<T_O>(),DummyCreator_O::entry_point);
-    return gc::GC<DummyCreator_O>::allocate(entryPoint,core::lisp_symbolNameAsString(className));
+    return gc::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
 };
 

@@ -95,21 +95,21 @@ derivable_class_registration::derivable_class_registration(char const *name) : m
 void derivable_class_registration::register_() const {
   LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
   ClassRegistry_sp registry = ClassRegistry_O::get_registry();
-  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+  std::string classNameString(this->m_name);
+  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
+  clbind::ClassRep_sp crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, className, this->m_derivable);
 #ifdef DEBUG_CLASS_INSTANCE
   printf("%s:%d:%s   Registering clbind class\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
   crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances(),REF_CLASS_NUMBER_OF_SLOTS_IN_DERIVABLE_CXX_CLASS);
-  std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
-    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,classNameString);
+    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   crep->initializeClassSlots(creator,gctools::NextStampWtag(gctools::Header_s::derivable_wtag));
-  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????

@@ -37,6 +37,7 @@ THE SOFTWARE.
 
 #include <clasp/core/wrappers.h>
 
+#if 0
 namespace core {
 
 string Serializer_O::__repr__() const {
@@ -51,3 +52,5 @@ CL_DEFUN Serializer_sp make_serializer(const std::string& s) {
 };
 
 };
+
+#endif

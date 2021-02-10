@@ -163,8 +163,8 @@ public:
                  pythonGlobals } WhatToExpose;
  private:
   // The package is put here
-  Package_sp _Package;
-  string _PackageName;
+   Package_sp _Package;
+   SimpleBaseString_sp _PackageName;
 public:
 
   /*! CTor that looks up a Package with packageName and if it
@@ -174,7 +174,7 @@ public:
   virtual ~Exposer_O();
 
   /*! Return the packageName */
-  string packageName() const { return this->_PackageName; };
+   string packageName() const { return this->_PackageName->get_std_string(); };
 
   /*! Return the Package that this Exposer holds */
   Package_sp package() const { return this->_Package; };

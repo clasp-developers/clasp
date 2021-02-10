@@ -1,5 +1,5 @@
 /*
-    File: llvmoExpose.h
+    File: code.h
 */
 
 
@@ -42,12 +42,12 @@ namespace llvmo {
     size_t         _Size;
     size_t         _StartupID;
     JITDylib_sp    _JITDylib;
-    std::string    _FasoName;
+    core::SimpleBaseString_sp _FasoName;
     size_t         _FasoIndex;
     Code_sp        _Code;
   public:
     static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-  ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
+    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
     ~ObjectFile_O();
     std::string __repr__() const;
     static void writeToFile(const std::string& filename, const char* start, size_t size);
@@ -91,9 +91,9 @@ namespace llvmo {
   class LibraryFile_O : public LibraryBase_O {
     LISP_CLASS(llvmo, LlvmoPkg, LibraryFile_O, "LibraryFile", LibraryBase_O);
   public:
-  LibraryFile_O(const std::string& name) : _Library(name) {};
+    LibraryFile_O(core::SimpleBaseString_sp name) : _Library(name) {};
   public:
-    std::string       _Library;
+    core::SimpleBaseString_sp       _Library;
   public:
     static LibraryFile_sp createLibrary(const std::string& libraryName);
   };

@@ -89,27 +89,27 @@ void class_registration::register_() const {
     printf("%s:%d setting up DynTypedMatcher\n", __FILE__, __LINE__ );
   }
 #endif
+  std::string classNameString(this->m_name);
+  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   if (!this->m_derivable) {
-    crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+    crep = clbind::ClassRep_O::create(core::lisp_clbind_cxx_class(), this->m_type, className, this->m_derivable);
     where = gctools::Header_s::wrapped_wtag;
   } else {
-    crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, this->m_name, this->m_derivable);
+    crep = clbind::ClassRep_O::create(core::lisp_derivable_cxx_class(), this->m_type, className, this->m_derivable);
     where = gctools::Header_s::derivable_wtag;
   }
   LOG_SCOPE(("%s:%d   Registering clbind class: %s\n", __FILE__, __LINE__, this->m_name.c_str() ));
   //  crep->_Class = core::lisp_standard_class();
   crep->initializeSlots(crep->_Class->CLASS_stamp_for_instances() /* BEFORE: gctools::NextStamp() */,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS);
-  std::string classNameString(this->m_name);
   gctools::smart_ptr<core::Creator_O> creator;
   if (m_default_constructor != NULL) {
     creator = m_default_constructor->registerDefaultConstructor_();
   } else {
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),DummyCreator_O::entry_point);
-    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,classNameString);
+    creator = gctools::GC<DummyCreator_O>::allocate(entryPoint,className);
   }
   //  printf("%s:%d:%s  classNameString->%s  where -> 0x%zx\n", __FILE__, __LINE__, __FUNCTION__, classNameString.c_str(), where);
   crep->initializeClassSlots(creator,gctools::NextStampWtag(where));
-  core::Symbol_sp className = core::lispify_intern(classNameString, _lisp->getCurrentPackage()->packageName());
   className->exportYourself();
   crep->_setClassName(className);
   reg::lisp_associateClassIdWithClassSymbol(m_id, className); // TODO: Or do I want m_wrapper_id????
