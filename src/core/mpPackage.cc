@@ -386,12 +386,13 @@ CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
   return m->_Owner;
 }
 
-CL_DOCSTRING("Start execution of a nascent process.");
-CL_DEFUN int mp__process_start(Process_sp process)
+CL_DOCSTRING("Start execution of a nascent process. Return no values.");
+CL_DEFUN void mp__process_start(Process_sp process)
 {
-  if (process->_Phase == Nascent)
-    return process->start();
-  else SIMPLE_ERROR(BF("The process %s has already started.") % process);
+  if (process->_Phase == Nascent) {
+    _lisp->add_process(process);
+    process->start();
+  } else SIMPLE_ERROR(BF("The process %s has already started.") % process);
 };
 
 CL_DOCSTRING("Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.");
