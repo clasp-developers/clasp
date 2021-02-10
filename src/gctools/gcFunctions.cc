@@ -1589,7 +1589,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   INTERN_(comp,STARuse_compile_file_parallelSTAR)->defparameter(_lisp->_true());
 #endif
-  if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s") % USE_COMPILE_FILE_PARALLEL);
+  if (buildReport) ss << (BF("USE_COMPILE_FILE_PARALLEL = %s\n") % USE_COMPILE_FILE_PARALLEL);
 
   bool force_startup_external_linkage = true;
 #if FORCE_STARTUP_EXTERNAL_LINKAGE == 0
@@ -1598,7 +1598,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #else
   INTERN_(comp,STARforce_startup_external_linkageSTAR)->defparameter(_lisp->_true());
 #endif
-  if (buildReport) ss << (BF("FORCE_STARTUP_EXTERNAL_LINKAGE = %s") % FORCE_STARTUP_EXTERNAL_LINKAGE);
+  if (buildReport) ss << (BF("FORCE_STARTUP_EXTERNAL_LINKAGE = %s\n") % FORCE_STARTUP_EXTERNAL_LINKAGE);
   
   bool use_lto = false;
   // CLASP_BUILD_MODE == 0 means generate fasls
@@ -1629,7 +1629,7 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   debugging = false;
   INTERN_(core,STARclasp_build_modeSTAR)->defparameter(kw::_sym_fasobc);
 #endif
-  if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s") % CLASP_BUILD_MODE);
+  if (buildReport) ss << (BF("CLASP_BUILD_MODE = %s\n") % CLASP_BUILD_MODE);
   
   bool use_human_readable_bitcode = false;
 #if USE_HUMAN_READABLE_BITCODE==1

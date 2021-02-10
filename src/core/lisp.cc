@@ -206,9 +206,7 @@ Lisp_O::GCRoots::GCRoots() :
   _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
   _DefaultSpecialBindings(_Nil<T_O>()),
   _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
-  _SyspropMutex(SYSPROC__NAMEWORD),
   _FinalizersMutex(MPSMESSG_NAMEWORD),
-  _ClassTableMutex(CLASSTBL_NAMEWORD),
   _SourceFilesMutex(SRCFILES_NAMEWORD),
   _PackagesMutex(PKGSMUTX_NAMEWORD),
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -445,7 +443,7 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
 
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-  
+ 
 #ifdef DEBUG_FLAGS_SET
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
 #endif
@@ -1305,8 +1303,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     stringstream sdebug;
     bool debugging = gctools::debugging_configuration(false,true,sdebug);
     if ( debugging ) {
-      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
+      printf("%s:%d Debugging flags are set - configuration:\n%s", __FILE__, __LINE__, sdebug.str().c_str());
     }
+    printf("%s:%d  Lisp_O smart_ptr width -> %d  sizeof(Lisp_O) -> %lu\n", __FILE__, __LINE__, (int)offsetof(Lisp_O,_Roots._all_taggedptr_barrier)/8, sizeof(Lisp_O));
   }
 
   //	this->_FunctionName = execName;
