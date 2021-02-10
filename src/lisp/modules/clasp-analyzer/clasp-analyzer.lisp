@@ -518,6 +518,8 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (bitunit-ctype (:include ctype)) bitunit-width unsigned-type signed-type)
 (defstruct (simple-ctype (:include ctype)))
 (defstruct (basic-string-ctype (:include ctype)) name)
+(defstruct (std-map-ctype (:include ctype)) name)
+(defstruct (shared-mutex-ctype (:include ctype)) name)
 
 (defstruct (function-proto-ctype (:include ctype)))
 (defstruct (lvalue-reference-ctype (:include ctype)))
@@ -620,8 +622,10 @@ This could change the value of stamps for specific classes - but that would brea
 (defclass smart-ptr-offset (copyable-offset) ())
 (defclass tagged-pointer-offset (copyable-offset) ())
 (defclass pointer-offset (copyable-offset) ())
+(defclass raw-pointer-offset (copyable-offset) ())
 (defclass pod-offset (copyable-offset) ())
 (defclass cxx-fixup-offset (copyable-offset) ())
+(defclass cxx-shared-mutex-offset (copyable-offset) ())
 
 (defun copy-offset (offset)
   "* Arguments
@@ -984,6 +988,16 @@ to expose to C++.
                            :base base
                            :offset-type x))))
 
+(defmethod linearize-class-layout-impl ((x std-map-ctype) base analysis)
+  (list (make-instance 'cxx-fixup-offset
+                       :base base
+                       :offset-type x)))
+
+(defmethod linearize-class-layout-impl ((x shared-mutex-ctype) base analysis)
+  (list (make-instance 'cxx-shared-mutex-offset
+                       :base base
+                       :offset-type x)))
+
 (defmethod linearize-class-layout-impl ((x unique-ptr-ctype) base analysis)
   (if (ignorable-ctype-p x)
       nil
@@ -1076,8 +1090,8 @@ Generate offsets for every array element that exposes the fields in elements."
        (list (make-instance 'pointer-offset :base base :offset-type x)))
       ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
       (t
-       (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
-       nil))))
+       (list (make-instance 'raw-pointer-offset :base base :offset-type x))
+       ))))
 
 ;; \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -1291,18 +1305,23 @@ can be saved and reloaded within the project for later analysis"
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
               (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "map")
+            (make-std-map-ctype :key decl-key :name name))
            ((string= name "basic_string")
             (make-basic-string-ctype :key decl-key :name name))
            ((string= name "unique_ptr")
             (make-unique-ptr-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            (t
-            #+(or)(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
+            (warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
                                                       :name name
                                                       :arguments (classify-template-args decl)
                                                       )))))
       (cast:cxxrecord-decl
-       (make-cxxrecord-ctype :key decl-key :name name))
+       (cond
+         ((string= name "SharedMutex")
+          (make-shared-mutex-ctype :key decl-key :name name))
+         (t (make-cxxrecord-ctype :key decl-key :name name))))
       (cast:record-decl
        (warn "classify-decl found ~a decl-key: ~a name: ~a - this means that the mostDerivedType code isn't working!!!!" (type-of decl) decl-key name)
        (make-unknown-ctype :key decl-key ))
@@ -2127,6 +2146,8 @@ so that they don't have to be constantly recalculated"
                (contains-fixptr-impl-p c project)
                nil))))))
 (defmethod contains-fixptr-impl-p ((x basic-string-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x std-map-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x shared-mutex-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unique-ptr-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
@@ -3096,11 +3117,10 @@ Recursively analyze x and return T if x contains fixable pointers."
     (when field-code (setq result (append result field-code)))
     result))
 (defmethod fixable-instance-variables-impl ((x builtin-ctype) analysis) nil)
-
 (defmethod fixable-instance-variables-impl ((x basic-string-ctype) analysis) nil)
-
+(defmethod fixable-instance-variables-impl ((x std-map-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
-
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
   (cond
     ((ignorable-ctype-p x) nil)
@@ -3463,6 +3483,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var rvalue-reference-ctype) analysis) (format *debug-io* "rvalue-reference-ctype -> ~a~%" var) nil)
 (defmethod fix-variable-p ((var incomplete-array-ctype) analysis) (format *debug-io* "incomplete-array-ctype -> ~a~%" var) nil)
 (defmethod fix-variable-p ((var basic-string-ctype) analysis) nil)
+(defmethod fix-variable-p ((var std-map-ctype) analysis) nil)
+(defmethod fix-variable-p ((var shared-mutex-ctype) analysis) nil)
 (defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
 (defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
