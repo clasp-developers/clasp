@@ -154,7 +154,7 @@
                        collect (mp:process-run-function nil thunk))))
     (mapcar #'mp:process-join threads)))
 
-(test atomic-acquire-release
+(test atomic-acquire-release-1
       (let ((lock (list nil))
             (value 0)
             (nthreads 7))
@@ -169,10 +169,48 @@
           (spam-processes nthreads #'thunk)
           (= value nthreads))))
 
+(test atomic-acquire-release-2
+      (let* ((L (list 0 0 0 0 0))
+             (consumer
+               (mp:process-run-function
+                nil (lambda ()
+                      (loop while (zerop (mp:atomic (first L) :order :acquire)))
+                      (apply #'= L))))
+             (producer
+               (mp:process-run-function
+                nil (lambda ()
+                      (setf (fifth L) 1 (fourth L) 1 (third L) 1 (second L) 1
+                            (mp:atomic (first L) :order :release) 1)))))
+        (mp:process-join producer)
+        (mp:process-join consumer)))
+
 (test atomic-incf
       (let ((x (list 0)))
         (mp:atomic-incf (car x) 319)
         (= (car x) 319)))
+
+(test atomic-sequential-consistency-1
+      ;; from cppreference.com
+      (let ((x (list nil)) (y (list nil)) (z (list 0)))
+        (let ((write-x
+                (mp:process-run-function
+                 nil (lambda () (setf (mp:atomic (car x)) t))))
+              (write-y
+                (mp:process-run-function
+                 nil (lambda () (setf (mp:atomic (car y)) t))))
+              (read-x-then-y
+                (mp:process-run-function
+                 nil (lambda ()
+                       (loop until (mp:atomic (car x)))
+                       (when (mp:atomic (car y)) (mp:atomic-incf (car z))))))
+              (read-y-then-x
+                (mp:process-run-function
+                 nil (lambda ()
+                       (loop until (mp:atomic (car y)))
+                       (when (mp:atomic (car x)) (mp:atomic-incf (car z)))))))
+          (mp:process-join write-x) (mp:process-join write-y)
+          (mp:process-join read-x-then-y) (mp:process-join read-y-then-x)
+          (not (zerop (mp:atomic (car z)))))))
 
 (test atomic-counter-effect
       (let ((counter (list 0))
