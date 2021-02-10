@@ -71,8 +71,6 @@ using namespace clbind;
 
 #include <clasp/clbind/clbind.h>
 
-#if 0
-
 
 namespace asttooling {
 core::T_sp mostDerivedDecl(const clang::Decl *cd);
@@ -742,9 +740,6 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 
 };
 
-
-
-#endif // #if 0
 
 
 namespace asttooling {

@@ -630,6 +630,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_application_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_libSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_stlibSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARbuild_cppflagsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
@@ -1057,6 +1058,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARbuild_libSTAR->defconstant(SimpleBaseString_O::make(BUILD_LIB));
   _sym_STARbuild_stlibSTAR->defconstant(SimpleBaseString_O::make(BUILD_STLIB));
   _sym_STARbuild_linkflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_LINKFLAGS));
+  _sym_STARbuild_cppflagsSTAR->defconstant(SimpleBaseString_O::make(BUILD_CPPFLAGS));
   _sym__PLUS_run_all_function_name_PLUS_->defconstant(SimpleBaseString_O::make(RUN_ALL_FUNCTION_NAME));
   _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(SimpleBaseString_O::make(CLASP_CTOR_FUNCTION_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);

@@ -406,7 +406,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defvar +isysroot+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain"
+  #+target-os-darwin (second (core:split core:*build-cppflags* " ")) ;; something like "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk"
   "Define the -isystem command line option for Clang compiler runs")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

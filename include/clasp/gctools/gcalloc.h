@@ -319,7 +319,6 @@ inline Header_s* do_boehm_uncollectable_allocation(const Header_s::StampWtagMtag
 #else
   new (header) Header_s(the_header);
 #endif
-  printf("%s:%d:%s stamp: %lu header@%p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, the_header.stamp(), header, size );
   return header;
 };
 #endif

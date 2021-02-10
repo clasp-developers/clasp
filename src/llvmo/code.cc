@@ -268,7 +268,7 @@ Return NIL if none or (values offset-from-start object-file). The index-from-sta
 CL_LISPIFY_NAME(object_file_for_instruction_pointer);
 CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose)
 {
-  printf("%s:%d:%s entered looking for instruction_pointer@%p you should search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer );
+  DEBUG_OBJECT_FILES(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count;
   DEBUG_OBJECT_FILES(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
