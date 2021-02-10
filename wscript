@@ -345,6 +345,21 @@ def analyze_clasp(cfg):
                      "--eval",    "(core:quit)")
     print("\n\n\n----------------- proceeding with static analysis --------------------")
 
+def analyze_test(cfg):
+    cfg.extensions_clasp_gc_names = []
+    log.debug("analyze_test about to recurse\n")
+    print("In analyze_test cfg.extensions_clasp_gc_names = %s" % cfg.extensions_clasp_gc_names)
+    log.debug("cfg.extensions_clasp_gc_names = %s\n", cfg.extensions_clasp_gc_names)
+    output_file = "source-dir:build;clasp_gc_test.cc"
+    run_search = '(run-search "%s")' % output_file
+    run_program_echo("build/boehm/iclasp-boehm",
+                     "-N", "-D",
+                     "--feature", "ignore-extensions",
+                     "--load",    "sys:modules;clasp-analyzer;run-serial-analyzer-test.lisp",
+                     "--eval", run_search,
+                     "--eval",    "(core:quit)")
+    print("\n\n\n----------------- proceeding with static analysis --------------------")
+
 def test(cfg):
     log.debug("Execute regression tests\n")
     run_program_echo("build/clasp",
@@ -402,6 +417,7 @@ def configure_common(cfg,variant):
     log.debug("cfg.env.LINKFLAGS = %s", cfg.env.LINKFLAGS)
     log.debug("cfg.env.LDFLAGS = %s", cfg.env.LDFLAGS)
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
+    cfg.define("BUILD_CPPFLAGS", ' '.join(cfg.env.CPPFLAGS))
 
 def module_fasl_extension(bld,name):
     if (bld.env.CLASP_BUILD_MODE=='faso'):

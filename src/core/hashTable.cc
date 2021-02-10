@@ -664,9 +664,6 @@ uint HashTable_O::resizeEmptyTable_no_lock(size_t sz) {
   T_sp no_key = _NoKey<T_O>();
   this->_HashTableCount = 0;
   this->_Table.resize(sz,KeyValuePair(no_key,no_key));
-#ifdef USE_MPS
-  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
-#endif
   return sz;
 }
 
@@ -762,21 +759,6 @@ KeyValuePair* HashTable_O::tableRef_no_read_lock(T_sp key, bool under_write_lock
   }
  NOT_FOUND:
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d key not found\n") % __FILE__ % __LINE__, T_sp());});
-#if 0 // defined(USE_MPS)
-  if (key.objectp()) {
-    if (hg.isstale(&this->_LocationDependency)) {
-      DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  mps_ld_isstale->TRUE\n") % __FILE__ % __LINE__, T_sp());});
-      if (under_write_lock) {
-        return this->rehash_no_lock(false /*expandTable*/, key);
-      } else {
-        return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
-      }
-    } else {
-      DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d  mps_ld_isstale->FALSE\n") % __FILE__ % __LINE__, T_sp());});
-        // mps_ld_isstale returned false - so we haven't seen this block before - proceed to fail to find the key
-    }
-  }
-#endif
   VERIFY_HASH_TABLE(this);
   return nullptr;
 }
@@ -866,14 +848,6 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value)
     VERIFY_HASH_TABLE(this);
     return value;
   }
-  // not found
-#if 0 // def USE_MPS  
-  // DO NOT! I repeat DO NOT comment out the following line because you see we calculate index above
-  // The one below has "true /*will-add-key*/ - this means it will add to the MPS location dependency
-  // object - this is essential if this is to work with MPS
-  DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d setf_gethash_no_write_lock getting index for will-add-key ht->is_eq=%d\n") % __FILE__ % __LINE__ % this->is_eq_hashtable(), T_sp());});
-  hg.addAddressesToLocationDependency(&this->_LocationDependency);
-#endif
   DEBUG_HASH_TABLE({core::write_bf_stream(BF("%s:%d Looking for empty slot index = %ld\n")  % __FILE__ % __LINE__ % index, T_sp());});
   KeyValuePair* entryP = &this->_Table[index];
   size_t cur;

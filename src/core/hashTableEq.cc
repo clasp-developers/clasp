@@ -93,18 +93,6 @@ List_sp HashTableEq_O::tableRef_no_read_lock(T_sp key, bool under_write_lock) {
     if (entry._Key.no_keyp()) goto NOT_FOUND;
   }
  NOT_FOUND:
-#if 0 // defined(USE_MPS)
-  // Location dependency test if key is stale
-  if (key.objectp()) {
-    if (hg.isstale(&this->_LocationDependency)) {
-      if (under_write_lock) {
-        return this->rehash_no_lock(false /*expandTable*/, key);
-      } else {
-        return this->rehash_upgrade_write_lock(false /*expandTable*/, key);
-      }
-    }
-  }
-#endif
   return _Nil<T_O>();
 }
 

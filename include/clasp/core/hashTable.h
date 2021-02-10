@@ -94,11 +94,6 @@ struct KeyValuePair {
 #ifdef CLASP_THREADS
     mutable mp::SharedMutex_sp _Mutex;
 #endif
-#ifdef USE_MPS
-    mps_ld_s _LocationDependency;
-#else
-    gctools::BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here to match MPS
-#endif
   public:
     static HashTable_sp create(T_sp test); // set everything up with defaults
     static HashTable_sp create_thread_safe(T_sp test, SimpleBaseString_sp readLockName, SimpleBaseString_sp writeLockName); // set everything up with defaults

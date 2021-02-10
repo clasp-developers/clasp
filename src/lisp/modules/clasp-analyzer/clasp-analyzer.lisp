@@ -2,6 +2,9 @@
 
 (declaim (debug 3))
 
+(eval-when (:load-toplevel :execute)
+  (setf *print-pretty* nil))
+
 (defpackage #:clasp-analyzer
   (:shadow #:function-info #:function-type)
   (:use #:common-lisp #:ast-tooling #:clang-ast)
@@ -514,6 +517,8 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct ctype key)
 (defstruct (bitunit-ctype (:include ctype)) bitunit-width unsigned-type signed-type)
 (defstruct (simple-ctype (:include ctype)))
+(defstruct (basic-string-ctype (:include ctype)) name)
+
 (defstruct (function-proto-ctype (:include ctype)))
 (defstruct (lvalue-reference-ctype (:include ctype)))
 (defstruct (template-type-parm-ctype (:include ctype)))
@@ -560,7 +565,8 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (pointer-to-record-ctype (:include ctype))
   description)
 
-
+(defstruct (unique-ptr-ctype (:include ctype))
+  name arguments)
 
 (defstruct (container (:include class-template-specialization-ctype)))
 (defstruct (gcvector-moveable-ctype (:include container)))
@@ -615,6 +621,7 @@ This could change the value of stamps for specific classes - but that would brea
 (defclass tagged-pointer-offset (copyable-offset) ())
 (defclass pointer-offset (copyable-offset) ())
 (defclass pod-offset (copyable-offset) ())
+(defclass cxx-fixup-offset (copyable-offset) ())
 
 (defun copy-offset (offset)
   "* Arguments
@@ -780,10 +787,12 @@ to expose."
                     (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
                     (is-std-atomic (is-atomic one stream))
                     (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-                    (expose-it (and fixable good-name))
+                    (expose-it (and #+(or)fixable good-name))
                     (*print-pretty* nil))
-               (dolist (iv (fields one))
-                 (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%" (instance-field-access iv) (instance-field-ctype iv)))
+               (let ((idx 0))
+                 (dolist (iv (fields one))
+                   (format stream "//     field: ~s (instance-field-access iv) -> ~s  (instance-field-ctype iv) -> ~s~%" (instance-field-as-string iv (= 0 idx)) (instance-field-access iv) (instance-field-ctype iv))
+                   (incf idx)))
                (format stream "~a    {    variable_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
                        (if expose-it "" "// not-exposed-yet ")
                        (offset-type-c++-identifier one)
@@ -817,8 +826,9 @@ to expose."
          (name (and (class-template-specialization-ctype-p second-last-field-type)
                     (class-template-specialization-ctype-name second-last-field-type)))
          (is-std-atomic (and name (string= "atomic" name))))
-    (format stream "// second-last-field is-atomic atomic: ~s  name: ~s~%" is-std-atomic name)
-    is-std-atomic))
+    #+(or)(format stream "// second-last-field is-atomic atomic: ~s  name: ~s~%" is-std-atomic name)
+    is-std-atomic)
+  )
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
@@ -826,15 +836,18 @@ to expose."
            (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'clang-ast:as-public)) (fields one)))
            (is-std-atomic (is-atomic one stream))
            (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
-           (expose-it (and fixable
+           (expose-it (and #+(or)fixable
                            good-name
-                           (expose-fixed-field-type (offset-type-c++-identifier one))))
+                           #+(or)(expose-fixed-field-type (offset-type-c++-identifier one))))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
-      (dolist (iv (fields one))
-        (format stream "// (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
-                (instance-field-access iv)
-                (instance-field-ctype iv)))
+      (let ((idx 0))
+        (dolist (iv (fields one))
+          (format stream "//      field: ~s (instance-field-access iv) -> ~s   (instance-field-ctype iv) -> ~s~%"
+                  (instance-field-as-string iv (= 0 idx))
+                  (instance-field-access iv)
+                  (instance-field-ctype iv))
+          (incf idx)))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), __builtin_offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // atomic: ~a public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it   "" "// not-exposing")
               (offset-type-c++-identifier one)
@@ -961,6 +974,20 @@ to expose to C++.
   (if (ignorable-ctype-p x)
       nil
       (list (make-instance 'pod-offset
+                           :base base
+                           :offset-type x))))
+
+(defmethod linearize-class-layout-impl ((x basic-string-ctype) base analysis)
+  (if (ignorable-ctype-p x)
+      nil
+      (list (make-instance 'cxx-fixup-offset
+                           :base base
+                           :offset-type x))))
+
+(defmethod linearize-class-layout-impl ((x unique-ptr-ctype) base analysis)
+  (if (ignorable-ctype-p x)
+      nil
+      (list (make-instance 'cxx-fixup-offset
                            :base base
                            :offset-type x))))
 
@@ -1198,12 +1225,31 @@ can be saved and reloaded within the project for later analysis"
       (cast:class-template-specialization-decl
        (let ((args (cast:get-template-args decl)))
          (cond
+           ((and (string= name "atomic")
+                 (let* ((arg (cast:template-argument-list-get args 0))
+                        (classified-args (classify-template-args decl)))
+                   (gclog "          Found an atomic object~%")
+                   (format t "ATOMIC - what do I do with decl-key: ~s  classified-args: ~s decl: ~s~%" decl-key classified-args decl)
+                   (cond
+                     ((and (= (length classified-args) 1)
+                           (gc-template-argument-p (first classified-args)))
+                      (let ((ctype (gc-template-argument-ctype (first classified-args))))
+                        (format t "    ctype = ~s~%" ctype)
+                        (when (or (smart-ptr-ctype-p ctype)
+                                  (tagged-pointer-ctype-p ctype))
+                          (format t "Returning ~s~%" ctype)
+                          ctype)))
+                     (t nil) ; punt to another clause
+                     ))))
            ((string= name "smart_ptr")
             (assert (eql (cast:size args) 1) nil "Must have 1 argument")
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
               (gclog "          Found a smart_ptr~%")
-              (make-smart-ptr-ctype :key decl-key :specializer (cast:get-as-string qtarg))))
+              (let ((ctype (make-smart-ptr-ctype :key decl-key :specializer (cast:get-as-string qtarg))))
+                (format t "Found smart_ptr: ~s~%" ctype)
+                ctype
+                )))
            ((string= name "tagged_pointer")
             (assert (eql (cast:size args) 1) nil "Must have 1 argument")
             (let* ((arg (cast:template-argument-list-get args 0))
@@ -1245,16 +1291,23 @@ can be saved and reloaded within the project for later analysis"
             (let* ((arg (cast:template-argument-list-get args 0))
                    (qtarg (cast:get-as-type arg)))
               (make-gcstring-moveable-ctype :key decl-key :name name :arguments (classify-template-args decl))))
+           ((string= name "basic_string")
+            (make-basic-string-ctype :key decl-key :name name))
+           ((string= name "unique_ptr")
+            (make-unique-ptr-ctype :key decl-key :name name :arguments (classify-template-args decl)))
            (t
-            #+gc-warnings(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
+            #+(or)(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
                                                       :name name
                                                       :arguments (classify-template-args decl)
                                                       )))))
       (cast:cxxrecord-decl
        (make-cxxrecord-ctype :key decl-key :name name))
+      (cast:record-decl
+       (warn "classify-decl found ~a decl-key: ~a name: ~a - this means that the mostDerivedType code isn't working!!!!" (type-of decl) decl-key name)
+       (make-unknown-ctype :key decl-key ))
       (otherwise
-       (warn "Add support for classify-ctype ~s name: ~s" decl-key name)
+       (warn "Add support for classify-ctype ~s name: ~s (type-of decl) -> ~s" decl-key name (type-of decl))
        (make-unknown-ctype :key decl-key)))))
 
 (defgeneric classify-ctype (type))
@@ -2073,7 +2126,8 @@ so that they don't have to be constantly recalculated"
            (if c
                (contains-fixptr-impl-p c project)
                nil))))))
-
+(defmethod contains-fixptr-impl-p ((x basic-string-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x unique-ptr-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x builtin-ctype) project) nil)
@@ -3043,6 +3097,9 @@ Recursively analyze x and return T if x contains fixable pointers."
     result))
 (defmethod fixable-instance-variables-impl ((x builtin-ctype) analysis) nil)
 
+(defmethod fixable-instance-variables-impl ((x basic-string-ctype) analysis) nil)
+
+(defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
 
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
   (cond
@@ -3100,16 +3157,11 @@ Recursively analyze x and return T if x contains fixable pointers."
     (inherits-metadata key :metadata_always_fix_pointers_to_derived_classes)))
 
 (defgeneric ignorable-ctype-p (ctype))
-
-(defmethod ignorable-ctype-p ((ctype builtin-ctype)) nil)
-(defmethod ignorable-ctype-p ((ctype function-proto-ctype)) nil)
-(defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) t)
-(defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
-(defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
-(defmethod ignorable-ctype-p ((ctype template-type-parm-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype t)) nil) ;; by default nothing is ignorable
+(defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) nil) ;; Should any of these be nil?
 (defmethod ignorable-ctype-p ((ctype unknown-ctype))
   (warn "ignorable-ctype-p called with ~a" ctype)
-  t)
+  nil)
 
 (defun make-table (strings)
   (let ((ht (make-hash-table :test #'equal)))
@@ -3142,7 +3194,7 @@ Recursively analyze x and return T if x contains fixable pointers."
                 "void (core::Lisp_O *)"
                 )))
 
-
+#+(or)
 (defmethod ignorable-ctype-p ((ctype unclassified-ctype))
   (let ((key (ctype-key ctype)))
     (if (gethash key +not-ignorable-unclassified-ctype+)
@@ -3190,6 +3242,7 @@ Recursively analyze x and return T if x contains fixable pointers."
                 "std::type_info"
                 )))
 
+#+(or)
 (defmethod ignorable-ctype-p ((ctype cxxrecord-ctype))
   (cond
     ((gethash (ctype-key ctype) +ignorable-cxxrecord-ctype+) t)
@@ -3212,10 +3265,12 @@ Recursively analyze x and return T if x contains fixable pointers."
                        "std::__1::codecvt<char,char,(anonymous)>"
                        )))
 
+#+(or)
 (defmethod ignorable-ctype-p ((ctype class-template-specialization-ctype))
   (gethash (ctype-key ctype) +ignorable-class-template-specialization-ctype+))
 
 
+#+(or)
 (defmethod ignorable-ctype-p ((ctype pointer-ctype))
   (cond
     ((pointer-ctype-p (pointer-ctype-pointee ctype))
@@ -3407,6 +3462,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var unclassified-template-specialization-ctype) analysis) (format *debug-io* "unclassified-template-specialization-ctype -> ~a~%" var) nil)
 (defmethod fix-variable-p ((var rvalue-reference-ctype) analysis) (format *debug-io* "rvalue-reference-ctype -> ~a~%" var) nil)
 (defmethod fix-variable-p ((var incomplete-array-ctype) analysis) (format *debug-io* "incomplete-array-ctype -> ~a~%" var) nil)
+(defmethod fix-variable-p ((var basic-string-ctype) analysis) nil)
+(defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
 (defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
