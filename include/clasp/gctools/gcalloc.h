@@ -233,7 +233,6 @@ smart_ptr<ConsType> cons_mps_allocation(mps_ap_t& allocation_point,
       //      printf("%s:%d cons_mps_allocation addr=%p size=%lu\n", __FILE__, __LINE__, addr, sizeof(Cons));
     }
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    handle_all_queued_interrupts();
 #if 0
     globalMpsMetrics.totalMemoryAllocated += cons_size;
     ++globalMpsMetrics.consAllocations;
@@ -288,7 +287,6 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
     header->validate();
 #endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
-    handle_all_queued_interrupts();
     globalMpsMetrics.totalMemoryAllocated += allocate_size;
 #ifdef DEBUG_MPS_SIZE
     {
@@ -365,7 +363,6 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
       }
     }
 #endif
-    handle_all_queued_interrupts();
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!obj)
       throw_hard_error("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>");
@@ -389,7 +386,6 @@ extern void bad_general_mps_reserve_error(mps_ap_t* allocation_point);
         Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
         new (obj) T(std::forward<ARGS>(args)...);
-        handle_all_queued_interrupts();
         gctools::tagged_pointer<T> tagged_obj(obj);
         return tagged_obj;
 #endif
@@ -447,7 +443,6 @@ template <class Cons, class Register>
         cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(cons_size));
         new (cons) Cons(std::forward<ARGS>(args)...);
       }
-      handle_all_queued_interrupts();
       return smart_ptr<Cons>((Tagged)tag_cons(cons));
 #endif
 #ifdef USE_MPS
@@ -570,7 +565,6 @@ should not be managed by the GC */
       Header_s* base = do_boehm_uncollectable_allocation(the_header,size);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
       new (obj) OT(std::forward<ARGS>(args)...);
-      handle_all_queued_interrupts();
       gctools::smart_ptr<OT> sp(obj);
       return sp;
 #endif
@@ -675,7 +669,6 @@ namespace gctools {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      handle_all_queued_interrupts();
       return sp;
 #endif
     };
@@ -687,7 +680,6 @@ namespace gctools {
       GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts();
       return sp;
 #endif
 #ifdef USE_MPS
@@ -695,7 +687,6 @@ namespace gctools {
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-      handle_all_queued_interrupts();
       return sp;
 #endif
     };
@@ -706,14 +697,12 @@ namespace gctools {
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      handle_all_queued_interrupts();
       return sp;
 #endif
 #ifdef USE_MPS
       smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, unmanaged>::allocate_in_appropriate_pool_kind(the_header,size,std::forward<ARGS>(args)...);
       GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
       GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-      handle_all_queued_interrupts();
       return sp;
 #endif
     };
@@ -916,7 +905,6 @@ public:
     size_t size = sizeof_container_with_header<TY>(num);
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    handle_all_queued_interrupts();
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
@@ -1021,7 +1009,6 @@ public:
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s* base = do_boehm_normal_allocation(the_header,size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<TY>(base);
-    handle_all_queued_interrupts();
     return myAddress;
 #endif
 #ifdef USE_MPS
