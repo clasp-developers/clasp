@@ -1189,6 +1189,11 @@
                   for lexical in (append (environment llvm-function-info)
                                          (arguments llvm-function-info))
                   do (setf (gethash lexical *datum-values*) arg)))
+          ;; If the policy calls for it, poll for interrupts.
+          (when (> (cleavir-policy:policy-value (cleavir-bir:policy ir)
+                                                'insert-polls)
+                   0)
+            (%intrinsic-invoke-if-landing-pad-or-call "handle_interrupts" nil))
           ;; Branch to the start block.
           (cmp:irc-br (iblock-tag (cleavir-bir:start ir)))
           ;; Lay out blocks.
