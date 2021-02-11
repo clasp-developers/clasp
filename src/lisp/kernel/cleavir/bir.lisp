@@ -365,7 +365,9 @@
   (defprimop core:rack-set (:object :object :object) ())
 
   (defprimop core:vaslist-pop (:object) (:object))
-  (defprimop core:vaslist-length (:object) (:object)))
+  (defprimop core:vaslist-length (:object) (:object))
+
+  (defprimop core::%check-pending-interrupts () ()))
 
 (macrolet ((defprimop (name (&rest in) (&rest out) ast &rest readers)
              `(progn

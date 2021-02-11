@@ -407,6 +407,7 @@
          (primitive         "cc_read_derivable_cxx_stamp_untagged_object" %i64% (list %i8*%))
          #+(or)(primitive         "cc_read_slot" %t*% (list %t*% %size_t%))
          #+(or)(primitive         "cc_write_slot" %t*% (list %t*% %size_t% %t*%))
+         (primitive-unwinds "handle_interrupts" %void% (list))
          )
      *primitives*
      ))

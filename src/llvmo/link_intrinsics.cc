@@ -560,6 +560,10 @@ void dumpLowLevelTrace(int numLowLevels) {
     printf("LowLevel-trace#%d -> %u\n", -i, _LLVMLowLevelTraceQueue[cur]);
   }
 }
+
+void handle_interrupts() {
+  gctools::handle_all_queued_interrupts();
+}
 };
 
 extern "C" {

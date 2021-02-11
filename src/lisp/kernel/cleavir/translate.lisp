@@ -901,6 +901,9 @@
   (cmp:gen-rack-set (in (first (cleavir-bir:inputs inst)))
                     (in (second (cleavir-bir:inputs inst)))
                     (in (third (cleavir-bir:inputs inst)))))
+(defmethod translate-primop ((name (eql 'core::%check-pending-interrupts)) inst)
+  (declare (ignore inst))
+  (%intrinsic-invoke-if-landing-pad-or-call "handle_interrupts" nil))
 
 (defmethod translate-simple-instruction ((inst cleavir-bir:nvprimop) abi)
   (declare (ignore abi))

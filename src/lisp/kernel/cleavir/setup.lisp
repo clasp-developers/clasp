@@ -183,6 +183,7 @@
     ((eq name 'core::atomic-vset) t)
     ((eq name 'core::vcas) t)
     ((eq name 'core::bind-va-list) t)
+    ((eq name 'core::%check-pending-interrupts) t)
     ((eq (symbol-package name) (find-package :cleavir-primop)) t)
     (t nil)))
 
