@@ -78,7 +78,5 @@ public:
   virtual ~Bundle(){};
 };
 
-/*! Get the system bundle */
-//extern	Bundle&	bundle();
 };
 #endif //]

@@ -332,14 +332,14 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("argc");
 CL_DEFUN int core__argc() {
-  return _lisp->_Argc;
+  return globals_->_Argc;
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("argv");
 CL_DEFUN SimpleBaseString_sp core__argv(int idx) {
-  if ( idx < _lisp->_Argc ) return SimpleBaseString_O::make(_lisp->_Argv[idx]);
+  if ( idx < globals_->_Argc ) return SimpleBaseString_O::make(globals_->_Argv[idx]);
   return SimpleBaseString_O::make("");
 };
 

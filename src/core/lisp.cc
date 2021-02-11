@@ -159,6 +159,13 @@ extern "C" void add_history(char *line);
 #undef ALL_TERMINATORS_EXTERN
 #endif
 
+
+//
+// globals_ definition
+//
+
+core::globals_t* globals_;
+
 namespace core {
 
 CommandLineOptions *global_options;
@@ -203,57 +210,29 @@ Lisp_O::GCRoots::GCRoots() :
     _UnboundSymbolFunctionEntryPoint(_Unbound<GlobalEntryPoint_O>()),
     _UnboundSetfSymbolFunctionEntryPoint(_Unbound<GlobalEntryPoint_O>()),
   _ActiveThreads(_Nil<T_O>()),
-  _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
   _DefaultSpecialBindings(_Nil<T_O>()),
-  _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
-  _FinalizersMutex(MPSMESSG_NAMEWORD),
-  _SourceFilesMutex(SRCFILES_NAMEWORD),
-  _PackagesMutex(PKGSMUTX_NAMEWORD),
-#ifdef DEBUG_MONITOR_SUPPORT
-  _MonitorMutex(LOGMUTEX_NAMEWORD),
 #endif
-  _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
-  _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
-#endif
-  _MpiEnabled(false),
-  _MpiRank(0),
-  _MpiSize(1),
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
-  _Booted(false),
   _UnixSignalHandlers(_Nil<T_O>())
 {
   this->_JITDylibs.store(_Nil<core::T_O>());
   this->_SingleDispatchGenericFunctions.store(_Nil<core::T_O>());
 };
 
-Lisp_O::Lisp_O() : _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
-                   _StackSampleCount(0),
-                   _StackSampleSize(0),
-                   _StackSampleMax(0),
-                   _PrintSymbolsProperly(false),
-                   _ReplCounter(1),
-                   _Bundle(NULL),
-                   _DebugStream(NULL),
-                   _SingleStepLevel(UndefinedUnsignedInt),
-                   _NoRc(false),
-                   _Interactive(true),
-                   _BootClassTableIsValid(true),
-                   _PathMax(CLASP_MAXPATHLEN) {
+Lisp_O::Lisp_O() : _Booted(false),
+                   _MpiEnabled(false),
+                   _MpiRank(0),
+                   _MpiSize(1),
+                   _BootClassTableIsValid(true) {
 //  this->_Roots._Bindings.reserve(1024); // moved to Lisp_O::initialize()
-  this->_TrapIntern = false;
-  this->_TrapInternPackage = "";
-  this->_TrapInternName = "";
-  this->_GlobalInitializationCallbacks.clear();
-  this->_MakePackageCallback = NULL;
-  this->_ExportSymbolCallback = NULL;
 }
 
 void Lisp_O::shutdownLispEnvironment() {
-  this->_Roots._Booted = false;
-  if (this->_DebugStream != NULL) {
-    this->_DebugStream->beginNode(DEBUG_TOPLEVEL);
+  this->_Booted = false;
+  if (globals_->_DebugStream != NULL) {
+    globals_->_DebugStream->beginNode(DEBUG_TOPLEVEL);
   }
   this->_Roots._CommandLineArguments.reset_();
   this->_Roots._Packages.clear();
@@ -262,10 +241,10 @@ void Lisp_O::shutdownLispEnvironment() {
   this->_Roots._TrueObject.reset_();
 
   //    this->_ClassesByClassSymbol.clear();
-  delete this->_Bundle;
-  if (this->_DebugStream != NULL) {
-    this->_DebugStream->endNode(DEBUG_TOPLEVEL);
-    delete this->_DebugStream;
+  delete globals_->_Bundle;
+  if (globals_->_DebugStream != NULL) {
+    globals_->_DebugStream->endNode(DEBUG_TOPLEVEL);
+    delete globals_->_DebugStream;
   }
   my_thread->destroy_sigaltstack();
 }
@@ -342,16 +321,17 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);
   //	lisp->__setWeakThis(lisp);
   //	lisp->__resetInitializationOwner();
-  _lisp->_DebugStream = new DebugStream(mpiRank);
+  ::globals_ = new globals_t();
+  globals_->_DebugStream = new DebugStream(mpiRank);
   LOG(BF("The lisp environment DebugStream has been created"));
   Lisp_O::finalizeSpecialSymbols();
   return _lisp;
 }
 
 void Lisp_O::setupMpi(bool mpiEnabled, int mpiRank, int mpiSize) {
-  this->_Roots._MpiEnabled = mpiEnabled;
-  this->_Roots._MpiRank = mpiRank;
-  this->_Roots._MpiSize = mpiSize;
+  this->_MpiEnabled = mpiEnabled;
+  this->_MpiRank = mpiRank;
+  this->_MpiSize = mpiSize;
 }
 
 int global_monitor_pid = 0;
@@ -379,7 +359,7 @@ std::string ensure_monitor_directory_exists_no_lock() {
 
 #if DEBUG_MONITOR_SUPPORT
 CL_DEFUN std::string core__monitor_directory() {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._MonitorMutex);
+  WITH_READ_WRITE_LOCK(globals_->_MonitorMutex);
   return ensure_monitor_directory_exists_no_lock();
 }
 #endif
@@ -418,7 +398,7 @@ void ensure_monitor_file_exists_no_lock() {
 void monitor_message(const std::string& msg)
 {
 #ifdef DEBUG_MONITOR
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._MonitorMutex);
+  WITH_READ_WRITE_LOCK(globals_->_MonitorMutex);
   if (getpid()!=global_monitor_pid) {
     ensure_monitor_file_exists_no_lock();
     if (global_monitor_pid!=0) {
@@ -442,7 +422,7 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
 }
 
 
-void Lisp_O::startupLispEnvironment(Bundle *bundle) {
+void Lisp_O::startupLispEnvironment() {
  
 #ifdef DEBUG_FLAGS_SET
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
@@ -487,29 +467,12 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
 #endif
-    char* trapInterncP = getenv("CLASP_TRAP_INTERN");
-    if ( trapInterncP ) {
-      this->_TrapIntern = true;
-      std::string trapIntern(trapInterncP);
-      size_t sep = trapIntern.find(':');
-      if (sep == string::npos) {
-        printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
-        abort();
-      }
-      size_t nameStart = sep + 1;
-      if (trapIntern[nameStart] == ':') ++nameStart;
-      this->_TrapInternPackage = trapIntern.substr(0, sep);
-      this->_TrapInternName = trapIntern.substr(nameStart, 9999999);
-      printf("%s:%d  Trapping intern of %s:%s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(),this->_TrapInternName.c_str());
-    }
   }
   //
   // Define the _lisp global
   //
   ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
   //	initializeProfiler(this->profiler(),_lisp);
-  this->_TraceLevel = 0;
-  this->_DebuggerLevel = 0;
   this->_CoreBuiltInClassesInitialized = false;
   this->_PackagesInitialized = false;
   this->_BuiltInClassesInitialized = false;
@@ -517,7 +480,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_EnvironmentInitialized = false;
   this->_EnvironmentId = 0;
   this->_Roots._CommandLineArguments.reset_();
-  this->_Bundle = bundle;
   //
   // Setup the core package aka the sys package
   //
@@ -595,14 +557,14 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   }
   {
     // Setup the pathname translation
-    this->_Bundle->setup_pathname_translations();
+    globals_->_Bundle->setup_pathname_translations();
   }
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);
   {
     _BLOCK_TRACE("Call global initialization callbacks");
-    for (vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin();
-         ic != this->_GlobalInitializationCallbacks.end(); ic++) {
+    for (vector<InitializationCallback>::iterator ic = globals_->_GlobalInitializationCallbacks.begin();
+         ic != globals_->_GlobalInitializationCallbacks.end(); ic++) {
       (*ic)(_lisp);
     }
   }
@@ -641,7 +603,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
     my_thread->initialize_thread(main_process,false);
   }
-  this->_PrintSymbolsProperly = true;
+  globals_->_PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
 
@@ -663,7 +625,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->add_process(my_thread->_Process);
   my_thread->_Process->_Phase = mp::Active;
   gctools::initialize_unix_signal_handlers();
-  this->_Roots._Booted = true;
+  this->_Booted = true;
   
 }
 
@@ -722,28 +684,14 @@ T_sp Lisp_O::getCurrentReadTable() {
   return cl::_sym_STARreadtableSTAR->symbolValue();
 }
 
+#if 0
 void Lisp_O::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc) {
   _OF();
   LOG(BF("Setting MakePackageCallback and ExportSymbolCallback"));
   this->_MakePackageCallback = mpc;
   this->_ExportSymbolCallback = esc;
 }
-
-#if defined(OLD_SERIALIZE)
-T_sp Lisp_O::sread(T_sp sin, bool eofErrorP, T_sp eofValue) {
-  _OF();
-  ReadSerializer_sp reader = _lisp->create<ReadSerializer_O>();
-  T_sp obj = reader->read(sin, eofErrorP, eofValue);
-  return obj;
-}
-
-void Lisp_O::sprint(T_sp obj, T_sp sout) {
-  _OF();
-  WriteSerializer_sp writer = _lisp->create<WriteSerializer_O>();
-  writer->addObject(obj);
-  writer->write(sout);
-}
-#endif // defined(OLD_SERIALIZER)
+#endif
 
 void Lisp_O::print(boost::format fmt) {
   _OF();
@@ -762,7 +710,7 @@ void Lisp_O::prin1(boost::format fmt) {
 
 #ifdef CLASP_THREADS
 void Lisp_O::add_process(mp::Process_sp process) {
-  WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
+  WITH_READ_WRITE_LOCK(globals_->_ActiveThreadsMutex);
   this->_Roots._ActiveThreads = Cons_O::create(process,this->_Roots._ActiveThreads);
 #ifdef DEBUG_ADD_PROCESS
   printf("%s:%d Added process %s @%p active threads now: %s\n", __FILE__, __LINE__, _rep_(process).c_str(), (void*)process.raw_(), _rep_(this->_Roots._ActiveThreads).c_str());
@@ -772,7 +720,7 @@ void Lisp_O::add_process(mp::Process_sp process) {
 
 void Lisp_O::remove_process(mp::Process_sp process) {
   {
-    WITH_READ_WRITE_LOCK(this->_Roots._ActiveThreadsMutex);
+    WITH_READ_WRITE_LOCK(globals_->_ActiveThreadsMutex);
     T_sp cur = this->_Roots._ActiveThreads;
     mp::Process_sp p;
     if (cur.consp()) {
@@ -800,20 +748,20 @@ void Lisp_O::remove_process(mp::Process_sp process) {
 }
 
 List_sp Lisp_O::processes() const {
-  WITH_READ_LOCK(this->_Roots._ActiveThreadsMutex);
+  WITH_READ_LOCK(globals_->_ActiveThreadsMutex);
   return cl__copy_list(this->_Roots._ActiveThreads);
 }
 
 
 void Lisp_O::push_default_special_binding(Symbol_sp symbol, T_sp form)
 {
-  WITH_READ_WRITE_LOCK(this->_Roots._DefaultSpecialBindingsMutex);
+  WITH_READ_WRITE_LOCK(globals_->_DefaultSpecialBindingsMutex);
   Cons_sp pair = Cons_O::create(symbol,form);
   this->_Roots._DefaultSpecialBindings = Cons_O::create(pair,this->_Roots._DefaultSpecialBindings);
 }
 
 List_sp Lisp_O::copy_default_special_bindings() const {
-  WITH_READ_LOCK(this->_Roots._DefaultSpecialBindingsMutex);
+  WITH_READ_LOCK(globals_->_DefaultSpecialBindingsMutex);
   return cl__copy_list(this->_Roots._DefaultSpecialBindings);
 }
 
@@ -869,7 +817,7 @@ T_sp Lisp_O::specialFormOrNil(Symbol_sp sym) {
 void Lisp_O::installPackage(const Exposer_O *pkg) {
   _OF();
   LOG(BF("Installing package[%s]") % pkg->packageName());
-  int firstNewGlobalCallback = this->_GlobalInitializationCallbacks.end() - this->_GlobalInitializationCallbacks.begin();
+  int firstNewGlobalCallback = globals_->_GlobalInitializationCallbacks.end() - globals_->_GlobalInitializationCallbacks.begin();
   ChangePackage change(pkg->package());
   {
     _BLOCK_TRACE("Initializing classes");
@@ -886,15 +834,15 @@ void Lisp_O::installPackage(const Exposer_O *pkg) {
 
   {
     _BLOCK_TRACE("Call global initialization callbacks");
-    for (vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin() + firstNewGlobalCallback;
-         ic != this->_GlobalInitializationCallbacks.end(); ic++) {
+    for (vector<InitializationCallback>::iterator ic = globals_->_GlobalInitializationCallbacks.begin() + firstNewGlobalCallback;
+         ic != globals_->_GlobalInitializationCallbacks.end(); ic++) {
       (*ic)(_lisp);
     }
   }
 }
 
 void Lisp_O::installGlobalInitializationCallback(InitializationCallback c) {
-  this->_GlobalInitializationCallbacks.push_back(c);
+  globals_->_GlobalInitializationCallbacks.push_back(c);
 }
 
 #if defined(XML_ARCHIVE)
@@ -931,7 +879,7 @@ void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
   //TODO Support package names with as regular strings
   int packageIndex;
   {
-    WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+    WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
       if (this->_Roots._Packages[packageIndex] == pkg) {
         this->_Roots._PackageNameIndexMap[name] = packageIndex;
@@ -944,7 +892,7 @@ void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
 
 void Lisp_O::unmapNameToPackage(const string &name) {
   {
-    WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+    WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     map<string, int>::iterator it;
     it = this->_Roots._PackageNameIndexMap.find(name);
     if (it == this->_Roots._PackageNameIndexMap.end()) {
@@ -1005,7 +953,7 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     string usedNickName;
     string packageUsingNickName;
     {
-      WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+      WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
       map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
       if (it != this->_Roots._PackageNameIndexMap.end()) {
         goto name_exists;
@@ -1043,9 +991,9 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
         LOG(BF("Using package[%s]") % usePkg->getName());
         newPackage->usePackage(usePkg);
       }
-      if (this->_MakePackageCallback != NULL) {
+      if (globals_->_MakePackageCallback != NULL) {
         LOG(BF("Calling _MakePackageCallback with package[%s]") % name);
-        this->_MakePackageCallback(name, _lisp);
+        globals_->_MakePackageCallback(name, _lisp);
       } else {
         LOG(BF("_MakePackageCallback is NULL - not calling callback"));
       }
@@ -1086,13 +1034,13 @@ T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
 }
 
 T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
-  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  WITH_READ_LOCK(globals_->_PackagesMutex);
   return this->findPackage_no_lock(name,errorp);
 }
 
 
 void Lisp_O::remove_package(const string& name ) {
-  WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
+  WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
   map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
   if (fi == this->_Roots._PackageNameIndexMap.end()) {
@@ -1103,13 +1051,13 @@ void Lisp_O::remove_package(const string& name ) {
 }
 
 bool Lisp_O::recognizesPackage(const string &packageName) const {
-  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  WITH_READ_LOCK(globals_->_PackagesMutex);
   map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(packageName);
   return (pi != this->_Roots._PackageNameIndexMap.end());
 }
 
 List_sp Lisp_O::allPackagesAsCons() const {
-  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  WITH_READ_LOCK(globals_->_PackagesMutex);
   gctools::Vec0<Package_sp> TempPackages;
   for (int packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
     // As a workaround, don't list previously deleted packages
@@ -1121,7 +1069,7 @@ List_sp Lisp_O::allPackagesAsCons() const {
 }
 
 void Lisp_O::inPackage(const string &p) {
-  WITH_READ_LOCK(this->_Roots._PackagesMutex);
+  WITH_READ_LOCK(globals_->_PackagesMutex);
   map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(p);
   if (pi == this->_Roots._PackageNameIndexMap.end()) {
     SIMPLE_ERROR(BF("I do not recognize package: %s") % p );
@@ -1305,14 +1253,14 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     if ( debugging ) {
       printf("%s:%d Debugging flags are set - configuration:\n%s", __FILE__, __LINE__, sdebug.str().c_str());
     }
-    printf("%s:%d  Lisp_O smart_ptr width -> %d  sizeof(Lisp_O) -> %lu\n", __FILE__, __LINE__, (int)offsetof(Lisp_O,_Roots._all_taggedptr_barrier)/8, sizeof(Lisp_O));
+    printf("%s:%d  Lisp_O smart_ptr width -> %d  sizeof(Lisp_O) -> %d\n", __FILE__, __LINE__, (int)(sizeof(_lisp->_Roots)/8), (int)sizeof(Lisp_O));
   }
 
   //	this->_FunctionName = execName;
-  this->_InitFileName = "sys:" KERNEL_NAME ";init.lsp";
+  globals_->_InitFileName = "sys:" KERNEL_NAME ";init.lsp";
 
-  this->_IgnoreInitImage = options._DontLoadImage;
-  this->_IgnoreInitLsp = options._DontLoadInitLsp;
+  globals_->_IgnoreInitImage = options._DontLoadImage;
+  globals_->_IgnoreInitLsp = options._DontLoadInitLsp;
 
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineLoadEvalSequenceSTAR);
   List_sp loadEvals = _Nil<T_O>();
@@ -1327,12 +1275,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   _sym_STARcommandLineLoadEvalSequenceSTAR->defparameter(cl__nreverse(loadEvals));
 
-  this->_NoInform = options._NoInform;
-  this->_NoPrint = options._NoPrint;
-  this->_DebuggerDisabled = options._DebuggerDisabled;
-  this->_Interactive = options._Interactive;
-  this->_RCFileName = options._RCFileName;
-  this->_NoRc = options._NoRc;
+  globals_->_NoInform = options._NoInform;
+  globals_->_NoPrint = options._NoPrint;
+  globals_->_DebuggerDisabled = options._DebuggerDisabled;
+  globals_->_Interactive = options._Interactive;
+  globals_->_RCFileName = options._RCFileName;
+  globals_->_NoRc = options._NoRc;
   if (options._GotRandomNumberSeed) {
     seedRandomNumberGenerators(options._RandomNumberSeed);
   } else {
@@ -1440,7 +1388,7 @@ CL_DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl
 CL_DEFUN void core__low_level_repl() {
   List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
   if ( features.notnilp() ) {
-    if (_lisp->_Interactive) {
+    if (globals_->_Interactive) {
       _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
     }
   }
@@ -1454,39 +1402,39 @@ CL_DEFUN List_sp core__singleDispatchGenericFunctions()
 }
 
 CL_DEFUN bool core__noinform_p() {
-  return _lisp->_NoInform;
+  return globals_->_NoInform;
 }
 
 CL_DEFUN bool core__noprint_p() {
-  return _lisp->_NoPrint;
+  return globals_->_NoPrint;
 }
 
 CL_DOCSTRING("Enable the system debugger if it has been disabled by disable-debugger.");
 CL_DEFUN void ext__enable_debugger() {
-  _lisp->_DebuggerDisabled = false;
+  globals_->_DebuggerDisabled = false;
 }
 
 CL_DOCSTRING("Disable the system debugger. If the debugger is disabled, then if invoke-debugger is called, *invoke-debugger-hook* and/or *debugger-hook* are called as normal. However, if the default debugger would be entered, Clasp will instead dump a backtrace and exit with a non-zero code.");
 CL_DEFUN void ext__disable_debugger() {
-  _lisp->_DebuggerDisabled = true;
+  globals_->_DebuggerDisabled = true;
 }
 
 CL_DEFUN bool core__debugger_disabled_p() {
-  return _lisp->_DebuggerDisabled;
+  return globals_->_DebuggerDisabled;
 }
 
 CL_DEFUN bool core__is_interactive_lisp() {
-  return _lisp->_Interactive;
+  return globals_->_Interactive;
 }
 
 // This conses, which is kind of stupid, but we only call it once.
 CL_DEFUN String_sp core__rc_file_name() {
   // FIXME: Unicode filenames?
-  return SimpleBaseString_O::make(_lisp->_RCFileName);
+  return SimpleBaseString_O::make(globals_->_RCFileName);
 }
 
 CL_DEFUN bool core__no_rc_p() {
-  return _lisp->_NoRc;
+  return globals_->_NoRc;
 }
 
 void Lisp_O::readEvalPrintInteractive() {
@@ -1520,16 +1468,13 @@ struct ExceptionSafeResetInvokedInternalDebugger {
   }
 };
 
-#define ARGS_af_stackSizeWarning "(arg)"
-#define DECL_af_stackSizeWarning ""
-#define DOCS_af_stackSizeWarning "stackSizeWarning"
-void af_stackSizeWarning(size_t stackUsed) {
+void stackSizeWarning(size_t stackUsed) {
   if (!global_invokedInternalDebugger) {
     int x;
     char *xaddr = (char *)(&x);
     printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n",
            __FILE__, __LINE__,
-           stackUsed, _lisp->_StackWarnSize,
+           stackUsed, globals_->_StackWarnSize,
            my_thread_low_level->_StackTop, xaddr );
     ExceptionSafeResetInvokedInternalDebugger safe;
     core__invoke_internal_debugger(_Nil<core::T_O>());
@@ -1541,24 +1486,24 @@ CL_DECLARE();
 CL_DOCSTRING("monitor stack for problems - warn if getting too large");
 CL_DEFUN void core__stack_monitor(T_sp fn) {
   uint stackUsed = core__stack_used();
-  if (stackUsed > _lisp->_StackSampleMax)
-    _lisp->_StackSampleMax = stackUsed;
-  if (_lisp->_StackSampleSize > 0) {
-    _lisp->_StackSampleCount++;
-    if (_lisp->_StackSampleCount >= _lisp->_StackSampleSize) {
+  if (stackUsed > globals_->_StackSampleMax)
+    globals_->_StackSampleMax = stackUsed;
+  if (globals_->_StackSampleSize > 0) {
+    globals_->_StackSampleCount++;
+    if (globals_->_StackSampleCount >= globals_->_StackSampleSize) {
       printf("STACK-USED samples: %u high-water: %u     %s:%d\n",
-             _lisp->_StackSampleSize,
-             _lisp->_StackSampleMax,
+             globals_->_StackSampleSize,
+             globals_->_StackSampleMax,
              __FILE__, __LINE__);
-      _lisp->_StackSampleCount = 0;
-      _lisp->_StackSampleMax = 0;
+      globals_->_StackSampleCount = 0;
+      globals_->_StackSampleMax = 0;
     }
   }
-  if (stackUsed > _lisp->_StackWarnSize) {
+  if (stackUsed > globals_->_StackWarnSize) {
     if (fn.notnilp()) {
       eval::funcall(fn);
     }
-    af_stackSizeWarning(stackUsed);
+    stackSizeWarning(stackUsed);
   }
 };
 
@@ -1566,7 +1511,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the stack warn size");
 CL_DEFUN T_sp core__stack_limit() {
-  return clasp_make_fixnum(_lisp->_StackWarnSize);
+  return clasp_make_fixnum(globals_->_StackWarnSize);
 };
 
 CL_LAMBDA(&key warn-size sample-size);
@@ -1574,12 +1519,12 @@ CL_DECLARE();
 CL_DOCSTRING("setupStackMonitor");
 CL_DEFUN void core__setup_stack_monitor(T_sp warnSize, T_sp sampleSize) {
   if (!warnSize.nilp()) {
-    _lisp->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
+    globals_->_StackWarnSize = unbox_fixnum(gc::As<Fixnum_sp>(warnSize));
   }
   if (!sampleSize.nilp()) {
-    _lisp->_StackSampleSize = unbox_fixnum(gc::As<Fixnum_sp>(sampleSize));
-    _lisp->_StackSampleCount = 0;
-    _lisp->_StackSampleMax = 0;
+    globals_->_StackSampleSize = unbox_fixnum(gc::As<Fixnum_sp>(sampleSize));
+    globals_->_StackSampleCount = 0;
+    globals_->_StackSampleMax = 0;
   }
 };
 
@@ -2084,7 +2029,7 @@ CL_DEFUN T_mv core__universal_error_handler(T_sp continueString, T_sp datum, Lis
     printf("%s\n", ss.str().c_str());
   }
   dbg_hook("universalErrorHandler");
-  if (_lisp->_Interactive) {
+  if (globals_->_Interactive) {
     core__invoke_internal_debugger(_Nil<T_O>());
   } else {
     c_bt();
@@ -2375,7 +2320,7 @@ int Lisp_O::run() {
   Package_sp cluser = gc::As<Package_sp>(_lisp->findPackage("COMMON-LISP-USER"));
   cl::_sym_STARpackageSTAR->defparameter(cluser);
   try {
-    if (!this->_IgnoreInitImage) {
+    if (!globals_->_IgnoreInitImage) {
       if ( startup_functions_are_waiting() ) {
         startup_functions_invoke(NULL);
       } else {
@@ -2388,13 +2333,13 @@ int Lisp_O::run() {
           printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
         }
       }
-    } else if (!this->_IgnoreInitLsp) {
+    } else if (!globals_->_IgnoreInitLsp) {
     // Assume that if there is no program then
     // we want an interactive script
     //
       {
         _BLOCK_TRACEF(BF("Evaluating initialization code in(%s)") % this->_InitFileName);
-        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(this->_InitFileName));
+        Pathname_sp initPathname = cl__pathname(SimpleBaseString_O::make(globals_->_InitFileName));
         T_mv result = core__load_no_package_set(initPathname);
         if (result.nilp()) {
           T_sp err = result.second();
@@ -2417,7 +2362,7 @@ int Lisp_O::run() {
 
 FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName) {
   {
-    WITH_READ_LOCK(this->_Roots._SourceFilesMutex);
+    WITH_READ_LOCK(globals_->_SourceFilesMutex);
     map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
     if (it != this->_Roots._SourceFileIndices.end()) {
       FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
@@ -2425,7 +2370,7 @@ FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName) {
     }
   }
   {
-    WITH_READ_WRITE_LOCK(this->_Roots._SourceFilesMutex);
+    WITH_READ_WRITE_LOCK(globals_->_SourceFilesMutex);
     map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
     if (it == this->_Roots._SourceFileIndices.end()) {
       if (this->_Roots._SourceFiles.size() == 0) {
@@ -2447,7 +2392,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("List all of the source files");
 CL_DEFUN List_sp core__all_source_files() {
-  WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
+  WITH_READ_LOCK(globals_->_SourceFilesMutex);
   List_sp list = _Nil<T_O>();
   for (auto it : _lisp->_Roots._SourceFileIndices) {
     SimpleBaseString_sp sf = SimpleBaseString_O::make(it.first);
@@ -2489,17 +2434,17 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   const char *argv0 = "./";
   if (argc > 0)
     argv0 = argv[0];
-  this->_Lisp->_Argc = argc;
+  globals_->_Argc = argc;
   for (int i = 0; i < argc; ++i) {
-    this->_Lisp->_Argv.push_back(string(argv[i]));
+    globals_->_Argv.push_back(string(argv[i]));
   }
   // Create the one global CommandLineOptions object and do some minimal argument processing
   global_options = new CommandLineOptions(argc, argv);
   // Call the initializers here so that they can edit the global_options structure
   Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
-
+  globals_->_Bundle = bundle;
   // Start up lisp
-  this->_Lisp->startupLispEnvironment(bundle);
+  this->_Lisp->startupLispEnvironment();
 
   // Run the initializers
 #ifndef SCRAPING

@@ -993,7 +993,7 @@ SYMBOL_EXPORT_SC_(CorePkg,start_debugger_with_backtrace);
 CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {
   DynamicScopeManager scope(_sym_STARbacktraceSTAR,backtrace);
   LispDebugger dbg(_Nil<T_O>());
-  if (_lisp->_DebuggerDisabled) {
+  if (globals_->_DebuggerDisabled) {
     T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue();
     if (std::getenv("CLASP_BACKTRACE_FILE")) {
       std::string filename = std::getenv("CLASP_BACKTRACE_FILE");
@@ -1014,13 +1014,13 @@ CL_DEFUN void core__start_debugger_with_backtrace(T_sp backtrace) {
 }
 
 LispDebugger::LispDebugger(T_sp condition) : _CanContinue(false), _Condition(condition) {
-  _lisp->incrementDebuggerLevel();
+  globals_->_DebuggerLevel++;
   core__gotoIhsTop();
 }
 
 LispDebugger::LispDebugger() : _CanContinue(true) {
   this->_Condition = _Nil<T_O>();
-  _lisp->incrementDebuggerLevel();
+  globals_->_DebuggerLevel++;
   core__gotoIhsTop();
 }
 
@@ -1043,7 +1043,7 @@ T_sp LispDebugger::invoke() {
     printf("The low-level debugger was entered but there is no terminal on fd0 - aborting\n");
     abort();
   }
-  if (_lisp->_DebuggerDisabled) {
+  if (globals_->_DebuggerDisabled) {
     printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }
@@ -1067,7 +1067,7 @@ T_sp LispDebugger::invoke() {
     if (core__ihs_env(core__ihs_current_frame()).notnilp()) {
       sprompt << "(+ENV)";
     }
-    sprompt << "[" << _lisp->debuggerLevel() << "]>";
+    sprompt << "[" << globals_->_DebuggerLevel.load() << "]>";
     bool end_of_transmission(false);
     line = myReadLine(sprompt.str(), end_of_transmission);
     if (end_of_transmission) {

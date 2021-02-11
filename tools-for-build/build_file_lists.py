@@ -158,6 +158,7 @@ def collect_clasp_c_source_files(bld):
                  'gc_boot',
                  'interrupt',
                  'gcFunctions',
+                 'imageSaveLoad',
                  'gctoolsPackage',
                  'globals',
                  'gcStack',

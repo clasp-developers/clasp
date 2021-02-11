@@ -41,6 +41,7 @@ int gcFunctions_after;
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
+#include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -901,6 +902,7 @@ void save_lisp_and_die(const std::string& filename)
   // 18. Write table of contents and save-buffer
   // 19. DIE
 
+  image_save();
 }
 
   
@@ -1053,7 +1055,7 @@ namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback) {
   //printf("%s:%d making a finalizer for %p calling %p\n", __FILE__, __LINE__, (void*)object.tagged_(), (void*)finalizer_callback.tagged_());
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   core::List_sp orig_finalizers = ht->gethash(object,_Nil<core::T_O>());
   core::List_sp finalizers = core::Cons_O::create(finalizer_callback,orig_finalizers);
@@ -1072,7 +1074,7 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::T_sp finalizer_callback
 
 CL_DEFUN void gctools__definalize(core::T_sp object) {
 //  printf("%s:%d erasing finalizers for %p\n", __FILE__, __LINE__, (void*)object.tagged_());
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex);
+  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::WeakKeyHashTable_sp ht = _lisp->_Roots._Finalizers;
   if (ht->gethash(object)) ht->remhash(object);
 #ifdef USE_BOEHM

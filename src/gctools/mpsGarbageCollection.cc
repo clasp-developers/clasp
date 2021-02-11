@@ -695,12 +695,12 @@ size_t processMpsMessages(size_t& finalizations) {
         // Ok, I'm super worried about a deadlock here.
         // What if (1) someone was doing an allocation and that registered a finalizer.
         // Then (2) while registering the finalizer the allocator adds it to the _lisp->_Roots._Finalizers,which
-        // will (3) grab the WITH_READ_WRITE_LOCK(_lisp->_Roots._FinalizersMutex)
+        // will (3) grab the WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex)
         // and (4) start allocating objects with MPS and something gets allocated with a finalizer...
-        // THEN (5) processMpsMessages gets called and (6) it grabs the WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex)
+        // THEN (5) processMpsMessages gets called and (6) it grabs the WITH_READ_LOCK(globals_->_FinalizersMutex)
         // ... I think that will dead lock!!!!!!!!
         // Hmmm, can anything be allocated with a finalizer in (4)?????  Maybe not.
-        WITH_READ_LOCK(_lisp->_Roots._FinalizersMutex);
+        WITH_READ_LOCK(globals_->_FinalizersMutex);
         auto ht = _lisp->_Roots._Finalizers;
         core::T_mv res = ht->gethash(obj);
         if (res.second().notnilp()) {

@@ -59,7 +59,7 @@ CL_DEFUN T_mv core__file_scope(T_sp sourceFile) {
     }
     return _lisp->getOrRegisterFileScope(gc::As<String_sp>(ns)->get_std_string());
   } else if (sourceFile.fixnump()) {
-    WITH_READ_LOCK(_lisp->_Roots._SourceFilesMutex);
+    WITH_READ_LOCK(globals_->_SourceFilesMutex);
     Fixnum_sp fnSourceFile(gc::As<Fixnum_sp>(sourceFile));
     size_t idx = unbox_fixnum(fnSourceFile);
     if (idx >= _lisp->_Roots._SourceFiles.size()) {

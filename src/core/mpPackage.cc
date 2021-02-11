@@ -211,7 +211,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
   Process_sp process;
   core::List_sp processes;
   {
-    WITH_READ_LOCK(_lisp->_Roots._ActiveThreadsMutex);
+    WITH_READ_LOCK(globals_->_ActiveThreadsMutex);
     processes = _lisp->_Roots._ActiveThreads;
     bool foundIt = false;
     for ( auto cur : processes ) {

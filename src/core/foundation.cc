@@ -1167,10 +1167,6 @@ void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp c
   conv->addSymbolEnumPair(name, archiveName, value);
 }
 
-bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp) {
-  return lisp->isGlobalInitializationAllowed();
-}
-
 void lisp_debugLogWrite(char const *fileName, const char *functionName, uint lineNumber, uint col, const boost::format &fmt, uint debugFlags) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   if (debugFlags == DEBUG_SCRIPT) {
@@ -1660,7 +1656,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
     Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
-    cons->_BadgeMtag = (badge^MASK_MTAG)|CONS_MTAG;
+    cons->_BadgeMtag = (badge& (~MASK_MTAG))|CONS_MTAG;
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));

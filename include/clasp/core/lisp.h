@@ -198,6 +198,111 @@ struct gctools::GCInfo<core::Lisp_O> {
 
 
 namespace core {
+
+struct globals_t {
+    mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
+    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
+    mutable mp::SharedMutex _FinalizersMutex;
+    mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
+    mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
+    mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
+    mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
+#ifdef DEBUG_MONITOR_SUPPORT
+    mutable mp::SharedMutex _MonitorMutex;
+    std::ofstream _MonitorStream;
+#endif
+  uint           _StackWarnSize;
+  uint           _StackSampleCount;
+  uint           _StackSampleSize;
+  uint           _StackSampleMax;
+  bool           _PrintSymbolsProperly;
+  int            _Argc; //! Raw argc
+  vector<string> _Argv; // Raw argv
+  /*! Map source file path strings to FileScope_sp */
+  uint _ReplCounter;
+  /*! Store paths to important directories */
+  Bundle *_Bundle;
+  DebugStream *_DebugStream;
+  uint _SingleStepLevel;
+  int _TraceLevel;
+  std::atomic<int> _DebuggerLevel;
+  /*! Global environment initialization hooks can be added until
+	  the environment is started up.
+	*/
+  bool _LockGlobalInitialization;
+  vector<InitializationCallback> _GlobalInitializationCallbacks;
+  bool _NoInform;
+  bool _NoPrint;
+  bool _DebuggerDisabled;
+  bool _Interactive;
+  string _FunctionName;
+  /*! Define the name of a source file that is evaluated
+   * before everything else to extend the environment
+   */
+  string _InitFileName;
+  string _RCFileName;
+  bool _NoRc;
+  bool _IgnoreInitImage;
+  bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
+
+ public:
+  /*! Callbacks for making packages and exporting symbols */
+  MakePackageCallback _MakePackageCallback;
+  ExportSymbolCallback _ExportSymbolCallback;
+  string _LastCompileErrorMessage;
+  /*! Store the maximum path length for the system */
+  int _PathMax;
+  // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  globals_t() : _MakePackageCallback(NULL),
+                _ExportSymbolCallback(NULL),
+                _PathMax(CLASP_MAXPATHLEN),
+                _ActiveThreadsMutex(ACTVTHRD_NAMEWORD),
+                _DefaultSpecialBindingsMutex(SPCLBIND_NAMEWORD),
+                _FinalizersMutex(MPSMESSG_NAMEWORD),
+                _SourceFilesMutex(SRCFILES_NAMEWORD),
+                _PackagesMutex(PKGSMUTX_NAMEWORD),
+#ifdef DEBUG_MONITOR_SUPPORT
+                _MonitorMutex(LOGMUTEX_NAMEWORD),
+#endif
+                _ThePathnameTranslationsMutex(PNTRANSL_NAMEWORD),
+                _UnixSignalHandlersMutex(UNIXSIGN_NAMEWORD),
+                _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
+                _StackSampleCount(0),
+                _StackSampleSize(0),
+                _StackSampleMax(0),
+                _PrintSymbolsProperly(false),
+                _ReplCounter(1),
+                _Bundle(NULL),
+                _DebugStream(NULL),
+                _SingleStepLevel(UndefinedUnsignedInt),
+                _NoRc(false),
+                _Interactive(true)
+  {
+    this->_GlobalInitializationCallbacks.clear();
+    this->_TraceLevel = 0;
+    this->_DebuggerLevel = 0;
+  };
+}
+ ;
+
+};
+
+
+
+//
+// All non-gc managed globals go here
+//
+extern core::globals_t* globals_;
+
+
+
+
+
+namespace core {
+
 class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
@@ -266,25 +371,9 @@ class Lisp_O {
 #endif // ifdef CLASP_LONG_FLOAT
     List_sp _UnixSignalHandlers;
     List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
-    size_t  _all_taggedptr_barrier; // Put all taggedptrs before this 
-    mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
-    mutable mp::SharedMutex _DefaultSpecialBindingsMutex;
-    mutable mp::SharedMutex _FinalizersMutex;
 //    DynamicBindingStack _Bindings;
     map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;
-    mutable mp::SharedMutex _SourceFilesMutex; // Protect _SourceFileIndices
     map<string, int> _PackageNameIndexMap;
-    mutable mp::SharedMutex _PackagesMutex; // Protect _PackageNameIndexMap
-    bool _MpiEnabled;
-    int _MpiRank;
-    int _MpiSize;
-    mutable mp::SharedMutex _ThePathnameTranslationsMutex; // Protect _ThePathnameTranslations
-    mutable mp::SharedMutex _UnixSignalHandlersMutex; // Protect _UnixSignalHandlers
-    bool _Booted;
-#ifdef DEBUG_MONITOR_SUPPORT
-    mutable mp::SharedMutex _MonitorMutex;
-    std::ofstream _MonitorStream;
-#endif
     GCRoots();
   };
 
@@ -306,25 +395,27 @@ public:
   
 public:
   static void lisp_initSymbols(Lisp_sp lisp);
-
 public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
-
 public:
   void initialize();
 public:
   GCRoots        _Roots;   // Always make this first - so it's close to the front of the object
-  // Trap INTERN of a specific symbol to help resolve symbol conflicts
-  bool           _TrapIntern;
-  std::string    _TrapInternPackage;
-  std::string    _TrapInternName;
-  uint           _StackWarnSize;
-  uint           _StackSampleCount;
-  uint           _StackSampleSize;
-  uint           _StackSampleMax;
-  bool           _PrintSymbolsProperly;
-  int            _Argc; //! Raw argc
-  vector<string> _Argv; // Raw argv
+    /*! Stores whether the system is big-endian or not */
+  IntegerOrdering _IntegerOrdering;
+  bool _BootClassTableIsValid;
+  int _RequireLevel;
+  bool _CoreBuiltInClassesInitialized;
+  bool _BuiltInClassesInitialized;
+  bool _PackagesInitialized;
+  bool _EnvironmentInitialized;
+  bool _NilsCreated;
+  bool _Booted;
+  bool _MpiEnabled;
+  int _MpiRank;
+  int _MpiSize;
+  /*! Keep track of every new environment that is created */
+  std::atomic<uint> _EnvironmentId;
  public:
 #ifdef CLASP_THREADS
   void add_process(mp::Process_sp process);
@@ -334,55 +425,6 @@ public:
   List_sp copy_default_special_bindings() const;
 #endif
 public:
-  /*! Map source file path strings to FileScope_sp */
-  uint _ReplCounter;
-  /*! Store paths to important directories */
-  Bundle *_Bundle;
-  /*! Stores whether the system is big-endian or not */
-  IntegerOrdering _IntegerOrdering;
-  DebugStream *_DebugStream;
-  uint _SingleStepLevel;
-  int _TraceLevel;
-  int _DebuggerLevel;
-  /*! Global environment initialization hooks can be added until
-	  the environment is started up.
-	*/
-  bool _LockGlobalInitialization;
-  vector<InitializationCallback> _GlobalInitializationCallbacks;
-  bool _NoInform;
-  bool _NoPrint;
-  bool _DebuggerDisabled;
-  bool _Interactive;
-  string _FunctionName;
-  /*! Define the name of a source file that is evaluated
-   * before everything else to extend the environment
-   */
-  string _InitFileName;
-  string _RCFileName;
-  bool _NoRc;
-  bool _IgnoreInitImage;
-  bool _IgnoreInitLsp; // true if the startup shouldn't be loaded
-  /*! Keep track of every new environment that is created */
-  uint _EnvironmentId;
-
- public:
-  /*! Callbacks for making packages and exporting symbols */
-  MakePackageCallback _MakePackageCallback;
-  ExportSymbolCallback _ExportSymbolCallback;
-  int _RequireLevel;
-  bool _CoreBuiltInClassesInitialized;
-  bool _BuiltInClassesInitialized;
-  bool _PackagesInitialized;
-  bool _EnvironmentInitialized;
-  bool _NilsCreated;
-  string _LastCompileErrorMessage;
-  bool _BootClassTableIsValid;
-  /*! Store the maximum path length for the system */
-  int _PathMax;
-  // ------------------------------------------------------------
-  // ------------------------------------------------------------
-  // ------------------------------------------------------------
-  // ------------------------------------------------------------
 
 public:
   /*! Signal a problem if the stack gets too full*/
@@ -390,24 +432,24 @@ public:
     int x;
     char *xaddr = (char *)(&x);
     size_t stack = (size_t)(((const char*)my_thread_low_level->_StackTop) - xaddr);
-    if (stack > _lisp->_StackWarnSize) {
+    if (stack > globals_->_StackWarnSize) {
       af_stackSizeWarning(stack);
     }
   }
 
 public:
   DebugStream &debugLog() {
-    return *(this->_DebugStream);
+    return *(globals_->_DebugStream);
   };
 
 public:
-  uint nextReplCounter() { return ++this->_ReplCounter; };
+  uint nextReplCounter() { return ++globals_->_ReplCounter; };
 
 public:
   void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);
-  bool mpiEnabled() { return this->_Roots._MpiEnabled; }
-  int mpiRank() { return this->_Roots._MpiRank; }
-  int mpiSize() { return this->_Roots._MpiSize; }
+  bool mpiEnabled() { return this->_MpiEnabled; }
+  int mpiRank() { return this->_MpiRank; }
+  int mpiSize() { return this->_MpiSize; }
 
 public:
   Str8Ns_sp get_Str8Ns_buffer_string();
@@ -429,8 +471,6 @@ public:
   List_sp pathnameTranslations_() const { return this->_Roots._ThePathnameTranslations; };
   void setPathnameTranslations_(List_sp pnt) { this->_Roots._ThePathnameTranslations = pnt; };
   /*! Return the maximum path length for the system */
-  int pathMax() const { return this->_PathMax; };
-
 public:
   bool bootClassTableIsValid() const { return this->_BootClassTableIsValid; };
 
@@ -488,16 +528,9 @@ public: // numerical constants
 #endif // ifdef CLASP_LONG_FLOAT
 public:
   /*! Setup makePackage and exportSymbol callbacks */
-  void setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc);
-
-public:
-  bool isSingleStepOn() { return this->_SingleStepLevel != UndefinedUnsignedInt; };
-  void setSingleStepLevel(uint level) { this->_SingleStepLevel = level; };
-  uint getSingleStepLevel() const { return this->_SingleStepLevel; };
 
 public:
   List_sp allPackagesAsCons() const;
-
 public:
   /*! Add a function to trace */
   void add_trace(Function_sp func);
@@ -548,11 +581,6 @@ public:
   //	Function_sp get_setfDefinition(Symbol_sp fnName) const;
   /*! Return true if the definition was found */
   //	bool remove_setfDefinition(Symbol_sp fnName);
-
-public:
-  void incrementDebuggerLevel() { this->_DebuggerLevel++; };
-  void decrementDebuggerLevel() { this->_DebuggerLevel--; };
-  int debuggerLevel() const { return this->_DebuggerLevel; };
 
 public:
   /*! This function is called whenever a symbol is exported 
@@ -617,7 +645,7 @@ public:
 
   /*! Call this to setup the lisp environment
 	 */
-  void startupLispEnvironment(Bundle *bundle);
+  void startupLispEnvironment();
   /*! Call this to shut down the lisp environment before it is destructed
 	 */
   void shutdownLispEnvironment();
@@ -654,13 +682,6 @@ public:
     gctools::smart_ptr<oclass> res = oclass::create(x, y, z, _lisp);
     return res;
   }
-
-public:
-  Bundle &bundle() { return *this->_Bundle; };
-
-public:
-  bool isInteractive() { return this->_Interactive; };
-  void setInteractive(bool b) { this->_Interactive = b; };
 
 private:
   static void setupSpecialSymbols();
@@ -718,7 +739,6 @@ public:
   /*! When global initialization is locked then no more callbacks can be added
 	 * and globals can be initialized
 	 */
-  bool isGlobalInitializationAllowed() { return this->_LockGlobalInitialization; };
   void installGlobalInitializationCallback(InitializationCallback c);
 
   /*! Find symbol or nil */
@@ -955,6 +975,7 @@ extern bool global_Started;
 
 T_mv cl__intern(String_sp symbol_name, T_sp package_desig);
 };
+
 
 
 #endif //]

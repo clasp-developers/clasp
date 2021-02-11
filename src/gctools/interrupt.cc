@@ -29,9 +29,9 @@ int global_signal = SIGUSR2;
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_name(int sig) {
-  WITH_READ_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
+  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
   core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Roots._Booted) {
+  if (_lisp->_Booted) {
     core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
     if (cur.notnilp()) {
       return oCadr(cur); // return the signal name
@@ -42,9 +42,9 @@ core::T_sp safe_signal_name(int sig) {
 
 /*! Signal info is in CONS set by ADD_SIGNAL macro at bottom */
 core::T_sp safe_signal_handler(int sig) {
-  WITH_READ_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
+  WITH_READ_LOCK(globals_->_UnixSignalHandlersMutex);
   core::T_sp key = core::clasp_make_fixnum(sig);
-  if (_lisp->_Roots._Booted) { 
+  if (_lisp->_Booted) { 
     core::T_sp cur = core__alist_assoc_eql(_lisp->_Roots._UnixSignalHandlers,key);
     if (cur.notnilp()) {
       return oCaddr(cur); // return the signal handler
@@ -441,7 +441,7 @@ CL_LAMBDA(signal symbol function);
 CL_DECLARE();
 CL_DOCSTRING("Set current handler for signal");
 CL_DEFUN void core__push_unix_signal_handler(int signal, core::Symbol_sp name, core::Symbol_sp handler) {
-  WITH_READ_WRITE_LOCK(_lisp->_Roots._UnixSignalHandlersMutex);
+  WITH_READ_WRITE_LOCK(globals_->_UnixSignalHandlersMutex);
   ADD_SIGNAL_SYMBOL(signal,name,handler);
 }
 

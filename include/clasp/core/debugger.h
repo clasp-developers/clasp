@@ -163,7 +163,7 @@ public:
 
   virtual ~LispDebugger() {
     _G();
-    _lisp->decrementDebuggerLevel();
+    --globals_->_DebuggerLevel;
   };
 };
 

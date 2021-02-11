@@ -667,7 +667,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   T_sp pair, l;
   {
 //    printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
-    WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+    WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
     if (hostp.nilp()) return cl__copy_list(_lisp->pathnameTranslations_());
     size_t parsed_len, len;
   /* Check that host is a valid host name */
@@ -702,11 +702,11 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
 //    printf("%s:%d WITH_READ_WRITE_LOCK\n", __FILE__, __LINE__ );
     if (pair.nilp()) {
       pair = Cons_O::create(host, Cons_O::create(_Nil<T_O>(), _Nil<T_O>()));
-      WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+      WITH_READ_WRITE_LOCK(globals_->_ThePathnameTranslationsMutex);
       _lisp->setPathnameTranslations_(Cons_O::create(pair, _lisp->pathnameTranslations_()));
     }
     {
-      WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+      WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
       for (l = set, set = _Nil<T_O>(); !cl__endp(l); l = CDR(l)) {
         T_sp item = CAR(l);
         T_sp from = coerce_to_from_pathname(oCar(item), host);
@@ -720,7 +720,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
       T_sp savedSet = set;
     }
     {
-      WITH_READ_WRITE_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+      WITH_READ_WRITE_LOCK(globals_->_ThePathnameTranslationsMutex);
       gc::As<Cons_sp>(oCdr(pair))->rplaca(set);
     }
     return set;
@@ -729,7 +729,7 @@ CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
 
 bool clasp_logical_hostname_p(T_sp host) {
 //  printf("%s:%d WITH_READ_LOCK\n", __FILE__, __LINE__ );
-  WITH_READ_LOCK(_lisp->_Roots._ThePathnameTranslationsMutex);
+  WITH_READ_LOCK(globals_->_ThePathnameTranslationsMutex);
   if (!cl__stringp(host))
     return false;
   if (cl::_sym_assoc->fboundp()) {
@@ -1238,8 +1238,8 @@ CL_DEFUN String_sp core__coerce_to_filename(T_sp pathname_orig) {
                     "\n :VERSION %s") %
                  _rep_(pathname->_Host) % _rep_(pathname->_Device) % _rep_(pathname->_Directory) % _rep_(pathname->_Name) % _rep_(pathname->_Type) % _rep_(pathname->_Version));
   }
-  if (_lisp->pathMax() != -1 &&
-      cl__length(tnamestring) >= _lisp->pathMax() - 16)
+  if (globals_->_PathMax != -1 &&
+      cl__length(tnamestring) >= globals_->_PathMax - 16)
     SIMPLE_ERROR(BF("Too long filename: %s.") % gc::As<String_sp>(tnamestring)->get_std_string());
   return gc::As<String_sp>(tnamestring);
 }

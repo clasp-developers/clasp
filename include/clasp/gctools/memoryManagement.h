@@ -79,12 +79,12 @@ extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 };
 
-#define STAMP_MTAG   0b00
+#define STAMP_MTAG          0b00
 #define INVALID_MTAG        0b01
 #define CONS_MTAG           INVALID_MTAG
 #define FWD_MTAG            0b10
 #define MASK_MTAG           0b11
-#define STAMP_SHIFT  2
+#define STAMP_SHIFT         2
 #define DO_SHIFT_STAMP(unshifted_stamp) ((unshifted_stamp<<STAMP_SHIFT)|STAMP_MTAG)
 #define STAMP_UNSHIFT_MTAG(unshifted_stamp) (((size_t)unshifted_stamp)>>STAMP_SHIFT)
 // ADJUST_STAMP values are left unshifted
@@ -307,19 +307,19 @@ namespace gctools {
 
   class Header_s {
   public:
-    static const tagged_stamp_t mtag_mask      =  0b0011;
+    static const tagged_stamp_t mtag_mask      =  MASK_MTAG;
       static const size_t mtag_width = 2;
-    static const tagged_stamp_t where_mask     =  0b1100;
+    static const tagged_stamp_t where_mask     =  0b11<<STAMP_SHIFT;
+    // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
+    static const tagged_stamp_t derivable_wtag =  0b00<<STAMP_SHIFT;
+    static const tagged_stamp_t rack_wtag      =  0b01<<STAMP_SHIFT;
+    static const tagged_stamp_t wrapped_wtag   =  0b10<<STAMP_SHIFT;
+    static const tagged_stamp_t header_wtag    =  0b11<<STAMP_SHIFT;
+    static const tagged_stamp_t max_wtag       =  0b11<<STAMP_SHIFT;
+    static const tagged_stamp_t wtag_width     = 2;
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
-    static const tagged_stamp_t where_tag_width=  4; 
-    // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
-    static const tagged_stamp_t derivable_wtag =  0b0000;
-    static const tagged_stamp_t rack_wtag      =  0b0100;
-    static const tagged_stamp_t wrapped_wtag   =  0b1000;
-    static const tagged_stamp_t header_wtag    =  0b1100;
-    static const tagged_stamp_t max_wtag       =  0b1100;
-    static const tagged_stamp_t wtag_width     = 2;
+    static const tagged_stamp_t where_tag_width =  STAMP_SHIFT+wtag_width;
     
     static const tagged_stamp_t invalid_tag=  INVALID_MTAG; // indicates not header
     // stamp_tag MUST be 00 so that stamps look like FIXNUMs

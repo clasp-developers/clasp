@@ -1016,8 +1016,6 @@ size_t lisp_badge(T_sp obj);
   T_sp lisp_ComplexVector_TFromMultipleValues(T_mv values);
   string symbol_fullName(Symbol_sp s);
   void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
-//    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);
-//    void lisp_installGlobalInitializationCallback( InitializationCallback initGlobals);
   void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName, int value);
 /*! Return the index of the top of the stack */
   size_t lisp_pushCatchThrowException(T_sp throwTag, T_sp value);
