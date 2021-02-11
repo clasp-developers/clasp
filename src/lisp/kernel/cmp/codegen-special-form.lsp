@@ -604,6 +604,10 @@ jump to blocks within this tagbody."
                                (section (extract-section (caddr tag-begin) (caddr tag-end))))
                           (irc-branch-if-no-terminator-inst section-block)
                           (irc-begin-block section-block)
+                          ;; Check for interrupts in case this is a loop
+                          (irc-intrinsic-call-or-invoke
+                           "handle_interrupts" nil)
+                          ;; Generate the tag's body
                           (codegen-progn result section tagbody-env)
                           (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))
                           ))
@@ -661,6 +665,10 @@ jump to blocks within this tagbody."
                            (section (extract-section (caddr tag-begin) (caddr tag-end))))
                       (irc-branch-if-no-terminator-inst section-block)
                       (irc-begin-block section-block)
+                      ;; Check for interrupts in case this is a loop
+                      (irc-intrinsic-call-or-invoke
+                       "handle_interrupts" nil)
+                      ;; Generate the tag's body
                       (codegen-progn result section tagbody-env)
                       (when section-next-block (irc-branch-if-no-terminator-inst section-next-block))))
                 enumerated-tag-blocks)
