@@ -3,20 +3,20 @@
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'insert-type-checks))
      optimize
-     (environment clasp-cleavir::clasp-global-environment))
+     (environment clasp-global-environment))
   (> (cleavir-policy:optimize-value optimize 'safety)
      (cleavir-policy:optimize-value optimize 'speed)))
 
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-arguments))
      optimize
-     (environment clasp-cleavir::clasp-global-environment))
+     (environment clasp-global-environment))
   (= (cleavir-policy:optimize-value optimize 'safety) 3))
 
 (defmethod cleavir-policy:compute-policy-quality
     ((quality (eql 'type-check-ftype-return-values))
      optimize
-     (environment clasp-cleavir::clasp-global-environment))
+     (environment clasp-global-environment))
   (= (cleavir-policy:optimize-value optimize 'safety) 3))
 
 (defmethod cleavir-policy:compute-policy-quality
@@ -31,7 +31,8 @@
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)
     (type-check-ftype-arguments boolean t)
-    (type-check-ftype-return-values boolean t)))
+    (type-check-ftype-return-values boolean t)
+    (insert-polls (integer 0 3) 3)))
 ;;; FIXME: Can't just punt like normal since it's an APPEND method combo.
 (defmethod cleavir-policy:policy-qualities append ((env null))
   '((save-register-args boolean t)
@@ -41,7 +42,8 @@
     (do-type-inference boolean t)
     (do-dx-analysis boolean t)
     (type-check-ftype-arguments boolean t)
-    (type-check-ftype-return-values boolean t)))
+    (type-check-ftype-return-values boolean t)
+    (insert-polls (integer 0 3) 3)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -116,6 +118,27 @@
   (let ((safety (cleavir-policy:optimize-value optimize 'safety)))
     (and (zerop safety)
          (> (cleavir-policy:optimize-value optimize 'speed) safety))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; POLICY CLASP-CLEAVIR::INSERT-POLLS
+;;;
+;;; Controls the insertion of interrupt polls by the compiler.
+;;; At 0, no polls are inserted. At 1, polls are inserted at the beginnings of
+;;; functions. At 2, polls are also inserted into each iteration of a loop,
+;;; unless the loop is demonstratably finite. At 3, polls are inserted into each
+;;; iteration of every loop.
+;;; (At the moment Clasp can never prove any loops are finite, so 2 = 3.)
+;;; For now, this is just 3 unless SPEED is 3. It's also manually disabled by
+;;; WITHOUT-INTERRUPTS.
+
+(defmethod cleavir-policy:compute-policy-quality
+    ((quality (eql 'insert-polls))
+     optimize
+     (environment clasp-global-environment))
+  (if (= (cleavir-policy:optimize-value optimize 'speed) 3)
+      0
+      3))
 
 ;;;
 
