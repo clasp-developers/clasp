@@ -1,5 +1,15 @@
 (in-package #:clasp-cleavir)
 
+;;; This file inserts interrupt polls into loops. Interrupt polls on entering a
+;;; function are inserted in translate.lisp/layout-main-function*.
+;;; The concept of "loop" here is very simplistic, including all CFG cycles.
+;;; TODO: It would be nice to distinguish demonstratably finite loops from not,
+;;; and have an option to only insert polls into the latter, since if polls
+;;; aren't inserted into a finite loop it just means interrupts will be delayed,
+;;; not entirely ignored.
+;;; We could also skip poll insertion for loops that a function immediately
+;;; enters.
+
 (defun maybe-insert-poll-into-iblock (iblock)
   (let* ((start (cleavir-bir:start iblock))
          (policy (cleavir-bir:policy start)))
