@@ -1401,6 +1401,9 @@ namespace core {
             ValueFrame_sp af = gc::As<ValueFrame_sp>(Environment_O::clasp_getActivationFrame(env));
             T_sp thandle = (*af)[0];
             T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
+            // Check for interrupts as this may be a loop
+            gc::handle_all_queued_interrupts();
+            // Transfer
             DynamicGo go(thandle.raw_(), index);
             throw go;
         }
