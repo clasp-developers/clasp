@@ -71,10 +71,18 @@ Could return more functions that provide lambda-list for swank for example"
                        ;; Christian Schafmeister June 2019
                        (if (irc-environment-has-cleanup new-env)
                            (with-try "TRY.func"
-                               (codegen-progn result (list new-body) new-env)
+                             (progn
+                               ;; Check for interrupts on function entry
+                               (irc-intrinsic-call-or-invoke
+                                "handle_interrupts" nil)
+                               (codegen-progn result (list new-body) new-env))
                              ((cleanup)
                               (irc-unwind-environment new-env)))
-                           (codegen-progn result (list new-body) new-env)))))))
+                           (progn
+                             (irc-intrinsic-call-or-invoke
+                              "handle_interrupts" nil)
+                             (codegen-progn result
+                                            (list new-body) new-env))))))))
         (cmp-log "About to dump the function constructed by generate-llvm-function-from-code%N")
         (cmp-log-dump-function fn)
         (unless *suppress-llvm-output* (irc-verify-function fn))
