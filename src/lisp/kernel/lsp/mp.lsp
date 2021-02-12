@@ -32,7 +32,7 @@ been executed.
 
 Deferrable interrupts include most blockable POSIX signals, and
 MP:INTERRUPT-THREAD. Does not interfere with garbage collection, and
-unlike in many traditional Lisps using userspace threads, in ECL
+unlike in many traditional Lisps using userspace threads, in Clasp
 WITHOUT-INTERRUPTS does not inhibit scheduling of other threads.
 
 Binds ALLOW-WITH-INTERRUPTS, WITH-LOCAL-INTERRUPTS and WITH-RESTORED-INTERRUPTS
