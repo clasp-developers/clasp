@@ -208,13 +208,11 @@ extern "C" {
   using namespace gctools;
 #ifdef USE_MPS
   /*! I'm using a format_header so MPS gives me the object-pointer */
-#define GC_OBJECT_SKIP
 #define OBJECT_SKIP obj_skip_debug
 #define ADDR_T mps_addr_t
 #include "obj_scan.cc"
 #undef ADDR_T
 #undef OBJECT_SKIP
-#undef GC_OBJECT_SKIP
 
 mps_addr_t obj_skip(mps_addr_t client) {
   return obj_skip_debug(client,false);
@@ -235,13 +233,11 @@ __attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t clien
 
 
 #if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
-#define GC_OBJECT_SKIP
 #define OBJECT_SKIP obj_skip_debug
 #define ADDR_T void*
 #include "obj_scan.cc"
 #undef ADDR_T
 #undef OBJECT_SKIP
-#undef GC_OBJECT_SKIP
 
 void* obj_skip(void* client) {
   return obj_skip_debug(client,false);
@@ -293,18 +289,16 @@ extern "C" {
 #define ADDR_T mps_addr_t
 #define SCAN_BEGIN(xxx) MPS_SCAN_BEGIN(xxx)
 #define SCAN_END(xxx) MPS_SCAN_END(xxx)
-#define GC_RESULT_TYPE GC_RESULT
-#define RETURN_OK MPS_RES_OK
+#define RESULT_TYPE    GC_RESULT
+#define RESULT_OK MPS_RES_OK
 #define EXTRA_ARGUMENTS
 #define OBJECT_SCAN obj_scan
-#define GC_OBJECT_SCAN
 #include "obj_scan.cc"
-#undef GC_OBJ_SCAN
 #undef OBJECT_SCAN
 #undef EXTRA_ARGUMENTS
 #undef SCAN_STRUCT_T
-#undef RETURN_OK
-#undef GC_RESULT_TYPE
+#undef RESULT_OK
+#undef RESULT_TYPE   
 #endif
 
 #if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
@@ -312,8 +306,8 @@ extern "C" {
 #define ADDR_T void*
 #define SCAN_BEGIN(xxx)
 #define SCAN_END(xxx)
-#define GC_RESULT_TYPE struct GC_ms_entry*
-#define RETURN_OK msp
+#define RESULT_TYPE    struct GC_ms_entry*
+#define RESULT_OK msp
 #define EXTRA_ARGUMENTS , struct GC_ms_entry* msp, struct GC_ms_entry* msl
 #define POINTER_FIX(_addr_) { \
     gctools::Tagged *taggedP = (gctools::Tagged*)_addr_;\
@@ -326,15 +320,13 @@ extern "C" {
     } \
   }
 #define OBJECT_SCAN obj_mark_low_level
-#define GC_OBJECT_SCAN
 #include "obj_scan.cc"
-#undef GC_OBJ_SCAN
 #undef OBJECT_SCAN
 #undef POINTER_FIX
 #undef EXTRA_ARGUMENTS
 #undef SCAN_STRUCT_T
-#undef RETURN_OK
-#undef GC_RESULT_TYPE
+#undef RESULT_OK
+#undef RESULT_TYPE   
 
 struct GC_ms_entry* object_mark_proc(unsigned long* addr, struct GC_ms_entry *msp, struct GC_ms_entry *msl, GC_word env) {
   printf("%s:%d In object_mark_proc\n", __FILE__, __LINE__ );
@@ -371,7 +363,7 @@ void obj_finalize(mps_addr_t client) {
  finalize_done:
   // Now replace the object with a pad object
   header->setPadSize(block_size);
-  header->setPad(Header_s::pad_tag);
+  header->setPad(Header_s::pad_mtag);
 }; // obj_finalize
 }; // extern "C"
   #undef GC_FINALIZE_METHOD

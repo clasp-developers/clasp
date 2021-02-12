@@ -331,19 +331,11 @@ void searchMemoryForAddress(mps_addr_t addr) {
     THROW_HARD_ERROR(BF("GC_RESULT error: %s   %s\n") % error % msg); \
   }
 
-static void obj_fwd(mps_addr_t old_client, mps_addr_t new_client) {
-  // I'm assuming both old and new client pointers have valid headers at this point
-  DEBUG_THROW_IF_INVALID_CLIENT(old_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(new_client);
-  mps_addr_t limit = obj_skip(old_client);
-  size_t size = (char *)limit - (char *)old_client;
-  if (size < global_sizeof_fwd) {
-    THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
-  }
-  Header_s *header = reinterpret_cast<Header_s *>(const_cast<void *>(ClientPtrToBasePtr(old_client)));
-  header->setFwdSize(size);
-  header->setFwdPointer(new_client);
-}
+#define ADDR_T mps_addr_t
+#define OBJECT_FWD obj_fwd
+#include "obj_scan.cc"
+#undef OBJECT_FWD
+#undef ADDR_T
 
 static mps_addr_t obj_isfwd(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
@@ -361,9 +353,9 @@ static void obj_pad(mps_addr_t base, size_t size) {
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
-    header->setPad(Header_s::pad1_tag);
+    header->setPad(Header_s::pad1_mtag);
   } else {
-    header->setPad(Header_s::pad_tag);
+    header->setPad(Header_s::pad_mtag);
     header->setPadSize(size);
   }
 }

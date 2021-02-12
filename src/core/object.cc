@@ -591,6 +591,8 @@ void lisp_setStaticClass(gctools::Header_s::StampWtagMtag header, Instance_sp va
 
 void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag header, Symbol_sp value)
 {
+//  printf("%s:%d:%s  gctools::STAMP_max -> %u\n", __FILE__, __LINE__, __FUNCTION__, gctools::STAMP_max);
+//  printf("%s:%d:%s      is_header_stamp(gctools::STAMP_max) -> %d\n", __FILE__, __LINE__, __FUNCTION__, gctools::Header_s::StampWtagMtag::is_header_stamp(gctools::STAMP_max));
   if (_lisp->_Roots.staticClassSymbolsUnshiftedNowhere.size() == 0) {
     ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_max));
     size_t unstamp = gctools::Header_s::StampWtagMtag::make_nowhere_stamp(gctools::STAMP_max);

@@ -45,7 +45,7 @@
 (defvar +MAX-WTAG+ (get-cxx-data-structure-info :MAX-WTAG))
 (defvar +MTAG-WIDTH+ (get-cxx-data-structure-info :MTAG-WIDTH))
 (defvar +WTAG-WIDTH+ (get-cxx-data-structure-info :WTAG-WIDTH))
-(defvar +STAMP-SHIFT+ (get-cxx-data-structure-info :STAMP-SHIFT))
+(defvar +GENERAL-MTAG-SHIFT+ (get-cxx-data-structure-info :GENERAL-MTAG-SHIFT))
 
 (defvar +derivable-where-tag+ (get-cxx-data-structure-info :derivable-where-tag))
 (defvar +rack-where-tag+ (get-cxx-data-structure-info :rack-where-tag))
@@ -54,7 +54,6 @@
 (defvar +where-tag-width+ (get-cxx-data-structure-info :where-tag-width))
 (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
 (defvar +fixnum-shift+ (get-cxx-data-structure-info :fixnum-shift))
-#+(or)(defvar +stamp-shift+ (get-cxx-data-structure-info :stamp-shift))
 #+(or)(defvar +stamp-in-rack-mask+ (get-cxx-data-structure-info :stamp-in-rack-mask))
 #+(or)(defvar +stamp-needs-call-mask+ (get-cxx-data-structure-info :stamp-needs-call-mask))
 (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))

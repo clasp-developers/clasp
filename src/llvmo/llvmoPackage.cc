@@ -259,7 +259,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
     list = Cons_O::create(Cons_O::create(lisp_internKeyword("MAX-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::max_wtag)), list);
     list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::mtag_width)), list);
     list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)), list);
-    list = Cons_O::create(Cons_O::create(lisp_internKeyword("STAMP-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::stamp_shift)), list);
+    list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-MTAG-SHIFT"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_shift)), list);
   
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);

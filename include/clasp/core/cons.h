@@ -168,7 +168,7 @@ namespace core {
     //
     inline bool cons_header_p() {
       uintptr_t val = *(uintptr_t*)this;
-      return (val&MASK_MTAG) == CONS_MTAG;
+      return (val&gctools::Header_s::mtag_mask) == gctools::Header_s::cons_mtag;
     }
     
   public:
@@ -354,12 +354,13 @@ namespace core {
   /*! Return the value associated with the property of the plist - implements CL getf */
     T_sp getf(T_sp key, T_sp defValue) const;
 
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _BadgeMtag(((uintptr_t)this & (~MASK_MTAG)) | CONS_TAG) {};
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr),_BadgeMtag(((uintptr_t)this & (~MASK_MTAG)) | CONS_TAG)  {};
+    inline static uintptr_t cons_header(uintptr_t val) {return (val & (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;};
+    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _BadgeMtag(cons_header((uintptr_t)this)) {};
+    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr),_BadgeMtag(cons_header((uintptr_t)this)) {};
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.
-    Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()), _BadgeMtag(((uintptr_t)this & (~MASK_MTAG)) | CONS_TAG)  {};
+    Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()), _BadgeMtag(cons_header((uintptr_t)this))  {};
     Cons_O& operator=(const Cons_O& other) {
         if (this != &other) {
             setCar(other.ocar());

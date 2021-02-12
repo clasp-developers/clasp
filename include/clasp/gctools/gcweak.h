@@ -115,18 +115,19 @@ void safeRun(std::function<Proto> f) {
 
 namespace gctools {
 
-typedef enum { WeakBucketKind,
-               StrongBucketKind,
-               WeakMappingKind,
-               StrongMappingKind,
-               WeakPointerKind,
-               WeakImmediateKind,
-               WeakFwdKind,
-               WeakFwd2Kind,
-               WeakPadKind,
-               WeakPad1Kind,
+typedef enum { WeakBucketKind     = ((1<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               StrongBucketKind   = ((2<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakMappingKind    = ((3<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               StrongMappingKind  = ((4<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakPointerKind    = ((5<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakImmediateKind  = ((6<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakFwdKind        = ((7<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakFwd2Kind       = ((8<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakPadKind        = ((9<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
+               WeakPad1Kind       = ((10<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
                // Other MPS kinds here
-               MaxWeakKind } WeakKinds;
+               MaxWeakKind        = ((11<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag)
+} WeakKinds;
 
 struct WeakObject {
   struct metadata_always_fix_pointers_to_derived_classes;
@@ -134,7 +135,7 @@ struct WeakObject {
   WeakObject(WeakKinds k) : Kind(gctools::make_tagged_fixnum<core::Fixnum_I>(k)){};
   KindType Kind;
   int kind() const {
-    GCTOOLS_ASSERT(this->Kind.unsafe_fixnum() < MaxWeakKind);
+    GCTOOLS_ASSERT(((gctools::Header_s*)this)->weakObjectP());
     return (int)this->Kind.unsafe_fixnum();
   };
   void setKind(WeakKinds k) { this->Kind = gc::make_tagged_fixnum<core::Fixnum_I>(k); };

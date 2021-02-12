@@ -232,12 +232,12 @@ namespace gctools {
 void rawHeaderDescribe(const uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
   switch (headerTag) {
-  case Header_s::invalid_tag: {
+  case Header_s::invalid_mtag: {
       printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
       printf(" Not an object header!\n");
       break;
   }
-  case Header_s::stamp_tag: {
+  case Header_s::stamp_mtag: {
     printf("  %p : %" PRIuPTR " (%p)\n", headerP, *headerP, (void*)*headerP);
     printf("  %p : %" PRIuPTR " (%p)\n", (headerP+1), *(headerP+1), (void*)*(headerP+1));
 #ifdef DEBUG_GUARD
@@ -251,22 +251,21 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
   } break;
-  case Header_s::fwd_tag: {
+  case Header_s::fwd_mtag: {
     Header_s *hdr = (Header_s *)headerP;
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
     printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
-  case Header_s::pad_tag:
+  case Header_s::pad1_mtag:
       printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-      if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
-        printf("   pad1_tag\n");
-        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-      } else {
-        printf("   pad_tag\n");
-        printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
-        printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
-      }
+      printf("   pad1_tag\n");
+      printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
+      break;
+  case Header_s::pad_mtag:
+      printf("   pad_tag\n");
+      printf("  0x%p : 0x%" PRIuPTR "\n", headerP, *headerP);
+      printf("  0x%p : 0x%" PRIuPTR "\n", (headerP+1), *(headerP+1));
       break;
   }
 #if DEBUG_GUARD

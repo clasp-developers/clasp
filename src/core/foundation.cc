@@ -1656,7 +1656,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
     Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
-    cons->_BadgeMtag = (badge& (~MASK_MTAG))|CONS_MTAG;
+    cons->_BadgeMtag = (badge& (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));

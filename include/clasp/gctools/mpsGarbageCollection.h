@@ -69,11 +69,6 @@ namespace gctools {
 #else
 #define DEBUG_MPS_UNDERSCANNING_TESTS()
 #endif
-#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
-#define DEBUG_THROW_IF_INVALID_CLIENT(c) throwIfInvalidClient(reinterpret_cast<core::T_O *>(c))
-#else
-#define DEBUG_THROW_IF_INVALID_CLIENT(c)
-#endif
 
 struct MpsMetrics {
   std::atomic<size_t> finalizationRequests;

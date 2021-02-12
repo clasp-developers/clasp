@@ -11,9 +11,9 @@
 #define SCAN_BEGIN(x)              // Macro for starting scanning block
 #define SCAN_END(x)                // Macro for end of scanning block
 #define POINTER_FIX(field)         // Macro to fix pointer at field
-#define GC_OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
-#define GC_RESULT_TYPE             // Result type 
-#define RETURN_OK                  // value to return on OK - MPS_RES_OK
+#define OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
+#define RESULT_TYPE                // Result type 
+#define RESULT_OK                  // value to return on OK - MPS_RES_OK
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
@@ -29,8 +29,10 @@
 
 
 
-#ifdef GC_OBJECT_SCAN
-GC_RESULT_TYPE OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUMENTS) {
+#ifdef OBJECT_SCAN
+ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg);
+
+RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUMENTS) {
 #ifdef DEBUG_OBJECT_SCAN
 //  printf("%s:%d obj_scan client = %p  limit = %p\n", __FILE__, __LINE__, client, limit );
 #endif
@@ -46,9 +48,7 @@ GC_RESULT_TYPE OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
       const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
       stamp_index = header.stamp_();
       LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
-      gctools::tagged_stamp_t mtag = header_value.mtag();
-      switch (mtag) {
-      case gctools::Header_s::stamp_tag: {
+      if (header.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
 #endif
@@ -173,79 +173,78 @@ GC_RESULT_TYPE OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #ifdef DEBUG_MPS_SIZE
         {
           size_t scan_size = ((char*)client-(char*)oldClient);
-          size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
+          size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                    __FILE__, __LINE__, (void*)oldClient, header.stamp_(), scan_size, skip_size);
-            obj_skip(oldClient);
+            OBJECT_SKIP(oldClient,false);
           }
         }
 #endif
-        break;
-      }
-#ifdef USE_MPS          
-      case gctools::Header_s::fwd_tag: {
-        client = (char *)(client) + header.fwdSize();
+      } else {
+        gctools::tagged_stamp_t mtag = header_value.mtag();
+        switch (mtag) {
+#ifdef USE_MPS
+        case gctools::Header_s::fwd_mtag: {
+          client = (char *)(client) + header.fwdSize();
 #ifdef DEBUG_MPS_SIZE
-        {
-          size_t scan_size = ((char*)client-(char*)oldClient);
-          size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
-          if (scan_size != skip_size) {
-            printf("%s:%d The size of the object with fwd_tag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, scan_size, skip_size);
+          {
+            size_t scan_size = ((char*)client-(char*)oldClient);
+            size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
+            if (scan_size != skip_size) {
+              printf("%s:%d The size of the object with fwd_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
+                     __FILE__, __LINE__, scan_size, skip_size);
+            }
           }
-        }
 #endif
-        break;
-      }
-      case gctools::Header_s::pad_tag: {
-        if (header_value.pad1P()) {
-          client = (char *)(client) + header.pad1Size();
-        } else if (header.padP()) {
-          client = (char *)(client) + header.padSize();
+          break;
         }
+        case gctools::Header_s::pad_mtag: {
+          if (header_value.pad1P()) {
+            client = (char *)(client) + header.pad1Size();
+          } else if (header.padP()) {
+            client = (char *)(client) + header.padSize();
+          }
 #ifdef DEBUG_MPS_SIZE
-        {
-          size_t scan_size = ((char*)client-(char*)oldClient);
-          size_t skip_size = ((char*)obj_skip(oldClient)-(char*)oldClient);
-          if (scan_size != skip_size) {
-            printf("%s:%d The size of the object with pad_tag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, scan_size, skip_size);
+          {
+            size_t scan_size = ((char*)client-(char*)oldClient);
+            size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
+            if (scan_size != skip_size) {
+              printf("%s:%d The size of the object with pad_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
+                     __FILE__, __LINE__, scan_size, skip_size);
+            }
           }
-        }
 #endif
-        break;
-      }
+          break;
+        }
 #endif // USE_MPS
-      case gctools::Header_s::invalid_tag: {
-        throw_hard_error_bad_client((void*)client);
-      }
+        case gctools::Header_s::invalid_mtag: {
+          throw_hard_error_bad_client((void*)client);
+        }
+        }
       }
     }
   } SCAN_END(ss);
   LOG(BF("obj_scan ENDING client=%p\n") % (void*)client );
-  return RETURN_OK;
+  return RESULT_OK;
 }
-#endif // GC_OBJECT_SCAN
+#endif // OBJECT_SCAN
 
 
-#ifdef GC_OBJECT_SKIP
-
+#ifdef OBJECT_SKIP
 ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
   ADDR_T oldClient = client;
   size_t size = 0;
   const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   const gctools::Header_s& header = *header_ptr;
   const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-  tagged_stamp_t mtag = header_value.mtag();
 #ifdef DEBUG_ON
   if (dbg) {
     LOG(BF("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n")
         % mtag % (AlignUp(size + sizeof(Header_s))) % header.tail_size() );
   }
 #endif
-  switch (mtag) {
-  case gctools::Header_s::stamp_tag: {
+  if (header.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
@@ -341,33 +340,50 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
         size = stamp_layout.size;
       }
     }
-    STAMP_CONTINUE:
+  STAMP_CONTINUE:
     client = (ADDR_T)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
-    break;
-  }
-  case gctools::Header_s::fwd_tag: {
-    client = (char *)(client) + header.fwdSize();
-    break;
-  }
-  case gctools::Header_s::pad_tag: {
-    if (header_value.pad1P()) {
-      client = (char *)(client) + header.pad1Size();
-    } else {
-      client = (char *)(client) + header.padSize();
+  } else {
+    tagged_stamp_t mtag = header_value.mtag();
+    switch (mtag) {
+    case gctools::Header_s::fwd_mtag: {
+      client = (ADDR_T)((char *)(client) + header.fwdSize());
+      break;
     }
-    break;
-  }
-  case gctools::Header_s::invalid_tag: {
-    throw_hard_error_bad_client((void*)client);
-  }
+    case gctools::Header_s::pad1_mtag: {
+        client = (ADDR_T)((char *)(client) + header.pad1Size());
+        break;
+    }
+    case gctools::Header_s::pad_mtag: {
+      client = (ADDR_T)((char *)(client) + header.padSize());
+      break;
+    }
+    case gctools::Header_s::invalid_mtag: {
+      throw_hard_error_bad_client((void*)client);
+      break;
+    }
+    }
   }
   return client;
 }
+#endif // OBJECT_SKIP
 
 
-#endif // GC_OBJECT_SKIP
+#ifdef OBJECT_FWD
+static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
+  // I'm assuming both old and new client pointers have valid headers at this point
+  DEBUG_THROW_IF_INVALID_CLIENT(old_client);
+  DEBUG_THROW_IF_INVALID_CLIENT(new_client);
+  ADDR_T limit = OBJECT_SKIP(old_client,false);
+  size_t size = (char *)limit - (char *)old_client;
+  if (size < global_sizeof_fwd) {
+    THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
+  }
+  Header_s *header = reinterpret_cast<Header_s *>(const_cast<void *>(ClientPtrToBasePtr(old_client)));
+  header->setFwdSize(size);
+  header->setFwdPointer(new_client);
+}
 
-
+#endif // OBJECT_FWD
 
 
 

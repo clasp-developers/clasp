@@ -289,8 +289,8 @@ CL_DEFUN size_t core__stamp_index(size_t stamp)
 CL_DOCSTRING("Shift an unshifted stamp so that it can be put into code in a form where it can be directly matched to a stamp read from an object header with no further shifting");
 CL_DEFUN core::Integer_sp core__shift_stamp_for_compiled_code(size_t unshifted_stamp)
 {
-  return core::make_fixnum((unshifted_stamp << gctools::Header_s::stamp_shift)
-                           | gctools::Header_s::stamp_tag);
+  return core::make_fixnum((unshifted_stamp << gctools::Header_s::general_mtag_shift)
+                           | gctools::Header_s::general_mtag);
 }
 
 CL_DOCSTRING("Return the stamp for the object, the flags and the header stamp");
@@ -303,8 +303,8 @@ CL_DEFUN core::T_sp core__instance_stamp(core::T_sp obj)
 
 CL_DOCSTRING("Determine if stamp A is immediately less than stamp B, so that they can be merged into a range.");
 CL_DEFUN bool core__stamps_adjacent_p(size_t stamp_a, size_t stamp_b) {
-  return (((stamp_a >> gctools::Header_s::stamp_shift) + 1)
-          == (stamp_b >> gctools::Header_s::stamp_shift));
+  return (((stamp_a >> gctools::Header_s::general_mtag_shift) + 1)
+          == (stamp_b >> gctools::Header_s::general_mtag_shift));
 }
 
 CL_DOCSTRING("Set the header stamp for the object");
@@ -703,14 +703,12 @@ extern "C" {
 #define SCAN_END(xxx)
 #define POINTER_FIX(field)
 #define EXTRA_ARGUMENTS
-#define GC_RESULT_TYPE GC_RESULT
-#define RETURN_OK MPS_RES_OK
-#define GC_OBJECT_SCAN
+#define RESULT_TYPE    GC_RESULT
+#define RESULT_OK MPS_RES_OK
 __attribute__((optnone))
 #include "obj_scan.cc"
-#undef GC_OBJ_SCAN
-#undef RETURN_OK
-#undef GC_RESULT_TYPE
+#undef RESULT_OK
+#undef RESULT_TYPE   
 #undef EXTRA_ARGUMENTS
 #undef OBJ_SCAN
 #undef SCAN_STRUCT_T
