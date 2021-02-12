@@ -59,7 +59,6 @@ namespace core {
     uint64_t   _BytesAllocated;
     mp::Process_sp _Process;
     uint64_t  _Tid;
-    uintptr_t           _BacktraceBasePointer;
     DynamicBindingStack _Bindings;
     inline DynamicBindingStack& bindings() { return this->_Bindings; };
     List_sp _CatchTags;
