@@ -209,10 +209,14 @@ void handle_queued_signal_or_interrupt(core::T_sp signal_code) {
 // Do all the queued actions, emptying the queue.
 void handle_all_queued_interrupts()
 {
-  while (my_thread->_PendingInterrupts.consp()) {
-    core::T_sp sig = pop_signal_or_interrupt(my_thread);
-    handle_queued_signal_or_interrupt(sig);
-  }
+  // We check for pending interrupts first, because there will usually not be
+  // any, and checking is probably faster than reading a dynamic variable.
+  if (my_thread->_PendingInterrupts.consp()
+      && !(interrupts_disabled_by_lisp()) && !(interrupts_disabled_by_C()))
+    while (my_thread->_PendingInterrupts.consp()) {
+      core::T_sp sig = pop_signal_or_interrupt(my_thread);
+      handle_queued_signal_or_interrupt(sig);
+    }
 }
 
 CL_DEFUN void core__check_pending_interrupts() {
