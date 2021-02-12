@@ -360,4 +360,4 @@ If SLOT-MISSING returns, its primary value is returned."
               `(if ,gslotd
                    ,cas
                    (slot-missing ,gclass ,gobject ,gsname
-                                 'cas (list ,cmpv ,newv)))))))
+                                 'mp:cas (list ,cmpv ,newv)))))))
