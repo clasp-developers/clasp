@@ -3,21 +3,6 @@
 
 #include <clasp/core/clasp_gmpxx.h>
 //#include <clasp/core/mpPackage.fwd.h>
-namespace core {
-  struct BignumExportBuffer {
-  BignumExportBuffer() : buffer(NULL), bufferSize(0){};
-    ~BignumExportBuffer() {
-      if (this->buffer)
-        free(this->buffer);
-    };
-    unsigned int *buffer = NULL;
-    size_t bufferSize = 0;
-    unsigned int *getOrAllocate(const mpz_class &bignum, int nail);
-  };
-};
-
-
-
 
 namespace core {
 #pragma GCC visibility push(default)
