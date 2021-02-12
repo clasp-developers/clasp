@@ -157,18 +157,20 @@ static void queue_signal_or_interrupt(core::ThreadLocalState* thread, core::T_sp
   mp::SafeSpinLock spinlock(thread->_SparePendingInterruptRecordsSpinLock);
   core::T_sp record;
   if (allocate) {
-    record = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+    record = core::Cons_O::create(thing, _Nil<core::T_O>());
   } else {
     record = thread->_SparePendingInterruptRecords;
     if (record.consp()) {
       thread->_SparePendingInterruptRecords = record.unsafe_cons()->cdr();
+      record.unsafe_cons()->rplaca(thing);
+      record.unsafe_cons()->rplacd(_Nil<core::T_O>());
+    } else {
+      // We're not allowed to allocate and there are no spare conses, so we
+      // just drop the signal. Might be bad? FIXME?
+      return;
     }
   }
-  if (record.consp()) {
-    record.unsafe_cons()->rplaca(thing);
-    record.unsafe_cons()->rplacd(_Nil<core::T_O>());
-    thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
-  }
+  thread->_PendingInterrupts = clasp_nconc(thread->_PendingInterrupts,record);
 }
 
 static void queue_signal(int signo) {
