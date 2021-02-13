@@ -384,8 +384,6 @@ using namespace clang;
 
 
 
-typedef clbind::Wrapper<clang::QualType, std::unique_ptr<clang::QualType>> QualType_wrapper;
-
 typedef clbind::Wrapper<clang::TypeLoc, std::unique_ptr<clang::TypeLoc>> TypeLoc_wrapper;
 
 typedef clbind::Wrapper<clang::TemplateName, std::unique_ptr<clang::TemplateName>> TemplateName_wrapper;
@@ -751,13 +749,32 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_af_makeQualType "(type)"
-#define DECL_af_makeQualType ""
-#define DOCS_af_makeQualType "makeQualType"
-clang::QualType af_makeQualType(clang::Type *ty) {
+CL_DEFUN clang::QualType cast__makeQualTypeDefault() {
+  clang::QualType qt;
+  return qt;
+};
+
+CL_DEFUN clang::QualType cast__makeQualType(clang::Type *ty) {
   clang::QualType qt(ty, 0);
   return qt;
 };
+
+CL_DEFUN std::string cast__getAsString(clang::QualType qt)
+{
+  return qt.getAsString();
+}
+
+CL_DEFUN bool cast__isCanonical(clang::QualType qt)
+{
+  return qt.isCanonical();
+}
+
+CL_DEFUN clang::QualType cast__getCanonicalType(clang::QualType qt)
+{
+  return qt.getCanonicalType();
+}
+
+
 
 
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, clang::LangOptions &langOps, bool qualified) {
@@ -776,10 +793,7 @@ core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
 }
 
 
-#define ARGS_af_getTypePtrOrNull "(arg)"
-#define DECL_af_getTypePtrOrNull ""
-#define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
-core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
+CL_DEFUN core::T_sp cast__getTypePtrOrNull(clang::QualType qt) {
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {
     return asttooling::mostDerivedType(tp);
@@ -1178,12 +1192,14 @@ void initialize_astExpose() {
   CLASS_TYPE(m,ObjCInterface, ObjCObjectType);
   CLASS_TYPE(m,ObjCObjectPointer, Type);
   CLASS_TYPE(m,Atomic, Type);
+#if 0
   class_<clang::QualType>(m,"QualType")
     .def("getAsString", (std::string (clang::QualType::*)() const) & clang::QualType::getAsString)
     .def("isCanonical", &clang::QualType::isCanonical)
     .def("getCanonicalType", &clang::QualType::getCanonicalType);
   m.def("getTypePtrOrNull", &af_getTypePtrOrNull, "returns the most derived Type* ptr or NIL");
   m.def("makeQualType", &af_makeQualType, "docstring","(type)"_ll);
+#endif
   class_<clang::TypeLoc>(m,"TypeLoc")
     .def("getSourceRange", &clang::TypeLoc::getSourceRange)
     .def("getLocalSourceRange", &clang::TypeLoc::getLocalSourceRange)

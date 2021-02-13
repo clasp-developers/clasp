@@ -61,19 +61,6 @@ struct to_object<int &> {
   }
 };
 
-#if 0
-    template<>
-    struct to_object<clang::CXXRecordDecl*>
-    {
-	static core::T_sp convert(clang::CXXRecordDecl* ptr)
-	{
-          HARD_IMPLEMENT_MEF(BF("Handle more complex wrappers"));
-//	    return (clbind::Wrapper<clang::CXXRecordDecl>::create(ptr));
-	}
-    };
-
-#endif
-
 template <>
 struct to_object<std::vector<std::string>, translate::adopt_pointer> {
   static core::T_sp convert(std::vector<std::string> strings) {
@@ -162,6 +149,41 @@ struct to_object<std::vector<clang::tooling::CompileCommand>> {
     return vo;
   }
 };
+
+
+
+
+ template <>
+   struct from_object<clang::QualType, std::true_type> {
+   typedef clang::QualType DeclareType;
+   DeclareType _v;
+ from_object(core::T_sp o) : _v(gc::As<asttooling::QualType_sp>(o)->_Value) {
+//     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
+   }
+};
+
+template <>
+  struct to_object<clang::QualType,translate::dont_adopt_pointer> {
+  typedef clang::QualType HolderType;
+  typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
+  static core::T_sp convert(clang::QualType val) {
+    GC_ALLOCATE_VARIADIC(asttooling::QualType_O,qtval,val);
+//    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    return qtval;
+  }
+ };
+
+ template <>
+  struct to_object<clang::QualType,translate::adopt_pointer> {
+  typedef clang::QualType HolderType;
+  typedef clbind::Wrapper<clang::QualType, HolderType> WrapperType;
+  static core::T_sp convert(clang::QualType val) {
+    GC_ALLOCATE_VARIADIC(asttooling::QualType_O,qtval,val);
+    printf("%s:%d:%s clang::QualType size -> %lu  value -> %p\n", __FILE__, __LINE__, __FUNCTION__, sizeof(val), val.getAsOpaquePtr() );
+    return qtval;
+  }
+};
+
 };
 
 #endif

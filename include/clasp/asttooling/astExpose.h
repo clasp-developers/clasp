@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clang/AST/DeclBase.h>
+#include <clang/AST/Type.h>
 
 PACKAGE_USE("COMMON-LISP");
 PACKAGE_NICKNAME("CAST");
@@ -36,10 +37,22 @@ NAMESPACE_PACKAGE_ASSOCIATION(clang_ast,ClangAstPkg,"CLANG-AST");
 
 namespace asttooling {
 
-core::T_sp mostDerivedDecl(const clang::Decl *d);
-core::T_sp mostDerivedStmt(const clang::Stmt *d);
-core::T_sp mostDerivedType(const clang::Type *d);
 
-void initialize_astExpose();
+
+  
+  FORWARD(QualType);
+  class QualType_O : public core::CxxObject_O {
+    LISP_CLASS(asttooling,ClangAstPkg,QualType_O,"QualType",core::CxxObject_O);
+  public:
+  QualType_O(clang::QualType qt) : _Value(qt) {};
+    clang::QualType _Value;
+  };
+
+ 
+  core::T_sp mostDerivedDecl(const clang::Decl *d);
+  core::T_sp mostDerivedStmt(const clang::Stmt *d);
+  core::T_sp mostDerivedType(const clang::Type *d);
+
+  void initialize_astExpose();
 };
 #endif
