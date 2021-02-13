@@ -2203,7 +2203,7 @@ so that they don't have to be constantly recalculated"
     (contains-fixptr-impl-p arg0 project)))
 
 (defmethod contains-fixptr-impl-p ((x atomic-ctype) project)
-  (contains-fixptr-impl-p (atomic-ctype-argument x)))
+  (contains-fixptr-impl-p (atomic-ctype-argument x) project))
 
 (defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
