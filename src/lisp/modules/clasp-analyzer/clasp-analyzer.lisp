@@ -1574,7 +1574,6 @@ can be saved and reloaded within the project for later analysis"
                      (cast:bases-iterator class-node)
                    (let* ((next1 (sys:iterator-step start))
                           (next2 (sys:iterator-step next1)))
-				      
                      (gclog "(cast:bases-iterator class-node) start == end -> ~s~%" (core:iterator= start end))
                      (gclog "(cast:bases-iterator class-node) next1 == end -> ~s~%" (core:iterator= next1 end))
                      (gclog "(cast:bases-iterator class-node) next2 == end -> ~s~%" (core:iterator= next2 end))))
@@ -2203,7 +2202,7 @@ so that they don't have to be constantly recalculated"
     (contains-fixptr-impl-p arg0 project)))
 
 (defmethod contains-fixptr-impl-p ((x atomic-ctype) project)
-  (contains-fixptr-impl-p (atomic-ctype-argument x)))
+  (contains-fixptr-impl-p (atomic-ctype-argument x) project))
 
 (defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
