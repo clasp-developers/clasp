@@ -126,6 +126,11 @@ extern std::atomic<uintptr_t> global_process_UniqueID;
     ConditionVariable _SuspensionCV;
     size_t _StackSize;
     pthread_t _Thread;
+    // Need to match fields in the two GC's
+#ifdef USE_BOEHM
+    void* thr_o;
+    void* root;
+#endif
 #ifdef USE_MPS
     mps_thr_t thr_o;
     mps_root_t root;

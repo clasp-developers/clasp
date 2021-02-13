@@ -1137,5 +1137,17 @@ namespace core {
   extern size_t debug_InvocationHistoryFrame;
 };
 
+
+//
+// Wrap a field type with this to suppress exposing it
+//
+template <typename Type>
+struct dont_expose {
+  Type _value;
+  template <typename Arg>
+  dont_expose(const Arg& val) : _value(val) {};
+};
+
+
 #endif
 #endif //]

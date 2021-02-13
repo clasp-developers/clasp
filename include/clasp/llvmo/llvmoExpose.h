@@ -2529,7 +2529,7 @@ class APFloat_O : public core::ExternalObject_O {
 
 public:
   typedef llvm::APFloat ExternalType;
-  llvm::APFloat _value;
+  dont_expose<llvm::APFloat>  _value;
 
 public:
   static APFloat_sp makeAPFloatFloat(core::SingleFloat_sp value);
@@ -2545,7 +2545,7 @@ template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
   typedef llvm::APFloat DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value){};
+  from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value._value){};
 };
 };
 

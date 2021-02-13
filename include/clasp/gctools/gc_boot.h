@@ -31,7 +31,9 @@ namespace gctools {
 
 enum Data_types {
   SMART_PTR_OFFSET,
+  ATOMIC_SMART_PTR_OFFSET,
   TAGGED_POINTER_OFFSET,
+  RAW_POINTER_OFFSET,
   ARRAY_OFFSET,
   POINTER_OFFSET,
   CONSTANT_ARRAY_OFFSET,
@@ -54,6 +56,11 @@ enum Data_types {
   ctype_const_char_ptr,
   ctype_size_t,
   ctype_opaque_ptr,
+  CXX_FIXUP_OFFSET,
+  ctype__Atomic_unsigned_long_,
+  ctype_unsigned_long_long,
+  ctype__Atomic_mp__ProcessPhase_,
+  ctype__Atomic_unsigned_int_,
   last_data_type };
 
 extern int global_cons_kind;
@@ -64,6 +71,7 @@ inline void dump_data_types(FILE* fout, const std::string& indent)
 {
 #define DTNAME(_type_,_name_,_sz_) fprintf(fout,"%sInit_data_type( data_type=%d, name=\"%s\",sizeof=%lu)\n", indent.c_str(), _type_, _name_, _sz_)
   DTNAME(SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
+  DTNAME(ATOMIC_SMART_PTR_OFFSET,"smart_ptr",sizeof(void*));
   DTNAME(TAGGED_POINTER_OFFSET,"tagged_ptr",sizeof(void*));
   DTNAME(ARRAY_OFFSET,"array",sizeof(void*));
   DTNAME(POINTER_OFFSET,"pointer",sizeof(void*));

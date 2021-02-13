@@ -293,6 +293,7 @@ extern "C" {
 #define RESULT_OK MPS_RES_OK
 #define EXTRA_ARGUMENTS
 #define OBJECT_SCAN obj_scan
+#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
 #undef EXTRA_ARGUMENTS

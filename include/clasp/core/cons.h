@@ -119,49 +119,46 @@ namespace core {
 
     friend T_sp oCar(T_sp o);
     friend T_sp oCdr(T_sp o);
-#ifdef USE_MPS
+#ifdef USE_PRECISE_GC
   public: // Garbage collector functions
     uintptr_t rawRefCar() const { return (uintptr_t)this->ocar().raw_(); }
     uintptr_t rawRefCdr() const { return (uintptr_t)this->cdr().raw_(); }
     void rawRefSetCar(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCarNoValidate(tval); }
     void rawRefSetCdr(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCdrNoValidate(tval); }
-    bool hasGcTag() const {
-      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag));
-    }
     bool fwdP() const {
-      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRefCdr())&gctools::ptag_mask) == gctools::Header_s::fwd_tag));
+      return ((gctools::Header_s*)this)->fwdP();
     }
     bool pad1P() const {
-      return ((uintptr_t)(this->rawRefCar()) == gctools::gc_tag);
+      return ((gctools::Header_s*)this)->pad1P();
     }
     bool padP() const {
-      return ((((uintptr_t)(this->rawRefCar())&gctools::ptag_mask) == gctools::gc_tag)
-              && (((uintptr_t)(this->rawRefCdr())&gctools::ptag_mask) == gctools::Header_s::pad_tag));
+      return ((gctools::Header_s*)this)->padP();
     }
     size_t padSize() const {
-      size_t sz = (size_t)(((uintptr_t)this->rawRefCdr()) >> gctools::tag_shift);
+      size_t sz = this->rawRefCar();
       return sz;
     }
     void setFwdPointer(void* ptr) {
-      this->rawRefSetCdr((uintptr_t)(gctools::Header_s::fwd_tag));
-      this->rawRefSetCar((uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag));
+      gctools::Header_s* header = (gctools::Header_s*)this;
+      header->setFwdPointer((void*)ptr);
+      header->setFwdSize(sizeof(Cons_O));
     }
     void* fwdPointer() {
-      return (void*)((uintptr_t)(this->rawRefCar()) & gctools::ptr_mask);
+      gctools::Header_s* header = (gctools::Header_s*)this;
+      return header->fwdPointer();
     }
     void setPad1()
     {
-    // Just a gc_tag means pad1
-      this->rawRefSetCar((uintptr_t)(gctools::gc_tag | 0));
+      gctools::Header_s* header = (gctools::Header_s*)this;
+      header->setPad(gctools::Header_s::pad1_mtag);
     }
     void setPad(size_t sz)
     {
-      this->rawRefSetCar((uintptr_t)(gctools::gc_tag | gctools::ptr_mask));
-      this->rawRefSetCdr((uintptr_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift)));
+      gctools::Header_s* header = (gctools::Header_s*)this;
+      header->setPad(gctools::Header_s::pad_mtag);
+      header->setPadSize(sz);
     }
 #endif
-
   public:
     //
     // Return true if the address points to a Cons_O cell header

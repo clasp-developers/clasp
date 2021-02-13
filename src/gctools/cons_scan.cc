@@ -75,10 +75,14 @@ ADDR_T CONS_SKIP(ADDR_T client) {
 
 
 #ifdef CONS_FWD
+#  ifdef CONS_SKIP_IN_CONS_FWD
+ADDR_T CONS_SKIP_IN_CONS_FWD(ADDR_T client);
+#  endif // CONS_SKIP_IN_CONS_FWD
+
 static void CONS_FWD(ADDR_T old_client, ADDR_T new_client) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   // I'm assuming both old and new client pointers have valid headers at this point
-  ADDR_T limit = CONS_SKIP(old_client);
+  ADDR_T limit = CONS_SKIP_IN_CONS_FWD(old_client);
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
   gctools::Header_s* header = (gctools::Header_s*)cons;

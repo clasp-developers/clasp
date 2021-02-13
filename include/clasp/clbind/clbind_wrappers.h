@@ -285,7 +285,6 @@ class to_object<const std::unique_ptr<T> &, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const std::unique_ptr<T> ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -301,7 +300,6 @@ class to_object<std::unique_ptr<T>, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -319,7 +317,6 @@ class to_object<std::unique_ptr<T>, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(std::unique_ptr<T>& ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -334,7 +331,6 @@ class to_object<const T *&, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<const T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<const T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -349,7 +345,6 @@ template <typename T>
 class to_object<const T *&, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<const T> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T *ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -365,7 +360,6 @@ class to_object<T *, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -379,7 +373,6 @@ template <typename T>
 class to_object<T *, translate::dont_adopt_pointer> {
 public:
   typedef clbind::Wrapper<T, T *> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(T *ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -395,7 +388,6 @@ class to_object<T *const, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T /*,debug_deleter<T>*/> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(T *const ptr) {
     if (ptr == NULL) {
       return _Nil<core::T_O>();
@@ -434,7 +426,6 @@ class to_object<T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
@@ -449,7 +440,6 @@ class to_object<T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
@@ -463,7 +453,6 @@ class to_object<const T, translate::adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     T *ptr = new T(val);
     gctools::smart_ptr<WrapperType> wrapper = WrapperType::make_wrapper(ptr, reg::registered_class<T>::id);
@@ -478,7 +467,6 @@ class to_object<const T, translate::dont_adopt_pointer> {
 public:
   typedef std::unique_ptr<T> HolderType;
   typedef clbind::Wrapper<T, HolderType> WrapperType;
-  typedef WrapperType GivenType;
   static core::T_sp convert(const T &val) {
     HARD_IMPLEMENT_MEF(BF("This doesn't make sense - copy but don't adopt pointer???"));
     T *ptr = new T(val);

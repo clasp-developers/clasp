@@ -773,6 +773,7 @@ void BoehmFinalizer(void *base, void *data) {
   OT *client = BasePtrToMostDerivedPtr<OT>(base);
   boehm_general_finalizer_from_BoehmFinalizer((void*)client,data);
   client->~OT();
+  GC_FREE(base);
 }
 #endif
 

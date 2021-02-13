@@ -30,7 +30,7 @@ namespace gctools {
 
 int              global_cons_kind;
 int              global_code_kind;
-int              global_container_proc_index;
+//int              global_container_proc_index;
 int              global_container_kind;
 size_t           global_stamp_max;
 Stamp_info*       global_stamp_info;
@@ -92,6 +92,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
     } else if ( (codes[idx].cmd == fixed_field
                  || codes[idx].cmd == variable_field )
                 && (codes[idx].data0 == SMART_PTR_OFFSET
+                    || codes[idx].data0 == ATOMIC_SMART_PTR_OFFSET
                     || codes[idx].data0 == TAGGED_POINTER_OFFSET
                     || codes[idx].data0 == POINTER_OFFSET )) {
       ++number_of_fixable_fields;
@@ -169,6 +170,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
                   );
         }
         if ( !(data_type == SMART_PTR_OFFSET
+               || data_type == ATOMIC_SMART_PTR_OFFSET
                || data_type == TAGGED_POINTER_OFFSET
                || data_type == POINTER_OFFSET )) continue;
         GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
@@ -296,6 +298,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
                                        field_offset
                                        );
         if ( !((data_type) == SMART_PTR_OFFSET
+               || (data_type) == ATOMIC_SMART_PTR_OFFSET
                || (data_type) == TAGGED_POINTER_OFFSET
                || (data_type) == POINTER_OFFSET )) continue;
         size_t field_bit = bitmap_field_index(63,field_offset);
@@ -368,7 +371,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   }
 
   // Use boehm in the precise GC mode
-  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)dumb_class_container_mark);
+//  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)class_container_mark);
 #if 0
   uintptr_t lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   uintptr_t cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);

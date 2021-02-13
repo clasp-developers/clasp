@@ -30,7 +30,9 @@
 
 
 #ifdef OBJECT_SCAN
-ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg);
+#  ifdef OBJECT_SKIP_IN_OBJECT_SCAN
+ADDR_T OBJECT_SKIP_IN_OBJECT_SCAN(ADDR_T client,bool dbg);
+#  endif // OBJECT_SKIP_IN_OBJECT_SCAN
 
 RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUMENTS) {
 #ifdef DEBUG_OBJECT_SCAN
@@ -173,11 +175,11 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #ifdef DEBUG_MPS_SIZE
         {
           size_t scan_size = ((char*)client-(char*)oldClient);
-          size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
+          size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                    __FILE__, __LINE__, (void*)oldClient, header.stamp_(), scan_size, skip_size);
-            OBJECT_SKIP(oldClient,false);
+            OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false);
           }
         }
 #endif
@@ -186,11 +188,11 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         switch (mtag) {
 #ifdef USE_MPS
         case gctools::Header_s::fwd_mtag: {
-          client = (char *)(client) + header.fwdSize();
+          client = (ADDR_T)((char *)(client) + header.fwdSize());
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
-            size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
+            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
             if (scan_size != skip_size) {
               printf("%s:%d The size of the object with fwd_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                      __FILE__, __LINE__, scan_size, skip_size);
@@ -201,14 +203,14 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         }
         case gctools::Header_s::pad_mtag: {
           if (header_value.pad1P()) {
-            client = (char *)(client) + header.pad1Size();
+            client = (ADDR_T)((char *)(client) + header.pad1Size());
           } else if (header.padP()) {
-            client = (char *)(client) + header.padSize();
+            client = (ADDR_T)((char *)(client) + header.padSize());
           }
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
-            size_t skip_size = ((char*)OBJECT_SKIP(oldClient,false)-(char*)oldClient);
+            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
             if (scan_size != skip_size) {
               printf("%s:%d The size of the object with pad_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                      __FILE__, __LINE__, scan_size, skip_size);
@@ -373,7 +375,7 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   // I'm assuming both old and new client pointers have valid headers at this point
   DEBUG_THROW_IF_INVALID_CLIENT(old_client);
   DEBUG_THROW_IF_INVALID_CLIENT(new_client);
-  ADDR_T limit = OBJECT_SKIP(old_client,false);
+  ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client,false);
   size_t size = (char *)limit - (char *)old_client;
   if (size < global_sizeof_fwd) {
     THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
@@ -517,7 +519,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
 
 
 
-
+#if 0
 struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
                                               struct GC_ms_entry* msp,
                                               struct GC_ms_entry* msl,
@@ -552,7 +554,10 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
   }
   return msp;
 }
+#endif
 
+
+#if 0
 /* class_container_mark
  * Marks pointers within container objects that contain pointers to mark!
  * This function shouldn't be invoked UNLESS there are pointers within the container part of the 
@@ -702,6 +707,8 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
 #endif    
     return msp;
   }
+
+#endif
 
 
 

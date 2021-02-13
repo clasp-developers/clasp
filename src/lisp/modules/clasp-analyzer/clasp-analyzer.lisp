@@ -570,6 +570,12 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (unique-ptr-ctype (:include ctype))
   name arguments)
 
+(defstruct (atomic-ctype (:include ctype))
+  name argument)
+
+(defstruct (dont-expose-ctype (:include ctype))
+  name argument)
+
 (defstruct (container (:include class-template-specialization-ctype)))
 (defstruct (gcvector-moveable-ctype (:include container)))
 (defstruct (gcarray-moveable-ctype (:include container)))
@@ -619,6 +625,8 @@ This could change the value of stamps for specific classes - but that would brea
   (format stream "#<~a :fields ~a :offset-type ~a :base ~a>" (class-name (class-of x)) (fields x) (offset-type x) (base x)))
 
 (defclass copyable-offset (offset) ())
+(defclass atomic-smart-ptr-offset (copyable-offset) ())
+(defclass atomic-pod-offset (copyable-offset) ())
 (defclass smart-ptr-offset (copyable-offset) ())
 (defclass tagged-pointer-offset (copyable-offset) ())
 (defclass pointer-offset (copyable-offset) ())
@@ -674,6 +682,9 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defmethod offset-type-c++-identifier ((x offset))
   (c++identifier (string (class-name (class-of x)))))
+
+(defmethod offset-type-c++-identifier ((x atomic-pod-offset))
+  (c++identifier (concatenate 'string (string (class-name (class-of x))) (format nil "_~a" (ctype-key (offset-type x))))))
 
 (defmethod offset-ctype ((x offset))
   (ctype-key (offset-type x)))
@@ -981,6 +992,17 @@ to expose to C++.
                            :base base
                            :offset-type x))))
 
+(defmethod linearize-class-layout-impl ((x atomic-ctype) base analysis)
+  (cond
+    ((or (smart-ptr-ctype-p (atomic-ctype-argument x))
+         (tagged-pointer-ctype-p (atomic-ctype-argument x)))
+     (list (make-instance 'atomic-smart-ptr-offset
+                         :base base
+                          :offset-type (atomic-ctype-argument x))))
+    (t (list (make-instance 'atomic-pod-offset
+                            :base base
+                            :offset-type (atomic-ctype-argument x))))))
+
 (defmethod linearize-class-layout-impl ((x basic-string-ctype) base analysis)
   (if (ignorable-ctype-p x)
       nil
@@ -1004,6 +1026,9 @@ to expose to C++.
       (list (make-instance 'cxx-fixup-offset
                            :base base
                            :offset-type x))))
+
+(defmethod linearize-class-layout-impl ((x dont-expose-ctype) base analysis)
+  nil)
 
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
   (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
@@ -1249,10 +1274,7 @@ can be saved and reloaded within the project for later analysis"
                            (gc-template-argument-p (first classified-args)))
                       (let ((ctype (gc-template-argument-ctype (first classified-args))))
                         (format t "    ctype = ~s~%" ctype)
-                        (when (or (smart-ptr-ctype-p ctype)
-                                  (tagged-pointer-ctype-p ctype))
-                          (format t "Returning ~s~%" ctype)
-                          ctype)))
+                        (make-atomic-ctype :key decl-key :name name :argument ctype)))
                      (t nil) ; punt to another clause
                      ))))
            ((string= name "smart_ptr")
@@ -1311,8 +1333,11 @@ can be saved and reloaded within the project for later analysis"
             (make-basic-string-ctype :key decl-key :name name))
            ((string= name "unique_ptr")
             (make-unique-ptr-ctype :key decl-key :name name :arguments (classify-template-args decl)))
+           ((string= name "dont_expose")
+            (format t "dont_expose type: ~a~%" decl-key)
+            (make-dont-expose-ctype :key decl-key :name name :argument (classify-template-args decl)))
            (t
-            (warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
+            #+(or)(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
                                                       :name name
                                                       :arguments (classify-template-args decl)
@@ -2176,6 +2201,9 @@ so that they don't have to be constantly recalculated"
                   :when (eq (gc-template-argument-index arg) 0)
                   :return arg)))
     (contains-fixptr-impl-p arg0 project)))
+
+(defmethod contains-fixptr-impl-p ((x atomic-ctype) project)
+  (contains-fixptr-impl-p (atomic-ctype-argument x)))
 
 (defmethod contains-fixptr-impl-p ((x tagged-pointer-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x pointer-ctype) project)
@@ -3121,6 +3149,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x std-map-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
   (cond
     ((ignorable-ctype-p x) nil)
@@ -3486,6 +3515,8 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var std-map-ctype) analysis) nil)
 (defmethod fix-variable-p ((var shared-mutex-ctype) analysis) nil)
 (defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
+(defmethod fix-variable-p ((var atomic-ctype) analysis) nil)
+(defmethod fix-variable-p ((var dont-expose-ctype) analysis) nil)
 (defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)

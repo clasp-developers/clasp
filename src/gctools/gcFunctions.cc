@@ -698,13 +698,14 @@ extern "C" {
 #ifdef USE_MPS
 #define SCAN_STRUCT_T int
 #define ADDR_T mps_addr_t
-#define OBJECT_SCAN fixup_objects
 #define SCAN_BEGIN(xxx)
 #define SCAN_END(xxx)
 #define POINTER_FIX(field)
 #define EXTRA_ARGUMENTS
 #define RESULT_TYPE    GC_RESULT
 #define RESULT_OK MPS_RES_OK
+#define OBJECT_SCAN fixup_objects
+#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
 __attribute__((optnone))
 #include "obj_scan.cc"
 #undef RESULT_OK
@@ -827,7 +828,12 @@ namespace gctools {
 
 
 CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
+#ifdef USE_PRECISE_GC
   throw(core::SaveLispAndDie(filename));
+#else
+  SIMPLE_ERROR(BF("save-lisp-and-die only works for precise GC"));
+#endif
+  
 }
 
 

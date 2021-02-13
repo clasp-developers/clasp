@@ -174,11 +174,13 @@ struct PoolInfo {
 /*! Info about the pools.
     PoolInfo structs. */
 PoolInfo global_pool_info[] = {
+#ifdef USE_PRECISE_GC
     {false,cons_pool,global_cons_pool,cons_skip},
     {true,amc_pool,global_amc_pool,obj_skip},
     {true,amcz_pool,global_amcz_pool,obj_skip},
     {false,awl_pool,global_awl_pool,weak_obj_skip},
     {true,non_moving_pool,global_non_moving_pool,obj_skip}
+#endif
 };
     
 
@@ -333,6 +335,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
 
 #define ADDR_T mps_addr_t
 #define OBJECT_FWD obj_fwd
+#define OBJECT_SKIP_IN_OBJECT_FWD obj_skip_debug
 #include "obj_scan.cc"
 #undef OBJECT_FWD
 #undef ADDR_T
@@ -344,10 +347,6 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
   return NULL;
 }
 
-};
-
-extern "C" {
-using namespace gctools;
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
   assert(size >= alignment);
@@ -360,64 +359,36 @@ static void obj_pad(mps_addr_t base, size_t size) {
   }
 }
 
-
-GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-  //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
-  mps_addr_t original_client = client;
-  MPS_SCAN_BEGIN(ss) {
-    while (client<limit) {
-      core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-      if ( !cons->hasGcTag() ) {
-        //        printf("%s:%d It's a regular cons\n", __FILE__, __LINE__ );
-#if DEBUG_VALIDATE_GUARD
-        client_validate(cons->ocar().raw_());
-        client_validate(cons->cdr().raw_());
-#endif
-        core::T_O* old_car = cons->ocar().raw_();
-        POINTER_FIX(&cons->_Car);
-        POINTER_FIX(&cons->_Cdr);
-        client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
-      } else if (cons->fwdP()) {
-        //        printf("%s:%d It's a fwdP\n", __FILE__, __LINE__ );
-        client = (char *)(client) + sizeof(core::Cons_O);
-      } else if (cons->pad1P()) {
-        //        printf("%s:%d It's a pad1P\n", __FILE__, __LINE__ );
-        client = (char *)(client) + Alignment();
-      } else if (cons->padP()) {
-        //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
-        client = (char *)(client) + cons->padSize();
-      } else {
-        printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, client, original_client, limit, cons->ocar().raw_(), cons->cdr().raw_());
-        abort();
-      }
-    };
-  } MPS_SCAN_END(ss);
-  return MPS_RES_OK;
 };
 
-mps_addr_t cons_skip(mps_addr_t client) {
-//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
-  mps_addr_t oldClient = client;
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-  if ( cons->pad1P() ) {
-    client = reinterpret_cast<mps_addr_t>((char*)client+Alignment());
-  } else if (cons->padP() ) {
-    client = reinterpret_cast<mps_addr_t>((char*)client + cons->padSize());
-  } else {
-    client = reinterpret_cast<mps_addr_t>((char*)client + sizeof(core::Cons_O));
-  }
-  return client;
-}
+#ifdef USE_PRECISE_GC
+extern "C" {
+using namespace gctools;
 
+#define SCAN_STRUCT_T mps_ss_t
+#define ADDR_T mps_addr_t
+#define SCAN_BEGIN(ss) MPS_SCAN_BEGIN(ss)
+#define SCAN_END(ss) MPS_SCAN_END(ss)
+//#define POINTER_FIX(field) printf("%s:%d:%s POINTER_FIX\n",__FILE__,__LINE__,__FUNCTION__);
+#define RESULT_TYPE    GC_RESULT
+#define RESULT_OK      MPS_RES_OK
+#define EXTRA_ARGUMENTS
 
-static void cons_fwd(mps_addr_t old_client, mps_addr_t new_client) {
-//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
-  // I'm assuming both old and new client pointers have valid headers at this point
-  mps_addr_t limit = cons_skip(old_client);
-  size_t size = (char *)limit - (char *)old_client;
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
-  cons->setFwdPointer(new_client);
-}
+#define CONS_SCAN cons_scan
+#define CONS_SKIP cons_skip
+#define CONS_FWD  cons_fwd
+#include "cons_scan.cc"
+#undef CONS_FWD
+#undef CONS_SKIP
+#undef CONS_SCAN
+
+#undef SCAN_STRUCT_T
+#undef ADDR_T
+#undef SCAN_BEGIN
+#undef SCAN_END
+#undef RESULT_TYPE
+#undef RESULT_OK
+
 
 static mps_addr_t cons_isfwd(mps_addr_t client) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -440,6 +411,7 @@ static void cons_pad(mps_addr_t base, size_t size) {
   }
 }
 };
+#endif
 
 
 namespace gctools {
@@ -632,10 +604,10 @@ size_t processMpsMessages(size_t& finalizations) {
         size_t condemned = mps_message_gc_condemned_size(global_arena, message);
         size_t not_condemned = mps_message_gc_not_condemned_size(global_arena, message);
         printf("Collection finished.\n");
-        printf("    live %" PRu "\n", (unsigned long)live);
-        printf("    condemned %" PRu "\n", (unsigned long)condemned);
-        printf("    not_condemned %" PRu "\n", (unsigned long)not_condemned);
-        printf("    clock: %" PRu "\n", (unsigned long)mps_message_clock(global_arena, message));
+        printf("    live %lu\n", (unsigned long)live);
+        printf("    condemned %lu\n", (unsigned long)condemned);
+        printf("    not_condemned %lu\n", (unsigned long)not_condemned);
+        printf("    clock: %lu\n", (unsigned long)mps_message_clock(global_arena, message));
       }
 #endif
     } else if (type == mps_message_type_finalization()) {
@@ -914,11 +886,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s));
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
+#ifdef USE_PRECISE_GC
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+#endif
     res = mps_fmt_create_k(&obj_fmt, global_arena, args);
   }
   MPS_ARGS_END(args);
@@ -967,11 +941,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_BEGIN(args) {
 //    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(ConsHeader_s));
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
+#ifdef USE_PRECISE_GC
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, cons_scan);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, cons_skip);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, cons_fwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, cons_isfwd);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, cons_pad);
+#endif
     res = mps_fmt_create_k(&cons_fmt, global_arena, args);
   }
   MPS_ARGS_END(args);

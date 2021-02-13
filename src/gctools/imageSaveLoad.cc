@@ -32,6 +32,8 @@ namespace gctools {
 #define OBJECT_SCAN isl_obj_scan
 #define OBJECT_SKIP isl_obj_skip
 #define OBJECT_FWD isl_obj_fwd
+#define OBJECT_SKIP_IN_OBJECT_FWD isl_obj_skip
+#define OBJECT_SKIP_IN_OBJECT_SCAN isl_obj_skip
 #include "obj_scan.cc"
 #undef OBJECT_FWD
 #undef OBJECT_SKIP
@@ -41,6 +43,7 @@ namespace gctools {
 #define CONS_SCAN isl_cons_scan
 #define CONS_SKIP isl_cons_skip
 #define CONS_FWD isl_cons_fwd
+#define CONS_SKIP_IN_CONS_FWD isl_cons_skip
 #include "cons_scan.cc"
 #undef CONS_FWD
 #undef CONS_SKIP
@@ -123,7 +126,12 @@ struct calculate_size_t : public walker_callback_t {
 
 template <typename Walker>
 void walk_garbage_collected_objects(Walker& walker) {
+#ifdef USE_BOEHM
   GC_enumerate_reachable_objects_inner(boehm_walker_callback, (void*)&walker);
+#endif
+#ifdef USE_MPS
+  printf("%s:%d:%s  Walk MPS objects\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
 }
 
 
