@@ -381,8 +381,6 @@ using namespace clang;
 
 
 
-typedef clbind::Wrapper<clang::QualType, std::unique_ptr<clang::QualType>> QualType_wrapper;
-
 typedef clbind::Wrapper<clang::TypeLoc, std::unique_ptr<clang::TypeLoc>> TypeLoc_wrapper;
 
 typedef clbind::Wrapper<clang::TemplateName, std::unique_ptr<clang::TemplateName>> TemplateName_wrapper;

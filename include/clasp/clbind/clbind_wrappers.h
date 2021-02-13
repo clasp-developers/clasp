@@ -93,10 +93,11 @@ struct maybe_delete<OT, false> {
 
 namespace clbind {
 
+
 /*! Wrappers wrap external pointers - 
       The wrapper does not own the pointer unless the HolderType 
-      is a std::unique_ptr or some other
-      smart_ptr type */
+      is a std::unique_ptr or std::shared_ptr some other holder that takes care of ownership
+ */
 template <class OT, class HolderType = OT *>
   class Wrapper : public core::WrappedPointer_O {
 public:
@@ -108,30 +109,45 @@ public:
 
 public: // Do NOT declare any smart_ptr's or weak_smart_ptr's here!!!!
   HolderType externalPtr_gc_ignore;
-  OT *nakedPtr_gc_ignore; // weak pointer
   class_id _classId;
 
+ public:
+//
+// Get a raw pointer from whatever HolderType we have
+//
+template <typename HType>
+struct RawGetter {
+  static HType get(HType& ptr) { return ptr; };
+  static const HType get(const HType& ptr) { return ptr; };
+};
+
+template <typename PtrType>
+struct RawGetter<std::unique_ptr<PtrType>> {
+  static PtrType* get(std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
+  static const PtrType* get(const std::unique_ptr<PtrType>& ptr) { return ptr.get(); };
+ };
+
+template <typename PtrType>
+struct RawGetter<std::shared_ptr<PtrType>> {
+  static PtrType* get(std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
+  static const PtrType* get(const std::shared_ptr<PtrType>& ptr) { return ptr.get(); };
+ };
+
 public:
-  Wrapper(OT *naked, class_id cid) : externalPtr_gc_ignore(naked), nakedPtr_gc_ignore(naked), _classId(cid){
-                                                                                                  //            printf("\n%s:%d - ctor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr,clbind::support_adapterAddress<ExternalType>(this->nakedPtr), cid, _rep_(reg::globalClassIdToClassSymbol[cid]).c_str() );
-                                                                                              };
+  Wrapper(OT *naked, class_id cid) : externalPtr_gc_ignore(naked), _classId(cid){};
 
   // ctor that takes a unique_ptr
-  Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {
-    nakedPtr_gc_ignore = &(*this->externalPtr_gc_ignore); // seriously - do I need nakedPtr?????????
-                                                          //            printf("\n%s:%d - ctor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr,clbind::support_adapterAddress<ExternalType>(this->nakedPtr), cid, _rep_(reg::globalClassIdToClassSymbol[cid]).c_str() );
-  };
+  Wrapper(std::unique_ptr<OT> naked, class_id cid) : externalPtr_gc_ignore(std::move(naked)), _classId(cid) {};
 
-  size_t templatedSizeof() const { return sizeof(*this); };
-  void *mostDerivedPointer() const { return (void *)(this->nakedPtr_gc_ignore); };
+size_t templatedSizeof() const { return sizeof(*this); };
+void* mostDerivedPointer() const { return (void*)RawGetter<HolderType>::get(this->externalPtr_gc_ignore); };
 
   virtual class_id classId() const { return this->_classId; };
 
   /*! Release the pointer - invalidate the wrapper and return the pointer */
   virtual void pointerDelete() {
-    if (this->nakedPtr_gc_ignore != NULL) {
-      maybe_delete<OT, is_deletable<OT>::value>::doit(this->nakedPtr_gc_ignore);
-      this->nakedPtr_gc_ignore = NULL;
+    if (RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL) {
+      maybe_delete<OT, is_deletable<OT>::value>::doit(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
       maybe_release<HolderType>::call(this->externalPtr_gc_ignore);
     }
   }
@@ -162,7 +178,7 @@ public:
   }
 
 public:
-  bool validp() const { return this->nakedPtr_gc_ignore != NULL; };
+bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL; };
   void throwIfInvalid() const {
     if (!this->validp()) {
       SIMPLE_ERROR_SPRINTF("The wrapper is invalid");
@@ -171,9 +187,8 @@ public:
 
   /*! Release the pointer - invalidate the wrapper and return the pointer */
   virtual void *pointerRelease() {
-    if (this->nakedPtr_gc_ignore != NULL) {
-      void *ptr = const_cast<typename std::remove_const<OT>::type *>(this->nakedPtr_gc_ignore);
-      this->nakedPtr_gc_ignore = NULL;
+    if (RawGetter<HolderType>::get(this->externalPtr_gc_ignore) != NULL) {
+      void *ptr = const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
       maybe_release<HolderType>::call(this->externalPtr_gc_ignore);
       return ptr;
     }
@@ -182,32 +197,32 @@ public:
 
   void initializeSlots(int numberOfSlots) {
     this->throwIfInvalid();
-    clbind::support_initializeSlots<ExternalType>(numberOfSlots, this->nakedPtr_gc_ignore);
+    clbind::support_initializeSlots<ExternalType>(numberOfSlots, RawGetter<HolderType>::get(this->externalPtr_gc_ignore)); 
   }
 
   core::T_sp instanceSigSet() {
     this->throwIfInvalid();
-    return clbind::support_instanceSigSet<ExternalType>(this->nakedPtr_gc_ignore);
+    return clbind::support_instanceSigSet<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
   }
 
   core::T_sp instanceSig() const {
     this->throwIfInvalid();
-    return clbind::support_instanceSig<ExternalType>(this->nakedPtr_gc_ignore);
+    return clbind::support_instanceSig<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
   }
 
   core::T_sp instanceRef(size_t idx) const {
     this->throwIfInvalid();
-    return clbind::support_instanceRef<ExternalType>(idx, this->nakedPtr_gc_ignore);
+    return clbind::support_instanceRef<ExternalType>(idx, RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
   }
 
   core::T_sp instanceSet(size_t idx, core::T_sp val) {
     this->throwIfInvalid();
-    return clbind::support_instanceSet<ExternalType>(idx, val, this->nakedPtr_gc_ignore);
+    return clbind::support_instanceSet<ExternalType>(idx, val, RawGetter<HolderType>::get(this->externalPtr_gc_ignore));
   }
 
   virtual void *castTo(class_id cid) const {
     this->throwIfInvalid();
-    std::pair<void *, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type *>(this->nakedPtr_gc_ignore) // ptr
+    std::pair<void *, int> res = globalCastGraph->cast(const_cast<typename std::remove_const<OT>::type *>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)) // ptr
                                                        ,
                                                        this->_classId // src
                                                        ,
@@ -215,7 +230,7 @@ public:
                                                        ,
                                                        this->_classId // dynamic_id
                                                        ,
-                                                       this->nakedPtr_gc_ignore // dynamic_ptr
+                                                       RawGetter<HolderType>::get(this->externalPtr_gc_ignore) // dynamic_ptr
                                                        );
     return res.first;
   }
@@ -225,7 +240,7 @@ public:
   };
   virtual ~Wrapper(){
       //            TRACE();
-      //            printf("\n%s:%d - dtor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),this->nakedPtr_gc_ignore,clbind::support_adapterAddress<ExternalType>(this->nakedPtr_gc_ignore), this->classId, _rep_(reg::globalClassIdToClassSymbol[this->classId]).c_str() );
+      //            printf("\n%s:%d - dtor for Wrapper@%p HolderType=%s OT*=%p adapter@%p cid=%lu  symbol=%s\n", __FILE__, __LINE__, this, typeid(HolderType).name(),RawGetter<HolderType>::get(this->externalPtr_gc_ignore),clbind::support_adapterAddress<ExternalType>(RawGetter<HolderType>::get(this->externalPtr_gc_ignore)), this->classId, _rep_(reg::globalClassIdToClassSymbol[this->classId]).c_str() );
 
   };
 };
