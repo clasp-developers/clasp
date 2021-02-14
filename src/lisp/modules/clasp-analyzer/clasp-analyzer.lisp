@@ -3866,7 +3866,7 @@ Run searches in *tools* on the source files in the compilation database."
                             &key (source-namestrings (clang-tool:source-namestrings compilation-tool-database))
                               (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                               (save-project t)
-                              (threads 8))
+                              (jobs 4))
   "* Arguments
 - test :: A list of files to run the search on, or NIL for all of them.
 - arguments-adjuster :: The arguments adjuster.
@@ -3874,12 +3874,12 @@ Run searches in *tools* on the source files in the compilation database."
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
   (let ((all-jobs source-namestrings)
-        (job-groups (loop for idx from 0 below threads
+        (job-groups (loop for idx from 0 below jobs
                           collect (make-instance 'job-group))))
 ;; Distribute the jobs to the job-groups
 (loop for job in all-jobs
       for job-index from 0
-      for job-group-index = (mod job-index threads)
+      for job-group-index = (mod job-index jobs)
       for job-group = (elt job-groups job-group-index)
       for job-info = (make-parallel-job :id job-index :filename job)
       do (push job-info (jobs job-group)))
@@ -3887,7 +3887,7 @@ Run searches in *tools* on the source files in the compilation database."
     (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (format t "Starting processes~%")
-    (let ((processes (loop for job-group-index from 0 below threads
+    (let ((processes (loop for job-group-index from 0 below jobs
                            for job-group = (elt job-groups job-group-index)
                            do (format t "loop for process ~a~%" job-group-index)
                            collect (prog1
@@ -3963,7 +3963,6 @@ If the source location of a match contains the string source-path-identifier the
       (generate-code analysis :output-file (make-pathname :type "cc" :defaults output-file)))
     *project*))
 
-#+(or)
 (defun parallel-search/generate-code (compilation-tool-database
                                       &key (output-file (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))
                                         pjobs)
@@ -3973,7 +3972,7 @@ If the source location of a match contains the string source-path-identifier the
                                2)))))
     (clang-tool:with-compilation-tool-database
         compilation-tool-database
-      (setf *project* (parallel-search-all-fork
+      (setf *project* (parallel-search-all-threaded
                        compilation-tool-database
                        :output-file output-file
                        :jobs pjobs))

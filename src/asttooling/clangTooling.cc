@@ -714,6 +714,60 @@ struct from_object<clang::tooling::JSONCommandLineSyntax> {
 };
 };
 
+
+
+
+namespace asttooling {
+
+
+#if 0
+    class_<clang::SourceLocation> cl_ag(m,"SourceLocation");
+    cl_ag.def("isFileID", &clang::SourceLocation::isFileID)
+        .def("printToString", &clang::SourceLocation::printToString);
+    class_<clang::PresumedLoc> cl_ah(m,"PresumedLoc");
+    cl_ah.def("isValid", &clang::PresumedLoc::isValid)
+        .def("isInvalid", &clang::PresumedLoc::isInvalid)
+        .def("PresumedLoc-getFilename", &clang::PresumedLoc::getFilename)
+        .def("getLine", &clang::PresumedLoc::getLine)
+        .def("getColumn", &clang::PresumedLoc::getColumn)
+        .def("getIncludeLoc", &clang::PresumedLoc::getIncludeLoc);
+#endif
+
+CL_DEFUN bool ast_tooling__isFileID(const clang::SourceLocation& ploc) {
+  return ploc.isValid();
+}
+
+CL_DEFUN std::string ast_tooling__printToString(const clang::SourceLocation& ploc,const clang::SourceManager &SM) {
+  return ploc.printToString(SM);
+}
+
+
+CL_DEFUN bool ast_tooling__isValid(const clang::PresumedLoc& ploc) {
+  return ploc.isValid();
+}
+
+CL_DEFUN bool ast_tooling__isInvalid(const clang::PresumedLoc& ploc) {
+  return ploc.isInvalid();
+}
+
+CL_DEFUN std::string ast_tooling__PresumedLoc_getFilename(const clang::PresumedLoc& ploc) {
+  return ploc.getFilename();
+}
+CL_DEFUN unsigned  ast_tooling__getLine(const clang::PresumedLoc& ploc) {
+  return ploc.getLine();
+}
+
+CL_DEFUN unsigned ast_tooling__getColumn(const clang::PresumedLoc& ploc) {
+  return ploc.getColumn();
+}
+
+CL_DEFUN clang::SourceLocation ast_tooling__getIncludeLoc(const clang::PresumedLoc& ploc) {
+  return ploc.getIncludeLoc();
+}
+
+
+
+};
 namespace asttooling {
 CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax ) {
   clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
@@ -763,13 +817,10 @@ void initialize_clangTooling() {
         .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, pureOutValue<2>())
         .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, pureOutValue<2>())
         .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, pureOutValue<2>());
+#if 0 
     class_<clang::SourceLocation> cl_ag(m,"SourceLocation");
     cl_ag.def("isFileID", &clang::SourceLocation::isFileID)
         .def("printToString", &clang::SourceLocation::printToString);
-
-
-
-  
     class_<clang::PresumedLoc> cl_ah(m,"PresumedLoc");
     cl_ah.def("isValid", &clang::PresumedLoc::isValid)
         .def("isInvalid", &clang::PresumedLoc::isInvalid)
@@ -777,6 +828,7 @@ void initialize_clangTooling() {
         .def("getLine", &clang::PresumedLoc::getLine)
         .def("getColumn", &clang::PresumedLoc::getColumn)
         .def("getIncludeLoc", &clang::PresumedLoc::getIncludeLoc);
+#endif
     class_<clang::SourceRange> cl_ai(m,"SourceRange");
     cl_ai.def("getBegin", &clang::SourceRange::getBegin)
         .def("getEnd", &clang::SourceRange::getEnd);
