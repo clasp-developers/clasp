@@ -29,6 +29,16 @@
   (time (clasp-analyzer:serial-search/generate-code *db*))
   (format t "Done searching project~%"))))
 
+;;; ------------------------------------------------------------
+;;; To load and analyze one file in the project
+(progn
+  (defparameter *compile-commands* (probe-file "source-dir:build;mpsprep;compile_commands.json"))
+  (defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+                      (pathname *compile-commands*)
+                      ))
+  (time (clasp-analyzer:parallel-search/generate-code *db*))
+  (format t "Done searching project~%"))))
+
 
 ;;; ------------------------------------------------------------
 ;;; To load and analyze the entire project
