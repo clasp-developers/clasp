@@ -70,7 +70,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     gc::Fixnum n = olimit.unsafe_fixnum();
     if (n > 0) {
       std::uniform_int_distribution<uint64_t> range(0, n - 1);
-      return make_fixnum(range(random_state->_Producer));
+      return make_fixnum(range(random_state->_Producer._value));
     } else TYPE_ERROR_cl_random(olimit);
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     Bignum_sp gbn = gc::As_unsafe<Bignum_sp>(olimit);
@@ -82,7 +82,7 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
     const mp_limb_t maxlimb = std::numeric_limits<mp_limb_t>::max();
     std::uniform_int_distribution<mp_limb_t> range(minlimb, maxlimb);
     for (mp_size_t i = 0; i < len; ++i)
-      res[i] = range(random_state->_Producer);
+      res[i] = range(random_state->_Producer._value);
     // FIXME: We KLUDGE the range by doing mod (basically).
     // This will in general result in deviations from a truly uniform
     // distribution.
@@ -95,13 +95,13 @@ CL_DEFUN T_sp cl__random(Number_sp olimit, RandomState_sp random_state) {
   } else if (DoubleFloat_sp df = olimit.asOrNull<DoubleFloat_O>()) {
     if (df->get() > 0.0) {
       std::uniform_real_distribution<> range(0.0, df->get());
-      return DoubleFloat_O::create(range(random_state->_Producer));
+      return DoubleFloat_O::create(range(random_state->_Producer._value));
     } else TYPE_ERROR_cl_random(olimit);
   } else if (olimit.single_floatp()) {
     float flimit = olimit.unsafe_single_float();
     if (flimit >  0.0f) {
       std::uniform_real_distribution<> range(0.0, flimit);
-      return clasp_make_single_float(range(random_state->_Producer));
+      return clasp_make_single_float(range(random_state->_Producer._value));
     } else TYPE_ERROR_cl_random(olimit);
   }
   TYPE_ERROR_cl_random(olimit);

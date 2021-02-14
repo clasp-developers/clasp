@@ -76,8 +76,6 @@ class DILocation_O : public MDNode_O {
   typedef llvm::DILocation ExternalType;
   typedef ExternalType* PointerToExternalType;
 public:
-  typedef llvm::DILocation OtherType;
-public:
   static DILocation_sp make(llvm::LLVMContext&, unsigned int, unsigned int, DINode_sp, core::T_sp);
   virtual operator llvm::DILocation *() { return reinterpret_cast<llvm::DILocation*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
@@ -118,8 +116,6 @@ class DINode_O : public MDNode_O {
   typedef llvm::DINode ExternalType;
   typedef ExternalType* PointerToExternalType;
 public:
-  typedef llvm::DINode OtherType;
-public:
   virtual operator llvm::DINode *() { return reinterpret_cast<llvm::DINode*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
   virtual operator llvm::Metadata *() { return reinterpret_cast<llvm::Metadata*>(this->_ptr); }
@@ -158,8 +154,6 @@ class DIExpression_O : public MDNode_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DIExpression, DIExpression_O, "DIExpression", MDNode_O );
   typedef llvm::DIExpression ExternalType;
   typedef ExternalType* PointerToExternalType;
-public:
-  typedef llvm::DIExpression OtherType;
 public:
   virtual operator llvm::DIExpression *() { return reinterpret_cast<llvm::DIExpression*>(this->_ptr); };
   virtual operator llvm::MDNode *() { return reinterpret_cast<llvm::MDNode*>(this->_ptr); };
@@ -233,12 +227,11 @@ namespace llvmo {
 FORWARD(DINodeArray);
  class DINodeArray_O : public core::CxxObject_O {
    LISP_CLASS(llvmo, LlvmoPkg, DINodeArray_O, "DINodeArray",core::CxxObject_O);
-  typedef llvm::DINodeArray OtherType;
  private:
-  OtherType _Val;
+   dont_expose<llvm::DINodeArray> _Val;
 public:
-  OtherType& get() { return this->_Val;};
- DINodeArray_O(const OtherType& v) : _Val(v) {};
+  llvm::DINodeArray& get() { return this->_Val._value;};
+ DINodeArray_O(const llvm::DINodeArray& v) : _Val(v) {};
   DINodeArray_O() : Base(){};
   virtual ~DINodeArray_O() {}
 
@@ -267,13 +260,12 @@ namespace llvmo {
 FORWARD(DITypeRefArray);
  class DITypeRefArray_O : public core::CxxObject_O {
    LISP_CLASS(llvmo, LlvmoPkg, DITypeRefArray_O, "DITypeRefArray", core::CxxObject_O);
-  typedef llvm::DITypeRefArray OtherType;
  private:
-  OtherType _Val;
+   dont_expose<llvm::DITypeRefArray> _Val;
 public:
-  OtherType& get() { return this->_Val;};
- DITypeRefArray_O(const OtherType &val) : _Val(val) {};
- DITypeRefArray_O() : Base(), _Val(NULL) {};
+  llvm::DITypeRefArray& get() { return this->_Val._value;};
+ DITypeRefArray_O(const llvm::DITypeRefArray &val) : _Val(val) {};
+ DITypeRefArray_O() : Base(), _Val((llvm::DITypeRefArray)NULL) {};
   virtual ~DITypeRefArray_O() {}
 }; // DITypeRefArray_O
 }; // llvmo

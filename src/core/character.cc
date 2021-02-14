@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/numberToString.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/exceptions.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/evaluator.h>
 
 namespace core {
@@ -605,30 +606,33 @@ const char* OrderedCharacterNames[] = {
 
 void CharacterInfo::initialize() {
   int num_chars = sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]);
+  this->_NamesToCharacterIndex = HashTableEqual_O::create_default();
   this->gCharacterNames.resize(num_chars, _Nil<T_O>());
   this->gIndexedCharacters.resize(num_chars, _Nil<T_O>());
   for (size_t fci=0; fci<num_chars; ++fci) {
     const char* name = OrderedCharacterNames[fci];
+    
     //printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name,(int) fci);
     // we later compare with Uppercase
-    this->gNamesToCharacterIndex[stringUpper(name)] = fci;
+    SimpleBaseString_sp sname = SimpleBaseString_O::make(stringUpper(name));
+    this->_NamesToCharacterIndex->setf_gethash(sname,make_fixnum(fci));
     // If fci is cast to char, the following code fails from fci = 128
     this->gIndexedCharacters[fci] = clasp_make_standard_character((claspCharacter)fci);
      // but want the names in the correct case
     this->gCharacterNames[fci] = SimpleBaseString_O::make(std::string(name));
   }
   // we later compare with Uppercase
-  gNamesToCharacterIndex["NULL"] = NULL_CHAR;
-  gNamesToCharacterIndex["BELL"] = BELL_CHAR;
-  gNamesToCharacterIndex["BS"] = BACKSPACE_CHAR;
-  gNamesToCharacterIndex["HT"] = TAB_CHAR;
-  gNamesToCharacterIndex["LF"] = LINE_FEED_CHAR;
-  gNamesToCharacterIndex["LINEFEED"] = LINE_FEED_CHAR;
-  gNamesToCharacterIndex["FF"] = PAGE_CHAR;
-  gNamesToCharacterIndex["CR"] = RETURN_CHAR;
-  gNamesToCharacterIndex["ESCAPE"] = ESCAPE_CHAR;
-  gNamesToCharacterIndex["SP"] = SPACE_CHAR;
-  gNamesToCharacterIndex["DEL"] = RUBOUT_CHAR;
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("NULL"),make_fixnum(NULL_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("BELL"),make_fixnum(BELL_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("BS"),make_fixnum(BACKSPACE_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("HT"),make_fixnum(TAB_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("LF"),make_fixnum(LINE_FEED_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("LINEFEED"),make_fixnum(LINE_FEED_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("FF"),make_fixnum(PAGE_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("CR"),make_fixnum(RETURN_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("ESCAPE"),make_fixnum(ESCAPE_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("SP"),make_fixnum(SPACE_CHAR));
+  this->_NamesToCharacterIndex->setf_gethash(SimpleBaseString_O::make("DEL"),make_fixnum(RUBOUT_CHAR));
 }
 
 CL_LAMBDA(ch);
@@ -3444,14 +3448,14 @@ CL_DECLARE();
 CL_DOCSTRING("name_char");
 CL_DEFUN T_sp cl__name_char(T_sp sname) {
   String_sp name = coerce::stringDesignator(sname);
-  string upname = stringUpper(name->get_std_string());
-  map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
-  if (it != _lisp->characterInfo().gNamesToCharacterIndex.end()) {
-    return _lisp->characterInfo().gIndexedCharacters[it->second];
+  String_sp upname = cl__string_upcase(name);
+  T_sp it = _lisp->characterInfo()._NamesToCharacterIndex->gethash(upname);
+  if (it.fixnump()) {
+    return _lisp->characterInfo().gIndexedCharacters[it.unsafe_fixnum()];
   }
   // The upper exclusive bound on the value returned by the function char-code.
   // Treat U100 until U110000 -1 to be consistent with char-name
-  claspCharacter conversion = unicodeHex2int(upname);
+  claspCharacter conversion = unicodeHex2int(upname->get_std_string());
   if ((conversion >= 0) && (conversion < CHAR_CODE_LIMIT))
     return (Values (clasp_make_standard_character(conversion)));
     else return _Nil<T_O>();
@@ -3473,6 +3477,9 @@ CL_DEFUN SimpleBaseString_sp cl__char_name(Character_sp och) {
   return ret;
 };
 
+CL_DEFUN T_sp core__all_characters() {
+  return _lisp->characterInfo()._NamesToCharacterIndex->keysAsCons();
+}
 CL_LAMBDA(och);
 CL_DECLARE();
 CL_DOCSTRING("char_code");

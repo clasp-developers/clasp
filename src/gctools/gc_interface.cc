@@ -321,6 +321,7 @@ extern "C" {
     } \
   }
 #define OBJECT_SCAN obj_mark_low_level
+#define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
 #undef POINTER_FIX
@@ -1107,7 +1108,6 @@ void dumpBoehmLayoutTables(FILE* fout) {
      Init_class_kind(core::FileStatus_O);
      Init_class_kind(core::InvocationHistoryFrameIterator_O);
      Init_class_kind(core::SourcePosInfo_O);
-     Init_class_kind(core::IntArray_O);
      Init_class_kind(core::DirectoryEntry_O);
      Init_class_kind(core::LightUserData_O);
      Init_class_kind(core::UserData_O);

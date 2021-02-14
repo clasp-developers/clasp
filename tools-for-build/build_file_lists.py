@@ -117,7 +117,6 @@ SRC_CORE_FILES = \
 #        'reader',
         'lightProfiler',
         'fileSystem',
-        'intArray',
         'posixTime',
         'hwinfo',
         'clasp_ffi_package',

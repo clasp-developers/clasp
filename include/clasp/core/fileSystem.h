@@ -48,7 +48,7 @@ public:
   void initialize();
 
 private:
-  boost_filesystem::path _Path;
+  dont_expose<boost_filesystem::path> _Path;
 
 public:
   static Path_sp create(const string &path);
@@ -56,12 +56,12 @@ public:
   static Path_sp pathnameDesignator(T_sp obj);
 
 public:
-  boost_filesystem::path &getPath() { return this->_Path; };
+  boost_filesystem::path &getPath() { return this->_Path._value; };
 
 public:
 
 CL_LISPIFY_NAME("isAbsolute");
-CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };
+CL_DEFMETHOD   bool isAbsolute() const { return this->_Path._value.is_absolute(); };
 
   Path_sp copyPath() const;
 
@@ -138,8 +138,8 @@ GCPRIVATE:
   /* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
 	 */
-  boost_filesystem::directory_iterator *_CurrentIterator;
-  boost_filesystem::directory_iterator _EndIterator;
+  dont_expose<boost_filesystem::directory_iterator *> _CurrentIterator;
+  dont_expose<boost_filesystem::directory_iterator> _EndIterator;
 
 public:
   DirectoryIterator_sp create(Path_sp path);
@@ -153,7 +153,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit DirectoryIterator_O() : Base(), _CurrentIterator(NULL){};
+  explicit DirectoryIterator_O() : Base(), _CurrentIterator((boost_filesystem::directory_iterator*)NULL){};
   virtual ~DirectoryIterator_O(); // non-trivial destructor
 };
 };
@@ -179,8 +179,8 @@ GCPRIVATE:
   /* A new CurrentIterator is created (new) whenever first() is called
 	   So we have to manage the memory for _CurrentIterator
 	 */
-  boost_filesystem::recursive_directory_iterator *_CurrentIterator;
-  boost_filesystem::recursive_directory_iterator _EndIterator;
+  dont_expose<boost_filesystem::recursive_directory_iterator *> _CurrentIterator;
+  dont_expose<boost_filesystem::recursive_directory_iterator> _EndIterator;
 
 public:
   RecursiveDirectoryIterator_sp create(Path_sp path);
@@ -195,7 +195,7 @@ public:
   virtual void next();
   virtual bool isDone();
   virtual T_sp currentObject();
-  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator(NULL){};
+  explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator((boost_filesystem::recursive_directory_iterator*)NULL){};
   virtual ~RecursiveDirectoryIterator_O(); // nontrivial
 };
 };

@@ -148,14 +148,14 @@ CL_DEFMETHOD PosixTime_sp PosixTime_O::setToLocalTime() {
 
 string PosixTime_O::toSimpleString() {
   stringstream ss;
-  ss << to_simple_string(this->_Time);
+  ss << to_simple_string(this->_Time._value);
   return ss.str();
 }
 
 CL_LISPIFY_NAME("sub");
 CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Time - tt->_Time;
+  result->_Duration._value = this->_Time._value - tt->_Time._value;
   return result;
 }
 
@@ -178,61 +178,61 @@ void PosixTimeDuration_O::archiveBase(ArchiveP node) {
 CL_LISPIFY_NAME("sub");
 CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Duration - tt->_Duration;
+  result->_Duration._value = this->_Duration._value - tt->_Duration._value;
   return result;
 }
 
 CL_LISPIFY_NAME("totalSeconds");
 CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalSeconds() {
   static_assert(sizeof(long long) == sizeof(signed long int),"The size of long long does not match the size of signed long int");
-  return mpz_class((signed long int)this->_Duration.total_seconds());
+  return mpz_class((signed long int)this->_Duration._value.total_seconds());
 }
 
 CL_LISPIFY_NAME("totalMilliseconds");
 CL_DEFMETHOD mpz_class PosixTimeDuration_O::totalMilliseconds() {
   _OF();
   stringstream ss;
-  ss << this->_Duration.total_milliseconds();
+  ss << this->_Duration._value.total_milliseconds();
   return mpz_class(ss.str());
 }
 
 mpz_class PosixTimeDuration_O::totalMicroseconds() {
   _OF();
   stringstream ss;
-  ss << this->_Duration.total_microseconds();
+  ss << this->_Duration._value.total_microseconds();
   return mpz_class(ss.str());
 }
 
 mpz_class PosixTimeDuration_O::fractionalSeconds() {
   _OF();
   stringstream ss;
-  ss << this->_Duration.fractional_seconds();
+  ss << this->_Duration._value.fractional_seconds();
   return mpz_class(ss.str());
 }
 
 CL_LISPIFY_NAME("posix-time-duration-seconds");
 CL_DEFMETHOD uint PosixTimeDuration_O::seconds() {
-  return this->_Duration.seconds();
+  return this->_Duration._value.seconds();
 }
 
 CL_LISPIFY_NAME("minutes");
 CL_DEFMETHOD uint PosixTimeDuration_O::minutes() {
-  return this->_Duration.minutes();
+  return this->_Duration._value.minutes();
 }
 
 CL_LISPIFY_NAME("hours");
 CL_DEFMETHOD uint PosixTimeDuration_O::hours() {
-  return this->_Duration.hours();
+  return this->_Duration._value.hours();
 }
 
 CL_LISPIFY_NAME("toSimpleString");
 CL_DEFMETHOD string PosixTimeDuration_O::toSimpleString() {
-  return boost::posix_time::to_simple_string(this->_Duration);
+  return boost::posix_time::to_simple_string(this->_Duration._value);
 }
 
 CL_LISPIFY_NAME("toIsoString");
 CL_DEFMETHOD string PosixTimeDuration_O::toIsoString() {
-  return boost::posix_time::to_iso_string(this->_Duration);
+  return boost::posix_time::to_iso_string(this->_Duration._value);
 }
 
 

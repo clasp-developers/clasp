@@ -71,7 +71,6 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/externalObject.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/intArray.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/iterator.h>
 #include <clasp/core/lambdaListHandler.h>

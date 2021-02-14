@@ -31,7 +31,7 @@ namespace core {
 bool clasp_charEqual2(T_sp x, T_sp y);
 
 struct CharacterInfo {
-  map<string, int> gNamesToCharacterIndex;
+  HashTableEqual_sp _NamesToCharacterIndex;
   gctools::Vec0<T_sp> gIndexedCharacters;
   gctools::Vec0<T_sp> gCharacterNames;
   const char *repr() const { return "CharacterInfo"; };

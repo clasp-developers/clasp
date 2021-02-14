@@ -125,16 +125,16 @@ public:
   const gctools::Vec0<core::Cons_sp> &bases() const throw() { return m_bases; }
 
   void set_type(type_id const &t) { m_type = t; }
-  type_id const &type() const throw() { return m_type; }
+  type_id const &type() const throw() { return m_type._value; }
 
   std::string name_() const throw() { return m_name->symbolNameAsString(); }
 
   detail::cast_graph const &casts() const {
-    return *m_casts;
+    return *m_casts._value;
   }
 
   detail::class_id_map const &classes() const {
-    return *m_classes;
+    return *m_classes._value;
   }
 
  public:
@@ -143,7 +143,7 @@ public:
   // warning: this may be a problem when using dll:s, since
   // typeid() may actually return different pointers for the same
   // type.
-  type_id m_type;
+  dont_expose<type_id> m_type;
 
   // a list of info for every class this class derives from
   // the information stored here is sufficient to do
@@ -153,9 +153,9 @@ public:
   // the class' name (as given when registered to lua with class_)
   core::Symbol_sp m_name;
 
-  detail::cast_graph *m_casts;
+  dont_expose<detail::cast_graph*> m_casts;
   /* What does this store???? */
-  detail::class_id_map *m_classes;
+  dont_expose<detail::class_id_map*> m_classes;
   bool m_derivable;
 };
 

@@ -372,8 +372,8 @@ class Lisp_O {
     List_sp _UnixSignalHandlers;
     List_sp _CommandLineArguments; // Make this the last smart_ptr in the GCRoots struct
 //    DynamicBindingStack _Bindings;
-    map<string, int> _SourceFileIndices; // map<string,FileScope_sp> 	_SourceFiles;
-    map<string, int> _PackageNameIndexMap;
+    HashTableEqual_sp _SourceFileIndices; // map<string,int>
+    HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
     GCRoots();
   };
 

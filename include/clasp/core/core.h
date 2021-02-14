@@ -1144,6 +1144,7 @@ namespace core {
 template <typename Type>
 struct dont_expose {
   Type _value;
+  dont_expose() {};
   template <typename Arg>
   dont_expose(const Arg& val) : _value(val) {};
 };

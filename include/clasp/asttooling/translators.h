@@ -158,7 +158,7 @@ struct to_object<std::vector<clang::tooling::CompileCommand>> {
    struct from_object<clang::QualType, std::true_type> {
    typedef clang::QualType DeclareType;
    DeclareType _v;
- from_object(core::T_sp o) : _v(gc::As<asttooling::QualType_sp>(o)->_Value) {
+ from_object(core::T_sp o) : _v(gc::As<asttooling::QualType_sp>(o)->_Value._value) {
 //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
    }
 };
@@ -192,7 +192,7 @@ template <>
    struct from_object<clang::PresumedLoc, std::true_type> {
    typedef clang::PresumedLoc DeclareType;
    DeclareType _v;
- from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value) {
+ from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
 //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
    }
 };
@@ -201,7 +201,7 @@ template <>
    struct from_object<const clang::PresumedLoc&, std::true_type> {
    typedef clang::PresumedLoc DeclareType;
    DeclareType _v;
- from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value) {
+ from_object(core::T_sp o) : _v(gc::As<asttooling::PresumedLoc_sp>(o)->_Value._value) {
 //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
    }
 };
@@ -235,7 +235,7 @@ template <>
    struct from_object<clang::SourceLocation, std::true_type> {
    typedef clang::SourceLocation DeclareType;
    DeclareType _v;
- from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value) {
+ from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {
 //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
    }
 };
@@ -244,7 +244,7 @@ template <>
    struct from_object<const clang::SourceLocation&, std::true_type> {
    typedef clang::SourceLocation DeclareType;
    DeclareType _v;
- from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value) {
+ from_object(core::T_sp o) : _v(gc::As<asttooling::SourceLocation_sp>(o)->_Value._value) {
 //     printf("%s:%d:%s value -> %p\n", __FILE__, __LINE__, __FUNCTION__, this->_v.getAsOpaquePtr());
    }
 };

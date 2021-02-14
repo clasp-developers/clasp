@@ -2369,7 +2369,7 @@ namespace llvmo {
 
 CL_LISPIFY_NAME("toString");
 CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
-  return this->_value.toString(radix, isigned);
+  return this->_value._value.toString(radix, isigned);
 }
 
 CL_LAMBDA(api &optional (issigned t))
@@ -2382,7 +2382,7 @@ CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
 string APInt_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString() << " ";
-  ss << this->_value.toString(10, true);
+  ss << this->_value._value.toString(10, true);
   ss << ">";
   return ss.str();
 }

@@ -52,7 +52,7 @@ class RandomState_O : public General_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   typedef std::mt19937 Generator;
-  Generator _Producer;
+  dont_expose<Generator> _Producer;
 
 public: // ctor/dtor for classes with shared virtual base
   explicit RandomState_O(bool random = false) {
@@ -66,25 +66,25 @@ public: // ctor/dtor for classes with shared virtual base
       uint tt = currentTime;
       tt = currentTime % 32768;
       Generator temp_gen(static_cast<uint>(tt));
-      this->_Producer = temp_gen; // this->_Producer.seed(tt);
+      this->_Producer._value = temp_gen; // this->_Producer.seed(tt);
     } else {
       Generator temp_gen(0);
-      this->_Producer = temp_gen; //this->_Producer.seed(0);
+      this->_Producer._value = temp_gen; //this->_Producer.seed(0);
     }
   };
   explicit RandomState_O(const RandomState_O &state) {
-    this->_Producer = state._Producer;
+    this->_Producer._value = state._Producer._value;
   };
   virtual ~RandomState_O() {}
 
   CL_DEFMETHOD std::string random_state_get() const {
     stringstream ss;
-    ss << this->_Producer;
+    ss << this->_Producer._value;
     return ss.str();
   }
   CL_DEFMETHOD RandomState_sp random_state_set(const std::string& s) {
     stringstream ss(s);
-    ss >> this->_Producer;
+    ss >> this->_Producer._value;
     return this->asSmartPtr();
   }
 

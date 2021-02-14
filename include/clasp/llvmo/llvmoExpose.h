@@ -196,10 +196,10 @@ FORWARD(FunctionCallee);
 class FunctionCallee_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, FunctionCallee_O, "FunctionCallee", core::CxxObject_O);
  public:
-  llvm::FunctionCallee _Info;
-  CL_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info.getFunctionType();};
-  CL_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info.getCallee(); };
-  FunctionCallee_O(llvm::FunctionType* ft, llvm::Value* v) : _Info(ft,v) {};
+  dont_expose<llvm::FunctionCallee> _Info;
+  CL_DEFMETHOD llvm::FunctionType * 	getFunctionType () {return this->_Info._value.getFunctionType();};
+  CL_DEFMETHOD llvm::Value * 	getCallee () {return this->_Info._value.getCallee(); };
+ FunctionCallee_O(llvm::FunctionType* ft, llvm::Value* v) : _Info(llvm::FunctionCallee(ft,v)) {};
 };
 };
 
@@ -398,11 +398,11 @@ class AttributeSet_O : public core::General_O {
  public:
   typedef llvm::AttributeSet ExternalType;
 protected:
-  llvm::AttributeSet val;
+  dont_expose<llvm::AttributeSet> val;
 
 public:
-  llvm::AttributeSet getAttributeSet() { return this->val; };
-  AttributeSet_O(){};
+  llvm::AttributeSet getAttributeSet() { return this->val._value; };
+ AttributeSet_O() {};
   AttributeSet_O(llvm::AttributeSet v) : val(v){};
 }; // AttributeSet_O
 }; // llvmo
@@ -1529,13 +1529,13 @@ public: // ctor/dtor for classes with shared virtual base
         //    virtual ~Attribute_O() {};
 public:
 private: // instance variables here
-  llvm::Attribute _Attribute;
+  dont_expose<llvm::Attribute> _Attribute;
 
 public: // Functions here
   static Attribute_sp get(LLVMContext_sp context, core::List_sp attribute_symbols);
 
-  llvm::Attribute attributes() { return this->_Attribute; };
-  void setAttribute(llvm::Attribute attr) { this->_Attribute = attr; };
+  llvm::Attribute attributes() { return this->_Attribute._value; };
+  void setAttribute(llvm::Attribute attr) { this->_Attribute._value = attr; };
 }; // Attribute class
 
 }; // llvmo namespace
@@ -2558,7 +2558,7 @@ class APInt_O : public core::ExternalObject_O {
 
 public:
   typedef llvm::APInt ExternalType;
-  llvm::APInt _value;
+  dont_expose<llvm::APInt> _value;
 
 public:
   static APInt_sp create(llvm::APInt i);
@@ -2585,7 +2585,7 @@ template <>
 struct from_object<const llvm::APInt &, std::true_type> {
   typedef llvm::APInt DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
+  from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value._value){};
 };
 /* to_object translators */
 template <>

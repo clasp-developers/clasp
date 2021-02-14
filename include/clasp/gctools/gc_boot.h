@@ -30,6 +30,7 @@ THE SOFTWARE.
 namespace gctools {
 
 enum Data_types {
+    DONT_EXPOSE_OFFSET,
   SMART_PTR_OFFSET,
   ATOMIC_SMART_PTR_OFFSET,
   TAGGED_POINTER_OFFSET,
@@ -46,6 +47,7 @@ enum Data_types {
   ctype_unsigned_short,
   ctype_signed_short,
   ctype_unsigned_long,
+  ctype_unsigned_long_long,
   ctype_unsigned_int,
   ctype_long,
   ctype_long_long,
@@ -57,10 +59,12 @@ enum Data_types {
   ctype_size_t,
   ctype_opaque_ptr,
   CXX_FIXUP_OFFSET,
-  ctype__Atomic_unsigned_long_,
-  ctype_unsigned_long_long,
-  ctype__Atomic_mp__ProcessPhase_,
-  ctype__Atomic_unsigned_int_,
+  ATOMIC_POD_OFFSET_unsigned_long,
+  ATOMIC_POD_OFFSET_mp__ProcessPhase,
+  ATOMIC_POD_OFFSET_unsigned_int,
+  ATOMIC_POD_OFFSET_long_long,
+  ATOMIC_POD_OFFSET__Bool,
+  CXX_SHARED_MUTEX_OFFSET,
   last_data_type };
 
 extern int global_cons_kind;

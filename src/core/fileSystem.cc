@@ -156,14 +156,14 @@ Path_mv af_makePath(List_sp args) {
 
 void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
-  string ts = this->_Path.string();
+  string ts = this->_Path._value.string();
   for (char const &c: ts)
     if (!(hg.addValue(c))) return;
 }
 
 CL_LISPIFY_NAME("last_write_time");
 CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
-  std::time_t ttime = boost_filesystem::last_write_time(this->_Path);
+  std::time_t ttime = boost_filesystem::last_write_time(this->_Path._value);
   gc::Fixnum ui64 = ttime;
   return Integer_O::create(ui64);
 }
@@ -172,7 +172,7 @@ CL_LISPIFY_NAME("path-append");
 CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   _OF();
   LOG(BF("Appending string[%s] to the path") % pp);
-  this->_Path /= pp;
+  this->_Path._value /= pp;
   return this->sharedThis<Path_O>();
 }
 
@@ -203,10 +203,10 @@ void Path_O::setPath(const boost_filesystem::path &path) {
 
 CL_LISPIFY_NAME("path-absolute");
 CL_DEFMETHOD Path_sp Path_O::absolute() const {
-  if (this->_Path.is_absolute())
+  if (this->_Path._value.is_absolute())
     return this->copyPath();
   GC_ALLOCATE(Path_O, abs);
-  abs->_Path = boost_filesystem::absolute(this->_Path);
+  abs->_Path = boost_filesystem::absolute(this->_Path._value);
   return abs;
 }
 
@@ -220,7 +220,7 @@ CL_DEFMETHOD Path_sp Path_O::copyPath() const {
 CL_LISPIFY_NAME("setPathFromString");
 CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   bf::path p(pth);
-  this->_Path = p;
+  this->_Path._value = p;
 }
 
 CL_LAMBDA(self);
@@ -229,7 +229,7 @@ CL_LISPIFY_NAME("path-parts");
 CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
   ql::list l;
-  for (it = this->_Path.begin(); it != this->_Path.end(); ++it) {
+  for (it = this->_Path._value.begin(); it != this->_Path._value.end(); ++it) {
     l << SimpleBaseString_O::make(it->native());
   }
   return l.cons();
@@ -238,25 +238,25 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
 CL_LISPIFY_NAME("path-asString");
 CL_DEFMETHOD string Path_O::asString() const {
   _OF();
-  return this->_Path.string();
+  return this->_Path._value.string();
 }
 
 string Path_O::__repr__() const {
   _OF();
   stringstream ss;
   ss << "#<" << _rep_(this->_instanceClass()->_className()) << " :string ";
-  ss << this->_Path.string() << ">";
+  ss << this->_Path._value.string() << ">";
   return ss.str();
 }
 
 CL_LISPIFY_NAME("path-stem");
 CL_DEFMETHOD string Path_O::stem() {
-  return this->_Path.stem().string();
+  return this->_Path._value.stem().string();
 }
 
 CL_LISPIFY_NAME("extension");
 CL_DEFMETHOD string Path_O::extension() {
-  return this->_Path.extension().string();
+  return this->_Path._value.extension().string();
 }
 
 void Path_O::appendToExtension(string const &str) {
@@ -270,24 +270,24 @@ CL_LISPIFY_NAME("replaceExtension");
 CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   _OF();
   //	bf::path newExt(str);
-  this->_Path.replace_extension(str);
+  this->_Path._value.replace_extension(str);
   return this->sharedThis<Path_O>();
 }
 
 CL_LISPIFY_NAME("parent_path");
 CL_DEFMETHOD Path_sp Path_O::parent_path() {
   _OF();
-  return Path_O::create(this->_Path.parent_path());
+  return Path_O::create(this->_Path._value.parent_path());
 }
 
 CL_LISPIFY_NAME("path-fileName");
 CL_DEFMETHOD string Path_O::fileName() const {
-  return this->_Path.filename().string();
+  return this->_Path._value.filename().string();
 }
 
 CL_LISPIFY_NAME("exists");
 CL_DEFMETHOD bool Path_O::exists() {
-  return boost_filesystem::exists(this->_Path);
+  return boost_filesystem::exists(this->_Path._value);
 }
 
 
@@ -336,7 +336,7 @@ DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
 
 void DirectoryIterator_O::initialize() {
   this->Base::initialize();
-  this->_CurrentIterator = NULL;
+  this->_CurrentIterator._value = NULL;
 }
 
 void DirectoryIterator_O::setPath(Path_sp p) {
@@ -348,9 +348,9 @@ void DirectoryIterator_O::setupCurrentIterator() {
   _OF();
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
-  delete (this->_CurrentIterator);
+  delete (this->_CurrentIterator._value);
   try {
-    this->_CurrentIterator = new boost_filesystem::directory_iterator(this->_Path->getPath());
+    this->_CurrentIterator._value = new boost_filesystem::directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {
     SIMPLE_ERROR(BF("%s") % err.what());
@@ -364,31 +364,31 @@ void DirectoryIterator_O::first() {
 
 void DirectoryIterator_O::next() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
-  (*(this->_CurrentIterator))++;
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
+  (*(this->_CurrentIterator._value))++;
 }
 
 bool DirectoryIterator_O::isDone() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
-  return (*(this->_CurrentIterator) == this->_EndIterator);
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp DirectoryIterator_O::currentObject() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
     return _Nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
-  de->setEntry(**(this->_CurrentIterator));
+  de->setEntry(**(this->_CurrentIterator._value));
   return de;
 }
 
 DirectoryIterator_O::~DirectoryIterator_O() {
-  delete this->_CurrentIterator;
+  delete this->_CurrentIterator._value;
 }
 
 RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
@@ -404,7 +404,7 @@ RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path)
 
 void RecursiveDirectoryIterator_O::initialize() {
   this->Base::initialize();
-  this->_CurrentIterator = NULL;
+  this->_CurrentIterator._value = NULL;
   this->_EnterHidden = false;
 }
 
@@ -417,9 +417,9 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   _OF();
   ASSERTNOTNULL(this->_Path);
   ASSERT(this->_Path.notnilp());
-  delete (this->_CurrentIterator);
+  delete (this->_CurrentIterator._value);
   try {
-    this->_CurrentIterator = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
+    this->_CurrentIterator._value = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {
     SIMPLE_ERROR(BF("%s") % err.what());
@@ -433,31 +433,31 @@ void RecursiveDirectoryIterator_O::first() {
 
 void RecursiveDirectoryIterator_O::next() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
-  (*(this->_CurrentIterator))++;
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  (*(this->_CurrentIterator._value))++;
 }
 
 bool RecursiveDirectoryIterator_O::isDone() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
-  return (*(this->_CurrentIterator) == this->_EndIterator);
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
+  return (*(this->_CurrentIterator._value) == this->_EndIterator._value);
 }
 
 T_sp RecursiveDirectoryIterator_O::currentObject() {
   _OF();
-  ASSERTF(this->_CurrentIterator != NULL, BF("The _CurrentIterator is NULL - it shouldn't be"));
+  ASSERTF(this->_CurrentIterator._value != NULL, BF("The _CurrentIterator._value is NULL - it shouldn't be"));
   if (this->isDone()) {
     LOG(BF("The directory iteratory is done - returning nil"));
     return _Nil<DirectoryEntry_O>();
   }
   LOG(BF("Returning the next directory entry"));
   DirectoryEntry_sp de = _lisp->create<DirectoryEntry_O>();
-  de->setEntry(**(this->_CurrentIterator));
+  de->setEntry(**(this->_CurrentIterator._value));
   return de;
 }
 
 RecursiveDirectoryIterator_O::~RecursiveDirectoryIterator_O() {
-  delete this->_CurrentIterator;
+  delete this->_CurrentIterator._value;
 }
 
 

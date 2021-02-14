@@ -627,6 +627,7 @@ This could change the value of stamps for specific classes - but that would brea
 (defclass copyable-offset (offset) ())
 (defclass atomic-smart-ptr-offset (copyable-offset) ())
 (defclass atomic-pod-offset (copyable-offset) ())
+(defclass dont-expose-offset (copyable-offset) ())
 (defclass smart-ptr-offset (copyable-offset) ())
 (defclass tagged-pointer-offset (copyable-offset) ())
 (defclass pointer-offset (copyable-offset) ())
@@ -1028,7 +1029,7 @@ to expose to C++.
                            :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x dont-expose-ctype) base analysis)
-  nil)
+  (list (make-instance 'dont-expose-offset :base base :offset-type (gc-template-argument-ctype (first (dont-expose-ctype-argument x))))))
 
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
   (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
@@ -3149,6 +3150,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x dont-expose-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
   (cond
     ((ignorable-ctype-p x) nil)

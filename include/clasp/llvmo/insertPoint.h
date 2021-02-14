@@ -49,10 +49,10 @@ public:
   static InsertPoint_sp create(llvm::IRBuilderBase::InsertPoint &ip);
 
 private: // instance variables here
-  llvm::IRBuilderBase::InsertPoint _InsertPoint;
+  dont_expose<llvm::IRBuilderBase::InsertPoint> _InsertPoint;
 
 public: // Functions here
-  llvm::IRBuilderBase::InsertPoint &insertPoint() { return this->_InsertPoint; };
+  llvm::IRBuilderBase::InsertPoint &insertPoint() { return this->_InsertPoint._value; };
 }; // InsertPoint class
 
 }; // llvmo namespace

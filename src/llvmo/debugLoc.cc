@@ -55,12 +55,12 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::make(const llvm::DebugLoc& dl) {
 
 CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope() const {
-  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope());
+  return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc._value.getScope());
 }
 
 CL_LISPIFY_NAME(DebugLoc_is_valid);
 CL_DEFMETHOD bool DebugLoc_O::is_valid() const {
-  return !!this->_DebugLoc; // bool operator
+  return !!this->_DebugLoc._value; // bool operator
 }
 
 };

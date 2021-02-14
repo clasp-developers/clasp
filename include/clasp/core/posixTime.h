@@ -65,7 +65,7 @@ public: // virtual functions inherited from Object
        //	string	__repr__() const;
 
 private: // instance variables
-  boost::posix_time::ptime _Time;
+  dont_expose<boost::posix_time::ptime> _Time;
 
 public: // Creation class functions
   static PosixTime_sp createNow();
@@ -96,7 +96,7 @@ public:
   static PosixTimeDuration_sp createDurationSince(PosixTime_sp past);
 
 private: // instance variables
-  boost::posix_time::time_duration _Duration;
+  dont_expose<boost::posix_time::time_duration> _Duration;
 
 public: // Creation class functions
 public:

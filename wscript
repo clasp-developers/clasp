@@ -1304,6 +1304,8 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
+    cfg.env.append_value('CXXFLAGS', ['-Wno-error=c++11-narrowing'] )
+
     cfg.env.append_value('LIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('STLIBPATH', ['/usr/lib', '/usr/local/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])

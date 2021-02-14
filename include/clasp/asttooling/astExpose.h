@@ -42,7 +42,7 @@ class QualType_O : public core::CxxObject_O {
   LISP_CLASS(asttooling,ClangAstPkg,QualType_O,"QualType",core::CxxObject_O);
 public:
   QualType_O(clang::QualType qt) : _Value(qt) {};
-  clang::QualType _Value;
+  dont_expose<clang::QualType> _Value;
 };
 
 FORWARD(PresumedLoc);
@@ -50,7 +50,7 @@ class PresumedLoc_O : public core::CxxObject_O {
   LISP_CLASS(asttooling,ClangAstPkg,PresumedLoc_O,"PresumedLoc",core::CxxObject_O);
 public:
   PresumedLoc_O(clang::PresumedLoc qt) : _Value(qt) {};
-  clang::PresumedLoc _Value;
+  dont_expose<clang::PresumedLoc> _Value;
 };
 
 FORWARD(SourceLocation);
@@ -58,7 +58,7 @@ class SourceLocation_O : public core::CxxObject_O {
   LISP_CLASS(asttooling,ClangAstPkg,SourceLocation_O,"SourceLocation",core::CxxObject_O);
 public:
   SourceLocation_O(clang::SourceLocation qt) : _Value(qt) {};
-  clang::SourceLocation _Value;
+  dont_expose<clang::SourceLocation> _Value;
 };
 
 core::T_sp mostDerivedDecl(const clang::Decl *d);

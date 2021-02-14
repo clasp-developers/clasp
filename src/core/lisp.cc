@@ -257,7 +257,10 @@ void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
 */
 void Lisp_O::initialize() {
 //  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
+  
   this->_Roots.charInfo.initialize();
+  this->_Roots._SourceFileIndices = HashTableEqual_O::create_default();
+  this->_Roots._PackageNameIndexMap = HashTableEqual_O::create_default();
 }
 
 template <class oclass>
@@ -882,7 +885,8 @@ void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
     for (packageIndex = 0; packageIndex < this->_Roots._Packages.size(); ++packageIndex) {
       if (this->_Roots._Packages[packageIndex] == pkg) {
-        this->_Roots._PackageNameIndexMap[name] = packageIndex;
+        SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+        this->_Roots._PackageNameIndexMap->setf_gethash(sname,make_fixnum(packageIndex));
         return;
       }
     }
@@ -893,12 +897,12 @@ void Lisp_O::mapNameToPackage(const string &name, Package_sp pkg) {
 void Lisp_O::unmapNameToPackage(const string &name) {
   {
     WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-    map<string, int>::iterator it;
-    it = this->_Roots._PackageNameIndexMap.find(name);
-    if (it == this->_Roots._PackageNameIndexMap.end()) {
+    SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+    T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
+    if (it.nilp()) {
       goto package_unfound;
     }
-    this->_Roots._PackageNameIndexMap.erase(it);
+    this->_Roots._PackageNameIndexMap->remhash(sname);
     return;
   }
  package_unfound:
@@ -954,8 +958,9 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     string packageUsingNickName;
     {
       WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
-      map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
-      if (it != this->_Roots._PackageNameIndexMap.end()) {
+      SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+      T_sp it = this->_Roots._PackageNameIndexMap->gethash(sname);
+      if (it.notnilp()) {
         goto name_exists;
       }
       LOG(BF("Creating package with name[%s]") % name);
@@ -963,21 +968,24 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       int packageIndex = this->_Roots._Packages.size();
       {
     //            printf("%s:%d Lisp_O::makePackage name: %s   index: %d   newPackage@%p\n", __FILE__, __LINE__, name.c_str(), packageIndex, newPackage.raw_());
-        this->_Roots._PackageNameIndexMap[name] = packageIndex;
+        this->_Roots._PackageNameIndexMap->setf_gethash(sname,make_fixnum(packageIndex));
         this->_Roots._Packages.push_back(newPackage);
       }
       {
         List_sp cnicknames(_Nil<T_O>());
         for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
           string nickName = *it;
-          if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
-            int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
+          SimpleBaseString_sp snickName = SimpleBaseString_O::make(nickName);
+          if (this->_Roots._PackageNameIndexMap->gethash(snickName).notnilp() && nickName != name) {
+            T_sp tindex = this->_Roots._PackageNameIndexMap->gethash(snickName);
+            ASSERT(tindex.fixnump());
+            int existingIndex = tindex.unsafe_fixnum();
             usedNickName = nickName;
             packageUsingNickName = this->_Roots._Packages[existingIndex]->getName();
             goto nickname_exists;
           }
-          this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
-          cnicknames = Cons_O::create(SimpleBaseString_O::make(nickName), cnicknames);
+          this->_Roots._PackageNameIndexMap->setf_gethash(snickName,make_fixnum(packageIndex));
+          cnicknames = Cons_O::create(snickName, cnicknames);
         }
         newPackage->setNicknames(cnicknames);
       }
@@ -1020,15 +1028,17 @@ T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
   }
   
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
-  if (fi == this->_Roots._PackageNameIndexMap.end()) {
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  if (fi.nilp()) {
     if (errorp) {
       PACKAGE_ERROR(SimpleBaseString_O::make(name));
     }
     return _Nil<Package_O>(); // return nil if no package found
   }
   //        printf("%s:%d Lisp_O::findPackage index: %d\n", __FILE__, __LINE__, fi->second );
-  Package_sp getPackage = this->_Roots._Packages[fi->second];
+  ASSERT(fi.fixnump());
+  Package_sp getPackage = this->_Roots._Packages[fi.unsafe_fixnum()];
   //        printf("%s:%d Lisp_O::findPackage pkg@%p\n", __FILE__, __LINE__, getPackage.raw_());
   return getPackage;
 }
@@ -1042,18 +1052,20 @@ T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
 void Lisp_O::remove_package(const string& name ) {
   WITH_READ_WRITE_LOCK(globals_->_PackagesMutex);
   //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
-  map<string, int>::const_iterator fi = this->_Roots._PackageNameIndexMap.find(name);
-  if (fi == this->_Roots._PackageNameIndexMap.end()) {
-    PACKAGE_ERROR(SimpleBaseString_O::make(name));
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(name);
+  T_sp fi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  if (fi.nilp()) {
+    PACKAGE_ERROR(sname);
   }
-  this->_Roots._PackageNameIndexMap.erase(name);
-  this->_Roots._Packages[fi->second]->setZombieP(true);
+  this->_Roots._PackageNameIndexMap->remhash(sname);
+  this->_Roots._Packages[fi.unsafe_fixnum()]->setZombieP(true);
 }
 
 bool Lisp_O::recognizesPackage(const string &packageName) const {
   WITH_READ_LOCK(globals_->_PackagesMutex);
-  map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(packageName);
-  return (pi != this->_Roots._PackageNameIndexMap.end());
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(packageName);
+  T_sp pi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  return (pi.notnilp());
 }
 
 List_sp Lisp_O::allPackagesAsCons() const {
@@ -1070,11 +1082,12 @@ List_sp Lisp_O::allPackagesAsCons() const {
 
 void Lisp_O::inPackage(const string &p) {
   WITH_READ_LOCK(globals_->_PackagesMutex);
-  map<string, int>::const_iterator pi = this->_Roots._PackageNameIndexMap.find(p);
-  if (pi == this->_Roots._PackageNameIndexMap.end()) {
+  SimpleBaseString_sp sname = SimpleBaseString_O::make(p);
+  T_sp pi = this->_Roots._PackageNameIndexMap->gethash(sname);
+  if (pi.nilp()) {
     SIMPLE_ERROR(BF("I do not recognize package: %s") % p );
   }
-  this->selectPackage(this->_Roots._Packages[pi->second]);
+  this->selectPackage(this->_Roots._Packages[pi.unsafe_fixnum()]);
 }
 
 Package_sp Lisp_O::getCurrentPackage() const {
@@ -2361,30 +2374,31 @@ int Lisp_O::run() {
 };
 
 FileScope_mv Lisp_O::getOrRegisterFileScope(const string &fileName) {
+  SimpleBaseString_sp sfileName = SimpleBaseString_O::make(fileName);
   {
     WITH_READ_LOCK(globals_->_SourceFilesMutex);
-    map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
-    if (it != this->_Roots._SourceFileIndices.end()) {
-      FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
-      return Values(sfi, make_fixnum(it->second));
+    T_sp it = this->_Roots._SourceFileIndices->gethash(sfileName);
+    if (it.notnilp()) {
+      FileScope_sp sfi = this->_Roots._SourceFiles[it.unsafe_fixnum()];
+      return Values(sfi, make_fixnum(it.unsafe_fixnum()));
     }
   }
   {
     WITH_READ_WRITE_LOCK(globals_->_SourceFilesMutex);
-    map<string, int>::iterator it = this->_Roots._SourceFileIndices.find(fileName);
-    if (it == this->_Roots._SourceFileIndices.end()) {
+    T_sp it = this->_Roots._SourceFileIndices->gethash(sfileName);
+    if (it.nilp()) {
       if (this->_Roots._SourceFiles.size() == 0) {
         FileScope_sp unknown = FileScope_O::create("-unknown-file-", 0);
         this->_Roots._SourceFiles.push_back(unknown);
       }
       int idx = this->_Roots._SourceFiles.size();
-      this->_Roots._SourceFileIndices[fileName] = idx;
+      this->_Roots._SourceFileIndices->setf_gethash(sfileName,make_fixnum(idx));
       FileScope_sp sfi = FileScope_O::create(fileName, idx);
       this->_Roots._SourceFiles.push_back(sfi);
       return Values(sfi, make_fixnum(idx));
     }
-    FileScope_sp sfi = this->_Roots._SourceFiles[it->second];
-    return Values(sfi, make_fixnum(it->second));
+    FileScope_sp sfi = this->_Roots._SourceFiles[it.unsafe_fixnum()];
+    return Values(sfi, make_fixnum(it.unsafe_fixnum()));
   }
 }
 
@@ -2393,12 +2407,7 @@ CL_DECLARE();
 CL_DOCSTRING("List all of the source files");
 CL_DEFUN List_sp core__all_source_files() {
   WITH_READ_LOCK(globals_->_SourceFilesMutex);
-  List_sp list = _Nil<T_O>();
-  for (auto it : _lisp->_Roots._SourceFileIndices) {
-    SimpleBaseString_sp sf = SimpleBaseString_O::make(it.first);
-    list = Cons_O::create(sf, list);
-  };
-  return list;
+  return _lisp->_Roots._SourceFileIndices->keysAsCons();
 }
 
 void Lisp_O::mapClassNamesAndClasses(KeyValueMapper *mapper) {
