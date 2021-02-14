@@ -21925,3 +21925,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
 #if defined(GC_GLOBAL_SYMBOLS)
+#endif // defined(GC_GLOBAL_SYMBOLS)
+#if defined(GC_GLOBALS)
+ TAGGED_POINTER_FIX(_lisp);
+#endif // defined(GC_GLOBALS)

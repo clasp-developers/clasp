@@ -55,7 +55,6 @@ SRC_CORE_FILES = \
         'specialForm',
         'unixfsys',
         'lispList',
-        'multiStringBuffer',
         'candoOpenMp',
         'foundation',
         'lambdaListHandler',
