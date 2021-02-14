@@ -141,11 +141,11 @@ to NIL) and returns all values."
                 (princ "  Macro")
                 (princ "  Function"))))
   (when (boundp symbol)
-        (if (constantp symbol)
-            (princ "  Constant")
-            (princ "  has value")))
+    (if (constantp symbol)
+        (princ "  Constant: ")
+        (princ "  has value: "))
+    (prin1 (symbol-value symbol)))
   (terpri))
-
 
 (defun apropos (string &optional package)
   "Args: (string &optional (package nil))
