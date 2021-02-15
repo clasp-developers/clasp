@@ -67,9 +67,15 @@ enum Data_types {
   CXX_SHARED_MUTEX_OFFSET,
   last_data_type };
 
-extern int global_cons_kind;
-extern int global_container_kind;
-extern int global_container_proc_index;
+extern uintptr_t global_lisp_kind;
+extern uintptr_t global_cons_kind;
+extern uintptr_t global_class_kind;
+extern uintptr_t global_container_kind;
+extern uintptr_t global_code_kind;
+extern uintptr_t global_atomic_kind;
+extern uintptr_t global_strong_weak_kind;
+
+extern int              global_container_proc_index;
 
 inline void dump_data_types(FILE* fout, const std::string& indent)
 {
@@ -196,19 +202,21 @@ struct Stamp_layout {
   uint              data_offset;
   uint              end_offset;
   uint              capacity_offset;
+  uint              image_save_load_poison;
   Field_layout*     field_layout_start; // Points into global_field_layout_table
   Container_layout* container_layout;
-  Stamp_layout() : layout_op(undefined_op)
-                 , boehm()
-                 , class_field_pointer_bitmap(0)
-                 , number_of_fields(0)
-                 , bits_per_bitunit(0)
-                 , size(0)
-                 , element_size(0)
-                 , data_offset(0)
-                 , end_offset(0)
-                 , capacity_offset(0)
-                 , field_layout_start(NULL) // Points into global_field_layout_table
+Stamp_layout() : layout_op(undefined_op)
+  , boehm()
+    , class_field_pointer_bitmap(0)
+    , number_of_fields(0)
+    , bits_per_bitunit(0)
+    , size(0)
+    , element_size(0)
+    , data_offset(0)
+    , end_offset(0)
+    , capacity_offset(0)
+    , image_save_load_poison(0)
+    , field_layout_start(NULL) // Points into global_field_layout_table
   {};
 };
 

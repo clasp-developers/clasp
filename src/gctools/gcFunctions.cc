@@ -826,7 +826,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 
 namespace gctools {
 
-
 CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
 #ifdef USE_PRECISE_GC
   throw(core::SaveLispAndDie(filename));
@@ -834,6 +833,10 @@ CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
   SIMPLE_ERROR(BF("save-lisp-and-die only works for precise GC"));
 #endif
   
+}
+
+CL_DEFUN void gctools__slad() {
+  gctools__save_lisp_and_die("test.dat");
 }
 
 
@@ -906,7 +909,7 @@ void save_lisp_and_die(const std::string& filename)
   // 18. Write table of contents and save-buffer
   // 19. DIE
 
-  image_save();
+  image_save(filename);
 }
 
   

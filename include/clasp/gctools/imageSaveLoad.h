@@ -13,7 +13,7 @@
 
 namespace gctools {
 
-  void image_save();
+  void image_save(const std::string& filename);
 
 };
 

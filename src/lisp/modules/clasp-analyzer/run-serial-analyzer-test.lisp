@@ -6,7 +6,7 @@
   (format t "output-filename: ~s~%" output-filename)
   (time (clasp-analyzer::serial-search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
                                                       (pathname *compile-commands*)
-                                                      :selection-pattern "insertPoint.cc")
+                                                      :selection-pattern "posixTime.cc")
                                                      :output-file (translate-logical-pathname output-filename)
                                                      )))
 

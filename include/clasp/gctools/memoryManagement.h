@@ -339,6 +339,7 @@ namespace gctools {
     struct StampWtagMtag {
       tagged_stamp_t _value;
     StampWtagMtag() : _value(0) {};
+    StampWtagMtag(uintptr_t all, bool dummy) : _value(all) {};
       StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)) {};
       // This is so we can find where we shift/unshift/don'tshift
       static UnshiftedStamp leave_unshifted_stamp(UnshiftedStamp us) {
@@ -989,6 +990,7 @@ void gc_release();
 #define DEBUG_THROW_IF_INVALID_CLIENT(c)
 #endif
 
+
 namespace gctools {
 struct SafeGCPark {
   SafeGCPark() {
@@ -998,6 +1000,50 @@ struct SafeGCPark {
     gc_release();
   }
 };
+};
+
+
+////////////////////////////////////////////////////////////
+/*!
+ * dont_expose<xxx>
+ *
+ * This is a template type that indicates that we do not want
+ * to expose a variable of this type by the static analyzer.
+ *
+ * See PosixTime_O for example - it declares the field
+ * dont_expose<boost::posix_time::ptime> _Time;
+ *
+ *  This indicates to the static analyzer that the _Time field
+ *   shouldn't be recursively introspected further by the static
+ *   analyzer and that it
+ *   shouldn't be saved or loaded in image save/load.
+ *   There can be many reasons for this:
+ *     1. The type boost::posix_time::ptime may contain private
+ *         fields that we can't access.
+ *     2. The type boost::posix_time::ptime may contain pointers to
+ *         C++ memory that we can't save/load.
+ *
+ *  The static analyzer will generate an entry in the clasp_gc_xxx.cc file
+ *  for this that looks like...
+ *    {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::posix_time::ptime),
+ *          __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time),
+ *          "_Time" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
+ *
+ *  So you can still get the offset and size of the field.
+ *  The DONT_EXPOSE_OFFSET indicates that the containing object should
+ *  NOT be saved to an image - because it will break the image save/load.
+ *
+ *  USAGE:
+ *    1. Wrap the type of the field with dont_expose<XXX> where XXX is the type.
+ *    2. Access the contents of the dont_expose<XXX> type using ._value
+ */
+
+template <typename Type>
+struct dont_expose {
+  Type _value;
+  dont_expose() {};
+  template <typename Arg>
+  dont_expose(const Arg& val) : _value(val) {};
 };
 
 //#endif // _clasp_memoryManagement_H

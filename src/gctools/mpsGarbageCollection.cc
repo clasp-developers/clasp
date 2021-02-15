@@ -161,7 +161,7 @@ mps_pool_t global_awl_pool;
 mps_pool_t global_non_moving_pool;
 //mps_pool_t global_unmanaged_pool;
 enum PoolEnum {cons_pool=0, amc_pool=1, amcz_pool=2, awl_pool=3, non_moving_pool=4, max_pool=4 };
-size_t global_sizeof_fwd;
+
 
 struct PoolInfo {
   bool HasHeader; // Do the objects have an inline header
@@ -838,7 +838,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     printf("%s:%d pointer_tag_eq = 0x%zx\n", __FILE__, __LINE__, (size_t)gctools::pointer_tag_eq);
 #endif
 
-  global_sizeof_fwd = AlignUp(sizeof(Header_s));
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
 #define CHAIN_SIZE 6400*5 // 256 // 6400
@@ -1006,6 +1005,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   mps_fmt_t weak_obj_fmt;
   MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(Header_s));
 #ifndef RUNNING_MPSPREP
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, weak_obj_scan);

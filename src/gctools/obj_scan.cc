@@ -110,8 +110,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         }
         if ( stamp_layout.container_layout ) {
           const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-          size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+          size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
           size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+          if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) size = size + 1; // Add \0 for SimpleBaseString
           size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
 #if 1
           // Use new way with pointer bitmaps
@@ -272,7 +273,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("SimpleBitVector\n"));}
 #endif
-      size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
+      size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
       size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
       goto STAMP_CONTINUE;
         // Do other bitunit vectors here
@@ -318,32 +319,37 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
       size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
       goto STAMP_CONTINUE;
     }
-    if ( stamp_layout.container_layout ) {
+    {
+      gctools::Container_layout* container_layoutP = stamp_layout.container_layout;
+      gctools::Container_layout** vvv = &container_layoutP;
+      if ( container_layoutP ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("container_layout\n"));}
+        if (dbg) {LOG(BF("container_layout\n"));}
 #endif
         // special cases
-      Container_layout& container_layout = *stamp_layout.container_layout;
+        Container_layout& container_layout = *container_layoutP;
         // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
         // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
         // Because of this we need to take the absolute value to get the number of entries.
-      size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-    } else {
-      if (stamp_layout.layout_op == templated_op) {
-#ifdef DEBUG_ON
-        if (dbg) {LOG(BF("templatedSizeof\n"));}
-#endif
-        size = ((core::General_O*)client)->templatedSizeof();
+        size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
+        size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
       } else {
+        if (stamp_layout.layout_op == templated_op) {
 #ifdef DEBUG_ON
-        if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
+          if (dbg) {LOG(BF("templatedSizeof\n"));}
 #endif
-        size = stamp_layout.size;
+          size = ((core::General_O*)client)->templatedSizeof();
+        } else {
+#ifdef DEBUG_ON
+          if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
+#endif
+          size = stamp_layout.size;
+        }
       }
     }
   STAMP_CONTINUE:
-    client = (ADDR_T)((char*)client + AlignUp(size + sizeof(Header_s)) + header.tail_size());
+    size_t align_up_size = AlignUp(size + sizeof(Header_s));
+    client = (ADDR_T)((char*)client + align_up_size + header.tail_size());
   } else {
     tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
@@ -427,7 +433,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
     // The client must have a valid header
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
   if (header._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
-  ENSURE_VALID_HEADER((void*)addr);
+  (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
   size_t stamp_index = header.stamp_();
@@ -457,7 +463,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
 #endif
 #ifdef DEBUG_GUARD_VALIDATE
       if (field_info_cur->data_type==gctools::SMART_PTR_OFFSET) {
-        ENSURE_VALID_OBJECT((core::T_O*)taggedP);
+        (void)ENSURE_VALID_OBJECT((core::T_O*)taggedP);
       }
       ++field_info_cur;
 #endif
@@ -480,7 +486,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
     // The client must have a valid header
     const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>((void*)addr);
     if (header._stamp_wtag_mtag._value == 0 ) return msp;
-    ENSURE_VALID_HEADER((void*)addr);
+    (void)ENSURE_VALID_HEADER((void*)addr);
     void* client = (char*)addr + sizeof(gctools::Header_s);
     const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
     size_t stamp_index = header.stamp_();
@@ -530,7 +536,7 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
   gctools::Header_s& header = *reinterpret_cast<gctools::Header_s *>((void*)addr);
   env = header._boehm_mark_work;
   if (header._stamp_wtag_mtag._value == 0 ) return msp;
-  ENSURE_VALID_HEADER((void*)addr);
+  (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   void* next_client = obj_skip(client);
   void* next_base = gctools::ClientPtrToBasePtr(next_client);
@@ -573,7 +579,7 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
     // The client must have a valid header
     gctools::Header_s& header = *reinterpret_cast<gctools::Header_s *>((void*)addr);
     if (header._stamp_wtag_mtag._value == 0 ) return msp;
-    ENSURE_VALID_HEADER((void*)addr);
+    (void)ENSURE_VALID_HEADER((void*)addr);
     void* client = (char*)addr + sizeof(gctools::Header_s);
     const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
     size_t stamp_index = header.stamp_();

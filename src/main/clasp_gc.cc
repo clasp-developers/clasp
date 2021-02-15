@@ -7651,9 +7651,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_SymbolToEnum), "_SymbolToEnum" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = llvmo::Attribute_O/35
 { class_kind, STAMP_llvmo__Attribute_O, sizeof(llvmo::Attribute_O), 0, "llvmo::Attribute_O" },
-//      field: "_Attribute" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Attribute" :NAME "Attribute")
-//      field: ".pImpl" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::AttributeImpl" :NAME "AttributeImpl"))
-// {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Attribute_O),_Attribute.pImpl), "_Attribute.pImpl" }, // atomic: NIL public: (NIL NIL) fixable: NIL good-name: T
+//      field: "_Attribute" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::Attribute>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Attribute" :NAME "Attribute") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::Attribute), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Attribute_O),_Attribute), "_Attribute" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // Stamp = core::LambdaListHandler_O/39
 { class_kind, STAMP_core__LambdaListHandler_O, sizeof(core::LambdaListHandler_O), 0, "core::LambdaListHandler_O" },
 //      field: "_NumberOfSpecialVariables" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -21874,3 +21873,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
 #if defined(GC_GLOBAL_SYMBOLS)
+#endif // defined(GC_GLOBAL_SYMBOLS)
+#if defined(GC_GLOBALS)
+ TAGGED_POINTER_FIX(_lisp);
+#endif // defined(GC_GLOBALS)

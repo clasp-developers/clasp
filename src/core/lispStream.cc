@@ -5499,7 +5499,7 @@ file_listen(T_sp stream, int fileno) {
       unlikely_if(!GetConsoleMode(hnd, &cm))
           FEwin32_error("GetConsoleMode() failed", 0);
       if (dw > 0) {
-        PINPUT_RECORD recs = (PINPUT_RECORD)GC_malloc(sizeof(INPUT_RECORD) * dw);
+        PINPUT_RECORD recs = (PINPUT_RECORD)ALLIGNED_GC_MALLOC(sizeof(INPUT_RECORD) * dw);
         int i;
         unlikely_if(!PeekConsoleInput(hnd, recs, dw, &dw_read))
             FEwin32_error("PeekConsoleInput failed()", 0);

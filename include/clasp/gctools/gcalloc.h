@@ -41,6 +41,9 @@ THE SOFTWARE.
 #define STACK_ALIGN_UP(size) \
   (((size)+STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))
 
+namespace gctools {
+  extern uintptr_t global_strong_weak_kind;
+};
 
 namespace gctools {
 template <class OT, bool Needed = true>
@@ -99,6 +102,14 @@ inline void* verify_alignment(void* ptr) {
   return ptr;
 }
 
+inline void* monitor_alloc(void* ptr,size_t sz) {
+  // printf("%s:%d Allocate pointer size: %lu at %p\n", __FILE__, __LINE__, sz, ptr);
+  if (sz==32784) {
+    printf("%s:%d  It's one of the special objects that fail when enumerating\n", __FILE__, __LINE__ );
+  }
+  return ptr;
+}
+
 namespace gctools {
 extern void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_t size, uintptr_t stmp, void* addr);
 };
@@ -109,15 +120,23 @@ extern void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_
 #define MAYBE_VERIFY_ALIGNMENT(ptr) (void*)ptr
 #endif
 
+#if 1
+#define MAYBE_MONITOR_ALLOC(_alloc_,_sz_) monitor_alloc(_alloc_,_sz_)
+#else
+#define MAYBE_MONITOR_ALLOC(_alloc_,_sz_) (_alloc_)
+#endif
+
 #if defined(USE_BOEHM)
 # if TAG_BITS==3
-#  define ALIGNED_GC_MALLOC(sz) GC_MALLOC(sz)
-#  define ALIGNED_GC_MALLOC_ATOMIC(sz) GC_MALLOC_ATOMIC(sz)
-#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) GC_MALLOC_UNCOLLECTABLE(sz)
-#  define ALIGNED_GC_MALLOC_KIND(stmp,sz,knd,kndaddr) GC_malloc_kind_global(sz,knd)
-#  define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp,sz,knd,kndaddr) (knd==GC_I_PTRFREE) ? GC_malloc_kind_global(sz,knd) : malloc_kind_error(GC_I_PTRFREE,knd,sz,stmp,kndaddr) // GC_I_PTRFREE) // knd)
-#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp,sz,knd,kndaddr) GC_generic_malloc_uncollectable(sz,knd) // knd)
+#  define ALIGNED_GC_MALLOC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC(sz),sz)
+#  define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_ATOMIC(sz),sz)
+#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_MONITOR_ALLOC(GC_MALLOC_UNCOLLECTABLE(sz),sz)
+#  define ALIGNED_GC_MALLOC_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz,knd),sz)
+#  define ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(sz,knd) MAYBE_MONITOR_ALLOC(GC_malloc_kind_global(sz,knd),sz)
+#  define ALIGNED_GC_MALLOC_ATOMIC_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC((knd==GC_I_PTRFREE) ? GC_malloc_kind_global(sz,knd) : malloc_kind_error(GC_I_PTRFREE,knd,sz,stmp,kndaddr), sz)
+#  define ALIGNED_GC_MALLOC_UNCOLLECTABLE_KIND(stmp,sz,knd,kndaddr) MAYBE_MONITOR_ALLOC(GC_generic_malloc_uncollectable(sz,knd),sz)
 # else
+#  error "There is more work to do to support more than 3 tag bits"
 #  define ALIGNED_GC_MALLOC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #  define ALIGNED_GC_MALLOC_ATOMIC(sz) MAYBE_VERIFY_ALIGNMENT(GC_memalign(Alignment(),sz))
 #  define ALIGNED_GC_MALLOC_UNCOLLECTABLE(sz) MAYBE_VERIFY_ALIGNMENT((void*)gctools::AlignUp((uintptr_t)GC_MALLOC_UNCOLLECTABLE(sz+Alignment())))
@@ -127,7 +146,6 @@ extern void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_
 namespace gctools {
 #ifdef USE_BOEHM
 
-extern int global_cons_kind;
 template <typename Cons, typename...ARGS>
 inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
 { RAII_DISABLE_INTERRUPTS();
@@ -147,78 +165,6 @@ inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
 }
 
 
-template <typename container_pointer>
-inline container_pointer do_boehm_weak_bucket_allocate(size_t size) {
-#ifdef DEBUG_GCWEAK
-  printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
-  // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
-#ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#endif
-  return myAddress;
-}
-
-
-template <typename container_pointer>
-inline container_pointer do_boehm_strong_bucket_allocate(size_t size) {
-#ifdef DEBUG_GCWEAK
-  printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
-#endif
-#ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#endif
-  return myAddress;
-}
-
-template <typename container_pointer>
-inline container_pointer do_boehm_weak_mapping_allocate(size_t size) {
-#ifdef DEBUG_GCWEAK
-  printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
-  // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
-#ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#endif
-  return myAddress;
-}
-
-
-template <typename container_pointer>
-inline container_pointer do_boehm_strong_mapping_allocate(size_t size) {
-#ifdef DEBUG_GCWEAK
-  printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
-#endif
-#ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#endif
-  return myAddress;
-}
-
-template <typename container_pointer>
-inline container_pointer do_boehm_weak_pointer_allocate(size_t size) {
-#ifdef DEBUG_GCWEAK
-  printf("%s:%d Allocating Pointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-#endif
-  // TODO: Why is this allocated in ATOMIC space?  It's a weak pointer?
-#ifdef USE_PRECISE_GC
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#else
-  container_pointer myAddress = (container_pointer)ALIGNED_GC_MALLOC(size);
-#endif
-  return myAddress;
-}
-
-
-
 inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
 {
   RAII_DISABLE_INTERRUPTS();
@@ -231,6 +177,34 @@ inline Header_s* do_boehm_atomic_allocation(const Header_s::StampWtagMtag& the_h
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC_KIND(the_header.stamp(),true_size,global_stamp_layout[the_header.stamp()].boehm._kind,&global_stamp_layout[the_header.stamp()].boehm._kind));
 #else
   Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_ATOMIC(true_size));
+#endif
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) Header_s(the_header,size,tail_size,true_size);
+#else
+  new (header) Header_s(the_header);
+#endif
+  return header;
+};
+#endif
+
+#ifdef USE_BOEHM
+inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_header, size_t size) 
+{
+  RAII_DISABLE_INTERRUPTS();
+  size_t true_size = size;
+#ifdef DEBUG_GUARD
+  size_t tail_size = ((rand()%8)+1)*Alignment();
+  true_size += tail_size;
+#endif
+#ifdef USE_PRECISE_GC
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_STRONG_WEAK_KIND(true_size,global_strong_weak_kind));
+# ifdef DEBUG_BOEHMPRECISE_ALLOC
+  printf("%s:%d:%s header = %p\n", __FILE__, __LINE__, __FUNCTION__, header );
+# endif
+#else
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC(true_size));
 #endif
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(),true_size);
 #ifdef DEBUG_GUARD
@@ -1267,10 +1241,11 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
-    size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
+  static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, size_type num, const void * = 0) {
+    size_t size = sizeof_container_with_header<container_type>(num);
 #ifdef USE_BOEHM
-    container_pointer myAddress = do_boehm_weak_bucket_allocate<container_pointer>(size);
+    Header_s* base = do_boehm_weak_allocation(the_header,size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1283,6 +1258,7 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
+    printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
       do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._weak_link_allocation_point,"weak_link_Bucket",num);
     return obj;
@@ -1338,13 +1314,14 @@ public:
   }
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
-    size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
+  static gctools::tagged_pointer<container_type> allocate( Header_s::StampWtagMtag the_header, size_type num, const void * = 0) {
+    size_t size = sizeof_container_with_header<container_type>(num);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    container_pointer myAddress = do_boehm_strong_bucket_allocate<container_pointer>(size);
+    Header_s* base = do_boehm_weak_allocation(the_header,size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1354,6 +1331,7 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
+    printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
       do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket",num);
     return obj;
@@ -1404,11 +1382,11 @@ public:
   ~GCMappingAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate( const VT &val) {
-    size_t size = sizeof(container_type);
+  static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, const VT &val) {
+    size_t size = sizeof_with_header<container_type>();
 #ifdef USE_BOEHM
-    printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
-    container_pointer myAddress = do_boehm_weak_mapping_allocate<container_pointer>(size);
+    Header_s* base = do_boehm_weak_allocation(the_header,size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_pointer>(base);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1420,6 +1398,7 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
+    printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
       do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._weak_link_allocation_point,"weak_link_Allocator",val);
     return obj;
@@ -1441,12 +1420,11 @@ public:
   ~GCMappingAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<container_type> allocate(const VT &val) {
-    size_t size = sizeof(container_type);
+  static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, const VT &val) {
+    size_t size = sizeof_with_header<container_type>();
 #ifdef USE_BOEHM
-    printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
-    container_pointer myAddress = do_boehm_strong_mapping_allocate<container_pointer>(size);
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
+    Header_s* base = do_boehm_weak_allocation(the_header,size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_pointer>(base);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(val);
@@ -1478,13 +1456,14 @@ public:
   ~GCWeakPointerAllocator() throw() {}
 
   // allocate but don't initialize num elements of type value_type
-  static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
-    size_t size = sizeof(VT);
+  static gctools::tagged_pointer<value_type> allocate(Header_s::StampWtagMtag the_header, const contained_type &val) {
+    size_t size = sizeof_with_header<VT>();
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
 #endif
-    value_pointer myAddress = do_boehm_weak_pointer_allocate<value_pointer>(size);
+    Header_s* base = do_boehm_weak_allocation(the_header,size);
+    VT* myAddress = BasePtrToMostDerivedPtr<VT>(base);
     my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
@@ -1667,11 +1646,6 @@ public:
 };
 #endif
  
-};
-
-namespace gctools {
-
-  extern void* malloc_uncollectable_and_zero(size_t size);
 };
 
 #endif // USE_BOEHM || USE_MPS

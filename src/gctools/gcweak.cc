@@ -93,8 +93,8 @@ void WeakKeyHashTable::initialize() {
   size_t l;
   for (l = 1; l < length; l *= 2)
     ;
-  this->_Keys = KeyBucketsAllocatorType::allocate(l);
-  this->_Values = ValueBucketsAllocatorType::allocate(l);
+  this->_Keys = KeyBucketsAllocatorType::allocate(Header_s::StampWtagMtag(WeakBucketKind,false),l);
+  this->_Values = ValueBucketsAllocatorType::allocate(Header_s::StampWtagMtag(StrongBucketKind,false),l);
   this->_Keys->dependent = this->_Values;
   //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;

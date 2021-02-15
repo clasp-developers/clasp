@@ -1138,17 +1138,5 @@ namespace core {
 };
 
 
-//
-// Wrap a field type with this to suppress exposing it
-//
-template <typename Type>
-struct dont_expose {
-  Type _value;
-  dont_expose() {};
-  template <typename Arg>
-  dont_expose(const Arg& val) : _value(val) {};
-};
-
-
 #endif
 #endif //]

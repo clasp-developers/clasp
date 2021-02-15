@@ -168,6 +168,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
 //    printf("%s:%d base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, base, (void*)orig_finalizer, (void*)data);
     if (data==NULL) {
       gctools::Tagged* new_data = reinterpret_cast<gctools::Tagged*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::Cons_O*)));
+      printf("%s:%d:%s  finalizers1 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
       data = (void*)new_data;
 //      printf("%s:%d allocated uncollectable data=%p\n", __FILE__, __LINE__, (void*)data);
     }
@@ -193,6 +194,7 @@ void boehm_set_finalizer_list(gctools::Tagged object_tagged, gctools::Tagged fin
 //    printf("%s:%d object -> %p base = %p orig_finalizer=%p  data=%p\n", __FILE__, __LINE__, object.raw_(), base, (void*)orig_finalizer, (void*)data);
     if (data==NULL) {
       gctools::Tagged* new_data = reinterpret_cast<gctools::Tagged*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::Cons_O*)));
+      printf("%s:%d:%s  finalizers2 allocate: %p\n", __FILE__, __LINE__, __FUNCTION__, new_data );
       data = (void*)new_data;
 //      printf("%s:%d allocated uncollectable data=%p\n", __FILE__, __LINE__, (void*)data);
     }
@@ -250,25 +252,6 @@ void boehm_clear_finalizer_list(gctools::Tagged object_tagged)
 #ifdef USE_BOEHM_MEMORY_MARKER
   int globalBoehmMarker = 0;
 #endif
-
-};
-
-namespace gctools  {
-
-#if 0
-void* boehm_create_shadow_table(size_t nargs)
-{
-  // Boehm uses a shadow table in the UNCOLLECTABLE space
-  // Allocate the table and fill it with UNBOUND
-  core::T_sp* shadow_mem = reinterpret_cast<core::T_sp*>(ALIGNED_GC_MALLOC_UNCOLLECTABLE(nargs*sizeof(core::T_sp)));
-  for (size_t ii(0); ii<nargs; ++ii) {
-    shadow_mem[ii] = _Unbound<core::T_O>();
-  }
-  return reinterpret_cast<void*>(shadow_mem);
-};
-#endif
-
-
 
 };
 

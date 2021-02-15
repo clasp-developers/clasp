@@ -143,20 +143,6 @@ DONE:
 #endif
 
 
-void* malloc_uncollectable_and_zero(size_t size)
-{
-#ifdef USE_BOEHM
-  void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(size);
-  memset( buffer, 0, size);
-#endif
-#ifdef USE_MPS
-  void* buffer = NULL;
-  printf("%s:%d  Add code to malloc_uncollectable_and_zero that works like the Boehm version\n", __FILE__, __LINE__ );
-#endif
-  return buffer;
-};
-
-
 void* malloc_kind_error(uintptr_t expected_kind, uintptr_t kind, uintptr_t size, uintptr_t stmp, void* addr) {
   // print message and abort
   printf("%s:%d Got an unexpected kind: %lu size: %lu stamp: %lu addr: %p   expected: %lu\n", __FILE__, __LINE__, kind, size, stmp, addr, expected_kind );

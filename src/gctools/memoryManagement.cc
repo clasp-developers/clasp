@@ -141,6 +141,12 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<int>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>);
 GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>);
 
+
+namespace gctools {
+
+size_t global_sizeof_fwd;
+
+};
 namespace gctools {
 void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value)
 {
@@ -621,6 +627,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
   global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
+  global_sizeof_fwd = AlignUp(sizeof(Header_s));
 
   //
   // Walk the stamp field layout tables.

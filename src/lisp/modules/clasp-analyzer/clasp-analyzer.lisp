@@ -573,8 +573,8 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (atomic-ctype (:include ctype))
   name argument)
 
-(defstruct (dont-expose-ctype (:include ctype))
-  name argument)
+(defstruct (dont-expose-ctype (:include ctype)) name argument)
+(defstruct (dont-analyze-ctype (:include ctype)) name argument)
 
 (defstruct (container (:include class-template-specialization-ctype)))
 (defstruct (gcvector-moveable-ctype (:include container)))
@@ -628,6 +628,7 @@ This could change the value of stamps for specific classes - but that would brea
 (defclass atomic-smart-ptr-offset (copyable-offset) ())
 (defclass atomic-pod-offset (copyable-offset) ())
 (defclass dont-expose-offset (copyable-offset) ())
+(defclass dont-analyze-offset (copyable-offset) ())
 (defclass smart-ptr-offset (copyable-offset) ())
 (defclass tagged-pointer-offset (copyable-offset) ())
 (defclass pointer-offset (copyable-offset) ())
@@ -1031,6 +1032,9 @@ to expose to C++.
 (defmethod linearize-class-layout-impl ((x dont-expose-ctype) base analysis)
   (list (make-instance 'dont-expose-offset :base base :offset-type (gc-template-argument-ctype (first (dont-expose-ctype-argument x))))))
 
+(defmethod linearize-class-layout-impl ((x dont-analyze-ctype) base analysis)
+  (list (make-instance 'dont-analyze-offset :base base :offset-type (gc-template-argument-ctype (first (dont-analyze-ctype-argument x))))))
+
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
   (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
     (unless code
@@ -1337,6 +1341,9 @@ can be saved and reloaded within the project for later analysis"
            ((string= name "dont_expose")
             (format t "dont_expose type: ~a~%" decl-key)
             (make-dont-expose-ctype :key decl-key :name name :argument (classify-template-args decl)))
+           ((string= name "dont_analyze")
+            (format t "dont_analyze type: ~a~%" decl-key)
+            (make-dont-analyze-ctype :key decl-key :name name :argument (classify-template-args decl)))
            (t
             #+(or)(warn "classify-ctype cast:record-type unhandled class-template-specialization-decl  key = ~a  name = ~a~%IGNORE-NAME ~a~%IGNORE-KEY ~a" decl-key name name decl-key)
             (make-class-template-specialization-ctype :key decl-key 
@@ -3151,6 +3158,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x dont-expose-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x dont-analyze-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
   (cond
     ((ignorable-ctype-p x) nil)
@@ -3518,6 +3526,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
 (defmethod fix-variable-p ((var atomic-ctype) analysis) nil)
 (defmethod fix-variable-p ((var dont-expose-ctype) analysis) nil)
+(defmethod fix-variable-p ((var dont-analyze-ctype) analysis) nil)
 (defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
