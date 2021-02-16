@@ -122,18 +122,18 @@ extern std::atomic<uintptr_t> global_process_UniqueID;
     core::T_sp _AbortCondition;
     core::ThreadLocalState* _ThreadInfo;
     std::atomic<ProcessPhase>  _Phase;
-    Mutex _SuspensionMutex;
-    ConditionVariable _SuspensionCV;
+    dont_expose<Mutex> _SuspensionMutex;
+    dont_expose<ConditionVariable> _SuspensionCV;
     size_t _StackSize;
-    pthread_t _Thread;
+    dont_expose<pthread_t> _Thread;
     // Need to match fields in the two GC's
 #ifdef USE_BOEHM
-    void* thr_o;
-    void* root;
+    dont_expose<void*> thr_o;
+    dont_expose<void*> root;
 #endif
 #ifdef USE_MPS
-    mps_thr_t thr_o;
-    mps_root_t root;
+    dont_expose<mps_thr_t> thr_o;
+    dont_expose<mps_root_t> root;
 #endif
   public:
     Process_O(core::T_sp name, core::T_sp function, core::List_sp arguments,
@@ -157,7 +157,7 @@ extern std::atomic<uintptr_t> global_process_UniqueID;
       if (result!=0) return result;
       this->_Phase = Booting;
       ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
-      result = pthread_create(&this->_Thread, &attr, start_thread, (void*)info);
+      result = pthread_create(&this->_Thread._value, &attr, start_thread, (void*)info);
       pthread_attr_destroy(&attr);
       return result;
     }
@@ -191,21 +191,21 @@ namespace mp {
   public:
     core::T_sp  _Name;
     core::T_sp  _Owner;
-    Mutex _Mutex;
-    Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(lisp_nameword(name),recursive) {};
+    dont_expose<Mutex> _Mutex;
+    Mutex_O(core::T_sp name, bool recursive) : _Name(name), _Owner(_Nil<T_O>()), _Mutex(Mutex(lisp_nameword(name),recursive)) {};
     bool lock(bool waitp) {
-      bool locked = this->_Mutex.lock(waitp);
+      bool locked = this->_Mutex._value.lock(waitp);
       if (locked) this->_Owner = my_thread->_Process;
       return locked;
     };
     void unlock() {
-      if (this->_Mutex.counter()==1) {
+      if (this->_Mutex._value.counter()==1) {
         this->_Owner = _Nil<T_O>();
       }
-      this->_Mutex.unlock();
+      this->_Mutex._value.unlock();
     };
     gctools::Fixnum counter() const{
-      return this->_Mutex.counter();
+      return this->_Mutex._value.counter();
     }
     string __repr__() const override;
   };
@@ -310,13 +310,13 @@ namespace mp {
       return l;
     };
   public:
-    ConditionVariable _ConditionVariable;
+    dont_expose<ConditionVariable> _ConditionVariable;
     core::T_sp _Name;
     ConditionVariable_O(core::T_sp name) : _Name(name) {};
-    bool wait(Mutex_sp m) {return this->_ConditionVariable.wait(m->_Mutex);};
-    bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable.timed_wait(m->_Mutex,timeout);};
-    void signal() { this->_ConditionVariable.signal();};
-    void broadcast() { this->_ConditionVariable.broadcast();};
+    bool wait(Mutex_sp m) {return this->_ConditionVariable._value.wait(m->_Mutex._value);};
+    bool timed_wait(Mutex_sp m,double timeout) {return this->_ConditionVariable._value.timed_wait(m->_Mutex._value,timeout);};
+    void signal() { this->_ConditionVariable._value.signal();};
+    void broadcast() { this->_ConditionVariable._value.broadcast();};
     CL_DOCSTRING("Return the name of the condition variable.");
     CL_DEFMETHOD core::T_sp condition_variable_name() {
       return _Name;

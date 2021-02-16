@@ -437,10 +437,10 @@ CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
 SYMBOL_EXPORT_SC_(MpPkg,suspend_loop);
 CL_DEFUN void mp__suspend_loop() {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
-  RAIILock<Mutex> lock(this_process->_SuspensionMutex);
+  RAIILock<Mutex> lock(this_process->_SuspensionMutex._value);
   this_process->_Phase = Suspended;
   while (this_process->_Phase == Suspended) {
-    if (!(this_process->_SuspensionCV.wait(this_process->_SuspensionMutex)))
+    if (!(this_process->_SuspensionCV.wait(this_process->_SuspensionMutex._value)))
       SIMPLE_ERROR(BF("BUG: pthread_cond_wait ran into an error"));
   }
 };
@@ -456,9 +456,9 @@ CL_DEFUN void mp__process_suspend(Process_sp process) {
 CL_DOCSTRING("Restart execution in a suspended process.");
 CL_DEFUN void mp__process_resume(Process_sp process) {
   if (process->_Phase == Suspended) {
-    RAIILock<Mutex> lock(process->_SuspensionMutex);
+    RAIILock<Mutex> lock(process->_SuspensionMutex._value);
     process->_Phase = Active;
-    if (!(process->_SuspensionCV.signal()))
+    if (!(process->_SuspensionCV._value.signal()))
       SIMPLE_ERROR(BF("BUG: pthread_cond_signal ran into an error"));
   } else
     SIMPLE_ERROR(BF("Cannot resume a process (%s) that has not been suspended") % process);
@@ -486,7 +486,7 @@ CL_DOCSTRING("Wait for the given process to finish executing. If the process's f
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
   if (process->_Phase>0) {
-    pthread_join(process->_Thread,NULL);
+    pthread_join(process->_Thread._value,NULL);
   }
   if (process->_Aborted)
     ERROR(_sym_process_join_error,
