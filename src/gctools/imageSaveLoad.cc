@@ -42,9 +42,9 @@
 
 namespace gctools {
 
-uintptr_t global_image_save_load_base;
+intptr_t global_image_save_load_base;
 
-clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, uintptr_t base) {
+clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, intptr_t base) {
   uintptr_t fwd_client;
   if (tag==gctools::general_tag) {
     Header_s* header = (Header_s*)(client - sizeof(Header_s));
@@ -57,7 +57,7 @@ clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, uintptr
     printf("%s:%d:%s Illegal tag %lu\n", __FILE__, __LINE__, __FUNCTION__, tag );
     abort();
   }
-  uintptr_t relative_fwd_client = fwd_client - base;
+  uintptr_t relative_fwd_client = fwd_client + base; // base is signed
   return (clasp_ptr_t)(relative_fwd_client | tag);
 }
 
@@ -153,7 +153,8 @@ typedef enum { Object = 0x215443454a424f21, // !OBJECT!
 struct ISLFileHeader {
   size_t _Magic;
   size_t _Size;
-  ISLFileHeader(size_t sz) : _Magic(MAGIC_NUMBER), _Size(sz) {};
+  size_t _NumberOfObjects;
+  ISLFileHeader(size_t sz,size_t num) : _Magic(MAGIC_NUMBER), _Size(sz), _NumberOfObjects(num) {};
   bool good_magic() const {
     return this->_Magic == MAGIC_NUMBER;
   }
@@ -253,7 +254,8 @@ struct ISLHeader_s {
 
 struct copy_objects_t : public walker_callback_t {
   char* _buffer;
-  copy_objects_t(char* buffer) : _buffer(buffer) {};
+  size_t _NumberOfObjects;
+  copy_objects_t(char* buffer) : _buffer(buffer), _NumberOfObjects(0) {};
 
   char* write_buffer(size_t bytes, char* source ) {
     char* addr = this->_buffer;
@@ -273,6 +275,7 @@ struct copy_objects_t : public walker_callback_t {
       this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
       DBG_SL2(BF("   copying general %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
       char* new_addr = this->write_buffer(bytes,(char*)header);
+      this->_NumberOfObjects++;
       header->setFwdPointer( new_addr );
       header->setFwdSize( bytes );
     } else if (header->consObjectP()) {
@@ -282,6 +285,7 @@ struct copy_objects_t : public walker_callback_t {
       this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader );
       DBG_SL2(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
       char* new_addr = this->write_buffer(bytes,(char*)header);
+      this->_NumberOfObjects++;
       header->setFwdPointer( new_addr );
       header->setFwdSize( bytes );
     } else if (header->weakObjectP()) {
@@ -292,6 +296,7 @@ struct copy_objects_t : public walker_callback_t {
       this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
       DBG_SL2(BF("   copying weak %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
       char* new_addr = this->write_buffer(bytes,(char*)header);
+      this->_NumberOfObjects++;
       header->setFwdPointer( new_addr );
       header->setFwdSize( bytes );
     }
@@ -404,6 +409,7 @@ void image_save(const std::string& filename)
   // 2. Allocate that amount of memory + space for roots -> intermediate-buffer
   //
 
+  size_t numberOfObjects = 0;
   size_t roots = sizeof(ISLHeader_s)* (1 + NUMBER_OF_CORE_SYMBOLS + global_symbol_count );
   size_t total_size = calc_size._total_size            // for all objects
     + (calc_size._general_count
@@ -420,6 +426,7 @@ void image_save(const std::string& filename)
   DBG_SL(BF("  Copy objects to islbuffer: %p - %p bytes: %lu\n") % (void*)islbuffer % (void*)(islbuffer+total_size) % total_size );
   copy_objects_t copy_objects(islbuffer);
   walk_garbage_collected_objects(copy_objects);
+  numberOfObjects = copy_objects._NumberOfObjects;
 
   //
   // Write out the roots
@@ -442,9 +449,9 @@ void image_save(const std::string& filename)
   //
 
   DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)islbuffer);
-  global_image_save_load_base = (uintptr_t)islbuffer;
+  global_image_save_load_base = (intptr_t)islbuffer;
   fixup_objects_t fixup_objects(islbuffer);
-  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
+  walk_garbage_collected_objects(fixup_objects);
 
 
   std::ofstream wf(filename, std::ios::out | std::ios::binary);
@@ -452,7 +459,7 @@ void image_save(const std::string& filename)
     printf("Cannot open file %s\n", filename.c_str());
     return;
   }
-  ISLFileHeader fh(total_size);
+  ISLFileHeader fh(total_size,numberOfObjects);
   wf.write( (char*)&fh, sizeof(fh) );
   wf.write( (char*)islbuffer, total_size );
   wf.close();
@@ -462,7 +469,31 @@ void image_save(const std::string& filename)
 }
 
 
-  
+
+struct temporary_root_holder_t {
+  void* _buffer;
+  size_t _Number;
+  void** _Cur;
+
+  temporary_root_holder_t(size_t num) : _Number(num){
+    this->_buffer = GC_MALLOC_UNCOLLECTABLE(sizeof(void*)*num);
+    memset( this->_buffer, 0, sizeof(void*)*num );
+    this->_Cur = &this->_buffer;
+  }
+
+  void release() {
+    GC_FREE(this->_buffer);
+  }
+
+  //
+  // Write a pointer into the temporary roots
+  //
+  void add(void* ptr) {
+    *this->_Cur = ptr;
+    this->_Cur++;
+  }
+
+};
 
 
 int image_load(const std::string& filename )
@@ -479,41 +510,87 @@ int image_load(const std::string& filename )
   //
   // Stop the world - hopefully we can allocate objects 
 
-#ifdef USE_BOEHM
-  GC_stop_world_external();
-#endif
-
-  ISLFileHeader* file_header = reinterpret_cast<ISLFileHeader*>(memory);
-  if (!file_header->good_magic()) {
+  ISLFileHeader* islbuffer = reinterpret_cast<ISLFileHeader*>(memory);
+  if (!islbuffer->good_magic()) {
     printf("The file is not an image file\n");
     exit(1);
   }
   //
+  // Allocate space for temporary roots
+  //
+
+  temporary_root_holder_t root_holder(islbuffer->_NumberOfObjects);
+  
+  //
   // Allocate new objects for everything we just loaded and set the forwarding pointers
   //
-  ISLHeader_s* cur_header = reinterpret_cast<ISLHeader_s*>(file_header+1);
-  image_save_load_init_s init;
-  for ( ; cur_header->_Kind != End; cur_header = reinterpret_cast<ISLHeader_s*>((char*)(cur_header+1)+cur_header->_Size) ) {
-    Header_s* header = reinterpret_cast<Header_s*>(cur_header+1);
-    init._header = header;
-    core::T_sp obj;
-    if (header->stampP()) {
-      gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
-      obj = image_save_load_obj_allocate(stamp_wtag,&init);
-      printf("%s:%d:%s Allocated general %p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_());
-    } else if (header->consObjectP()) {
-      obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(&init);
-      printf("%s:%d:%s allocated cons @%p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_() );
-    } else if (header->weakObjectP()) {
-      printf("%s:%d:%s Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__ );
-    } else {
-      printf("%s:%d:%s Unknown object at %p\n", __FILE__, __LINE__, __FUNCTION__, header );
+  {
+    ISLHeader_s* cur_header = reinterpret_cast<ISLHeader_s*>(islbuffer+1);
+    image_save_load_init_s init;
+    for ( ; cur_header->_Kind != End; cur_header = reinterpret_cast<ISLHeader_s*>((char*)(cur_header+1)+cur_header->_Size) ) {
+      if (cur_header->_Kind == Object) {
+        Header_s* header = reinterpret_cast<Header_s*>(cur_header+1);
+        init._header = header;
+        core::T_sp obj;
+        if (header->stampP()) {
+          gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
+          obj = image_save_load_obj_allocate(stamp_wtag,&init);
+          printf("%s:%d:%s allocated general %p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_());
+          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+          header->setFwdPointer((void*)fwd);
+          root_holder.add((void*)fwd);
+        } else if (header->consObjectP()) {
+          obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(&init);
+          printf("%s:%d:%s allocated cons @%p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_() );
+          gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+          header->setFwdPointer((void*)fwd);
+          root_holder.add((void*)fwd);
+        } else if (header->weakObjectP()) {
+          gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
+          switch (stamp_wtag) {
+          case WeakBucketKind: {
+            auto wobj = gctools::GCBucketAllocator<WeakBucketsObjectType>::image_save_load_allocate(&init);
+            gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)wobj.raw_());
+            header->setFwdPointer((void*)fwd);
+            root_holder.add((void*)fwd);
+            break;
+          }
+          case StrongBucketKind: {
+            auto wobj = gctools::GCBucketAllocator<StrongBucketsObjectType>::image_save_load_allocate(&init);
+            gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)wobj.raw_());
+            header->setFwdPointer((void*)fwd);
+            root_holder.add((void*)fwd);
+            break;
+          }
+          default:
+              printf("%s:%d:%s  Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__ );
+              break;
+          }
+        } else {
+          printf("%s:%d:%s Unknown object at %p\n", __FILE__, __LINE__, __FUNCTION__, header );
+        }
+      } else if (cur_header->_Kind == Roots) {
+        printf("%s:%d:%s Handle Roots\n", __FILE__, __LINE__, __FUNCTION__ );
+      } else {
+        printf("%s:%d:%s Handle unknown kind\n", __FILE__, __LINE__, __FUNCTION__ );
+      }
     }
-    gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
-    header->setFwdPointer((void*)fwd);
   }
 
-   
+  //
+  // Walk all the objects and fixup all the pointers
+  //
+  global_image_save_load_base = -(intptr_t)islbuffer;
+  fixup_objects_t fixup_objects((char*)islbuffer);
+  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
+
+
+  //
+  // Release the temporary roots
+  //
+  root_holder.release();
+
+  
   //
   // munmap the memory
   //
@@ -521,9 +598,7 @@ int image_load(const std::string& filename )
   if (res!=0) {
     SIMPLE_ERROR(BF("Could not munmap memory"));
   }
-#ifdef USE_BOEHM
-  GC_start_world_external();
-#endif
+
   printf("Leaving image_load\n");
   return 0;
 }

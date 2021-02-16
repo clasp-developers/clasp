@@ -350,9 +350,9 @@
     class Record_O;
     class Test_O;
     class SimpleBaseString_O;
-    class Frame_O;
     class Integer_O;
     class SimpleMDArray_int32_t_O;
+    class Frame_O;
     class ComplexVector_O;
     class SimpleVector_byte64_t_O;
     class SimpleMDArray_fixnum_O;
@@ -809,8 +809,8 @@ STAMP_core__DirectoryEntry_O = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
 STAMP_core__LightUserData_O = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
 STAMP_core__UserData_O = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
 STAMP_core__Record_O = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
-STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
-STAMP_core__Frame_O = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
+STAMP_core__Frame_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
+STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
 STAMP_core__Cons_O = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
 STAMP_core__Lisp_O = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
 STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
@@ -2151,8 +2151,8 @@ register_stamp_name("STAMP_core__DirectoryEntry_O", ADJUST_STAMP(1683));
 register_stamp_name("STAMP_core__LightUserData_O", ADJUST_STAMP(1687));
 register_stamp_name("STAMP_core__UserData_O", ADJUST_STAMP(1691));
 register_stamp_name("STAMP_core__Record_O", ADJUST_STAMP(1695));
-register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1699));
-register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1703));
+register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1699));
+register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1703));
 register_stamp_name("STAMP_core__Cons_O", ADJUST_STAMP(1707));
 register_stamp_name("STAMP_core__Lisp_O", ADJUST_STAMP(1711));
 register_stamp_name("STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1715));
@@ -2280,21 +2280,21 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
       return ((ISA_ADJUST_STAMP(1579) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1587)));
   };
 };
-// STAMP_core__Frame_O
-template <typename FP> struct Cast<core::Frame_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Frame_O val -> 1703
-      return (kindVal == ISA_ADJUST_STAMP(1703));
-  };
-};
 // STAMP_clbind__ClassRegistry_O
 template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRegistry_O val -> 1699
+    // IsA-stamp-range clbind::ClassRegistry_O val -> 1703
+      return (kindVal == ISA_ADJUST_STAMP(1703));
+  };
+};
+// STAMP_core__Frame_O
+template <typename FP> struct Cast<core::Frame_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range core::Frame_O val -> 1699
       return (kindVal == ISA_ADJUST_STAMP(1699));
   };
 };
@@ -5718,8 +5718,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(571),TYPEQ_ADJUST_STAMP(735));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(447));
       ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1579),TYPEQ_ADJUST_STAMP(1587));
-      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1703));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1699));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1703));
+      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1699));
       ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1719));
       ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(219));
       ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1695));
@@ -5857,7 +5857,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1167));
       ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1303));
       ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1647));
-      ADD_RANGE_TYPEQ_TEST(core::General_O,core::Frame_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1703));
+      ADD_RANGE_TYPEQ_TEST(core::General_O,clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1703));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(191));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Library_O,TYPEQ_ADJUST_STAMP(179));
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(95),TYPEQ_ADJUST_STAMP(111));
@@ -6067,8 +6067,8 @@ DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),STAMP_core__SimpleMDArray
 //DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_O),STAMP_core__ComplexVector_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),STAMP_core__SimpleMDArray_int32_t_O);
 //DO_CLASS(SAFE_TYPE_MACRO(core::Integer_O),STAMP_core__Integer_O);
-DO_CLASS(SAFE_TYPE_MACRO(core::Frame_O),STAMP_core__Frame_O);
 DO_CLASS(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),STAMP_clbind__ClassRegistry_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Frame_O),STAMP_core__Frame_O);
 DO_CLASS(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),STAMP_asttooling__AstVisitor_O);
 DO_CLASS(SAFE_TYPE_MACRO(mp::Process_O),STAMP_mp__Process_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::Record_O),STAMP_core__Record_O);
@@ -6442,13 +6442,13 @@ template <> class gctools::GCStamp<core::Integer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Integer_O ;
 };
-template <> class gctools::GCStamp<core::Frame_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Frame_O ;
-};
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
+};
+template <> class gctools::GCStamp<core::Frame_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Frame_O ;
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
@@ -8206,12 +8206,12 @@ public:
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(clang::PresumedLoc), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::PresumedLoc_O),_Value), "_Value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = llvmo::MDBuilder_O/151
 { class_kind, STAMP_llvmo__MDBuilder_O, sizeof(llvmo::MDBuilder_O), 0, "llvmo::MDBuilder_O" },
+//      field: "_Builder" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MDBuilder" :NAME "MDBuilder"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDBuilder_O),_Builder), "_Builder" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 // Stamp = mp::ConditionVariable_O/155
 { class_kind, STAMP_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, "mp::ConditionVariable_O" },
-//      field: "_ConditionVariable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable")
-//      field: "._ConditionVariable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_cond_t" :NAME "_opaque_pthread_cond_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable._ConditionVariable.__sig), "_ConditionVariable._ConditionVariable.__sig" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
+//      field: "_ConditionVariable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::ConditionVariable>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::ConditionVariable), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable), "_ConditionVariable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::NativeVector_double_O/159
@@ -8309,38 +8309,16 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Owner" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Owner), "_Owner" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._NameWord" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
- {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._NameWord), "_Mutex._NameWord" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Mutex.__sig), "_Mutex._Mutex.__sig" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
- {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Counter), "_Mutex._Counter" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Recursive" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
- {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
+//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex), "_Mutex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = mp::RecursiveMutex_O/207
 { class_kind, STAMP_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, "mp::RecursiveMutex_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Name), "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Owner" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Owner), "_Owner" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._NameWord" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
- {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._NameWord), "_Mutex._NameWord" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Mutex.__sig), "_Mutex._Mutex.__sig" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
- {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Counter), "_Mutex._Counter" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Recursive" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
- {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex._Recursive), "_Mutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
+//      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex), "_Mutex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = llvmo::DITypeRefArray_O/211
 { class_kind, STAMP_llvmo__DITypeRefArray_O, sizeof(llvmo::DITypeRefArray_O), 0, "llvmo::DITypeRefArray_O" },
 //      field: "_Val" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::DITypeRefArray>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DITypeRefArray" :NAME "DITypeRefArray") :INTEGRAL-VALUE NIL)))
@@ -8416,31 +8394,18 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_ThreadInfo), "_ThreadInfo" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Phase" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<mp::ProcessPhase>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::ENUM-CTYPE :KEY "mp::ProcessPhase"))
  {  fixed_field, ATOMIC_POD_OFFSET_mp__ProcessPhase, sizeof(mp::ProcessPhase), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Phase), "_Phase" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_SuspensionMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._NameWord" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
- {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionMutex._NameWord), "_SuspensionMutex._NameWord" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_SuspensionMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionMutex._Mutex.__sig), "_SuspensionMutex._Mutex.__sig" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_SuspensionMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
- {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionMutex._Counter), "_SuspensionMutex._Counter" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_SuspensionMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Recursive" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
- {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionMutex._Recursive), "_SuspensionMutex._Recursive" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_SuspensionCV" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable")
-//      field: "._ConditionVariable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_cond_t" :NAME "_opaque_pthread_cond_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionCV._ConditionVariable.__sig), "_SuspensionCV._ConditionVariable.__sig" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
+//      field: "_SuspensionMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionMutex), "_SuspensionMutex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_SuspensionCV" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::ConditionVariable>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::ConditionVariable), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_SuspensionCV), "_SuspensionCV" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_StackSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_StackSize), "_StackSize" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "_Thread" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_t" :NAME "_opaque_pthread_t"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "thr_o" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_thr_s" :NAME "mps_thr_s"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),thr_o), "thr_o" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-//      field: "root" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_root_s" :NAME "mps_root_s"))
- {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),root), "root" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_Thread" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<_opaque_pthread_t *>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_t" :NAME "_opaque_pthread_t")) :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_Thread), "_Thread" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "thr_o" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mps_thr_s *>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_thr_s" :NAME "mps_thr_s")) :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),thr_o), "thr_o" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "root" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mps_root_s *>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_root_s" :NAME "mps_root_s")) :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),root), "root" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = core::SingleDispatchMethod_O/223
 { class_kind, STAMP_core__SingleDispatchMethod_O, sizeof(core::SingleDispatchMethod_O), 0, "core::SingleDispatchMethod_O" },
 //      field: "_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -10666,8 +10631,8 @@ public:
 { class_kind, STAMP_llvmo__APFloat_O, sizeof(llvmo::APFloat_O), 0, "llvmo::APFloat_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-//      field: "_value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::APFloat>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APFloat" :NAME "APFloat") :INTEGRAL-VALUE NIL)))
- {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::APFloat*), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_valueP), "_value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+//      field: "_valueP" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APFloat" :NAME "APFloat"))
+ {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_valueP), "_valueP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = llvmo::APInt_O/1075
 { class_kind, STAMP_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, "llvmo::APInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -13258,11 +13223,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_patching_callback), "_patching_callback" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Seen" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), "_Seen" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRegistry_O/1699
-{ class_kind, STAMP_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
-//      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Frame_O/1703
+// Stamp = core::Frame_O/1699
 { class_kind, STAMP_core__Frame_O, sizeof(core::Frame_O), 0, "core::Frame_O" },
 //      field: "stype" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13292,6 +13253,10 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),up), "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// Stamp = clbind::ClassRegistry_O/1703
+{ class_kind, STAMP_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
+//      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Cons_O/1707
 { class_kind, STAMP_core__Cons_O, sizeof(core::Cons_O), 0, "core::Cons_O" },
 //      field: "_BadgeMtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -17954,23 +17919,23 @@ obj_finalize_STAMP_core__Record_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_clbind__ClassRegistry_O:
-{
-     // stamp value 1699
-    clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~ClassRegistry_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMP_core__Frame_O:
 {
-     // stamp value 1703
+     // stamp value 1699
     core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~Frame_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMP_clbind__ClassRegistry_O:
+{
+     // stamp value 1703
+    clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~ClassRegistry_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -18643,8 +18608,8 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1687 */ &&obj_finalize_STAMP_core__LightUserData_O,
   /* 1691 */ &&obj_finalize_STAMP_core__UserData_O,
   /* 1695 */ &&obj_finalize_STAMP_core__Record_O,
-  /* 1699 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
-  /* 1703 */ &&obj_finalize_STAMP_core__Frame_O,
+  /* 1699 */ &&obj_finalize_STAMP_core__Frame_O,
+  /* 1703 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
   /* 1707 */ &&obj_finalize_STAMP_core__Cons_O,
   /* 1711 */ &&obj_finalize_STAMP_core__Lisp_O,
   /* 1715 */ &&obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
@@ -21497,18 +21462,18 @@ obj_deallocate_unmanaged_instance_STAMP_core__Record_O:
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O:
-{
-     // stamp value 1699
-    clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
-    GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMP_core__Frame_O:
 {
-     // stamp value 1703
+     // stamp value 1699
     core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
     GC<core::Frame_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O:
+{
+     // stamp value 1703
+    clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
+    GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Cons_O:
@@ -22166,8 +22131,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
   /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
   /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
-  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
-  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
+  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
+  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
   /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
   /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
   /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,

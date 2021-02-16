@@ -351,6 +351,7 @@ gctools::smart_ptr<core::T_O> image_save_load_obj_allocate(gctools::GCStampEnum 
 #undef DO_CLASS
   default: {
     printf("%s:%d:%s Handle allocation of stamp_wtag = %lu\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)stamp_wtag);
+    abort();
     break;
   };
   };

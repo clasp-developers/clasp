@@ -18,7 +18,20 @@ struct image_save_load_init_s {
   image_save_load_init_s() : _header(NULL), _size(0) {};
 
   void fill(void* object) {
+    printf("%s:%d:%s filling from %p bytes: %lu\n",
+           __FILE__, __LINE__, __FUNCTION__,
+           (void*)this->_object_data_start,
+           this->_object_data_size);
     memcpy((void*)((char*)object+sizeof(void*)), // skip vtable
+           (void*)this->_object_data_start,
+           this->_object_data_size);
+  }
+  void fill_no_virtual(void* object) {
+    printf("%s:%d:%s filling from %p bytes: %lu\n",
+           __FILE__, __LINE__, __FUNCTION__,
+           (void*)this->_object_data_start,
+           this->_object_data_size);
+    memcpy((void*)((char*)object), // skip vtable
            (void*)this->_object_data_start,
            this->_object_data_size);
   }

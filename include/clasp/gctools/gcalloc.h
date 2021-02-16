@@ -1309,6 +1309,31 @@ public:
 #endif
   }
 
+    static gctools::tagged_pointer<container_type> image_save_load_allocate( image_save_load_init_s* init ) {
+#ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
+    printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
+#endif
+    Header_s* base = do_boehm_weak_allocation(init->_header->_stamp_wtag_mtag, init->_size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,init->_size);
+    if (!myAddress)
+      throw_hard_error("Out of memory in allocate");
+    new (myAddress) container_type(init);
+    return gctools::tagged_pointer<container_type>(myAddress);
+#endif
+#ifdef USE_MPS
+    printf("%s:%d:%s Handle allocation in MPS\n");
+    mps_addr_t addr;
+    container_pointer myAddress(NULL);
+    printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(init->_size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
+    return obj;
+#endif
+  }
+
+
   // initialize elements of allocated storage p with value value
   template <typename... ARGS>
   void construct(pointer p, ARGS &&... args) {
@@ -1378,6 +1403,30 @@ public:
     printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
       do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket",num);
+    return obj;
+#endif
+  }
+
+  static gctools::tagged_pointer<container_type> image_save_load_allocate( image_save_load_init_s* init ) {
+#ifdef USE_BOEHM
+#ifdef DEBUG_GCWEAK
+    printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
+#endif
+    Header_s* base = do_boehm_weak_allocation(init->_header->_stamp_wtag_mtag, init->_size);
+    container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,init->_size);
+    if (!myAddress)
+      throw_hard_error("Out of memory in allocate");
+    new (myAddress) container_type(init);
+    return gctools::tagged_pointer<container_type>(myAddress);
+#endif
+#ifdef USE_MPS
+    printf("%s:%d:%s Handle allocation in MPS\n");
+    mps_addr_t addr;
+    container_pointer myAddress(NULL);
+    printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(init->_size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
     return obj;
 #endif
   }

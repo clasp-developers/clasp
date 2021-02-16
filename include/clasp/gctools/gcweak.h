@@ -133,6 +133,7 @@ struct WeakObject {
   struct metadata_always_fix_pointers_to_derived_classes;
   typedef gctools::smart_ptr<core::Fixnum_I> KindType;
   WeakObject(WeakKinds k) : Kind(gctools::make_tagged_fixnum<core::Fixnum_I>(k)){};
+  WeakObject() {};
   KindType Kind;
   int kind() const {
     GCTOOLS_ASSERT(((gctools::Header_s*)this)->weakObjectP());
@@ -168,6 +169,7 @@ struct BucketsBase : public WeakObject {
     }
   }
 
+  BucketsBase(){};
   virtual ~BucketsBase(){};
 
   T &operator[](size_t idx) { return this->bucket[idx]; };
@@ -218,6 +220,9 @@ template <class T, class U>
 struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
   Buckets(int l) : BucketsBase<T, U>(WeakBucketKind, l){};
+  Buckets(gctools::image_save_load_init_s* isl) {
+    isl->fill_no_virtual((void*)this);
+  }
   virtual ~Buckets() {
 #ifdef USE_BOEHM
     for (size_t i(0), iEnd(this->length()); i < iEnd; ++i) {
@@ -269,6 +274,9 @@ template <class T, class U>
 struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
   Buckets(int l) : BucketsBase<T, U>(StrongBucketKind, l){};
+  Buckets(gctools::image_save_load_init_s* isl) {
+    isl->fill_no_virtual((void*)this);
+  }
   virtual ~Buckets() {}
   void set(size_t idx, const value_type &val) {
     GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
