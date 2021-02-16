@@ -260,8 +260,8 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
 #endif
 #ifdef USE_MPS
   gctools::my_thread_allocation_points.destroyAllocationPoints();
-  mps_root_destroy(process->root);
-  mps_thread_dereg(process->thr_o);
+  mps_root_destroy(process->root._value);
+  mps_thread_dereg(process->thr_o._value);
 #endif
 };
 
@@ -440,7 +440,7 @@ CL_DEFUN void mp__suspend_loop() {
   RAIILock<Mutex> lock(this_process->_SuspensionMutex._value);
   this_process->_Phase = Suspended;
   while (this_process->_Phase == Suspended) {
-    if (!(this_process->_SuspensionCV.wait(this_process->_SuspensionMutex._value)))
+    if (!(this_process->_SuspensionCV._value.wait(this_process->_SuspensionMutex._value)))
       SIMPLE_ERROR(BF("BUG: pthread_cond_wait ran into an error"));
   }
 };

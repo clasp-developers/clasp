@@ -562,7 +562,7 @@ struct ConsAllocator {
 # ifdef USE_BOEHM
     Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMP_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
 # else
-#  error "Handle other garbage collectors"
+    printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif
     new (cons) Cons((const Cons&) *(Cons*)image_save_load_init->_header);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
@@ -607,7 +607,7 @@ namespace gctools {
       return sp;
 #endif
 #ifdef USE_MPS
-# error "Add support for mps"
+      printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
 
@@ -657,7 +657,7 @@ namespace gctools {
       return sp;
 #endif
 #ifdef USE_MPS
-# error "Add support for mps"
+      printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
 
@@ -704,7 +704,7 @@ When would I ever want the GC to automatically collect objects but not move them
       return sp;
 #endif
 #ifdef USE_MPS
-# error "Add support for mps"
+      printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
 
@@ -748,7 +748,7 @@ should not be managed by the GC */
       return sp;
 #endif
 #ifdef USE_MPS
-# error "Add support for mps"
+      printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
     };
 

@@ -164,6 +164,7 @@
             safe-system
             jit-constant-uintptr_t
             irc-sext
+            irc-zext
             irc-int-to-ptr
             irc-ptr-to-int
             irc-verify-module-safe

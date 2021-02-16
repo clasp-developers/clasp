@@ -199,7 +199,7 @@ void register_thread(mp::Process_sp process, void* stack_base) {
   GC_register_my_thread(&gc_stack_base);
 #endif
 #ifdef USE_MPS
-  my_mps_thread_reg(&process->thr_o);
+  my_mps_thread_reg(&process->thr_o._value);
 #endif
 };
 
@@ -209,7 +209,7 @@ void unregister_thread(mp::Process_sp process) {
   GC_unregister_my_thread();
 #endif
 #ifdef USE_MPS
-  my_mps_thread_deref(process->thr_o);
+  my_mps_thread_deref(process->thr_o._value);
 //  printf("%s:%d  add support to add threads for MPS\n", __FILE__, __LINE__ );
 #endif
 };
@@ -413,7 +413,7 @@ namespace gctools {
 std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(STAMP_max+1));
 
 void OutOfStamps() {
-    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %" Ptagged_stamp_t " are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
+  printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::largest_possible_stamp );
     abort();
 }
 

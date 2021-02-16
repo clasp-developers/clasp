@@ -461,6 +461,9 @@
 (defun irc-sext (val &optional (destty %fixnum%) (label "sext"))
   (llvm-sys:create-sext *irbuilder* val destty label))
 
+(defun irc-zext (val &optional (destty %fixnum%) (label "sext"))
+  (llvm-sys:create-zext *irbuilder* val destty label))
+
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
 representing the fixnum with the tag shaved off."
@@ -598,8 +601,11 @@ representing a tagged fixnum."
                               ((= 4 +header-stamp-size+) %i32*%)
                               ((= 8 +header-stamp-size+) %i64*%)
                               (t (error "illegal +header-stamp-size+ ~a expected 4 or 8" +header-stamp-size+))))
-         (header-addr (irc-bit-cast byte-addr header-stamp-type)))
-    (irc-bit-cast (irc-load header-addr) %i64%)))
+         (header-addr (irc-bit-cast byte-addr header-stamp-type))
+         (value32 (irc-load header-addr))
+         (value64 (irc-zext value32 %i64%))
+         (valuet* (irc-int-to-ptr value64 %t*%)))
+    valuet*))
 
 (defun irc-rack-stamp (object)
   (let* ((instance (irc-untag-general object))

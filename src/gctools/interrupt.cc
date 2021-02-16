@@ -106,7 +106,7 @@ static bool do_interrupt_thread(mp::Process_sp process)
   return ok;
 # else
   int signal = global_signal;
-  if (pthread_kill(process->_Thread,signal)) {
+  if (pthread_kill(process->_Thread._value,signal)) {
     FElibc_error("Unable to interrupt process ~A", 1,
                  process);
   }
