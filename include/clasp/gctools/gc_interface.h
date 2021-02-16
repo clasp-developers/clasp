@@ -27,6 +27,9 @@ THE SOFTWARE.
 #ifndef GC_INTERFACE_H
 #define GC_INTERFACE_H
 
+#include <clasp/gctools/imageSaveLoad.fwd.h>
+
+
 //
 // All class forward declarations
 //
@@ -137,6 +140,9 @@ extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
 
 extern void client_validate_internal(void* tagged_client);
 extern void client_validate_recursive(void* tagged_client, std::set<void*>& seen );
+
+gctools::smart_ptr<core::T_O> image_save_load_obj_allocate(gctools::GCStampEnum stamp_wtag,
+                                                           gctools::image_save_load_init_s* init);
 
 };
 

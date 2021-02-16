@@ -109,6 +109,8 @@ namespace core {
   typedef template_SimpleBitUnitVector<SimpleVector_int4_t_O, 4, true> specialized_SimpleVector_int4_t;
   class SimpleVector_int4_t_O : public specialized_SimpleVector_int4_t {
     LISP_CLASS(core, CorePkg, SimpleVector_int4_t_O, "SimpleVector_int4_t", AbstractSimpleVector_O);
+  public:
+    CLASP_DEFAULT_CTOR SimpleVector_int4_t_O() {};
     virtual ~SimpleVector_int4_t_O() {};
   public:
     typedef specialized_SimpleVector_int4_t TemplatedBase;

@@ -2277,7 +2277,7 @@ CL_LAMBDA(value);
 CL_LISPIFY_NAME(make-apfloat-float);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatFloat(core::SingleFloat_sp value) {
   GC_ALLOCATE(APFloat_O, self);
-  self->_value = llvm::APFloat(unbox_single_float(value));
+  self->_valueP = new llvm::APFloat(unbox_single_float(value));
   return self;
 };
 
@@ -2285,7 +2285,7 @@ CL_LAMBDA(value);
 CL_LISPIFY_NAME(makeAPFloatDouble);
 CL_DEFUN APFloat_sp APFloat_O::makeAPFloatDouble(core::DoubleFloat_sp value) {
   GC_ALLOCATE(APFloat_O, self);
-  self->_value = llvm::APFloat(value->get());
+  self->_valueP = new llvm::APFloat(value->get());
   return self;
 };
 }

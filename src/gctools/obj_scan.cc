@@ -432,7 +432,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
 {
     // The client must have a valid header
   const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(addr);
-  if (header._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
+  if (header._stamp_wtag_mtag._header_badge == 0 ) return msp; // If addr points to unused object residing on a free list then second word is zero
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;

@@ -33,7 +33,7 @@ namespace core {
   FORWARD(HashTableBase);
   class HashTableBase_O : public General_O {
     struct metadata_bootstrap_class {};
-    LISP_CLASS(core, CorePkg, HashTableBase_O, "HashTableBase",core::General_O);
+    LISP_ABSTRACT_CLASS(core, CorePkg, HashTableBase_O, "HashTableBase",core::General_O);
   HashTableBase_O() {};
   public:
     virtual ~HashTableBase_O() {};

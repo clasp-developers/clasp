@@ -80,6 +80,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/core/pathname.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
@@ -304,6 +305,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   char *cur = getenv("CLASP_MEMORY_PROFILE");
   size_t values[2];
   int numValues = 0;
+  int exit_code = 0;
   if (cur) {
     while (*cur && numValues < 2) {
       values[numValues] = strtol(cur, &cur, 10);
@@ -316,45 +318,60 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       my_thread_low_level->_Allocations._AllocationSizeThreshold = values[0];
     }
   }
-  core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
-  int exit_code = 0;
 
-  gctools::GcToolsExposer_O GcToolsPkg(_lisp);
-  clbind::ClbindExposer_O ClbindPkg(_lisp);
-  llvmo::LlvmoExposer_O llvmopkg(_lisp);
-  sockets::SocketsExposer_O SocketsPkg(_lisp);
-  serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
-  asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
+    // Create the one global CommandLineOptions object and do some minimal argument processing
+  core::global_options = new core::CommandLineOptions(argc, argv);
+  (core::global_options->_ProcessArguments)(core::global_options);
+  if (!core::global_options->_DontLoadImage && // YES load the image
+      core::global_options->_ImageType == core::cloCoreImage // YES its a core image
+      ) {
+#ifdef USE_PRECISE_GC
+    printf("%s:%d:%s Loading the core image %s\n",
+           __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
+    exit_code = gctools::image_load(core::global_options->_ImageFile);
+#else
+    printf("Core image loading is not supported unless precise GC is turned on\n");
+#endif
+  } else {
+    core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
 
-  std::string progname = program_name();
-  lispHolder.startup(argc, argv, progname.c_str()); // was "CANDO_APP"
+    gctools::GcToolsExposer_O GcToolsPkg(_lisp);
+    clbind::ClbindExposer_O ClbindPkg(_lisp);
+    llvmo::LlvmoExposer_O llvmopkg(_lisp);
+    sockets::SocketsExposer_O SocketsPkg(_lisp);
+    serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
+    asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
 
-  _lisp->installPackage(&GcToolsPkg);
-  _lisp->installPackage(&ClbindPkg);
-  _lisp->installPackage(&llvmopkg);
-  _lisp->installPackage(&SocketsPkg);
-  _lisp->installPackage(&ServeEventPkg);
-  _lisp->installPackage(&AsttoolingPkg);
+    std::string progname = program_name();
+    lispHolder.startup(core::global_options, argc, argv, progname.c_str()); // was "CANDO_APP"
 
-  core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
-  core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
+    _lisp->installPackage(&GcToolsPkg);
+    _lisp->installPackage(&ClbindPkg);
+    _lisp->installPackage(&llvmopkg);
+    _lisp->installPackage(&SocketsPkg);
+    _lisp->installPackage(&ServeEventPkg);
+    _lisp->installPackage(&AsttoolingPkg);
+
+    core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(0));
+    core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(1));
 
 #ifdef USE_MPI
-  mpip::MpiExposer_O TheMpiPkg(_lisp);
-  _lisp->installPackage(&TheMpiPkg);
-  if (mpiEnabled) {
-    core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
-    core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
-    cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
-    core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
-    core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
-  }
+    mpip::MpiExposer_O TheMpiPkg(_lisp);
+    _lisp->installPackage(&TheMpiPkg);
+    if (mpiEnabled) {
+      core::Symbol_sp mpi = _lisp->internKeyword("MPI-ENABLED");
+      core::Cons_sp features = cl::_sym_STARfeaturesSTAR->symbolValue().as<core::Cons_O>();
+      cl::_sym_STARfeaturesSTAR->defparameter(core::Cons_O::create(mpi, features));
+      core::_sym_STARmpi_rankSTAR->defparameter(core::make_fixnum(mpiRank));
+      core::_sym_STARmpi_sizeSTAR->defparameter(core::make_fixnum(mpiSize));
+    }
 #endif
   
     // printf("%s:%d About to _lisp->run() - ExitProgram typeid %p;\n",
     // __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     // RUN THIS LISP IMPLEMENTATION
-  exit_code = _lisp->run();
+    exit_code = _lisp->run();
+  }
   return exit_code;
 
 } // STARTUP
@@ -384,6 +401,18 @@ int main( int argc, char *argv[] )
   int  mpiRank    = 0;
   int  mpiSize    = 1;
 
+
+  // Run a test for endianness and Header_s layout
+  gctools::Header_s testme(0);
+  testme._stamp_wtag_mtag._value = 12;
+  if (testme._header_data[0] != 12) {
+    printf("%s:%d The _stamp_wtag_mtag %lu does not line up properly with _header_words[0] = %lu\n",
+           __FILE__, __LINE__,
+           (uintptr_t)testme._stamp_wtag_mtag._value,
+           (uintptr_t)testme._header_data[0]);
+    std::exit(1);
+  }
+  
   // DO BASIC EXE SETUP
 
   set_abort_flag(); // Set abort flag to default value

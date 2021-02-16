@@ -7,6 +7,8 @@ namespace core {
   class NativeVector_int_O : public CxxObject_O {
     LISP_CLASS(core, CorePkg, NativeVector_int_O, "NativeVector<int>",CxxObject_O);
   public:
+    CLASP_DEFAULT_CTOR NativeVector_int_O() {};
+  public:
     gctools::Vec0<int> _Vector;
   public:
     CL_LISPIFY_NAME("make-native-vector<int>");
@@ -36,6 +38,8 @@ namespace core {
   class NativeVector_double_O : public CxxObject_O {
     LISP_CLASS(core, CorePkg, NativeVector_double_O, "NativeVector<double>",CxxObject_O);
   public:
+    CLASP_DEFAULT_CTOR NativeVector_double_O() {};
+  public:
     gctools::Vec0<double> _Vector;
   public:
     CL_LISPIFY_NAME("make-native-vector<double>");
@@ -63,6 +67,8 @@ namespace core {
 
   class NativeVector_float_O : public CxxObject_O {
     LISP_CLASS(core, CorePkg, NativeVector_float_O, "NativeVector<float>",CxxObject_O);
+  public:
+    CLASP_DEFAULT_CTOR NativeVector_float_O() {};
   public:
     gctools::Vec0<float> _Vector;
   public:

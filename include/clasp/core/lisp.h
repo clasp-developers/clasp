@@ -154,6 +154,8 @@ throw_hard_error("What the heck? - the Endian test failed when starting up Lisp 
  class Exposer_O : public General_O {
    FRIEND_GC_SCANNER(Exposer_O);
    LISP_ABSTRACT_CLASS(core,CorePkg,Exposer_O,"Exposer",General_O);
+ public:
+   CLASP_DEFAULT_CTOR Exposer_O() {};
 public:
   typedef enum { candoClasses,
                  candoFunctions,
@@ -198,6 +200,8 @@ struct gctools::GCInfo<core::Lisp_O> {
 
 
 namespace core {
+
+struct CommandLineOptions;
 
 struct globals_t {
     mutable mp::SharedMutex _ActiveThreadsMutex; // _ActiveThreads
@@ -925,7 +929,8 @@ public:
   /*! Pass the mpiProcess rank in (rank) or set to 0 if there is only one process */
   LispHolder(bool mpiEnabled, int mpiRank, int mpiSize);
 
-  virtual void startup(int argc, char *argv[], const string &appPathEnvironmentVariable);
+      virtual void startup(CommandLineOptions* options,
+                           int argc, char *argv[], const string &appPathEnvironmentVariable);
 
   virtual ~LispHolder();
 };

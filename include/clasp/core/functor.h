@@ -125,6 +125,8 @@ fields at the same offset as Instance_O.
  class EntryPointBase_O : public General_O {
    LISP_CLASS(core,CorePkg,EntryPointBase_O,"EntryPointBase",General_O);
  public:
+   CLASP_DEFAULT_CTOR EntryPointBase_O() {};
+ public:
    FunctionDescription_sp _FunctionDescription;
  public:
   // Accessors
@@ -218,6 +220,8 @@ namespace core {
 */
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
+  public:
+    CLASP_DEFAULT_CTOR Function_O() {};
   public:
     std::atomic<GlobalEntryPoint_sp>    _EntryPoint;
   public:
@@ -328,7 +332,9 @@ namespace core {
    */
 class Closure_O : public Function_O {
     LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
-  public:
+public:
+  CLASP_DEFAULT_CTOR Closure_O() {};
+public:
   Closure_O(GlobalEntryPoint_sp ep ) : Base(ep) {};
   public:
     virtual const char *describe() const override { return "Closure"; };
@@ -343,6 +349,8 @@ namespace core {
   
   class BuiltinClosure_O : public Closure_O {
     LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Closure_O);
+  public:
+    CLASP_DEFAULT_CTOR BuiltinClosure_O() {};
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:

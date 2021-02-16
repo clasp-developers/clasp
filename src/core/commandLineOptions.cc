@@ -56,6 +56,7 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
+             "-T/--type (slow|core) - Set the type of the image file. (slow == default for now)\n"             
              "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
              "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"
@@ -167,6 +168,17 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (arg == "-R" || arg == "--resource-dir") {
       options->_ResourceDir = options->_RawArguments[iarg+1];
       iarg++;
+    } else if (arg == "-T" || arg == "--type") {
+      std::string type = options->_RawArguments[iarg+1];
+      if (type == "core" || type == "CORE" || type == "Core" ) {
+        options->_ImageType = cloCoreImage;
+      } else if (type == "slow" || type == "SLOW" || type == "Slow" ) {
+        options->_ImageType = cloSlowImage;
+      } else {
+        printf("Illegal argument for --type, legal values (core|slow)\n");
+        std::exit(1);
+      }
+      iarg++;
     } else if (arg == "--rc") {
       options->_RCFileName = options->_RawArguments[iarg+1];
       iarg++;
@@ -233,6 +245,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     _HasDescribeFile(false),
     _Stage('c'),
     _ImageFile(""),
+    _ImageType(cloSlowImage),
     _GotRandomNumberSeed(false),
     _RandomNumberSeed(0),
     _NoInform(false),

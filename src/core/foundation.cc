@@ -1631,7 +1631,7 @@ CL_DEFUN void core__debug_invocation_history_frame(size_t v) {
 
 size_t lisp_general_badge(General_sp object) {
   const gctools::Header_s* header = gctools::header_pointer(object.unsafe_general());
-  return header->_header_badge;
+  return header->_stamp_wtag_mtag._header_badge;
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
@@ -1660,12 +1660,12 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
-  header->_header_badge = badge;
+  header->_stamp_wtag_mtag._header_badge = badge;
 }
 
 
 
-size_t lisp_random()
+uint32_t lisp_random()
 {
   return my_thread->random();
 }

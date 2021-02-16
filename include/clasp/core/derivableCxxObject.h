@@ -40,7 +40,7 @@ namespace core {
   SMART(DerivableCxxObject);
   class DerivableCxxObject_O : public Instance_O {
     LISP_META_CLASS(::_lisp->_Roots._TheDerivableCxxClass);
-    LISP_CLASS(core, CorePkg, DerivableCxxObject_O, "derivable-cxx-object",Instance_O);
+    LISP_ABSTRACT_CLASS(core, CorePkg, DerivableCxxObject_O, "derivable-cxx-object",Instance_O);
   public:
     static DerivableCxxObject_sp create(T_sp type, List_sp slotNames);
   public:

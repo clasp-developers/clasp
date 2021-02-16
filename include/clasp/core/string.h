@@ -24,7 +24,9 @@ struct gctools::GCInfo<core::SimpleString_O> {
 };
 namespace core {
   class SimpleString_O : public AbstractSimpleVector_O {
-    LISP_CLASS(core, ClPkg, SimpleString_O, "simple-string",AbstractSimpleVector_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, SimpleString_O, "simple-string",AbstractSimpleVector_O);
+  public:
+    CLASP_DEFAULT_CTOR SimpleString_O() {};
     virtual ~SimpleString_O() {};
   };
 };
@@ -178,7 +180,9 @@ namespace core {
 
 namespace core {
   class StrNs_O : public ComplexVector_O {
-    LISP_CLASS(core, CorePkg, StrNs_O, "StrNs",ComplexVector_O);
+    LISP_ABSTRACT_CLASS(core, CorePkg, StrNs_O, "StrNs",ComplexVector_O);
+  public:
+    CLASP_DEFAULT_CTOR StrNs_O() {};
     virtual ~StrNs_O() {};
   public:
   StrNs_O(size_t dimension,

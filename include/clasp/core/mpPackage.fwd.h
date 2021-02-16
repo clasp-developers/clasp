@@ -342,6 +342,7 @@ void debug_mutex_unlock(Mutex* m);
 #define MPSMESSG_NAMEWORD 0x005353454d53504d     // MPSMESSG
 
 struct Mutex {
+  Mutex() {};
   uint64_t _NameWord;
   pthread_mutex_t _Mutex;
   gctools::Fixnum _Counter;
@@ -416,6 +417,7 @@ struct SharedMutex {
 };
 #else
 struct SharedMutex : public sf::contention_free_shared_mutex<> {
+  SharedMutex() {};
   uint64_t _r;
   SharedMutex(uint64_t nameword) : _r(nameword) {};
   // shared access
@@ -433,6 +435,8 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
 
 /* I derived this code from https://oroboro.com/upgradable-read-write-locks/ */
   class UpgradableSharedMutex {
+  public:
+    UpgradableSharedMutex() {};
   public:
     Mutex mReadMutex;
     Mutex mWriteMutex;

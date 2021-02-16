@@ -62,6 +62,8 @@
             #+(or)*run-time-values-table-global-var*
             *the-module*
             +header-size+
+            +header-stamp-size+
+            +header-stamp-offset+
             +cons-tag+
             +fixnum-mask+
             +fixnum00-tag+

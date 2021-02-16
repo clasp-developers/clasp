@@ -33,7 +33,9 @@ struct gctools::GCInfo<core::FuncallableInstanceCreator_O> {
 namespace core {
 
   class Creator_O : public Function_O {
-    LISP_CLASS(core,CorePkg,Creator_O,"Creator",Function_O);
+    LISP_ABSTRACT_CLASS(core,CorePkg,Creator_O,"Creator",Function_O);
+  public:
+    CLASP_DEFAULT_CTOR Creator_O() {};
   public:
   // Some Creators don't actually allocate anything -
   // classes that don't have default allocators

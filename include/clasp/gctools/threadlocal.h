@@ -124,7 +124,7 @@ namespace core {
     List_sp _BufferStrWNsPool;
     StringOutputStream_sp _BFormatStringOutputStream;
     StringOutputStream_sp _WriteToStringOutputStream;
-    size_t random();
+    uint32_t random();
 
     llvmo::ObjectFile_sp topObjectFile();
     void pushObjectFile(llvmo::ObjectFile_sp of);

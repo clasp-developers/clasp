@@ -156,7 +156,7 @@ ThreadLocalState::ThreadLocalState() :
   this->_xorshf_z = rand();
 }
 
-size_t ThreadLocalState::random() {
+uint32_t ThreadLocalState::random() {
   unsigned long t;
   // This random number generator is ONLY used to initialize
   // the badges of general objects (currently, because cons cells
@@ -172,7 +172,7 @@ size_t ThreadLocalState::random() {
     this->_xorshf_y = this->_xorshf_z;
     this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
   } while (this->_xorshf_z==0);
-  return this->_xorshf_z;
+  return this->_xorshf_z&0xFFFFFFFF;
 }
 
 void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {

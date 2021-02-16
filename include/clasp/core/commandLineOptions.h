@@ -38,6 +38,9 @@ extern bool global_debug_byte_code;
 typedef enum { cloLoad,
                cloEval } LoadEvalEnum;
 
+typedef enum { cloSlowImage,
+    cloCoreImage } ImageTypeEnum;
+
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
   process_arguments_callback _ProcessArguments;
@@ -54,6 +57,7 @@ struct CommandLineOptions {
   std::string _DescribeFile;
   char _Stage;
   std::string _ImageFile;
+  ImageTypeEnum _ImageType;
   bool _GotRandomNumberSeed;
   long _RandomNumberSeed;
   bool _NoInform;

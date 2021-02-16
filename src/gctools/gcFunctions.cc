@@ -909,7 +909,9 @@ void save_lisp_and_die(const std::string& filename)
   // 18. Write table of contents and save-buffer
   // 19. DIE
 
+#ifdef USE_PRECISE_GC
   image_save(filename);
+#endif
 }
 
   

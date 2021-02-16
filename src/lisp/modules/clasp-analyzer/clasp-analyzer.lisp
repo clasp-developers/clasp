@@ -499,6 +499,18 @@ This could change the value of stamps for specific classes - but that would brea
            (analysis-stamps analysis)))
 
 
+
+(defun generate-do-class-code (fout analysis)
+  (maphash (lambda (key stamp)
+             (declare (core:lambda-name generate-typeq-code.lambda))
+             (when (and (not (abstract-species-stamp-p stamp analysis))
+                        (not (eq (stamp-value% stamp) :no-stamp-value))
+                        (stamp-in-hierarchy stamp)
+                        (derived-from-cclass key "core::T_O" (analysis-project analysis)))
+               (format fout "DO_CLASS(SAFE_TYPE_MACRO(~a),~a);~%" key (get-stamp-name stamp))))
+           (analysis-stamps analysis)))
+
+
 ;; ----------------------------------------------------------------------
 ;;
 ;; Clang type classes
@@ -3640,6 +3652,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
     (format stream "#if defined(GC_TYPEQ)~%")
     (generate-typeq-code stream analysis )
     (format stream "#endif // defined(GC_TYPEQ)~%")
+    (format stream "#if defined(DO_CLASS)~%")
+    (generate-do-class-code stream analysis )
+    (format stream "#endif // defined(DO_CLASS)~%")
     (format stream "#if defined(GC_STAMP_SELECTORS)~%")
     (generate-gckind-for-stamps stream analysis)
     (format stream "#endif // defined(GC_STAMP_SELECTORS)~%")

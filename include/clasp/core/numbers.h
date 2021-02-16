@@ -173,8 +173,7 @@ namespace core {
 
   SMART(Number);
   class Number_O : public General_O {
-    LISP_CLASS(core, ClPkg, Number_O, "number",General_O);
-
+    LISP_ABSTRACT_CLASS(core, ClPkg, Number_O, "number",General_O);
   public:
     static Number_sp create(double val);
     static Number_sp create(gc::Fixnum val);
@@ -230,7 +229,7 @@ namespace core {
 
   SMART(Real);
   class Real_O : public Number_O {
-    LISP_CLASS(core, ClPkg, Real_O, "real",Number_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, Real_O, "real",Number_O);
 
   public:
     virtual double as_double_() const override { SUBIMP(); };
@@ -245,7 +244,7 @@ namespace core {
 
   SMART(Rational);
   class Rational_O : public Real_O {
-    LISP_CLASS(core, ClPkg, Rational_O, "rational",Real_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, Rational_O, "rational",Real_O);
 
   public:
     static Rational_sp create(mpz_class const &num, mpz_class const &denom);
@@ -270,7 +269,7 @@ namespace core {
 
   SMART(Integer);
   class Integer_O : public Rational_O {
-    LISP_CLASS(core, ClPkg, Integer_O, "integer",Rational_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, Integer_O, "integer",Rational_O);
 
   public:
     /*! Return a Cons (integer low high) */
@@ -355,7 +354,7 @@ namespace core {
   Fixnum_sp make_fixnum(gc::Fixnum x);
   
   class Fixnum_dummy_O : public Integer_O {
-    LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
   };
   inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
   inline gc::Fixnum unbox_fixnum(Fixnum_sp x) { return x.unsafe_fixnum(); };
@@ -365,7 +364,7 @@ namespace core {
 
   SMART(Float);
   class Float_O : public Real_O {
-    LISP_CLASS(core, ClPkg, Float_O, "float",Real_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, Float_O, "float",Real_O);
 
   public:
     virtual Integer_sp castToInteger() const { SUBIMP(); };
@@ -379,7 +378,7 @@ namespace core {
 
   SMART(ShortFloat);
   class ShortFloat_O : public Float_O {
-    LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat",Float_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat",Float_O);
 
   private:
     float _Value;
@@ -427,7 +426,7 @@ namespace core {
   };
 
   class SingleFloat_dummy_O : public Float_O {
-    LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat",Float_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat",Float_O);
 
   };
 
@@ -512,7 +511,7 @@ namespace core {
 namespace core {
   SMART(LongFloat);
   class LongFloat_O : public Float_O {
-    LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat",Float_O);
+    LISP_ABSTRACT_CLASS(core, ClPkg, LongFloat_O, "LongFloat",Float_O);
 
   public:
   private:
@@ -521,8 +520,8 @@ namespace core {
     static DoubleFloat_sp create(LongFloat nm) {
       return DoubleFloat_O::create(nm);
     };
-
   public:
+//    virtual Rational_sp rational_() const final { return DoubleFloat_O::rational(this->_Value); };
 
     DEFAULT_CTOR_DTOR(LongFloat_O);
   };

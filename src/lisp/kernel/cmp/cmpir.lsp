@@ -593,9 +593,13 @@ representing a tagged fixnum."
          (byte-ptr (irc-bit-cast object* %i8*%))
          (byte-addr
            (irc-gep byte-ptr
-                    (list (jit-constant-i64 (- +header-size+)))))
-         (header-addr (irc-bit-cast byte-addr %t**%)))
-    (irc-load header-addr)))
+                    (list (jit-constant-i64 (+ +header-stamp-offset+ (- +header-size+))))))
+         (header-stamp-type (cond
+                              ((= 4 +header-stamp-size+) %i32*%)
+                              ((= 8 +header-stamp-size+) %i64*%)
+                              (t (error "illegal +header-stamp-size+ ~a expected 4 or 8" +header-stamp-size+))))
+         (header-addr (irc-bit-cast byte-addr header-stamp-type)))
+    (irc-bit-cast (irc-load header-addr) %i64%)))
 
 (defun irc-rack-stamp (object)
   (let* ((instance (irc-untag-general object))

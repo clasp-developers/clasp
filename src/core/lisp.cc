@@ -2437,7 +2437,8 @@ LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_Lisp = Lisp_O::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
 }
 
-void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmentVariable) {
+void LispHolder::startup(CommandLineOptions* global_options,
+                         int argc, char *argv[], const string &appPathEnvironmentVariable) {
   ::_lisp = this->_Lisp;
 
   const char *argv0 = "./";
@@ -2447,8 +2448,6 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   for (int i = 0; i < argc; ++i) {
     globals_->_Argv.push_back(string(argv[i]));
   }
-  // Create the one global CommandLineOptions object and do some minimal argument processing
-  global_options = new CommandLineOptions(argc, argv);
   // Call the initializers here so that they can edit the global_options structure
   Bundle *bundle = new Bundle(argv0,global_options->_ResourceDir);
   globals_->_Bundle = bundle;
@@ -2463,7 +2462,6 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
 #endif
 
   // The initializers may have changed the function that processes global_options
-  (global_options->_ProcessArguments)(global_options);
   _lisp->parseCommandLineArguments(argc, argv, *global_options);
 }
 

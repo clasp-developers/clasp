@@ -33,6 +33,8 @@ namespace gctools {
 
 template <class T>
 class GCArray_moveable : public GCContainer {
+public:
+  GCArray_moveable() {};
  public:
  typedef T value_type;
  typedef T *pointer_type;
@@ -90,6 +92,8 @@ class GCArray_moveable : public GCContainer {
 template <class T>
 class GCArray_atomic : public GCContainer {
 public:
+  GCArray_atomic() {};
+public:
   int64_t _Length; // Index one beyond the total number of elements allocated
   std::atomic<T> _Data[0];
   GCArray_atomic(size_t length, const T& initialElement, bool initialElementSupplied,
@@ -131,6 +135,8 @@ void Array0_dump(const Array &v, const char *head = "") {
 
 template <class T>
 class GCArraySignedLength_moveable : public GCArray_moveable<T> {
+public:
+  GCArraySignedLength_moveable() {};
 public:
   GCArraySignedLength_moveable(int64_t length, const T& initialElement, bool initialElementSupplied,
                                size_t initialContentsSize=0, const T* initialContents=NULL) : GCArray_moveable<T>(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {}

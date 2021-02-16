@@ -349,6 +349,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creat
   static void register_class_with_redeye() {                            \
     gctools::GCObjectAllocator<oClass>::register_class_with_redeye();   \
   }                                                                     \
+  oClass(gctools::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) \
@@ -402,6 +403,7 @@ namespace core {
   private:
     friend class CoreExposer;
     LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+    T_O() {};
   };
 
 };
@@ -421,6 +423,8 @@ namespace core {
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
+    General_O() {};
+    
     virtual void sxhash_(HashGenerator &hg) const;
     virtual void sxhash_equal(HashGenerator &hg) const;
     virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};

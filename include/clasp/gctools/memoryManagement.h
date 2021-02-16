@@ -116,8 +116,8 @@ struct GCAllocationPoint;
 namespace gctools {
     /*! This is the type of the tagged kind header that is the first
 word of every object in memory managed by the GC */
-  typedef uintptr_t stamp_t;
-  typedef uintptr_t tagged_stamp_t;
+  typedef uint32_t stamp_t;
+  typedef uint32_t tagged_stamp_t;
 
 };
 
@@ -207,7 +207,7 @@ inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return 
 
 namespace core {
   class ThreadLocalState;
-  size_t lisp_random();
+  uint32_t lisp_random();
 };
 
 /*! Declare this in the top namespace */
@@ -336,11 +336,22 @@ namespace gctools {
 //    static const int stamp_shift = general_mtag_shift;
     static const tagged_stamp_t largest_possible_stamp = stamp_mask>>mtag_shift;
   public:
+    //
+    // Type of badge
+    //
+    typedef uint32_t badge_t;
+
+    //
+    //
+    struct Dummy_s{};
     struct StampWtagMtag {
       tagged_stamp_t _value;
-    StampWtagMtag() : _value(0) {};
-    StampWtagMtag(uintptr_t all, bool dummy) : _value(all) {};
-      StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)) {};
+      badge_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
+                                 /* will treat it like a unused object residing on a free list          */
+      StampWtagMtag() : _value(0), _header_badge(0xDEADBEEF) {};
+      StampWtagMtag(uintptr_t all, badge_t badge, Dummy_s dummy) : _value(all) {};
+      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
+      StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)), _header_badge(core::lisp_random()) {};
       // This is so we can find where we shift/unshift/don'tshift
       static UnshiftedStamp leave_unshifted_stamp(UnshiftedStamp us) {
         return (us);
@@ -474,12 +485,11 @@ namespace gctools {
 #endif
     }
   public:
+    uintptr_t      _header_data[0];  // The 0th element overlaps StampWtagMtag
+                                   // and the 1st into the client data unless DEBUG_GUARD is on
     // The header contains the stamp_wtag_mtag value.
     StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
     // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
-    tagged_stamp_t additional_data[0]; // The 0th element intrudes into the client data unless DEBUG_GUARD is on
-    uintptr_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
-                                 /* will treat it like a unused object residing on a free list          */
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
@@ -492,28 +502,25 @@ namespace gctools {
 #endif
   public:
 #if !defined(DEBUG_GUARD)
-    
-  Header_s(const StampWtagMtag& k) :
-    _stamp_wtag_mtag(k),
-      _header_badge(core::lisp_random())
+    Header_s(const StampWtagMtag& k ) :
+        _stamp_wtag_mtag(k)
     {}
 #endif
 #if defined(DEBUG_GUARD)
     inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
-  Header_s(const StampWtagMtag& k,size_t tstart, size_t tsize, size_t total_size) 
-    : _stamp_wtag_mtag(k),
-      _header_badge(core::lisp_random()),
-      _tail_start(tstart),
-      _tail_size(tsize),
-      _guard(0xFEEAFEEBDEADBEEF),
-      _dup_tail_start(tstart),
-      _dup_tail_size(tsize),
-      _dup_stamp_wtag_mtag(k),
-      _guard2(0xAAAAAAAAAAAAAAAA),
-      _guard3(0xDDDDDDDDDDDDDDDD)
-      {
-        this->fill_tail();
-      };
+    Header_s(const StampWtagMtag& k, size_t tstart, size_t tsize, size_t total_size) 
+        : _stamp_wtag_mtag(k), 
+          _tail_start(tstart),
+          _tail_size(tsize),
+          _guard(0xFEEAFEEBDEADBEEF),
+          _dup_tail_start(tstart),
+          _dup_tail_size(tsize),
+          _dup_stamp_wtag_mtag(k),
+          _guard2(0xAAAAAAAAAAAAAAAA),
+          _guard3(0xDDDDDDDDDDDDDDDD)
+    {
+      this->fill_tail();
+    };
 #endif
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
   public:
@@ -538,23 +545,23 @@ namespace gctools {
   /*! No sanity checking done - this function assumes fwdP == true */
     void *fwdPointer() const { return reinterpret_cast<void *>(this->_stamp_wtag_mtag._value & (~mtag_mask)); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-    void setFwdPointer(void *ptr) { this->_stamp_wtag_mtag._value = reinterpret_cast<tagged_stamp_t>(ptr) | fwd_mtag; };
-    tagged_stamp_t fwdSize() const { return this->additional_data[0]; };
+    void setFwdPointer(void *ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
+    uintptr_t fwdSize() const { return this->_header_data[1]; };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setFwdSize(size_t sz) { this->additional_data[0] = sz; };
+    void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
-    void setPad(tagged_stamp_t p) { this->_stamp_wtag_mtag._value = p; };
+    void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
   /*! Return the pad1 size */
     tagged_stamp_t pad1Size() const { return Alignment(); };
   /*! Return the size of the pad block - without the header */
-    tagged_stamp_t padSize() const { return (this->additional_data[0]); };
+    tagged_stamp_t padSize() const { return (this->_header_data[1]); };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
-    void setPadSize(size_t sz) { this->additional_data[0] = sz; };
+    void setPadSize(size_t sz) { this->_header_data[1] = sz; };
   /*! Write the stamp to the stamp bits */
     string description() const {
       if (this->stampP()) {
         std::stringstream ss;
-        ss << "Header=" << (void *)(this->_stamp_wtag_mtag._value);
+        ss << "Header=" << (void*)(uintptr_t)(this->_stamp_wtag_mtag._value);
         ss << "/";
         ss << obj_name(this->stamp_());
         return ss.str();
@@ -571,7 +578,7 @@ namespace gctools {
       }
       stringstream ss;
       ss << "IllegalHeader=";
-      ss << (void *)(this->_stamp_wtag_mtag._value);
+      ss << (void *)(uintptr_t)(this->_stamp_wtag_mtag._value);
       printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
       return ss.str();
       ;

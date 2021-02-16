@@ -286,7 +286,8 @@ typedef gctools::Buckets<BucketValueType, BucketValueType, gctools::StrongLinks>
 
 class WeakKeyHashTable {
   friend class core::WeakKeyHashTable_O;
-
+public:
+  WeakKeyHashTable() {};
 public:
   typedef BucketValueType value_type;
   typedef WeakBucketsObjectType KeyBucketsType;
@@ -574,6 +575,7 @@ struct WeakPointer : public WeakObject {
 };
 
 struct WeakPointerManager {
+  WeakPointerManager() {};
   typedef typename gctools::WeakPointer::value_type value_type;
   typedef WeakPointerManager MyType;
   typedef gctools::GCWeakPointerAllocator<WeakPointer> AllocatorType;

@@ -29,6 +29,8 @@ namespace llvmo {
   class LibraryBase_O : public core::CxxObject_O {
     LISP_CLASS(llvmo, LlvmoPkg, LibraryBase_O, "LibraryBase", core::CxxObject_O);
   public:
+    CLASP_DEFAULT_CTOR LibraryBase_O() {};
+  public:
   };
 
   
@@ -111,6 +113,8 @@ namespace llvmo {
   FORWARD(CodeBase);
   class CodeBase_O : public core::CxxObject_O {
     LISP_CLASS(llvmo, LlvmoPkg, CodeBase_O, "CodeBase", core::CxxObject_O);
+  public:
+    CLASP_DEFAULT_CTOR CodeBase_O() {};
   public:
 
   };

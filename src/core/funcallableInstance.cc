@@ -95,7 +95,7 @@ CL_DEFUN FuncallableInstance_sp core__allocate_raw_funcallable_instance(Instance
 }
 
 size_t FuncallableInstance_O::rack_stamp_offset() {
-  SimpleVector_O dummy_rack(0);
+  SimpleVector_O dummy_rack(0,_Nil<T_O>(),false);
   return (char*)&(dummy_rack.operator[](0))-(char*)&dummy_rack;
 }
 

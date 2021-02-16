@@ -1137,6 +1137,7 @@ namespace core {
   extern size_t debug_InvocationHistoryFrame;
 };
 
+#define CLASP_DEFAULT_CTOR
 
 #endif
 #endif //]

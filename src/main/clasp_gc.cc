@@ -350,9 +350,9 @@
     class Record_O;
     class Test_O;
     class SimpleBaseString_O;
+    class Frame_O;
     class Integer_O;
     class SimpleMDArray_int32_t_O;
-    class Frame_O;
     class ComplexVector_O;
     class SimpleVector_byte64_t_O;
     class SimpleMDArray_fixnum_O;
@@ -809,8 +809,8 @@ STAMP_core__DirectoryEntry_O = ADJUST_STAMP(1683), // Stamp(420)  wtag(3)
 STAMP_core__LightUserData_O = ADJUST_STAMP(1687), // Stamp(421)  wtag(3)
 STAMP_core__UserData_O = ADJUST_STAMP(1691), // Stamp(422)  wtag(3)
 STAMP_core__Record_O = ADJUST_STAMP(1695), // Stamp(423)  wtag(3)
-STAMP_core__Frame_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
-STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
+STAMP_clbind__ClassRegistry_O = ADJUST_STAMP(1699), // Stamp(424)  wtag(3)
+STAMP_core__Frame_O = ADJUST_STAMP(1703), // Stamp(425)  wtag(3)
 STAMP_core__Cons_O = ADJUST_STAMP(1707), // Stamp(426)  wtag(3)
 STAMP_core__Lisp_O = ADJUST_STAMP(1711), // Stamp(427)  wtag(3)
 STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_ = ADJUST_STAMP(1715), // Stamp(428)  wtag(3)
@@ -883,7 +883,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 1094, 
 // Unused CLEAVIR-CODE-UTILITIES::REQUIRED-MUST-BE-VARIABLE = 1291, 
 // Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-CAN-APPEAR-AT-MOST-ONCE = 1280, 
-// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 1544, 
+// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 1546, 
 // Unused CLEAVIR-AST::FIXNUM-LESS-AST = 1227, 
 // Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 1430, 
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 962, 
@@ -974,7 +974,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-BIR::NOP = 1133, 
 // Unused CLEAVIR-AST::AREF-AST = 1253, 
 // Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 885, 
-// Unused CLASP-ANALYZER::MANAGER = 1553, 
+// Unused CLASP-ANALYZER::MANAGER = 1555, 
 // Unused CLEAVIR-BIR::CAST = 1170, 
 // Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1446, 
 // Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 1476, 
@@ -986,7 +986,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused COMPILER::UNDEFINED-WARNING = 852, 
 // Unused CORE::FORMAT-ERROR = 819, 
 // Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 933, 
-// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 1537, 
+// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 1538, 
 // Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 1102, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-SPECIALIZED-REQUIRED = 1281, 
 // Unused ECLECTOR.READER::REFERENCE-ERROR = 1093, 
@@ -1058,14 +1058,14 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::CAS-RACK-AST = 1418, 
 // Unused ACCLIMATION::VIETNAMESE = 894, 
 // Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 1352, 
-// Unused CLASP-ANALYZER::POD-OFFSET = 1542, 
+// Unused CLASP-ANALYZER::POD-OFFSET = 1544, 
 // Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 866, 
 // Unused CLASP-CLEAVIR-BMIR::STORE = 1454, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 951, 
 // Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1426, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1068, 
 // Unused STAMP_gctools__GCBitUnitArray_moveable_4__false_ = 362, 
-// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1536, 
+// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1537, 
 // Unused COMMON-LISP::UNBOUND-SLOT = 802, 
 // Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1321, 
 // Unused CORE::SIMPLE-PARSE-ERROR = 816, 
@@ -1146,7 +1146,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 837, 
 // Unused CLEAVIR-CODE-UTILITIES::SUSPECT-LAMBDA-LIST-KEYWORD = 1292, 
 // Unused CLEAVIR-SET::SET = 1100, 
-// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1557, 
+// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1559, 
 // Unused CLEAVIR-AST::CALL-AST = 1196, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-AUX = 1288, 
 // Unused CORE::FORMAT-WARNING-TOO-MANY-ARGUMENTS = 821, 
@@ -1184,12 +1184,12 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::NO-TAG-INFO = 1338, 
 // Unused CLEAVIR-BIR::CATCH = 1156, 
 // Unused CLEAVIR-BIR::UNUSED-VARIABLE = 1172, 
-// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1543, 
+// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1545, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-KEY = 1285, 
 // Unused CLASP-ANALYZER::GLOBAL-VARIABLE = 1489, 
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-KEY-PARAMETER-GROUP = 927, 
 // Unused CLASP-CLEAVIR-BMIR::GENERALP = 1450, 
-// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1547, 
+// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1549, 
 // Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 1409, 
 // Unused STAMP_gctools__GCVector_moveable_core__ExceptionEntry_ = 367, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1012, 
@@ -1206,10 +1206,10 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 971, 
 // Unused CLEAVIR-AST::TAG-AST = 1206, 
 // Unused CLASP-CLEAVIR-BIR::FENCE = 1437, 
-// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1550, 
+// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1552, 
 // Unused CLEAVIR-CODE-UTILITIES::FUNCTION-BODY-MUST-BE-PROPER-LIST = 1294, 
-// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1545, 
-// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 1541, 
+// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1547, 
+// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 1543, 
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 926, 
 // Unused CLASP-CLEAVIR-AST::VREF-AST = 1420, 
 // Unused EXT::STREAM-DECODING-ERROR = 828, 
@@ -1231,7 +1231,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-AST::LEXICAL-AST = 1189, 
 // Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 920, 
 // Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 1240, 
-// Unused CLASP-ANALYZER::POINTER-OFFSET = 1540, 
+// Unused CLASP-ANALYZER::POINTER-OFFSET = 1542, 
 // Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 812, 
 // Unused CLEAVIR-BIR::NO-OUTPUT = 1121, 
 // Unused CLEAVIR-ENVIRONMENT::GLOBAL-FUNCTION-INFO = 1301, 
@@ -1258,6 +1258,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CORE::QUEUE = 1458, 
 // Unused CLEAVIR-AST::BRANCH-AST = 1215, 
 // Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 1380, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-CTYPE = 1528, 
 // Unused ECLECTOR.READER::DIGIT-CONDITION = 1047, 
 // Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 1490, 
 // Unused ACCLIMATION::CONDITION = 896, 
@@ -1275,7 +1276,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused COMMON-LISP::WARNING = 761, 
 // Unused CLEAVIR-BIR::NVPRIMOP = 1140, 
 // Unused CLEAVIR-AST::FLOAT-SUB-AST = 1233, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1546, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1548, 
 // Unused CLANG-TOOL::MATCH-INFO = 1464, 
 // Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 1004, 
 // Unused CLEAVIR-BIR::TERMINATOR = 1122, 
@@ -1317,7 +1318,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 1318, 
 // Unused CLEAVIR-CODE-UTILITIES::REST/BODY-MUST-BE-FOLLOWED-BY-VARIABLE = 1275, 
 // Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1514, 
-// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1529, 
+// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1530, 
 // Unused CLASP-ANALYZER::BITUNIT-CTYPE = 1498, 
 // Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-LIST = 1266, 
 // Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 1063, 
@@ -1354,7 +1355,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 1044, 
 // Unused CONCRETE-SYNTAX-TREE::PARSER = 973, 
 // Unused CONCRETE-SYNTAX-TREE::PARAMETER = 934, 
-// Unused CLASP-ANALYZER::PARALLEL-JOB = 1556, 
+// Unused CLASP-ANALYZER::PARALLEL-JOB = 1558, 
 // Unused CLEAVIR-BIR::PHI = 1126, 
 // Unused CLASP-ANALYZER::STD-MAP-CTYPE = 1501, 
 // Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 831, 
@@ -1375,21 +1376,21 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 1103, 
 // Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 1452, 
 // Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1513, 
-// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1551, 
+// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1553, 
 // Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1509, 
 // Unused CLEAVIR-AST::FUNCTION-AST = 1197, 
-// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 1535, 
+// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 1536, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 1019, 
 // Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-APPEAR-FIRST = 1277, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-LAMBDA-LIST-PATTERN = 1290, 
 // Unused CLEAVIR-CODE-UTILITIES::CODE-CONDITION = 1260, 
 // Unused CLEAVIR-AST::FIXNUM-SUB-AST = 1226, 
 // Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 1386, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1539, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1541, 
 // Unused ACCLIMATION::SVENSKA = 888, 
 // Unused CLASP-ANALYZER::LOCAL-VARIABLE = 1491, 
 // Unused COMMON-LISP::STRUCTURE-OBJECT = 748, 
-// Unused CLASP-ANALYZER::NAMESPACE = 1555, 
+// Unused CLASP-ANALYZER::NAMESPACE = 1557, 
 // Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 990, 
 // Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 1369, 
 // Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 1259, 
@@ -1424,10 +1425,10 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-AST::ASET-AST = 1254, 
 // Unused STAMP_gctools__GCBitUnitArray_moveable_2__false_ = 361, 
 // Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1148, 
-// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1548, 
+// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1550, 
 // Unused COMMON-LISP::CONTROL-ERROR = 786, 
 // Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1521, 
-// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1530, 
+// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1531, 
 // Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 1370, 
 // Unused CONCRETE-SYNTAX-TREE::ECL = 907, 
 // Unused CORE::SEQUENCE-OUT-OF-BOUNDS = 780, 
@@ -1474,7 +1475,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-AST::IF-AST = 1214, 
 // Unused CORE::SIMPLE-PROGRAM-ERROR = 785, 
 // Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 1320, 
-// Unused CLASP-ANALYZER::OFFSET = 1533, 
+// Unused CLASP-ANALYZER::OFFSET = 1534, 
 // Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 1062, 
 // Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 1182, 
 // Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 1072, 
@@ -1488,9 +1489,10 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-ENVIRONMENT::TAG = 1315, 
 // Unused STATIC-GFS::CHANGER-UPDATER = 757, 
 // Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 874, 
-// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1538, 
+// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1540, 
 // Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 860, 
 // Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 1015, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-OFFSET = 1539, 
 // Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 1067, 
 // Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 1296, 
 // Unused CLASP-CLEAVIR::CLASP-64BIT = 1385, 
@@ -1561,7 +1563,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 1401, 
 // Unused ACCLIMATION::ENGLISH = 891, 
 // Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 932, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1549, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1551, 
 // Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 924, 
 // Unused CORE::STD-CLASS = 724, 
 // Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 1048, 
@@ -1581,7 +1583,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-BIR::TYPE-CONFLICT = 1173, 
 // Unused ECLECTOR.READER::DIGIT-EXPECTED = 1049, 
 // Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1511, 
-// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1534, 
+// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1535, 
 // Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1104, 
 // Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 994, 
 // Unused CLASP-ANALYZER::DEBUG-INFO = 1473, 
@@ -1594,20 +1596,20 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 1374, 
 // Unused CLEAVIR-BIR::READVAR = 1136, 
 // Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 1381, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1531, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1532, 
 // Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 1218, 
 // Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 1372, 
 // Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 981, 
 // Unused CLEAVIR-BIR::TRANSFER = 1112, 
 // Unused CLOS::EQL-SPECIALIZER = 721, 
 // Unused CLEAVIR-BIR::CHOKE = 1166, 
-// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1532, 
+// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1533, 
 // Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 1351, 
 // Unused CLEAVIR-BIR::VALUES-SAVE = 1150, 
-// Unused CLASP-ANALYZER::DESTINATION = 1554, 
+// Unused CLASP-ANALYZER::DESTINATION = 1556, 
 // Unused CLEAVIR-METER::SIZE-METER = 1179, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 956, 
-// Unused CLASP-ANALYZER::CONTAINER = 1528, 
+// Unused CLASP-ANALYZER::CONTAINER = 1529, 
 // Unused CLEAVIR-BIR::LINEAR-DATUM = 1111, 
 // Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACA-AST = 1411, 
 // Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 1322, 
@@ -1652,7 +1654,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLOS::STD-METHOD = 741, 
 // Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-READ = 1438, 
 // Unused CLEAVIR-BIR::CALL = 1144, 
-// Unused CLASP-ANALYZER::SPECIES = 1552, 
+// Unused CLASP-ANALYZER::SPECIES = 1554, 
 // Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 1002, 
 // Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 1300, 
 // Unused ACCLIMATION::DEUTSCH = 889, 
@@ -1707,7 +1709,7 @@ STAMP_clang__SyntaxOnlyAction = ADJUST_STAMP(1911), // Stamp(477)  wtag(3)
 // Unused CLEAVIR-AST::VALUES-AST = 1217, 
 // Unused MP::PROCESS-JOIN-ERROR = 791, 
 // Unused CLEAVIR-AST::TYPEQ-AST = 1210, 
-// Unused CLASP-ANALYZER::JOB-GROUP = 1558, 
+// Unused CLASP-ANALYZER::JOB-GROUP = 1560, 
 // Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 1053, 
 // Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 1146, 
 // Unused GRAY::FUNDAMENTAL-BINARY-INPUT-STREAM = 836, 
@@ -2149,8 +2151,8 @@ register_stamp_name("STAMP_core__DirectoryEntry_O", ADJUST_STAMP(1683));
 register_stamp_name("STAMP_core__LightUserData_O", ADJUST_STAMP(1687));
 register_stamp_name("STAMP_core__UserData_O", ADJUST_STAMP(1691));
 register_stamp_name("STAMP_core__Record_O", ADJUST_STAMP(1695));
-register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1699));
-register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1703));
+register_stamp_name("STAMP_clbind__ClassRegistry_O", ADJUST_STAMP(1699));
+register_stamp_name("STAMP_core__Frame_O", ADJUST_STAMP(1703));
 register_stamp_name("STAMP_core__Cons_O", ADJUST_STAMP(1707));
 register_stamp_name("STAMP_core__Lisp_O", ADJUST_STAMP(1711));
 register_stamp_name("STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_", ADJUST_STAMP(1715));
@@ -2278,21 +2280,21 @@ template <typename FP> struct Cast<core::Integer_O*,FP> {
       return ((ISA_ADJUST_STAMP(1579) <= kindVal) && (kindVal <= ISA_ADJUST_STAMP(1587)));
   };
 };
-// STAMP_clbind__ClassRegistry_O
-template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->shifted_stamp();
-    // IsA-stamp-range clbind::ClassRegistry_O val -> 1703
-      return (kindVal == ISA_ADJUST_STAMP(1703));
-  };
-};
 // STAMP_core__Frame_O
 template <typename FP> struct Cast<core::Frame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->shifted_stamp();
-    // IsA-stamp-range core::Frame_O val -> 1699
+    // IsA-stamp-range core::Frame_O val -> 1703
+      return (kindVal == ISA_ADJUST_STAMP(1703));
+  };
+};
+// STAMP_clbind__ClassRegistry_O
+template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->shifted_stamp();
+    // IsA-stamp-range clbind::ClassRegistry_O val -> 1699
       return (kindVal == ISA_ADJUST_STAMP(1699));
   };
 };
@@ -5716,8 +5718,8 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(core::ComplexVector_O,core::ComplexVector_int64_t_O,TYPEQ_ADJUST_STAMP(571),TYPEQ_ADJUST_STAMP(735));
       ADD_SINGLE_TYPEQ_TEST(core::SimpleMDArray_int32_t_O,TYPEQ_ADJUST_STAMP(447));
       ADD_RANGE_TYPEQ_TEST(core::Integer_O,core::Fixnum_dummy_O,TYPEQ_ADJUST_STAMP(1579),TYPEQ_ADJUST_STAMP(1587));
-      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1703));
-      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1699));
+      ADD_SINGLE_TYPEQ_TEST(core::Frame_O,TYPEQ_ADJUST_STAMP(1703));
+      ADD_SINGLE_TYPEQ_TEST(clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(1699));
       ADD_SINGLE_TYPEQ_TEST(asttooling::AstVisitor_O,TYPEQ_ADJUST_STAMP(1719));
       ADD_SINGLE_TYPEQ_TEST(mp::Process_O,TYPEQ_ADJUST_STAMP(219));
       ADD_SINGLE_TYPEQ_TEST(core::Record_O,TYPEQ_ADJUST_STAMP(1695));
@@ -5855,7 +5857,7 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_RANGE_TYPEQ_TEST(llvmo::DINode_O,llvmo::DICompileUnit_O,TYPEQ_ADJUST_STAMP(1111),TYPEQ_ADJUST_STAMP(1167));
       ADD_SINGLE_TYPEQ_TEST(llvmo::GlobalVariable_O,TYPEQ_ADJUST_STAMP(1303));
       ADD_SINGLE_TYPEQ_TEST(core::BroadcastStream_O,TYPEQ_ADJUST_STAMP(1647));
-      ADD_RANGE_TYPEQ_TEST(core::General_O,clbind::ClassRegistry_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1703));
+      ADD_RANGE_TYPEQ_TEST(core::General_O,core::Frame_O,TYPEQ_ADJUST_STAMP(19),TYPEQ_ADJUST_STAMP(1703));
       ADD_SINGLE_TYPEQ_TEST(llvmo::ObjectFile_O,TYPEQ_ADJUST_STAMP(191));
       ADD_SINGLE_TYPEQ_TEST(llvmo::Library_O,TYPEQ_ADJUST_STAMP(179));
       ADD_RANGE_TYPEQ_TEST(core::Closure_O,core::SingleDispatchGenericFunctionClosure_O,TYPEQ_ADJUST_STAMP(95),TYPEQ_ADJUST_STAMP(111));
@@ -6058,6 +6060,355 @@ template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
       ADD_SINGLE_TYPEQ_TEST(llvmo::PointerType_O,TYPEQ_ADJUST_STAMP(1027));
       ADD_SINGLE_TYPEQ_TEST(core::TwoWayStream_O,TYPEQ_ADJUST_STAMP(1623));
 #endif // defined(GC_TYPEQ)
+#if defined(DO_CLASS)
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_size_t_O),STAMP_core__MDArray_size_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte2_t_O),STAMP_core__SimpleVector_byte2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),STAMP_core__SimpleMDArray_fixnum_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_O),STAMP_core__ComplexVector_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),STAMP_core__SimpleMDArray_int32_t_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Integer_O),STAMP_core__Integer_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Frame_O),STAMP_core__Frame_O);
+DO_CLASS(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),STAMP_clbind__ClassRegistry_O);
+DO_CLASS(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),STAMP_asttooling__AstVisitor_O);
+DO_CLASS(SAFE_TYPE_MACRO(mp::Process_O),STAMP_mp__Process_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Record_O),STAMP_core__Record_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LightUserData_O),STAMP_core__LightUserData_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArrayT_O),STAMP_core__MDArrayT_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::DirectoryEntry_O),STAMP_core__DirectoryEntry_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Linker_O),STAMP_llvmo__Linker_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_float_O),STAMP_core__MDArray_float_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SourcePosInfo_O),STAMP_core__SourcePosInfo_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::BranchInst_O),STAMP_llvmo__BranchInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),STAMP_llvmo__AllocaInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::StandardClassCreator_O),STAMP_core__StandardClassCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_float_O),STAMP_core__ComplexVector_float_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTableCustom_O),STAMP_core__HashTableCustom_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte8_t_O),STAMP_core__ComplexVector_byte8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTable_O),STAMP_core__HashTable_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),STAMP_core__InvocationHistoryFrameIterator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),STAMP_core__SimpleVector_size_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIScope_O),STAMP_llvmo__DIScope_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FileStatus_O),STAMP_core__FileStatus_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),STAMP_llvmo__IndirectBrInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),STAMP_llvmo__ConstantArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::PHINode_O),STAMP_llvmo__PHINode_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Package_O),STAMP_core__Package_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),STAMP_core__SimpleMDArrayBaseChar_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILocation_O),STAMP_llvmo__DILocation_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_O),STAMP_core__SimpleMDArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Stream_O),STAMP_core__Stream_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::MDString_O),STAMP_llvmo__MDString_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::ShortFloat_O),STAMP_core__ShortFloat_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Number_O),STAMP_core__Number_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::T_O),STAMP_core__T_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),STAMP_llvmo__DICompileUnit_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),STAMP_core__AbstractSimpleVector_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),STAMP_core__SimpleMDArray_byte16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Pathname_O),STAMP_core__Pathname_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Str8Ns_O),STAMP_core__Str8Ns_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),STAMP_llvmo__FunctionPass_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte4_t_O),STAMP_core__SimpleVector_byte4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::UndefValue_O),STAMP_llvmo__UndefValue_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::CallBase_O),STAMP_llvmo__CallBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),STAMP_core__CompileTimeEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Path_O),STAMP_core__Path_O);
+DO_CLASS(SAFE_TYPE_MACRO(mp::SharedMutex_O),STAMP_mp__SharedMutex_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::InstanceCreator_O),STAMP_core__InstanceCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::IOStreamStream_O),STAMP_core__IOStreamStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Scope_O),STAMP_core__Scope_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::InsertPoint_O),STAMP_llvmo__InsertPoint_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FunctionDescription_O),STAMP_core__FunctionDescription_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_double_O),STAMP_core__ComplexVector_double_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::StrWNs_O),STAMP_core__StrWNs_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::EchoStream_O),STAMP_core__EchoStream_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::HashTableBase_O),STAMP_core__HashTableBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),STAMP_core__SimpleMDArrayBit_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArrayBit_O),STAMP_core__MDArrayBit_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte16_t_O),STAMP_core__ComplexVector_byte16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::AtomicFixnumHolder_O),STAMP_core__AtomicFixnumHolder_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),STAMP_llvmo__DILocalScope_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),STAMP_core__LocalEntryPoint_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int2_t_O),STAMP_core__ComplexVector_int2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),STAMP_llvmo__DILexicalBlock_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DITypeRefArray_O),STAMP_llvmo__DITypeRefArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(mp::Mutex_O),STAMP_mp__Mutex_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),STAMP_core__RecursiveDirectoryIterator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::StringInputStream_O),STAMP_core__StringInputStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ModulePass_O),STAMP_llvmo__ModulePass_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FunctionFrame_O),STAMP_core__FunctionFrame_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),STAMP_llvmo__DILocalVariable_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::LongFloat_O),STAMP_core__LongFloat_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int4_t_O),STAMP_core__ComplexVector_int4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),STAMP_llvmo__TargetLibraryInfoWrapperPass_O);
+DO_CLASS(SAFE_TYPE_MACRO(asttooling::QualType_O),STAMP_asttooling__QualType_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LibraryFile_O),STAMP_llvmo__LibraryFile_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::User_O),STAMP_llvmo__User_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),STAMP_core__MDArray_int16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_T_O),STAMP_core__ComplexVector_T_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::FenceInst_O),STAMP_llvmo__FenceInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),STAMP_llvmo__AtomicCmpXchgInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ValueFrame_O),STAMP_core__ValueFrame_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int8_t_O),STAMP_core__ComplexVector_int8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int4_t_O),STAMP_core__SimpleMDArray_int4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),STAMP_core__SimpleVector_int32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_double_O),STAMP_core__SimpleMDArray_double_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Complex_O),STAMP_core__Complex_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),STAMP_llvmo__ConstantPointerNull_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::VectorType_O),STAMP_llvmo__VectorType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::EntryPointBase_O),STAMP_core__EntryPointBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),STAMP_llvmo__ValueAsMetadata_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),STAMP_llvmo__ConstantExpr_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::StructType_O),STAMP_llvmo__StructType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::RandomState_O),STAMP_core__RandomState_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int16_t_O),STAMP_core__ComplexVector_int16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_float_O),STAMP_core__SimpleMDArray_float_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Target_O),STAMP_llvmo__Target_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int2_t_O),STAMP_core__SimpleVector_int2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),STAMP_core__MDArray_byte64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),STAMP_core__SimpleVector_fixnum_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),STAMP_core__SimpleVector_byte32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),STAMP_core__SingleDispatchGenericFunctionClosure_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::AnsiStream_O),STAMP_core__AnsiStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::BuiltinClosure_O),STAMP_core__BuiltinClosure_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::SingleFloat_dummy_O),STAMP_core__SingleFloat_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIExpression_O),STAMP_llvmo__DIExpression_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Module_O),STAMP_llvmo__Module_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Environment_O),STAMP_core__Environment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ValueEnvironment_O),STAMP_core__ValueEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),STAMP_llvmo__InvokeInst_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::StrNs_O),STAMP_core__StrNs_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),STAMP_core__UnwindProtectEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),STAMP_clasp_ffi__ForeignData_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::CallInst_O),STAMP_llvmo__CallInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),STAMP_llvmo__FunctionPassManager_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::DoubleFloat_O),STAMP_core__DoubleFloat_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::StringStream_O),STAMP_core__StringStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LibraryBase_O),STAMP_llvmo__LibraryBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Sigset_O),STAMP_core__Sigset_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),STAMP_core__MDArray_int32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),STAMP_asttooling__AsttoolingExposer_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::IntegerType_O),STAMP_llvmo__IntegerType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),STAMP_core__MDArray_int64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),STAMP_core__SimpleMDArray_size_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SmallMultimap_O),STAMP_core__SmallMultimap_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),STAMP_llvmo__PassManagerBuilder_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Fixnum_dummy_O),STAMP_core__Fixnum_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),STAMP_core__MDArray_int8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),STAMP_llvmo__ConstantFP_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Cons_O),STAMP_core__Cons_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),STAMP_llvmo__LLVMContext_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int4_t_O),STAMP_core__MDArray_int4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),STAMP_core__WeakKeyHashTable_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Rack_O),STAMP_core__Rack_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),STAMP_core__MDArrayBaseChar_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::UserData_O),STAMP_core__UserData_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ExternalObject_O),STAMP_core__ExternalObject_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DINode_O),STAMP_llvmo__DINode_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),STAMP_llvmo__GlobalVariable_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::BroadcastStream_O),STAMP_core__BroadcastStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::General_O),STAMP_core__General_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),STAMP_llvmo__ObjectFile_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Library_O),STAMP_llvmo__Library_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Closure_O),STAMP_core__Closure_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_size_t_O),STAMP_core__ComplexVector_size_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::BlockEnvironment_O),STAMP_core__BlockEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(mpip::Mpi_O),STAMP_mpip__Mpi_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DINodeArray_O),STAMP_llvmo__DINodeArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),STAMP_llvmo__ConstantDataArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SmallMap_O),STAMP_core__SmallMap_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Instance_O),STAMP_core__Instance_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),STAMP_llvmo__TargetOptions_O);
+DO_CLASS(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),STAMP_clasp_ffi__ForeignTypeSpec_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Unused_dummy_O),STAMP_core__Unused_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),STAMP_core__PosixTimeDuration_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),STAMP_llvmo__DWARFContext_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTableEqual_O),STAMP_core__HashTableEqual_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),STAMP_core__SimpleMDArray_byte64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Triple_O),STAMP_llvmo__Triple_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::BitVectorNs_O),STAMP_core__BitVectorNs_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::CoreExposer_O),STAMP_core__CoreExposer_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),STAMP_llvmo__NamedMDNode_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),STAMP_core__SimpleVector_byte16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),STAMP_llvmo__ThreadSafeContext_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),STAMP_llvmo__TargetMachine_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),STAMP_core__SimpleVector_byte64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Value_O),STAMP_llvmo__Value_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleBaseString_O),STAMP_core__SimpleBaseString_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Test_O),STAMP_core__Test_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Metadata_O),STAMP_llvmo__Metadata_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_O),STAMP_core__MDArray_O);
+DO_CLASS(SAFE_TYPE_MACRO(clbind::ClassRep_O),STAMP_clbind__ClassRep_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),STAMP_llvmo__ConstantInt_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),STAMP_core__SimpleMDArray_int16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::StructLayout_O),STAMP_llvmo__StructLayout_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),STAMP_core__SimpleMDArrayT_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ActivationFrame_O),STAMP_core__ActivationFrame_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),STAMP_llvmo__PassManagerBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LoadInst_O),STAMP_llvmo__LoadInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),STAMP_llvmo__ConstantStruct_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Exposer_O),STAMP_core__Exposer_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::DirectoryIterator_O),STAMP_core__DirectoryIterator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte2_t_O),STAMP_core__MDArray_byte2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),STAMP_llvmo__DISubroutineType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),STAMP_core__LexicalEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::PosixTime_O),STAMP_core__PosixTime_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),STAMP_llvmo__MetadataAsValue_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleBitVector_O),STAMP_core__SimpleBitVector_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),STAMP_core__FunctionContainerEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),STAMP_core__SimpleVector_int8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),STAMP_llvmo__ResumeInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Function_O),STAMP_llvmo__Function_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIType_O),STAMP_llvmo__DIType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Readtable_O),STAMP_core__Readtable_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),STAMP_llvmo__IRBuilder_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ClaspJIT_O),STAMP_llvmo__ClaspJIT_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),STAMP_core__SimpleVector_byte8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),STAMP_llvmo__DILexicalBlockBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::MDNode_O),STAMP_llvmo__MDNode_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_fixnum_O),STAMP_core__ComplexVector_fixnum_O);
+DO_CLASS(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),STAMP_mp__RecursiveMutex_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_float_O),STAMP_core__SimpleVector_float_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),STAMP_llvmo__VAArgInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int4_t_O),STAMP_core__SimpleVector_int4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),STAMP_core__MDArray_fixnum_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),STAMP_core__SharpEqualWrapper_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LoadTimeValues_O),STAMP_core__LoadTimeValues_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIFile_O),STAMP_llvmo__DIFile_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::CodeBase_O),STAMP_llvmo__CodeBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DataLayout_O),STAMP_llvmo__DataLayout_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),STAMP_llvmo__BasicBlock_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),STAMP_core__SimpleMDArray_int8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),STAMP_llvmo__EngineBuilder_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte64_t_O),STAMP_core__ComplexVector_byte64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),STAMP_llvmo__SectionedAddress_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),STAMP_core__MDArray_byte32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Character_dummy_O),STAMP_core__Character_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),STAMP_core__TagbodyEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Constant_O),STAMP_llvmo__Constant_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SpecialForm_O),STAMP_core__SpecialForm_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::FunctionCallee_O),STAMP_llvmo__FunctionCallee_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),STAMP_llvmo__DIBasicType_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),STAMP_llvmo__DIBuilder_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::NativeVector_int_O),STAMP_core__NativeVector_int_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::APInt_O),STAMP_llvmo__APInt_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::APFloat_O),STAMP_llvmo__APFloat_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),STAMP_core__SimpleMDArrayCharacter_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),STAMP_core__SimpleCharacterString_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Symbol_O),STAMP_core__Symbol_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Array_O),STAMP_core__Array_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte4_t_O),STAMP_core__MDArray_byte4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Argument_O),STAMP_llvmo__Argument_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Iterator_O),STAMP_core__Iterator_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),STAMP_llvmo__IRBuilderBase_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::GlobalEntryPoint_O),STAMP_core__GlobalEntryPoint_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Null_O),STAMP_core__Null_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),STAMP_llvmo__TargetPassConfig_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),STAMP_core__SingleDispatchMethod_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::NativeVector_double_O),STAMP_core__NativeVector_double_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::GlueEnvironment_O),STAMP_core__GlueEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::CxxObject_O),STAMP_core__CxxObject_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),STAMP_llvmo__ReturnInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::FunctionType_O),STAMP_llvmo__FunctionType_O);
+DO_CLASS(SAFE_TYPE_MACRO(clbind::DummyCreator_O),STAMP_clbind__DummyCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),STAMP_core__MDArray_byte16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIContext_O),STAMP_llvmo__DIContext_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::JITDylib_O),STAMP_llvmo__JITDylib_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Type_O),STAMP_llvmo__Type_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Pointer_O),STAMP_core__Pointer_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),STAMP_llvmo__UnreachableInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int64_t_O),STAMP_core__ComplexVector_int64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FileScope_O),STAMP_core__FileScope_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Float_O),STAMP_core__Float_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte4_t_O),STAMP_core__SimpleMDArray_byte4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),STAMP_llvmo__DIDerivedType_O);
+//DO_CLASS(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),STAMP_clbind__ConstructorCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),STAMP_core__SimpleVector_int64_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),STAMP_llvmo__ConstantDataSequential_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::TranslationFunctor_O),STAMP_core__TranslationFunctor_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Code_O),STAMP_llvmo__Code_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_double_O),STAMP_core__MDArray_double_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::StoreInst_O),STAMP_llvmo__StoreInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DebugLoc_O),STAMP_llvmo__DebugLoc_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::WeakPointer_O),STAMP_core__WeakPointer_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::IOFileStream_O),STAMP_core__IOFileStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),STAMP_core__RuntimeVisibleEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),STAMP_core__SimpleMDArray_byte8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Instruction_O),STAMP_llvmo__Instruction_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FileStream_O),STAMP_core__FileStream_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Rational_O),STAMP_core__Rational_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),STAMP_core__MDArrayCharacter_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),STAMP_llvmo__LandingPadInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ImmobileObject_O),STAMP_core__ImmobileObject_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Function_O),STAMP_core__Function_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int2_t_O),STAMP_core__SimpleMDArray_int2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::AtomicT_Holder_O),STAMP_core__AtomicT_Holder_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTableEql_O),STAMP_core__HashTableEql_O);
+DO_CLASS(SAFE_TYPE_MACRO(mp::ConditionVariable_O),STAMP_mp__ConditionVariable_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Real_O),STAMP_core__Real_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),STAMP_core__MDArray_byte8_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),STAMP_core__FuncallableInstanceCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::StringOutputStream_O),STAMP_core__StringOutputStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::AttributeSet_O),STAMP_llvmo__AttributeSet_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),STAMP_llvmo__AtomicRMWInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::MDBuilder_O),STAMP_llvmo__MDBuilder_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::PassManager_O),STAMP_llvmo__PassManager_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_O),STAMP_core__SimpleVector_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),STAMP_llvmo__DISubprogram_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::Creator_O),STAMP_core__Creator_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ArrayType_O),STAMP_llvmo__ArrayType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),STAMP_core__SimpleMDArray_int64_t_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::SimpleString_O),STAMP_core__SimpleString_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DIVariable_O),STAMP_llvmo__DIVariable_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte2_t_O),STAMP_core__SimpleMDArray_byte2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),STAMP_llvmo__BlockAddress_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),STAMP_llvmo__DICompositeType_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),STAMP_llvmo__MCSubtargetInfo_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),STAMP_core__FunctionValueEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::DerivableCxxClassCreator_O),STAMP_core__DerivableCxxClassCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTableEq_O),STAMP_core__HashTableEq_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::HashTableEqualp_O),STAMP_core__HashTableEqualp_O);
+DO_CLASS(SAFE_TYPE_MACRO(asttooling::PresumedLoc_O),STAMP_asttooling__PresumedLoc_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LambdaListHandler_O),STAMP_core__LambdaListHandler_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),STAMP_core__ConcatenatedStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),STAMP_core__SymbolMacroletEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),STAMP_core__MacroletEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),STAMP_llvmo__ImmutablePass_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::FuncallableInstance_O),STAMP_core__FuncallableInstance_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SynonymStream_O),STAMP_core__SynonymStream_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Ratio_O),STAMP_core__Ratio_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::MDArray_int2_t_O),STAMP_core__MDArray_int2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte2_t_O),STAMP_core__ComplexVector_byte2_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),STAMP_core__ClosureWithSlots_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),STAMP_llvmo__ExecutionEngine_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ClassRepCreator_O),STAMP_core__ClassRepCreator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),STAMP_core__SimpleVector_int16_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Attribute_O),STAMP_llvmo__Attribute_O);
+//DO_CLASS(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),STAMP_core__DerivableCxxObject_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),STAMP_core__SymbolToEnumConverter_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),STAMP_llvmo__SwitchInst_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::NativeVector_float_O),STAMP_core__NativeVector_float_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::Pass_O),STAMP_llvmo__Pass_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_int32_t_O),STAMP_core__ComplexVector_int32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::VaList_dummy_O),STAMP_core__VaList_dummy_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte4_t_O),STAMP_core__ComplexVector_byte4_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(asttooling::SourceLocation_O),STAMP_asttooling__SourceLocation_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::CatchEnvironment_O),STAMP_core__CatchEnvironment_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LogicalPathname_O),STAMP_core__LogicalPathname_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),STAMP_llvmo__TargetSubtargetInfo_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::WrappedPointer_O),STAMP_core__WrappedPointer_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleVector_double_O),STAMP_core__SimpleVector_double_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),STAMP_core__SimpleMDArray_byte32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::Bignum_O),STAMP_core__Bignum_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),STAMP_llvmo__LLVMTargetMachine_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ClassHolder_O),STAMP_core__ClassHolder_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::LocalEntryPointGenerator_O),STAMP_core__LocalEntryPointGenerator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::GlobalEntryPointGenerator_O),STAMP_core__GlobalEntryPointGenerator_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::ComplexVector_byte32_t_O),STAMP_core__ComplexVector_byte32_t_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),STAMP_llvmo__UnaryInstruction_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),STAMP_llvmo__GlobalValue_O);
+DO_CLASS(SAFE_TYPE_MACRO(llvmo::PointerType_O),STAMP_llvmo__PointerType_O);
+DO_CLASS(SAFE_TYPE_MACRO(core::TwoWayStream_O),STAMP_core__TwoWayStream_O);
+#endif // defined(DO_CLASS)
 #if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
@@ -6091,13 +6442,13 @@ template <> class gctools::GCStamp<core::Integer_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Integer_O ;
 };
-template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
-public:
-  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
-};
 template <> class gctools::GCStamp<core::Frame_O> {
 public:
   static gctools::GCStampEnum const Stamp = gctools::STAMP_core__Frame_O ;
+};
+template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
+public:
+  static gctools::GCStampEnum const Stamp = gctools::STAMP_clbind__ClassRegistry_O ;
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
@@ -10316,7 +10667,7 @@ public:
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_Class), "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::APFloat>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APFloat" :NAME "APFloat") :INTEGRAL-VALUE NIL)))
- {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::APFloat), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_value), "_value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::APFloat*), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_valueP), "_value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 // Stamp = llvmo::APInt_O/1075
 { class_kind, STAMP_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, "llvmo::APInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
@@ -12907,7 +13258,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_patching_callback), "_patching_callback" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Seen" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), "_Seen" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Frame_O/1699
+// Stamp = clbind::ClassRegistry_O/1699
+{ class_kind, STAMP_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
+//      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
+// Stamp = core::Frame_O/1703
 { class_kind, STAMP_core__Frame_O, sizeof(core::Frame_O), 0, "core::Frame_O" },
 //      field: "stype" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12937,10 +13292,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),up), "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRegistry_O/1703
-{ class_kind, STAMP_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
-//      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Cons_O/1707
 { class_kind, STAMP_core__Cons_O, sizeof(core::Cons_O), 0, "core::Cons_O" },
 //      field: "_BadgeMtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
@@ -17603,23 +17954,23 @@ obj_finalize_STAMP_core__Record_O:
 #pragma clang diagnostic pop
     goto finalize_done;
 }
-obj_finalize_STAMP_core__Frame_O:
-{
-     // stamp value 1699
-    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wignored-qualifiers"
-    obj_gc_safe->~Frame_O();
-#pragma clang diagnostic pop
-    goto finalize_done;
-}
 obj_finalize_STAMP_clbind__ClassRegistry_O:
 {
-     // stamp value 1703
+     // stamp value 1699
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
     obj_gc_safe->~ClassRegistry_O();
+#pragma clang diagnostic pop
+    goto finalize_done;
+}
+obj_finalize_STAMP_core__Frame_O:
+{
+     // stamp value 1703
+    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
+    obj_gc_safe->~Frame_O();
 #pragma clang diagnostic pop
     goto finalize_done;
 }
@@ -18292,8 +18643,8 @@ static void* OBJ_FINALIZE_table[] = {
   /* 1687 */ &&obj_finalize_STAMP_core__LightUserData_O,
   /* 1691 */ &&obj_finalize_STAMP_core__UserData_O,
   /* 1695 */ &&obj_finalize_STAMP_core__Record_O,
-  /* 1699 */ &&obj_finalize_STAMP_core__Frame_O,
-  /* 1703 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
+  /* 1699 */ &&obj_finalize_STAMP_clbind__ClassRegistry_O,
+  /* 1703 */ &&obj_finalize_STAMP_core__Frame_O,
   /* 1707 */ &&obj_finalize_STAMP_core__Cons_O,
   /* 1711 */ &&obj_finalize_STAMP_core__Lisp_O,
   /* 1715 */ &&obj_finalize_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,
@@ -21146,18 +21497,18 @@ obj_deallocate_unmanaged_instance_STAMP_core__Record_O:
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_STAMP_core__Frame_O:
-{
-     // stamp value 1699
-    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
-    GC<core::Frame_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
 obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O:
 {
-     // stamp value 1703
+     // stamp value 1699
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    return;
+}
+obj_deallocate_unmanaged_instance_STAMP_core__Frame_O:
+{
+     // stamp value 1703
+    core::Frame_O* obj_gc_safe = reinterpret_cast<core::Frame_O*>(client);
+    GC<core::Frame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_STAMP_core__Cons_O:
@@ -21815,8 +22166,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1687 */ &&obj_deallocate_unmanaged_instance_STAMP_core__LightUserData_O,
   /* 1691 */ &&obj_deallocate_unmanaged_instance_STAMP_core__UserData_O,
   /* 1695 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Record_O,
-  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
-  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
+  /* 1699 */ &&obj_deallocate_unmanaged_instance_STAMP_clbind__ClassRegistry_O,
+  /* 1703 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Frame_O,
   /* 1707 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Cons_O,
   /* 1711 */ &&obj_deallocate_unmanaged_instance_STAMP_core__Lisp_O,
   /* 1715 */ &&obj_deallocate_unmanaged_instance_STAMP_clang__RecursiveASTVisitor_asttooling__AstVisitor_O_,

@@ -40,6 +40,8 @@ namespace gctools {
  */
 template <size_t BitUnitBitWidth, int Signedp>
 class GCBitUnitArray_moveable : public GCContainer {
+public:
+  GCBitUnitArray_moveable() {};
  public:
   static const size_t bits_in_word = sizeof(bit_array_word)*CHAR_BIT;
   static const size_t bit_unit_bit_width = BitUnitBitWidth;

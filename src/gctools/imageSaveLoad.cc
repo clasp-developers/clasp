@@ -9,6 +9,11 @@
 
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+
 #include <iomanip>
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
@@ -16,6 +21,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/gc_boot.h>
 
+#ifdef USE_PRECISE_GC
 
 #if 1
 #define DBG_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
@@ -148,6 +154,9 @@ struct ISLFileHeader {
   size_t _Magic;
   size_t _Size;
   ISLFileHeader(size_t sz) : _Magic(MAGIC_NUMBER), _Size(sz) {};
+  bool good_magic() const {
+    return this->_Magic == MAGIC_NUMBER;
+  }
 };
 
 
@@ -160,7 +169,21 @@ struct walker_callback_t {
 extern "C" {
 void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
   gctools::walker_callback_t* walker = (gctools::walker_callback_t*)client_data;
-  walker->callback((gctools::clasp_ptr_t)ptr, sz);
+  int kind;
+  size_t psize;
+#ifdef USE_BOEHM
+  kind = GC_get_kind_and_size((void*)ptr, &psize );
+#endif
+    // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
+  if ( kind == gctools::global_lisp_kind ||
+       kind == gctools::global_cons_kind ||
+       kind == gctools::global_class_kind ||
+       kind == gctools::global_container_kind ||
+       kind == gctools::global_code_kind ||
+       kind == gctools::global_atomic_kind ||
+       kind == gctools::global_strong_weak_kind ) {
+    walker->callback((gctools::clasp_ptr_t)ptr, sz);
+  }
 }
 };
 
@@ -174,41 +197,29 @@ struct calculate_size_t : public walker_callback_t {
   size_t _cons_count;
   size_t _weak_count;
   void callback(clasp_ptr_t cheader, size_t sz) {
-    size_t psize;
-    int kind = GC_get_kind_and_size((void*)cheader, &psize );
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if ( kind ==global_lisp_kind ||
-         kind == global_cons_kind ||
-         kind == global_class_kind ||
-         kind == global_container_kind ||
-         kind == global_code_kind ||
-         kind == global_atomic_kind ||
-         kind == global_strong_weak_kind ) {
-      if (header->stampP()) {
-        this->_general_count++;
-        clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-        size_t delta = isl_obj_skip(client,false)-client;
-        DBG_SL2(BF("kind: %d size: %lu   general header@%p -> %p  sz = %lu  obj_skip = %lu\n") % kind % psize % header % *(void**)header % sz % delta );
-        if (delta > sz) {
-          printf("%s:%d:%s  There is a size mismatch for header %p  boehm says %lu  must be larger than obj_skip says %lu and i\n", __FILE__, __LINE__, __FUNCTION__, *(clasp_ptr_t*)header, sz, delta );
-          size_t delta2 = isl_obj_skip(client,true)-client;
-        }
-        this->_total_size += delta;
-      } else if (header->consObjectP()) {
-        DBG_SL2(BF("kind: %d size: %lu   cons header@%p -> %p\n") % kind % psize % header % *(void**)header );
-        this->_cons_count++;
-        clasp_ptr_t client = (clasp_ptr_t)header;
-        this->_total_size += isl_cons_skip(client)-client;
-      } else if (header->weakObjectP()) {
-        this->_weak_count++;
-        clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-        DBG_SL2(BF("weak object kind: %d size: %lu header %p   client: %p\n") % kind % psize % (void*)header % (void*)client );
-        this->_total_size += isl_weak_skip(client,false)-client;
+    if (header->stampP()) {
+      this->_general_count++;
+      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      size_t delta = isl_obj_skip(client,false)-client;
+      DBG_SL2(BF("   general header@%p -> %p  sz = %lu  obj_skip = %lu\n") % header % *(void**)header % sz % delta );
+      if (delta > sz) {
+        printf("%s:%d:%s  There is a size mismatch for header %p  boehm says %lu  must be larger than obj_skip says %lu and i\n", __FILE__, __LINE__, __FUNCTION__, *(clasp_ptr_t*)header, sz, delta );
+        size_t delta2 = isl_obj_skip(client,true)-client;
       }
-    } else {
-      printf("%s:%d:%s kind: %d size: %lu   unknown object %p\n", __FILE__, __LINE__, __FUNCTION__, kind, psize, header );
+      this->_total_size += delta;
+    } else if (header->consObjectP()) {
+      DBG_SL2(BF("   cons header@%p -> %p\n") % header % *(void**)header );
+      this->_cons_count++;
+      clasp_ptr_t client = (clasp_ptr_t)header;
+      this->_total_size += isl_cons_skip(client)-client;
+    } else if (header->weakObjectP()) {
+      this->_weak_count++;
+      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      DBG_SL2(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
+      this->_total_size += isl_weak_skip(client,false)-client;
     }
   }
 
@@ -252,47 +263,37 @@ struct copy_objects_t : public walker_callback_t {
   }
   
   void callback(clasp_ptr_t cheader, size_t sz) {
-    size_t psize;
-    int kind = GC_get_kind_and_size((void*)cheader, &psize );
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if ( kind ==global_lisp_kind ||
-         kind == global_cons_kind ||
-         kind == global_class_kind ||
-         kind == global_container_kind ||
-         kind == global_code_kind ||
-         kind == global_atomic_kind ||
-         kind == global_strong_weak_kind ) {
-      if (header->stampP()) {
-        clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-        size_t bytes = isl_obj_skip(client,false)-client;
-        ISLHeader_s islheader( Object, bytes );
-        this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
-        DBG_SL2(BF("kind: %d size: %lu   copying general %p to %p bytes: %lu\n") % kind % psize % header % (void*)this->_buffer % bytes );
-        char* new_addr = this->write_buffer(bytes,(char*)header);
-        header->setFwdPointer( new_addr );
-        header->setFwdSize( bytes );
-      } else if (header->consObjectP()) {
-        clasp_ptr_t client = (clasp_ptr_t)header;
-        size_t bytes = isl_cons_skip(client) - client;
-        ISLHeader_s islheader( Object, bytes );
-        this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader );
-        DBG_SL2(BF("kind: %d size: %lu  copying cons %p to %p bytes: %lu\n") % kind % psize % header % (void*)this->_buffer % bytes );
-        char* new_addr = this->write_buffer(bytes,(char*)header);
-        header->setFwdPointer( new_addr );
-        header->setFwdSize( bytes );
-      } else if (header->weakObjectP()) {
-        printf("%s:%d:%s kind: %d size: %lu   weak_skip\n", __FILE__, __LINE__, __FUNCTION__, kind, psize );
-        clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-        size_t bytes = isl_weak_skip(client,false)-client;
-        ISLHeader_s islheader( Object, bytes );
-        this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
-        DBG_SL2(BF("kind: %d size: %lu   copying weak %p to %p bytes: %lu\n") % kind % psize % header % (void*)this->_buffer % bytes );
-        char* new_addr = this->write_buffer(bytes,(char*)header);
-        header->setFwdPointer( new_addr );
-        header->setFwdSize( bytes );
-      }
+    if (header->stampP()) {
+      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      size_t bytes = isl_obj_skip(client,false)-client;
+      ISLHeader_s islheader( Object, bytes );
+      this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
+      DBG_SL2(BF("   copying general %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
+      char* new_addr = this->write_buffer(bytes,(char*)header);
+      header->setFwdPointer( new_addr );
+      header->setFwdSize( bytes );
+    } else if (header->consObjectP()) {
+      clasp_ptr_t client = (clasp_ptr_t)header;
+      size_t bytes = isl_cons_skip(client) - client;
+      ISLHeader_s islheader( Object, bytes );
+      this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader );
+      DBG_SL2(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
+      char* new_addr = this->write_buffer(bytes,(char*)header);
+      header->setFwdPointer( new_addr );
+      header->setFwdSize( bytes );
+    } else if (header->weakObjectP()) {
+      printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
+      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      size_t bytes = isl_weak_skip(client,false)-client;
+      ISLHeader_s islheader( Object, bytes );
+      this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
+      DBG_SL2(BF("   copying weak %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
+      char* new_addr = this->write_buffer(bytes,(char*)header);
+      header->setFwdPointer( new_addr );
+      header->setFwdSize( bytes );
     }
   }
 };
@@ -339,7 +340,9 @@ struct fixup_objects_t : public walker_callback_t {
 
 void image_save(const std::string& filename)
 {
+#ifdef USE_BOEHM
   GC_stop_world_external();
+#endif
   
   DBG_SL(BF(" Entered\n" ));
   printf("%s:%d:%s WHAT AM I GOING TO DO WITH WEAK OBJECTS\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -459,9 +462,79 @@ void image_save(const std::string& filename)
 }
 
 
+  
+
+
+int image_load(const std::string& filename )
+{
+  int fd = open(filename.c_str(),O_RDONLY);
+  off_t fsize = lseek(fd, 0, SEEK_END);
+  lseek(fd,0,SEEK_SET);
+  void* memory = mmap(NULL, fsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FILE, fd, 0);
+  if (memory==MAP_FAILED) {
+    close(fd);
+    SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
+  }
+
+  //
+  // Stop the world - hopefully we can allocate objects 
+
+#ifdef USE_BOEHM
+  GC_stop_world_external();
+#endif
+
+  ISLFileHeader* file_header = reinterpret_cast<ISLFileHeader*>(memory);
+  if (!file_header->good_magic()) {
+    printf("The file is not an image file\n");
+    exit(1);
+  }
+  //
+  // Allocate new objects for everything we just loaded and set the forwarding pointers
+  //
+  ISLHeader_s* cur_header = reinterpret_cast<ISLHeader_s*>(file_header+1);
+  image_save_load_init_s init;
+  for ( ; cur_header->_Kind != End; cur_header = reinterpret_cast<ISLHeader_s*>((char*)(cur_header+1)+cur_header->_Size) ) {
+    Header_s* header = reinterpret_cast<Header_s*>(cur_header+1);
+    init._header = header;
+    core::T_sp obj;
+    if (header->stampP()) {
+      gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
+      obj = image_save_load_obj_allocate(stamp_wtag,&init);
+      printf("%s:%d:%s Allocated general %p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_());
+    } else if (header->consObjectP()) {
+      obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(&init);
+      printf("%s:%d:%s allocated cons @%p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_() );
+    } else if (header->weakObjectP()) {
+      printf("%s:%d:%s Handle allocate weak objects\n", __FILE__, __LINE__, __FUNCTION__ );
+    } else {
+      printf("%s:%d:%s Unknown object at %p\n", __FILE__, __LINE__, __FUNCTION__, header );
+    }
+    gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
+    header->setFwdPointer((void*)fwd);
+  }
+
+   
+  //
+  // munmap the memory
+  //
+  int res = munmap( memory, fsize );
+  if (res!=0) {
+    SIMPLE_ERROR(BF("Could not munmap memory"));
+  }
+#ifdef USE_BOEHM
+  GC_start_world_external();
+#endif
+  printf("Leaving image_load\n");
+  return 0;
+}
+
+
 
 
 };
+
+
+#endif // USE_PRECISE_GC
 
 
 

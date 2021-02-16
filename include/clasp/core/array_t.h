@@ -24,6 +24,7 @@ namespace core {
   public:
     // Simple vectors include pointers, so they can't have uninitialized contents.
     // Therefore we always pass initialElementSupplied=true.
+    SimpleVector_O() {};
   SimpleVector_O(size_t length, value_type initialElement=default_initial_element(), bool initialElementSupplied=true, size_t initialContentsSize=0, const value_type* initialContents=NULL) : TemplatedBase(length,initialElement,initialElementSupplied,initialContentsSize,initialContents) {};
     static SimpleVector_sp make(size_t length, T_sp initialElement=_Nil<T_O>(), bool initialElementSupplied=true, size_t initialContentsSize=0, const T_sp* initialContents=NULL,
                                 bool static_vector_p = false) {

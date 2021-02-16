@@ -41,6 +41,7 @@ namespace core {
 class Scope_O : public General_O {
   LISP_CLASS(core, CorePkg, Scope_O, "Scope", General_O);
 public:
+  CLASP_DEFAULT_CTOR Scope_O() {};
 };
 
 

@@ -2529,15 +2529,15 @@ class APFloat_O : public core::ExternalObject_O {
 
 public:
   typedef llvm::APFloat ExternalType;
-  dont_expose<llvm::APFloat>  _value;
+  llvm::APFloat* _valueP;
 
 public:
   static APFloat_sp makeAPFloatFloat(core::SingleFloat_sp value);
   static APFloat_sp makeAPFloatDouble(core::DoubleFloat_sp value);
 
 public:
-  APFloat_O() : Base(), _value(0.0){};
-  ~APFloat_O(){};
+  APFloat_O() : Base(), _valueP( new llvm::APFloat(0.0) ){};
+  ~APFloat_O(){delete this->_valueP;};
 }; // APFloat_O
 }; // llvmo
 namespace translate {
@@ -2545,7 +2545,7 @@ template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
   typedef llvm::APFloat DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value._value){};
+  from_object(T_P object) : _v(*gc::As<llvmo::APFloat_sp>(object)->_valueP){};
 };
 };
 
@@ -4627,10 +4627,13 @@ namespace llvmo {
 FORWARD(MDBuilder);
 class MDBuilder_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, MDBuilder_O, "MDBuilder", core::CxxObject_O);
-protected:
-  llvm::MDBuilder _Builder;
 public:
-  MDBuilder_O(llvm::LLVMContext& context) : _Builder(context) {};
+  CLASP_DEFAULT_CTOR MDBuilder_O() {};
+  ~MDBuilder_O() { delete this->_Builder; };
+protected:
+  llvm::MDBuilder* _Builder;
+public:
+  MDBuilder_O(llvm::LLVMContext& context) : _Builder(new llvm::MDBuilder(context)) {};
 public:
   CL_LISPIFY_NAME(make_mdbuilder);
   CL_DEF_CLASS_METHOD
@@ -4642,7 +4645,7 @@ public:
 
   CL_DEFMETHOD MDNode* createBranchWeightsTrueFalse(uint32_t trueWeight, uint32_t falseWeight)
   {
-    return this->_Builder.createBranchWeights(trueWeight,falseWeight);
+    return this->_Builder->createBranchWeights(trueWeight,falseWeight);
   };
     
 }; // MDBuilder_O
