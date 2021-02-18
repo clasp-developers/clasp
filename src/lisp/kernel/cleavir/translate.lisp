@@ -1066,11 +1066,12 @@
        (%intrinsic-call "cc_load_values" (list storage1 storage2))
        return-value))))
 
-(defmethod translate-simple-instruction ((inst cleavir-bir:load-time-value)
-                                         abi)
+(defmethod translate-simple-instruction
+    ((inst cleavir-bir:load-time-value-reference) abi)
   (declare (ignore abi))
-  (let ((index (gethash inst *constant-values*))
-        (label ""))
+  (let* ((ltv (first (cleavir-bir:inputs inst)))
+         (index (gethash ltv *constant-values*))
+         (label ""))
     (cmp:irc-load
      (cmp:irc-gep-variable (literal:ltv-global)
                            (list (%size_t 0)
