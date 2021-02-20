@@ -88,8 +88,8 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
       sentry << "@" << (void *)(key.raw_());
       sentry << "   -->   ";
       value_type val = values[i];
-      if (val.sameAsKeyP()) {
-        sentry << "sameAsKey!!!";
+      if (val.same_as_keyP()) {
+        sentry << "same_as_key!!!";
       } else {
         sentry << _rep_(val);
       }

@@ -881,7 +881,8 @@ void initialize_astExpose() {
     .iterator("vbases-iterator",
               (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_begin,
               (CXXRecordDecl::base_class_iterator (CXXRecordDecl::*)()) & CXXRecordDecl::vbases_end)
-    .def("hasDefinition", &clang::CXXRecordDecl::hasDefinition),
+    .def("hasDefinition", &clang::CXXRecordDecl::hasDefinition)
+    .def("isPolymorphic", &clang::CXXRecordDecl::isPolymorphic),
     CLASS_DECL(m,ClassTemplateSpecialization, CXXRecordDecl)
         //            .   def("desugar",&clang::ClassTemplateSpecializationDecl::desugar)
     .def("getTemplateArgs", &clang::ClassTemplateSpecializationDecl::getTemplateArgs)

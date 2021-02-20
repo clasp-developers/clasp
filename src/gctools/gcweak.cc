@@ -242,7 +242,7 @@ int WeakKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   GCWEAK_LOG(BF("Entered trySet with key %p") % tkey.raw_());
   size_t b;
   if (tkey == value) {
-    value = gctools::make_tagged_sameAsKey<core::T_O>();
+    value = gctools::make_tagged_same_as_key<core::T_O>();
   }
   value_type key(tkey);
 #ifdef DEBUG_TRYSET
@@ -358,7 +358,7 @@ core::T_mv WeakKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
         if ( k.raw_() && !k.unboundp() && !k.deletedp() ) {
           GCWEAK_LOG(BF("Returning success!"));
           core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
-          if ( value.sameAsKeyP() ) {
+          if ( value.same_as_keyP() ) {
             value = smart_ptr<core::T_O>(k);
           }
           result_mv = Values(value,core::lisp_true());
@@ -630,7 +630,7 @@ int StrongKeyHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   GCWEAK_LOG(BF("Entered trySet with key %p") % tkey.raw_());
   size_t b;
   if (tkey == value) {
-    value = gctools::make_tagged_sameAsKey<core::T_O>();
+    value = gctools::make_tagged_same_as_key<core::T_O>();
   }
   value_type key(tkey);
 #ifdef DEBUG_TRYSET
@@ -740,7 +740,7 @@ core::T_mv StrongKeyHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue)
     if ( !k.unboundp() && !k.deletedp() ) {
       GCWEAK_LOG(BF("Returning success!"));
       core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);
-      if ( value.sameAsKeyP() ) {
+      if ( value.same_as_keyP() ) {
         value = smart_ptr<core::T_O>(k);
       }
       result_mv = Values(value,core::lisp_true());

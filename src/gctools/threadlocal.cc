@@ -239,13 +239,6 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process, bool initialize
   this->_SparePendingInterruptRecords = cl__make_list(clasp_make_fixnum(16),_Nil<T_O>());
 };
 
-void ThreadLocalState::create_sigaltstack() {
-}
-
-void ThreadLocalState::destroy_sigaltstack()
-{
-}
-
 // Push a tag onto the list of active catches.
 void ThreadLocalState::pushCatchTag(T_sp tag) {
   this->_CatchTags = Cons_O::create(tag, this->_CatchTags);

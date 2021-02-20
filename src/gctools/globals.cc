@@ -42,5 +42,5 @@ core::Symbol_O*& global_tagged_Symbol_OP_no_key = global_core_symbols[3];
 /*! Tagged pointer to the global DELETED - used in weak hash tables */
 core::Symbol_O*& global_tagged_Symbol_OP_deleted = global_core_symbols[4];
 /*! Tagged pointer to the global SAME-AS-KEY - used in weak hash tables */
-core::Symbol_O*& global_tagged_Symbol_OP_sameAsKey = global_core_symbols[5];
+core::Symbol_O*& global_tagged_Symbol_OP_same_as_key = global_core_symbols[5];
 };

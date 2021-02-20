@@ -534,7 +534,7 @@ int image_load(const std::string& filename )
         core::T_sp obj;
         if (header->stampP()) {
           gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
-          obj = image_save_load_obj_allocate(stamp_wtag,&init);
+          obj = GCObjectAllocator<core::General_O>::image_save_load_allocate(&init); break;
           printf("%s:%d:%s allocated general %p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_());
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           header->setFwdPointer((void*)fwd);

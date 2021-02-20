@@ -493,11 +493,11 @@ namespace gctools {
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
-    tagged_stamp_t _guard;
+    uintptr_t _guard;
     int _dup_tail_start;
     int _dup_tail_size;
     StampWtagMtag _dup_stamp_wtag_mtag;
-    tagged_stamp_t _guard2;
+    uint _guard2;
     uintptr_t _guard3; // Header needs to be size aligned - so add another guard to get to 64 bytes
 #endif
   public:
@@ -507,17 +507,21 @@ namespace gctools {
     {}
 #endif
 #if defined(DEBUG_GUARD)
+#define GUARD1 0xFEEAFEEBDEADBEEF
+#define GUARD2 0xC0FFEEEE
+#define GUARD3 0xDDDDDDDDDDDDDDDD
+
     inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
-    Header_s(const StampWtagMtag& k, size_t tstart, size_t tsize, size_t total_size) 
-        : _stamp_wtag_mtag(k), 
-          _tail_start(tstart),
-          _tail_size(tsize),
-          _guard(0xFEEAFEEBDEADBEEF),
-          _dup_tail_start(tstart),
-          _dup_tail_size(tsize),
-          _dup_stamp_wtag_mtag(k),
-          _guard2(0xAAAAAAAAAAAAAAAA),
-          _guard3(0xDDDDDDDDDDDDDDDD)
+  Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
+    : _stamp_wtag_mtag(k), 
+      _tail_start(tstart),
+      _tail_size(tsize),
+      _guard(GUARD1),
+      _dup_tail_start(tstart),
+      _dup_tail_size(tsize),
+      _dup_stamp_wtag_mtag(k),
+      _guard2(GUARD2),
+      _guard3(GUARD3)
     {
       this->fill_tail();
     };

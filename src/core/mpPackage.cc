@@ -240,7 +240,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
   gctools::my_thread_allocation_points.initializeAllocationPoints();
 #endif
   my_thread->initialize_thread(process,true);
-  my_thread->create_sigaltstack();
+//  my_thread->create_sigaltstack();
   process->_ThreadInfo = my_thread;
   // Set the mp:*current-process* variable to the current process
   core::DynamicScopeManager scope(_sym_STARcurrent_processSTAR,process);
@@ -276,7 +276,7 @@ void* start_thread(void* vinfo) {
   // MPS setup of thread
   //
   start_thread_inner(uniqueId,cold_end_of_stack);
-  my_thread->destroy_sigaltstack();
+//  my_thread->destroy_sigaltstack();
   return NULL;
 }
 

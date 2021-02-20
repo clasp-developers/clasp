@@ -46,7 +46,7 @@ Layout_code* get_stamp_layout_codes() {
 #undef GC_OBJ_SCAN_HELPERS
 #endif // #ifndef RUNNING_MPSPREP
 #endif // #if defined(USE_PRECISE_GC)
-      {layout_end, 0, 0, 0, "" }
+      {layout_end, 0, 0, 0, 0, "" }
   };
   return &codes[0];
 };
@@ -337,28 +337,6 @@ struct GC_ms_entry* object_mark_proc(unsigned long* addr, struct GC_ms_entry *ms
 #endif // defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
 };
 
-
-
-#ifdef USE_PRECISE_GC
-extern "C" {
-
-gctools::smart_ptr<core::T_O> image_save_load_obj_allocate(gctools::GCStampEnum stamp_wtag, image_save_load_init_s* init) {
-  gctools::smart_ptr<core::T_O> obj;
-  switch (stamp_wtag) {
-#define SAFE_TYPE_MACRO(...) __VA_ARGS__
-#define DO_CLASS(_type_,_stamp_) case _stamp_: obj = GCObjectAllocator<_type_>::image_save_load_allocate(init); break;
-#include CLASP_GC_FILENAME
-#undef DO_CLASS
-  default: {
-    printf("%s:%d:%s Handle allocation of stamp_wtag = %lu\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)stamp_wtag);
-    abort();
-    break;
-  };
-  };
-  return obj;
-}
-};
-#endif // USE_PRECISE_GC
 
 #ifdef USE_MPS
 extern "C" {

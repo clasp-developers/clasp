@@ -148,6 +148,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_layout[cur_stamp].container_layout = NULL;
       local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
+      local_stamp_layout[cur_stamp].flags = codes[idx].data3;
       local_stamp_info[cur_stamp].name = codes[idx].description;
       local_stamp_info[cur_stamp].field_info_ptr = NULL;
       local_stamp_info[cur_stamp].container_info_ptr = NULL;
@@ -397,7 +398,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 //  global_container_proc_index = GC_new_proc_inner((GC_mark_proc)class_container_mark);
   global_lisp_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1 );
   global_cons_kind = GC_new_kind(GC_new_free_list(), GC_DS_BITMAP | cons_bitmap, 0, 1 ); // GC_DS_LENGTH, 1, 1);
-  global_class_kind = GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
+  global_class_kind = GC_new_kind(GC_new_free_list(),GC_DS_LENGTH, 1, 1 ); //  GC_MAKE_PROC(GC_new_proc((GC_mark_proc)Lisp_O_object_mark),0), 0, 1); // GC_DS_LENGTH, 1, 1);
   global_container_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1); // */  GC_new_kind(GC_new_free_list(), GC_MAKE_PROC(global_container_proc_index,0),0,1); // GC_DS_LENGTH, 1, 1);
   global_code_kind = GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 1, 1);
   global_atomic_kind = GC_I_PTRFREE; // GC_new_kind(GC_new_free_list(), GC_DS_LENGTH, 0, 1);

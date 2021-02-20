@@ -833,8 +833,7 @@ the type LLVMContexts don't match - so they were defined in different threads!"
   (c++-field-ptr info.%vaslist% vaslist 'remaining-nargs label))
 
 (defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
-                                              ("no-frame-pointer-elim" "true")
-                                              "no-frame-pointer-elim-non-leaf"))
+                                              ("frame-pointer" "all")))
 (defmacro with-new-function
     ((;; FN is bound to the function being created
       fn
@@ -1441,8 +1440,7 @@ and then the irbuilder-alloca, irbuilder-body."
         fnattrs)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
     (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
-    (push '("no-frame-pointer-elim" "true") fnattrs)
-    (push "no-frame-pointer-elim-non-leaf" fnattrs)
+    (push '("frame-pointer" "all") fnattrs)
     (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
                                              dispatch-name

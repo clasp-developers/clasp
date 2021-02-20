@@ -168,6 +168,88 @@ public:
 };
 
 
+struct SymbolEntry {
+  uintptr_t    _Address;
+  char         _Type;
+  uint         _SymbolOffset;
+  SymbolEntry() {};
+  SymbolEntry(uintptr_t start, char type, int symbolOffset) : _Address(start), _Type(type), _SymbolOffset(symbolOffset) {};
+  bool operator<(const SymbolEntry& other) {
+    return this->_Address < other._Address;
+  }
+  const char* symbol(const char* symbol_names) {
+    return symbol_names+this->_SymbolOffset;
+  }
+};
+
+
+struct SymbolTable {
+  char* _SymbolNames;
+  uint   _End;
+  uint   _Capacity;
+  uintptr_t _SymbolsLowAddress;
+  uintptr_t _SymbolsHighAddress;
+  uintptr_t _StackmapStart;
+  uintptr_t _StackmapEnd;
+  std::vector<SymbolEntry> _Symbols;
+  SymbolTable() : _End(0), _Capacity(1024), _SymbolsLowAddress(~0), _SymbolsHighAddress(0), _StackmapStart(0), _StackmapEnd(0) {
+    this->_SymbolNames = (char*)malloc(this->_Capacity);
+  }
+  ~SymbolTable() {
+  };
+  void addSymbol(std::string symbol, uintptr_t start, char type);
+
+  // Shrink the symbol table to the minimimum size
+  void optimize() {
+    if (this->_End>0) {
+      size_t newCapacity = this->_End+16&(~0x7);
+      this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
+      this->_Capacity = newCapacity;
+    } else {
+      if (this->_SymbolNames) free(this->_SymbolNames);
+      this->_SymbolNames = 0;
+      this->_Capacity = 0;
+    }
+  }
+  // Return true if a symbol is found that matches the address
+  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index);
+  void sort(); 
+  bool is_sorted() const;
+  
+  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
+  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
+  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
+  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
+};
+
+
+ 
+
+struct OpenDynamicLibraryInfo {
+  std::string    _Filename;
+  void*          _Handle;
+  SymbolTable    _SymbolTable;
+  gctools::clasp_ptr_t      _LibraryStart;
+  gctools::clasp_ptr_t      _TextStart;
+  gctools::clasp_ptr_t      _TextEnd;
+  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd) :
+    _Filename(f),
+    _Handle(h),
+    _SymbolTable(symbol_table),
+    _LibraryStart(libstart),
+    _TextStart(textStart),
+    _TextEnd(textEnd) {};
+  OpenDynamicLibraryInfo() {};
+};
+
+
+ struct add_dynamic_library {
+   virtual void operator()(const OpenDynamicLibraryInfo& info) {
+     printf("%s:%d:%s Handle library: %s\n", __FILE__, __LINE__, __FUNCTION__, info._Filename.c_str() );
+   }
+ };
+ 
+
 void dbg_lowLevelDescribe(T_sp obj);
 void dbg_describe_tagged_T_Optr(T_O *p);
 
@@ -191,8 +273,8 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
- void add_dynamic_library_using_handle(const std::string& libraryName, void* handle);
-void add_dynamic_library_using_origin(bool is_executable, const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd);
+ void add_dynamic_library_using_handle(add_dynamic_library& callback, const std::string& libraryName, void* handle);
+void add_dynamic_library_using_origin(add_dynamic_library& callback, bool is_executable, const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd);
  
  void startup_register_loaded_objects();
 
@@ -271,61 +353,6 @@ namespace core {
 
 typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
 
-
-struct SymbolEntry {
-  uintptr_t    _Address;
-  char         _Type;
-  uint         _SymbolOffset;
-  SymbolEntry() {};
-  SymbolEntry(uintptr_t start, char type, int symbolOffset) : _Address(start), _Type(type), _SymbolOffset(symbolOffset) {};
-  bool operator<(const SymbolEntry& other) {
-    return this->_Address < other._Address;
-  }
-  const char* symbol(const char* symbol_names) {
-    return symbol_names+this->_SymbolOffset;
-  }
-};
-
-
-struct SymbolTable {
-  char* _SymbolNames;
-  uint   _End;
-  uint   _Capacity;
-  uintptr_t _SymbolsLowAddress;
-  uintptr_t _SymbolsHighAddress;
-  uintptr_t _StackmapStart;
-  uintptr_t _StackmapEnd;
-  std::vector<SymbolEntry> _Symbols;
-  SymbolTable() : _End(0), _Capacity(1024), _SymbolsLowAddress(~0), _SymbolsHighAddress(0), _StackmapStart(0), _StackmapEnd(0) {
-    this->_SymbolNames = (char*)malloc(this->_Capacity);
-  }
-  ~SymbolTable() {
-  };
-  void addSymbol(std::string symbol, uintptr_t start, char type);
-
-  // Shrink the symbol table to the minimimum size
-  void optimize() {
-    if (this->_End>0) {
-      size_t newCapacity = this->_End+16&(~0x7);
-      this->_SymbolNames = (char*)realloc(this->_SymbolNames,newCapacity);
-      this->_Capacity = newCapacity;
-    } else {
-      if (this->_SymbolNames) free(this->_SymbolNames);
-      this->_SymbolNames = 0;
-      this->_Capacity = 0;
-    }
-  }
-  // Return true if a symbol is found that matches the address
-  bool findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index);
-  void sort(); 
-  bool is_sorted() const;
-  
-  std::vector<SymbolEntry>::iterator begin() { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::iterator end() { return this->_Symbols.end(); };
-  std::vector<SymbolEntry>::const_iterator begin() const { return this->_Symbols.begin(); };
-  std::vector<SymbolEntry>::const_iterator end() const { return this->_Symbols.end(); };
-};
-
   
 struct ScanInfo {
   size_t  _Index;
@@ -357,23 +384,6 @@ struct FrameMap {
   }
 };
 
-
-struct OpenDynamicLibraryInfo {
-  std::string    _Filename;
-  void*          _Handle;
-  SymbolTable    _SymbolTable;
-  gctools::clasp_ptr_t      _LibraryStart;
-  gctools::clasp_ptr_t      _TextStart;
-  gctools::clasp_ptr_t      _TextEnd;
-  OpenDynamicLibraryInfo(const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd) :
-    _Filename(f),
-    _Handle(h),
-    _SymbolTable(symbol_table),
-    _LibraryStart(libstart),
-    _TextStart(textStart),
-    _TextEnd(textEnd) {};
-  OpenDynamicLibraryInfo() {};
-};
 
 struct StackMapRange {
   uintptr_t _StartAddress;
@@ -409,7 +419,7 @@ void startup_register_loaded_objects();
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
-void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end );
+ void add_dynamic_library_impl(add_dynamic_library& adder, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end );
 DebugInfo& debugInfo();
 
 

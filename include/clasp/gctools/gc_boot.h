@@ -67,6 +67,13 @@ enum Data_types {
   CXX_SHARED_MUTEX_OFFSET,
   last_data_type };
 
+ //
+ // Use powers of two for the flags
+ //
+ enum ClassFlags {
+     IS_POLYMORPHIC = 1
+ };
+ 
 extern uintptr_t global_lisp_kind;
 extern uintptr_t global_cons_kind;
 extern uintptr_t global_class_kind;
@@ -128,11 +135,30 @@ enum Layout_cmd {
   layout_end
 };
 
+ //
+ // Layout_code represents the entries in GC_OBJ_SCAN_HELPERS section in clasp_gcXXX.cc
+ // It is a Layout_cmd enum followed by three uintptr_t arguments whose meaning depends
+ // on the value of 'cmd'.
+ // For example:
+ // When cmd = class_kind
+ // Then data0 = The header STAMP_xxx of the class
+ //      data1 = sizeof(class)
+ //      data2 = 0
+ //      data3 = bitwise OR of flags
+ //      description = C-string name of the class
+ //When cmd = fixed_field
+ // Then data0 = enum value that represents the type of the field
+ //      data1 = sizeof(field)
+ //      data2 = offset of field from start of class
+ //      data3 = 0
+ //      description = C-string name of the field
+
 struct Layout_code {
   Layout_cmd    cmd;
   uintptr_t     data0;
   uintptr_t     data1;
   uintptr_t     data2;
+  uintptr_t     data3;
   const char*   description;
 };
 
@@ -194,7 +220,8 @@ struct Stamp_layout {
   Boehm_info        boehm;
   // A bitmap of pointer fields for mps fixing and (once shifted right to skip clasp header - boehm marking)
   // The most significant bit indicates the vtable - it must be zero
-  uintptr_t         class_field_pointer_bitmap; 
+  uintptr_t         class_field_pointer_bitmap;
+  uint              flags;
   uint              number_of_fields;
   uint              bits_per_bitunit;
   uint              size;

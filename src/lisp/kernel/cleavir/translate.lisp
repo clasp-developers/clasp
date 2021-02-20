@@ -64,7 +64,7 @@
                           (make-list (+ (cleavir-set:size (cleavir-bir:environment function))
                                         (length arguments))
                                      :initial-element cmp::%t*%))
-                         'llvm-sys:private-linkage
+                         'llvm-sys:internal-linkage ;; was llvm-sys:private-linkage
                          llvm-function-name
                          cmp:*the-module*
                          function-info)))
@@ -577,7 +577,7 @@
                   (function-type (llvm-sys:get-function-type function))
                   (result-in-registers
                     (cmp::irc-call-or-invoke function-type function arguments)))
-             (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
+             #+(or)(llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
              result-in-registers)))))
 
 (defmethod translate-simple-instruction ((instruction cleavir-bir:call) abi)
@@ -688,7 +688,7 @@
              (function-type (llvm-sys:get-function-type function))
              (call
                (cmp::irc-call-or-invoke function-type function arguments)))
-        (llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
+        #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
         call)))))
 
 (defmethod translate-simple-instruction
@@ -1171,7 +1171,7 @@
                    ;; Augment the environment lexicals as a local call would.
                    (nconc environment-values
                           (mapcar #'in (arguments llvm-function-info))))))
-           (llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
+           #+(or)(llvm-sys:set-calling-conv c 'llvm-sys:fastcc)
            c)))))
   the-function)
 
@@ -1241,7 +1241,7 @@
             (layout-xep-function* xep-function function calling-convention abi)))))))
 
 (defun layout-main-function (function lambda-name abi
-                             &aux (linkage 'llvm-sys:private-linkage))
+                             &aux (linkage 'llvm-sys:internal-linkage)) ; llvm-sys:private-linkage
   (let* ((*tags* (make-hash-table :test #'eq))
          (*datum-values* (make-hash-table :test #'eq))
          (*dynenv-storage* (make-hash-table :test #'eq))
@@ -1267,7 +1267,7 @@
     (cmp:with-dbg-function (:lineno lineno :linkage-name llvm-function-name
                             :function-type llvm-function-type
                             :function the-function)
-      (llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
+      #+(or)(llvm-sys:set-calling-conv the-function 'llvm-sys:fastcc)
       (llvm-sys:set-personality-fn the-function
                                    (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr the-function 'llvm-sys:attribute-uwtable)

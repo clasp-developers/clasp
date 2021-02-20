@@ -794,13 +794,13 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 
 
-void add_dynamic_library_using_handle(const std::string& libraryName, void* handle) {
+void add_dynamic_library_using_handle(add_dynamic_library& adder, const std::string& libraryName, void* handle) {
   printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
-  add_dynamic_library_impl(false,libraryName, false, 0, handle, NULL, NULL );
+  add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL );
 }
 
-void add_dynamic_library_using_origin(bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
-  add_dynamic_library_impl(is_executable,libraryName, true, origin, NULL, text_start, text_end );
+void add_dynamic_library_using_origin(add_dynamic_library& adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
+  add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end );
 }
 
 bool if_dynamic_library_loaded_remove(const std::string& libraryName) {

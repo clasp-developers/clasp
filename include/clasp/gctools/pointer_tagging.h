@@ -306,8 +306,8 @@ template <class T>
     return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_no_key);
   }
 template <class T>
-    inline bool tagged_sameAsKeyP(T ptr) {
-    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_sameAsKey);
+    inline bool tagged_same_as_keyP(T ptr) {
+    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_same_as_key);
   }
 
   template <class T>
@@ -467,7 +467,7 @@ template <class T>
       return std::string( tagged_deleted_str );
     }
 
-    if( tagged_sameAsKeyP( tagged_obj )  )
+    if( tagged_same_as_keyP( tagged_obj )  )
     {
       return std::string( tagged_same_as_key_str );
     }

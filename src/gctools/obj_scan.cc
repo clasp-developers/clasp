@@ -424,7 +424,7 @@ GC_ms_entry * GC_signal_mark_stack_overflow(GC_ms_entry *msp);
 
 extern "C" {
 int global_scan_stamp = -1;
-
+__attribute__((optnone))
 struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
                                        struct GC_ms_entry* msp,
                                        struct GC_ms_entry* msl,
@@ -475,6 +475,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
 }
 
 
+__attribute__((optnone))
 struct GC_ms_entry* class_mark(GC_word addr,
                                  struct GC_ms_entry* msp,
                                  struct GC_ms_entry* msl,

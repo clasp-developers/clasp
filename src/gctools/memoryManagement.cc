@@ -371,8 +371,9 @@ void Header_s::validate() const {
     }
 #endif // USE_BOEHM
 #ifdef DEBUG_GUARD    
-    if ( this->_guard != 0xFEEAFEEBDEADBEEF) signal_invalid_object(this,"normal object bad header guard");
-    if ( this->_guard2!= 0xAAAAAAAAAAAAAAAA) signal_invalid_object(this,"normal object bad header guard2");
+    if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
+    if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
+    if ( this->_guard3!= GUARD3) signal_invalid_object(this,"normal object bad header guard3");
 #endif
     if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD

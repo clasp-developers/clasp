@@ -302,6 +302,12 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
   }
 }
 
+struct add_library : public add_dynamic_library {
+  virtual void operator()(const OpenDynamicLibraryInfo& info) {
+    printf("%s:%d:%s handle library: %s start: %p  end: %p\n", __FILE__, __LINE__,  __FUNCTION__, info._Filename.c_str(), info._TextStart, info._TextEnd );
+  }
+};
+    
 
 void startup_register_loaded_objects() {
  printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
@@ -312,7 +318,8 @@ void startup_register_loaded_objects() {
     std::string libname(filename);
     uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
     bool is_executable = (idx==0);
-    add_dynamic_library_using_origin(is_executable,libname,library_origin,NULL,NULL);
+    add_library adder;
+    add_dynamic_library_using_origin(adder, is_executable,libname,library_origin,NULL,NULL);
   }
 }
 
@@ -321,7 +328,7 @@ void startup_register_loaded_objects() {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end) {
+void add_dynamic_library_impl(add_dynamic_library& callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end) {
 //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
@@ -388,6 +395,7 @@ void add_dynamic_library_impl(bool is_executable, const std::string& libraryName
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size));
+  callback(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 

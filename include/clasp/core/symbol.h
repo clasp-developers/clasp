@@ -54,6 +54,15 @@ struct gctools::GCInfo<core::Symbol_O> {
 };
 
 namespace core {
+
+
+  //
+  // A special class used to invoke a Symbol_O constructor
+  // for startup symbols.
+  //
+  struct only_at_startup {};
+
+  
 #define NO_THREAD_LOCAL_BINDINGS std::numeric_limits<uint32_t>::max()
 SMART(Package);
 SMART(NamedFunction);
@@ -87,12 +96,11 @@ public:
 
   /*! Only used when creating special symbols at boot time.
 	  Before NIL, UNBOUND etc are defined */
-  static Symbol_sp create_at_boot(const string &nm);
   static Symbol_sp create_from_string(const string &nm);
   static Symbol_sp create(SimpleString_sp snm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-    Symbol_sp n = gctools::GC<Symbol_O>::allocate(true);
+    Symbol_sp n = gctools::GC<Symbol_O>::allocate(only_at_startup());
     n->setf_name(snm);
     n->fmakunbound();
     n->fmakunbound_setf();
@@ -328,7 +336,9 @@ public:
 
 public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
-  explicit Symbol_O(bool dummy); // string const &name);
+  explicit Symbol_O(const only_at_startup&);
+  explicit Symbol_O(SimpleBaseString_sp name) : _Name(name) {};
+  
   /*! Used to finish setting up symbol when created with the above constructor */
   void finish_setup(Package_sp pkg, bool exportp, bool shadowp);
 

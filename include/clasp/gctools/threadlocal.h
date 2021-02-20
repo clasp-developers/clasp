@@ -61,8 +61,6 @@ namespace core {
   struct ThreadLocalState {
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
-    void create_sigaltstack();
-    void destroy_sigaltstack();
     void pushCatchTag(T_sp);
 
     core::T_sp _ObjectFiles;

@@ -246,7 +246,7 @@ void Lisp_O::shutdownLispEnvironment() {
     globals_->_DebugStream->endNode(DEBUG_TOPLEVEL);
     delete globals_->_DebugStream;
   }
-  my_thread->destroy_sigaltstack();
+//  my_thread->destroy_sigaltstack();
 }
 
 void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
@@ -280,23 +280,30 @@ string dump_instanceClass_info(Instance_sp co, Lisp_sp prog) {
 
 void Lisp_O::setupSpecialSymbols() {
   RAII_DISABLE_INTERRUPTS();
-  Null_sp symbol_nil = Null_O::create_at_boot("NIL");
-  Symbol_sp symbol_unbound = Symbol_O::create_at_boot("UNBOUND");
-  Symbol_sp symbol_no_thread_local_binding = Symbol_O::create_at_boot("NO-THREAD-LOCAL-BINDING");
-  Symbol_sp symbol_no_key = Symbol_O::create_at_boot("NO_KEY");
-  Symbol_sp symbol_deleted = Symbol_O::create_at_boot("DELETED");
-  Symbol_sp symbol_sameAsKey = Symbol_O::create_at_boot("SAME-AS-KEY");
+  SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
+  Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
+  SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
+  Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
+  SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
+  Symbol_sp symbol_no_thread_local_binding = gctools::GC<Symbol_O>::allocate(name_no_thread_local_binding);
+  SimpleBaseString_sp name_no_key = SimpleBaseString_O::make("NO_KEY");
+  Symbol_sp symbol_no_key = gctools::GC<Symbol_O>::allocate(name_no_key);
+  SimpleBaseString_sp name_deleted = SimpleBaseString_O::make("DELETED");
+  Symbol_sp symbol_deleted = gctools::GC<Symbol_O>::allocate(name_deleted);
+  SimpleBaseString_sp name_same_as_key = SimpleBaseString_O::make("SAME-AS-KEY");
+  Symbol_sp symbol_same_as_key = gctools::GC<Symbol_O>::allocate(name_same_as_key);
   //TODO: Ensure that these globals are updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O *>(symbol_nil.raw_());
   gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
   gctools::global_tagged_Symbol_OP_no_thread_local_binding = reinterpret_cast<Symbol_O *>(symbol_no_thread_local_binding.raw_());
-  gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
   gctools::global_tagged_Symbol_OP_no_key = reinterpret_cast<Symbol_O *>(symbol_no_key.raw_());
-  gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
+  gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
+  gctools::global_tagged_Symbol_OP_same_as_key = reinterpret_cast<Symbol_O *>(symbol_same_as_key.raw_());
   symbol_unbound->_HomePackage = symbol_nil;
   symbol_no_thread_local_binding->_HomePackage = symbol_nil;
+  symbol_no_key->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
-  symbol_sameAsKey->_HomePackage = symbol_nil;
+  symbol_same_as_key->_HomePackage = symbol_nil;
   // 
   my_thread->_PendingInterrupts = symbol_nil;
 }
@@ -309,7 +316,7 @@ void Lisp_O::finalizeSpecialSymbols() {
   symbol_nil->setf_plist(_Nil<T_O>());
   //    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
   //    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
-  //    	Symbol_sp symbol_sameAsKey = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_sameAsKey);
+  //    	Symbol_sp symbol_same_as_key = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_same_as_key);
 }
 
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -430,6 +437,7 @@ void Lisp_O::startupLispEnvironment() {
 #ifdef DEBUG_FLAGS_SET
   printf("%s:%d There are DEBUG_xxxx flags on - check the top of foundation.h !!!!\n", __FILE__, __LINE__ );
 #endif
+  
   MONITOR(BF("Starting lisp environment\n"));
   global_dump_functions = getenv("CLASP_DUMP_FUNCTIONS");
   char* debug_byte_code = getenv("CLASP_DEBUG_BYTE_CODE");
@@ -440,7 +448,7 @@ void Lisp_O::startupLispEnvironment() {
 
   // Setup the ExecutableObjectFile and ExecutableCode
     
-  my_thread->create_sigaltstack();
+//  my_thread->create_sigaltstack();
 
 
   //

@@ -223,16 +223,16 @@ ClosureWithSlots_sp make_unbound_setf_symbol_function(Symbol_sp name)
 
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
+Symbol_O::Symbol_O(const only_at_startup& dummy) : _HomePackage(_Nil<T_O>()),
 #ifdef SYMBOL_CLASS
-                                 _Class(_Nil<T_O>()),
+                                                   _Class(_Nil<T_O>()),
 #endif
-                                 _GlobalValue(_Unbound<T_O>()),
-                                 _Function(_Unbound<Function_O>()),
-                                 _SetfFunction(_Unbound<Function_O>()),
-                                 _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
-                                 _Flags(0),
-                                 _PropertyList(_Nil<List_V>()) {};
+                                                   _GlobalValue(_Unbound<T_O>()),
+                                                   _Function(_Unbound<Function_O>()),
+                                                   _SetfFunction(_Unbound<Function_O>()),
+                                                   _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
+                                                   _Flags(0),
+                                                   _PropertyList(_Nil<List_V>()) {};
 
 Symbol_O::Symbol_O() : Base(),
                        _BindingIdx(NO_THREAD_LOCAL_BINDINGS),
@@ -254,35 +254,17 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   this->setf_plist(_Nil<T_O>());
 }
 
-Symbol_sp Symbol_O::create_at_boot(const string &nm) {
-  // This is used to allocate roots that are pointed
-  // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::allocate(); // root_allocate();
-  ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
-#if VERBOSE_SYMBOLS
-  if (nm.find("/dyn") != string::npos) {
-    THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
-  }
-#endif
-  n->_Name = SimpleBaseString_O::make(nm.size(),'\0',true,nm.size(),(const claspChar*)nm.c_str());
-  return n;
-};
-
 Symbol_sp Symbol_O::create_from_string(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GC<Symbol_O>::allocate(true); // root_allocate(true)
+  only_at_startup dummy;
+  Symbol_sp n = gctools::GC<Symbol_O>::allocate(dummy); // root_allocate(true)
   SimpleString_sp snm = SimpleBaseString_O::make(nm);
   n->setf_name(snm);
   // The following are done in finish_setup
-//  n->fmakunbound();
-//  n->fmakunbound_setf();
+  //  n->fmakunbound();
+  //  n->fmakunbound_setf();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
-#if VERBOSE_SYMBOLS
-  if (nm.find("/dyn") != string::npos) {
-    THROW_HARD_ERROR(BF("Illegal name for symbol[%s]") % nm);
-  }
-#endif
   return n;
 };
    

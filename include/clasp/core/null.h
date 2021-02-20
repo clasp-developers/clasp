@@ -32,14 +32,13 @@ THE SOFTWARE.
 
 namespace core {
 
-FORWARD(Null);
+  FORWARD(SimpleBaseString);
+  FORWARD(Null);
 class Null_O : public Symbol_O {
   LISP_CLASS(core, ClPkg, Null_O, "null",Symbol_O);
-#if defined(XML_ARCHIVE)
-  DECLARE_ARCHIVE();
-#endif                              // defined(XML_ARCHIVE)
 public:                             // ctor/dtor for classes with shared virtual base
   explicit Null_O() : Symbol_O(){}; // List_O
+  explicit Null_O(SimpleBaseString_sp name) : Symbol_O(name) {};
   virtual ~Null_O(){};
   static Null_sp create_at_boot(const string& nm);
 public: // Functions here
