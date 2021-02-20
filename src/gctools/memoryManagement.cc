@@ -530,7 +530,7 @@ void GCRootsInModule::setup_transients(core::SimpleVector_O** transient_alloca, 
 }
 
 GCRootsInModule::GCRootsInModule(void* module_mem, size_t num_entries, core::SimpleVector_O** transient_alloca, size_t transient_entries, size_t function_pointer_count, void** fptrs) {
-  DEBUG_OBJECT_FILES(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Compiled code literals are from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,module_mem, (char*)module_mem+(sizeof(core::T_O*)*num_entries)));
   this->_function_pointer_count = function_pointer_count;
   this->_function_pointers = fptrs;
   this->_num_entries = num_entries;

@@ -21,7 +21,7 @@ namespace llvmo { // ObjectFile_O
 #if 0
 LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
 {
-  DEBUG_OBJECT_FILES(("%s:%d:%s Creating empty ObjectFile_O\n", __FILE__, __LINE__, __FUNCTION__));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating empty ObjectFile_O\n", __FILE__, __LINE__, __FUNCTION__));
   core::SimpleBaseString_sp libraryName = core::SimpleBaseString_O::make(slibraryName);
   LibraryFile_sp of = gc::GC<LibraryFile_O>::allocate(libraryName);
   return of;
@@ -31,7 +31,7 @@ LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
 
 ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex)
 {
-  DEBUG_OBJECT_FILES(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
   core::SimpleBaseString_sp fasoName = core::SimpleBaseString_O::make(sFasoName);
   ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(std::move(buffer),startupID,jitdylib,fasoName,fasoIndex);
   return of;
@@ -39,13 +39,13 @@ ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, s
 
 
 ObjectFile_O::~ObjectFile_O() {
-  DEBUG_OBJECT_FILES(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this ));
   printf("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this );
   this->_Code = _Unbound<Code_O>();
 }
 
 Code_O::~Code_O() {
-  DEBUG_OBJECT_FILES(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
   printf("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this );
 }
 
@@ -88,7 +88,7 @@ namespace llvmo {
 Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize) {
 //  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
   Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
-  // Don't put DEBUG_OBJECT_FILES in here - this is called too early
+  // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
   return code;
 }
 
@@ -236,7 +236,7 @@ namespace llvmo {
 void save_object_file_and_code_info(ObjectFile_sp ofi)
 {
 //  register_object_file_with_gdb((void*)objectFileStart,objectFileSize);
-  DEBUG_OBJECT_FILES(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(ofi->_FasoName).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s register object file \"%s\"\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(ofi->_FasoName).c_str()));
   core::T_sp expected;
   core::Cons_sp entry = core::Cons_O::create(ofi,_Nil<core::T_O>());
   do {
@@ -270,16 +270,16 @@ Return NIL if none or (values offset-from-start object-file). The index-from-sta
 CL_LISPIFY_NAME(object_file_for_instruction_pointer);
 CL_DEFUN core::T_mv object_file_for_instruction_pointer(void* instruction_pointer, bool verbose)
 {
-  DEBUG_OBJECT_FILES(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s entered looking for instruction_pointer@%p search Code_O objects\n", __FILE__, __LINE__, __FUNCTION__, instruction_pointer ));
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count;
-  DEBUG_OBJECT_FILES(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s instruction_pointer = %p  object_files = %p\n", __FILE__, __LINE__, __FUNCTION__, (char*)instruction_pointer, cur.raw_()));
   if ((cur.nilp()) && verbose){
     core::write_bf_stream(BF("No object files registered - cannot find object file for address %p\n") % (void*)instruction_pointer);
   }
   while (cur.consp()) {
     ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur)));
-    DEBUG_OBJECT_FILES(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Looking at object file _text %p to %p\n", __FILE__, __LINE__, __FUNCTION__, ofi->_Code->_TextSegmentStart, ofi->_Code->_TextSegmentEnd));
     if ((char*)instruction_pointer>=(char*)ofi->_Code->_TextSegmentStart&&(char*)instruction_pointer<((char*)ofi->_Code->_TextSegmentEnd)) {
       core::T_sp sectionedAddress = object_file_sectioned_address(instruction_pointer,ofi,verbose);
       return Values(sectionedAddress,ofi);
@@ -381,13 +381,13 @@ uint8_t* ClaspSectionMemoryManager::allocateDataSection( uintptr_t Size, unsigne
       LOG(BF("STACKMAP_LOG  recorded __llvm_stackmap allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n") %
           Size% Alignment% SectionID% SectionName.str().c_str() % isReadOnly% (void*)ptr);
     }
-    DEBUG_OBJECT_FILES(("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d  allocateDataSection Size: %lu  Alignment: %u SectionId: %u SectionName: %s isReadOnly: %d --> allocated at: %p\n", __FILE__, __LINE__, Size, Alignment, SectionID, SectionName.str().c_str(), isReadOnly, (void*)ptr ));
     }
     return ptr;
   }
 
 void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const object::ObjectFile &Obj) {
-  DEBUG_OBJECT_FILES(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
 #if 0
       // DONT DELETE DONT DELETE DONT DELETE
       // This is trying to use the gdb jit interface described here.
@@ -424,7 +424,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
       auto reloc = section.getRelocatedSection();
       stackmap = (uintptr_t)reloc->getAddress();
       stackmap_size = (size_t)reloc->getSize();
-      DEBUG_OBJECT_FILES(("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d Found stackmap at %p size: %lu\n", __FILE__, __LINE__, (void*) stackmap, stackmap_size));
     }
   }
   unsigned long section_size = 0;
@@ -464,7 +464,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
 
 bool ClaspSectionMemoryManager::finalizeMemory(std::string* ErrMsg ) {
 #ifdef USE_CODE_O
-  DEBUG_OBJECT_FILES(("%s:%d finalizeMemory\n", __FILE__, __LINE__));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d finalizeMemory\n", __FILE__, __LINE__));
   LOG(BF("STACKMAP_LOG %s entered\n") % __FUNCTION__ );
   llvm::sys::MemoryBlock block(this->_CodeStart,this->_CodeSize);
   llvm::sys::Memory::protectMappedMemory(block,

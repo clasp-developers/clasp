@@ -752,7 +752,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     jit->addObjectFile(of,print.notnilp());
     T_mv startupName = core__startup_function_name_and_linkage(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
-    DEBUG_OBJECT_FILES(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
     jit->runStartupCode(*jitDylib->wrappedPtr(), str->get_std_string(), _Unbound<core::T_O>(), codeObject);
   }

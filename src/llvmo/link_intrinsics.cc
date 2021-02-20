@@ -150,7 +150,7 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      fnLispCallingConvention* fptrs )
 {NO_UNWIND_BEGIN();
   my_thread->_GCRootsInModule = holder;
-  DEBUG_OBJECT_FILES(("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data ));
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   NO_UNWIND_END();
 }
@@ -420,9 +420,9 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
     SIMPLE_ERROR(BF("The object is not a FunctionDescription %s") % core::_rep_(val));
   }
-  DEBUG_OBJECT_FILES(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -436,9 +436,9 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
   if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a LocalEntryPoint %s") % core::_rep_(entryPoint));
   }
-  DEBUG_OBJECT_FILES(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
   LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
   NO_UNWIND_END();
 }
@@ -452,9 +452,9 @@ LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char t
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
   }
-  DEBUG_OBJECT_FILES(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
-  DEBUG_OBJECT_FILES(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
   LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
   NO_UNWIND_END();
 }
@@ -732,7 +732,7 @@ core::T_O* makeCompiledFunction(fnLispCallingConvention funcPtr,
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     printf("%s:%d:%s You must pass a global-entry-point - you passed a %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(entryPoint).c_str());
   };
-//  DEBUG_OBJECT_FILES(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
+//  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  functionDescription -> %s@%p\n", __FILE__, __LINE__, __FUNCTION__, _rep_(fi).c_str(), fi.raw_()));
   core::ClosureWithSlots_sp toplevel_closure =
     gctools::GC<core::ClosureWithSlots_O>::allocate_container(false, BCLASP_CLOSURE_SLOTS,
                                                               funcPtr,

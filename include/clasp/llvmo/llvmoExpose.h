@@ -4720,5 +4720,10 @@ LLVMContext_sp llvm_sys__thread_local_llvm_context();
 };
 
 
-#define DEBUG_OBJECT_FILES(msg) if ( llvmo::_sym_STARdebugObjectFilesSTAR && !llvmo::_sym_STARdebugObjectFilesSTAR.unboundp() && !llvmo::_sym_STARdebugObjectFilesSTAR->symbolValueUnsafe().unboundp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
+#ifdef DEBUG_OBJECT_FILES
+# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::_sym_STARdebugObjectFilesSTAR && !llvmo::_sym_STARdebugObjectFilesSTAR.unboundp() && !llvmo::_sym_STARdebugObjectFilesSTAR->symbolValueUnsafe().unboundp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
+#else
+# define DEBUG_OBJECT_FILES_PRINT(msg)
+#endif
+
 #endif //]

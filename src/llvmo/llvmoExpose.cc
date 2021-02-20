@@ -3877,26 +3877,26 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       return Error::success();
                                     });
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-      DEBUG_OBJECT_FILES(("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePasses\n", __FILE__, __LINE__, __FUNCTION__));
       keepAliveStackmap(G);
                                       //printLinkGraph(G, "PrePrune:");
       return Error::success();
     });
     Config.PostFixupPasses.push_back([this](jitlink::LinkGraph &G) -> Error {
-      DEBUG_OBJECT_FILES(("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PostFixupPasses\n", __FILE__, __LINE__, __FUNCTION__));
       parseLinkGraph(G);
                                        // printLinkGraph(G, "PostFixup:");
       return Error::success();
     });
-    DEBUG_OBJECT_FILES(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__));
   }
 
   void notifyLoaded(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
   }
 
   llvm::Error  notifyFailed(llvm::orc::MaterializationResponsibility& MR) {
-    DEBUG_OBJECT_FILES(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ ));
     return Error::success();
   }
 
@@ -3929,7 +3929,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   
   void keepAliveStackmap(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       if (S.getName().str() == STACKMAPS_NAME) {
         for ( auto& sym : S.symbols() ) {
           sym->setLive(true);
@@ -3953,24 +3953,24 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
 
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
-    DEBUG_OBJECT_FILES(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
     bool gotGcroots = false;
     for (auto &S : G.sections()) {
-      DEBUG_OBJECT_FILES(("%s:%d:%s   section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  section: %s getOrdinal->%u\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), S.getOrdinal()));
       if (S.getName().str() == BSS_NAME || S.getName().str() == DATA_NAME) {
         llvm::jitlink::SectionRange range(S);
         for ( auto& sym : S.symbols() ) {
           std::string name = sym->getName().str();
           void* address = (void*)sym->getAddress();
           size_t size = sym->getSize();
-          DEBUG_OBJECT_FILES(("%s:%d:%s  section: %s  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
           if (name.substr(0,gcroots_name.size()) == gcroots_name) {
             my_thread->topObjectFile()->_Code->_gcroots = (gctools::GCRootsInModule*) address;
             gotGcroots = true;
-            DEBUG_OBJECT_FILES(("%s:%d:%s    Captured GCRootsInModule %s at %p size: %lu\n",
+            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    Captured GCRootsInModule %s at %p size: %lu\n",
                                 __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size));
 #ifdef USE_BOEHM
-            DEBUG_OBJECT_FILES(("%s:%d:%s     GCRootsInModule is in the boehm heap: %d\n",
+            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     GCRootsInModule is in the boehm heap: %d\n",
                                 __FILE__, __LINE__, __FUNCTION__, GC_is_heap_ptr(address)));
 #endif
             if (size != sizeof(gctools::GCRootsInModule)) {
@@ -3994,9 +3994,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         currentCode->_TextSegmentStart = (void*)range.getStart();
         currentCode->_TextSegmentEnd = (void*)((char*)range.getStart()+range.getSize());
         currentCode->_TextSegmentSectionId = 0;
-        DEBUG_OBJECT_FILES(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Setting text_segment start %p  size %lu\n", __FILE__, __LINE__, __FUNCTION__, my_thread->_text_segment_start, my_thread->_text_segment_size ));
         my_thread->_text_segment_SectionID = 0;
-        DEBUG_OBJECT_FILES(("%s:%d:%s   text section segment_start = %p  segment_size = %llu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), (unsigned long long)range.getSize()));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   text section segment_start = %p  segment_size = %llu\n", __FILE__, __LINE__, __FUNCTION__, (void*)range.getStart(), (unsigned long long)range.getSize()));
         for ( auto& sym : S.symbols() ) {
           if (sym->isCallable()&&sym->hasName()) {
             std::string name = sym->getName().str();
@@ -4011,7 +4011,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
 #endif
             if (name == startup_name) {
               my_thread->_ObjectFileStartUp = (void*)address;
-              DEBUG_OBJECT_FILES(("%s:%d:%s Found startup_name = %s   address = %p\n", __FILE__, __LINE__, __FUNCTION__, startup_name.c_str(), (void*)address ));
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Found startup_name = %s   address = %p\n", __FILE__, __LINE__, __FUNCTION__, startup_name.c_str(), (void*)address ));
             }
           }
         }
@@ -4019,13 +4019,18 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         llvm::jitlink::SectionRange range(S);
         void* start = (void*)range.getStart();
         uintptr_t size = range.getSize();
-        DEBUG_OBJECT_FILES(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   eh_frame section segment_start = %p  segment_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, start, size ));
       } else if (S.getName().str() == STACKMAPS_NAME) {
         llvm::jitlink::SectionRange range(S);
         my_thread->_stackmap = (uintptr_t)range.getStart();
         my_thread->_stackmap_size = (size_t)range.getSize();
       }
     }
+#ifdef DEBUG_OBJECT_FILES
+    for (auto ssym : G.defined_symbols()) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, ssym->hasName(), ssym->getName().str().c_str(), (void*)ssym->getAddress(), ssym->getSize()));
+    }
+#endif
     if (!gotGcroots) {
       printf("%s:%d:%s A module/object file was added that did not have GCRootsInModule prefixed with %s - this should not be possible\n", __FILE__, __LINE__, __FUNCTION__, gcroots_name.c_str());
     }
@@ -4072,12 +4077,12 @@ std::atomic<size_t> global_object_file_number;
 
 
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
-  DEBUG_OBJECT_FILES(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
                       __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
   if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue() == kw::_sym_dump_repl_object_files) {
     stringstream ss;
     ss << "/tmp/clasp_repl_object_file_" << ++global_object_file_number << ".o";
-    DEBUG_OBJECT_FILES(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
     ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
   }
   // Grab the buffer and put it in the current ObjectFile
@@ -4310,7 +4315,7 @@ CL_DEFUN llvm::Module* llvm_sys__optimizeModule(llvm::Module* module)
 SYMBOL_EXPORT_SC_(CorePkg,repl);
 SYMBOL_EXPORT_SC_(KeywordPkg, dump_repl_object_files);
 CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, const string& startupName, const string& shutdownName, core::T_sp initialData) {
-  DEBUG_OBJECT_FILES(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
 #ifdef DEBUG_MONITOR  
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
     MONITOR(BF("startup llvm_sys__jitFinalizeReplFunction startupName-> %s\n") % startupName);
@@ -4319,7 +4324,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
   void* replPtrRaw;
 #if 1
   // Run the startup code by looking up a symbol
-  DEBUG_OBJECT_FILES(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    About to runStartupCode name = %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
   Code_sp codeObject;
   replPtrRaw = jit->runStartupCode(jit->_LLJIT->getMainJITDylib(), startupName, initialData, codeObject );
 //  printf("%s:%d:%s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(codeObject).c_str());
@@ -4346,7 +4351,7 @@ CL_DEFUN core::Function_sp llvm_sys__jitFinalizeReplFunction(ClaspJIT_sp jit, co
                                                                               _Nil<core::T_O>() );
 //  printf("%s:%d:%s writing into function-description@%p  functionName: %s codeObject = %s\n", __FILE__, __LINE__, __FUNCTION__, functoid->fdesc().raw_(), _rep_(functoid->fdesc()->_functionName).c_str(), _rep_(codeObject).c_str());
   functoid->_EntryPoint.load()->_Code = codeObject;
-  DEBUG_OBJECT_FILES(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   We should have captured the ObjectFile_O and Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
   
   return functoid;
 }
@@ -4532,7 +4537,7 @@ void ClaspJIT_O::addObjectFile(ObjectFile_sp of, bool print)
  */
 void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject )
 {
-  DEBUG_OBJECT_FILES(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to evaluate the LoadtimeCode - with startupName: %s\n", __FILE__, __LINE__, __FUNCTION__, startupName.c_str() ));
 #if 1
   void* ptr;
   bool found = this->do_lookup(dylib,startupName,ptr);
@@ -4541,7 +4546,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
   }
   T_OStartUp startup = reinterpret_cast<T_OStartUp>(ptr);
 //    printf("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup);
-  DEBUG_OBJECT_FILES(("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup));
+  DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to invoke startup @p=%p\n", __FILE__, __LINE__, __FUNCTION__, (void*)startup));
   core::T_O* replPtrRaw = startup(initialDataOrUnbound.unboundp() ? (core::T_O*)NULL : initialDataOrUnbound.raw_());
   // If we load a bitcode file generated by clasp - then startup_functions will be waiting - so run them
 #else
@@ -4550,7 +4555,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
 #endif
   if (!initialDataOrUnbound.unboundp()) {
 //    printf("%s:%d:%s There is initialData -> %s\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(initialDataOrUnbound).c_str());
-    DEBUG_OBJECT_FILES(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
     // Clear out the current ObjectFile and Code
     codeObject= my_thread->topObjectFile()->_Code;
     my_thread->popObjectFile();
@@ -4560,7 +4565,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
   if (core::startup_functions_are_waiting()) {
     // This is where we can take the my_thread->_ObjectFile and my_thread->_Code and write it into the FunctionDescription_O objects that are bound to functions.
     void* result = core::startup_functions_invoke(NULL);
-    DEBUG_OBJECT_FILES(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
     // Clear out the current ObjectFile and Code
     codeObject= my_thread->topObjectFile()->_Code;
     my_thread->popObjectFile();
