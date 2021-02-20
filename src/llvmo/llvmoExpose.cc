@@ -3964,19 +3964,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           void* address = (void*)sym->getAddress();
           size_t size = sym->getSize();
           DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     section: %s symbol:  %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, S.getName().str().c_str(), name.c_str(), address, size));
-          if (name.substr(0,gcroots_name.size()) == gcroots_name) {
-            my_thread->topObjectFile()->_Code->_gcroots = (gctools::GCRootsInModule*) address;
-            gotGcroots = true;
-            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    Captured GCRootsInModule %s at %p size: %lu\n",
-                                __FILE__, __LINE__, __FUNCTION__, name.c_str(), address, size));
-#ifdef USE_BOEHM
-            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s     GCRootsInModule is in the boehm heap: %d\n",
-                                __FILE__, __LINE__, __FUNCTION__, GC_is_heap_ptr(address)));
-#endif
-            if (size != sizeof(gctools::GCRootsInModule)) {
-              SIMPLE_ERROR(BF("There is a mismatch in the size of GCRootsInModule and what I find in the object file"));
-            }
-          }
         }
       } else if (S.getName().str() == DATA_NAME) {
 #if 0
@@ -4031,9 +4018,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, ssym->hasName(), ssym->getName().str().c_str(), (void*)ssym->getAddress(), ssym->getSize()));
     }
 #endif
-    if (!gotGcroots) {
-      printf("%s:%d:%s A module/object file was added that did not have GCRootsInModule prefixed with %s - this should not be possible\n", __FILE__, __LINE__, __FUNCTION__, gcroots_name.c_str());
-    }
   }
   
   void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {
@@ -4558,6 +4542,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Returned from startup function with %p\n", __FILE__, __LINE__, __FUNCTION__, replPtrRaw ));
     // Clear out the current ObjectFile and Code
     codeObject= my_thread->topObjectFile()->_Code;
+    codeObject->_gcroots = my_thread->_GCRootsInModule;
     my_thread->popObjectFile();
     return (void*)replPtrRaw;
   }
@@ -4568,6 +4553,7 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s The startup functions were INVOKED\n", __FILE__, __LINE__, __FUNCTION__ ));
     // Clear out the current ObjectFile and Code
     codeObject= my_thread->topObjectFile()->_Code;
+    codeObject->_gcroots = my_thread->_GCRootsInModule;
     my_thread->popObjectFile();
     return result;
   }
