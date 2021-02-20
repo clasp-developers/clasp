@@ -794,12 +794,12 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 
 
-void add_dynamic_library_using_handle(add_dynamic_library& adder, const std::string& libraryName, void* handle) {
+void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
   printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
   add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL );
 }
 
-void add_dynamic_library_using_origin(add_dynamic_library& adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
+void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
   add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end );
 }
 
@@ -824,9 +824,7 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
 
 
 CL_DEFUN List_sp core__dynamic_library_handles() {
-#ifdef CLASP_THREADS
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
   ql::list result;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     result << Cons_O::createList(SimpleBaseString_O::make(entry.second._Filename),
@@ -837,9 +835,7 @@ CL_DEFUN List_sp core__dynamic_library_handles() {
 
 bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName )
 {
-#ifdef CLASP_THREADS
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
@@ -856,9 +852,7 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
 bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type, bool& foundLibrary, std::string& libraryName, uintptr_t& libraryStart )
 {
   foundLibrary = false;
-#ifdef CLASP_THREADS
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     SymbolTable symtab = entry.second._SymbolTable;
@@ -870,9 +864,7 @@ bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& star
     }
   }
   {
-#ifdef CLASP_THREADS
     WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
-#endif
     for ( auto entry : debugInfo()._JittedObjects ) {
       BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
       if (entry._ObjectPointer<=address && address<(entry._ObjectPointer+entry._Size)) {
@@ -898,9 +890,7 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
 
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {
-#ifdef CLASP_THREADS
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
   BT_LOG((buf,"search_symbol_table library: %s\n", filename));
   std::string fname(filename);
   map<std::string,OpenDynamicLibraryInfo>::iterator it = debugInfo()._OpenDynamicLibraryHandles.find(fname);

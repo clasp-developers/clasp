@@ -942,7 +942,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     abort();
   }
   add_dynamic_library adder;
-  add_dynamic_library_using_handle(adder,name,handle);
+  add_dynamic_library_using_handle(&adder,name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);
   if (startup_functions_are_waiting()) {

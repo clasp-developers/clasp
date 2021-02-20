@@ -256,7 +256,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
     }
   }
-  add_dynamic_library_using_origin(is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,text_start,text_end);
+  add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,text_start,text_end);
   scan_callback_info->_Index++;
   return 0;
 }
@@ -264,7 +264,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
 
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory)
 {
-  ScanInfo scan;
+  ScanInfo scan(NULL);
   scan._Backtrace = &backtrace;
     // Search the symbol tables and stackmaps
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
@@ -279,9 +279,9 @@ void* find_base_of_loaded_object(const char* name)
   return search._Address;
 }
 
-void startup_register_loaded_objects()
+void startup_register_loaded_objects(add_dynamic_library* callback)
 {
-  ScanInfo scan;
+  ScanInfo scan(callback);
   dl_iterate_phdr(elf_startup_loaded_object_callback,&scan);
 }
 
@@ -291,7 +291,8 @@ void startup_register_loaded_objects()
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(bool is_executable,
+void add_dynamic_library_impl(add_dynamic_library* callback,
+                              bool is_executable,
                               const std::string& libraryName,
                               bool use_origin,
                               uintptr_t library_origin,
@@ -345,7 +346,10 @@ void add_dynamic_library_impl(bool is_executable,
   }
   BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end);
+  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end);
+  if (callback) {
+    (*callback)(odli);
+  }
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 

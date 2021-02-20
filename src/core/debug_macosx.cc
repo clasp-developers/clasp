@@ -302,14 +302,8 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
   }
 }
 
-struct add_library : public add_dynamic_library {
-  virtual void operator()(const OpenDynamicLibraryInfo& info) {
-    printf("%s:%d:%s handle library: %s start: %p  end: %p\n", __FILE__, __LINE__,  __FUNCTION__, info._Filename.c_str(), info._TextStart, info._TextEnd );
-  }
-};
-    
 
-void startup_register_loaded_objects() {
+void startup_register_loaded_objects(add_dynamic_library& callback) {
  printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
@@ -318,8 +312,7 @@ void startup_register_loaded_objects() {
     std::string libname(filename);
     uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
     bool is_executable = (idx==0);
-    add_library adder;
-    add_dynamic_library_using_origin(adder, is_executable,libname,library_origin,NULL,NULL);
+    add_dynamic_library_using_origin(callback, is_executable,libname,library_origin,NULL,NULL);
   }
 }
 
@@ -391,7 +384,8 @@ void add_dynamic_library_impl(add_dynamic_library& callback, bool is_executable,
                     text_segment_start,
                     text_segment_size);
   //printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
-  OpenDynamicLibraryInfo odli(libraryName,handle,symbol_table,
+  OpenDynamicLibraryInfo odli(is_executable,
+                              libraryName,handle,symbol_table,
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size));
