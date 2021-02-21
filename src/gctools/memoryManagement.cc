@@ -412,8 +412,8 @@ bool Header_s::preciseIsPolymorphic() const {
     } else if (this->_stamp_wtag_mtag._value == WeakPointerKind  ) {
       return std::is_polymorphic<WeakPointer>();
     }
-    return false;
   }
+  return false;
 }
 
 

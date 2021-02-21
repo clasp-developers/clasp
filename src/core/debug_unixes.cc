@@ -218,6 +218,9 @@ int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* dat
 int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
 //  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
+  core::General_O general;
+  gctools::clasp_ptr_t vtablePtr = *(gctools::clasp_ptr_t*)&general;
+//  printf("%s:%d:%s one vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
   ScanInfo* scan_callback_info = (ScanInfo*)data;
   bool is_executable;
   std::string libname;
@@ -233,9 +236,13 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   }
   gctools::clasp_ptr_t text_start;
   gctools::clasp_ptr_t text_end;
+  bool hasVtableSection = false;
+  gctools::clasp_ptr_t vtableSectionStart;
+  gctools::clasp_ptr_t vtableSectionEnd;
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
-#if 0
+#if 1
+    const char* type;
     type =  (p_type == PT_LOAD) ? "PT_LOAD" :
       (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
       (p_type == PT_INTERP) ? "PT_INTERP" :
@@ -246,17 +253,42 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
       (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
       (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
       (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
-    printf("    %2d: [%14p; memsz:%7jx] flags: %#jx; ", j,
+    printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j,
            (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
            (uintmax_t) info->dlpi_phdr[j].p_memsz,
+           (void*) ((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz),
            (uintmax_t) info->dlpi_phdr[j].p_flags);
 #endif
+    gctools::clasp_ptr_t low = (gctools::clasp_ptr_t) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
+    gctools::clasp_ptr_t high = (gctools::clasp_ptr_t)((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz);
     if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
+      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
+    }
+    if (low<= vtablePtr && vtablePtr<high) {
+      //
+      // There can be multiple ranges that contain the vtable section - for crying out loud!
+      //  Use the largest one.
+      if (hasVtableSection) {
+        uintptr_t oldSize = vtableSectionEnd - vtableSectionStart;
+        uintptr_t newSize = high - low;
+        if (newSize>oldSize) {
+          vtableSectionStart = low;
+          vtableSectionEnd = high;
+        }
+      } else {
+        hasVtableSection = true;
+        vtableSectionStart = low;
+        vtableSectionEnd = high;
+      }
+      printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
     }
   }
-  add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,text_start,text_end);
+  add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,
+                                   text_start,text_end,
+                                   hasVtableSection,
+                                   vtableSectionStart, vtableSectionEnd);
   scan_callback_info->_Index++;
   return 0;
 }
@@ -297,7 +329,9 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
                               bool use_origin,
                               uintptr_t library_origin,
                               void* handle,
-                              gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
+                              gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
+                              bool hasVtableSection,
+                              gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) {
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
@@ -346,7 +380,8 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
   }
   BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
-  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end);
+  OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
+                              hasVtableSection,vtableSectionStart,vtableSectionEnd);
   if (callback) {
     (*callback)(odli);
   }

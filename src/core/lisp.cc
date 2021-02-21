@@ -454,9 +454,11 @@ void Lisp_O::startupLispEnvironment() {
   //
   // Walk all of the loaded dynamic libraries
   //
+  // Now this is in main.cc
+#if 0
   add_library addlib;
   startup_register_loaded_objects(&addlib);
-
+#endif
   //
   // Initialize the symbols
   //

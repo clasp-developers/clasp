@@ -319,6 +319,13 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     }
   }
 
+  
+  //
+  // Walk all of the loaded dynamic libraries
+  //
+  core::add_library addlib;
+  startup_register_loaded_objects(&addlib);
+
     // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);

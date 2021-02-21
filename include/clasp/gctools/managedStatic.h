@@ -44,6 +44,7 @@ namespace gctools {
 //===----------------------------------------------------------------------===//
 
 /// object_creator - Helper method for ManagedStatic.
+
 template <class C>
 void *object_creator() {
   return RootClassAllocator<C>::allocate();

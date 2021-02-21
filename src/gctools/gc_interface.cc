@@ -147,7 +147,7 @@ const char *obj_name(gctools::stamp_t stamp) {
 //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
   }
-  printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, stamp, global_unshifted_nowhere_stamp_names.size());
+  printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp, global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
 #endif
   

@@ -325,12 +325,10 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end) {
+void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end, bool dummyHasDataConst, gctools::clasp_ptr_t dummyDataConstStart, gctools::clasp_ptr_t dummyDataConstEnd ) {
 //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
-#ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-#endif
 // Get the start of the library and the symbol_table
   if (!use_origin) {
     printf("%s:%d:%s Looking for library %s with handle %p\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), handle);
@@ -388,22 +386,22 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
                     text_segment_start,
                     text_segment_size);
   printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
-  gctools::clasp_ptr_t data_const_segment_start;
-  uintptr_t data_const_segment_size;
+  gctools::clasp_ptr_t vtableSection_segment_start;
+  uintptr_t vtableSection_segment_size;
   bool found = mygetsegmentsize( is_executable,
                                  (void*)library_origin,
                                  "__DATA_CONST",
-                                 data_const_segment_start,
-                                 data_const_segment_size);
-  printf("%s:%d:%s       Looking for __DATA_CONST  library_origin = %p - %p  data_const_segment_start = %p - %p data_const_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+data_const_segment_size), (void*)data_const_segment_start, (void*)((char*)data_const_segment_start + data_const_segment_size), data_const_segment_size );
+                                 vtableSection_segment_start,
+                                 vtableSection_segment_size);
+  printf("%s:%d:%s       Looking for __DATA_CONST  library_origin = %p - %p  vtableSection_segment_start = %p - %p vtableSection_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+vtableSection_segment_size), (void*)vtableSection_segment_start, (void*)((char*)vtableSection_segment_start + vtableSection_segment_size), vtableSection_segment_size );
   OpenDynamicLibraryInfo odli(is_executable,
                               libraryName,handle,symbol_table,
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),
                               found,
-                              data_const_segment_start,
-                              data_const_segment_start+data_const_segment_size);
+                              vtableSection_segment_start,
+                              vtableSection_segment_start+vtableSection_segment_size);
   if (callback) (*callback)(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }

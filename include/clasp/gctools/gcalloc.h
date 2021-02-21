@@ -473,6 +473,7 @@ inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size,
 }
 #endif // #ifdef USE_MPS
 
+#if 1
 #ifdef TAGGED_POINTER
 /*! Allocate regular C++ classes that are considered roots */
 template <class T>
@@ -529,7 +530,9 @@ struct RootClassAllocator {
   };
 };
 #endif // end TAGGED_POINTER
-  
+#endif
+
+
 template <class Cons, class Register>
 struct ConsAllocator {
   template <class... ARGS>

@@ -796,11 +796,12 @@ void register_jitted_object(const std::string& name, uintptr_t address, int size
 
 void add_dynamic_library_using_handle(add_dynamic_library* adder, const std::string& libraryName, void* handle) {
   printf("%s:%d:%s libraryName: %s need text_start, text_end\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
-  add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL );
+  add_dynamic_library_impl(adder, false,libraryName, false, 0, handle, NULL, NULL, false, NULL, NULL );
 }
 
-void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end ) {
-  add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end );
+void add_dynamic_library_using_origin(add_dynamic_library* adder, bool is_executable,const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end, bool hasDataConst, gctools::clasp_ptr_t dataConstStart, gctools::clasp_ptr_t dataConstEnd  ) {
+  add_dynamic_library_impl(adder,is_executable,libraryName, true, origin, NULL, text_start, text_end,
+                           hasDataConst, dataConstStart, dataConstEnd );
 }
 
 bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
@@ -849,7 +850,26 @@ void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end
   }
   SIMPLE_ERROR(BF("Could not find the executableTextRange"));
 }
-  
+
+void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    printf("%s:%d:%s Looking at entry: %s start: %p end: %p isExecutable: %d\n",
+           __FILE__, __LINE__, __FUNCTION__,
+           entry.second._Filename.c_str(),
+           entry.second._VtableSectionStart,
+           entry.second._VtableSectionEnd,
+           entry.second._IsExecutable );
+    if (entry.second._IsExecutable) {
+      start = entry.second._VtableSectionStart;
+      end = entry.second._VtableSectionEnd;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
+}
+
 bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);

@@ -28,12 +28,12 @@
 #else
 #define DBG_SL(_fmt_)
 #endif
-#if 0
+#if 1
 #define DBG_SL2(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL2(_fmt_)
 #endif
-#if 0
+#if 1
 #define DBG_SL3(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL3(_fmt_)
@@ -333,6 +333,9 @@ struct fixup_objects_t : public walker_callback_t {
 
   void callback(clasp_ptr_t cheader, size_t sz) {
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
+    if (!this->_saving) {
+      printf("%s:%d:%s loading header: %p %s\n", __FILE__, __LINE__, __FUNCTION__, header, header->description().c_str() );
+    }
     if (header->stampP()) {
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       clasp_ptr_t client_limit = isl_obj_skip(client,false);
@@ -344,13 +347,29 @@ struct fixup_objects_t : public walker_callback_t {
       // 3. entry points to Code_O objects -> offset
 
       isl_obj_scan( 0, client, client_limit );
-      gctools::clasp_ptr_t vtable = *(gctools::clasp_ptr_t*)client;
-      printf("%s:%d:%s The object @ %p %s isPolymorphic->%d vtable = %p | %p | %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic(), this->_vtableStart, vtable, this->_vtableEnd );
+      if (header->preciseIsPolymorphic()) {
+        gctools::clasp_ptr_t vtable = *(gctools::clasp_ptr_t*)client;
+        if (this->_saving) {
+          if (! (this->_vtableStart <= vtable && vtable < this->_vtableEnd ) ) {
+            printf("%s:%d:%s The object @ %p %s isPolymorphic->%d vtable = %p | %p | %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic(), this->_vtableStart, vtable, this->_vtableEnd );
+            printf("%s:%d:%s The vtable @ %p MUST be in the vtable section %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtable, this->_vtableStart, this->_vtableEnd );
+          }
+      //printf("%s:%d:%s The object @ %p %s isPolymorphic->%d vtable = %p | %p | %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic(), this->_vtableStart, vtable, this->_vtableEnd );
+          intptr_t offset = (vtable-this->_vtableStart);
+          *(gctools::clasp_ptr_t*)client = (gctools::clasp_ptr_t)offset;
+      // printf("%s:%d:%s       vtable offset = 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, offset );
+        } else {
+          //
+          // Loading we add the vtableStart segment address
+          //
+          *(gctools::clasp_ptr_t*)client = (uintptr_t)vtable + this->_vtableStart;
+        }
+      }
     } else if (header->consObjectP()) {
       clasp_ptr_t client = (clasp_ptr_t)header;
       clasp_ptr_t client_limit = isl_cons_skip((clasp_ptr_t)header);
       isl_cons_scan( 0, client, client_limit );
-      printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
+      // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->weakObjectP()) {
       printf("%s:%d:%s   weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
@@ -470,7 +489,7 @@ void image_save(const std::string& filename)
   global_image_save_load_base = (intptr_t)islbuffer;
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
-  core::executableTextRange(start,end);
+  core::executableVtableSectionRange(start,end);
   fixup_objects_t fixup_objects( true, (gctools::clasp_ptr_t)islbuffer, start, end );
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
 
@@ -604,7 +623,7 @@ int image_load(const std::string& filename )
   global_image_save_load_base = -(intptr_t)islbuffer;
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
-  core::executableTextRange(start,end);
+  core::executableVtableSectionRange(start,end);
   fixup_objects_t fixup_objects( false, (gctools::clasp_ptr_t)islbuffer, start, end );
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
 

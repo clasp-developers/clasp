@@ -233,11 +233,11 @@ struct OpenDynamicLibraryInfo {
   gctools::clasp_ptr_t      _LibraryStart;
   gctools::clasp_ptr_t      _TextStart;
   gctools::clasp_ptr_t      _TextEnd;
-  bool                      _HasDataConst;
-  gctools::clasp_ptr_t      _DataConstStart;
-  gctools::clasp_ptr_t      _DataConstEnd;
+  bool                      _HasVtableSection;
+  gctools::clasp_ptr_t      _VtableSectionStart;
+  gctools::clasp_ptr_t      _VtableSectionEnd;
   OpenDynamicLibraryInfo(bool is_executable, const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
-                         bool hasDataConst, dataConstStart, dataConstEnd ) :
+                         bool hasVtableSection, gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) :
     _IsExecutable(is_executable),
     _Filename(f),
     _Handle(h),
@@ -245,10 +245,9 @@ struct OpenDynamicLibraryInfo {
     _LibraryStart(libstart),
     _TextStart(textStart),
     _TextEnd(textEnd),
-    _HasDataConst(hasDataConst),
-    _DataConstStart(dataConstStart),
-    _DataConstEnd(dataConstEnd),
-  {};
+    _HasVtableSection(hasVtableSection),
+    _VtableSectionStart(vtableSectionStart),
+    _VtableSectionEnd(vtableSectionEnd)  {};
   OpenDynamicLibraryInfo() {};
 };
 
@@ -291,7 +290,10 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
  bool if_dynamic_library_loaded_remove(const std::string& libraryName);
 
  void add_dynamic_library_using_handle(add_dynamic_library* callback, const std::string& libraryName, void* handle);
-void add_dynamic_library_using_origin(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, uintptr_t origin, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd);
+void add_dynamic_library_using_origin(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, uintptr_t origin,
+                                      gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
+                                      bool hasVtableSection,
+                                      gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd);                                      
  
  bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName );
  bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
@@ -437,13 +439,18 @@ void startup_register_loaded_objects(add_dynamic_library* addlib);
 uintptr_t load_stackmap_info(const char* filename, uintptr_t header, size_t& section_size);
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size);
 void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_table_memory);
- void add_dynamic_library_impl(add_dynamic_library* adder, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end );
+ void add_dynamic_library_impl(add_dynamic_library* adder, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle,
+                               gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
+                               bool hasVtableSection,
+                               gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd );
+
 DebugInfo& debugInfo();
 
 
 void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace);
 
 void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
+void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 
 
 };
