@@ -389,6 +389,39 @@ void Header_s::validate() const {
   }
 }
 
+//
+//
+// When USE_PRECISE_GC then we expose more methods for Header_s
+//
+
+#ifdef USE_PRECISE_GC
+
+//
+// Return true if the object represented by this header is polymorphic
+bool Header_s::preciseIsPolymorphic() const {
+  if (this->stampP()) {
+    uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
+    return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
+  } else if (this->consObjectP()) {
+    return false;
+  } else if (this->weakObjectP()) {
+    if (this->_stamp_wtag_mtag._value == WeakBucketKind) {
+      return std::is_polymorphic<WeakBucketsObjectType>();
+    } else if (this->_stamp_wtag_mtag._value == StrongBucketKind ) {
+      return std::is_polymorphic<StrongBucketsObjectType>();
+    } else if (this->_stamp_wtag_mtag._value == WeakPointerKind  ) {
+      return std::is_polymorphic<WeakPointer>();
+    }
+    return false;
+  }
+}
+
+
+#endif
+
+
+
+
 
 CL_DEFUN core::T_mv gctools__ensure_valid_object(core::T_mv obj) {
   if (obj.generalp()) {

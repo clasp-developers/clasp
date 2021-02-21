@@ -233,22 +233,28 @@ struct OpenDynamicLibraryInfo {
   gctools::clasp_ptr_t      _LibraryStart;
   gctools::clasp_ptr_t      _TextStart;
   gctools::clasp_ptr_t      _TextEnd;
-  OpenDynamicLibraryInfo(bool is_executable, const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd) :
+  bool                      _HasDataConst;
+  gctools::clasp_ptr_t      _DataConstStart;
+  gctools::clasp_ptr_t      _DataConstEnd;
+  OpenDynamicLibraryInfo(bool is_executable, const std::string& f, void* h, const SymbolTable& symbol_table, gctools::clasp_ptr_t libstart, gctools::clasp_ptr_t textStart, gctools::clasp_ptr_t textEnd,
+                         bool hasDataConst, dataConstStart, dataConstEnd ) :
     _IsExecutable(is_executable),
     _Filename(f),
     _Handle(h),
     _SymbolTable(symbol_table),
     _LibraryStart(libstart),
     _TextStart(textStart),
-    _TextEnd(textEnd) {};
+    _TextEnd(textEnd),
+    _HasDataConst(hasDataConst),
+    _DataConstStart(dataConstStart),
+    _DataConstEnd(dataConstEnd),
+  {};
   OpenDynamicLibraryInfo() {};
 };
 
 
  struct add_dynamic_library {
-   virtual void operator()(const OpenDynamicLibraryInfo& info) {
-     printf("%s:%d:%s Handle library: %s\n", __FILE__, __LINE__, __FUNCTION__, info._Filename.c_str() );
-   }
+   virtual void operator()(const OpenDynamicLibraryInfo& info) = 0;
  };
 
 struct add_library : public add_dynamic_library {
@@ -435,8 +441,9 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 DebugInfo& debugInfo();
 
 
- void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace);
+void fill_backtrace_or_dump_info(std::vector<BacktraceEntry>& backtrace);
 
+void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end );
 
 
 };

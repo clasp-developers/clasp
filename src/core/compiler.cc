@@ -941,7 +941,7 @@ CL_DEFUN T_mv core__load_binary(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
     printf("%s:%d No static constructors were run - what do we do in this situation????\n", __FILE__, __LINE__ );
     abort();
   }
-  add_dynamic_library adder;
+  add_library adder;
   add_dynamic_library_using_handle(&adder,name,handle);
   Pointer_sp handle_ptr = Pointer_O::create(handle);
   DynamicScopeManager scope4(_sym_STARcurrent_dlopen_handleSTAR, handle_ptr);

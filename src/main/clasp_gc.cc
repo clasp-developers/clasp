@@ -13569,7 +13569,7 @@ public:
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, 0, "only" },
 // Stamp = gctools::GCBitUnitArray_moveable<4,0>/1763
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4_0_, sizeof(gctools::GCBitUnitArray_moveable<4,0>), 4, 0, "GCBitUnitArray_moveable_4_0_" },
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4_0_, sizeof(gctools::GCBitUnitArray_moveable<4,0>), 4, 0, "gctools::GCBitUnitArray_moveable<4,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
@@ -13818,7 +13818,7 @@ public:
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FileScope_O>), 0, 0, "only" },
 // Stamp = gctools::GCBitUnitArray_moveable<4,1>/1819
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, 0, "GCBitUnitArray_moveable_4_1_" },
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, 0, "gctools::GCBitUnitArray_moveable<4,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
@@ -13941,7 +13941,7 @@ public:
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = gctools::GCBitUnitArray_moveable<2,0>/1851
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2_0_, sizeof(gctools::GCBitUnitArray_moveable<2,0>), 2, 0, "GCBitUnitArray_moveable_2_0_" },
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2_0_, sizeof(gctools::GCBitUnitArray_moveable<2,0>), 2, 0, "gctools::GCBitUnitArray_moveable<2,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
@@ -13963,7 +13963,7 @@ public:
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
 // Stamp = gctools::GCBitUnitArray_moveable<1,0>/1859
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_1_0_, sizeof(gctools::GCBitUnitArray_moveable<1,0>), 1, 0, "GCBitUnitArray_moveable_1_0_" },
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_1_0_, sizeof(gctools::GCBitUnitArray_moveable<1,0>), 1, 0, "gctools::GCBitUnitArray_moveable<1,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
@@ -14010,7 +14010,7 @@ public:
 //     field: "_Expression" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), 0, "_Expression" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = gctools::GCBitUnitArray_moveable<2,1>/1871
-{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, 0, "GCBitUnitArray_moveable_2_1_" },
+{ bitunit_container_kind, STAMP_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, 0, "gctools::GCBitUnitArray_moveable<2,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")

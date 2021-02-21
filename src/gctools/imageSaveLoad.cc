@@ -205,7 +205,11 @@ struct calculate_size_t : public walker_callback_t {
       this->_general_count++;
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       size_t delta = isl_obj_skip(client,false)-client;
-      DBG_SL2(BF("   general header@%p -> %p  sz = %lu  obj_skip = %lu\n") % header % *(void**)header % sz % delta );
+      DBG_SL2(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n")
+              % header
+              % header->_stamp_wtag_mtag._value
+              % header->_stamp_wtag_mtag._header_badge
+              % sz % delta );
       if (delta > sz) {
         printf("%s:%d:%s  There is a size mismatch for header %p  boehm says %lu  must be larger than obj_skip says %lu and i\n", __FILE__, __LINE__, __FUNCTION__, *(clasp_ptr_t*)header, sz, delta );
         size_t delta2 = isl_obj_skip(client,true)-client;
@@ -320,19 +324,33 @@ void walk_image_save_load_objects( ISLHeader_s* cur, Walker& walker) {
 
 
 struct fixup_objects_t : public walker_callback_t {
-  char* _buffer;
-  fixup_objects_t(char* buffer) : _buffer(buffer) {};
+  bool                 _saving;
+  gctools::clasp_ptr_t _buffer;
+  gctools::clasp_ptr_t _vtableStart;
+  gctools::clasp_ptr_t _vtableEnd;
+  fixup_objects_t(bool saving, gctools::clasp_ptr_t buffer, gctools::clasp_ptr_t vtableStart, gctools::clasp_ptr_t vtableEnd) :
+    _saving(saving), _buffer(buffer), _vtableStart(vtableStart), _vtableEnd(vtableEnd) {};
 
   void callback(clasp_ptr_t cheader, size_t sz) {
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
     if (header->stampP()) {
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       clasp_ptr_t client_limit = isl_obj_skip(client,false);
+      //
+      // This is where we would fixup vtable pointers and entry-points
+      //
+      // 1. vtable pointers -> offset
+      // 2. entry points to library code -> offset
+      // 3. entry points to Code_O objects -> offset
+
       isl_obj_scan( 0, client, client_limit );
+      gctools::clasp_ptr_t vtable = *(gctools::clasp_ptr_t*)client;
+      printf("%s:%d:%s The object @ %p %s isPolymorphic->%d vtable = %p | %p | %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic(), this->_vtableStart, vtable, this->_vtableEnd );
     } else if (header->consObjectP()) {
       clasp_ptr_t client = (clasp_ptr_t)header;
       clasp_ptr_t client_limit = isl_cons_skip((clasp_ptr_t)header);
       isl_cons_scan( 0, client, client_limit );
+      printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->weakObjectP()) {
       printf("%s:%d:%s   weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
@@ -450,8 +468,11 @@ void image_save(const std::string& filename)
 
   DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)islbuffer);
   global_image_save_load_base = (intptr_t)islbuffer;
-  fixup_objects_t fixup_objects(islbuffer);
-  walk_garbage_collected_objects(fixup_objects);
+  gctools::clasp_ptr_t start;
+  gctools::clasp_ptr_t end;
+  core::executableTextRange(start,end);
+  fixup_objects_t fixup_objects( true, (gctools::clasp_ptr_t)islbuffer, start, end );
+  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
 
 
   std::ofstream wf(filename, std::ios::out | std::ios::binary);
@@ -581,7 +602,10 @@ int image_load(const std::string& filename )
   // Walk all the objects and fixup all the pointers
   //
   global_image_save_load_base = -(intptr_t)islbuffer;
-  fixup_objects_t fixup_objects((char*)islbuffer);
+  gctools::clasp_ptr_t start;
+  gctools::clasp_ptr_t end;
+  core::executableTextRange(start,end);
+  fixup_objects_t fixup_objects( false, (gctools::clasp_ptr_t)islbuffer, start, end );
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
 
 

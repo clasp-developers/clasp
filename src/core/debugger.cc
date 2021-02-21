@@ -833,6 +833,23 @@ CL_DEFUN List_sp core__dynamic_library_handles() {
   return result.cons();
 }
 
+//
+// Return the range of the .text section of the executable
+//
+void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+//    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
+    if (entry.second._IsExecutable) {
+      start = entry.second._TextStart;
+      end = entry.second._TextEnd;
+      return;
+    }
+  }
+  SIMPLE_ERROR(BF("Could not find the executableTextRange"));
+}
+  
 bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);

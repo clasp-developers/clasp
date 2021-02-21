@@ -489,7 +489,6 @@ namespace gctools {
                                    // and the 1st into the client data unless DEBUG_GUARD is on
     // The header contains the stamp_wtag_mtag value.
     StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
-    // The additional_data[0] must fall right after the header or pads might try to write into the wrong place
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
@@ -569,6 +568,10 @@ namespace gctools {
         ss << "/";
         ss << obj_name(this->stamp_());
         return ss.str();
+      } else if (this->consObjectP()) {
+        return "Header_CONS";
+      } else if (this->weakObjectP()) {
+        return "Header_WEAK";
       } else if (this->fwdP()) {
         std::stringstream ss;
         ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
@@ -587,6 +590,13 @@ namespace gctools {
       return ss.str();
       ;
     }
+
+#ifdef USE_PRECISE_GC
+    //
+    // When USE_PRECISE_GC we can determine more about objects
+    //
+    bool preciseIsPolymorphic() const;
+#endif
   };
 };
 

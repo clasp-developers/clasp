@@ -78,7 +78,8 @@ namespace core {
 #if defined(_TARGET_OS_DARWIN)
 
 
-void mygetsegmentsize( void* vmhp,
+bool mygetsegmentsize( bool errorP,
+                       void* vmhp,
                        const char *segname,
                        gctools::clasp_ptr_t& segment_start,
                        uintptr_t& segment_size
@@ -103,12 +104,15 @@ void mygetsegmentsize( void* vmhp,
       if (strcmp(sgp->segname, segname) == 0){
         segment_start = (gctools::clasp_ptr_t)sgp->vmaddr;
         segment_size = sgp->vmsize;
-        return;
+        return true;
       }
     }
   }
-  printf("%s:%d:%s Could not find segment %s\n", __FILE__, __LINE__, __FUNCTION__, segname );
-  abort();
+  if (errorP) {
+    printf("%s:%d:%s Could not find segment %s\n", __FILE__, __LINE__, __FUNCTION__, segname );
+    abort();
+  }
+  return false;
 }
 
 uint8_t * 
@@ -303,7 +307,7 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
 }
 
 
-void startup_register_loaded_objects(add_dynamic_library& callback) {
+void startup_register_loaded_objects(add_dynamic_library* callback) {
  printf("%s:%d:%s Registering loaded objects\n", __FILE__, __LINE__, __FUNCTION__);
 //    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
   uint32_t num_loaded = _dyld_image_count();
@@ -321,7 +325,7 @@ void startup_register_loaded_objects(add_dynamic_library& callback) {
 /*! Add a dynamic library.
     If library_origin points to the start of the library then that address is used,
     otherwise it uses handle to look up the start of the library. */
-void add_dynamic_library_impl(add_dynamic_library& callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end) {
+void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end) {
 //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
@@ -379,17 +383,28 @@ void add_dynamic_library_impl(add_dynamic_library& callback, bool is_executable,
   BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t text_segment_start;
   uintptr_t text_segment_size;
-  mygetsegmentsize( (void*)library_origin,
+  mygetsegmentsize( true,(void*)library_origin,
                     "__TEXT",
                     text_segment_start,
                     text_segment_size);
-  //printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
+  printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
+  gctools::clasp_ptr_t data_const_segment_start;
+  uintptr_t data_const_segment_size;
+  bool found = mygetsegmentsize( is_executable,
+                                 (void*)library_origin,
+                                 "__DATA_CONST",
+                                 data_const_segment_start,
+                                 data_const_segment_size);
+  printf("%s:%d:%s       Looking for __DATA_CONST  library_origin = %p - %p  data_const_segment_start = %p - %p data_const_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+data_const_segment_size), (void*)data_const_segment_start, (void*)((char*)data_const_segment_start + data_const_segment_size), data_const_segment_size );
   OpenDynamicLibraryInfo odli(is_executable,
                               libraryName,handle,symbol_table,
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
                               reinterpret_cast<gctools::clasp_ptr_t>(library_origin),
-                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size));
-  callback(odli);
+                              reinterpret_cast<gctools::clasp_ptr_t>(library_origin+text_segment_size),
+                              found,
+                              data_const_segment_start,
+                              data_const_segment_start+data_const_segment_size);
+  if (callback) (*callback)(odli);
   debugInfo()._OpenDynamicLibraryHandles[libraryName] = odli;
 }
 
