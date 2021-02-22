@@ -126,37 +126,33 @@ namespace core {
     void rawRefSetCar(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCarNoValidate(tval); }
     void rawRefSetCdr(uintptr_t val) { T_sp tval((gctools::Tagged)val); this->setCdrNoValidate(tval); }
     bool fwdP() const {
-      return ((gctools::Header_s*)this)->fwdP();
+      return this->_stamp_wtag_mtag.fwdP();
     }
     bool pad1P() const {
-      return ((gctools::Header_s*)this)->pad1P();
+      return this->_stamp_wtag_mtag.pad1P();
     }
     bool padP() const {
-      return ((gctools::Header_s*)this)->padP();
+      return this->_stamp_wtag_mtag.padP();
     }
     size_t padSize() const {
       size_t sz = this->rawRefCar();
       return sz;
     }
     void setFwdPointer(void* ptr) {
-      gctools::Header_s* header = (gctools::Header_s*)this;
-      header->setFwdPointer((void*)ptr);
-      header->setFwdSize(sizeof(Cons_O));
+      this->_stamp_wtag_mtag.setFwdPointer((void*)ptr);
+      this->_stamp_wtag_mtag.setFwdSize(sizeof(Cons_O));
     }
     void* fwdPointer() {
-      gctools::Header_s* header = (gctools::Header_s*)this;
-      return header->fwdPointer();
+      return this->_stamp_wtag_mtag.fwdPointer();
     }
     void setPad1()
     {
-      gctools::Header_s* header = (gctools::Header_s*)this;
-      header->setPad(gctools::Header_s::pad1_mtag);
+      this->_stamp_wtag_mtag.setPad(gctools::Header_s::pad1_mtag);
     }
     void setPad(size_t sz)
     {
-      gctools::Header_s* header = (gctools::Header_s*)this;
-      header->setPad(gctools::Header_s::pad_mtag);
-      header->setPadSize(sz);
+      this->_stamp_wtag_mtag.setPad(gctools::Header_s::pad_mtag);
+      this->_stamp_wtag_mtag.setPadSize(sz);
     }
 #endif
   public:
@@ -169,7 +165,7 @@ namespace core {
     }
     
   public:
-    uintptr_t         _BadgeMtag;
+    gctools::Header_s::StampWtagMtag     _stamp_wtag_mtag;
     std::atomic<T_sp> _Car;
     std::atomic<T_sp> _Cdr;
   public:
@@ -352,12 +348,13 @@ namespace core {
     T_sp getf(T_sp key, T_sp defValue) const;
 
     inline static uintptr_t cons_header(uintptr_t val) {return (val & (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;};
-    explicit Cons_O(): _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()), _BadgeMtag(cons_header((uintptr_t)this)) {};
-    explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr),_BadgeMtag(cons_header((uintptr_t)this)) {};
+    explicit Cons_O(): _stamp_wtag_mtag(this), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) {};
+    explicit Cons_O(T_sp car, T_sp cdr) :  _stamp_wtag_mtag(this), _Car(car), _Cdr(cdr) {};
+    explicit Cons_O(gctools::Header_s::StampWtagMtag header, T_sp car, T_sp cdr) : _stamp_wtag_mtag(header), _Car(car), _Cdr(cdr) {};
     // These are necessary because atomics are not copyable.
     // More specifically they are necessary if you want to store conses in vectors,
     // which the hash table code does.
-    Cons_O(const Cons_O& other) : _Car(other.ocar()), _Cdr(other.cdr()), _BadgeMtag(cons_header((uintptr_t)this))  {};
+    Cons_O(const Cons_O& other) :  _stamp_wtag_mtag(other._stamp_wtag_mtag), _Car(other.ocar()), _Cdr(other.cdr())  {};
     Cons_O& operator=(const Cons_O& other) {
         if (this != &other) {
             setCar(other.ocar());

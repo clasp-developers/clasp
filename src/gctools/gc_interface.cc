@@ -109,13 +109,13 @@ using namespace gctools;
 size_t obj_kind( core::T_O *tagged_ptr) {
   const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return (size_t)(header->stamp_());
+  return (size_t)(header->_stamp_wtag_mtag.stamp_());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
   const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  return obj_name(header->stamp_());
+  return obj_name(header->_stamp_wtag_mtag.stamp_());
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
@@ -169,7 +169,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 
   const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
   ASSERTF(header->stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp_());
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_MPSPREP
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)
   size_t jump_table_index = (size_t)stamp; // - stamp_first_general;

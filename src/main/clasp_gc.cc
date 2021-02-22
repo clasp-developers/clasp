@@ -13260,7 +13260,7 @@ public:
 // Stamp = core::Cons_O/1707
 { class_kind, STAMP_core__Cons_O, sizeof(core::Cons_O), 0, 0, "core::Cons_O" },
 //      field: "_BadgeMtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_BadgeMtag), 0, "_BadgeMtag" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_stamp_wtag_mtag), 0, "_stamp_wtag_mtag" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Car" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Car), 0, "_Car" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Cdr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))

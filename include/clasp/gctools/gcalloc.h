@@ -473,8 +473,6 @@ inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size,
 }
 #endif // #ifdef USE_MPS
 
-#if 1
-#ifdef TAGGED_POINTER
 /*! Allocate regular C++ classes that are considered roots */
 template <class T>
 struct RootClassAllocator {
@@ -528,9 +526,26 @@ struct RootClassAllocator {
     GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
   };
-};
-#endif // end TAGGED_POINTER
+
+  static void* allocateRootsAndZero(size_t num) {
+#ifdef USE_BOEHM
+    void* buffer = ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(void*)*num);
+    memset( buffer, 0, sizeof(void*)*num);
+#else
+# error "Add support for other GC"
 #endif
+    return buffer;
+  }
+
+  static void freeRoots(void* roots) {
+#ifdef USE_BOEHM
+    GC_FREE(roots);
+#else
+# error "Add support for other GC"
+#endif
+  };
+  
+};
 
 
 template <class Cons, class Register>
@@ -561,13 +576,13 @@ struct ConsAllocator {
 
 
 #ifdef USE_PRECISE_GC
-  static smart_ptr<Cons> image_save_load_allocate(image_save_load_init_s* image_save_load_init ) {
+  static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
     Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMP_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
 # else
     printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif
-    new (cons) Cons((const Cons&) *(Cons*)image_save_load_init->_header);
+    new (cons) Cons(header,car,cdr);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 #endif
@@ -601,8 +616,9 @@ namespace gctools {
 
 
     static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init) {
+      size_t sizeWithHeader = sizeof(Header_s)+(image_save_load_init->_clientEnd-image_save_load_init->_clientStart);
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_header->_stamp_wtag_mtag,image_save_load_init->_size);
+      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_stamp_wtag_mtag,sizeWithHeader);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -650,9 +666,9 @@ namespace gctools {
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init) {
+    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_header->_stamp_wtag_mtag,image_save_load_init->_size);
+      Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_stamp_wtag_mtag,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -697,9 +713,9 @@ When would I ever want the GC to automatically collect objects but not move them
       // so that the static analyzer has something to call
     };
 
-    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init) {
+    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_header->_stamp_wtag_mtag,image_save_load_init->_size);
+      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_stamp_wtag_mtag,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -741,9 +757,9 @@ should not be managed by the GC */
 #endif
     }
 
-    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init) {
+    static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_header->_stamp_wtag_mtag,image_save_load_init->_size);
+      Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_stamp_wtag_mtag,size);
       pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -1313,13 +1329,14 @@ public:
   }
 
     static gctools::tagged_pointer<container_type> image_save_load_allocate( image_save_load_init_s* init ) {
+      size_t size = sizeof(Header_s) + (init->_clientEnd-init->_clientStart);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    Header_s* base = do_boehm_weak_allocation(init->_header->_stamp_wtag_mtag, init->_size);
+    Header_s* base = do_boehm_weak_allocation(init->_stamp_wtag_mtag, size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,init->_size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(init);
@@ -1331,7 +1348,7 @@ public:
     container_pointer myAddress(NULL);
     printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(init->_size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
     return obj;
 #endif
   }
@@ -1411,13 +1428,14 @@ public:
   }
 
   static gctools::tagged_pointer<container_type> image_save_load_allocate( image_save_load_init_s* init ) {
+    size_t size = sizeof(Header_s)+(init->_clientEnd-init->_clientStart);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
 #endif
-    Header_s* base = do_boehm_weak_allocation(init->_header->_stamp_wtag_mtag, init->_size);
+    Header_s* base = do_boehm_weak_allocation(init->_stamp_wtag_mtag, size);
     container_pointer myAddress = BasePtrToMostDerivedPtr<container_type>(base);
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,init->_size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,size);
     if (!myAddress)
       throw_hard_error("Out of memory in allocate");
     new (myAddress) container_type(init);
@@ -1429,7 +1447,7 @@ public:
     container_pointer myAddress(NULL);
     printf("%s:%d:%s Handle weak object allocation properly - I added normal headers\n", __FILE__, __LINE__, __FUNCTION__ );
     gctools::tagged_pointer<container_type> obj =
-      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(init->_size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,my_thread_allocation_points._strong_link_allocation_point,"strong_link_Bucket");
     return obj;
 #endif
   }

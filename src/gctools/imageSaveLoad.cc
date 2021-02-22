@@ -42,24 +42,67 @@
 
 namespace gctools {
 
-intptr_t global_image_save_load_base;
+struct MemoryRange {
+  gctools::clasp_ptr_t _Start;
+  gctools::clasp_ptr_t _End;
+  
+  MemoryRange(gctools::clasp_ptr_t start=NULL, gctools::clasp_ptr_t end=NULL) : _Start(start), _End(end) {};
+  void set(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end) {
+    this->_Start = start;
+    this->_End = end;
+  }
+  bool contains(gctools::clasp_ptr_t ptr) {
+    return (this->_Start<=ptr && ptr<= this->_End);
+  }
+};
+
+//
+// This stores the base of the image save/load memory
+//
+intptr_t globalImageSaveLoadBase;
+
+//
+// This stores if the client object is in image save/load memory (true) or
+// from garbage collected memory (false)
+//
+MemoryRange globalISLBufferRange;
+
+
+gctools::Header_s* clientPointerToHeaderPointer(gctools::clasp_ptr_t client)
+{
+  if (globalISLBufferRange.contains(client)) {
+    return (gctools::Header_s*)(client - sizeof(gctools::Header_s::StampWtagMtag));
+  }
+  return (gctools::Header_s*)gctools::ClientPtrToBasePtr(client);
+}
+
+gctools::clasp_ptr_t headerPointerToClientPointer(gctools::Header_s* header)
+{
+  if (globalISLBufferRange.contains((gctools::clasp_ptr_t)header)) {
+    return (gctools::clasp_ptr_t)((const char*)header + sizeof(gctools::Header_s::StampWtagMtag));
+  }
+  return (gctools::clasp_ptr_t)gctools::BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+}
+
+#define CLIENT_PTR_TO_HEADER_PTR(_client_) clientPointerToHeaderPointer((gctools::clasp_ptr_t)_client_)
+#define HEADER_PTR_TO_CLIENT_PTR(_header_) headerPointerToClientPointer((gctools::Header_s*)_header_)
 
 clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, intptr_t base) {
   uintptr_t fwd_client;
   if (tag==gctools::general_tag) {
-    Header_s* header = (Header_s*)(client - sizeof(Header_s));
-    clasp_ptr_t fwd = (clasp_ptr_t)header->fwdPointer();
-    fwd_client = (uintptr_t)(fwd+sizeof(Header_s));
+    Header_s* header = CLIENT_PTR_TO_HEADER_PTR(client);
+    fwd_client = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
   } else if (tag==gctools::cons_tag) {
-    Header_s* header = (Header_s*)client;
-    fwd_client = (uintptr_t)header->fwdPointer();
+    core::Cons_O* cons = (core::Cons_O*)client;
+    fwd_client = (uintptr_t)cons->fwdPointer();
   } else {
-    printf("%s:%d:%s Illegal tag %lu\n", __FILE__, __LINE__, __FUNCTION__, tag );
+    printf("%s:%d:%s Handle tag %lu\n", __FILE__, __LINE__, __FUNCTION__, tag );
     abort();
   }
   uintptr_t relative_fwd_client = fwd_client + base; // base is signed
   return (clasp_ptr_t)(relative_fwd_client | tag);
 }
+
 
 #define POINTER_FIX(_ptr_)\
   {\
@@ -70,7 +113,7 @@ clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, intptr_
         gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);\
         gctools::clasp_ptr_t tag = gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);\
         /*printf("%s:%d fixing taggedP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)taggedP, (void*)obj, (uintptr_t)tag);*/ \
-        obj = follow_forwarding_pointer(obj,(uintptr_t)tag,global_image_save_load_base); \
+        obj = follow_forwarding_pointer(obj,(uintptr_t)tag,globalImageSaveLoadBase); \
         /*printf("%s:%d     forwarded  obj = %p \n", __FILE__, __LINE__, (void*)obj );*/ \
         *taggedP = obj;\
       };\
@@ -86,21 +129,22 @@ clasp_ptr_t follow_forwarding_pointer(clasp_ptr_t client, uintptr_t tag, intptr_
 #define RESULT_OK 1
 #define EXTRA_ARGUMENTS
 
-#define OBJECT_SKIP_IN_OBJECT_SCAN isl_obj_skip
+#undef DEBUG_MPS_SIZE
+#define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
 #define OBJECT_SCAN isl_obj_scan
 __attribute__((optnone))
 #include "obj_scan.cc"
 #undef OBJECT_SCAN
 
-#define OBJECT_SKIP_IN_OBJECT_FWD isl_obj_skip
-#define OBJECT_FWD isl_obj_fwd
-#include "obj_scan.cc"
-#undef OBJECT_FWD
-
 #define OBJECT_SKIP isl_obj_skip
 __attribute__((optnone))
 #include "obj_scan.cc"
 #undef OBJECT_SKIP
+
+#define OBJECT_SKIP_IN_OBJECT_FWD isl_obj_skip
+#define OBJECT_FWD isl_obj_fwd
+#include "obj_scan.cc"
+#undef OBJECT_FWD
 
 
 #define CONS_SCAN isl_cons_scan
@@ -145,8 +189,9 @@ namespace gctools {
  * These are strings that are visible in the image save file
  */
 typedef enum { Object = 0x215443454a424f21, // !OBJECT!
-  Roots =  0x3c2153544f4f5221, // ROOTS
-  End =    0x21444e45444e4521 } ISLKind; // END
+    Cons = 0xC0C0C0C0C0C0C0C0, 
+    Roots =  0x3c2153544f4f5221, // ROOTS
+    End =    0x21444e45444e4521 } ISLKind; // END
 
 
 #define MAGIC_NUMBER 348235823
@@ -156,7 +201,7 @@ struct ISLFileHeader {
   size_t _NumberOfObjects;
   ISLFileHeader(size_t sz,size_t num) : _Magic(MAGIC_NUMBER), _Size(sz), _NumberOfObjects(num) {};
   bool good_magic() const {
-    return this->_Magic == MAGIC_NUMBER;
+    return (this->_Magic == MAGIC_NUMBER);
   }
 };
 
@@ -183,13 +228,31 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
        kind == gctools::global_code_kind ||
        kind == gctools::global_atomic_kind ||
        kind == gctools::global_strong_weak_kind ) {
-    walker->callback((gctools::clasp_ptr_t)ptr, sz);
+    gctools::clasp_ptr_t client = HEADER_PTR_TO_CLIENT_PTR((gctools::Header_s*)ptr);
+    walker->callback(client);
   }
 }
 };
 
 
 namespace gctools {
+
+
+
+struct ISLHeader_s {
+  ISLKind     _Kind;
+  size_t      _Size;
+  ISLHeader_s(ISLKind k, size_t s) : _Kind(k), _Size(s) {};
+};
+
+struct ISLConsHeader_s : public ISLHeader_s {
+  ISLConsHeader_s(ISLKind k, size_t s) : ISLHeader_s(k,s) {};
+};
+
+struct ISLObjectHeader_s : public ISLHeader_s {
+  Header_s::StampWtagMtag _stamp_wtag_mtag;
+  ISLObjectHeader_s(ISLKind k, uintptr_t sz, Header_s::StampWtagMtag swm) : ISLHeader_s(k,sz), _stamp_wtag_mtag(swm) {};
+};
 
 struct calculate_size_t : public walker_callback_t {
 
@@ -201,10 +264,12 @@ struct calculate_size_t : public walker_callback_t {
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->stampP()) {
+    if (header->_stamp_wtag_mtag.stampP()) {
       this->_general_count++;
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       size_t delta = isl_obj_skip(client,false)-client;
+      // Remove the Header_s and any tail
+      size_t objectSize = delta - sizeof(Header_s) - header->tail_size();
       DBG_SL2(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n")
               % header
               % header->_stamp_wtag_mtag._value
@@ -214,17 +279,19 @@ struct calculate_size_t : public walker_callback_t {
         printf("%s:%d:%s  There is a size mismatch for header %p  boehm says %lu  must be larger than obj_skip says %lu and i\n", __FILE__, __LINE__, __FUNCTION__, *(clasp_ptr_t*)header, sz, delta );
         size_t delta2 = isl_obj_skip(client,true)-client;
       }
-      this->_total_size += delta;
-    } else if (header->consObjectP()) {
+      this->_total_size += sizeof(ISLObjectHeader_s) + objectSize;
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
       DBG_SL2(BF("   cons header@%p -> %p\n") % header % *(void**)header );
       this->_cons_count++;
       clasp_ptr_t client = (clasp_ptr_t)header;
-      this->_total_size += isl_cons_skip(client)-client;
-    } else if (header->weakObjectP()) {
+      this->_total_size += sizeof(ISLConsHeader_s) + isl_cons_skip(client)-client;
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       this->_weak_count++;
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       DBG_SL2(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
-      this->_total_size += isl_weak_skip(client,false)-client;
+      size_t delta = isl_weak_skip(client,false)-client;
+      size_t objectSize = delta - sizeof(Header_s) - header->tail_size();
+      this->_total_size += sizeof(ISLObjectHeader_s) + objectSize;
     }
   }
 
@@ -248,18 +315,10 @@ void walk_garbage_collected_objects(Walker& walker) {
 
 
 
-struct ISLHeader_s {
-  ISLKind     _Kind;
-  uintptr_t   _Size;
-  ISLHeader_s(ISLKind k, uintptr_t sz) : _Kind(k), _Size(sz) {};
-};
-
-
-
 struct copy_objects_t : public walker_callback_t {
   char* _buffer;
   size_t _NumberOfObjects;
-  copy_objects_t(char* buffer) : _buffer(buffer), _NumberOfObjects(0) {};
+  copy_objects_t(char* buffer) : _buffer(buffer), _NumberOfObjects(0) {}
 
   char* write_buffer(size_t bytes, char* source ) {
     char* addr = this->_buffer;
@@ -268,41 +327,43 @@ struct copy_objects_t : public walker_callback_t {
     return addr;
   }
   
-  void callback(clasp_ptr_t cheader, size_t sz) {
+  void callback(clasp_ptr_t cheader) {
     Header_s* header = reinterpret_cast<Header_s*>(cheader);
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->stampP()) {
-      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-      size_t bytes = isl_obj_skip(client,false)-client;
-      ISLHeader_s islheader( Object, bytes );
-      this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
+    if (header->_stamp_wtag_mtag.stampP()) {
+      clasp_ptr_t clientStart = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      size_t bytes = isl_obj_skip(clientStart,false) - clientStart - sizeof(Header_s) - header->tail_size();
+      clasp_ptr_t clientEnd = clientStart + bytes;
+      ISLObjectHeader_s islheader( Object, bytes, header->_stamp_wtag_mtag );
+      this->write_buffer(sizeof(ISLObjectHeader_s), (char*)&islheader ); 
       DBG_SL2(BF("   copying general %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
-      char* new_addr = this->write_buffer(bytes,(char*)header);
+      char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
       this->_NumberOfObjects++;
-      header->setFwdPointer( new_addr );
-      header->setFwdSize( bytes );
-    } else if (header->consObjectP()) {
+      header->_stamp_wtag_mtag.setFwdPointer( new_addr );
+      header->_stamp_wtag_mtag.setFwdSize( bytes );
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
       clasp_ptr_t client = (clasp_ptr_t)header;
       size_t bytes = isl_cons_skip(client) - client;
-      ISLHeader_s islheader( Object, bytes );
+      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O) );
       this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader );
       DBG_SL2(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
       char* new_addr = this->write_buffer(bytes,(char*)header);
       this->_NumberOfObjects++;
-      header->setFwdPointer( new_addr );
-      header->setFwdSize( bytes );
-    } else if (header->weakObjectP()) {
+      header->_stamp_wtag_mtag.setFwdPointer( new_addr );
+      header->_stamp_wtag_mtag.setFwdSize( bytes );
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
-      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-      size_t bytes = isl_weak_skip(client,false)-client;
-      ISLHeader_s islheader( Object, bytes );
-      this->write_buffer(sizeof(ISLHeader_s), (char*)&islheader ); 
+      clasp_ptr_t clientStart = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
+      size_t bytes = isl_obj_skip(clientStart,false)-clientStart - sizeof(Header_s) - header->tail_size();
+      clasp_ptr_t clientEnd = clientStart + bytes;
+      ISLObjectHeader_s islheader( Object, bytes, header->_stamp_wtag_mtag );
+      this->write_buffer(sizeof(ISLObjectHeader_s), (char*)&islheader ); 
       DBG_SL2(BF("   copying weak %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
-      char* new_addr = this->write_buffer(bytes,(char*)header);
+      char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
       this->_NumberOfObjects++;
-      header->setFwdPointer( new_addr );
-      header->setFwdSize( bytes );
+      header->_stamp_wtag_mtag.setFwdPointer( new_addr );
+      header->_stamp_wtag_mtag.setFwdSize( bytes );
     }
   }
 };
@@ -313,9 +374,16 @@ struct copy_objects_t : public walker_callback_t {
 template <typename Walker>
 void walk_image_save_load_objects( ISLHeader_s* cur, Walker& walker) {
   while (cur->_Kind != End) {
-    char* object = (char*)cur+sizeof(ISLHeader_s);
-    walker.callback((gctools::clasp_ptr_t) object, cur->_Size );
-    cur = (ISLHeader_s*)((char*)cur + cur->_Size + sizeof(ISLHeader_s));
+    if (cur->_Kind == Object) {
+      char* object = (char*)cur + sizeof(ISLObjectHeader_s);
+      walker.callback((gctools::clasp_ptr_t) object, cur->_Size );
+      cur = (ISLHeader_s*)((char*)cur + cur->_Size + sizeof(ISLObjectHeader_s));
+    } else if (cur->_Kind == Cons) {
+      char* object = (char*)cur + sizeof(ISLConsHeader_s);
+      walker.callback((gctools::clasp_ptr_t) object, cur->_Size );
+      cur = (ISLHeader_s*)((char*)cur + cur->_Size + sizeof(ISLConsHeader_s));
+      
+    }
   }
 }
 
@@ -336,9 +404,9 @@ struct fixup_objects_t : public walker_callback_t {
     if (!this->_saving) {
       printf("%s:%d:%s loading header: %p %s\n", __FILE__, __LINE__, __FUNCTION__, header, header->description().c_str() );
     }
-    if (header->stampP()) {
-      clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
-      clasp_ptr_t client_limit = isl_obj_skip(client,false);
+    if (header->_stamp_wtag_mtag.stampP()) {
+      clasp_ptr_t client = (clasp_ptr_t)HEADER_PTR_TO_CLIENT_PTR(header);
+      clasp_ptr_t client_limit = client + sz;
       //
       // This is where we would fixup vtable pointers and entry-points
       //
@@ -365,12 +433,12 @@ struct fixup_objects_t : public walker_callback_t {
           *(gctools::clasp_ptr_t*)client = (uintptr_t)vtable + this->_vtableStart;
         }
       }
-    } else if (header->consObjectP()) {
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
       clasp_ptr_t client = (clasp_ptr_t)header;
       clasp_ptr_t client_limit = isl_cons_skip((clasp_ptr_t)header);
       isl_cons_scan( 0, client, client_limit );
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
-    } else if (header->weakObjectP()) {
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       printf("%s:%d:%s   weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
       clasp_ptr_t client = (clasp_ptr_t)BasePtrToMostDerivedPtr<core::General_O>((void*)header);
       clasp_ptr_t client_limit = isl_weak_skip(client,false);
@@ -385,7 +453,13 @@ void image_save(const std::string& filename)
 #ifdef USE_BOEHM
   GC_stop_world_external();
 #endif
-  
+
+  if (sizeof(ISLObjectHeader)-offsetof(ISLObjectHeader,_stamp_wtag_mtag) != sizeof(Header_s::StampWtagMtag)) {
+    printf("%s:%d:%s Sanity check for headers in image save/load failed.\n"
+           "The _stamp_wtag_mtag field must be the last field in ISLObjectHeader so that it is IMMEDIATELY followed by a client\n",
+           __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
   DBG_SL(BF(" Entered\n" ));
   printf("%s:%d:%s WHAT AM I GOING TO DO WITH WEAK OBJECTS\n", __FILE__, __LINE__, __FUNCTION__ );
   //
@@ -449,9 +523,6 @@ void image_save(const std::string& filename)
   size_t numberOfObjects = 0;
   size_t roots = sizeof(ISLHeader_s)* (1 + NUMBER_OF_CORE_SYMBOLS + global_symbol_count );
   size_t total_size = calc_size._total_size            // for all objects
-    + (calc_size._general_count
-       + calc_size._cons_count
-       + calc_size._weak_count)*sizeof(ISLHeader_s)    // ISLHeader_s for each object
     + roots                                            // size for roots
     + sizeof(ISLHeader_s);                             // size of last End header
   char* islbuffer = (char*)malloc( total_size );
@@ -486,7 +557,9 @@ void image_save(const std::string& filename)
   //
 
   DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)islbuffer);
-  global_image_save_load_base = (intptr_t)islbuffer;
+  globalImageSaveLoadBase = (intptr_t)islbuffer;
+  globalClientInImageSaveLoad = false;
+  
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableVtableSectionRange(start,end);
@@ -516,13 +589,12 @@ struct temporary_root_holder_t {
   void** _Cur;
 
   temporary_root_holder_t(size_t num) : _Number(num){
-    this->_buffer = GC_MALLOC_UNCOLLECTABLE(sizeof(void*)*num);
-    memset( this->_buffer, 0, sizeof(void*)*num );
+    this->_buffer = gctools::RootClassAllocator<void*>::allocateRootsAndZero(num);
     this->_Cur = &this->_buffer;
   }
 
   void release() {
-    GC_FREE(this->_buffer);
+    gctools::RootClassAllocator<void*>::freeRoots(this->_buffer);
   }
 
   //
@@ -538,6 +610,7 @@ struct temporary_root_holder_t {
 
 int image_load(const std::string& filename )
 {
+  DBG_SL(BF(" image_load entered\n"));
   int fd = open(filename.c_str(),O_RDONLY);
   off_t fsize = lseek(fd, 0, SEEK_END);
   lseek(fd,0,SEEK_SET);
@@ -546,9 +619,6 @@ int image_load(const std::string& filename )
     close(fd);
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
   }
-
-  //
-  // Stop the world - hopefully we can allocate objects 
 
   ISLFileHeader* islbuffer = reinterpret_cast<ISLFileHeader*>(memory);
   if (!islbuffer->good_magic()) {
@@ -566,26 +636,33 @@ int image_load(const std::string& filename )
   //
   {
     ISLHeader_s* cur_header = reinterpret_cast<ISLHeader_s*>(islbuffer+1);
-    image_save_load_init_s init;
+    gctools::clasp_ptr_t startVtables;
+    gctools::clasp_ptr_t end;
+    core::executableVtableSectionRange(startVtables,end);
+    DBG_SL(BF(" allocate objects\n"));
     for ( ; cur_header->_Kind != End; cur_header = reinterpret_cast<ISLHeader_s*>((char*)(cur_header+1)+cur_header->_Size) ) {
       if (cur_header->_Kind == Object) {
-        Header_s* header = reinterpret_cast<Header_s*>(cur_header+1);
-        init._header = header;
+        ISLObjectHeader_s* objectHeader = (ISLObjectHeader_s*)cur_header;
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(objectHeader+1);
+        gctools::clasp_ptr_t clientEnd = clientStart + objectHeader->_Size;
+        image_save_load_init_s init(startVtables,objectHeader->_stamp_wtag_mtag,clientStart,clientEnd);
+        DBG_SL(BF("---- Working with object value: 0x%x  size: %lu\n") % objectHeader->_stamp_wtag_mtag._value % (init._clientEnd-init._clientStart) );
         core::T_sp obj;
-        if (header->stampP()) {
-          gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
-          obj = GCObjectAllocator<core::General_O>::image_save_load_allocate(&init); break;
-          printf("%s:%d:%s allocated general %p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_());
+        if (objectHeader->_stamp_wtag_mtag.stampP()) {
+          init._clientStart = (gctools::clasp_ptr_t)(cur_header+1)+sizeof(Header_s);
+          init._clientEnd = (gctools::clasp_ptr_t)init._clientStart + cur_header->_Size;
+          obj = GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
+          printf("%s:%d:%s allocated general %p stamp: %u: %s\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_(), header->_stamp_wtag_mtag._value, header->description().c_str() );
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           header->setFwdPointer((void*)fwd);
           root_holder.add((void*)fwd);
-        } else if (header->consObjectP()) {
+        } else if (objectHeader->_stamp_wtag_mtag.consObjectP()) {
           obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(&init);
           printf("%s:%d:%s allocated cons @%p\n", __FILE__, __LINE__, __FUNCTION__, obj.raw_() );
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           header->setFwdPointer((void*)fwd);
           root_holder.add((void*)fwd);
-        } else if (header->weakObjectP()) {
+        } else if (objectHeader->_stamp_wtag_mtag.weakObjectP()) {
           gctools::GCStampEnum stamp_wtag = header->stamp_wtag();
           switch (stamp_wtag) {
           case WeakBucketKind: {
@@ -614,19 +691,23 @@ int image_load(const std::string& filename )
       } else {
         printf("%s:%d:%s Handle unknown kind\n", __FILE__, __LINE__, __FUNCTION__ );
       }
+      DBG_SL(BF("Done working with cur_header@%p\n") % (void*)cur_header );
     }
+    DBG_SL(BF("Done working with all objects cur_header@%p\n") % (void*)cur_header );
   }
 
   //
   // Walk all the objects and fixup all the pointers
   //
-  global_image_save_load_base = -(intptr_t)islbuffer;
+  DBG_SL(BF(" fixup pointers\n"));
+  globalImageSaveLoadBase = -(intptr_t)islbuffer;
+  globalClientInImageSaveLoad = true;
+
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableVtableSectionRange(start,end);
   fixup_objects_t fixup_objects( false, (gctools::clasp_ptr_t)islbuffer, start, end );
-  walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
-
+  walk_garbage_collected_objects(fixup_objects);
 
   //
   // Release the temporary roots

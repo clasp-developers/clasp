@@ -267,7 +267,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
-    gctools::GCStampEnum stamp = header->stamp_();
+    gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
     return gctools::STAMP_SINGLE_FLOAT;
@@ -378,7 +378,7 @@ static size_t invalidHeaderTotalSize = 0;
 extern "C" {
 void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->stamp_();
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==sizeof(core::Cons_O)) {
       stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
@@ -412,7 +412,7 @@ struct FindStamp {
 void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *client_data) {
   FindStamp* findStamp = (FindStamp*)client_data;
   gctools::Header_s *h = reinterpret_cast<gctools::Header_s *>(ptr);
-  gctools::GCStampEnum stamp = h->stamp_();
+  gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==32) {
       stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);

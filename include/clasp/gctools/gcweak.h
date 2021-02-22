@@ -136,7 +136,7 @@ struct WeakObject {
   WeakObject() {};
   KindType Kind;
   int kind() const {
-    GCTOOLS_ASSERT(((gctools::Header_s*)this)->weakObjectP());
+    GCTOOLS_ASSERT(((gctools::Header_s::StampWtagMtag*)this)->weakObjectP());
     return (int)this->Kind.unsafe_fixnum();
   };
   void setKind(WeakKinds k) { this->Kind = gc::make_tagged_fixnum<core::Fixnum_I>(k); };

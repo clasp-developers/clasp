@@ -1335,7 +1335,7 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp 
 [[noreturn]] void lisp_error_no_stamp(void* ptr)
 {
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ClientPtrToBasePtr(ptr));
-  SIMPLE_ERROR(BF("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") % ((void*)ptr) % header->stamp_());
+  SIMPLE_ERROR(BF("This General_O object %p does not return a stamp because its subclass should overload get_stamp_() and return one  - the subclass header stamp value is %lu") % ((void*)ptr) % header->_stamp_wtag_mtag.stamp_());
 }
 
 void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol)
@@ -1635,7 +1635,7 @@ size_t lisp_general_badge(General_sp object) {
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
-  return object->_BadgeMtag;
+  return (size_t)object->_stamp_wtag_mtag._header_badge;
 }
 
 size_t lisp_badge(T_sp object) {
@@ -1656,7 +1656,7 @@ CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
     Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
-    cons->_BadgeMtag = (badge& (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;
+    cons->_stamp_wtag_mtag._header_badge = (gctools::Header_s::badge_t)(badge&0xffffffff);
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));

@@ -345,10 +345,12 @@ namespace gctools {
     //
     struct Dummy_s{};
     struct StampWtagMtag {
+      uintptr_t      _header_data[0];  // The 0th element overlaps StampWtagMtag values
       tagged_stamp_t _value;
       badge_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
                                  /* will treat it like a unused object residing on a free list          */
       StampWtagMtag() : _value(0), _header_badge(0xDEADBEEF) {};
+      StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag), _header_badge((badge_t)((uintptr_t)cons&0xFFFFFFFF)) {};
       StampWtagMtag(uintptr_t all, badge_t badge, Dummy_s dummy) : _value(all) {};
       StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
       StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)), _header_badge(core::lisp_random()) {};
@@ -445,15 +447,39 @@ namespace gctools {
         return v;
       }
     public:
+      inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
+      bool invalidP() const { return (this->_value & mtag_mask) == invalid_mtag; };
+      bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
+      bool weakObjectP() const { return (this->_value & mtag_mask) == weak_mtag; };
+      bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
+      bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
+      bool padP() const { return (this->_value & mtag_mask) == pad_mtag; };
+      bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
+      bool anyPadP() const { return this->padP() || this->pad1P(); };
+  /*! No sanity checking done - this function assumes kindP == true */
+      ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_value); };
+      GCStampEnum stamp_wtag() const { return (GCStampEnum)(value_to_stamp(this->_value)); };
+      GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_value)>>(mtag_width)); };
+  /*! No sanity checking done - this function assumes fwdP == true */
+      void *fwdPointer() const { return reinterpret_cast<void *>(this->_value & (~mtag_mask)); };
+  /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
+      void setFwdPointer(void *ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
+      uintptr_t fwdSize() const { return this->_header_data[1]; };
+  /*! This writes into the first tagged_stamp_t sized word of the client data. */
+      void setFwdSize(size_t sz) { this->_header_data[1] = sz; };
+  /*! Define the header as a pad, pass pad_tag or pad1_tag */
+      void setPad(tagged_stamp_t p) { this->_header_data[0] = p; };
+  /*! Return the pad1 size */
+      tagged_stamp_t pad1Size() const { return Alignment(); };
+  /*! Return the size of the pad block - without the header */
+      tagged_stamp_t padSize() const { return (this->_header_data[1]); };
+  /*! This writes into the first tagged_stamp_t sized word of the client data. */
+      void setPadSize(size_t sz) { this->_header_data[1] = sz; };
+    public:
       // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
       template <typename T>
       static int64_t GenerateHeaderValue() { return (int64_t)GCStamp<T>::Stamp; };
     public: // header readers
-      inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
-      inline bool pad1P() const { return (this->_value & mtag_mask) == pad1_mtag; };
-      inline ShiftedStamp shifted_stamp() const {
-        return static_cast<ShiftedStamp>( this->_value );
-      }
       inline UnshiftedStamp unshifted_stamp() const {
         //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
         return static_cast<UnshiftedStamp>( unshift_shifted_stamp(this->_value) );
@@ -464,6 +490,13 @@ namespace gctools {
         return make_nowhere_stamp(us);
       }
     };
+    //
+    //
+    // End of StampWtagMtag
+    //
+    //
+    
+    
   public:
     static void signal_invalid_object(const Header_s* header, const char* msg);
   public:
@@ -485,8 +518,6 @@ namespace gctools {
 #endif
     }
   public:
-    uintptr_t      _header_data[0];  // The 0th element overlaps StampWtagMtag
-                                   // and the 1st into the client data unless DEBUG_GUARD is on
     // The header contains the stamp_wtag_mtag value.
     StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
 #ifdef DEBUG_GUARD
@@ -533,6 +564,10 @@ namespace gctools {
 #else
     constexpr size_t tail_size() const { return 0; };
 #endif
+
+    ShiftedStamp shifted_stamp() const { return (ShiftedStamp)(this->_stamp_wtag_mtag.shifted_stamp()); };
+
+#if 0    
     bool invalidP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == invalid_mtag; };
     bool stampP() const { return (this->_stamp_wtag_mtag._value & general_mtag_mask) == general_mtag; };
     bool weakObjectP() const { return (this->_stamp_wtag_mtag._value & mtag_mask) == weak_mtag; };
@@ -560,27 +595,27 @@ namespace gctools {
     tagged_stamp_t padSize() const { return (this->_header_data[1]); };
   /*! This writes into the first tagged_stamp_t sized word of the client data. */
     void setPadSize(size_t sz) { this->_header_data[1] = sz; };
-  /*! Write the stamp to the stamp bits */
+#endif
     string description() const {
-      if (this->stampP()) {
+      if (this->_stamp_wtag_mtag.stampP()) {
         std::stringstream ss;
         ss << "Header=" << (void*)(uintptr_t)(this->_stamp_wtag_mtag._value);
         ss << "/";
-        ss << obj_name(this->stamp_());
+        ss << obj_name(this->_stamp_wtag_mtag.stamp_());
         return ss.str();
-      } else if (this->consObjectP()) {
+      } else if (this->_stamp_wtag_mtag.consObjectP()) {
         return "Header_CONS";
-      } else if (this->weakObjectP()) {
+      } else if (this->_stamp_wtag_mtag.weakObjectP()) {
         return "Header_WEAK";
-      } else if (this->fwdP()) {
+      } else if (this->_stamp_wtag_mtag.fwdP()) {
         std::stringstream ss;
-        ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+        ss << "Fwd/ptr=" << this->_stamp_wtag_mtag.fwdPointer() << "/sz=" << this->_stamp_wtag_mtag.fwdSize();
         return ss.str();
-      } else if (this->pad1P()) {
+      } else if (this->_stamp_wtag_mtag.pad1P()) {
         return "Pad1";
-      } else if (this->padP()) {
+      } else if (this->_stamp_wtag_mtag.padP()) {
         stringstream ss;
-        ss << "Pad/sz=" << this->padSize();
+        ss << "Pad/sz=" << this->_stamp_wtag_mtag.padSize();
         return ss.str();
       }
       stringstream ss;
@@ -769,7 +804,7 @@ namespace gctools {
 
   inline void throwIfInvalidClient(core::T_O *client) {
     Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
-    if (header->invalidP()) {
+    if (header->_stamp_wtag_mtag.invalidP()) {
       throw_hard_error_bad_client((void*)client);
     }
   }

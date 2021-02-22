@@ -252,7 +252,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
     printf("  %p : %p\n", (headerP+4), (void*)*(headerP+4));
     printf("  %p : %p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP)).stamp_());
+    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._stamp_wtag_mtag.stamp_());
     printf(" stamp tag - stamp: %d", kind);
     fflush(stdout);
     printf("     %s\n", obj_name(kind));
@@ -261,7 +261,7 @@ void rawHeaderDescribe(const uintptr_t *headerP) {
     Header_s *hdr = (Header_s *)headerP;
     printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
     printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("     fwdSize = %" PRIuPTR "/0x%" PRIuPTR "\n", hdr->_stamp_wtag_mtag.fwdSize(), hdr->_stamp_wtag_mtag.fwdSize());
   } break;
   case Header_s::pad1_mtag:
       printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
@@ -361,10 +361,10 @@ void Header_s::validate() const {
 #ifdef DEBUG_GUARD  
   if ( this->_stamp_wtag_mtag._value != this->_dup_stamp_wtag_mtag._value ) signal_invalid_object(this,"header stamps are invalid");
 #endif
-  if ( this->invalidP() ) signal_invalid_object(this,"header is invalidP");
-  if ( this->stampP() ) {
+  if ( this->_stamp_wtag_mtag.invalidP() ) signal_invalid_object(this,"header is invalidP");
+  if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->stamp_();
+    uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
     if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMP_max)) {
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
@@ -399,12 +399,12 @@ void Header_s::validate() const {
 //
 // Return true if the object represented by this header is polymorphic
 bool Header_s::preciseIsPolymorphic() const {
-  if (this->stampP()) {
+  if (this->_stamp_wtag_mtag.stampP()) {
     uintptr_t stamp = this->_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
-  } else if (this->consObjectP()) {
+  } else if (this->_stamp_wtag_mtag.consObjectP()) {
     return false;
-  } else if (this->weakObjectP()) {
+  } else if (this->_stamp_wtag_mtag.weakObjectP()) {
     if (this->_stamp_wtag_mtag._value == WeakBucketKind) {
       return std::is_polymorphic<WeakBucketsObjectType>();
     } else if (this->_stamp_wtag_mtag._value == StrongBucketKind ) {

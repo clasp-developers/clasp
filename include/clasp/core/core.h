@@ -616,14 +616,6 @@ core::T_sp lisp_true();
 uint lisp_hash(uintptr_t v);
 };
 
-
-
-
-
-//#include <clasp/gctools/gcweak.h>
-
-#include <clasp/gctools/managedStatic.h>
-
 #include <clasp/gctools/gc_interface.h>
 
 

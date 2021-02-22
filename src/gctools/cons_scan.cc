@@ -27,7 +27,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
     while (client<limit) {
       core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       gctools::Header_s* header = (gctools::Header_s*)cons;
-      if ( header->consObjectP() ) {
+      if ( header->_stamp_wtag_mtag.consObjectP() ) {
         //        printf("%s:%d It's a regular cons\n", __FILE__, __LINE__ );
 #if DEBUG_VALIDATE_GUARD
         client_validate(cons->ocar().raw_());
@@ -36,15 +36,15 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
         POINTER_FIX(&cons->_Car);
         POINTER_FIX(&cons->_Cdr);
         client = reinterpret_cast<ADDR_T>((char*)client+sizeof(core::Cons_O));
-      } else if (header->fwdP()) {
+      } else if (header->_stamp_wtag_mtag.fwdP()) {
         //        printf("%s:%d It's a fwdP\n", __FILE__, __LINE__ );
         client = reinterpret_cast<ADDR_T>((char *)(client) + sizeof(core::Cons_O));
-      } else if (header->pad1P()) {
+      } else if (header->_stamp_wtag_mtag.pad1P()) {
         //        printf("%s:%d It's a pad1P\n", __FILE__, __LINE__ );
         client = reinterpret_cast<ADDR_T>((char *)(client) + Alignment());
-      } else if (header->padP()) {
+      } else if (header->_stamp_wtag_mtag.padP()) {
         //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
-        client = reinterpret_cast<ADDR_T>((char *)(client) + header->padSize());
+        client = reinterpret_cast<ADDR_T>((char *)(client) + header->_stamp_wtag_mtag.padSize());
       } else {
         printf("%s:%d CONS in cons_scan client=%p original_client=%p limit=%p\n(it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, client, original_client, limit, cons->ocar().raw_(), cons->cdr().raw_());
         abort();
@@ -62,10 +62,10 @@ ADDR_T CONS_SKIP(ADDR_T client) {
   ADDR_T oldClient = client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
   gctools::Header_s* header = (gctools::Header_s*)cons;
-  if ( header->pad1P() ) {
+  if ( header->_stamp_wtag_mtag.pad1P() ) {
     client = reinterpret_cast<ADDR_T>((char*)client+Alignment());
-  } else if (header->padP() ) {
-    client = reinterpret_cast<ADDR_T>((char*)client + header->padSize());
+  } else if (header->_stamp_wtag_mtag.padP() ) {
+    client = reinterpret_cast<ADDR_T>((char*)client + header->_stamp_wtag_mtag.padSize());
   } else {
     client = reinterpret_cast<ADDR_T>((char*)client + sizeof(core::Cons_O));
   }
@@ -86,7 +86,7 @@ static void CONS_FWD(ADDR_T old_client, ADDR_T new_client) {
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
   gctools::Header_s* header = (gctools::Header_s*)cons;
-  header->setFwdPointer(new_client);
-  header->setFwdSize(sizeof(core::Cons_O));
+  header->_stamp_wtag_mtag.setFwdPointer(new_client);
+  header->_stamp_wtag_mtag.setFwdSize(sizeof(core::Cons_O));
 }
 #endif // CONS_FWD

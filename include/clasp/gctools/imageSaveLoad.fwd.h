@@ -10,30 +10,38 @@
 namespace gctools {
 
 struct image_save_load_init_s {
-  Header_s* _header;
-  size_t    _size;
-  char*     _object_data_start; // after vtable
-  size_t    _object_data_size; 
-  image_save_load_init_s(Header_s* header, size_t sz) : _header(header), _size(sz) {};
-  image_save_load_init_s() : _header(NULL), _size(0) {};
+  gctools::clasp_ptr_t _vtableSegmentStart;
+  Header_s::StampWtagMtag        _stamp_wtag_mtag;
+  gctools::clasp_ptr_t                _clientStart; // include vtable
+  gctools::clasp_ptr_t                _clientEnd; // after client
+  image_save_load_init_s(gctools::clasp_ptr_t vtableSegmentStart, Header_s::StampWtagMtag stamp, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
+    _vtableSegmentStart(vtableSegmentStart),
+    _stamp_wtag_mtag(stamp),
+    _clientStart(clientStart),
+    _clientEnd(clientEnd) {};
 
-  void fill(void* object) {
-    printf("%s:%d:%s filling from %p bytes: %lu\n",
+  void fill(void* client) {
+    printf("%s:%d:%s copying source: %p end: %p --> %p\n",
            __FILE__, __LINE__, __FUNCTION__,
-           (void*)this->_object_data_start,
-           this->_object_data_size);
-    memcpy((void*)((char*)object+sizeof(void*)), // skip vtable
-           (void*)this->_object_data_start,
-           this->_object_data_size);
+           (void*)this->_clientStart,
+           (void*)this->_clientEnd,
+           (void*)client);
+    // Fixup the vtable
+    memcpy((void*)client, // skip vtable
+           (void*)this->_clientStart,
+           this->_clientEnd-this->_clientStart);
+    uintptr_t vtableOffset = *(uintptr_t*)client;
+    vtableOffset += (uintptr_t)this->_vtableSegmentStart;
+    *(uintptr_t*)client = vtableOffset;
   }
-  void fill_no_virtual(void* object) {
+  void fill_no_virtual(void* client) {
     printf("%s:%d:%s filling from %p bytes: %lu\n",
            __FILE__, __LINE__, __FUNCTION__,
-           (void*)this->_object_data_start,
-           this->_object_data_size);
-    memcpy((void*)((char*)object), // skip vtable
-           (void*)this->_object_data_start,
-           this->_object_data_size);
+           (void*)this->_clientStart,
+           this->_clientEnd-this->_clientStart);
+    memcpy((void*)((char*)client), // skip vtable
+           (void*)this->_clientStart,
+           this->_clientEnd-this->_clientStart);
   }
 };
   

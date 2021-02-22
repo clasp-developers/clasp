@@ -14,6 +14,7 @@
 #define OBJECT_SCAN             // Macro to turn on #ifdef inclusion of code
 #define RESULT_TYPE                // Result type 
 #define RESULT_OK                  // value to return on OK - MPS_RES_OK
+#define CLIENT_PTR_TO_HEADER_PTR(client) // Replace with function to get base pointer from client
  */
 
 // !!!!! DEBUG_OBJECT_SCAN can only be on when DEBUG_GUARD_VALIDATE is on!!!!!!
@@ -46,15 +47,15 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
     while (client < limit) {
       oldClient = (ADDR_T)client;
       // The client must have a valid header
-      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(CLIENT_PTR_TO_HEADER_PTR(client));
       const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-      stamp_index = header.stamp_();
+      stamp_index = header._stamp_wtag_mtag.stamp_();
       LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
-      if (header.stampP()) {
+      if (header._stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
         header->validate();
 #endif
-        gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+        gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
         const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
         if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMP_core__DerivableCxxObject_O ) ) {
           // If this is true then I think we need to call virtual functions on the client
@@ -179,7 +180,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
-                   __FILE__, __LINE__, (void*)oldClient, header.stamp_(), scan_size, skip_size);
+                   __FILE__, __LINE__, (void*)oldClient, header._stamp_wtag_mtag.stamp_(), scan_size, skip_size);
             OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false);
           }
         }
@@ -189,7 +190,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         switch (mtag) {
 #ifdef USE_MPS
         case gctools::Header_s::fwd_mtag: {
-          client = (ADDR_T)((char *)(client) + header.fwdSize());
+          client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.fwdSize());
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
@@ -204,9 +205,9 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         }
         case gctools::Header_s::pad_mtag: {
           if (header_value.pad1P()) {
-            client = (ADDR_T)((char *)(client) + header.pad1Size());
-          } else if (header.padP()) {
-            client = (ADDR_T)((char *)(client) + header.padSize());
+            client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
+          } else if (header._stamp_wtag_mtag.padP()) {
+            client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
           }
 #ifdef DEBUG_MPS_SIZE
           {
@@ -238,7 +239,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
   ADDR_T oldClient = client;
   size_t size = 0;
-  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(CLIENT_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
   const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
 #ifdef DEBUG_ON
@@ -247,12 +248,12 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
         % mtag % (AlignUp(size + sizeof(Header_s))) % header.tail_size() );
   }
 #endif
-  if (header.stampP()) {
+  if (header._stamp_wtag_mtag.stampP()) {
 #ifdef DEBUG_VALIDATE_GUARD
     header->validate();
 #endif
-    gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
-    size_t stamp_index = header.stamp_();
+    gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
+    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_ON
     if (dbg) {
       LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
@@ -354,15 +355,15 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
     tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
     case gctools::Header_s::fwd_mtag: {
-      client = (ADDR_T)((char *)(client) + header.fwdSize());
+      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.fwdSize());
       break;
     }
     case gctools::Header_s::pad1_mtag: {
-        client = (ADDR_T)((char *)(client) + header.pad1Size());
+        client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
         break;
     }
     case gctools::Header_s::pad_mtag: {
-      client = (ADDR_T)((char *)(client) + header.padSize());
+      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
       break;
     }
     case gctools::Header_s::invalid_mtag: {
@@ -386,9 +387,9 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   if (size < global_sizeof_fwd) {
     THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
   }
-  Header_s *header = reinterpret_cast<Header_s *>(const_cast<void *>(ClientPtrToBasePtr(old_client)));
-  header->setFwdSize(size);
-  header->setFwdPointer(new_client);
+  Header_s *header = (CLIENT_PTR_TO_HEADER_PTR(old_client));
+  header->_stamp_wtag_mtag.setFwdSize(size);
+  header->_stamp_wtag_mtag.setFwdPointer(new_client);
 }
 
 #endif // OBJECT_FWD
@@ -436,7 +437,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-  size_t stamp_index = header.stamp_();
+  size_t stamp_index = header._stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_GUARD_VALIDATE
   const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
 #endif
@@ -449,7 +450,7 @@ struct GC_ms_entry* Lisp_O_object_mark(GC_word addr,
   const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
   gctools::tagged_stamp_t mtag = header_value.mtag();
-  gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+  gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
   const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
   int num_fields = stamp_layout.number_of_fields;
   const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
@@ -490,7 +491,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
     (void)ENSURE_VALID_HEADER((void*)addr);
     void* client = (char*)addr + sizeof(gctools::Header_s);
     const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
-    size_t stamp_index = header.stamp_();
+    size_t stamp_index = header._stamp_wtag_mtag.stamp_();
 #ifdef DEBUG_OBJECT_SCAN
     const gctools::Stamp_info& stamp_info = gctools::global_stamp_info[stamp_index];
     if (global_scan_stamp==-1 || global_scan_stamp == stamp_index) {
@@ -499,7 +500,7 @@ struct GC_ms_entry* class_mark(GC_word addr,
     const gctools::Field_info* field_info_cur = stamp_info.field_info_ptr;
 #endif
     gctools::tagged_stamp_t mtag = header_value.mtag();
-    gctools::GCStampEnum stamp_wtag = header.stamp_wtag();
+    gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
     int idx = 0;
     uintptr_t pointer_bitmap = stamp_layout.boehm._class_bitmap;
