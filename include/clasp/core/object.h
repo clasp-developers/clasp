@@ -417,6 +417,8 @@ namespace core {
 //
 namespace core {
 
+typedef enum { SaveOp, LoadOp } FixupOperation;
+
   Instance_sp instance_class(T_sp obj);
 
 #define OVERRIDE
@@ -430,10 +432,16 @@ namespace core {
     virtual void sxhash_equalp(HashGenerator &hg) const {return this->sxhash_equal(hg);};
     
     virtual size_t templatedSizeof() const { return 0; };
-
+    virtual bool enableImageSaveLoad() const { return true; };
+    virtual void validateCodePointer( void** funcPtr, size_t sizeofFuncPtr ) {
+      // Do nothing currently
+    }
+    virtual void fixupOneCodePointer( FixupOperation op, void** address, size_t size ) {
+      printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
+    };
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
-  /*! Objects can catch signals from Models
+      /*! Objects can catch signals from Models
 	 * but only Model's and subclasses can send them
 	 */
     string className() const;

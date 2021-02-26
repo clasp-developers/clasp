@@ -64,8 +64,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
+  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -96,8 +101,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
+  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -134,8 +144,13 @@ public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
-  GetterMethoid(core::GlobalEntryPoint_sp fdesc, MemPtr ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), mptr(ptr){};
+  GetterMethoid(core::GlobalEntryPoint_sp fdesc, MemPtr ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), mptr(ptr){
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SIMPLE_ERROR_SPRINTF("What do I do here");
   }

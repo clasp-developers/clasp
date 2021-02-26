@@ -116,19 +116,10 @@ namespace llvmo {
   public:
     CLASP_DEFAULT_CTOR CodeBase_O() {};
   public:
-
+    virtual uintptr_t codeStart() const = 0;
   };
  
 };
-
-
-
-
-
-
-
-
-
 
 
 template <>
@@ -184,6 +175,7 @@ class Code_O : public CodeBase_O {
     , _DataCode(totalSize,0,true) {};
 
   ~Code_O();
+  uintptr_t codeStart() const { return (uintptr_t)this->_TextSegmentStart; };
 };
   
 };
@@ -209,6 +201,7 @@ class Library_O : public CodeBase_O {
  Library_O(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end) : _Start(start), _End(end) {};
   static Library_sp make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name );
   std::string __repr__() const;
+  uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
 };
 };
 

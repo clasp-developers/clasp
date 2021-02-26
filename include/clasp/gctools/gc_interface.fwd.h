@@ -33,4 +33,6 @@ extern void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr);
 void dumpBoehmLayoutTables(FILE* fout);
 
 
+void define_builtin_cxx_class_names();
+
 #endif

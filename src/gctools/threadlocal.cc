@@ -172,7 +172,9 @@ uint32_t ThreadLocalState::random() {
     this->_xorshf_y = this->_xorshf_z;
     this->_xorshf_z = t ^ this->_xorshf_x ^ this->_xorshf_y;
   } while (this->_xorshf_z==0);
-  return this->_xorshf_z&0xFFFFFFFF;
+  uint32_t rnd = this->_xorshf_z&0xFFFFFFFF;
+  // printf("%s:%d:%s rnd = %u\n", __FILE__, __LINE__, __FUNCTION__, rnd );
+  return rnd;
 }
 
 void ThreadLocalState::pushObjectFile(llvmo::ObjectFile_sp of) {

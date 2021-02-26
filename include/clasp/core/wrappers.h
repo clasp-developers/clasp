@@ -48,10 +48,15 @@ namespace core {
     typedef core::T_O* (*Type)(core::T_O* arg);
     Type fptr;
   public:
-    TranslationFunctor_O(GlobalEntryPoint_sp fdesc, Type ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,TranslationFunctor_O::entry_point)), fptr(ptr) {};
+    TranslationFunctor_O(GlobalEntryPoint_sp fdesc, Type ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,TranslationFunctor_O::entry_point)), fptr(ptr) {
+      this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
+    };
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const override { return sizeof(TranslationFunctor_O); };
+    virtual void fixupCodePointers(core::FixupOperation op) {
+      this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+    }
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
       TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
       return gctools::return_type((closure->fptr)(lcc_fixed_arg0),1);
@@ -87,8 +92,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
+  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -120,8 +130,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {};
+  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

@@ -82,6 +82,7 @@ THE SOFTWARE.
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/core/pathname.h>
+#include <clasp/gctools/gc_interface.fwd.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
 #include <clasp/mpip/claspMpi.h>
@@ -298,7 +299,10 @@ void handle_unhandled_exception( void )
 static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize)
 {
 
-    // Read the memory profiling settings <size-threshold> <number-theshold>
+  // Register builtin function names
+  define_builtin_cxx_class_names();
+  
+  // Read the memory profiling settings <size-threshold> <number-theshold>
   // as in export CLASP_MEMORY_PROFILE="16000000 1024"
   // This means call HitAllocationSizeThreshold every time 16000000 bytes are allocated
   //        and call HitAllocationNumberThreshold every time 1024 allocations take place
@@ -335,7 +339,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 #ifdef USE_PRECISE_GC
     printf("%s:%d:%s Loading the core image %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
-    exit_code = gctools::image_load(core::global_options->_ImageFile);
+    exit_code = imageSaveLoad::image_load(core::global_options->_ImageFile);
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif

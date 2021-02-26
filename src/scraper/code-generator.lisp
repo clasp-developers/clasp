@@ -596,7 +596,7 @@ Convert colons to underscores"
         (dolist (c sorted-classes)
           (format sout "template <typename FP> struct Cast<~a*,FP> {~%" (class-key% c))
           (format sout "  inline static bool isA(FP client) {~%")
-          (format sout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
+          (format sout "    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));~%")
           (format sout "    size_t kindVal = header->shifted_stamp();~%")
           (multiple-value-bind (high-stamp high-class)
               (highest-stamp-class c)

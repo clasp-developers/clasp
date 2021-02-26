@@ -336,14 +336,16 @@ void searchMemoryForAddress(mps_addr_t addr) {
 #define ADDR_T mps_addr_t
 #define OBJECT_FWD obj_fwd
 #define OBJECT_SKIP_IN_OBJECT_FWD obj_skip_debug
+#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
 #include "obj_scan.cc"
+#undef GENERAL_PTR_TO_HEADER_PTR
 #undef OBJECT_FWD
 #undef ADDR_T
 
 static mps_addr_t obj_isfwd(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
-  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
-  if (header->fwdP()) return header->fwdPointer();
+  const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
+  if (header->_stamp_wtag_mtag.fwdP()) return header->_stamp_wtag_mtag.fwdPointer();
   return NULL;
 }
 
@@ -352,10 +354,10 @@ static void obj_pad(mps_addr_t base, size_t size) {
   assert(size >= alignment);
   Header_s *header = reinterpret_cast<Header_s *>(base);
   if (size == alignment) {
-    header->setPad(Header_s::pad1_mtag);
+    header->_stamp_wtag_mtag.setPad(Header_s::pad1_mtag);
   } else {
-    header->setPad(Header_s::pad_mtag);
-    header->setPadSize(size);
+    header->_stamp_wtag_mtag.setPad(Header_s::pad_mtag);
+    header->_stamp_wtag_mtag.setPadSize(size);
   }
 }
 
@@ -641,7 +643,7 @@ size_t processMpsMessages(size_t& finalizations) {
           printf("%s:%d    in General pool %p\n", __FILE__, __LINE__, ref_o);
 #endif
           gctools::Header_s* header = (gctools::Header_s*)((char*)ref_o - sizeof(gctools::Header_s));
-          live_object = (header->stampP());
+          live_object = (header->_stamp_wtag_mtag.stampP());
 #ifdef DEBUG_FINALIZERS
           printf("%s:%d    in General pool %p  stamp_wtag_mtag %lu  live_object -> %d\n", __FILE__, __LINE__, ref_o, (size_t)header->_stamp_wtag_mtag._value, live_object);
 #endif

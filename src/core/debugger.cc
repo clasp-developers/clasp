@@ -870,7 +870,8 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
   SIMPLE_ERROR(BF("Could not find the executableVtableSectionRange"));
 }
 
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName )
+
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& executable )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
@@ -880,6 +881,23 @@ bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_
       libraryName = entry.second._Filename;
       start = entry.second._TextStart;
       end = entry.second._TextEnd;
+      executable = entry.second._IsExecutable;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool library_with_name( const std::string& name, std::string& libraryName, uintptr_t& start, uintptr_t& end, bool& isExecutable )
+{
+  WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  size_t index;
+  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+    if ( name == entry.second._Filename.substr(entry.second._Filename.size()-name.size()) ) {
+      libraryName = entry.second._Filename;
+      start = (uintptr_t)(entry.second._TextStart);
+      end = (uintptr_t)(entry.second._TextEnd);
+      isExecutable = entry.second._IsExecutable;
       return true;
     }
   }

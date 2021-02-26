@@ -318,7 +318,7 @@ namespace gctools {
     static const tagged_stamp_t fwd_mtag       = 0b101;
     static const tagged_stamp_t pad_mtag       = 0b110;
     static const tagged_stamp_t pad1_mtag      = 0b111;
-    static const tagged_stamp_t stamp_mask     = ~mtag_mask; // 0b11...111111111111000;
+    static const tagged_stamp_t stamp_mask     = ~(tagged_stamp_t)mtag_mask; // 0b11...111111111111000;
     static const size_t mtag_width = general_mtag_shift;
     static const tagged_stamp_t where_mask     =  0b11<<general_mtag_shift;
     // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
@@ -341,6 +341,15 @@ namespace gctools {
     //
     typedef uint32_t badge_t;
 
+
+    typedef enum { WeakBucketKind     = ((1<<mtag_shift)|weak_mtag),
+                   StrongBucketKind   = ((2<<mtag_shift)|weak_mtag),
+                   WeakMappingKind    = ((3<<mtag_shift)|weak_mtag),
+                   StrongMappingKind  = ((4<<mtag_shift)|weak_mtag),
+                   WeakPointerKind    = ((5<<mtag_shift)|weak_mtag),
+                   MaxWeakKind        = ((6<<mtag_shift)|weak_mtag)
+    } WeakKinds;
+
     //
     //
     struct Dummy_s{};
@@ -354,12 +363,13 @@ namespace gctools {
       StampWtagMtag(uintptr_t all, badge_t badge, Dummy_s dummy) : _value(all) {};
       StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
       StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)), _header_badge(core::lisp_random()) {};
+      StampWtagMtag(WeakKinds kind) : _value(kind), _header_badge((uintptr_t)this&0xFFFFFFFF) {};
       // This is so we can find where we shift/unshift/don'tshift
       static UnshiftedStamp leave_unshifted_stamp(UnshiftedStamp us) {
         return (us);
       }
       static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
-        return (start+(1<<mtag_shift))&(~mtag_mask);
+        return (start+(1<<mtag_shift))&(~(uintptr_t)mtag_mask);
       }
       uintptr_t stamp() const { return this->_value>>(wtag_width+general_mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
@@ -461,7 +471,7 @@ namespace gctools {
       GCStampEnum stamp_wtag() const { return (GCStampEnum)(value_to_stamp(this->_value)); };
       GCStampEnum stamp_() const { return (GCStampEnum)(value_to_stamp(this->_value)>>(mtag_width)); };
   /*! No sanity checking done - this function assumes fwdP == true */
-      void *fwdPointer() const { return reinterpret_cast<void *>(this->_value & (~mtag_mask)); };
+      void *fwdPointer() const { return reinterpret_cast<void *>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
       void setFwdPointer(void *ptr) { this->_header_data[0] = reinterpret_cast<uintptr_t>(ptr) | fwd_mtag; };
       uintptr_t fwdSize() const { return this->_header_data[1]; };
@@ -692,6 +702,9 @@ namespace gctools {
   template <class T>
     inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
+  template <class T>
+    inline size_t sizeof_with_small_header() { return AlignUp(sizeof(T)) + sizeof(Header_s::StampWtagMtag); }
+
 
 /*! Size of containers given the number of elements */
   template <typename Cont_impl>
@@ -728,6 +741,11 @@ template <class T>
 inline size_t sizeof_container_with_header(size_t num) {
   return sizeof_container<T>(num) + sizeof(Header_s)
       ;
+};
+
+ template <class T>
+inline size_t sizeof_container_with_small_header(size_t num) {
+   return sizeof_container<T>(num)+sizeof(Header_s::StampWtagMtag);
 };
 
   /*! Size of containers given the number of binits where BinitWidth is the number of bits/bunit */
@@ -786,12 +804,12 @@ namespace gctools {
 #define EXHAUSTIVE_VALIDATE(ptr)
 #endif
 
-  inline const void *ClientPtrToBasePtr(const void *mostDerived) {
+  inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
     const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
     return ptr;
   }
 
-  inline void *ClientPtrToBasePtr(void *mostDerived) {
+  inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
     void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
     return ptr;
   }
@@ -803,15 +821,32 @@ namespace gctools {
   }
 
   inline void throwIfInvalidClient(core::T_O *client) {
-    Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
+    Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
     if (header->_stamp_wtag_mtag.invalidP()) {
       throw_hard_error_bad_client((void*)client);
     }
   }
 
   template <typename T>
-    inline T *BasePtrToMostDerivedPtr(void *base) {
+    inline T *HeaderPtrToGeneralPtr(void *base) {
     T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
+    return ptr;
+  }
+
+
+inline constexpr size_t SizeofWeakHeader() { return sizeof(Header_s::StampWtagMtag); };
+  inline const void *WeakPtrToHeaderPtr(const void *client) {
+    const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
+    return ptr;
+  }
+
+  inline void *WeakPtrToHeaderPtr(void *client) {
+    void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
+    return ptr;
+  }
+
+inline void*HeaderPtrToWeakPtr(void *header) {
+  void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
     return ptr;
   }
 };
@@ -995,7 +1030,7 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
   // Only validate general objects for now
     if (tagged_generalp(tagged_object)) {
       core::T_O* untagged_object = gc::untag_general(tagged_object);
-      Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
+      Header_s* header = reinterpret_cast<Header_s*>(GeneralPtrToHeaderPtr(untagged_object));
       header->quick_validate();
     }
     return tagged_object;
@@ -1013,7 +1048,7 @@ void initialize_gcroots_in_module(GCRootsInModule* gcroots_in_module, core::T_O*
   // Only validate general objects for now
     if (tagged_generalp(tagged_object.raw_())) {
       core::T_O* untagged_object = gc::untag_general(tagged_object.raw_());
-      Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(untagged_object));
+      Header_s* header = reinterpret_cast<Header_s*>(GeneralPtrToHeaderPtr(untagged_object));
       header->quick_validate();
     }
 #endif

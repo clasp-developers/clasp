@@ -295,8 +295,9 @@ void add_dynamic_library_using_origin(add_dynamic_library* callback, bool is_exe
                                       bool hasVtableSection,
                                       gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd);                                      
  
- bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName );
- bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& isExecutable );
+bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
+bool library_with_name(const std::string& name, std::string& libraryPath, uintptr_t& start, uintptr_t& end, bool& isExecutable );
 
  llvmo::Code_sp lookup_code(uintptr_t address);
 

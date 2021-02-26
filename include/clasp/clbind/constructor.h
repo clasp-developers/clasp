@@ -180,6 +180,9 @@ public:
   enum { NumParams = sizeof...(ARGS) };
   VariadicConstructorFunction_O(core::GlobalEntryPoint_sp ep) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)) {};
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    // nothing to do - no wrapped functions
+  }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

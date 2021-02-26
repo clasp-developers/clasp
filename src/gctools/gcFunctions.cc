@@ -235,7 +235,7 @@ CL_DOCSTRING("Return the header value for the object");
 CL_DEFUN core::T_sp core__header_value(core::T_sp obj) {
   if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
+    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
     return core::clasp_make_integer(header->_stamp_wtag_mtag._value);
   }
   SIMPLE_ERROR(BF("The object %s is not a general object and doesn't have a header-value") % _rep_(obj));
@@ -266,7 +266,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
     return gctools::STAMP_FIXNUM;
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
-    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(mostDerived));
+    const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
     gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
@@ -441,7 +441,7 @@ void boehm_callback_reachable_object_find_owners(void *ptr, size_t sz, void *cli
     if (GC_is_heap_ptr(tp) && (tag == GENERAL_TAG || tag == CONS_TAG)) {
       void* obj = gctools::untag_object(tp);
       uintptr_t addr = (uintptr_t)obj;
-      void* base = gctools::ClientPtrToBasePtr(obj);
+      void* base = gctools::GeneralPtrToHeaderPtr(obj);
 #if 0
       printf("%s:%d Looking at cur->%p\n", __FILE__, __LINE__, cur);
       printf("%s:%d             tp->%p\n", __FILE__, __LINE__, tp);
@@ -513,7 +513,7 @@ struct ReachableMPSObject {
 
 extern "C" {
 void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
-  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(client));
   if (((uintptr_t)header&gctools::ptag_mask)!=0) {
     printf("%s:%d The header at %p is not aligned to %lu\n", __FILE__, __LINE__,
            (void*)header,gctools::Alignment());
@@ -526,9 +526,9 @@ void amc_apply_stepper(mps_addr_t client, void *p, size_t s) {
   }
   vector<ReachableMPSObject> *reachablesP = reinterpret_cast<vector<ReachableMPSObject> *>(p);
   // Very expensive to validate every object on the heap
-  if (header->stampP()) {
+  if (header->_stamp_wtag_mtag.stampP()) {
     header->validate();
-    ReachableMPSObject &obj = (*reachablesP)[header->stamp_()];
+    ReachableMPSObject &obj = (*reachablesP)[header->_stamp_wtag_mtag.stamp_()];
     ++obj.instances;
     size_t sz = (char *)(obj_skip(client)) - (char *)client;
     obj.totalMemory += sz;
@@ -684,7 +684,7 @@ void amc_apply_copy(mps_addr_t client, void* p, size_t s) {
   MemoryCopy* cpy = (MemoryCopy*)p;
   mps_addr_t next = obj_skip(client);
   size_t size = ((size_t)next-(size_t)client);
-  void* header = reinterpret_cast<void*>(gctools::ClientPtrToBasePtr(client));
+  void* header = reinterpret_cast<void*>(gctools::GeneralPtrToHeaderPtr(client));
   memcpy((void*)cpy->_address,(void*)header,size);
   cpy->_address += size;
 };
@@ -706,8 +706,9 @@ extern "C" {
 #define RESULT_OK MPS_RES_OK
 #define OBJECT_SCAN fixup_objects
 #define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
-__attribute__((optnone))
+#define GENERAL_PTR_TO_HEADER_PTR(_client_) gctools::GeneralPtrToHeaderPtr(_client_)
 #include "obj_scan.cc"
+#undef GENERAL_PTR_TO_HEADER_PTR
 #undef RESULT_OK
 #undef RESULT_TYPE   
 #undef EXTRA_ARGUMENTS
@@ -910,7 +911,7 @@ void save_lisp_and_die(const std::string& filename)
   // 19. DIE
 
 #ifdef USE_PRECISE_GC
-  image_save(filename);
+  imageSaveLoad::image_save(filename);
 #endif
 }
 
@@ -1003,7 +1004,7 @@ void amc_apply_function_call_counter(mps_addr_t client, void* hash_table_raw, si
 #ifdef USE_BOEHM
 void boehm_callback_function_call_counter(void* header, size_t size, void* hash_table_raw)
 {
-  common_function_call_counter(BasePtrToMostDerivedPtr<core::General_O>(header),
+  common_function_call_counter(HeaderPtrToGeneralPtr<core::General_O>(header),
                                size, hash_table_raw);
 };
 #endif

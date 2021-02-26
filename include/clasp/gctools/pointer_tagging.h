@@ -185,7 +185,7 @@ static const int fixnum_bits = 64-FIXNUM_SHIFT;
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
-  static const uintptr_t ptr_mask    = ~ZERO_TAG_MASK;
+  static const uintptr_t ptr_mask    = ~(uintptr_t)ZERO_TAG_MASK;
   static const uintptr_t general_tag =  GENERAL_TAG;  // means a GENERAL pointer
   static const uintptr_t cons_tag    =  CONS_TAG;     // means a CONS cell pointer
   /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */

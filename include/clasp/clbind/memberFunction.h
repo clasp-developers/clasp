@@ -53,8 +53,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {};
+  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -84,8 +89,13 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {};
+  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
+    this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);

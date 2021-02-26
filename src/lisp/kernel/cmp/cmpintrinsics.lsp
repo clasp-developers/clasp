@@ -762,8 +762,8 @@ eg:  (f closure-ptr nargs a b c d ...)
 (define-c++-struct %global-entry-point% +general-tag+
     ((%i8*% vtable)
      (%t*% function-description)
-     (%entry-points-vector% data0)
      (%t*% code)
+     (%entry-points-vector% data0)
      ))
     
 (eval-when (:compile-toplevel :load-toplevel :execute)

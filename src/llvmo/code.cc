@@ -186,7 +186,8 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
     
   gctools::clasp_ptr_t start, end;
   std::string libraryName;
-  bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName );
+  bool isExecutable;
+  bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName, isExecutable);
   if (foundLibrary) {
     // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
     Library_sp newlib = Library_O::make(reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end),libraryName);

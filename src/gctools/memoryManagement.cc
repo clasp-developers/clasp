@@ -292,16 +292,16 @@ void client_describe(void *taggedClient) {
     // conses may be moved into a separate pool and dealt with in a different way
     const uintptr_t *headerP;
     if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::GeneralPtrToHeaderPtr(gctools::untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<const uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
+      headerP = reinterpret_cast<const uintptr_t *>(gctools::GeneralPtrToHeaderPtr(gctools::untag_cons(taggedClient)));
     }
     gctools::rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
     printf("    Trying to interpret as client pointer\n");
     const uintptr_t* headerP;
-    headerP = reinterpret_cast<const uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
+    headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(taggedClient));
     gctools::rawHeaderDescribe(headerP);
   }
 };
@@ -316,7 +316,7 @@ void client_validate(core::T_sp client) {
 }
 
 void client_validate_General_O_ptr(const core::General_O* client_ptr) {
-  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::ClientPtrToBasePtr(reinterpret_cast<const void*>(client_ptr)));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(reinterpret_cast<const void*>(client_ptr)));
   header->validate();
 }
 

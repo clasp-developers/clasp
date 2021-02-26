@@ -134,7 +134,7 @@ void register_stamp_name(const std::string& stamp_name, gctools::UnshiftedStamp 
   global_unshifted_nowhere_stamp_where_map[stamp_num] = stamp_where;
 }
 
-void define_builtin_cxx_classes() {
+void define_builtin_cxx_class_names() {
 #ifndef SCRAPING
  #define GC_ENUM_NAMES
   #if !defined(USE_PRECISE_GC)
@@ -311,7 +311,10 @@ void initialize_allocate_metaclasses(  core::BootStrapCoreSymbolMap& bootStrapCo
   // have to do this before symbols are finalized so that keywords are all bound properly.
   gc::As<core::Package_sp>(_lisp->findPackage("KEYWORD"))->setKeywordPackage(true);
   
-  define_builtin_cxx_classes();
+  //
+  // Now this is done in startup
+  //
+  //define_builtin_cxx_class_names();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
 

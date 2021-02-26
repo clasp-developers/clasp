@@ -93,8 +93,8 @@ void WeakKeyHashTable::initialize() {
   size_t l;
   for (l = 1; l < length; l *= 2)
     ;
-  this->_Keys = KeyBucketsAllocatorType::allocate(Header_s::StampWtagMtag(WeakBucketKind,false),l);
-  this->_Values = ValueBucketsAllocatorType::allocate(Header_s::StampWtagMtag(StrongBucketKind,false),l);
+  this->_Keys = KeyBucketsAllocatorType::allocate(Header_s::StampWtagMtag(Header_s::WeakBucketKind),l);
+  this->_Values = ValueBucketsAllocatorType::allocate(Header_s::StampWtagMtag(Header_s::StrongBucketKind),l);
   this->_Keys->dependent = this->_Values;
   //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
@@ -811,10 +811,11 @@ void StrongKeyHashTable::clrhash() {
 
 #endif
 
-#ifdef USE_MPS
+#if defined(USE_MPS)
 extern "C" {
 using namespace gctools;
 mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
+#if !defined(RUNNING_MPSPREP)  
   MPS_SCAN_BEGIN(ss) {
     while (base < limit) {
       WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
@@ -960,10 +961,12 @@ mps_res_t weak_obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
     };
   }
   MPS_SCAN_END(ss);
+#endif
   return MPS_RES_OK;
 }
 
 mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
+#if !defined(RUNNING_MPSPREP)
   GCWEAK_LOG(BF("weak_obj_skip base=%p") % ((void *)base));
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(base);
   switch (weakObj->kind()) {
@@ -1011,6 +1014,7 @@ mps_addr_t weak_obj_skip_debug(mps_addr_t base, bool dbg) {
     THROW_HARD_ERROR(BF("Handle weak_obj_skip other weak kind %d") % weakObj->kind());
   }
   GCWEAK_LOG(BF("weak_obj_skip returning base=%p") % ((void *)base));
+#endif
   return base;
 };
 
@@ -1029,13 +1033,14 @@ __attribute__((noinline))  mps_addr_t weak_obj_skip_debug_wrong_size(mps_addr_t 
 }
 
 void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
+#if !defined(RUNNING_MPSPREP)
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(old);
   mps_addr_t limit = weak_obj_skip(old);
   size_t size = (char *)limit - (char *)old;
   assert(size >= Align(sizeof(weak_fwd2_s)));
   if (size == Align(sizeof(weak_fwd2_s))) {
     weak_fwd2_s *weak_fwd2_obj = reinterpret_cast<weak_fwd2_s *>(weakObj);
-    weak_fwd2_obj->setKind(WeakFwd2Kind);
+    weak_fwd2_obj->_setKind(WeakFwd2Kind);
     weak_fwd2_obj->fwd = reinterpret_cast<WeakObject *>(newv);
   } else {
     weak_fwd_s *weak_fwd_obj = reinterpret_cast<weak_fwd_s *>(weakObj);
@@ -1043,9 +1048,11 @@ void weak_obj_fwd(mps_addr_t old, mps_addr_t newv) {
     weak_fwd_obj->fwd = reinterpret_cast<WeakObject *>(newv);
     weak_fwd_obj->size = gc::make_tagged_fixnum<core::Fixnum_I *>(size);
   }
+#endif
 }
 
 mps_addr_t weak_obj_isfwd(mps_addr_t addr) {
+#if !defined(RUNNING_MPSPREP)
   WeakObject *obj = reinterpret_cast<WeakObject *>(addr);
   switch (obj->kind()) {
   case WeakFwd2Kind: {
@@ -1057,10 +1064,12 @@ mps_addr_t weak_obj_isfwd(mps_addr_t addr) {
     return weak_fwd_obj->fwd;
   }
   }
+#endif
   return NULL;
 }
 
 void weak_obj_pad(mps_addr_t addr, size_t size) {
+#if !defined(RUNNING_MPSPREP)
   WeakObject *weakObj = reinterpret_cast<WeakObject *>(addr);
   assert(size >= Align(sizeof(weak_pad1_s)));
   if (size == Align(sizeof(weak_pad1_s))) {
@@ -1070,6 +1079,7 @@ void weak_obj_pad(mps_addr_t addr, size_t size) {
     weak_pad_s *weak_pad_obj = reinterpret_cast<weak_pad_s *>(addr);
     weak_pad_obj->size = gctools::make_tagged_fixnum<core::Fixnum_I *>(size);
   }
+#endif
 }
 };
 

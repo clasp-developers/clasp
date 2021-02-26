@@ -41,7 +41,7 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
         client = reinterpret_cast<ADDR_T>((char *)(client) + sizeof(core::Cons_O));
       } else if (header->_stamp_wtag_mtag.pad1P()) {
         //        printf("%s:%d It's a pad1P\n", __FILE__, __LINE__ );
-        client = reinterpret_cast<ADDR_T>((char *)(client) + Alignment());
+        client = reinterpret_cast<ADDR_T>((char *)(client) + gctools::Alignment());
       } else if (header->_stamp_wtag_mtag.padP()) {
         //        printf("%s:%d It's a padP\n", __FILE__, __LINE__ );
         client = reinterpret_cast<ADDR_T>((char *)(client) + header->_stamp_wtag_mtag.padSize());
@@ -57,16 +57,17 @@ RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
 
 
 #ifdef CONS_SKIP
-ADDR_T CONS_SKIP(ADDR_T client) {
+ADDR_T CONS_SKIP(ADDR_T client,size_t& objectSize) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   ADDR_T oldClient = client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
   gctools::Header_s* header = (gctools::Header_s*)cons;
   if ( header->_stamp_wtag_mtag.pad1P() ) {
-    client = reinterpret_cast<ADDR_T>((char*)client+Alignment());
+    client = reinterpret_cast<ADDR_T>((char*)client+gctools::Alignment());
   } else if (header->_stamp_wtag_mtag.padP() ) {
     client = reinterpret_cast<ADDR_T>((char*)client + header->_stamp_wtag_mtag.padSize());
   } else {
+    objectSize = sizeof(core::Cons_O);
     client = reinterpret_cast<ADDR_T>((char*)client + sizeof(core::Cons_O));
   }
   return client;

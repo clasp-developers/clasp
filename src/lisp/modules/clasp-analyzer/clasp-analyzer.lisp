@@ -455,7 +455,7 @@ This could change the value of stamps for specific classes - but that would brea
                (format fout "// ~a~%" (get-stamp-name stamp))
                (format fout "template <typename FP> struct Cast<~a*,FP> {~%" key )
                (format fout "  inline static bool isA(FP client) {~%")
-               (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));~%")
+               (format fout "      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(GeneralPtrToHeaderPtr(client));~%")
                (format fout "      int kindVal = header->shifted_stamp();~%")
                (multiple-value-bind (contig stamp-value-low stamp-value-high)
                    (hierarchy-class-stamp-range key analysis)

@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 //#define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/imageSaveLoad.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -64,6 +65,33 @@ GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry
   return ep;
 }
 
+void CodeEntryPoint_O::fixupOneCodePointer(FixupOperation op, void** ptr) {
+#ifdef USE_PRECISE_GC
+  if (op==SaveOp) {
+    void* address = ptr[0];
+    void* saveAddress = imageSaveLoad::encodeEntryPointSaveAddress(address,this->_Code);
+    ptr[0] = saveAddress;
+  } else if (op==LoadOp) {
+    void* savedAddress = ptr[0];
+    void* address = imageSaveLoad::decodeEntryPointSaveAddress(savedAddress,this->_Code);
+    ptr[0] = address;
+  } else {
+    SIMPLE_ERROR(BF("Illegal image save/load operation"));
+  }
+#endif
+}
+
+void GlobalEntryPoint_O::fixupCodePointers( FixupOperation op) {
+  this->fixupOneCodePointer(op,(void**)&this->_EntryPoints[0]);
+};
+
+
+void LocalEntryPoint_O::fixupCodePointers( FixupOperation op) {
+  this->fixupOneCodePointer(op,(void**)&this->_EntryPoint);
+};
+
+
+
 CL_LAMBDA(&key function-description entry-point-functions);
 CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(FunctionDescription_sp fdesc,
                                                                           T_sp entryPointIndices) {
@@ -74,7 +102,7 @@ CL_DEFUN GlobalEntryPointGenerator_sp core__makeGlobalEntryPointGenerator(Functi
 
 CL_LAMBDA(&key function-description entry-point-functions);
 CL_DEFUN LocalEntryPointGenerator_sp core__makeLocalEntryPointGenerator(FunctionDescription_sp fdesc,
-                                                                          T_sp entryPointIndices) {
+                                                                        T_sp entryPointIndices) {
   GC_ALLOCATE_VARIADIC(LocalEntryPointGenerator_O,entryPoint,fdesc,entryPointIndices);
 //  printf("%s:%d:%s  entryPoint-> %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)entryPoint.raw_());
   return entryPoint;
@@ -165,7 +193,7 @@ LocalEntryPoint_sp makeLocalEntryPoint(FunctionDescription_sp fdesc,
   return ep;
 }
 GlobalEntryPoint_sp makeGlobalEntryPoint(FunctionDescription_sp fdesc,
-                                       claspFunction entry_point) {
+                                         claspFunction entry_point) {
   llvmo::CodeBase_sp code = _Unbound<llvmo::CodeBase_O>();
   if (entry_point) {
     code = llvmo::identify_code_or_library(reinterpret_cast<gctools::clasp_ptr_t>(entry_point));
@@ -224,7 +252,7 @@ GlobalEntryPoint_sp makeGlobalEntryPointFromGenerator(GlobalEntryPointGenerator_
 
 #if 0
 FunctionDescription_sp makeFunctionDescriptionFromFunctionInfo(T_sp information,
-                                                       claspFunction entry_point)
+                                                               claspFunction entry_point)
 {
 #define POP(rrr,lll) T_sp rrr = oCar(lll); lll = oCdr(lll);
   // THE order of entries MUST match cmpir.lsp function-info
@@ -305,13 +333,13 @@ CL_DEFMETHOD bool FunctionDescription_O::function_description_equal(T_sp other) 
   if (gc::IsA<FunctionDescription_sp>(other)) {
     FunctionDescription_sp fdother = gc::As_unsafe<FunctionDescription_sp>(other);
     return this->filepos == fdother->filepos
-        && this->lineno == fdother->lineno
-        && this->column == fdother->column
-        && cl__equal(this->_sourcePathname, fdother->_sourcePathname)
-        && cl__equal(this->_functionName, fdother->_functionName)
-        && cl__equal(this->_docstring, fdother->_docstring)
-        && cl__equal(this->_declares, fdother->_declares)
-        && cl__equal(this->_lambdaList, fdother->_lambdaList);
+      && this->lineno == fdother->lineno
+      && this->column == fdother->column
+      && cl__equal(this->_sourcePathname, fdother->_sourcePathname)
+      && cl__equal(this->_functionName, fdother->_functionName)
+      && cl__equal(this->_docstring, fdother->_docstring)
+      && cl__equal(this->_declares, fdother->_declares)
+      && cl__equal(this->_lambdaList, fdother->_lambdaList);
   }
   return false;
 }
@@ -570,7 +598,7 @@ string Function_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->_classNameAsString();
 #if 1
-    ss << " " << _rep_(name);
+  ss << " " << _rep_(name);
 #else
 #ifdef USE_BOEHM
   ss << "@" << (void*)this << " ";
@@ -689,7 +717,7 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
         }
         SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
       }
-        break;
+      break;
     case ClosureWithSlots_O::cclaspClosure:
         if ( index >= closure->_Slots.length() ) {
           SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots.length() );
@@ -719,6 +747,26 @@ __attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_E
   ClosureWithSlots_O* closure = gctools::untag_general<ClosureWithSlots_O*>((ClosureWithSlots_O*)lcc_closure);
   Symbol_sp symbol = gc::As<Symbol_sp>((*closure)[0]);
   ERROR_UNDEFINED_FUNCTION(symbol);
+}
+
+
+
+void BuiltinClosure_O::fixupOneCodePointer(FixupOperation op, void** funcPtr, size_t sizeofFuncPtr ) {
+#ifdef USE_PRECISE_GC
+  if (((uintptr_t)funcPtr[0] & 7) == 0) {
+    if (op==SaveOp) {
+      void* address = funcPtr[0];
+      void* saveAddress = imageSaveLoad::encodeLibrarySaveAddress(address);
+      funcPtr[0] = saveAddress;
+    } else if (op==LoadOp) {
+      void* savedAddress = funcPtr[0];
+      void* address = imageSaveLoad::decodeLibrarySaveAddress(savedAddress);
+      funcPtr[0] = address;
+    } else {
+      SIMPLE_ERROR(BF("Illegal image save/load operation"));
+    }
+  }
+#endif
 }
 
 LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS) {

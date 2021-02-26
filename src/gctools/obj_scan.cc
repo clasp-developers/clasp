@@ -32,7 +32,7 @@
 
 #ifdef OBJECT_SCAN
 #  ifdef OBJECT_SKIP_IN_OBJECT_SCAN
-ADDR_T OBJECT_SKIP_IN_OBJECT_SCAN(ADDR_T client,bool dbg);
+ADDR_T OBJECT_SKIP_IN_OBJECT_SCAN(ADDR_T client,bool dbg,size_t& objectSize);
 #  endif // OBJECT_SKIP_IN_OBJECT_SCAN
 
 RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUMENTS) {
@@ -47,7 +47,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
     while (client < limit) {
       oldClient = (ADDR_T)client;
       // The client must have a valid header
-      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(CLIENT_PTR_TO_HEADER_PTR(client));
+      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
       const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
       stamp_index = header._stamp_wtag_mtag.stamp_();
       LOG(BF("obj_scan client=%p stamp=%lu\n") % (void*)client % stamp_index );
@@ -177,11 +177,13 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #ifdef DEBUG_MPS_SIZE
         {
           size_t scan_size = ((char*)client-(char*)oldClient);
-          size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
+          size_t objectSize;
+          size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize)-(char*)oldClient);
           if (scan_size != skip_size) {
             printf("%s:%d The size of the object at client %p with stamp %u will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                    __FILE__, __LINE__, (void*)oldClient, header._stamp_wtag_mtag.stamp_(), scan_size, skip_size);
-            OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false);
+            size_t objectSize;
+            OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize);
           }
         }
 #endif
@@ -194,7 +196,8 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
-            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
+            size_t objectSize;
+            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize)-(char*)oldClient);
             if (scan_size != skip_size) {
               printf("%s:%d The size of the object with fwd_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                      __FILE__, __LINE__, scan_size, skip_size);
@@ -212,7 +215,8 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #ifdef DEBUG_MPS_SIZE
           {
             size_t scan_size = ((char*)client-(char*)oldClient);
-            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false)-(char*)oldClient);
+            size_t objectSize;
+            size_t skip_size = ((char*)OBJECT_SKIP_IN_OBJECT_SCAN(oldClient,false,objectSize)-(char*)oldClient);
             if (scan_size != skip_size) {
               printf("%s:%d The size of the object with pad_mtag will not be calculated properly - obj_scan -> %lu  obj_skip -> %lu\n",
                      __FILE__, __LINE__, scan_size, skip_size);
@@ -236,16 +240,15 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 
 
 #ifdef OBJECT_SKIP
-ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
+ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
   ADDR_T oldClient = client;
-  size_t size = 0;
-  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(CLIENT_PTR_TO_HEADER_PTR(client));
+  const gctools::Header_s* header_ptr = reinterpret_cast<const gctools::Header_s *>(GENERAL_PTR_TO_HEADER_PTR(client));
   const gctools::Header_s& header = *header_ptr;
-  const Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
+  const gctools::Header_s::StampWtagMtag& header_value = header._stamp_wtag_mtag;
 #ifdef DEBUG_ON
   if (dbg) {
     LOG(BF("obj_scan_debug mtag = %d  AlignUp(size + sizeof(Header_s)) -> %lu + header.tail_size())-> %lu\n")
-        % mtag % (AlignUp(size + sizeof(Header_s))) % header.tail_size() );
+        % mtag % (AlignUp(sizeof(Header_s))) % header.tail_size() );
   }
 #endif
   if (header._stamp_wtag_mtag.stampP()) {
@@ -259,7 +262,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
       LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
     }
 #endif
-    if ( stamp_wtag == STAMP_core__DerivableCxxObject_O ) {
+    if ( stamp_wtag == gctools::STAMP_core__DerivableCxxObject_O ) {
 #ifdef DEBUG_ON
       if (dbg) {
         LOG(BF("DerivableCxxObject\n"));
@@ -269,46 +272,46 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
         // to determine the Instance_O offset and the total size of the object.
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
     }
-    const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleBitVector_O ) {
+    const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
+    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleBitVector_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("SimpleBitVector\n"));}
 #endif
       size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-      size = core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(core::SimpleBitVector_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
         // Do other bitunit vectors here
     }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte2_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_byte2_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte2_t_O"));}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int2_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_int2_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_int2_t_O"));}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_byte4_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_byte4_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte4_t_O"));}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == STAMP_core__SimpleVector_int4_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_int4_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_int4_t_O"));}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
-      size = core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
     unlikely_if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) {
@@ -317,7 +320,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
 #endif
         // Account for the SimpleBaseString additional byte for \0
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset) + 1;
-      size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+      obj_size = gctools::AlignUp(stamp_layout.element_size*capacity + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
     {
@@ -328,31 +331,32 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg) {
         if (dbg) {LOG(BF("container_layout\n"));}
 #endif
         // special cases
-        Container_layout& container_layout = *container_layoutP;
+        gctools::Container_layout& container_layout = *container_layoutP;
         // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
         // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
         // Because of this we need to take the absolute value to get the number of entries.
         size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-        size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
+        obj_size = gctools::AlignUp(stamp_layout.element_size*capacity + stamp_layout.data_offset);
       } else {
-        if (stamp_layout.layout_op == templated_op) {
+        if (stamp_layout.layout_op == gctools::templated_op) {
 #ifdef DEBUG_ON
           if (dbg) {LOG(BF("templatedSizeof\n"));}
 #endif
-          size = ((core::General_O*)client)->templatedSizeof();
+          obj_size = gctools::AlignUp(((core::General_O*)client)->templatedSizeof());
         } else {
 #ifdef DEBUG_ON
           if (dbg) {LOG(BF("stamp_layout.size = %lu\n") % stamp_layout.size);}
 #endif
-          size = stamp_layout.size;
+          obj_size = gctools::AlignUp(stamp_layout.size);
         }
       }
     }
   STAMP_CONTINUE:
-    size_t align_up_size = AlignUp(size + sizeof(Header_s));
+    size_t align_up_size = obj_size + sizeof(gctools::Header_s);
+    
     client = (ADDR_T)((char*)client + align_up_size + header.tail_size());
   } else {
-    tagged_stamp_t mtag = header_value.mtag();
+    gctools::tagged_stamp_t mtag = header_value.mtag();
     switch (mtag) {
     case gctools::Header_s::fwd_mtag: {
       client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.fwdSize());
@@ -382,12 +386,13 @@ static void OBJECT_FWD(ADDR_T old_client, ADDR_T new_client) {
   // I'm assuming both old and new client pointers have valid headers at this point
   DEBUG_THROW_IF_INVALID_CLIENT(old_client);
   DEBUG_THROW_IF_INVALID_CLIENT(new_client);
-  ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client,false);
+  size_t obj_size;
+  ADDR_T limit = OBJECT_SKIP_IN_OBJECT_FWD(old_client,false,obj_size);
   size_t size = (char *)limit - (char *)old_client;
-  if (size < global_sizeof_fwd) {
-    THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % global_sizeof_fwd);
+  if (size < gctools::global_sizeof_fwd) {
+    THROW_HARD_ERROR(BF("obj_fwd needs size >= %u") % gctools::global_sizeof_fwd);
   }
-  Header_s *header = (CLIENT_PTR_TO_HEADER_PTR(old_client));
+  gctools::Header_s *header = (gctools::Header_s*)(GENERAL_PTR_TO_HEADER_PTR(old_client));
   header->_stamp_wtag_mtag.setFwdSize(size);
   header->_stamp_wtag_mtag.setFwdPointer(new_client);
 }
@@ -541,7 +546,7 @@ struct GC_ms_entry* dumb_class_container_mark(GC_word addr,
   (void)ENSURE_VALID_HEADER((void*)addr);
   void* client = (char*)addr + sizeof(gctools::Header_s);
   void* next_client = obj_skip(client);
-  void* next_base = gctools::ClientPtrToBasePtr(next_client);
+  void* next_base = gctools::GeneralPtrToHeaderPtr(next_client);
   printf("%s:%d addr = %p next_base = %p stamp: %s  num = %lu env = %lu\n", __FILE__, __LINE__, (void*)addr, next_base, obj_name(header.stamp_()), ((GC_word*)next_base-(GC_word*)addr), env);
   GC_word* start = (GC_word*)client + env;
   GC_word* end = (GC_word*)start + MARK_WORK;

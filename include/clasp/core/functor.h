@@ -133,16 +133,32 @@ fields at the same offset as Instance_O.
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
  };
 
- FORWARD(LocalEntryPoint);
- class LocalEntryPoint_O : public EntryPointBase_O {
-   LISP_CLASS(core,CorePkg,LocalEntryPoint_O,"LocalEntryPoint",EntryPointBase_O);
+ FORWARD(CodeEntryPoint);
+ class CodeEntryPoint_O : public EntryPointBase_O {
+   LISP_CLASS(core,CorePkg,CodeEntryPoint_O,"CodeEntryPoint",EntryPointBase_O);
  public:
-   void* _EntryPoint;
+   CLASP_DEFAULT_CTOR CodeEntryPoint_O() {};
+ public:
    llvmo::CodeBase_sp _Code;                       //  10 code
  public:
   // Accessors
-   LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : EntryPointBase_O(fdesc), _EntryPoint(entry_point), _Code(code) {};
+   CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
+ public:
+   virtual void fixupCodePointers( FixupOperation op) { SIMPLE_ERROR(BF("Subclass must implement")); };
+   void fixupOneCodePointer(FixupOperation op, void** ptr);
  };
+
+ FORWARD(LocalEntryPoint);
+ class LocalEntryPoint_O : public CodeEntryPoint_O {
+   LISP_CLASS(core,CorePkg,LocalEntryPoint_O,"LocalEntryPoint",CodeEntryPoint_O);
+ public:
+   void* _EntryPoint;
+ public:
+  // Accessors
+   LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
+ public:
+   virtual void fixupCodePointers( FixupOperation op);
+};
 
 FORWARD(LocalEntryPointGenerator);
 class LocalEntryPointGenerator_O : public EntryPointBase_O {
@@ -155,14 +171,15 @@ class LocalEntryPointGenerator_O : public EntryPointBase_O {
  };
 
 FORWARD(GlobalEntryPoint);
- class GlobalEntryPoint_O : public EntryPointBase_O {
-   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",EntryPointBase_O);
+ class GlobalEntryPoint_O : public CodeEntryPoint_O {
+   LISP_CLASS(core,CorePkg,GlobalEntryPoint_O,"GlobalEntryPoint",CodeEntryPoint_O);
  public:
    void* _EntryPoints[NUMBER_OF_ENTRY_POINTS];
-   llvmo::CodeBase_sp _Code;                       //  10 code
  public:
   // Accessors
-   GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _EntryPoints{entry_point}, _Code(code) {};
+   GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
+ public:
+   virtual void fixupCodePointers( FixupOperation op);
  };
 
 FORWARD(GlobalEntryPointGenerator);
@@ -351,6 +368,7 @@ namespace core {
     LISP_CLASS(core,CorePkg,BuiltinClosure_O,"BuiltinClosure",Closure_O);
   public:
     CLASP_DEFAULT_CTOR BuiltinClosure_O() {};
+
   public:
     LambdaListHandler_sp _lambdaListHandler;
   public:
@@ -363,6 +381,9 @@ namespace core {
     }
     T_sp closedEnvironment() const override { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
+    // Fixup the code pointers
+    virtual void fixupCodePointers( FixupOperation op) { SIMPLE_ERROR(BF("Subclass must implement")); };
+    void fixupOneCodePointer( FixupOperation op, void** address, size_t size );
     virtual const char *describe() const override { return "BuiltinClosure"; };
     bool builtinP() const override { return true; };
     T_sp lambdaListHandler() const override { return this->_lambdaListHandler; };
@@ -375,7 +396,7 @@ namespace core {
   extern LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
   extern LCC_RETURN unboundSetfFunctionEntryPoint(LCC_ARGS_FUNCALL_ELLIPSIS);
    
-  class ClosureWithSlots_O final : public core::Closure_O {
+  class ClosureWithSlots_O final : public core::BuiltinClosure_O::BuiltinClosure_O::Closure_O {
     LISP_CLASS(core,CorePkg,ClosureWithSlots_O,"ClosureWithSlots",core::Closure_O);
     typedef enum { interpretedClosure, bclaspClosure, cclaspClosure } ClosureType;
 #define ENVIRONMENT_SLOT 0
@@ -394,8 +415,7 @@ namespace core {
   public:
     virtual const char *describe() const override { return "CompiledClosure"; };
     virtual size_t templatedSizeof() const override {
-      printf("%s:%d templatedSizeof called on closure %s - it is probably incorrect because we don't account for the slots\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
-      return sizeof(*this);
+      return gctools::sizeof_container<ClosureWithSlots_O>(this->_Slots.size());
     };
   public:
     static ClosureWithSlots_sp make_interpreted_closure(T_sp name, T_sp type, T_sp lambda_list, LambdaListHandler_sp lambda_list_handler, T_sp declares, T_sp docstring, T_sp form, T_sp environment, SOURCE_INFO);

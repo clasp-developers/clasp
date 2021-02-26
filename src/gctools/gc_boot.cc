@@ -228,6 +228,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_layout[cur_stamp].layout_op = class_container_op;
       local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
+      local_stamp_layout[cur_stamp].flags = codes[idx].data3;
       local_stamp_layout[cur_stamp].field_layout_start = NULL;
       local_stamp_layout[cur_stamp].container_layout = NULL;
       local_stamp_info[cur_stamp].name = codes[idx].description;
@@ -247,6 +248,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       local_stamp_layout[cur_stamp].layout_op = bitunit_container_op;
       local_stamp_layout[cur_stamp].number_of_fields = 0;
       local_stamp_layout[cur_stamp].size = codes[idx].data1;
+      local_stamp_layout[cur_stamp].flags = codes[idx].data3;
       local_stamp_layout[cur_stamp].bits_per_bitunit = codes[idx].data2;
       local_stamp_layout[cur_stamp].field_layout_start = NULL;
       local_stamp_layout[cur_stamp].container_layout = NULL;
@@ -362,6 +364,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         local_stamp_layout[cur_stamp].container_layout = NULL;
         local_stamp_layout[cur_stamp].number_of_fields = 0;
         local_stamp_layout[cur_stamp].size = codes[idx].data1;
+        local_stamp_layout[cur_stamp].flags = codes[idx].data3;
         local_stamp_info[cur_stamp].name = codes[idx].description;
         local_stamp_info[cur_stamp].field_info_ptr = NULL;
         local_stamp_info[cur_stamp].container_info_ptr = NULL;

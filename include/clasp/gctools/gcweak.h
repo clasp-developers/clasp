@@ -115,31 +115,10 @@ void safeRun(std::function<Proto> f) {
 
 namespace gctools {
 
-typedef enum { WeakBucketKind     = ((1<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               StrongBucketKind   = ((2<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakMappingKind    = ((3<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               StrongMappingKind  = ((4<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakPointerKind    = ((5<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakImmediateKind  = ((6<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakFwdKind        = ((7<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakFwd2Kind       = ((8<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakPadKind        = ((9<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               WeakPad1Kind       = ((10<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag),
-               // Other MPS kinds here
-               MaxWeakKind        = ((11<<gctools::Header_s::mtag_shift)|gctools::Header_s::weak_mtag)
-} WeakKinds;
-
 struct WeakObject {
   struct metadata_always_fix_pointers_to_derived_classes;
-  typedef gctools::smart_ptr<core::Fixnum_I> KindType;
-  WeakObject(WeakKinds k) : Kind(gctools::make_tagged_fixnum<core::Fixnum_I>(k)){};
-  WeakObject() {};
-  KindType Kind;
-  int kind() const {
-    GCTOOLS_ASSERT(((gctools::Header_s::StampWtagMtag*)this)->weakObjectP());
-    return (int)this->Kind.unsafe_fixnum();
-  };
-  void setKind(WeakKinds k) { this->Kind = gc::make_tagged_fixnum<core::Fixnum_I>(k); };
+WeakObject() {};
+
   virtual void *dependentPtr() const { return NULL; };
 };
 
@@ -162,7 +141,7 @@ struct weak_pad1_s : public WeakObject {
 
 template <class T, class U>
 struct BucketsBase : public WeakObject {
-  BucketsBase(WeakKinds k, int l) : WeakObject(k), _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
+ BucketsBase(int l) : _length(gctools::make_tagged_fixnum<core::Fixnum_I>(l)), _used(gctools::make_tagged_fixnum<core::Fixnum_I>(0)), _deleted(gctools::make_tagged_fixnum<core::Fixnum_I>(0)) {
     GCWEAK_LOG(BF("Created BucketsBase with length: %d") % this->length());
     for (size_t i(0); i < l; ++i) {
       this->bucket[i] = T((gctools::Tagged)gctools::tag_unbound<typename T::Type *>());
@@ -219,9 +198,9 @@ inline bool unboundOrDeletedOrSplatted(core::T_sp bucket) {
 template <class T, class U>
 struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
-  Buckets(int l) : BucketsBase<T, U>(WeakBucketKind, l){};
+ Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(gctools::image_save_load_init_s* isl) {
-    isl->fill_no_virtual((void*)this);
+    isl->fill((void*)this);
   }
   virtual ~Buckets() {
 #ifdef USE_BOEHM
@@ -273,9 +252,9 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
 template <class T, class U>
 struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
-  Buckets(int l) : BucketsBase<T, U>(StrongBucketKind, l){};
+ Buckets(int l) : BucketsBase<T, U>(l){};
   Buckets(gctools::image_save_load_init_s* isl) {
-    isl->fill_no_virtual((void*)this);
+    isl->fill((void*)this);
   }
   virtual ~Buckets() {}
   void set(size_t idx, const value_type &val) {
@@ -500,7 +479,7 @@ public:
 
 template <class T, class U>
 struct MappingBase : public WeakObject {
-  MappingBase(const T &val) : WeakObject(WeakMappingKind), bucket(val){};
+ MappingBase(const T &val) : bucket(val){};
   virtual ~MappingBase(){};
   typedef T value_type;
   void *dependentPtr() const {
@@ -577,7 +556,7 @@ struct WeakPointer : public WeakObject {
   typedef gctools::smart_ptr<core::T_O> value_type;
 #endif
 
-  WeakPointer(const value_type &val) : WeakObject(WeakPointerKind), value(val){};
+ WeakPointer(const value_type &val) : value(val){};
   
   value_type value;
 };

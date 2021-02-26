@@ -87,7 +87,7 @@ namespace llvmo {
 
 core::T_sp functionNameOrNilFromFunctionDescription(core::FunctionDescription_sp functionDescription)
 {
-  if (functionDescription.unsafe_fixnum()==0) {
+  if (functionDescription.fixnump() && functionDescription.unsafe_fixnum()==0) {
     return _Nil<core::T_O>();
   }
   return functionDescription->_functionName;

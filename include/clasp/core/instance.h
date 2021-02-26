@@ -74,11 +74,13 @@ FORWARD(Rack);
       return this->_Slots[i].compare_exchange_strong(expected,desired,sync);
     }
     inline void stamp_set(gctools::ShiftedStamp stamp) {
-      ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp));
+      ASSERT(stamp==0||gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(stamp)
+             ||gctools::Header_s::StampWtagMtag::is_derivable_shifted_stamp(stamp));
       this->_ShiftedStamp = stamp;
     };
     inline gctools::ShiftedStamp stamp_get() {
-      ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(this->_ShiftedStamp));
+      ASSERT(gctools::Header_s::StampWtagMtag::is_rack_shifted_stamp(this->_ShiftedStamp)
+             ||gctools::Header_s::StampWtagMtag::is_derivable_shifted_stamp(this->_ShiftedStamp));
       return this->_ShiftedStamp;
     };
   };

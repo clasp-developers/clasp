@@ -40,7 +40,7 @@ CL_LISPIFY_NAME(make-weak-pointer);
 CL_DEFUN WeakPointer_sp WeakPointer_O::make(T_sp obj) {
   if (obj.objectp()) {
     GC_ALLOCATE_VARIADIC(WeakPointer_O, me, obj);
-    me->_WeakObject.pointer = gctools::WeakPointerManager::AllocatorType::allocate(gctools::Header_s::StampWtagMtag(gctools::WeakPointerKind,true),obj);
+    me->_WeakObject.pointer = gctools::WeakPointerManager::AllocatorType::allocate(gctools::Header_s::StampWtagMtag(gctools::Header_s::WeakPointerKind),obj);
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(me->_WeakObject.pointer->value.objectp());
     if (!unboundOrDeletedOrSplatted(me->_WeakObject.pointer->value)) {

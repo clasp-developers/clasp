@@ -57,6 +57,8 @@ private:
 
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
+  virtual void fixupCodePointers(core::FixupOperation op) {
+  }
 
 public:
   static LCC_RETURN LISP_CALLING_CONVENTION() {

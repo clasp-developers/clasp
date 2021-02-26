@@ -114,7 +114,7 @@ void boehm_general_finalizer_from_BoehmFinalizer(void* client, void* data)
 void boehm_general_finalizer(void* base, void* data)
 {
 //  printf("%s:%d general_finalizer for %p\n", __FILE__, __LINE__, (void*)base);
-  void* client = BasePtrToMostDerivedPtr<core::T_O>(base);
+  void* client = HeaderPtrToGeneralPtr<core::T_O>(base);
   if ((uintptr_t)client&gctools::ptag_mask) {
     printf("%s:%d The client pointer %p must NOT BE TAGGED at this point\n", __FILE__, __LINE__, client);
     abort();

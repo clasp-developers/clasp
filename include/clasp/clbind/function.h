@@ -107,8 +107,15 @@ public:
   
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-  VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {};
+  VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
+    : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point))
+    , fptr(ptr) {
+    this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+  }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
@@ -146,8 +153,13 @@ public:
 public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-    VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {};
+    VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {
+        this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
+    };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
+  virtual void fixupCodePointers(core::FixupOperation op) {
+    this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+  }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
 //    printf("%s:%d Entered entry_point of a VariadicFunctor\n", __FILE__, __LINE__ );

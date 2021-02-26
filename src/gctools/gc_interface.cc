@@ -108,13 +108,13 @@ using namespace gctools;
 
 size_t obj_kind( core::T_O *tagged_ptr) {
   const core::T_O *client = untag_object<const core::T_O *>(tagged_ptr);
-  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
+  const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
   return (size_t)(header->_stamp_wtag_mtag.stamp_());
 }
 
 const char *obj_kind_name(core::T_O *tagged_ptr) {
   core::T_O *client = untag_object<core::T_O *>(tagged_ptr);
-  const Header_s *header = reinterpret_cast<const Header_s *>(ClientPtrToBasePtr(client));
+  const Header_s *header = reinterpret_cast<const Header_s *>(GeneralPtrToHeaderPtr(client));
   return obj_name(header->_stamp_wtag_mtag.stamp_());
 }
 
@@ -167,8 +167,8 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   #endif
 #endif
 
-  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(ClientPtrToBasePtr(client));
-  ASSERTF(header->stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
+  const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
   gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
 #ifndef RUNNING_MPSPREP
 #if defined(USE_MPS) || defined(USE_PRECISE_GC)
@@ -210,12 +210,15 @@ extern "C" {
   /*! I'm using a format_header so MPS gives me the object-pointer */
 #define OBJECT_SKIP obj_skip_debug
 #define ADDR_T mps_addr_t
+#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
 #include "obj_scan.cc"
+#undef GENERAL_PTR_TO_HEADER_PTR
 #undef ADDR_T
 #undef OBJECT_SKIP
 
 mps_addr_t obj_skip(mps_addr_t client) {
-  return obj_skip_debug(client,false);
+  size_t objectSize;
+  return obj_skip_debug(client,false,objectSize);
 }
 
 __attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t client,
@@ -227,11 +230,13 @@ __attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t clien
                                                             int delta) {
   printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
          __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
-  return obj_skip_debug(client,true);
+  size_t objectSize;
+  return obj_skip_debug(client,true,objectSize);
 }
 #endif // USE_MPS
 
 
+#if 0
 #if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
 #define OBJECT_SKIP obj_skip_debug
 #define ADDR_T void*
@@ -240,8 +245,12 @@ __attribute__((noinline))  mps_addr_t obj_skip_debug_wrong_size(mps_addr_t clien
 #undef OBJECT_SKIP
 
 void* obj_skip(void* client) {
-  return obj_skip_debug(client,false);
+  size_t objectSize;
+  return obj_skip_debug(client,false,objectSize);
 }
+#endif
+
+
 
 __attribute__((noinline))  void* obj_skip_debug_wrong_size(void* client,
                                                            void* header,
@@ -252,7 +261,8 @@ __attribute__((noinline))  void* obj_skip_debug_wrong_size(void* client,
                                                            int delta) {
   printf("%s:%d Bad size calc header@%p header->stamp_wtag_mtag._value(%lu) obj_skip(stamp %lu) allocate_size -> %lu  obj_skip -> %lu delta -> %d\n         About to recalculate the size - connect a debugger and break on obj_skip_debug_wrong_size to trap\n",
          __FILE__, __LINE__, (void*)header, stamp_wtag_mtag, stamp, allocate_size, skip_size, delta );
-  return obj_skip_debug(client,true);
+  size_t objectSize;
+  return obj_skip_debug(client,true,objectSize);
 }
 #endif //#if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
 
@@ -294,7 +304,9 @@ extern "C" {
 #define EXTRA_ARGUMENTS
 #define OBJECT_SCAN obj_scan
 #define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
+#define GENERAL_PTR_TO_HEADER_PTR gctools::GeneralPtrToHeaderPtr
 #include "obj_scan.cc"
+#undef GENERAL_PTR_TO_HEADER_PTR
 #undef OBJECT_SCAN
 #undef EXTRA_ARGUMENTS
 #undef SCAN_STRUCT_T
@@ -302,6 +314,8 @@ extern "C" {
 #undef RESULT_TYPE   
 #endif
 
+
+#if 0
 #if defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
 #define SCAN_STRUCT_T void*
 #define ADDR_T void*
@@ -322,19 +336,24 @@ extern "C" {
   }
 #define OBJECT_SCAN obj_mark_low_level
 #define OBJECT_SKIP_IN_OBJECT_SCAN obj_skip_debug
+#define CLIENT_PTR_TO_HEADER_PTR(client) gctools::GeneralPtrToHeaderPtr(client)
 #include "obj_scan.cc"
+#undef CLIENT_PTR_TO_HEADER_PTR
 #undef OBJECT_SCAN
 #undef POINTER_FIX
 #undef EXTRA_ARGUMENTS
 #undef SCAN_STRUCT_T
 #undef RESULT_OK
-#undef RESULT_TYPE   
+#undef RESULT_TYPE
 
 struct GC_ms_entry* object_mark_proc(unsigned long* addr, struct GC_ms_entry *msp, struct GC_ms_entry *msl, GC_word env) {
   printf("%s:%d In object_mark_proc\n", __FILE__, __LINE__ );
   return obj_mark_low_level( NULL, (void*)addr, (void*)((char*)addr+1), msp, msl );
 }
+
 #endif // defined(USE_BOEHM)&&defined(USE_PRECISE_GC)
+
+#endif // 0
 };
 
 
@@ -352,9 +371,9 @@ void obj_finalize(mps_addr_t client) {
     #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_MPSPREP
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(ClientPtrToBasePtr(client)));
-  ASSERTF(header->stampP(), BF("obj_finalized called without a valid object"));
-  gctools::GCStampEnum stamp = (GCStampEnum)(header->stamp_());
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(const_cast<void*>(GeneralPtrToHeaderPtr(client)));
+  ASSERTF(header->_stamp_wtag_mtag.stampP(), BF("obj_finalized called without a valid object"));
+  gctools::GCStampEnum stamp = (GCStampEnum)(header->_stamp_wtag_mtag.stamp_());
   #ifndef RUNNING_MPSPREP
   size_t table_index = (size_t)stamp;
   goto *(OBJ_FINALIZE_table[table_index]);
@@ -364,8 +383,8 @@ void obj_finalize(mps_addr_t client) {
   #endif // ifndef RUNNING_MPSPREP
  finalize_done:
   // Now replace the object with a pad object
-  header->setPadSize(block_size);
-  header->setPad(Header_s::pad_mtag);
+  header->_stamp_wtag_mtag.setPadSize(block_size);
+  header->_stamp_wtag_mtag.setPad(Header_s::pad_mtag);
 }; // obj_finalize
 }; // extern "C"
   #undef GC_FINALIZE_METHOD

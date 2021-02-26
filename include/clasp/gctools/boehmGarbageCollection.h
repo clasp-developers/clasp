@@ -75,7 +75,7 @@ namespace gctools {
     inline bool tagged_pointer_from_interior_pointer( clasp_ptr_t interior_pointer, Tagged& tagged_pointer ) {
     void* base = GC_base(static_cast<void*>(interior_pointer));
     if (base) {
-      GeneralType* client = BasePtrToMostDerivedPtr<GeneralType>(base);
+      GeneralType* client = HeaderPtrToGeneralPtr<GeneralType>(base);
       tagged_pointer = (gctools::Tagged)tag_general<GeneralType*>(client);
       return true;
     }
@@ -87,7 +87,7 @@ namespace gctools {
     inline bool tagged_pointer_from_interior_pointer<core::Cons_O>( clasp_ptr_t interior_pointer, Tagged& tagged_pointer ) {
     void* base = GC_base(static_cast<void*>(interior_pointer));
     if (base) {
-      core::Cons_O* client = BasePtrToMostDerivedPtr<core::Cons_O>(base);
+      core::Cons_O* client = HeaderPtrToGeneralPtr<core::Cons_O>(base);
       tagged_pointer = (gctools::Tagged)tag_cons<core::Cons_O*>(client);
       return true;
     }

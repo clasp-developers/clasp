@@ -73,6 +73,30 @@ namespace gctools {
     }
 #endif
    };
+   inline void registerWeakAllocation(uintptr_t stamp, size_t size) {
+     this->_BytesAllocated += size;
+     this->_AllocationSizeCounter += size;
+     this->_AllocationNumberCounter++;
+#if defined(DEBUG_COUNT_ALLOCATIONS) && defined(DEBUG_SLOW)
+    gctools::count_weak_allocation(stamp);
+#endif
+#ifdef DEBUG_MEMORY_PROFILE
+     if (this->_AllocationSizeCounter >= this->_AllocationSizeThreshold) {
+       HitAllocationSizeThreshold();
+       this->_AllocationSizeCounter -= this->_AllocationSizeThreshold;
+     }
+     if (this->_AllocationNumberCounter >= this->_AllocationNumberThreshold) {
+       HitAllocationNumberThreshold();
+       this->_AllocationNumberCounter = 0;
+     }
+#endif
+#if defined(GC_MONITOR_ALLOCATIONS) && defined(DEBUG_SLOW)
+    if ( this->_Monitor.on ) {
+      monitorWeakAllocation(stamp,sz);
+    }
+#endif
+   };
+
  };
 
 

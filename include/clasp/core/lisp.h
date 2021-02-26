@@ -307,7 +307,7 @@ extern core::globals_t* globals_;
 
 namespace core {
 
-class Lisp_O {
+  class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
@@ -318,34 +318,34 @@ class Lisp_O {
     GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
     GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
-    List_sp _ActiveThreads;
-    List_sp _DefaultSpecialBindings;
-    WeakKeyHashTable_sp _Finalizers;
-    HashTable_sp _Sysprop;
-    HashTable_sp _ClassTable;
-    Integer_sp _IntegerOverflowAdjust;
-    CharacterInfo charInfo; // Contains GC managed pointers
+    List_sp                    _ActiveThreads;
+    List_sp                    _DefaultSpecialBindings;
+    WeakKeyHashTable_sp        _Finalizers;
+    HashTable_sp               _Sysprop;
+    HashTable_sp               _ClassTable;
+    Integer_sp                 _IntegerOverflowAdjust;
+    CharacterInfo              charInfo; // Contains GC managed pointers
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolderUnshiftedNowhere;
-    gctools::Vec0<Instance_sp> staticClassesUnshiftedNowhere;
-    gctools::Vec0<Symbol_sp> staticClassSymbolsUnshiftedNowhere;
-    gctools::Vec0<Creator_sp> staticInstanceCreatorsUnshiftedNowhere;
-    std::atomic<T_sp>    _JITDylibs; // Maintain a list of loaded JITDylibs 
+    gctools::Vec0<Instance_sp>     staticClassesUnshiftedNowhere;
+    gctools::Vec0<Symbol_sp>    staticClassSymbolsUnshiftedNowhere;
+    gctools::Vec0<Creator_sp>   staticInstanceCreatorsUnshiftedNowhere;
+    std::atomic<T_sp>           _JITDylibs; // Maintain a list of loaded JITDylibs 
     gctools::Vec0<FileScope_sp> _SourceFiles;
     gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
-    mpip::Mpi_sp  _MpiWorld;
+    mpip::Mpi_sp                _MpiWorld;
     //! Class_map
     gctools::Vec0<clbind::ClassRep_sp> _ClassMap;
     //! Any class defined here needs to be added to predicates.cc::clos__classp
-    Instance_sp   _TheClass;
-    Instance_sp   _TheBuiltInClass;
-    Instance_sp   _TheStandardClass;
-    Instance_sp   _TheStructureClass;
-    Instance_sp   _TheDerivableCxxClass;
-    Instance_sp   _TheClbindCxxClass;
-    Package_sp _CorePackage;
-    Package_sp _KeywordPackage;
-    Package_sp _CommonLispPackage;
-    HashTableEq_sp _SpecialForms;
+    Instance_sp                 _TheClass;
+    Instance_sp                 _TheBuiltInClass;
+    Instance_sp                 _TheStandardClass;
+    Instance_sp                 _TheStructureClass;
+    Instance_sp                 _TheDerivableCxxClass;
+    Instance_sp                 _TheClbindCxxClass;
+    Package_sp                  _CorePackage;
+    Package_sp                  _KeywordPackage;
+    Package_sp                  _CommonLispPackage;
+    HashTableEq_sp              _SpecialForms;
     /*! Store a list of all of the _SingleDispatchGenericFunction names
      *  We will use this once the compiler is up and running to compile their discriminating functions.
      */

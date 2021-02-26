@@ -1183,16 +1183,16 @@ std::string SimpleBaseString_O::__repr__() const {
 }
 
 bool SimpleBaseString_O::equal(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (!cl__stringp(other)) return false;
   String_sp sother = gc::As_unsafe<String_sp>(other);
   TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_EQ_equal,0,this->length(),0,sother->length());
 };
 
 bool SimpleBaseString_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (cl__stringp(other)) {
     String_sp sother = gc::As_unsafe<String_sp>(other);
     TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
@@ -1208,8 +1208,8 @@ bool SimpleBaseString_O::equalp(T_sp other) const {
 //
 
 bool SimpleCharacterString_O::equal(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (gc::IsA<SimpleString_sp>(other)) {
     if (gc::IsA<SimpleBaseString_sp>(other)) {
       auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
@@ -1231,8 +1231,8 @@ bool SimpleCharacterString_O::equal(T_sp other) const {
 };
 
 bool SimpleCharacterString_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (cl__stringp(other)) {
     String_sp sother = gc::As_unsafe<String_sp>(other);
     TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
@@ -1262,8 +1262,8 @@ std::string Str8Ns_O::__repr__() const {
 }
 
 bool Str8Ns_O::equal(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (gc::IsA<SimpleString_sp>(other)) {
     if (gc::IsA<SimpleBaseString_sp>(other)) {
       auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
@@ -1285,8 +1285,8 @@ bool Str8Ns_O::equal(T_sp other) const {
 };
 
 bool Str8Ns_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (cl__stringp(other)) {
     String_sp sother = gc::As_unsafe<String_sp>(other);
     TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
@@ -1343,8 +1343,8 @@ bool StrWNs_O::all_base_char_p() const {
 }
 
 bool StrWNs_O::equal(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (gc::IsA<SimpleString_sp>(other)) {
     if (gc::IsA<SimpleBaseString_sp>(other)) {
       auto so = gc::As_unsafe<SimpleBaseString_sp>(other);
@@ -1366,8 +1366,8 @@ bool StrWNs_O::equal(T_sp other) const {
 };
 
 bool StrWNs_O::equalp(T_sp other) const {
-  if (&*other==this) return true;
   if (!other.generalp()) return false;
+  if (&*other==this) return true;
   if (cl__stringp(other)) {
     String_sp sother = gc::As_unsafe<String_sp>(other);
     TEMPLATE_HALF_STRING_DISPATCHER(this,sother,template_string_equalp_bool,0,this->length(),0,sother->length());
