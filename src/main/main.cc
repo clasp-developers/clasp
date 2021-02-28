@@ -330,6 +330,12 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   core::add_library addlib;
   startup_register_loaded_objects(&addlib);
 
+  {
+    core::global_initialize_builtin_classes = true;
+    initialize_clasp_Kinds();
+    core::global_initialize_builtin_classes = false;
+  }
+
     // Create the one global CommandLineOptions object and do some minimal argument processing
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
@@ -498,9 +504,17 @@ int main( int argc, char *argv[] )
 
   // Pause before any allocations take place
   {
+    if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+      printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
+      FILE* fout = fopen("/tmp/clasp_pid","w");
+      fprintf(fout,"%d",getpid());
+      fclose(fout);
+      core::dumpDebuggingLayouts();
+    }
+
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
-      printf("%s:%d PID = %d Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      printf("%s:%d PID = %d (Wrote to /tmp/clasp_pid)\n   Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);
       getchar();
     }

@@ -120,7 +120,7 @@ public:
 template <typename Pols, typename OT, typename MethodPtrType>
 class gctools::GCStamp<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Stamp;
 };
 
 #endif

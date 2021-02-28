@@ -4622,29 +4622,33 @@ SectionedAddress_sp SectionedAddress_O::create(uint64_t SectionIndex, uint64_t A
 }
 
 
-void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset)
+void python_dump_field(FILE* fout, const char* name, bool comma, gctools::Data_types dt, size_t offset, size_t sz=0)
 {
   if (comma) fprintf(fout, ",");
-  fprintf(fout, "[ \"%s\", %d, %lu ]\n", name, dt, offset );
+  fprintf(fout, "[ \"%s\", %d, %lu, %lu ]\n", name, dt, offset, sz );
 }
 
 void dump_objects_for_lldb(FILE* fout,std::string indent)
 {
+  fprintf(fout,"%sInit_struct(\"gctools::Header_s::StampWtagMtag\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s::StampWtagMtag));
+  python_dump_field(fout,"_value",false,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_value),sizeof(gctools::Header_s::StampWtagMtag::_value));
+  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s::StampWtagMtag,_header_badge),sizeof(gctools::Header_s::StampWtagMtag::_header_badge));
+  fprintf(fout,"] )\n");
   fprintf(fout,"%sInit_struct(\"gctools::Header_s\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(gctools::Header_s));
-  python_dump_field(fout,"_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._value));
-  python_dump_field(fout,"_header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._header_badge));
+  python_dump_field(fout,"_stamp_wtag_mtag._value",false,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._value),sizeof(gctools::Header_s::_stamp_wtag_mtag._value));
+  python_dump_field(fout,"_stamp_wtag_mtag._header_badge",true,gctools::ctype_int,offsetof(gctools::Header_s,_stamp_wtag_mtag._header_badge),sizeof(gctools::Header_s::_stamp_wtag_mtag._header_badge));
 #ifdef DEBUG_GUARD
-  python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start));
-  python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size));
-  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard));
-  python_dump_field(fout,"_dup_tail_start",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_start));
-  python_dump_field(fout,"_dup_tail_size",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_size));
-  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag));
-  python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2));
+  python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start),sizeof(gctools::Header_s::_tail_start));
+  python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size),sizeof(gctools::Header_s::_tail_size));
+  python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard),sizeof(gctools::Header_s::_guard));
+  python_dump_field(fout,"_dup_tail_start",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_start),sizeof(gctools::Header_s::_dup_tail_start));
+  python_dump_field(fout,"_dup_tail_size",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_size),sizeof(gctools::Header_s::_dup_tail_size));
+  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2),sizeof(gctools::Header_s::_guard2));
 #endif
   fprintf(fout,"] )\n");
 #if 0
-//  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
+  fprintf(fout,"%sInit_struct(\"llvmo::ObjectFileInfo\",sizeof=%lu,fields=[ \n", indent.c_str(), sizeof(llvmo::ObjectFileInfo));
   python_dump_field(fout,"_faso_filename",false,gctools::ctype_const_char_ptr,offsetof(ObjectFileInfo,_faso_filename));
   python_dump_field(fout,"_faso_index",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_faso_index));
   python_dump_field(fout,"_objectID",true,gctools::ctype_size_t ,offsetof(ObjectFileInfo,_objectID));

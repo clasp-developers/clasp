@@ -6423,7 +6423,7 @@ DO_CLASS(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),STAMPWTAG_llvmo__GlobalValue_O);
 DO_CLASS(SAFE_TYPE_MACRO(llvmo::PointerType_O),STAMPWTAG_llvmo__PointerType_O);
 DO_CLASS(SAFE_TYPE_MACRO(core::TwoWayStream_O),STAMPWTAG_core__TwoWayStream_O);
 #endif // defined(DO_CLASS)
-#if defined(GC_STAMPWTAG_SELECTORS)
+#if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_size_t_O ;
@@ -7984,7 +7984,7 @@ template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__TwoWayStream_O ;
 };
-#endif // defined(GC_STAMPWTAG_SELECTORS)
+#endif // defined(GC_STAMP_SELECTORS)
 #if defined(GC_OBJ_SCAN)
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_HELPERS)
@@ -22234,7 +22234,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 1903 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_gctools__GCVector_moveable_float_,
   /* 1907 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__FrontendAction,
   /* 1911 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__ASTFrontendAction,
-  /* 1915 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_yclang__SyntaxOnlyAction,
+  /* 1915 */ &&obj_deallocate_unmanaged_instance_STAMPWTAG_clang__SyntaxOnlyAction,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)

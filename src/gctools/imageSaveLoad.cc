@@ -36,7 +36,7 @@
 #else
 #define DBG_SL1(_fmt_)
 #endif
-#if 1
+#if 0
 #define DBG_SL_ALLOCATE(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_ALLOCATE(_fmt_)
@@ -47,7 +47,7 @@
 #define DBG_SAVECOPY(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_ROOT(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_ROOT(_fmt_)
@@ -59,7 +59,7 @@
 #define DBG_SL_FWD(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_FFWD(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_FFWD(_fmt_)
@@ -71,13 +71,13 @@
 #define DBG_SL_RELOCATE0(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_WALK(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_WALK(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_VTABLE(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_VTABLE(_fmt_)
@@ -468,7 +468,7 @@ struct prepare_for_image_save_t : public walker_callback_t {
       // Handle them on a case by case basis
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       core::General_O* generalObject = (core::General_O*)client;
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMP_core__Symbol_O)) {
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Symbol_O)) {
         generalObject->fixupInternalsForImageSaveLoad();
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
@@ -668,7 +668,7 @@ struct fixup_objects_t : public walker_callback_t {
         //
         // Fixup code pointers before we mangle the vtable
         //
-        if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMP_core__BuiltinClosure_O)) {
+        if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__BuiltinClosure_O)) {
           ((core::BuiltinClosure_O*)client)->fixupCodePointers(core::SaveOp);
         }
         // Handle other kinds of code objects
@@ -1092,7 +1092,7 @@ int image_load(const std::string& filename )
   DBG_SL(BF("Fixup the Library_O objects\n"));
   struct fixup_CodeBase_t : public walker_callback_t {
     void callback(gctools::Header_s* header) {
-      if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMP_llvmo__Library_O)) {
+      if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
         llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
         core::SimpleBaseString_sp name = lib->_Name;
         std::string libraryPath = name->get_std_string();

@@ -3,11 +3,13 @@ global_dataTypes = {}
 global_kinds = {}
 global_structs = {}
 global_headerStruct = None
+global_StampWtagMtag = None
 
 def SetupGlobals(debugger):
     global global_headerStruct
     debugger.print_("In SetupGlobals")
     global_headerStruct = global_structs["gctools::Header_s"]
+    global_StampWtagMtagStruct = global_structs["gctools::Header_s::StampWtagMtag"]
     if (global_headerStruct==None):
         raise "Could not find gctools::Header_s struct"
     else:
@@ -64,7 +66,7 @@ class BitunitContainerKind:
         
 class FixedField:
     def __init__(self,index,data_type,field_name,field_offset):
-        self._index = index
+        self._index = index # unused?
         self._data_type = data_type
         self._field_name = field_name
         self._field_offset = field_offset
@@ -114,7 +116,6 @@ def Init_templated_kind(stamp, name, size):
 def Init_container_kind(stamp, name, size):
     # print("Init__container_kind stamp = %d\n" % stamp)
     global_kinds[stamp] = ContainerKind(stamp,name,size)
-
 
 def Init_bitunit_container_kind(stamp, name, size, bits_per_bitunit):
     # print("Init__bitunit_container_kind stamp = %d\n" % stamp)

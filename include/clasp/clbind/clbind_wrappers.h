@@ -249,7 +249,7 @@ bool validp() const { return RawGetter<HolderType>::get(this->externalPtr_gc_ign
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, T *>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, T *>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
@@ -262,7 +262,7 @@ struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::unique_ptr<T>>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::unique_ptr<T>>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
@@ -275,7 +275,7 @@ struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
 template <typename T>
 class gctools::GCStamp<clbind::Wrapper<T, std::shared_ptr<T>>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Wrapper<T, std::shared_ptr<T>>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::shared_ptr<T>>> {

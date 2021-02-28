@@ -71,6 +71,7 @@ struct CommandLineOptions {
   bool _PauseForDebugger;
   std::string _ResourceDir;
   std::vector<std::string> _Args;
+  bool optionArgP(int& iarg,std::string& val, const std::string& default_);
 };
 };
 #endif

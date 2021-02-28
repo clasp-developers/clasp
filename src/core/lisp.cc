@@ -282,6 +282,10 @@ void Lisp_O::setupSpecialSymbols() {
   RAII_DISABLE_INTERRUPTS();
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
+  if (!gc::IsA<Null_sp>(symbol_nil)) {
+    printf("%s:%d:%s The NIL symbol failed gc::IsA<Null_sp>(symbol_nil)\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
   SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
   Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
   SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
@@ -320,11 +324,13 @@ void Lisp_O::finalizeSpecialSymbols() {
 }
 
 Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
+#if 0
   {
     global_initialize_builtin_classes = true;
     initialize_clasp_Kinds();
     global_initialize_builtin_classes = false;
   }
+#endif
   Lisp_O::setupSpecialSymbols();
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
@@ -1167,6 +1173,22 @@ uint Lisp_O::nextEnvironmentId() {
   return this->_EnvironmentId;
 }
 
+void dumpDebuggingLayouts(const std::string& filename) {
+  #if defined(USE_PRECISE_GC)
+  FILE* fout = fopen(filename.c_str(),"w");
+    gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
+    llvmo::dump_objects_for_lldb(fout,"");
+    fclose(fout);
+    printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+#else
+    FILE* fout = fopen(filename.c_str(),"w");
+    dumpBoehmLayoutTables(fout);
+    llvmo::dump_objects_for_lldb(fout,"");
+    fclose(fout);
+    printf("Wrote class layouts for lldb interface to %s\n", filename.c_str());
+#endif
+}
+
 void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options) {
   int endArg = options._EndArg;
   LOG(BF("Parsing what is left over into lisp environment arguments"));
@@ -1311,19 +1333,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
     seedRandomNumberGenerators(this->mpiRank());
   }
   if (options._HasDescribeFile) {
-#if defined(USE_PRECISE_GC)
-    FILE* fout = fopen(options._DescribeFile.c_str(),"w");
-    gctools::walk_stamp_field_layout_tables(gctools::lldb_info,fout);
-    llvmo::dump_objects_for_lldb(fout,"");
-    fclose(fout);
-    printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
-#else
-    FILE* fout = fopen(options._DescribeFile.c_str(),"w");
-    dumpBoehmLayoutTables(fout);
-    llvmo::dump_objects_for_lldb(fout,"");
-    fclose(fout);
-    printf("Wrote class layouts for lldb interface to %s\n", options._DescribeFile.c_str());
-#endif
+    dumpDebuggingLayouts(options._DescribeFile);
   }
     
   if (options._HasImageFile) {

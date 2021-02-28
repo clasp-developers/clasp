@@ -6,13 +6,13 @@ from clasp_inspect.object_layout import *
 from clasp_inspect.translate import *
 
 
-global_udb_interface = None
+global_gdb_interface = None
 
-class UdbInterface(Interface):
+class GdbInterface(Interface):
     def __init__(self):
         global global_structs
         print( "In clasp_inspect for UdbInterface")
-        filename = "/tmp/clasp-layout.py"
+        filename = "/tmp/clasp_layout.py"
         with open(filename, "rb") as source_file:
             code = compile(source_file.read(), filename, "exec")
         exec(code)
@@ -38,6 +38,9 @@ class UdbInterface(Interface):
         #print "Read and unpacked mem at 0x%x len: %d with fmt: %s and got: 0x%x" % (address,len,fmt,val[0])
         return val[0]
 
+    def evaluate(self,string):
+        return int(gdb.parse_and_eval(string))
+
 def arg_to_tptr(debugger,args):
     args = args.split(" ")
     arg = args[0]
@@ -52,30 +55,30 @@ def arg_to_tptr(debugger,args):
     elif (is_int(arg,10)):
         tptr = int(arg,10)
     else:
-        debugger.print_("Handle arg: %s" % arg)
-        return
+        tptr = int(debugger.evaluate(arg))
+    print("arg_to_tptr returning %x" % tptr)
     return tptr
     
 def do_print(args):
     #print "In inspect args: %s" % args
-    global global_udb_interface
-    tptr = arg_to_tptr(global_udb_interface,args)
-    obj = translate_tagged_ptr(global_udb_interface,tptr)
+    global global_gdb_interface
+    tptr = arg_to_tptr(global_gdb_interface,args)
+    obj = translate_tagged_ptr(global_gdb_interface,tptr)
     print( obj.__repr__())
     return obj
 
 
 def do_inspect(args):
     #print "In inspect args: %s" % args
-    global global_udb_interface
-    tptr = arg_to_tptr(global_udb_interface,args)
-    obj = general_tagged_ptr(global_udb_interface,tptr)
-    print( obj.__repr__())
+    global global_gdb_interface
+    tptr = arg_to_tptr(global_gdb_interface,args)
+    obj = general_tagged_ptr(global_gdb_interface,tptr)
+    print( "general_tagged_ptr returned: %s" % obj.__repr__())
     return obj
 
-def do_udb_init_module():
-    global global_udb_interface
-    global_udb_interface = UdbInterface()
-    print( "Leaving do_lldb_init_module with global_udb_interface = %s" % global_udb_interface)
+def do_gdb_init_module():
+    global global_gdb_interface
+    global_gdb_interface = GdbInterface()
+    print( "Leaving do_lldb_init_module with global_gdb_interface = %s" % global_gdb_interface)
     
     

@@ -471,7 +471,7 @@ template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-    return allocate_kind(Header_s::StampWtagMtag::make<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
+    return allocate_kind(Header_s::StampWtagMtag::make_Value<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
   };
 
   template <class... ARGS>
@@ -970,12 +970,12 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type root_allocate_with_stamp(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -997,13 +997,13 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
-      auto kind = OT::static_StampWtagMtag;
+      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
-      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_StampWtagMtag);
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag));
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
@@ -1015,8 +1015,8 @@ namespace gctools {
     static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -1026,10 +1026,10 @@ namespace gctools {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p)
-        return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag, size, length,
+        return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag, size, length,
+        return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -1044,7 +1044,7 @@ namespace gctools {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
       size_t scanSize = sizeof_container_with_header<OT>(dataScanSize);
-      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -1058,10 +1058,10 @@ namespace gctools {
 #endif
       smart_pointer_type result;
       if (static_container_p)
-        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
@@ -1074,7 +1074,7 @@ namespace gctools {
     }
     
     static smart_pointer_type copy(const OT &that) {
-      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),that);
+      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),that);
     }
 
     static void deallocate_unmanaged_instance(OT* obj) {
@@ -1114,7 +1114,7 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(Header_s::StampWtagMtag::make<TY>(),num);
+    return allocate_kind(Header_s::StampWtagMtag::make_Value<TY>(),num);
   }
 
   // allocate but don't initialize num elements of type value_type

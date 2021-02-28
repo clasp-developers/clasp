@@ -299,12 +299,12 @@ public:
 
 
 namespace core {
-Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag);
-void lisp_setStaticClass(gctools::Header_s::StampWtagMtag value, Instance_sp class_);
-Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag value);
-void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag value, Symbol_sp class_);
-Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag value);
-void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creator_sp creator);
+Instance_sp lisp_getStaticClass(gctools::Header_s::StampWtagMtag::Value);
+void lisp_setStaticClass(gctools::Header_s::StampWtagMtag::Value value, Instance_sp class_);
+Symbol_sp lisp_getStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value value);
+void lisp_setStaticClassSymbol(gctools::Header_s::StampWtagMtag::Value value, Symbol_sp class_);
+Creator_sp lisp_getStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value);
+void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value, Creator_sp creator);
 };
 
 
@@ -324,26 +324,26 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creat
   gctools::smart_ptr<oClass> asSmartPtr()                               \
   { return this->sharedThis<oClass>(); };                               \
   static core::Creator_sp staticCreator()                               \
-    { return core::lisp_getStaticInstanceCreator(oClass::static_StampWtagMtag);} \
+    { return core::lisp_getStaticInstanceCreator(oClass::static_ValueStampWtagMtag);} \
   static void setStaticClass(core::Instance_sp ci)                         \
-  { return core::lisp_setStaticClass(oClass::static_StampWtagMtag,ci);} \
+  { return core::lisp_setStaticClass(oClass::static_ValueStampWtagMtag,ci);} \
   static core::Instance_sp staticClass()                                  \
-    { return core::lisp_getStaticClass(oClass::static_StampWtagMtag);} \
+    { return core::lisp_getStaticClass(oClass::static_ValueStampWtagMtag);} \
  public:                                                                \
   typedef oClass my_type;                                               \
   typedef gctools::smart_ptr<oClass> smart_ptr_type;                 \
  public:                                                                \
-  static gctools::Header_s::StampWtagMtag static_StampWtagMtag;                   \
+ static gctools::Header_s::StampWtagMtag::Value static_ValueStampWtagMtag; \
  public:                                                                \
  static void set_static_class_symbol(core::Symbol_sp symbol)                \
- { core::lisp_setStaticClassSymbol(oClass::static_StampWtagMtag,symbol); }; \
+ { core::lisp_setStaticClassSymbol(oClass::static_ValueStampWtagMtag,symbol); }; \
  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) \
- { core::lisp_setStaticInstanceCreator(oClass::static_StampWtagMtag,al); }; \
+ { core::lisp_setStaticInstanceCreator(oClass::static_ValueStampWtagMtag,al); }; \
   static string static_packageName() { return oPackage; };              \
   static string static_className()                                      \
   { return core::lispify_symbol_name(oclassName); };                    \
   static core::Symbol_sp static_classSymbol()                           \
-  { return core::lisp_getStaticClassSymbol(oClass::static_StampWtagMtag);};     \
+  { return core::lisp_getStaticClassSymbol(oClass::static_ValueStampWtagMtag);};     \
   static string Package() { return oClass::static_packageName(); };     \
   static string Pkg() { return Package(); };                            \
   static void register_class_with_redeye() {                            \
@@ -367,7 +367,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag value, Creat
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
   virtual core::Instance_sp __class() const OVERRIDE {                           \
-    return core::lisp_getStaticClass(aClass::static_StampWtagMtag);       \
+    return core::lisp_getStaticClass(aClass::static_ValueStampWtagMtag);       \
   }                                                                     \
   /* end LISP_CLASS */
     
