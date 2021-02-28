@@ -192,12 +192,12 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
         // There is a corresponding change to obj_scan.cc
           int bit_index;
           uintptr_t field_bitmap;
-          if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMP_core__Lisp_O)) {
+          if (cur_stamp != STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp_O)) {
             bit_index = bitmap_field_index(63,field_offset);
             field_bitmap = bitmap_field_bitmap(bit_index);
             local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
           } else {
-          // Do the same for STAMP_core__Lisp_O - but if it doesn't fit in a 64bit word then we will skip this.
+          // Do the same for STAMPWTAG_core__Lisp_O - but if it doesn't fit in a 64bit word then we will skip this.
             bit_index = bitmap_field_index(63,field_offset);
             field_bitmap = bitmap_field_bitmap(bit_index);
             local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
@@ -390,7 +390,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
 
   // Setup the CONS cell bitmap
-  uintptr_t cons_stamp = STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O);
+  uintptr_t cons_stamp = STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Cons_O);
   uintptr_t cons_bitmap = ((uintptr_t)1<<(63-(offsetof(core::Cons_O,_Car)/8)))|((uintptr_t)1<<(63-(offsetof(core::Cons_O,_Cdr)/8)));
   if (cons_bitmap != local_stamp_layout[cons_stamp].class_field_pointer_bitmap) {
     printf("%s:%d The cons stamp %lu cons_bitmap = 0x%lX  and it doesn't match   local_stamp_layout[cons_stamp].class_field_pointer_bitmap = 0x%lX\n", __FILE__, __LINE__, cons_stamp, cons_bitmap, local_stamp_layout[cons_stamp].class_field_pointer_bitmap);
@@ -412,13 +412,13 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
       printf("%s:%d --------------------------------------\n", __FILE__, __LINE__ );
       printf("%s:%d calculate boehm header cur_stamp = %d  layout_op %d  %s  \n", __FILE__, __LINE__, cur_stamp, local_stamp_layout[cur_stamp].layout_op, local_stamp_info[cur_stamp].name);
 #endif
-      if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Lisp_O) ) {
+      if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Lisp_O) ) {
         local_stamp_layout[cur_stamp].boehm._kind = global_lisp_kind;
         local_stamp_layout[cur_stamp].boehm._kind_defined = true;
-      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_llvmo__Code_O) ) {
+      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_llvmo__Code_O) ) {
         local_stamp_layout[cur_stamp].boehm._kind = global_code_kind;
         local_stamp_layout[cur_stamp].boehm._kind_defined = true;
-      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMP_core__Cons_O) ) {
+      } else if (cur_stamp == STAMP_UNSHIFT_MTAG(STAMPWTAG_core__Cons_O) ) {
         local_stamp_layout[cur_stamp].boehm._kind = global_cons_kind;
 #ifdef DUMP_PRECISE_CALC
         printf("%s:%d   cons_bitmap = 0x%lx global_cons_kind = %d  address = %p\n", __FILE__, __LINE__, cons_bitmap, global_cons_kind, &global_cons_kind );

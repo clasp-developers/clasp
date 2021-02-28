@@ -444,7 +444,7 @@ namespace gctools {
   global_NextBuiltInStamp starts at STAMP_max+1
   so that it doesn't use any stamps that correspond to KIND values
    assigned by the static analyzer. */
-std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(STAMP_max+1));
+std::atomic<UnshiftedStamp>   global_NextUnshiftedStamp = ATOMIC_VAR_INIT(Header_s::StampWtagMtag::first_NextUnshiftedStamp(STAMPWTAG_max+1));
 
 void OutOfStamps() {
   printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, (uintptr_t)Header_s::largest_possible_stamp );
@@ -455,7 +455,7 @@ void OutOfStamps() {
 const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
-stamp_t global_next_header_stamp = (stamp_t)STAMP_max+1;
+stamp_t global_next_header_stamp = (stamp_t)STAMPWTAG_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;

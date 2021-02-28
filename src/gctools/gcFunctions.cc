@@ -130,7 +130,7 @@ CL_DEFUN double gctools__discriminating_function_compilation_seconds() {
 namespace gctools {
 
 
-size_t global_next_unused_kind = STAMP_max+1;
+size_t global_next_unused_kind = STAMPWTAG_max+1;
 
 /*! Hardcode a few kinds of objects for bootstrapping
  */
@@ -261,20 +261,20 @@ CL_DEFUN core::T_mv gctools__tagged_pointer_mps_test()
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {
-    return gctools::STAMP_CONS;
+    return gctools::STAMPWTAG_CONS;
   } else if (obj.fixnump()) {
-    return gctools::STAMP_FIXNUM;
+    return gctools::STAMPWTAG_FIXNUM;
   } else if (obj.generalp()) {
     void *mostDerived = gctools::untag_general<void *>(obj.raw_());
     const gctools::Header_s *header = reinterpret_cast<const gctools::Header_s *>(gctools::GeneralPtrToHeaderPtr(mostDerived));
     gctools::GCStampEnum stamp = header->_stamp_wtag_mtag.stamp_();
     return (Fixnum)stamp;
   } else if (obj.single_floatp()) {
-    return gctools::STAMP_SINGLE_FLOAT;
+    return gctools::STAMPWTAG_SINGLE_FLOAT;
   } else if (obj.characterp()) {
-    return gctools::STAMP_CHARACTER;
+    return gctools::STAMPWTAG_CHARACTER;
   } else if (obj.valistp()) {
-    return gctools::STAMP_VA_LIST_S;
+    return gctools::STAMPWTAG_VA_LIST_S;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   SIMPLE_ERROR(BF("The object %s doesn't have a stamp") % _rep_(obj));
@@ -334,7 +334,7 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj)
 #ifdef USE_BOEHM
 
 struct ReachableClass {
-  ReachableClass() : _Kind(gctools::STAMP_null){};
+  ReachableClass() : _Kind(gctools::STAMPWTAG_null){};
   ReachableClass(gctools::GCStampEnum tn) : _Kind(tn), instances(0), totalSize(0) {}
   void update(size_t sz) {
     ++this->instances;
@@ -346,7 +346,7 @@ struct ReachableClass {
   size_t print(const std::string &shortName) {
     core::Fixnum k = this->_Kind;
     stringstream className;
-    if (k <= gctools::STAMP_max) {
+    if (k <= gctools::STAMPWTAG_max) {
 //      printf("%s:%d searching for name for this->_Kind: %u\n", __FILE__, __LINE__, this->_Kind);
       const char* nm = obj_name(k);
       if (!nm) {
@@ -381,7 +381,7 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
   gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==sizeof(core::Cons_O)) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
 //      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
       stamp = (gctools::GCStampEnum)0; // unknown uses 0
@@ -396,7 +396,7 @@ void boehm_callback_reachable_object(void *ptr, size_t sz, void *client_data) {
     it->second.update(sz);
   }
 #if 0
-  if (stamp==(gctools::GCStampEnum)(gctools::STAMP_core__Symbol_O>>gctools::Header_s::wtag_width)) {
+  if (stamp==(gctools::GCStampEnum)(gctools::STAMPWTAG_core__Symbol_O>>gctools::Header_s::wtag_width)) {
     core::Symbol_O* sym = (core::Symbol_O*)ptr;
     printf("%s:%d symbol %s\n", __FILE__, __LINE__, sym->formattedName(true).c_str());
   }
@@ -415,7 +415,7 @@ void boehm_callback_reachable_object_find_stamps(void *ptr, size_t sz, void *cli
   gctools::GCStampEnum stamp = h->_stamp_wtag_mtag.stamp_();
   if (!valid_stamp(stamp)) {
     if (sz==32) {
-      stamp = (gctools::GCStampEnum)(gctools::STAMP_core__Cons_O>>gctools::Header_s::wtag_width);
+      stamp = (gctools::GCStampEnum)(gctools::STAMPWTAG_core__Cons_O>>gctools::Header_s::wtag_width);
 //      printf("%s:%d cons stamp address: %p sz: %lu stamp: %lu\n", __FILE__, __LINE__, (void*)h, sz, stamp);
     } else {
       stamp = (gctools::GCStampEnum)0; // unknown uses 0

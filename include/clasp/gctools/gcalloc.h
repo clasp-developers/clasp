@@ -152,7 +152,7 @@ template <typename Cons, typename...ARGS>
 inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
 { RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
-  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMP_CONS),cons_size,global_cons_kind,&global_cons_kind));
+  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),cons_size,global_cons_kind,&global_cons_kind));
 # ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
 # endif
@@ -290,7 +290,7 @@ template <typename Cons>
 struct ConsSizeCalculator<Cons,DoRegister> {
   static inline size_t value() {
     size_t size = ConsSizeCalculator<Cons,DontRegister>::value();
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_CONS,size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS,size);
     return size;
   }
 };
@@ -309,7 +309,7 @@ smart_ptr<ConsType> do_cons_mps_allocation(mps_ap_t& allocation_point,
                                            ARGS &&... args) {
   gc::smart_ptr<ConsType> tagged_obj;
   { RAII_DISABLE_INTERRUPTS();
-    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_CONS);
+    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMPWTAG_CONS);
     // printf("%s:%d cons_mps_allocation\n", __FILE__, __LINE__ );
     mps_addr_t addr;
     ConsType* cons;
@@ -423,7 +423,7 @@ inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size,
   mps_addr_t addr;
   T* obj;
   { RAII_DISABLE_INTERRUPTS();
-    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMP_UNUSED);
+    RAII_DEBUG_RECURSIVE_ALLOCATIONS((size_t)STAMPWTAG_UNUSED);
     allocate_size = AlignUp(allocate_size);
     do {
       mps_res_t res = mps_reserve(&addr, allocation_point, allocate_size);
@@ -437,7 +437,7 @@ inline PTR_TYPE do_mps_weak_allocation(size_t allocate_size,
       tagged_obj = PTR_TYPE(obj);
     } while (!mps_commit(allocation_point, addr, allocate_size));
     MAYBE_VERIFY_ALIGNMENT((void*)addr);
-    my_thread_low_level->_Allocations.registerAllocation(STAMP_null,allocate_size);
+    my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_null,allocate_size);
   }
 #ifdef DEBUG_MPS_SIZE
   {
@@ -572,7 +572,7 @@ struct ConsAllocator {
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
-    Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMP_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
+    Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
 # else
     printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif

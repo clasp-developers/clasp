@@ -146,7 +146,7 @@ CL_DEFUN List_sp cl__make_list(Fixnum_sp osize, T_sp initial_element) {
       result = gctools::ConsAllocator<Cons_O,gctools::DontRegister>::allocate(initial_element,result);
     }
     size_t cons_size = gctools::ConsSizeCalculator<Cons_O,gctools::DontRegister>::value();
-    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMP_CONS,size*cons_size);
+    my_thread_low_level->_Allocations.registerAllocation(gctools::STAMPWTAG_CONS,size*cons_size);
     return result;
   }
 };

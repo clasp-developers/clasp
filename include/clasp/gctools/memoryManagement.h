@@ -157,12 +157,12 @@ namespace gctools {
 
 
   
-#define STAMP_DUMMY_FOR_CPOINTER 0
+#define STAMPWTAG_DUMMY_FOR_CPOINTER 0
     typedef enum {
 #if !defined(SCRAPING)
  #if !defined(USE_PRECISE_GC)
   #define GC_ENUM
-        STAMP_null = 0,
+        STAMPWTAG_null = 0,
    #include INIT_CLASSES_INC_H // REPLACED CLASP_GC_FILENAME
   #undef GC_ENUM
  #else
@@ -171,18 +171,18 @@ namespace gctools {
   #undef GC_STAMP
  #endif
 #endif
-        STAMP_VA_LIST_S = STAMP_core__VaList_dummy_O, 
-        STAMP_CONS = STAMP_core__Cons_O, 
-        STAMP_CHARACTER = STAMP_core__Character_dummy_O, 
-        STAMP_UNUSED = STAMP_core__Unused_dummy_O, 
-        STAMP_CPOINTER = STAMP_DUMMY_FOR_CPOINTER,
-        STAMP_SINGLE_FLOAT = STAMP_core__SingleFloat_dummy_O, 
-        STAMP_FIXNUM = STAMP_core__Fixnum_dummy_O,
-        STAMP_INSTANCE = STAMP_core__Instance_O,
-        STAMP_FUNCALLABLE_INSTANCE = STAMP_core__FuncallableInstance_O,
-        STAMP_WRAPPED_POINTER = STAMP_core__WrappedPointer_O,
-        STAMP_DERIVABLE = STAMP_core__DerivableCxxObject_O,
-        STAMP_CLASS_REP = STAMP_clbind__ClassRep_O
+        STAMPWTAG_VA_LIST_S = STAMPWTAG_core__VaList_dummy_O, 
+        STAMPWTAG_CONS = STAMPWTAG_core__Cons_O, 
+        STAMPWTAG_CHARACTER = STAMPWTAG_core__Character_dummy_O, 
+        STAMPWTAG_UNUSED = STAMPWTAG_core__Unused_dummy_O, 
+        STAMPWTAG_CPOINTER = STAMPWTAG_DUMMY_FOR_CPOINTER,
+        STAMPWTAG_SINGLE_FLOAT = STAMPWTAG_core__SingleFloat_dummy_O, 
+        STAMPWTAG_FIXNUM = STAMPWTAG_core__Fixnum_dummy_O,
+        STAMPWTAG_INSTANCE = STAMPWTAG_core__Instance_O,
+        STAMPWTAG_FUNCALLABLE_INSTANCE = STAMPWTAG_core__FuncallableInstance_O,
+        STAMPWTAG_WRAPPED_POINTER = STAMPWTAG_core__WrappedPointer_O,
+        STAMPWTAG_DERIVABLE = STAMPWTAG_core__DerivableCxxObject_O,
+        STAMPWTAG_CLASS_REP = STAMPWTAG_clbind__ClassRep_O
     } GCStampEnum;
 
 // These different positions represent tag tests in the dtree interpreter and
@@ -373,7 +373,7 @@ namespace gctools {
       }
       uintptr_t stamp() const { return this->_value>>(wtag_width+general_mtag_width); };
       static bool is_unshifted_stamp(uint64_t unknown) {
-        size_t sm = STAMP_max;
+        size_t sm = STAMPWTAG_max;
         // This is the only test that makes sense.
         if (is_header_stamp(unknown) && unknown <= sm) return true;
         // Otherwise it's an assigned stamp and it must be in the range below.
@@ -387,17 +387,17 @@ namespace gctools {
         if ((unknown&general_mtag_mask)!=general_mtag) return false;
         uint64_t stamp = unshift_shifted_stamp(unknown);
         if ((unknown&where_mask)==header_wtag) {
-          return (stamp<=STAMP_max);
+          return (stamp<=STAMPWTAG_max);
         }
         if ((unknown&where_mask)==rack_wtag) {
-          return (stamp == STAMP_core__Instance_O ||
-                  stamp == STAMP_core__FuncallableInstance_O ||
-                  stamp == STAMP_clbind__ClassRep_O);
+          return (stamp == STAMPWTAG_core__Instance_O ||
+                  stamp == STAMPWTAG_core__FuncallableInstance_O ||
+                  stamp == STAMPWTAG_clbind__ClassRep_O);
         }
         if ((unknown&where_mask)==wrapped_wtag) {
-          return (stamp == STAMP_core__WrappedPointer_O);
+          return (stamp == STAMPWTAG_core__WrappedPointer_O);
         }
-        return (stamp == STAMP_core__DerivableCxxObject_O);
+        return (stamp == STAMPWTAG_core__DerivableCxxObject_O);
       }
       static bool is_rack_shifted_stamp(uint64_t header_word) {
         return ((header_word&general_mtag_mask)==general_mtag)&&((header_word&where_mask)==rack_wtag); // Low two bits must be zero
@@ -438,17 +438,17 @@ namespace gctools {
       template <typename T>
       static StampWtagMtag make()
       {
-        StampWtagMtag v(GCStamp<T>::Stamp);
+        StampWtagMtag v(GCStamp<T>::StampWtag);
         return v;
       }
       static StampWtagMtag make_instance()
       {
-        StampWtagMtag v(STAMP_INSTANCE);
+        StampWtagMtag v(STAMPWTAG_INSTANCE);
         return v;
       }
       static StampWtagMtag make_funcallable_instance()
       {
-        StampWtagMtag v(STAMP_FUNCALLABLE_INSTANCE);
+        StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
         return v;
       }
       static StampWtagMtag make_unknown(UnshiftedStamp the_stamp)
@@ -488,7 +488,7 @@ namespace gctools {
     public:
       // GenerateHeaderValue must be passed to make_fixnum and the result exactly matches a header value
       template <typename T>
-      static int64_t GenerateHeaderValue() { return (int64_t)GCStamp<T>::Stamp; };
+      static int64_t GenerateHeaderValue() { return (int64_t)GCStamp<T>::StampWtag; };
     public: // header readers
       inline UnshiftedStamp unshifted_stamp() const {
         //        printf("%s:%d  unshifted_stamp() this->_value -> %lu\n", __FILE__, __LINE__, this->_value);
@@ -656,17 +656,17 @@ namespace gctools {
      must be unique system-wide.  They are used for generic function dispatch.
   */
 
-  /*! global_NextBuiltInStamp starts at STAMP_max+1
+  /*! global_NextBuiltInStamp starts at STAMPWTAG_max+1
       See definition in memoryManagement.cc
       This is so that it doesn't use any stamps that were set by the static analyzer. */
   extern std::atomic<UnshiftedStamp> global_NextUnshiftedStamp;
   /*! Return a new stamp for BuiltIn classes.
-      If given != STAMP_null then simply return give as the stamp.
+      If given != STAMPWTAG_null then simply return give as the stamp.
       Otherwise return the global_NextBuiltInStamp and advance it
       to the next one */
   void OutOfStamps();
-inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STAMP_null) {
-    if ( given != STAMP_null ) {
+inline ShiftedStamp NextStampWtag(ShiftedStamp where, UnshiftedStamp given = STAMPWTAG_null) {
+    if ( given != STAMPWTAG_null ) {
       return Header_s::StampWtagMtag::shift_unshifted_stamp(given)|where;
     }
     UnshiftedStamp stamp = global_NextUnshiftedStamp.fetch_add(1<<Header_s::wtag_width);
@@ -875,7 +875,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-      static GCStampEnum const Stamp = STAMP_null;
+      static GCStampEnum const Stamp = STAMPWTAG_null;
     };
 };
 

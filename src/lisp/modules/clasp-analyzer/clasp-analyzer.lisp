@@ -2335,7 +2335,7 @@ so that they don't have to be constantly recalculated"
     (if exists
         exists
         (let* ((key (stamp-key stamp))
-               (prefix "STAMP_")
+               (prefix "STAMPWTAG_")
                (raw-name (concatenate 'base-string prefix (copy-seq key)))
                (name (nsubstitute-if #\_ (lambda (c) (not (alphanumericp c))) raw-name)))
           (setf (gethash stamp *stamp-names*) name)
@@ -3502,9 +3502,9 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 (defun generate-alloc-stamp (&optional (fout t) (analysis *analysis*))
   (let ((maxstamp 0))
-    (format fout "STAMP_null = ADJUST_STAMP(0), ~%")
+    (format fout "STAMPWTAG_null = ADJUST_STAMP(0), ~%")
     #+(or)(let ((hardwired-kinds (core:hardwired-kinds)))
-            (mapc (lambda (kv) (format fout "STAMP_~a = ADJUST_STAMP(~a), ~%" (car kv) (cdr kv))) hardwired-kinds))
+            (mapc (lambda (kv) (format fout "STAMPWTAG_~a = ADJUST_STAMP(~a), ~%" (car kv) (cdr kv))) hardwired-kinds))
     (mapc (lambda (stamp)
             (format fout "~A = ADJUST_STAMP(~A), // Stamp(~a)  wtag(~a)~%"
                     (get-stamp-name stamp)
@@ -3525,11 +3525,11 @@ Recursively analyze x and return T if x contains fixable pointers."
     (maphash (lambda (stamp-name value)
                (format fout "// Unused ~a = ~a, ~%" stamp-name value))
              (unused-builtin-stamps (analysis-stamp-value-generator analysis)))
-    (format fout "  STAMP_max = ~a,~%" maxstamp)
+    (format fout "  STAMPWTAG_max = ~a,~%" maxstamp)
     (format fout "~%" )))
 
 (defun generate-register-stamp-names (&optional (fout t) (analysis *analysis*))
-  (format fout "register_stamp_name(\"STAMP_null\",0); ~%")
+  (format fout "register_stamp_name(\"STAMPWTAG_null\",0); ~%")
   (mapc (lambda (stamp)
           (format fout "register_stamp_name(\"~A\", ADJUST_STAMP(~A));~%" (get-stamp-name stamp) (stamp-value% stamp)))
         (analysis-sorted-stamps analysis))

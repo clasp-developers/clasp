@@ -229,10 +229,10 @@ SYMBOL_EXPORT_SC_(KeywordPkg, cons_tag);
 
 CL_DEFUN core::T_sp llvm_sys__tag_tests() {
   ql::list l;
-  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMP_FIXNUM),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
-  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMP_SINGLE_FLOAT),core::make_fixnum(SINGLE_FLOAT_TEST), core::_sym_single_float_p);
-  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMP_CHARACTER),core::make_fixnum(CHARACTER_TEST), ::cl::_sym_characterp);
-  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMP_CONS),core::make_fixnum(CONS_TEST), ::cl::_sym_consp);
+  l << core::Cons_O::createList(kw::_sym_fixnum_tag,core::make_fixnum(gctools::STAMPWTAG_FIXNUM),core::make_fixnum(FIXNUM_TEST),core::_sym_fixnump);
+  l << core::Cons_O::createList(kw::_sym_single_float_tag,core::make_fixnum(gctools::STAMPWTAG_SINGLE_FLOAT),core::make_fixnum(SINGLE_FLOAT_TEST), core::_sym_single_float_p);
+  l << core::Cons_O::createList(kw::_sym_character_tag,core::make_fixnum(gctools::STAMPWTAG_CHARACTER),core::make_fixnum(CHARACTER_TEST), ::cl::_sym_characterp);
+  l << core::Cons_O::createList(kw::_sym_cons_tag,core::make_fixnum(gctools::STAMPWTAG_CONS),core::make_fixnum(CONS_TEST), ::cl::_sym_consp);
   return l.cons();
 }
 
@@ -307,11 +307,11 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
   ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   ENTRY(list, "OPTIMIZED-SLOT-INDEX-INDEX", make_fixnum(OPTIMIZED_SLOT_INDEX_INDEX));
-  ENTRY(list, "CLASS-REP-STAMP", make_fixnum(gctools::STAMP_CLASS_REP));
-  ENTRY(list, "UNUSED-STAMP", make_fixnum(gctools::STAMP_UNUSED));
-  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMP_FIXNUM));
+  ENTRY(list, "CLASS-REP-STAMP", make_fixnum(gctools::STAMPWTAG_CLASS_REP));
+  ENTRY(list, "UNUSED-STAMP", make_fixnum(gctools::STAMPWTAG_UNUSED));
+  ENTRY(list, "FIXNUM-STAMP", make_fixnum(gctools::STAMPWTAG_FIXNUM));
   ENTRY(list, "FIXNUM-SHIFT", make_fixnum(gctools::fixnum_shift));
-  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMP_max));
+  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
   ENTRY(list, "WHERE-TAG-MASK", make_fixnum(gctools::Header_s::where_mask));
   ENTRY(list, "DERIVABLE-WHERE-TAG", make_fixnum(gctools::Header_s::derivable_wtag));
   ENTRY(list, "RACK-WHERE-TAG", make_fixnum(gctools::Header_s::rack_wtag));
@@ -319,19 +319,19 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "HEADER-WHERE-TAG", make_fixnum(gctools::Header_s::header_wtag));
   ENTRY(list, "WHERE-TAG-WIDTH", make_fixnum(gctools::Header_s::where_tag_width));
   ENTRY(list, "STAMP-MASK", make_fixnum(gctools::Header_s::stamp_mask));
-  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMP_max));
-  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMP_CONS));
-  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::STAMP_VA_LIST_S));
-  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMP_CHARACTER));
-  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::STAMP_SINGLE_FLOAT)); 
+  ENTRY(list, "C++-STAMP-MAX", make_fixnum(gctools::STAMPWTAG_max));
+  ENTRY(list, "CONS-STAMP", make_fixnum(gctools::STAMPWTAG_CONS));
+  ENTRY(list, "VA_LIST_S-STAMP", make_fixnum(gctools::STAMPWTAG_VA_LIST_S));
+  ENTRY(list, "CHARACTER-STAMP", make_fixnum(gctools::STAMPWTAG_CHARACTER));
+  ENTRY(list, "SINGLE-FLOAT-STAMP", make_fixnum(gctools::STAMPWTAG_SINGLE_FLOAT)); 
   ENTRY(list, "INSTANCE-RACK-OFFSET", make_fixnum(offsetof(Instance_O,_Rack)));
   ENTRY(list, "INSTANCE-RACK-STAMP-OFFSET", make_fixnum(Instance_O::rack_stamp_offset()));
-  ENTRY(list, "INSTANCE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_INSTANCE)));
-  ENTRY(list, "WRAPPED-POINTER-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_WRAPPED_POINTER)));
-  ENTRY(list, "DERIVABLE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_DERIVABLE)));
-  ENTRY(list, "FUNCALLABLE-INSTANCE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMP_FUNCALLABLE_INSTANCE)));
+  ENTRY(list, "INSTANCE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_INSTANCE)));
+  ENTRY(list, "WRAPPED-POINTER-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_WRAPPED_POINTER)));
+  ENTRY(list, "DERIVABLE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_DERIVABLE)));
+  ENTRY(list, "FUNCALLABLE-INSTANCE-STAMP", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_FUNCALLABLE_INSTANCE)));
   ENTRY(list, "LITERAL-TAG-CHAR-CODE", make_fixnum(static_cast<Fixnum>(LITERAL_TAG_CHAR)));
-//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMP_CLASS)));
+//  ENTRY(list, "CLASS-KIND", make_fixnum(static_cast<Fixnum>(gctools::STAMPWTAG_CLASS)));
   ENTRY(list, "SIMPLE-VECTOR._DATA-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_Data)));
   ENTRY(list, "SIMPLE-VECTOR._LENGTH-OFFSET",make_fixnum(offsetof(SimpleVector_O,_Data)+offsetof(SimpleVector_O::vector_type,_MaybeSignedLength)));
   return list;

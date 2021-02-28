@@ -11,28 +11,28 @@ core::T_O* template_read_stamp(TTT* obj)
   case FIXNUM2_TAG:
   case FIXNUM3_TAG:
 #endif
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_FIXNUM);
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_FIXNUM);
   case GENERAL_TAG: {
   // do more stuff to get the stamp
     core::General_O* client_ptr = reinterpret_cast<core::General_O*>(gctools::untag_general<TTT*>(obj));
     const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s *>(GeneralPtrToHeaderPtr(client_ptr));
     uint64_t stamp = header.shifted_stamp();
     ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(stamp));
-    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMP_core__Instance_O)));
-    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMP_core__FuncallableInstance_O)));
-    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMP_clbind__ClassRep_O)));
-    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMP_core__WrappedPointer_O)));
-    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMP_core__DerivableCxxObject_O)));
-    if (stamp == DO_SHIFT_STAMP(gctools::STAMP_core__Instance_O) ||
-        stamp == DO_SHIFT_STAMP(gctools::STAMP_core__FuncallableInstance_O) ||
-        stamp == DO_SHIFT_STAMP(gctools::STAMP_clbind__ClassRep_O)) {
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Instance_O)));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_core__FuncallableInstance_O)));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_clbind__ClassRep_O)));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_core__WrappedPointer_O)));
+    ASSERT(gctools::Header_s::StampWtagMtag::is_shifted_stamp(DO_SHIFT_STAMP(gctools::STAMPWTAG_core__DerivableCxxObject_O)));
+    if (stamp == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Instance_O) ||
+        stamp == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__FuncallableInstance_O) ||
+        stamp == DO_SHIFT_STAMP(gctools::STAMPWTAG_clbind__ClassRep_O)) {
       core::Instance_O* instance_ptr = reinterpret_cast<core::Instance_O*>(client_ptr);
       core::Rack_O* rack = reinterpret_cast<core::Rack_O*>(gctools::untag_general<core::T_O*>(instance_ptr->rack().raw_()));
       return (core::T_O*)rack->_ShiftedStamp;
-    } else if ( stamp == DO_SHIFT_STAMP(gctools::STAMP_core__WrappedPointer_O) ) {
+    } else if ( stamp == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__WrappedPointer_O) ) {
       core::WrappedPointer_O* wrapped_ptr = reinterpret_cast<core::WrappedPointer_O*>(client_ptr);
       return (core::T_O*)wrapped_ptr->ShiftedStamp_;
-    } else if ( stamp == DO_SHIFT_STAMP(gctools::STAMP_core__DerivableCxxObject_O) ) {
+    } else if ( stamp == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__DerivableCxxObject_O) ) {
       core::DerivableCxxObject_O* derivable_cxx_object_ptr = reinterpret_cast<core::DerivableCxxObject_O*>(client_ptr);
       return (core::T_O*)derivable_cxx_object_ptr->get_stamp_();
     } else {
@@ -40,20 +40,20 @@ core::T_O* template_read_stamp(TTT* obj)
     }
   }
   case CHARACTER_TAG:
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_CHARACTER));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_CHARACTER);
+      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_CHARACTER));
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_CHARACTER);
   case CONS_TAG:
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_CONS));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_CONS);
+      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_CONS));
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_CONS);
   case VASLIST0_TAG:
 #if TAG_BITS==4
   case VASLIST1_TAG:
 #endif
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_VA_LIST_S));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_VA_LIST_S);
+      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_VA_LIST_S));
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_VA_LIST_S);
   case SINGLE_FLOAT_TAG:
-      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMP_SINGLE_FLOAT));
-      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMP_SINGLE_FLOAT);
+      ASSERT(gctools::Header_s::StampWtagMtag::is_unshifted_stamp(gctools::STAMPWTAG_SINGLE_FLOAT));
+      return (core::T_O*)DO_SHIFT_STAMP(gctools::STAMPWTAG_SINGLE_FLOAT);
   }
   unreachableError();
   return (core::T_O*)0;
