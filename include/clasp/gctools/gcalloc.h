@@ -149,19 +149,18 @@ namespace gctools {
 #ifdef USE_BOEHM
 
 template <typename Cons, typename...ARGS>
-inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
+inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 { RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
-  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),cons_size,global_cons_kind,&global_cons_kind));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
 # ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
 # endif
 #else
-  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(cons_size));
+  Header_s::StampWtagMtag* header = reinterpret_cast<Header_s::StampWtagMtag*>(ALIGNED_GC_MALLOC(size));
 #endif
-#ifdef DEBUG_CONS_ALLOC
-  printf("%s:%d:%s cons@%p sizeof alloc = %lu\n", __FILE__, __LINE__, __FUNCTION__, cons, cons_size );
-#endif
+  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
+  new (header) Header_s::StampWtagMtag(cons);
   new (cons) Cons(std::forward<ARGS>(args)...);
   return cons;
 }
@@ -280,8 +279,8 @@ class DoRegister {};
 template <typename Cons,typename Register=DontRegister>
 struct ConsSizeCalculator {
   static inline size_t value() {
-    static_assert(AlignUp(sizeof(Cons)) == 24);
-    size_t size = AlignUp(sizeof(Cons));
+    static_assert(AlignUp(sizeof(Cons)+SizeofConsHeader()) == 24);
+    size_t size = AlignUp(sizeof(Cons)+SizeofConsHeader());
     return size;
   }
 };
@@ -572,11 +571,13 @@ struct ConsAllocator {
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
-    Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
+    header->_stamp_wtag_mtag = header;
 # else
     printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif
-    new (cons) Cons(header,car,cdr);
+    Cons* cons = HeaderPtrToConsPtr(header);
+    new (cons) Cons(car,cdr);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 #endif

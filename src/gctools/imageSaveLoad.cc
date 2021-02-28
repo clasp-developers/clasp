@@ -420,6 +420,7 @@ struct ISLHeader_s {
 struct ISLEndHeader_s : public ISLHeader_s {
   ISLEndHeader_s(ISLKind k) : ISLHeader_s(k,0) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)); };
+  virtual gctools::Header_s* header() const {printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCION__ ); abort(); };
 };
 
 
@@ -429,20 +430,24 @@ struct ISLRootHeader_s : public ISLHeader_s {
 };
   
 struct ISLConsHeader_s : public ISLHeader_s {
-  ISLConsHeader_s(ISLKind k, size_t s) : ISLHeader_s(k,s) {};
+  gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
+  ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,s), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
+  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag));
 };
 
 struct ISLWeakHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLWeakHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,sz), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
+  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLWeakHeader_s,_stamp_wtag_mtag));
 };
 
 struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,sz), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
+  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLGeneralHeader_s,_stamp_wtag_mtag));
 };
 
 struct ISLLibraryHeader_s : public ISLHeader_s {
@@ -502,14 +507,14 @@ struct calculate_size_t : public walker_callback_t {
               % objectSize % delta );
       this->_total_size += sizeof(ISLGeneralHeader_s) + objectSize;
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)header;
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       DBG_SL1(BF("   cons header@%p -> %p\n") % header % *(void**)header );
       this->_cons_count++;
       size_t consSize;
       isl_cons_skip(client,consSize);
       this->_total_size += sizeof(ISLConsHeader_s) + consSize;
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)((char*)header+sizeof(gctools::Header_s::StampWtagMtag));
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToWeakPtr(header);
       this->_weak_count++;
       DBG_SL1(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
       size_t objectSize;
@@ -581,7 +586,7 @@ struct copy_objects_t : public walker_callback_t {
       header->_stamp_wtag_mtag.setFwdPointer( new_addr ); // This is a client pointer
       DBG_SL_FWD(BF("setFwdPointer general header %p new_addr -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_addr % (void*)header->_stamp_wtag_mtag.fwdPointer() );
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)header;
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
       size_t bytes = isl_cons_skip(client,consSize) - client;
       if (consSize==0) ISL_ERROR(BF("A zero size cons at %p was encountered") % (void*)client );
@@ -594,7 +599,7 @@ struct copy_objects_t : public walker_callback_t {
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)((char*)header+sizeof(gctools::Header_s::StampWtagMtag));
+      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HeaderPtrToWeakPtr(header);
       size_t weakSize;
       gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart,false,weakSize);
       if (weakSize==0) ISL_ERROR(BF("A zero size weak object at %p was encountered") % (void*)clientStart );
@@ -620,13 +625,13 @@ void walk_image_save_load_objects( ISLHeader_s* cur, Walker& walker) {
     DBG_SL_WALK(BF("walk: %p 0x%lx\n") % (void*)cur % cur->_Kind );
     if (cur->_Kind == Object) {
       ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)cur;
-      gctools::Header_s* header = (gctools::Header_s*)((char*)cur + offsetof(ISLGeneralHeader_s,_stamp_wtag_mtag));
+      gctools::Header_s* header = generalCur->header();
       DBG_SL_WALK(BF("general header: %p %s  next: %p\n") % header % header->description() % (void*)generalCur->next() );
       walker.callback(header);
       cur = generalCur->next();
     } else if (cur->_Kind == Cons) {
       ISLConsHeader_s* consCur = (ISLConsHeader_s*)cur;
-      gctools::Header_s* header = (gctools::Header_s*)((char*)cur + sizeof(ISLConsHeader_s));
+      gctools::Header_s* header = consCur->header();
       DBG_SL_WALK(BF("cons header: %p %s  next: %p\n") % header % header->description() % (void*)consCur->next() );
       walker.callback(header);
       cur = consCur->next();
@@ -674,12 +679,12 @@ struct fixup_objects_t : public walker_callback_t {
         // Handle other kinds of code objects
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)header;
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       size_t consSkip;
-      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)header,consSkip);
+      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
       isl_cons_scan( 0, client, client_limit );
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)((char*)header+sizeof(gctools::Header_s::StampWtagMtag));
+      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)gctools::HeaderPtrToWeakPtr(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
       isl_weak_scan( 0, clientStart, client_limit );
@@ -989,9 +994,9 @@ struct relocate_objects_t : public walker_callback_t {
       gctools::clasp_ptr_t client_limit = isl_obj_skip(client,false,objectSize);
       isl_obj_scan( 0, client, client_limit );
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)header;
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
-      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)header,consSize);
+      gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSize);
       isl_cons_scan( 0, client, client_limit );
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
@@ -1153,7 +1158,7 @@ int image_load(const std::string& filename )
       } else if (cur_header->_Kind == Cons ) {
         ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
         next_header = consHeader->next();
-        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(cur_header+1);
+        gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
         gctools::Header_s* header = (gctools::Header_s*)clientStart;
         core::Cons_O* cons = (core::Cons_O*)clientStart;

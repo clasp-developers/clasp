@@ -862,10 +862,26 @@ inline constexpr size_t SizeofWeakHeader() { return sizeof(Header_s::StampWtagMt
 
 inline void*HeaderPtrToWeakPtr(void *header) {
   void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
+  return ptr;
+}
+
+inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
+  inline const void *ConsPtrToHeaderPtr(const void *client) {
+    const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
     return ptr;
   }
-};
 
+  inline void *ConsPtrToHeaderPtr(void *client) {
+    void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
+    return ptr;
+  }
+
+inline void* HeaderPtrToConsPtr(void *header) {
+  void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());
+  return ptr;
+}
+
+};
 
 
 #if  defined(USE_BOEHM)
