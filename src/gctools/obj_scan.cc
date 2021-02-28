@@ -57,7 +57,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
 #endif
         gctools::GCStampEnum stamp_wtag = header._stamp_wtag_mtag.stamp_wtag();
         const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-        if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMP_core__DerivableCxxObject_O ) ) {
+        if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O ) ) {
           // If this is true then I think we need to call virtual functions on the client
           // to determine the Instance_O offset and the total size of the object.
           printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
@@ -69,7 +69,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
         }
         if ( stamp_layout.field_layout_start ) {
           // Handle Lisp_O object specially because it's bitmask will be too large
-          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMP_core__Lisp_O) ) {
+          if ( stamp_index == STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_core__Lisp_O) ) {
             int num_fields = stamp_layout.number_of_fields;
             const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
             for ( int i=0; i<num_fields; ++i ) {
@@ -113,7 +113,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
           size_t capacity = std::abs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
           size = stamp_layout.element_size*capacity + stamp_layout.data_offset;
-          if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) size = size + 1; // Add \0 for SimpleBaseString
+          if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) size = size + 1; // Add \0 for SimpleBaseString
           size_t end = *(size_t*)((const char*)client + stamp_layout.end_offset);
 #if 1
           // Use new way with pointer bitmaps
@@ -262,7 +262,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       LOG(BF("stamp_wtag = %lu stamp_index=%lu\n") % (size_t)stamp_wtag % stamp_index);
     }
 #endif
-    if ( stamp_wtag == gctools::STAMP_core__DerivableCxxObject_O ) {
+    if ( stamp_wtag == gctools::STAMPWTAG_core__DerivableCxxObject_O ) {
 #ifdef DEBUG_ON
       if (dbg) {
         LOG(BF("DerivableCxxObject\n"));
@@ -273,7 +273,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__ );
     }
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleBitVector_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleBitVector_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("SimpleBitVector\n"));}
 #endif
@@ -282,7 +282,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       goto STAMP_CONTINUE;
         // Do other bitunit vectors here
     }
-    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_byte2_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte2_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte2_t_O"));}
 #endif
@@ -290,15 +290,15 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       obj_size = gctools::AlignUp(core::SimpleVector_byte2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_int2_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int2_t_O ) {
 #ifdef DEBUG_ON
-      if (dbg) {LOG(BF("STAMP_core__SimpleVector_int2_t_O"));}
+      if (dbg) {LOG(BF("STAMPWTAG_core__SimpleVector_int2_t_O"));}
 #endif
       size_t capacity = *(size_t*)((const char*)client + stamp_layout.capacity_offset);
       obj_size = gctools::AlignUp(core::SimpleVector_int2_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_byte4_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_byte4_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_byte4_t_O"));}
 #endif
@@ -306,7 +306,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       obj_size = gctools::AlignUp(core::SimpleVector_byte4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if ( stamp_wtag == gctools::STAMP_core__SimpleVector_int4_t_O ) {
+    unlikely_if ( stamp_wtag == gctools::STAMPWTAG_core__SimpleVector_int4_t_O ) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("STAMP_core__SimpleVector_int4_t_O"));}
 #endif
@@ -314,7 +314,7 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       obj_size = gctools::AlignUp(core::SimpleVector_int4_t_O::bitunit_array_type::sizeof_for_length(capacity) + stamp_layout.data_offset);
       goto STAMP_CONTINUE;
     }
-    unlikely_if (stamp_wtag == gctools::STAMP_core__SimpleBaseString_O) {
+    unlikely_if (stamp_wtag == gctools::STAMPWTAG_core__SimpleBaseString_O) {
 #ifdef DEBUG_ON
       if (dbg) {LOG(BF("SimpleBaseString\n"));}
 #endif
