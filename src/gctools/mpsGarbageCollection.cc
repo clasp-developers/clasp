@@ -394,22 +394,22 @@ using namespace gctools;
 
 static mps_addr_t cons_isfwd(mps_addr_t client) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-  if (cons->fwdP()) {
-    return cons->fwdPointer();
+  gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(client);
+  if (header->fwdP()) {
+    return header->fwdPointer();
   }
   return NULL;
 }
 
 static void cons_pad(mps_addr_t base, size_t size) {
 //  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
+  gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(base);
   size_t alignment = Alignment();
   assert(size >= alignment);
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(base);
   if (size == alignment) {
-    cons->setPad1();
+    header->setPad1();
   } else {
-    cons->setPad(size);
+    header->setPad(size);
   }
 }
 };
@@ -940,7 +940,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   ASSERT(CONS_HEADER_SIZE==0); // CONS cells have no header currently
   mps_fmt_t cons_fmt;
   MPS_ARGS_BEGIN(args) {
-//    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, sizeof(ConsHeader_s));
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, SizeofConsHeader() );
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
 #ifdef USE_PRECISE_GC
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, cons_scan);

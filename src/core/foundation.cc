@@ -1635,7 +1635,8 @@ size_t lisp_general_badge(General_sp object) {
 }
 
 size_t lisp_cons_badge(Cons_sp object) {
-  return (size_t)object->_stamp_wtag_mtag._header_badge;
+  const gctools::Header_s* header = (gctools::Header_s*)ConsPtrToHeaderPtr(object.unsafe_cons());
+  return header->_stamp_wtag_mtag._header_badge;
 }
 
 size_t lisp_badge(T_sp object) {
@@ -1655,8 +1656,8 @@ CL_DEFUN size_t core__get_badge(T_sp object)
 CL_DEFUN void core__set_badge(T_sp object, size_t badge)
 {
   if (object.consp()) {
-    Cons_sp cons = gc::As_unsafe<Cons_sp>(object);
-    cons->_stamp_wtag_mtag._header_badge = (gctools::Header_s::badge_t)(badge&0xffffffff);
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
+    header->_stamp_wtag_mtag._header_badge = badge;
     return;
   }
   gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));

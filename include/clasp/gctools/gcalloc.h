@@ -149,19 +149,18 @@ namespace gctools {
 #ifdef USE_BOEHM
 
 template <typename Cons, typename...ARGS>
-inline Cons* do_boehm_cons_allocation(size_t cons_size,ARGS&&... args)
+inline Cons* do_boehm_cons_allocation(size_t size,ARGS&&... args)
 { RAII_DISABLE_INTERRUPTS();
 #ifdef USE_PRECISE_GC
-  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),cons_size,global_cons_kind,&global_cons_kind));
+  Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),size,global_cons_kind,&global_cons_kind));
 # ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons );
 # endif
 #else
-  Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC(cons_size));
+  Header_s::StampWtagMtag* header = reinterpret_cast<Header_s::StampWtagMtag*>(ALIGNED_GC_MALLOC(size));
 #endif
-#ifdef DEBUG_CONS_ALLOC
-  printf("%s:%d:%s cons@%p sizeof alloc = %lu\n", __FILE__, __LINE__, __FUNCTION__, cons, cons_size );
-#endif
+  Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
+  new (header) Header_s::StampWtagMtag(cons);
   new (cons) Cons(std::forward<ARGS>(args)...);
   return cons;
 }
@@ -280,8 +279,8 @@ class DoRegister {};
 template <typename Cons,typename Register=DontRegister>
 struct ConsSizeCalculator {
   static inline size_t value() {
-    static_assert(AlignUp(sizeof(Cons)) == 24);
-    size_t size = AlignUp(sizeof(Cons));
+    static_assert(AlignUp(sizeof(Cons)+SizeofConsHeader()) == 24);
+    size_t size = AlignUp(sizeof(Cons)+SizeofConsHeader());
     return size;
   }
 };
@@ -471,7 +470,7 @@ template <class T>
 struct RootClassAllocator {
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-    return allocate_kind(Header_s::StampWtagMtag::make<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
+    return allocate_kind(Header_s::StampWtagMtag::make_Value<T>(),sizeof_with_header<T>(),std::forward<ARGS>(args)...);
   };
 
   template <class... ARGS>
@@ -572,11 +571,13 @@ struct ConsAllocator {
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
-    Cons* cons = reinterpret_cast<Cons*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),sizeof(Cons),global_cons_kind,&global_cons_kind));
+    Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
+    header->_stamp_wtag_mtag = header;
 # else
     printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif
-    new (cons) Cons(header,car,cdr);
+    Cons* cons = HeaderPtrToConsPtr(header);
+    new (cons) Cons(car,cdr);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 #endif
@@ -970,12 +971,12 @@ namespace gctools {
   public:
     template <typename... ARGS>
       static smart_pointer_type root_allocate(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
       static smart_pointer_type root_allocate_with_stamp(ARGS &&... args) {
-      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::root_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
     }
 
     template <typename... ARGS>
@@ -997,13 +998,13 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type allocate( ARGS &&... args) {
-      auto kind = OT::static_StampWtagMtag;
+      auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
       size_t size = sizeof_with_header<OT>();
       return GCObjectAllocator<OT>::allocate_kind(kind,size, std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
-      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(OT::static_StampWtagMtag);
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag));
     }
 
     /*! Allocate enough space for capacity elements, but set the length to length */
@@ -1015,8 +1016,8 @@ namespace gctools {
     static smart_pointer_type allocate_container( bool static_container_p, int64_t length, ARGS &&... args) {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
-      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
-      return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+      if (static_container_p) return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -1026,10 +1027,10 @@ namespace gctools {
       size_t capacity = length+1;
       size_t size = sizeof_container_with_header<OT>(capacity);
       if (static_container_p)
-        return GCObjectAllocator<OT>::static_allocate_kind(OT::static_StampWtagMtag, size, length,
+        return GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                            std::forward<ARGS>(args)...);
       else
-        return GCObjectAllocator<OT>::allocate_kind(OT::static_StampWtagMtag, size, length,
+        return GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                     std::forward<ARGS>(args)...);
     }
 
@@ -1044,7 +1045,7 @@ namespace gctools {
       size_t capacity = std::abs(length);
       size_t size = sizeof_container_with_header<OT>(capacity);
       size_t scanSize = sizeof_container_with_header<OT>(dataScanSize);
-      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,OT::static_StampWtagMtag,size,length,std::forward<ARGS>(args)...);
+      return GCObjectAllocator<OT>::allocate_kind_partial_scan(scanSize,Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),size,length,std::forward<ARGS>(args)...);
     }
 
 
@@ -1058,10 +1059,10 @@ namespace gctools {
 #endif
       smart_pointer_type result;
       if (static_container_p)
-        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                              std::forward<ARGS>(args)...);
       else
-        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make<OT>(),size,length,
+        result = GCObjectAllocator<OT>::allocate_kind(Header_s::StampWtagMtag::make_Value<OT>(),size,length,
                                                       std::forward<ARGS>(args)...);
 #if DEBUG_BITUNIT_CONTAINER
       {
@@ -1074,7 +1075,7 @@ namespace gctools {
     }
     
     static smart_pointer_type copy(const OT &that) {
-      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make<OT>(),sizeof_with_header<OT>(),that);
+      return GCObjectAllocator<OT>::copy_kind(Header_s::StampWtagMtag::make_Value<OT>(),sizeof_with_header<OT>(),that);
     }
 
     static void deallocate_unmanaged_instance(OT* obj) {
@@ -1114,7 +1115,7 @@ public:
 
     // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate(size_type num, const void * = 0) {
-    return allocate_kind(Header_s::StampWtagMtag::make<TY>(),num);
+    return allocate_kind(Header_s::StampWtagMtag::make_Value<TY>(),num);
   }
 
   // allocate but don't initialize num elements of type value_type

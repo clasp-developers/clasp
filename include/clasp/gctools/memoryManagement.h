@@ -354,17 +354,26 @@ namespace gctools {
     //
     struct Dummy_s{};
     struct StampWtagMtag {
+      typedef tagged_stamp_t Value;
       uintptr_t      _header_data[0];  // The 0th element overlaps StampWtagMtag values
       tagged_stamp_t _value;
       badge_t     _header_badge; /* This can NEVER be zero or the boehm mark procedures in precise mode */
                                  /* will treat it like a unused object residing on a free list          */
       StampWtagMtag() : _value(0), _header_badge(0xDEADBEEF) {};
       StampWtagMtag(core::Cons_O* cons) : _value(cons_mtag), _header_badge((badge_t)((uintptr_t)cons&0xFFFFFFFF)) {};
-      StampWtagMtag(uintptr_t all, badge_t badge, Dummy_s dummy) : _value(all) {};
-      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
-      StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)), _header_badge(core::lisp_random()) {};
+      StampWtagMtag(Value all, badge_t badge) : _value(all) {};
+//      StampWtagMtag(UnshiftedStamp stamp) : _value(shift_unshifted_stamp(stamp)), _header_badge(core::lisp_random()) {};
+      StampWtagMtag(Value stamp_wtag_mtag) : _value(stamp_wtag_mtag), _header_badge(core::lisp_random()) {
+        GCTOOLS_ASSERT((stamp_wtag_mtag & general_mtag_mask) == 0);
+      };
       StampWtagMtag(WeakKinds kind) : _value(kind), _header_badge((uintptr_t)this&0xFFFFFFFF) {};
-      // This is so we can find where we shift/unshift/don'tshift
+
+
+      // WHAT IS GOING ON
+//      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
+
+
+// This is so we can find where we shift/unshift/don'tshift
       static UnshiftedStamp leave_unshifted_stamp(UnshiftedStamp us) {
         return (us);
       }
@@ -436,11 +445,16 @@ namespace gctools {
         return ((us>>Header_s::general_mtag_shift));
       }
       template <typename T>
-      static StampWtagMtag make()
+      static StampWtagMtag::Value make_Value()
       {
-        StampWtagMtag v(GCStamp<T>::StampWtag);
-        return v;
+        return (GCStamp<T>::StampWtag << general_mtag_shift);
       }
+      static StampWtagMtag make_StampWtagMtag(Value vvv)
+      {
+        StampWtagMtag mak(vvv);
+        return mak;
+      }
+
       static StampWtagMtag make_instance()
       {
         StampWtagMtag v(STAMPWTAG_INSTANCE);
@@ -451,10 +465,9 @@ namespace gctools {
         StampWtagMtag v(STAMPWTAG_FUNCALLABLE_INSTANCE);
         return v;
       }
-      static StampWtagMtag make_unknown(UnshiftedStamp the_stamp)
+      static StampWtagMtag::Value make_unknown(UnshiftedStamp the_stamp)
       {
-        StampWtagMtag v(the_stamp);
-        return v;
+        return the_stamp << general_mtag_shift;
       }
     public:
       inline size_t mtag() const { return (size_t)(this->_value & mtag_mask);};
@@ -500,6 +513,11 @@ namespace gctools {
         return make_nowhere_stamp(us);
       }
     };
+    
+    static inline int Stamp(StampWtagMtag::Value stamp_wtag_mtag ) {
+      GCTOOLS_ASSERT((stamp_wtag_mtag&0x3) == 0);
+      return stamp_wtag_mtag >> (general_mtag_shift + wtag_width);
+    }
     //
     //
     // End of StampWtagMtag
@@ -536,9 +554,8 @@ namespace gctools {
     uintptr_t _guard;
     int _dup_tail_start;
     int _dup_tail_size;
-    StampWtagMtag _dup_stamp_wtag_mtag;
     uint _guard2;
-    uintptr_t _guard3; // Header needs to be size aligned - so add another guard to get to 64 bytes
+    StampWtagMtag _dup_stamp_wtag_mtag;
 #endif
   public:
 #if !defined(DEBUG_GUARD)
@@ -549,7 +566,6 @@ namespace gctools {
 #if defined(DEBUG_GUARD)
 #define GUARD1 0xFEEAFEEBDEADBEEF
 #define GUARD2 0xC0FFEEEE
-#define GUARD3 0xDDDDDDDDDDDDDDDD
 
     inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
   Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
@@ -559,9 +575,8 @@ namespace gctools {
       _guard(GUARD1),
       _dup_tail_start(tstart),
       _dup_tail_size(tsize),
-      _dup_stamp_wtag_mtag(k),
       _guard2(GUARD2),
-      _guard3(GUARD3)
+      _dup_stamp_wtag_mtag(k)
     {
       this->fill_tail();
     };
@@ -847,10 +862,26 @@ inline constexpr size_t SizeofWeakHeader() { return sizeof(Header_s::StampWtagMt
 
 inline void*HeaderPtrToWeakPtr(void *header) {
   void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
+  return ptr;
+}
+
+inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
+  inline const void *ConsPtrToHeaderPtr(const void *client) {
+    const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
     return ptr;
   }
-};
 
+  inline void *ConsPtrToHeaderPtr(void *client) {
+    void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
+    return ptr;
+  }
+
+inline void* HeaderPtrToConsPtr(void *header) {
+  void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());
+  return ptr;
+}
+
+};
 
 
 #if  defined(USE_BOEHM)
@@ -875,7 +906,7 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
   template <class OT>
     struct GCStamp {
-      static GCStampEnum const Stamp = STAMPWTAG_null;
+      static GCStampEnum const StampWtag = STAMPWTAG_null;
     };
 };
 

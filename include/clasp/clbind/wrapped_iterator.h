@@ -76,7 +76,7 @@ bool operator==(core::T_sp other) const {
 template <typename IT, typename Policy>
 class gctools::GCStamp<clbind::Iterator<IT, Policy>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::Iterator<IT, Policy>::TemplatedBase>::Stamp;
 };
 
 #endif // clbind_wrapped_iterator

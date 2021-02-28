@@ -97,7 +97,7 @@ public:
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
 
 
@@ -159,7 +159,7 @@ public:
 template <typename SetterPolicies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::SetterMethoid<SetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
 
 #endif

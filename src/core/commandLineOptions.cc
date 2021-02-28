@@ -37,6 +37,17 @@ namespace core {
 bool global_debug_byte_code = false;
 
 
+bool CommandLineOptions::optionArgP(int& iarg,std::string& val, const std::string& default_) {
+  // If there are arguments left and it doesn't start with - then
+  // treat it like an argument for the option
+  if (((iarg+1) >= this->_EndArg) || (this->_RawArguments[iarg+1][0] == '-')) {
+    val = default_;
+    return false;
+  }
+  val = this->_RawArguments[iarg+1];
+  iarg += 1;
+  return true;
+}
 
 void process_clasp_arguments(CommandLineOptions* options)
 {
@@ -102,6 +113,7 @@ void process_clasp_arguments(CommandLineOptions* options)
              "Environment variables:\n"
              "export CLASP_DEBUG=<file-names-space-or-comma-separated>  Define files that\n"
              "                        generate log info when DEBUG_LEVEL_FULL is set at top of file.\n"
+             "export CLASP_DEBUGGER_SUPPORT=1 Generate files that lldb/gdb/udb can use to debug clasp.\n"
              "export CLASP_DONT_HANDLE_CRASH_SIGNALS=1  Don't insert signal handlers for crash signals.\n"
              "export CLASP_GC_MESSAGES=1 Print a message when garbage collection takes place.\n"
              "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
@@ -209,8 +221,7 @@ void process_clasp_arguments(CommandLineOptions* options)
     } else if (arg == "-d" || arg == "--describe") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --describe,-d"));
       options->_HasDescribeFile = true;
-      options->_DescribeFile = options->_RawArguments[iarg + 1];
-      iarg++;
+      options->optionArgP(iarg,options->_DescribeFile,"/tmp/clasp_layout.py");
     } else if (arg == "-t" || arg == "--stage") {
       ASSERTF(iarg < (endArg + 1), BF("Missing argument for --stage,-t"));
       options->_Stage = options->_RawArguments[iarg + 1][0];

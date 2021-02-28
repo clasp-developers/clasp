@@ -405,8 +405,7 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
 (define-c++-struct %cons% +cons-tag+
-  ( (%size_t% :badge)
-    (%t*% :car)
+  ( (%t*% :car)
     (%t*% :cdr)))
 
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))

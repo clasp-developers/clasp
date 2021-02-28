@@ -308,7 +308,7 @@ def translate_tagged_ptr(debugger,tptr):
         return Vaslist(debugger,tptr)
 
     
-def general_tagged_ptr(debugger,tptr):
+def any_tagged_ptr(debugger,tptr):
     debugger.dbg_print("In translate_tagged_ptr 0x%x" % tptr)
     if (generalp(tptr)):
         base = untag_general(tptr)

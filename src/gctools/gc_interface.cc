@@ -499,7 +499,7 @@ template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
   ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::Stamp);
   if (gctools::GCStamp<TheClass>::Stamp!=0) {
-    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
+    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_Value<TheClass>();
   } else {
 #ifdef USE_MPS
     if (core::global_initialize_builtin_classes) {
@@ -738,17 +738,17 @@ void initialize_classes_and_methods()
 
 void dumpBoehmLayoutTables(FILE* fout) {
 #define Init_class_kind(_class_) \
-  fprintf(fout, "Init_class_kind( stamp=%lu, name=\"%s\", size=%lu)\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_class_,sizeof(*(_class_*)0x0));
+  fprintf(fout, "Init_class_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init_templated_kind(_class_) \
-  fprintf(fout, "Init_templated_kind( stamp=%lu, name=\"%s\", size=%lu)\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_class_,sizeof(*(_class_*)0x0));
+  fprintf(fout, "Init_templated_kind( stamp=%d, name=\"%s\", size=%lu)\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_class_,sizeof(*(_class_*)0x0));
 #define Init__fixed_field(_class_,_index_,_type_,_field_name_) \
-  fprintf(fout, "Init__fixed_field( stamp=%lu, index=%d, data_type=%d,field_name=\"%s\",field_offset=%lu);\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
+  fprintf(fout, "Init__fixed_field( stamp=%d, index=%d, data_type=%d,field_name=\"%s\",field_offset=%lu);\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_type_,#_field_name_,offsetof(_class_,_field_name_));
 #define Init__variable_array0(_class_,_data_field_) \
-  fprintf(fout,"Init__variable_array0( stamp=%lu, name=\"%s\", offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),#_data_field_,offsetof(_class_,_data_field_));
+  fprintf(fout,"Init__variable_array0( stamp=%d, name=\"%s\", offset=%lu );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),#_data_field_,offsetof(_class_,_data_field_));
 #define Init__variable_capacity(_class_,_value_type_,_end_,_capacity_) \
-  fprintf(fout,"Init__variable_capacity( stamp=%lu, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", _class_::static_StampWtagMtag.nowhere_stamp(),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
+  fprintf(fout,"Init__variable_capacity( stamp=%d, element_size=%lu, end_offset=%lu, capacity_offset=%lu );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),sizeof(_class_::_value_type_),offsetof(_class_,_end_),offsetof(_class_,_capacity_));
 #define Init__variable_field(_class_,_data_type_,_index_,_field_name_,_field_offset_) \
-  fprintf(fout,"Init__variable_field( stamp=%lu, index=%d, data_type=%d, field_name=\"%s\", field_offset=%d );\n", _class_::static_StampWtagMtag.nowhere_stamp(),_index_,_data_type_,_field_name_,_field_offset_);
+  fprintf(fout,"Init__variable_field( stamp=%d, index=%d, data_type=%d, field_name=\"%s\", field_offset=%d );\n", Header_s::Stamp(_class_::static_ValueStampWtagMtag),_index_,_data_type_,_field_name_,_field_offset_);
 #define Init_global_ints(_name_,_value_) fprintf(fout,"Init_global_ints(name=\"%s\",value=%d)\n", _name_,_value_);
   printf("Dumping interface\n");
   gctools::dump_data_types(fout,"");
@@ -790,12 +790,12 @@ void dumpBoehmLayoutTables(FILE* fout) {
 
   Init_class_kind(core::Package_O);
   Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _InternalSymbols);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _ExternalSymbols);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Shadowing);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Name);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Nicknames);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _LocalNicknames);
-  Init__fixed_field(core::Package_O, 0, SMART_PTR_OFFSET, _Documentation);
+  Init__fixed_field(core::Package_O, 1, SMART_PTR_OFFSET, _ExternalSymbols);
+  Init__fixed_field(core::Package_O, 2, SMART_PTR_OFFSET, _Shadowing);
+  Init__fixed_field(core::Package_O, 3, SMART_PTR_OFFSET, _Name);
+  Init__fixed_field(core::Package_O, 4, SMART_PTR_OFFSET, _Nicknames);
+  Init__fixed_field(core::Package_O, 5, SMART_PTR_OFFSET, _LocalNicknames);
+  Init__fixed_field(core::Package_O, 6, SMART_PTR_OFFSET, _Documentation);
   
 
   Init_class_kind(core::LambdaListHandler_O);

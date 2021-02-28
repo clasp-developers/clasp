@@ -365,7 +365,7 @@ void Header_s::validate() const {
   if ( this->_stamp_wtag_mtag.stampP() ) {
 #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
     uintptr_t stamp_index = (uintptr_t)this->_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMP_max)) {
+    if (stamp_index > STAMP_UNSHIFT_MTAG(gctools::STAMPWTAG_max)) {
       printf("%s:%d A bad stamp was found %lu at addr %p\n", __FILE__, __LINE__, stamp_index, (void*)this );
       signal_invalid_object(this,"stamp out of range in header");
     }
@@ -373,7 +373,6 @@ void Header_s::validate() const {
 #ifdef DEBUG_GUARD    
     if ( this->_guard != GUARD1) signal_invalid_object(this,"normal object bad header guard");
     if ( this->_guard2!= GUARD2) signal_invalid_object(this,"normal object bad header guard2");
-    if ( this->_guard3!= GUARD3) signal_invalid_object(this,"normal object bad header guard3");
 #endif
     if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD

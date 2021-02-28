@@ -85,7 +85,7 @@ namespace core {
 template <typename T>
 class gctools::GCStamp<core::BuiltInObjectCreator<T>> {
  public:
-  static gctools::GCStampEnum const Stamp = gctools::GCStamp<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::BuiltInObjectCreator<T>::TemplatedBase>::Stamp;
 };
 template <typename T>
 struct gctools::GCInfo<core::BuiltInObjectCreator<T>> {

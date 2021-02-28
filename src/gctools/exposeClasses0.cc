@@ -59,7 +59,7 @@ template <class TheClass>
 NOINLINE void set_one_static_class_Header() {
   gctools::ShiftedStamp the_stamp = gctools::NextStampWtag(0 /* Get from the Stamp */,gctools::GCStamp<TheClass>::StampWtag);
   if (gctools::GCStamp<TheClass>::StampWtag!=0) {
-    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make<TheClass>();
+    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make_Value<TheClass>();
   } else {
 #ifdef USE_MPS
     if (core::global_initialize_builtin_classes) {
@@ -67,7 +67,7 @@ NOINLINE void set_one_static_class_Header() {
       abort();
     }
 #endif
-    TheClass::static_StampWtagMtag = gctools::Header_s::StampWtagMtag::make_unknown(the_stamp);
+    TheClass::static_ValueStampWtagMtag = gctools::Header_s::StampWtagMtag::make_unknown(the_stamp);
   }
 }
 
@@ -93,7 +93,7 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp m
   core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
   core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
-  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_StampWtagMtag.shifted_stamp(),metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
+  gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_ValueStampWtagMtag,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::setStaticClass(class_val);
