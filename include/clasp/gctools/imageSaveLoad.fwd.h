@@ -19,17 +19,9 @@ struct image_save_load_init_s {
     _clientEnd(clientEnd) {};
 
   void fill(void* client) {
-    printf("%s:%d:%s copying source: %p end: %p  size: %lu --> %p\n",
-           __FILE__, __LINE__, __FUNCTION__,
-           (void*)this->_clientStart,
-           (void*)this->_clientEnd,
-           (this->_clientEnd - this->_clientStart),
-           (void*)client);
-#if 1
     memcpy((void*)client,
            (void*)this->_clientStart,
            this->_clientEnd-this->_clientStart);
-#endif
   }
 };
   

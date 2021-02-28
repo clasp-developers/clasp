@@ -59,23 +59,23 @@ namespace core {
 #define IHS_BACKTRACE_SIZE 16
   struct InvocationHistoryFrame;
   struct ThreadLocalState {
-    ThreadLocalState();
-    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
-    void pushCatchTag(T_sp);
 
-    core::T_sp _ObjectFiles;
-    uint64_t   _BytesAllocated;
-    mp::Process_sp _Process;
-    uint64_t  _Tid;
-    uintptr_t           _BacktraceBasePointer;
-    DynamicBindingStack _Bindings;
-    inline DynamicBindingStack& bindings() { return this->_Bindings; };
-    List_sp _CatchTags;
-    inline List_sp catchTags() { return this->_CatchTags; };
-    inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
+    core::T_sp            _ObjectFiles;
+    mp::Process_sp        _Process;
+    DynamicBindingStack   _Bindings;
+    /*! Pending interrupts */
+    List_sp               _PendingInterrupts;
+    /*! Save CONS records so we don't need to do allocations
+        to add to _PendingInterrupts */
+    List_sp               _SparePendingInterruptRecords; // signal_queue on ECL
+    List_sp               _CatchTags;
+    List_sp               _BufferStr8NsPool;
+    List_sp               _BufferStrWNsPool;
+    StringOutputStream_sp _BFormatStringOutputStream;
+    StringOutputStream_sp _WriteToStringOutputStream;
+
     MultipleValues _MultipleValues;
     const InvocationHistoryFrame* _InvocationHistoryStackTop;
-//    gctools::GCRootsInModule*  _GCRoots;
     void* _sigaltstack_buffer;
     size_t  _unwinds;
     stack_t _original_stack;
@@ -104,6 +104,11 @@ namespace core {
     size_t                 _xorshf_y;
     size_t                 _xorshf_z;
     CleanupFunctionNode*   _CleanupFunctions;
+    mp::SpinLock _SparePendingInterruptRecordsSpinLock;
+    uint64_t   _BytesAllocated;
+    uint64_t            _Tid;
+    uintptr_t           _BacktraceBasePointer;
+
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
     // used for logging. This is so that per-thread log files can be
@@ -111,22 +116,22 @@ namespace core {
     // thread exits.
     std::map<std::string,FILE*> _MonitorFiles;
 #endif
-    /*! Pending interrupts */
-    List_sp _PendingInterrupts;
-    /*! Save CONS records so we don't need to do allocations
-        to add to _PendingInterrupts */
-    List_sp _SparePendingInterruptRecords; // signal_queue on ECL
-    mp::SpinLock _SparePendingInterruptRecordsSpinLock;
-    /*------- per-thread data */
-    List_sp _BufferStr8NsPool;
-    List_sp _BufferStrWNsPool;
-    StringOutputStream_sp _BFormatStringOutputStream;
-    StringOutputStream_sp _WriteToStringOutputStream;
+
+  public:
+    // Methods
+    ThreadLocalState();
+    void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
+    void pushCatchTag(T_sp);
+
+    inline List_sp catchTags() { return this->_CatchTags; };
+    inline void setCatchTags(List_sp tags) { this->_CatchTags = tags; };
+
     uint32_t random();
 
     llvmo::ObjectFile_sp topObjectFile();
     void pushObjectFile(llvmo::ObjectFile_sp of);
     void popObjectFile();
+    inline DynamicBindingStack& bindings() { return this->_Bindings; };
     
     ~ThreadLocalState();
   };

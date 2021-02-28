@@ -107,6 +107,17 @@ public:
 //    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
+public:
+  void fixupInternalsForImageSaveLoad() {
+    // Write any thread local symbol value into the global value and
+    // reset the _BindingIdx
+    if (this->_BindingIdx.load() != NO_THREAD_LOCAL_BINDINGS) {
+      T_sp tlvalue = this->threadLocalSymbolValue();
+      this->set_globalValue(tlvalue);
+      my_thread->_Bindings.release_binding_index(this->_BindingIdx.load());
+    }
+  }
+
  public:
   string formattedName(bool prefixAlways) const;
  private:

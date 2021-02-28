@@ -8355,7 +8355,7 @@ public:
 //      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 //      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
 //      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__sig), 0, "_SharedMutex.mReadMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__sig), 0, "_SharedMutex.mReadMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
 //      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 //      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
@@ -8372,7 +8372,7 @@ public:
 //      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 //      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
 //      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
- {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__sig), 0, "_SharedMutex.mWriteMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
+// {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__sig), 0, "_SharedMutex.mWriteMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
 //      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
 //      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")

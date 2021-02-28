@@ -436,6 +436,9 @@ typedef enum { SaveOp, LoadOp } FixupOperation;
     virtual void validateCodePointer( void** funcPtr, size_t sizeofFuncPtr ) {
       // Do nothing currently
     }
+    virtual void fixupInternalsForImageSaveLoad() {
+      // Do nothing by default
+    };
     virtual void fixupOneCodePointer( FixupOperation op, void** address, size_t size ) {
       printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
     };
