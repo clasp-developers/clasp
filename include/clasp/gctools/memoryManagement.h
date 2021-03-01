@@ -549,7 +549,7 @@ namespace gctools {
     }
   public:
     // The header contains the stamp_wtag_mtag value.
-    StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word.
+    StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word of the guard.
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
@@ -557,7 +557,11 @@ namespace gctools {
     int _dup_tail_start;
     int _dup_tail_size;
     uint _guard2;
-    StampWtagMtag _dup_stamp_wtag_mtag;
+    // The last word of the guard must be a copy of the first.
+    //  this is so that we can get the stamp_wtag_mtag by subtracting
+    //  from the client pointer AND we can get it from a header pointer.
+    StampWtagMtag _dup_stamp_wtag_mtag; // This MUST be the last word of the guard.
+    
 #endif
   public:
 #if !defined(DEBUG_GUARD)
