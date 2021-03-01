@@ -337,10 +337,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 
 
   if (getenv("CLASP_DEBUGGER_SUPPORT")) {
-    printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
-    FILE* fout = fopen("/tmp/clasp_pid","w");
-    fprintf(fout,"%d",getpid());
-    fclose(fout);
+    printf("%s:%d:%s  Generating clasp object layouts\n", __FILE__, __LINE__, __FUNCTION__ );
     core::dumpDebuggingLayouts();
   }
 
@@ -513,6 +510,12 @@ int main( int argc, char *argv[] )
   // Pause before any allocations take place
   {
 
+    if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+      printf("%s:%d:%s  Setting up clasp for debugging - writing PID to /tmp/clasp_pid\n", __FILE__, __LINE__, __FUNCTION__);
+      FILE* fout = fopen("/tmp/clasp_pid","w");
+      fprintf(fout,"%d",getpid());
+      fclose(fout);
+    }
     char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
     if (pause_startup) {
       printf("%s:%d PID = %d  Paused at startup before all initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
