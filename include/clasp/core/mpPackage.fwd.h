@@ -438,8 +438,8 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
   public:
     UpgradableSharedMutex() {};
   public:
-    Mutex mReadMutex;
-    Mutex mWriteMutex;
+    dont_expose<Mutex> mReadMutex;
+    dont_expose<Mutex> mWriteMutex;
     bool    mReadsBlocked;
     uint     mMaxReaders;
     uint     mReaders;
@@ -450,22 +450,22 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
       mReadsBlocked( false ), mMaxReaders( maxReaders ), mReaders( 0 ) {};
     void readLock() {
       while ( 1 ) {
-        mReadMutex.lock();
+        mReadMutex._value.lock();
         if (( !mReadsBlocked ) && ( mReaders < mMaxReaders )) {
           mReaders++; 
-          mReadMutex.unlock();
+          mReadMutex._value.unlock();
           return;
         }
-        mReadMutex.unlock();
+        mReadMutex._value.unlock();
         muSleep( 0 );
       }
       assert( 0 );
     };
     void readUnlock() { 
-      mReadMutex.lock(); 
+      mReadMutex._value.lock(); 
       assert( mReaders );
       mReaders--; 
-      mReadMutex.unlock(); 
+      mReadMutex._value.unlock(); 
     };
 
     /* Pass true for upgrade if you want to upgrade a read lock to a write lock.
@@ -473,43 +473,43 @@ struct SharedMutex : public sf::contention_free_shared_mutex<> {
       there will be a deadlock unless they do it in a loop using withTryLock(true).
       See the hashTable.cc rehash_upgrade_write_lock for an example. */
     bool writeTryLock(bool upgrade = false) {
-      if ( !mWriteMutex.lock(false))
+      if ( !mWriteMutex._value.lock(false))
         return false;
       waitReaders( upgrade ? 1 : 0 );
       return true;
     }
     void writeLock(bool upgrade = false) {
-      mWriteMutex.lock(); 
+      mWriteMutex._value.lock(); 
       waitReaders( upgrade ? 1 : 0 );
     }
     /*! Pass true releaseReadLock if when you release the write lock it also
        releases the read lock */
     void writeUnlock(bool releaseReadLock = false) {
-      mReadMutex.lock();
+      mReadMutex._value.lock();
       if ( releaseReadLock ) {
         assert( mReaders <= 1 );
         if ( mReaders == 1 )
           mReaders--; 
       }
       mReadsBlocked = false;
-      mReadMutex.unlock();
-      mWriteMutex.unlock(); 
+      mReadMutex._value.unlock();
+      mWriteMutex._value.unlock(); 
     }
   public:
     void waitReaders(uint numReaders) {
    // block new readers 
-      mReadMutex.lock();
+      mReadMutex._value.lock();
       mReadsBlocked = true;
-      mReadMutex.unlock();  
+      mReadMutex._value.unlock();  
    // wait for current readers to finish
       while ( 1 ) {
-        mReadMutex.lock();
+        mReadMutex._value.lock();
         if ( mReaders == numReaders )
         {
-          mReadMutex.unlock();  
+          mReadMutex._value.unlock();  
           break;
         }
-        mReadMutex.unlock();  
+        mReadMutex._value.unlock();  
         muSleep( 0 );
       }
       assert( mReaders == numReaders );

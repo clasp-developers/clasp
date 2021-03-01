@@ -533,6 +533,7 @@ This could change the value of stamps for specific classes - but that would brea
 (defstruct (basic-string-ctype (:include ctype)) name)
 (defstruct (std-map-ctype (:include ctype)) name)
 (defstruct (shared-mutex-ctype (:include ctype)) name)
+(defstruct (mutex-ctype (:include ctype)) name)
 
 (defstruct (function-proto-ctype (:include ctype)))
 (defstruct (lvalue-reference-ctype (:include ctype)))
@@ -649,6 +650,7 @@ This could change the value of stamps for specific classes - but that would brea
 (defclass pod-offset (copyable-offset) ())
 (defclass cxx-fixup-offset (copyable-offset) ())
 (defclass cxx-shared-mutex-offset (copyable-offset) ())
+(defclass cxx-mutex-offset (copyable-offset) ())
 
 (defun copy-offset (offset)
   "* Arguments
@@ -1041,6 +1043,12 @@ to expose to C++.
                        :base base
                        :offset-type x)))
 
+(defmethod linearize-class-layout-impl ((x mutex-ctype) base analysis)
+  nil
+  #+(or)(list (make-instance 'cxx-mutex-offset
+                       :base base
+                       :offset-type x)))
+
 (defmethod linearize-class-layout-impl ((x unique-ptr-ctype) base analysis)
   (if (ignorable-ctype-p x)
       nil
@@ -1373,6 +1381,12 @@ can be saved and reloaded within the project for later analysis"
        (cond
          ((string= name "SharedMutex")
           (make-shared-mutex-ctype :key decl-key :name name))
+         (t (make-cxxrecord-ctype :key decl-key :name name))))
+      (cast:cxxrecord-decl
+       (cond
+         ((string= name "Mutex")
+          (format t "Making a mutex-ctype name: ~s~%" name)
+          (make-mutex-ctype :key decl-key :name name))
          (t (make-cxxrecord-ctype :key decl-key :name name))))
       (cast:record-decl
        (warn "classify-decl found ~a decl-key: ~a name: ~a - this means that the mostDerivedType code isn't working!!!!" (type-of decl) decl-key name)
@@ -2205,6 +2219,7 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x basic-string-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x std-map-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x shared-mutex-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x mutex-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unique-ptr-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
@@ -3191,6 +3206,7 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x basic-string-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x std-map-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x shared-mutex-ctype) analysis) nil)
+(defmethod fixable-instance-variables-impl ((x mutex-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x unique-ptr-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x atomic-ctype) analysis) nil)
 (defmethod fixable-instance-variables-impl ((x dont-expose-ctype) analysis) nil)
@@ -3559,6 +3575,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var basic-string-ctype) analysis) nil)
 (defmethod fix-variable-p ((var std-map-ctype) analysis) nil)
 (defmethod fix-variable-p ((var shared-mutex-ctype) analysis) nil)
+(defmethod fix-variable-p ((var mutex-ctype) analysis) nil)
 (defmethod fix-variable-p ((var unique-ptr-ctype) analysis) nil)
 (defmethod fix-variable-p ((var atomic-ctype) analysis) nil)
 (defmethod fix-variable-p ((var dont-expose-ctype) analysis) nil)

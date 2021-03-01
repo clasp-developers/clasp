@@ -84,8 +84,8 @@ void dump_data_types(FILE* fout, const std::string& indent)
   Init_global_ints("VASLIST0_TAG",VASLIST0_TAG);
   Init_global_ints("FIXNUM_SHIFT",FIXNUM_SHIFT);
   Init_global_ints("GENERAL_MTAG_MASK",Header_s::general_mtag_mask);
-  Init_global_ints("GENERAL_STAMP_SHIFT",Header_s::general_stamp_shift);
-  Init_global_ints("MTAG_SHIFT",Header_s::mtag_shift);
+  Init_global_ints("GENERAL_STAMP_SHIFT",(int)Header_s::general_stamp_shift);
+  Init_global_ints("MTAG_SHIFT",(int)Header_s::mtag_shift);
   Init_global_ints("MTAG_MASK",Header_s::mtag_mask);
   Init_global_ints("GENERAL_MTAG", Header_s::general_mtag );
   Init_global_ints("CONS_MTAG", Header_s::cons_mtag );

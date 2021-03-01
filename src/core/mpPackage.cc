@@ -325,8 +325,8 @@ CL_DEFUN void mp__shared_unlock(SharedMutex_sp m) {
 
 void SharedMutex_O::setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName)
 {
-  this->_SharedMutex.mReadMutex._NameWord = lisp_nameword(readLockName);
-  this->_SharedMutex.mWriteMutex._NameWord = lisp_nameword(writeLockName);
+  this->_SharedMutex.mReadMutex._value._NameWord = lisp_nameword(readLockName);
+  this->_SharedMutex.mWriteMutex._value._NameWord = lisp_nameword(writeLockName);
 }
 
 
