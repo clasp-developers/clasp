@@ -588,12 +588,12 @@ struct copy_objects_t : public walker_callback_t {
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
-      size_t bytes = isl_cons_skip(client,consSize) - client;
+      isl_cons_skip(client,consSize);
       if (consSize==0) ISL_ERROR(BF("A zero size cons at %p was encountered") % (void*)client );
       ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_stamp_wtag_mtag );
       this->write_buffer(sizeof(ISLConsHeader_s), (char*)&islheader );
       DBG_SAVECOPY(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
-      char* new_addr = this->write_buffer(bytes,(char*)header);
+      char* new_addr = this->write_buffer(consSize,(char*)client);
       this->_NumberOfObjects++;
       header->_stamp_wtag_mtag.setFwdPointer( new_addr );
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
@@ -1160,7 +1160,7 @@ int image_load(const std::string& filename )
         next_header = consHeader->next();
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
-        gctools::Header_s* header = (gctools::Header_s*)clientStart;
+        gctools::Header_s* header = consHeader->header();
         core::Cons_O* cons = (core::Cons_O*)clientStart;
         auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
