@@ -886,7 +886,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused ECLECTOR.READER::SHARPSIGN-EQUALS-LABEL-DEFINED-MORE-THAN-ONCE = 1096, 
 // Unused CLEAVIR-CODE-UTILITIES::REQUIRED-MUST-BE-VARIABLE = 1293, 
 // Unused CLEAVIR-CODE-UTILITIES::ENVIRONMENT-CAN-APPEAR-AT-MOST-ONCE = 1282, 
-// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 1548, 
+// Unused CLASP-ANALYZER::CXX-SHARED-MUTEX-OFFSET = 1549, 
 // Unused CLEAVIR-AST::FIXNUM-LESS-AST = 1229, 
 // Unused CLASP-CLEAVIR-BIR::UNWIND-PROTECT = 1432, 
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-LAMBDA-LIST = 964, 
@@ -898,7 +898,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused GRAY::FUNDAMENTAL-STREAM = 831, 
 // Unused CLEAVIR-AST::FLOAT-ADD-AST = 1234, 
 // Unused CLEAVIR-AST::FIXNUM-EQUAL-AST = 1233, 
-// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 1509, 
+// Unused CLASP-ANALYZER::DEPENDENT-NAME-CTYPE = 1510, 
 // Unused CLEAVIR-METER::METER = 1179, 
 // Unused CLASP-CLEAVIR-BIR::FOREIGN-CALL-POINTER = 1435, 
 // Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED = 1271, 
@@ -907,10 +907,10 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLANG-TOOL::MULTITOOL = 1470, 
 // Unused ECLECTOR.READER::READ-OBJECT-TYPE-ERROR = 994, 
 // Unused CLANG-TOOL::COMPILATION-TOOL-DATABASE = 1461, 
-// Unused CLASP-ANALYZER::ENUM-CTYPE = 1510, 
+// Unused CLASP-ANALYZER::ENUM-CTYPE = 1511, 
 // Unused CLEAVIR-AST::SET-CONSTANT-SYMBOL-VALUE-AST = 1195, 
 // Unused CLEAVIR-CST-TO-AST::COMPILER-MACRO-EXPANSION-ERROR = 1379, 
-// Unused CLASP-ANALYZER::UNIQUE-PTR-CTYPE = 1527, 
+// Unused CLASP-ANALYZER::UNIQUE-PTR-CTYPE = 1528, 
 // Unused CLEAVIR-CODE-UTILITIES::ODD-NUMBER-OF-KEYWORD-ARGUMENTS = 1267, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-ALLOW-OTHER-KEYS = 955, 
 // Unused CLEAVIR-CST-TO-AST::SITUATIONS-MUST-BE-PROPER-LIST = 1352, 
@@ -921,7 +921,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-METER::BASIC-METER = 1180, 
 // Unused CLEAVIR-BIR::OUTPUT = 1120, 
 // Unused CLEAVIR-AST::FIXNUM-ADD-AST = 1227, 
-// Unused CLASP-ANALYZER::POINTER-CTYPE = 1520, 
+// Unused CLASP-ANALYZER::POINTER-CTYPE = 1521, 
 // Unused CLEAVIR-ENVIRONMENT::LOCAL-MACRO-INFO = 1304, 
 // Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS = 1335, 
 // Unused CLEAVIR-AST::SLOT-READ-AST = 1251, 
@@ -978,7 +978,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-BIR::NOP = 1135, 
 // Unused SB-BSD-SOCKETS::NO-ADDRESS-ERROR = 887, 
 // Unused CLEAVIR-AST::AREF-AST = 1255, 
-// Unused CLASP-ANALYZER::MANAGER = 1557, 
+// Unused CLASP-ANALYZER::MANAGER = 1559, 
 // Unused CLEAVIR-BIR::CAST = 1172, 
 // Unused CLASP-ANALYZER::INSTANCE-VARIABLE = 1478, 
 // Unused CLASP-CLEAVIR-BMIR::FIXNUMP = 1448, 
@@ -990,7 +990,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused COMPILER::UNDEFINED-WARNING = 854, 
 // Unused CORE::FORMAT-ERROR = 821, 
 // Unused CONCRETE-SYNTAX-TREE::WHOLE-PARAMETER-GROUP = 935, 
-// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 1540, 
+// Unused CLASP-ANALYZER::DONT-EXPOSE-OFFSET = 1541, 
 // Unused CLEAVIR-CONDITIONS::PROGRAM-ERROR = 1104, 
 // Unused ECLECTOR.READER::REFERENCE-ERROR = 1095, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-SPECIALIZED-REQUIRED = 1283, 
@@ -1034,7 +1034,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::DEFCALLBACK-AST = 1402, 
 // Unused COMMON-LISP::FLOATING-POINT-INEXACT = 811, 
 // Unused CLEAVIR-CST-TO-AST::INCORRECT-NUMBER-OF-ARGUMENTS-WARNING = 1344, 
-// Unused CLASP-ANALYZER::ATOMIC-CTYPE = 1528, 
+// Unused CLASP-ANALYZER::ATOMIC-CTYPE = 1529, 
 // Unused EXT::CHARACTER-CODING-ERROR = 826, 
 // Unused CLOS::INITARGS-UPDATER = 753, 
 // Unused CONCRETE-SYNTAX-TREE::CCL = 910, 
@@ -1057,18 +1057,18 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-ENVIRONMENT::BLOCK = 1316, 
 // Unused CLEAVIR-AST::CONSTANT-FDEFINITION-AST = 1197, 
 // Unused CLASP-ANALYZER::SIMPLE-CTYPE = 1501, 
-// Unused CLASP-ANALYZER::DONT-EXPOSE-CTYPE = 1529, 
+// Unused CLASP-ANALYZER::DONT-EXPOSE-CTYPE = 1530, 
 // Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-BE-FOLLOWED-BY-VARIABLE = 1280, 
 // Unused CLASP-CLEAVIR-AST::CAS-RACK-AST = 1420, 
 // Unused ACCLIMATION::VIETNAMESE = 896, 
 // Unused CLEAVIR-CST-TO-AST::CASE-KEYS-MUST-BE-PROPER-LIST = 1354, 
-// Unused CLASP-ANALYZER::POD-OFFSET = 1546, 
+// Unused CLASP-ANALYZER::POD-OFFSET = 1547, 
 // Unused SB-BSD-SOCKETS::ADDRESS-IN-USE-ERROR = 868, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-BODY = 953, 
 // Unused CLASP-CLEAVIR-BMIR::STORE = 1456, 
 // Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1428, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1070, 
-// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1539, 
+// Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1540, 
 // Unused COMMON-LISP::UNBOUND-SLOT = 804, 
 // Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1323, 
 // Unused CORE::SIMPLE-PARSE-ERROR = 818, 
@@ -1121,7 +1121,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-ENVIRONMENT::FUNCTION = 1314, 
 // Unused COMMON-LISP::VECTOR = 730, 
 // Unused CLEAVIR-AST::EQ-AST = 1224, 
-// Unused CLASP-ANALYZER::RECORD-CTYPE = 1517, 
+// Unused CLASP-ANALYZER::RECORD-CTYPE = 1518, 
 // Unused CLEAVIR-BIR::ARGUMENT = 1127, 
 // Unused CLANG-TOOL::CODE-MATCH-TIMER = 1462, 
 // Unused CONCRETE-SYNTAX-TREE::TARGET = 970, 
@@ -1142,7 +1142,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLOS::STANDARD-EFFECTIVE-SLOT-DEFINITION = 713, 
 // Unused CLOS::EFFECTIVE-READER-METHOD = 748, 
 // Unused EXT::STORAGE-EXHAUSTED = 774, 
-// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1561, 
+// Unused CLASP-ANALYZER::PARALLEL-RESULT = 1563, 
 // Unused CLEAVIR-AST::SET-SYMBOL-VALUE-AST = 1194, 
 // Unused CONCRETE-SYNTAX-TREE::CST-ERROR = 902, 
 // Unused GRAY::FUNDAMENTAL-BINARY-OUTPUT-STREAM = 839, 
@@ -1192,9 +1192,9 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 1411, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 380, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1014, 
-// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1547, 
+// Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1548, 
 // Unused CORE::SIMPLE-FILE-ERROR = 799, 
-// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1551, 
+// Unused CLASP-ANALYZER::CONTAINER-OFFSET = 1553, 
 // Unused COMMON-LISP::STYLE-WARNING = 768, 
 // Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-LAMBDA-LIST = 961, 
 // Unused CLEAVIR-CST-TO-AST::INVALID-EVAL-WHEN-SITUATION = 1355, 
@@ -1206,17 +1206,17 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::VARIABLE-MUST-BE-A-SYMBOL = 1363, 
 // Unused CONCRETE-SYNTAX-TREE::EARLEY-ITEM = 973, 
 // Unused CLEAVIR-AST::TAG-AST = 1208, 
-// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1549, 
+// Unused CLASP-ANALYZER::ARRAY-OFFSET = 1551, 
 // Unused CLASP-CLEAVIR-BIR::FENCE = 1439, 
-// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1554, 
+// Unused CLASP-ANALYZER::GCVECTOR-OFFSET = 1556, 
 // Unused CLEAVIR-CODE-UTILITIES::FUNCTION-BODY-MUST-BE-PROPER-LIST = 1296, 
-// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 1545, 
+// Unused CLASP-ANALYZER::RAW-POINTER-OFFSET = 1546, 
 // Unused CLASP-CLEAVIR-AST::VREF-AST = 1422, 
 // Unused CONCRETE-SYNTAX-TREE::DESTRUCTURING-OPTIONAL-PARAMETER-GROUP = 928, 
 // Unused EXT::STREAM-DECODING-ERROR = 830, 
 // Unused CLEAVIR-CODE-UTILITIES::FORM-MUST-BE-PROPER-LIST = 1263, 
 // Unused CONCRETE-SYNTAX-TREE::ORDINARY-OPTIONAL-PARAMETER-GROUP = 920, 
-// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 1505, 
+// Unused CLASP-ANALYZER::FUNCTION-PROTO-CTYPE = 1506, 
 // Unused CLEAVIR-BIR::CONSTANT-REFERENCE = 1139, 
 // Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 1465, 
 // Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 937, 
@@ -1230,7 +1230,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused ECLECTOR.READER::INCORRECT-INITIALIZATION-LENGTH = 1062, 
 // Unused CLEAVIR-ENVIRONMENT::SPECIAL-VARIABLE-INFO = 1299, 
 // Unused CLEAVIR-AST::LEXICAL-AST = 1191, 
-// Unused CLASP-ANALYZER::POINTER-OFFSET = 1544, 
+// Unused CLASP-ANALYZER::POINTER-OFFSET = 1545, 
 // Unused CONCRETE-SYNTAX-TREE::ORDINARY-KEY-PARAMETER-GROUP = 922, 
 // Unused CLEAVIR-AST::FLOAT-EQUAL-AST = 1242, 
 // Unused CORE::WRONG-NUMBER-OF-ARGUMENTS = 814, 
@@ -1240,7 +1240,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-AST::COERCE-AST = 1246, 
 // Unused CLASP-ANALYZER::CLASSALLOC = 1483, 
 // Unused CLASP-CLEAVIR-BIR::DEFCALLBACK = 1436, 
-// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 1524, 
+// Unused CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE = 1525, 
 // Unused MP::NOT-ATOMIC = 791, 
 // Unused ECLECTOR.READTABLE::UNKNOWN-MACRO-SUB-CHARACTER = 991, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_4__false_ = 363, 
@@ -1260,7 +1260,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CORE::QUEUE = 1460, 
 // Unused CLEAVIR-AST::BRANCH-AST = 1217, 
 // Unused CLEAVIR-CST-TO-AST::EVAL-ERROR = 1382, 
-// Unused CLASP-ANALYZER::DONT-ANALYZE-CTYPE = 1530, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-CTYPE = 1531, 
 // Unused ECLECTOR.READER::DIGIT-CONDITION = 1049, 
 // Unused CLASP-ANALYZER::STATIC-LOCAL-VARIABLE = 1492, 
 // Unused ACCLIMATION::CONDITION = 898, 
@@ -1272,13 +1272,14 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused SB-BSD-SOCKETS::LOCAL-SOCKET = 866, 
 // Unused CLEAVIR-AST::TYPEW-AST = 1213, 
 // Unused CLEAVIR-AST::DYNAMIC-ALLOCATION-AST = 1221, 
+// Unused CLASP-ANALYZER::CXX-MUTEX-OFFSET = 1550, 
 // Unused CLANG-TOOL::WRONG-MATCHER = 1472, 
 // Unused CLEAVIR-BIR::ALLOCA = 1154, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKSLASH = 1045, 
 // Unused COMMON-LISP::WARNING = 763, 
 // Unused CLEAVIR-BIR::NVPRIMOP = 1142, 
 // Unused CLEAVIR-AST::FLOAT-SUB-AST = 1235, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1550, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-OFFSET = 1552, 
 // Unused CLANG-TOOL::MATCH-INFO = 1466, 
 // Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-END-WITH-PACKAGE-MARKER = 1006, 
 // Unused CLASP-CLEAVIR-BMIR::HEADERQ = 1453, 
@@ -1308,9 +1309,9 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CORE::ARRAY-OUT-OF-BOUNDS = 781, 
 // Unused ACCLIMATION::LOCALE = 888, 
 // Unused ECLECTOR.READER::UNINTERNED-SYMBOL-MUST-NOT-CONTAIN-PACKAGE-MARKER = 1010, 
-// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 1508, 
+// Unused CLASP-ANALYZER::RVALUE-REFERENCE-CTYPE = 1509, 
 // Unused CLEAVIR-BIR::ONE-INPUT = 1122, 
-// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 1521, 
+// Unused CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE = 1522, 
 // Unused CLASP-CLEAVIR-AST::RACK-STAMP-AST = 1405, 
 // Unused CONCRETE-SYNTAX-TREE::CONS-CST = 901, 
 // Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-KEYWORD-NOT-ALLOWED-IN-DOTTED-LAMBDA-LIST = 1272, 
@@ -1319,19 +1320,19 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused ECLECTOR.READER::SYMBOL-DOES-NOT-EXIST = 999, 
 // Unused CLEAVIR-ENVIRONMENT::VARIABLE-IGNORE = 1320, 
 // Unused CLEAVIR-CODE-UTILITIES::REST/BODY-MUST-BE-FOLLOWED-BY-VARIABLE = 1277, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1516, 
-// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1532, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-TEMPLATE-SPECIALIZATION-CTYPE = 1517, 
+// Unused CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE = 1533, 
 // Unused CLASP-ANALYZER::BITUNIT-CTYPE = 1500, 
 // Unused CLEAVIR-CODE-UTILITIES::LAMBDA-LIST-MUST-BE-LIST = 1268, 
 // Unused ECLECTOR.READER::NON-LIST-FOLLOWING-SHARPSIGN-C = 1065, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-AUX = 956, 
 // Unused CLEAVIR-BIR::WRITEVAR = 1137, 
 // Unused CLEAVIR-CODE-UTILITIES::TOO-MANY-ARGUMENTS = 1266, 
-// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 1514, 
+// Unused CLASP-ANALYZER::UNKNOWN-CTYPE = 1515, 
 // Unused GRAY::FUNDAMENTAL-INPUT-STREAM = 832, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-DOT = 1042, 
 // Unused CLOS::EFFECTIVE-WRITER-METHOD = 749, 
-// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 1507, 
+// Unused CLASP-ANALYZER::TEMPLATE-TYPE-PARM-CTYPE = 1508, 
 // Unused CLEAVIR-AST::THE-AST = 1211, 
 // Unused CLEAVIR-ENVIRONMENT::SYMBOL-MACRO-INFO = 1301, 
 // Unused CLEAVIR-ENVIRONMENT::CONSTANT-VARIABLE-INFO = 1300, 
@@ -1357,7 +1358,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-CHARACTER-NAME = 1046, 
 // Unused CONCRETE-SYNTAX-TREE::PARSER = 975, 
 // Unused CONCRETE-SYNTAX-TREE::PARAMETER = 936, 
-// Unused CLASP-ANALYZER::PARALLEL-JOB = 1560, 
+// Unused CLASP-ANALYZER::PARALLEL-JOB = 1562, 
 // Unused CLEAVIR-BIR::PHI = 1128, 
 // Unused CLASP-ANALYZER::STD-MAP-CTYPE = 1503, 
 // Unused GRAY::FUNDAMENTAL-OUTPUT-STREAM = 833, 
@@ -1377,22 +1378,22 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CONDITIONS::PROGRAM-WARNING = 1105, 
 // Unused CLASP-CLEAVIR-BMIR::MEMREF2 = 1454, 
 // Unused CLASP-CLEAVIR-AST::RACK-REF-AST = 1417, 
-// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1515, 
-// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1555, 
-// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1511, 
+// Unused CLASP-ANALYZER::TEMPLATE-SPECIALIZATION-CTYPE = 1516, 
+// Unused CLASP-ANALYZER::GCSTRING-OFFSET = 1557, 
+// Unused CLASP-ANALYZER::BUILTIN-CTYPE = 1512, 
 // Unused CLEAVIR-AST::FUNCTION-AST = 1199, 
-// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 1538, 
+// Unused CLASP-ANALYZER::ATOMIC-SMART-PTR-OFFSET = 1539, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-BACKQUOTE = 1021, 
 // Unused CLEAVIR-CODE-UTILITIES::WHOLE-MUST-APPEAR-FIRST = 1279, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-LAMBDA-LIST-PATTERN = 1292, 
 // Unused CLEAVIR-CODE-UTILITIES::CODE-CONDITION = 1262, 
 // Unused CLEAVIR-AST::FIXNUM-SUB-AST = 1228, 
 // Unused CLASP-CLEAVIR::CLASP-GLOBAL-ENVIRONMENT = 1388, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1543, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-OFFSET = 1544, 
 // Unused ACCLIMATION::SVENSKA = 890, 
 // Unused CLASP-ANALYZER::LOCAL-VARIABLE = 1493, 
 // Unused COMMON-LISP::STRUCTURE-OBJECT = 750, 
-// Unused CLASP-ANALYZER::NAMESPACE = 1559, 
+// Unused CLASP-ANALYZER::NAMESPACE = 1561, 
 // Unused ECLECTOR.READTABLE.SIMPLE::READTABLE = 992, 
 // Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-NAMES-SPECIAL-OPERATOR = 1371, 
 // Unused CONCRETE-SYNTAX-TREE::CONS-STRUCTURE-MISMATCH-ERROR = 1261, 
@@ -1413,7 +1414,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CORE::CLOSED-STREAM = 796, 
 // Unused CLEAVIR-BIR::MULTIPLE-TO-FIXED = 1171, 
 // Unused CLEAVIR-AST::PRIMOP-AST = 1201, 
-// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 1522, 
+// Unused CLASP-ANALYZER::INCOMPLETE-ARRAY-CTYPE = 1523, 
 // Unused CLEAVIR-CONDITIONS::PROGRAM-NOTE = 1108, 
 // Unused ACCLIMATION::FRENCH = 894, 
 // Unused ECLECTOR.READER::STRUCTURE-TYPE-NAME-IS-NOT-A-SYMBOL = 1075, 
@@ -1426,10 +1427,10 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 1359, 
 // Unused CLEAVIR-AST::ASET-AST = 1256, 
 // Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1150, 
-// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1552, 
+// Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1554, 
 // Unused COMMON-LISP::CONTROL-ERROR = 788, 
-// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1523, 
-// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1533, 
+// Unused CLASP-ANALYZER::CXXRECORD-CTYPE = 1524, 
+// Unused CLASP-ANALYZER::GCARRAY-MOVEABLE-CTYPE = 1534, 
 // Unused CLEAVIR-CST-TO-AST::NO-DEFAULT-METHOD = 1372, 
 // Unused CLEAVIR-AST::UNREACHABLE-AST = 1222, 
 // Unused CONCRETE-SYNTAX-TREE::ECL = 909, 
@@ -1453,6 +1454,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused COMMON-LISP::STREAM-ERROR = 794, 
 // Unused EXT::ASSERT-ERROR = 825, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-SHARPSIGN-EQUALS = 1094, 
+// Unused CLASP-ANALYZER::MUTEX-CTYPE = 1505, 
 // Unused SB-BSD-SOCKETS::CONNECTION-REFUSED-ERROR = 871, 
 // Unused CONCRETE-SYNTAX-TREE::DEFTYPE-LAMBDA-LIST = 967, 
 // Unused CLEAVIR-PRIMOP-INFO::INFO = 1101, 
@@ -1477,7 +1479,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CORE::SIMPLE-PROGRAM-ERROR = 787, 
 // Unused CLEAVIR-ENVIRONMENT::VARIABLE-DYNAMIC-EXTENT = 1322, 
 // Unused CLEAVIR-AST::IF-AST = 1216, 
-// Unused CLASP-ANALYZER::OFFSET = 1536, 
+// Unused CLASP-ANALYZER::OFFSET = 1537, 
 // Unused ECLECTOR.READER::COMPLEX-PARTS-MUST-FOLLOW-SHARPSIGN-C = 1064, 
 // Unused CLEAVIR-AST::MULTIWAY-AST-MIXIN = 1184, 
 // Unused ECLECTOR.READER::NO-STRUCTURE-TYPE-NAME-FOUND = 1074, 
@@ -1491,17 +1493,17 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused STATIC-GFS::CHANGER-UPDATER = 759, 
 // Unused SB-BSD-SOCKETS::OPERATION-NOT-SUPPORTED-ERROR = 876, 
 // Unused CLEAVIR-ENVIRONMENT::TAG = 1317, 
-// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1542, 
+// Unused CLASP-ANALYZER::SMART-PTR-OFFSET = 1543, 
 // Unused COMPILER::SIMPLE-COMPILER-STYLE-WARNING = 862, 
 // Unused ECLECTOR.READER::UNTERMINATED-SINGLE-ESCAPE-IN-STRING = 1017, 
 // Unused ECLECTOR.READER::TOO-MANY-COMPLEX-PARTS = 1069, 
 // Unused CLEAVIR-ENVIRONMENT::LEXICAL-VARIABLE-INFO = 1298, 
-// Unused CLASP-ANALYZER::DONT-ANALYZE-OFFSET = 1541, 
+// Unused CLASP-ANALYZER::DONT-ANALYZE-OFFSET = 1542, 
 // Unused CLASP-CLEAVIR::CLASP-64BIT = 1387, 
 // Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 1397, 
 // Unused CLOS::STANDARD-SLOT-DEFINITION = 718, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-KEY = 1288, 
-// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1518, 
+// Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1519, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 361, 
 // Unused ECLECTOR.READER::READ-TIME-EVALUATION-ERROR = 1044, 
 // Unused CONCRETE-SYNTAX-TREE::EARLEY-STATE = 974, 
@@ -1510,7 +1512,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::CAS-CDR-AST = 1416, 
 // Unused CLASP-CLEAVIR-AST::BASE-FOREIGN-CALL-AST = 1398, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-ORDINARY-OPTIONAL = 1284, 
-// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 1519, 
+// Unused CLASP-ANALYZER::TAGGED-POINTER-CTYPE = 1520, 
 // Unused CLEAVIR-COMPILATION-POLICY::NO-POLICY-COMPUTER = 1329, 
 // Unused SB-BSD-SOCKETS::BAD-FILE-DESCRIPTOR-ERROR = 870, 
 // Unused CLEAVIR-ENVIRONMENT::MACRO = 1315, 
@@ -1529,11 +1531,11 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::NO-INFO = 1336, 
 // Unused CLASP-CLEAVIR::CLASP-ECLECTOR-CLIENT-MIXIN = 1430, 
 // Unused CLASP-CLEAVIR::CLASP-ORDINARY-REST-PARAMETER-GROUP = 1393, 
-// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 1506, 
+// Unused CLASP-ANALYZER::LVALUE-REFERENCE-CTYPE = 1507, 
 // Unused CORE::DO-NOT-FUNCALL-SPECIAL-OPERATOR = 813, 
 // Unused CLEAVIR-AST::FIXNUM-GREATER-AST = 1231, 
 // Unused CLASP-ANALYZER::TEMPLATED-STAMP = 1489, 
-// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 1525, 
+// Unused CLASP-ANALYZER::INJECTED-CLASS-NAME-CTYPE = 1526, 
 // Unused CLEAVIR-CST-TO-AST::FUNCTION-ARGUMENT-MUST-BE-FUNCTION-NAME-OR-LAMBDA-EXPRESSION = 1358, 
 // Unused CLASP-ANALYZER::ABSTRACTALLOC = 1481, 
 // Unused CLEAVIR-AST::GO-AST = 1210, 
@@ -1565,7 +1567,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR-AST::HEADER-STAMP-CASE-AST = 1403, 
 // Unused CONCRETE-SYNTAX-TREE::ENVIRONMENT-PARAMETER-GROUP = 934, 
 // Unused CONCRETE-SYNTAX-TREE::SPECIALIZED-REQUIRED-PARAMETER-GROUP = 926, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1553, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-OFFSET = 1555, 
 // Unused ACCLIMATION::ENGLISH = 893, 
 // Unused CORE::STD-CLASS = 726, 
 // Unused ECLECTOR.READER::END-OF-INPUT-BEFORE-DIGIT = 1050, 
@@ -1579,13 +1581,13 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-BIR::WRITETEMP = 1157, 
 // Unused ECLECTOR.READER::UNKNOWN-CHARACTER-NAME = 1048, 
 // Unused ECLECTOR.READTABLE::SUB-CHAR-MUST-NOT-BE-A-DECIMAL-DIGIT = 989, 
-// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1513, 
+// Unused CLASP-ANALYZER::UNINTERESTING-CTYPE = 1514, 
 // Unused ECLECTOR.READER::COMPLEX-PART-CONDITION = 1066, 
 // Unused CLEAVIR-CST-TO-AST::ODD-KEYWORD-PORTION-WARNING = 1346, 
 // Unused CLEAVIR-CONDITIONS::ORIGIN = 1107, 
 // Unused ECLECTOR.READER::DIGIT-EXPECTED = 1051, 
 // Unused CLEAVIR-BIR::TYPE-CONFLICT = 1175, 
-// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1537, 
+// Unused CLASP-ANALYZER::COPYABLE-OFFSET = 1538, 
 // Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1106, 
 // Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 996, 
 // Unused CLASP-ANALYZER::DEBUG-INFO = 1475, 
@@ -1597,20 +1599,20 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::MACROEXPANSION-ERROR = 1376, 
 // Unused CLEAVIR-BIR::READVAR = 1138, 
 // Unused CLEAVIR-CST-TO-AST::EVAL-WARNING = 1383, 
-// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1534, 
+// Unused CLASP-ANALYZER::GCBITUNITARRAY-MOVEABLE-CTYPE = 1535, 
 // Unused CLEAVIR-AST::MULTIPLE-VALUE-PROG1-AST = 1220, 
 // Unused CLEAVIR-CST-TO-AST::MALFORMED-LAMBDA-LIST = 1374, 
 // Unused ECLECTOR.BASE::STREAM-POSITION-READER-ERROR = 983, 
 // Unused CLOS::EQL-SPECIALIZER = 723, 
 // Unused CLEAVIR-BIR::TRANSFER = 1114, 
 // Unused CLEAVIR-BIR::CHOKE = 1168, 
-// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1535, 
+// Unused CLASP-ANALYZER::GCSTRING-MOVEABLE-CTYPE = 1536, 
 // Unused CLEAVIR-CST-TO-AST::CASE-MUST-BE-PROPER-LIST = 1353, 
 // Unused CLEAVIR-BIR::VALUES-SAVE = 1152, 
-// Unused CLASP-ANALYZER::DESTINATION = 1558, 
+// Unused CLASP-ANALYZER::DESTINATION = 1560, 
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-WHOLE = 958, 
 // Unused CLEAVIR-METER::SIZE-METER = 1181, 
-// Unused CLASP-ANALYZER::CONTAINER = 1531, 
+// Unused CLASP-ANALYZER::CONTAINER = 1532, 
 // Unused CLEAVIR-BIR::LINEAR-DATUM = 1113, 
 // Unused CLASP-CLEAVIR-AST::ATOMIC-RPLACA-AST = 1413, 
 // Unused CLEAVIR-ENVIRONMENT::OPTIMIZE = 1324, 
@@ -1654,14 +1656,14 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-BIR::DYNAMIC-LETI = 1160, 
 // Unused CLOS::STD-METHOD = 743, 
 // Unused CLASP-CLEAVIR-BIR::ATOMIC-RACK-READ = 1440, 
-// Unused CLASP-ANALYZER::SPECIES = 1556, 
+// Unused CLASP-ANALYZER::SPECIES = 1558, 
 // Unused CLEAVIR-BIR::CALL = 1146, 
 // Unused ACCLIMATION::DEUTSCH = 891, 
 // Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE-IN-SYMBOL = 1004, 
 // Unused CLEAVIR-ENVIRONMENT::LOCAL-FUNCTION-INFO = 1302, 
 // Unused CLEAVIR-CST-TO-AST::SETQ-VAR-MUST-BE-SYMBOL = 1366, 
 // Unused COMMON-LISP::BASE-STRING = 732, 
-// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 1526, 
+// Unused CLASP-ANALYZER::POINTER-TO-RECORD-CTYPE = 1527, 
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DESTRUCTURING-OPTIONAL = 1286, 
 // Unused CORE::QUEUED-OP = 843, 
 // Unused ECLECTOR.READER::BACKQUOTE-IN-INVALID-CONTEXT = 1020, 
@@ -1710,7 +1712,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-AST::VALUES-AST = 1219, 
 // Unused CLEAVIR-AST::TYPEQ-AST = 1212, 
 // Unused MP::PROCESS-JOIN-ERROR = 793, 
-// Unused CLASP-ANALYZER::JOB-GROUP = 1562, 
+// Unused CLASP-ANALYZER::JOB-GROUP = 1564, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 368, 
 // Unused ECLECTOR.READER::UNTERMINATED-BLOCK-COMMENT = 1055, 
 // Unused CLEAVIR-BIR::ABSTRACT-LOCAL-CALL = 1148, 
@@ -1720,7 +1722,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused ECLECTOR.READER::SHARPSIGN-EQUALS-ONLY-REFERS-TO-SELF = 1097, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-FEATURE-EXPRESSION = 1091, 
 // Unused CLEAVIR-IO::MODEL-CONDITION = 1176, 
-// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 1512, 
+// Unused CLASP-ANALYZER::UNCLASSIFIED-CTYPE = 1513, 
 // Unused ECLECTOR.READTABLE::UNTERMINATED-DISPATCH-MACRO = 988, 
 // Unused CLEAVIR-CST-TO-AST::LAMBDA-CALL-FIRST-SYMBOL-NOT-LAMBDA = 1373, 
 // Unused ECLECTOR.BASE::STREAM-POSITION-CONDITION = 982, 
@@ -7988,25 +7990,25 @@ public:
 #if defined(GC_OBJ_SCAN)
 #endif // defined(GC_OBJ_SCAN)
 #if defined(GC_OBJ_SCAN_HELPERS)
-// Stamp = core::T_O/7
+// StampWtag = core::T_O/7
 { class_kind, STAMPWTAG_core__T_O, sizeof(core::T_O), 0, 0, "core::T_O" },
-// Stamp = core::VaList_dummy_O/11
+// StampWtag = core::VaList_dummy_O/11
 { class_kind, STAMPWTAG_core__VaList_dummy_O, sizeof(core::VaList_dummy_O), 0, 0, "core::VaList_dummy_O" },
-// Stamp = core::Unused_dummy_O/15
+// StampWtag = core::Unused_dummy_O/15
 { class_kind, STAMPWTAG_core__Unused_dummy_O, sizeof(core::Unused_dummy_O), 0, 0, "core::Unused_dummy_O" },
-// Stamp = core::General_O/19
+// StampWtag = core::General_O/19
 { class_kind, STAMPWTAG_core__General_O, sizeof(core::General_O), 0, IS_POLYMORPHIC, "core::General_O" },
-// Stamp = core::ClassHolder_O/23
+// StampWtag = core::ClassHolder_O/23
 { class_kind, STAMPWTAG_core__ClassHolder_O, sizeof(core::ClassHolder_O), 0, IS_POLYMORPHIC, "core::ClassHolder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::Instance_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClassHolder_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::WrappedPointer_O/26
+// StampWtag = core::WrappedPointer_O/26
 { templated_kind, STAMPWTAG_core__WrappedPointer_O, sizeof(core::WrappedPointer_O), 0, IS_POLYMORPHIC, "core::WrappedPointer_O" },
 //      field: "ShiftedStamp_" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),ShiftedStamp_), 0, "ShiftedStamp_" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "Class_" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WrappedPointer_O),Class_), 0, "Class_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::SymbolToEnumConverter_O/31
+// StampWtag = core::SymbolToEnumConverter_O/31
 { class_kind, STAMPWTAG_core__SymbolToEnumConverter_O, sizeof(core::SymbolToEnumConverter_O), 0, IS_POLYMORPHIC, "core::SymbolToEnumConverter_O" },
 //      field: "_WhatTheEnumsRepresent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_WhatTheEnumsRepresent), 0, "_WhatTheEnumsRepresent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8018,11 +8020,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_EnumToArchiveSymbol), 0, "_EnumToArchiveSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_SymbolToEnum" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolToEnumConverter_O),_SymbolToEnum), 0, "_SymbolToEnum" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Attribute_O/35
+// StampWtag = llvmo::Attribute_O/35
 { class_kind, STAMPWTAG_llvmo__Attribute_O, sizeof(llvmo::Attribute_O), 0, IS_POLYMORPHIC, "llvmo::Attribute_O" },
 //      field: "_Attribute" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::Attribute>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Attribute" :NAME "Attribute") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::Attribute), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Attribute_O),_Attribute), 0, "_Attribute" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::LambdaListHandler_O/39
+// StampWtag = core::LambdaListHandler_O/39
 { class_kind, STAMPWTAG_core__LambdaListHandler_O, sizeof(core::LambdaListHandler_O), 0, IS_POLYMORPHIC, "core::LambdaListHandler_O" },
 //      field: "_NumberOfSpecialVariables" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_NumberOfSpecialVariables), 0, "_NumberOfSpecialVariables" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8072,19 +8074,19 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_RequiredLexicalArgumentsOnly), 0, "_RequiredLexicalArgumentsOnly" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_LexicalVariableNamesForDebugging" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LambdaListHandler_O),_LexicalVariableNamesForDebugging), 0, "_LexicalVariableNamesForDebugging" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::AttributeSet_O/43
+// StampWtag = llvmo::AttributeSet_O/43
 { class_kind, STAMPWTAG_llvmo__AttributeSet_O, sizeof(llvmo::AttributeSet_O), 0, IS_POLYMORPHIC, "llvmo::AttributeSet_O" },
 //      field: "val" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::AttributeSet>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::AttributeSet" :NAME "AttributeSet") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::AttributeSet), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AttributeSet_O),val), 0, "val" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::AtomicT_Holder_O/47
+// StampWtag = core::AtomicT_Holder_O/47
 { class_kind, STAMPWTAG_core__AtomicT_Holder_O, sizeof(core::AtomicT_Holder_O), 0, IS_POLYMORPHIC, "core::AtomicT_Holder_O" },
 //      field: "_Object" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicT_Holder_O),_Object), 0, "_Object" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Function_O/51
+// StampWtag = core::Function_O/51
 { class_kind, STAMPWTAG_core__Function_O, sizeof(core::Function_O), 0, IS_POLYMORPHIC, "core::Function_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Function_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FuncallableInstance_O/53
+// StampWtag = core::FuncallableInstance_O/53
 { class_kind, STAMPWTAG_core__FuncallableInstance_O, sizeof(core::FuncallableInstance_O), 0, IS_POLYMORPHIC, "core::FuncallableInstance_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8096,57 +8098,57 @@ public:
  {  fixed_field, ATOMIC_POD_OFFSET_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_InterpretedCalls), 0, "_InterpretedCalls" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_CompiledDispatchFunction" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstance_O),_CompiledDispatchFunction), 0, "_CompiledDispatchFunction" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Creator_O/59
+// StampWtag = core::Creator_O/59
 { templated_kind, STAMPWTAG_core__Creator_O, sizeof(core::Creator_O), 0, IS_POLYMORPHIC, "core::Creator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Creator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::ClassRepCreator_O/63
+// StampWtag = core::ClassRepCreator_O/63
 { class_kind, STAMPWTAG_core__ClassRepCreator_O, sizeof(core::ClassRepCreator_O), 0, IS_POLYMORPHIC, "core::ClassRepCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClassRepCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::DerivableCxxClassCreator_O/67
+// StampWtag = core::DerivableCxxClassCreator_O/67
 { class_kind, STAMPWTAG_core__DerivableCxxClassCreator_O, sizeof(core::DerivableCxxClassCreator_O), 0, IS_POLYMORPHIC, "core::DerivableCxxClassCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxClassCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FuncallableInstanceCreator_O/71
+// StampWtag = core::FuncallableInstanceCreator_O/71
 { class_kind, STAMPWTAG_core__FuncallableInstanceCreator_O, sizeof(core::FuncallableInstanceCreator_O), 0, IS_POLYMORPHIC, "core::FuncallableInstanceCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FuncallableInstanceCreator_O),_class), 0, "_class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ConstructorCreator_O/75
+// StampWtag = clbind::ConstructorCreator_O/75
 { templated_kind, STAMPWTAG_clbind__ConstructorCreator_O, sizeof(clbind::ConstructorCreator_O), 0, IS_POLYMORPHIC, "clbind::ConstructorCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_mostDerivedClassSymbol" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_mostDerivedClassSymbol), 0, "_mostDerivedClassSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::DummyCreator_O/79
+// StampWtag = clbind::DummyCreator_O/79
 { class_kind, STAMPWTAG_clbind__DummyCreator_O, sizeof(clbind::DummyCreator_O), 0, IS_POLYMORPHIC, "clbind::DummyCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_name), 0, "_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::InstanceCreator_O/83
+// StampWtag = core::InstanceCreator_O/83
 { class_kind, STAMPWTAG_core__InstanceCreator_O, sizeof(core::InstanceCreator_O), 0, IS_POLYMORPHIC, "core::InstanceCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_class), 0, "_class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::StandardClassCreator_O/87
+// StampWtag = core::StandardClassCreator_O/87
 { class_kind, STAMPWTAG_core__StandardClassCreator_O, sizeof(core::StandardClassCreator_O), 0, IS_POLYMORPHIC, "core::StandardClassCreator_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::StandardClassCreator_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SpecialForm_O/91
+// StampWtag = core::SpecialForm_O/91
 { class_kind, STAMPWTAG_core__SpecialForm_O, sizeof(core::SpecialForm_O), 0, IS_POLYMORPHIC, "core::SpecialForm_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_fptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "gctools::multiple_values<class core::T_O> (class gctools::smart_ptr<core::List_V>, class gctools::smart_ptr<core::T_O>)"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SpecialForm_O),_fptr), 0, "_fptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Closure_O/95
+// StampWtag = core::Closure_O/95
 { templated_kind, STAMPWTAG_core__Closure_O, sizeof(core::Closure_O), 0, IS_POLYMORPHIC, "core::Closure_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Closure_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::ClosureWithSlots_O/99
+// StampWtag = core::ClosureWithSlots_O/99
 { class_kind, STAMPWTAG_core__ClosureWithSlots_O, sizeof(core::ClosureWithSlots_O), 0, IS_POLYMORPHIC, "core::ClosureWithSlots_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ClosureWithSlots_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8159,13 +8161,13 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = core::BuiltinClosure_O/103
+// StampWtag = core::BuiltinClosure_O/103
 { templated_kind, STAMPWTAG_core__BuiltinClosure_O, sizeof(core::BuiltinClosure_O), 0, IS_POLYMORPHIC, "core::BuiltinClosure_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_lambdaListHandler" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LambdaListHandler_O>" :SPECIALIZER "class core::LambdaListHandler_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BuiltinClosure_O),_lambdaListHandler), 0, "_lambdaListHandler" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::TranslationFunctor_O/107
+// StampWtag = core::TranslationFunctor_O/107
 { class_kind, STAMPWTAG_core__TranslationFunctor_O, sizeof(core::TranslationFunctor_O), 0, IS_POLYMORPHIC, "core::TranslationFunctor_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8173,30 +8175,30 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),_lambdaListHandler), 0, "_lambdaListHandler" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "fptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "core::T_O *(class core::T_O *)"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::TranslationFunctor_O),fptr), 0, "fptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SingleDispatchGenericFunctionClosure_O/111
+// StampWtag = core::SingleDispatchGenericFunctionClosure_O/111
 { class_kind, STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O, sizeof(core::SingleDispatchGenericFunctionClosure_O), 0, IS_POLYMORPHIC, "core::SingleDispatchGenericFunctionClosure_O" },
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::GlobalEntryPoint_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::GlobalEntryPoint_O>" :SPECIALIZER "class core::GlobalEntryPoint_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::GlobalEntryPoint_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchGenericFunctionClosure_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::ImmobileObject_O/115
+// StampWtag = core::ImmobileObject_O/115
 { class_kind, STAMPWTAG_core__ImmobileObject_O, sizeof(core::ImmobileObject_O), 0, IS_POLYMORPHIC, "core::ImmobileObject_O" },
 //      field: "_Head" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ImmobileObject_O),_Head), 0, "_Head" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Tail" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ImmobileObject_O),_Tail), 0, "_Tail" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::WeakPointer_O/119
+// StampWtag = core::WeakPointer_O/119
 { class_kind, STAMPWTAG_core__WeakPointer_O, sizeof(core::WeakPointer_O), 0, IS_POLYMORPHIC, "core::WeakPointer_O" },
 //      field: "_WeakObject" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakPointerManager" :NAME "WeakPointerManager")
 //      field: ".pointer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::WeakPointer>" :SPECIALIZER "struct gctools::WeakPointer")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::WeakPointer>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_WeakObject.pointer), 0, "_WeakObject.pointer" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = llvmo::DebugLoc_O/123
+// StampWtag = llvmo::DebugLoc_O/123
 { class_kind, STAMPWTAG_llvmo__DebugLoc_O, sizeof(llvmo::DebugLoc_O), 0, IS_POLYMORPHIC, "llvmo::DebugLoc_O" },
 //      field: "_DebugLoc" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::DebugLoc>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DebugLoc" :NAME "DebugLoc") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::DebugLoc), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DebugLoc_O),_DebugLoc), 0, "_DebugLoc" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Pointer_O/127
+// StampWtag = core::Pointer_O/127
 { class_kind, STAMPWTAG_core__Pointer_O, sizeof(core::Pointer_O), 0, IS_POLYMORPHIC, "core::Pointer_O" },
 //      field: "m_raw_data" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pointer_O),m_raw_data), 0, "m_raw_data" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = clasp_ffi::ForeignData_O/131
+// StampWtag = clasp_ffi::ForeignData_O/131
 { class_kind, STAMPWTAG_clasp_ffi__ForeignData_O, sizeof(clasp_ffi::ForeignData_O), 0, IS_POLYMORPHIC, "clasp_ffi::ForeignData_O" },
 //      field: "m_raw_data" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),m_raw_data), 0, "m_raw_data" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
@@ -8206,51 +8208,51 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),m_size), 0, "m_size" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "m_orig_data_ptr" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignData_O),m_orig_data_ptr), 0, "m_orig_data_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::CxxObject_O/135
+// StampWtag = core::CxxObject_O/135
 { class_kind, STAMPWTAG_core__CxxObject_O, sizeof(core::CxxObject_O), 0, IS_POLYMORPHIC, "core::CxxObject_O" },
-// Stamp = asttooling::SourceLocation_O/139
+// StampWtag = asttooling::SourceLocation_O/139
 { class_kind, STAMPWTAG_asttooling__SourceLocation_O, sizeof(asttooling::SourceLocation_O), 0, IS_POLYMORPHIC, "asttooling::SourceLocation_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<clang::SourceLocation>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clang::SourceLocation" :NAME "SourceLocation") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(clang::SourceLocation), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::SourceLocation_O),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::NativeVector_float_O/143
+// StampWtag = core::NativeVector_float_O/143
 { class_kind, STAMPWTAG_core__NativeVector_float_O, sizeof(core::NativeVector_float_O), 0, IS_POLYMORPHIC, "core::NativeVector_float_O" },
 //      field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<float>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL)))
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<float,gctools::GCContainerAllocator<gctools::GCVector_moveable<float>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<float>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<float>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<float>>" :SPECIALIZER "class gctools::GCVector_moveable<float>")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<float>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_float_O),_Vector._Vector._Contents), 0, "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = asttooling::PresumedLoc_O/147
+// StampWtag = asttooling::PresumedLoc_O/147
 { class_kind, STAMPWTAG_asttooling__PresumedLoc_O, sizeof(asttooling::PresumedLoc_O), 0, IS_POLYMORPHIC, "asttooling::PresumedLoc_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<clang::PresumedLoc>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clang::PresumedLoc" :NAME "PresumedLoc") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(clang::PresumedLoc), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::PresumedLoc_O),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::MDBuilder_O/151
+// StampWtag = llvmo::MDBuilder_O/151
 { class_kind, STAMPWTAG_llvmo__MDBuilder_O, sizeof(llvmo::MDBuilder_O), 0, IS_POLYMORPHIC, "llvmo::MDBuilder_O" },
 //      field: "_Builder" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MDBuilder" :NAME "MDBuilder"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDBuilder_O),_Builder), 0, "_Builder" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = mp::ConditionVariable_O/155
+// StampWtag = mp::ConditionVariable_O/155
 { class_kind, STAMPWTAG_mp__ConditionVariable_O, sizeof(mp::ConditionVariable_O), 0, IS_POLYMORPHIC, "mp::ConditionVariable_O" },
 //      field: "_ConditionVariable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::ConditionVariable>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::ConditionVariable" :NAME "ConditionVariable") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::ConditionVariable), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_ConditionVariable), 0, "_ConditionVariable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::ConditionVariable_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::NativeVector_double_O/159
+// StampWtag = core::NativeVector_double_O/159
 { class_kind, STAMPWTAG_core__NativeVector_double_O, sizeof(core::NativeVector_double_O), 0, IS_POLYMORPHIC, "core::NativeVector_double_O" },
 //      field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<double>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL)))
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<double,gctools::GCContainerAllocator<gctools::GCVector_moveable<double>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<double>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<double>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<double>>" :SPECIALIZER "class gctools::GCVector_moveable<double>")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<double>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_double_O),_Vector._Vector._Contents), 0, "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = core::NativeVector_int_O/163
+// StampWtag = core::NativeVector_int_O/163
 { class_kind, STAMPWTAG_core__NativeVector_int_O, sizeof(core::NativeVector_int_O), 0, IS_POLYMORPHIC, "core::NativeVector_int_O" },
 //      field: "_Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<int>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL)))
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<int,gctools::GCContainerAllocator<gctools::GCVector_moveable<int>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<int>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<int>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<int>>" :SPECIALIZER "class gctools::GCVector_moveable<int>")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<int>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::NativeVector_int_O),_Vector._Vector._Contents), 0, "_Vector._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = llvmo::FunctionCallee_O/167
+// StampWtag = llvmo::FunctionCallee_O/167
 { class_kind, STAMPWTAG_llvmo__FunctionCallee_O, sizeof(llvmo::FunctionCallee_O), 0, IS_POLYMORPHIC, "llvmo::FunctionCallee_O" },
 //      field: "_Info" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::FunctionCallee>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::FunctionCallee" :NAME "FunctionCallee") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::FunctionCallee), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionCallee_O),_Info), 0, "_Info" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::CodeBase_O/171
+// StampWtag = llvmo::CodeBase_O/171
 { class_kind, STAMPWTAG_llvmo__CodeBase_O, sizeof(llvmo::CodeBase_O), 0, IS_POLYMORPHIC, "llvmo::CodeBase_O" },
-// Stamp = llvmo::Code_O/175
+// StampWtag = llvmo::Code_O/175
 { class_kind, STAMPWTAG_llvmo__Code_O, sizeof(llvmo::Code_O), 0, IS_POLYMORPHIC, "llvmo::Code_O" },
 //      field: "_HeadOffset" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_HeadOffset), 0, "_HeadOffset" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8283,7 +8285,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
-// Stamp = llvmo::Library_O/179
+// StampWtag = llvmo::Library_O/179
 { class_kind, STAMPWTAG_llvmo__Library_O, sizeof(llvmo::Library_O), 0, IS_POLYMORPHIC, "llvmo::Library_O" },
 //      field: "_Start" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_Start), 0, "_Start" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8291,13 +8293,13 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_End), 0, "_End" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Library_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::DINodeArray_O/183
+// StampWtag = llvmo::DINodeArray_O/183
 { class_kind, STAMPWTAG_llvmo__DINodeArray_O, sizeof(llvmo::DINodeArray_O), 0, IS_POLYMORPHIC, "llvmo::DINodeArray_O" },
 //      field: "_Val" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::MDTupleTypedArrayWrapper<llvm::DINode>>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "llvm::MDTupleTypedArrayWrapper<llvm::DINode>" :NAME "MDTupleTypedArrayWrapper" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DINode" :NAME "DINode") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::MDTupleTypedArrayWrapper<llvm::DINode>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINodeArray_O),_Val), 0, "_Val" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::LibraryBase_O/187
+// StampWtag = llvmo::LibraryBase_O/187
 { class_kind, STAMPWTAG_llvmo__LibraryBase_O, sizeof(llvmo::LibraryBase_O), 0, IS_POLYMORPHIC, "llvmo::LibraryBase_O" },
-// Stamp = llvmo::ObjectFile_O/191
+// StampWtag = llvmo::ObjectFile_O/191
 { class_kind, STAMPWTAG_llvmo__ObjectFile_O, sizeof(llvmo::ObjectFile_O), 0, IS_POLYMORPHIC, "llvmo::ObjectFile_O" },
 //      field: "_MemoryBuffer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::UNIQUE-PTR-CTYPE :KEY "std::unique_ptr<llvm::MemoryBuffer,std::default_delete<llvm::MemoryBuffer>>" :NAME "unique_ptr" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MemoryBuffer" :NAME "MemoryBuffer") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::default_delete<llvm::MemoryBuffer>" :NAME "default_delete" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MemoryBuffer" :NAME "MemoryBuffer") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
  {  fixed_field, CXX_FIXUP_OFFSET, sizeof(std::unique_ptr<llvm::MemoryBuffer,std::default_delete<llvm::MemoryBuffer>>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_MemoryBuffer), 0, "_MemoryBuffer" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8313,15 +8315,15 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_FasoIndex), 0, "_FasoIndex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Code" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::Code_O>" :SPECIALIZER "class llvmo::Code_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::Code_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ObjectFile_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::LibraryFile_O/195
+// StampWtag = llvmo::LibraryFile_O/195
 { class_kind, STAMPWTAG_llvmo__LibraryFile_O, sizeof(llvmo::LibraryFile_O), 0, IS_POLYMORPHIC, "llvmo::LibraryFile_O" },
 //      field: "_Library" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LibraryFile_O),_Library), 0, "_Library" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = asttooling::QualType_O/199
+// StampWtag = asttooling::QualType_O/199
 { class_kind, STAMPWTAG_asttooling__QualType_O, sizeof(asttooling::QualType_O), 0, IS_POLYMORPHIC, "asttooling::QualType_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<clang::QualType>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "clang::QualType" :NAME "QualType") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(clang::QualType), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::QualType_O),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = mp::Mutex_O/203
+// StampWtag = mp::Mutex_O/203
 { class_kind, STAMPWTAG_mp__Mutex_O, sizeof(mp::Mutex_O), 0, IS_POLYMORPHIC, "mp::Mutex_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8329,7 +8331,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Owner), 0, "_Owner" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Mutex_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = mp::RecursiveMutex_O/207
+// StampWtag = mp::RecursiveMutex_O/207
 { class_kind, STAMPWTAG_mp__RecursiveMutex_O, sizeof(mp::RecursiveMutex_O), 0, IS_POLYMORPHIC, "mp::RecursiveMutex_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8337,50 +8339,22 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Owner), 0, "_Owner" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::RecursiveMutex_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::DITypeRefArray_O/211
+// StampWtag = llvmo::DITypeRefArray_O/211
 { class_kind, STAMPWTAG_llvmo__DITypeRefArray_O, sizeof(llvmo::DITypeRefArray_O), 0, IS_POLYMORPHIC, "llvmo::DITypeRefArray_O" },
 //      field: "_Val" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::DITypeRefArray>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DITypeRefArray" :NAME "DITypeRefArray") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::DITypeRefArray), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DITypeRefArray_O),_Val), 0, "_Val" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = mp::SharedMutex_O/215
+// StampWtag = mp::SharedMutex_O/215
 { class_kind, STAMPWTAG_mp__SharedMutex_O, sizeof(mp::SharedMutex_O), 0, IS_POLYMORPHIC, "mp::SharedMutex_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Owner" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_Owner), 0, "_Owner" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._NameWord" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
-// {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._NameWord), 0, "_SharedMutex.mReadMutex._NameWord" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
+//      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex), 0, "_SharedMutex.mReadMutex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
-// {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Mutex.__sig), 0, "_SharedMutex.mReadMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
-// {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Counter), 0, "_SharedMutex.mReadMutex._Counter" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mReadMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Recursive" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
-// {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadMutex._Recursive), 0, "_SharedMutex.mReadMutex._Recursive" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._NameWord" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
-// {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._NameWord), 0, "_SharedMutex.mWriteMutex._NameWord" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "_opaque_pthread_mutex_t" :NAME "_opaque_pthread_mutex_t")
-//      field: ".__sig" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long")
-// {  fixed_field, ctype_long, sizeof(long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Mutex.__sig), 0, "_SharedMutex.mWriteMutex._Mutex.__sig" }, // atomic: NIL public: (T T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Counter" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
-// {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Counter), 0, "_SharedMutex.mWriteMutex._Counter" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
-//      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
-//      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex")
-//      field: "._Recursive" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
-// {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex._Recursive), 0, "_SharedMutex.mWriteMutex._Recursive" }, // atomic: NIL public: (T T T) fixable: NIL good-name: T
+//      field: ".mWriteMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mp::Mutex>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::Mutex" :NAME "Mutex") :INTEGRAL-VALUE NIL)))
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(mp::Mutex), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mWriteMutex), 0, "_SharedMutex.mWriteMutex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
 //      field: ".mReadsBlocked" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReadsBlocked), 0, "_SharedMutex.mReadsBlocked" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
@@ -8390,7 +8364,7 @@ public:
 //      field: "_SharedMutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mp::UpgradableSharedMutex" :NAME "UpgradableSharedMutex")
 //      field: ".mReaders" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(mp::SharedMutex_O),_SharedMutex.mReaders), 0, "_SharedMutex.mReaders" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = mp::Process_O/219
+// StampWtag = mp::Process_O/219
 { class_kind, STAMPWTAG_mp__Process_O, sizeof(mp::Process_O), 0, IS_POLYMORPHIC, "mp::Process_O" },
 //      field: "_UniqueID" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),_UniqueID), 0, "_UniqueID" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8424,7 +8398,7 @@ public:
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),thr_o), 0, "thr_o" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "root" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<mps_root_s *>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "mps_root_s" :NAME "mps_root_s")) :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(mp::Process_O),root), 0, "root" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SingleDispatchMethod_O/223
+// StampWtag = core::SingleDispatchMethod_O/223
 { class_kind, STAMPWTAG_core__SingleDispatchMethod_O, sizeof(core::SingleDispatchMethod_O), 0, IS_POLYMORPHIC, "core::SingleDispatchMethod_O" },
 //      field: "_name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_name), 0, "_name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8438,9 +8412,9 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_docstring), 0, "_docstring" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_function" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Function_O>" :SPECIALIZER "class core::Function_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_function), 0, "_function" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Iterator_O/227
+// StampWtag = core::Iterator_O/227
 { class_kind, STAMPWTAG_core__Iterator_O, sizeof(core::Iterator_O), 0, IS_POLYMORPHIC, "core::Iterator_O" },
-// Stamp = core::DirectoryIterator_O/231
+// StampWtag = core::DirectoryIterator_O/231
 { class_kind, STAMPWTAG_core__DirectoryIterator_O, sizeof(core::DirectoryIterator_O), 0, IS_POLYMORPHIC, "core::DirectoryIterator_O" },
 //      field: "_Path" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_Path), 0, "_Path" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8448,7 +8422,7 @@ public:
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_CurrentIterator), 0, "_CurrentIterator" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_EndIterator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<boost::filesystem::directory_iterator>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::directory_iterator" :NAME "directory_iterator") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::filesystem::directory_iterator), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryIterator_O),_EndIterator), 0, "_EndIterator" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::RecursiveDirectoryIterator_O/235
+// StampWtag = core::RecursiveDirectoryIterator_O/235
 { class_kind, STAMPWTAG_core__RecursiveDirectoryIterator_O, sizeof(core::RecursiveDirectoryIterator_O), 0, IS_POLYMORPHIC, "core::RecursiveDirectoryIterator_O" },
 //      field: "_Path" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Path_O>" :SPECIALIZER "class core::Path_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_Path), 0, "_Path" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -8458,11 +8432,11 @@ public:
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_CurrentIterator), 0, "_CurrentIterator" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_EndIterator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<boost::filesystem::recursive_directory_iterator>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::recursive_directory_iterator" :NAME "recursive_directory_iterator") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::filesystem::recursive_directory_iterator), __builtin_offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_EndIterator), 0, "_EndIterator" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Array_O/239
+// StampWtag = core::Array_O/239
 { class_kind, STAMPWTAG_core__Array_O, sizeof(core::Array_O), 0, IS_POLYMORPHIC, "core::Array_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Array_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::MDArray_O/243
+// StampWtag = core::MDArray_O/243
 { class_kind, STAMPWTAG_core__MDArray_O, sizeof(core::MDArray_O), 0, IS_POLYMORPHIC, "core::MDArray_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8486,8 +8460,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>/247
-// Stamp = core::MDArray_int16_t_O/251
+// StampWtag = core::template_Array<core::MDArray_int16_t_O,core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::MDArray_O>/247
+// StampWtag = core::MDArray_int16_t_O/251
 { class_kind, STAMPWTAG_core__MDArray_int16_t_O, sizeof(core::MDArray_int16_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8511,8 +8485,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>/255
-// Stamp = core::MDArray_int8_t_O/259
+// StampWtag = core::template_Array<core::MDArray_int8_t_O,core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::MDArray_O>/255
+// StampWtag = core::MDArray_int8_t_O/259
 { class_kind, STAMPWTAG_core__MDArray_int8_t_O, sizeof(core::MDArray_int8_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8536,8 +8510,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>/263
-// Stamp = core::MDArray_int32_t_O/267
+// StampWtag = core::template_Array<core::MDArray_int32_t_O,core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::MDArray_O>/263
+// StampWtag = core::MDArray_int32_t_O/267
 { class_kind, STAMPWTAG_core__MDArray_int32_t_O, sizeof(core::MDArray_int32_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8561,8 +8535,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>/271
-// Stamp = core::MDArray_byte4_t_O/275
+// StampWtag = core::template_Array<core::MDArray_byte4_t_O,core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::MDArray_O>/271
+// StampWtag = core::MDArray_byte4_t_O/275
 { class_kind, STAMPWTAG_core__MDArray_byte4_t_O, sizeof(core::MDArray_byte4_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8586,8 +8560,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>/279
-// Stamp = core::MDArray_float_O/283
+// StampWtag = core::template_Array<core::MDArray_float_O,core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::MDArray_O>/279
+// StampWtag = core::MDArray_float_O/283
 { class_kind, STAMPWTAG_core__MDArray_float_O, sizeof(core::MDArray_float_O), 0, IS_POLYMORPHIC, "core::MDArray_float_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_float_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8611,8 +8585,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>/287
-// Stamp = core::MDArray_size_t_O/291
+// StampWtag = core::template_Array<core::MDArray_size_t_O,core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::MDArray_O>/287
+// StampWtag = core::MDArray_size_t_O/291
 { class_kind, STAMPWTAG_core__MDArray_size_t_O, sizeof(core::MDArray_size_t_O), 0, IS_POLYMORPHIC, "core::MDArray_size_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_size_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8636,8 +8610,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>/295
-// Stamp = core::MDArray_byte8_t_O/299
+// StampWtag = core::template_Array<core::MDArray_byte8_t_O,core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::MDArray_O>/295
+// StampWtag = core::MDArray_byte8_t_O/299
 { class_kind, STAMPWTAG_core__MDArray_byte8_t_O, sizeof(core::MDArray_byte8_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8661,8 +8635,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>/303
-// Stamp = core::MDArray_int64_t_O/307
+// StampWtag = core::template_Array<core::MDArray_int64_t_O,core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::MDArray_O>/303
+// StampWtag = core::MDArray_int64_t_O/307
 { class_kind, STAMPWTAG_core__MDArray_int64_t_O, sizeof(core::MDArray_int64_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8686,8 +8660,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>/311
-// Stamp = core::MDArray_byte32_t_O/315
+// StampWtag = core::template_Array<core::MDArray_byte32_t_O,core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::MDArray_O>/311
+// StampWtag = core::MDArray_byte32_t_O/315
 { class_kind, STAMPWTAG_core__MDArray_byte32_t_O, sizeof(core::MDArray_byte32_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8711,8 +8685,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>/319
-// Stamp = core::MDArray_byte2_t_O/323
+// StampWtag = core::template_Array<core::MDArray_byte2_t_O,core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::MDArray_O>/319
+// StampWtag = core::MDArray_byte2_t_O/323
 { class_kind, STAMPWTAG_core__MDArray_byte2_t_O, sizeof(core::MDArray_byte2_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8736,8 +8710,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>/327
-// Stamp = core::MDArray_int2_t_O/331
+// StampWtag = core::template_Array<core::MDArray_int2_t_O,core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::MDArray_O>/327
+// StampWtag = core::MDArray_int2_t_O/331
 { class_kind, STAMPWTAG_core__MDArray_int2_t_O, sizeof(core::MDArray_int2_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8761,8 +8735,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>/335
-// Stamp = core::MDArray_fixnum_O/339
+// StampWtag = core::template_Array<core::MDArray_fixnum_O,core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::MDArray_O>/335
+// StampWtag = core::MDArray_fixnum_O/339
 { class_kind, STAMPWTAG_core__MDArray_fixnum_O, sizeof(core::MDArray_fixnum_O), 0, IS_POLYMORPHIC, "core::MDArray_fixnum_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_fixnum_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8786,8 +8760,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>/343
-// Stamp = core::MDArrayBaseChar_O/347
+// StampWtag = core::template_Array<core::MDArrayBaseChar_O,core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::MDArray_O>/343
+// StampWtag = core::MDArrayBaseChar_O/347
 { class_kind, STAMPWTAG_core__MDArrayBaseChar_O, sizeof(core::MDArrayBaseChar_O), 0, IS_POLYMORPHIC, "core::MDArrayBaseChar_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBaseChar_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8811,8 +8785,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>/351
-// Stamp = core::MDArray_byte64_t_O/355
+// StampWtag = core::template_Array<core::MDArray_byte64_t_O,core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::MDArray_O>/351
+// StampWtag = core::MDArray_byte64_t_O/355
 { class_kind, STAMPWTAG_core__MDArray_byte64_t_O, sizeof(core::MDArray_byte64_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8836,8 +8810,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>/359
-// Stamp = core::MDArrayCharacter_O/363
+// StampWtag = core::template_Array<core::MDArrayCharacter_O,core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::MDArray_O>/359
+// StampWtag = core::MDArrayCharacter_O/363
 { class_kind, STAMPWTAG_core__MDArrayCharacter_O, sizeof(core::MDArrayCharacter_O), 0, IS_POLYMORPHIC, "core::MDArrayCharacter_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayCharacter_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8861,8 +8835,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>/367
-// Stamp = core::MDArrayT_O/371
+// StampWtag = core::template_Array<core::MDArrayT_O,core::SimpleMDArrayT_O,core::SimpleVector_O,core::MDArray_O>/367
+// StampWtag = core::MDArrayT_O/371
 { class_kind, STAMPWTAG_core__MDArrayT_O, sizeof(core::MDArrayT_O), 0, IS_POLYMORPHIC, "core::MDArrayT_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayT_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8886,8 +8860,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>/375
-// Stamp = core::MDArrayBit_O/379
+// StampWtag = core::template_Array<core::MDArrayBit_O,core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::MDArray_O>/375
+// StampWtag = core::MDArrayBit_O/379
 { class_kind, STAMPWTAG_core__MDArrayBit_O, sizeof(core::MDArrayBit_O), 0, IS_POLYMORPHIC, "core::MDArrayBit_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArrayBit_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8911,8 +8885,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>/383
-// Stamp = core::MDArray_byte16_t_O/387
+// StampWtag = core::template_Array<core::MDArray_byte16_t_O,core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::MDArray_O>/383
+// StampWtag = core::MDArray_byte16_t_O/387
 { class_kind, STAMPWTAG_core__MDArray_byte16_t_O, sizeof(core::MDArray_byte16_t_O), 0, IS_POLYMORPHIC, "core::MDArray_byte16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_byte16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8936,7 +8910,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::SimpleMDArray_O/391
+// StampWtag = core::SimpleMDArray_O/391
 { class_kind, STAMPWTAG_core__SimpleMDArray_O, sizeof(core::SimpleMDArray_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8960,8 +8934,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>/395
-// Stamp = core::SimpleMDArray_int8_t_O/399
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int8_t_O,core::SimpleVector_int8_t_O,core::SimpleMDArray_O>/395
+// StampWtag = core::SimpleMDArray_int8_t_O/399
 { class_kind, STAMPWTAG_core__SimpleMDArray_int8_t_O, sizeof(core::SimpleMDArray_int8_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -8985,8 +8959,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>/403
-// Stamp = core::SimpleMDArray_double_O/407
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::SimpleMDArray_O>/403
+// StampWtag = core::SimpleMDArray_double_O/407
 { class_kind, STAMPWTAG_core__SimpleMDArray_double_O, sizeof(core::SimpleMDArray_double_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_double_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_double_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9010,8 +8984,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>/411
-// Stamp = core::SimpleMDArray_byte32_t_O/415
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte32_t_O,core::SimpleVector_byte32_t_O,core::SimpleMDArray_O>/411
+// StampWtag = core::SimpleMDArray_byte32_t_O/415
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte32_t_O, sizeof(core::SimpleMDArray_byte32_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9035,8 +9009,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>/419
-// Stamp = core::SimpleMDArrayT_O/423
+// StampWtag = core::template_SimpleArray<core::SimpleMDArrayT_O,core::SimpleVector_O,core::SimpleMDArray_O>/419
+// StampWtag = core::SimpleMDArrayT_O/423
 { class_kind, STAMPWTAG_core__SimpleMDArrayT_O, sizeof(core::SimpleMDArrayT_O), 0, IS_POLYMORPHIC, "core::SimpleMDArrayT_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayT_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9060,8 +9034,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>/427
-// Stamp = core::SimpleMDArray_int2_t_O/431
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int2_t_O,core::SimpleVector_int2_t_O,core::SimpleMDArray_O>/427
+// StampWtag = core::SimpleMDArray_int2_t_O/431
 { class_kind, STAMPWTAG_core__SimpleMDArray_int2_t_O, sizeof(core::SimpleMDArray_int2_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9085,8 +9059,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>/435
-// Stamp = core::SimpleMDArray_byte4_t_O/439
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte4_t_O,core::SimpleVector_byte4_t_O,core::SimpleMDArray_O>/435
+// StampWtag = core::SimpleMDArray_byte4_t_O/439
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte4_t_O, sizeof(core::SimpleMDArray_byte4_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9110,8 +9084,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>/443
-// Stamp = core::SimpleMDArray_int32_t_O/447
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int32_t_O,core::SimpleVector_int32_t_O,core::SimpleMDArray_O>/443
+// StampWtag = core::SimpleMDArray_int32_t_O/447
 { class_kind, STAMPWTAG_core__SimpleMDArray_int32_t_O, sizeof(core::SimpleMDArray_int32_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9135,8 +9109,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>/451
-// Stamp = core::SimpleMDArray_float_O/455
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_float_O,core::SimpleVector_float_O,core::SimpleMDArray_O>/451
+// StampWtag = core::SimpleMDArray_float_O/455
 { class_kind, STAMPWTAG_core__SimpleMDArray_float_O, sizeof(core::SimpleMDArray_float_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_float_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_float_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9160,8 +9134,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>/459
-// Stamp = core::SimpleMDArray_int16_t_O/463
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int16_t_O,core::SimpleVector_int16_t_O,core::SimpleMDArray_O>/459
+// StampWtag = core::SimpleMDArray_int16_t_O/463
 { class_kind, STAMPWTAG_core__SimpleMDArray_int16_t_O, sizeof(core::SimpleMDArray_int16_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9185,8 +9159,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>/467
-// Stamp = core::SimpleMDArray_size_t_O/471
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_size_t_O,core::SimpleVector_size_t_O,core::SimpleMDArray_O>/467
+// StampWtag = core::SimpleMDArray_size_t_O/471
 { class_kind, STAMPWTAG_core__SimpleMDArray_size_t_O, sizeof(core::SimpleMDArray_size_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_size_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_size_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9210,8 +9184,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>/475
-// Stamp = core::SimpleMDArray_int4_t_O/479
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::SimpleMDArray_O>/475
+// StampWtag = core::SimpleMDArray_int4_t_O/479
 { class_kind, STAMPWTAG_core__SimpleMDArray_int4_t_O, sizeof(core::SimpleMDArray_int4_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9235,8 +9209,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>/483
-// Stamp = core::SimpleMDArrayCharacter_O/487
+// StampWtag = core::template_SimpleArray<core::SimpleMDArrayCharacter_O,core::SimpleCharacterString_O,core::SimpleMDArray_O>/483
+// StampWtag = core::SimpleMDArrayCharacter_O/487
 { class_kind, STAMPWTAG_core__SimpleMDArrayCharacter_O, sizeof(core::SimpleMDArrayCharacter_O), 0, IS_POLYMORPHIC, "core::SimpleMDArrayCharacter_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayCharacter_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9260,8 +9234,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>/491
-// Stamp = core::SimpleMDArray_byte2_t_O/495
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte2_t_O,core::SimpleVector_byte2_t_O,core::SimpleMDArray_O>/491
+// StampWtag = core::SimpleMDArray_byte2_t_O/495
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte2_t_O, sizeof(core::SimpleMDArray_byte2_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9285,8 +9259,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>/499
-// Stamp = core::SimpleMDArray_fixnum_O/503
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_fixnum_O,core::SimpleVector_fixnum_O,core::SimpleMDArray_O>/499
+// StampWtag = core::SimpleMDArray_fixnum_O/503
 { class_kind, STAMPWTAG_core__SimpleMDArray_fixnum_O, sizeof(core::SimpleMDArray_fixnum_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_fixnum_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_fixnum_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9310,8 +9284,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>/507
-// Stamp = core::SimpleMDArray_byte16_t_O/511
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte16_t_O,core::SimpleVector_byte16_t_O,core::SimpleMDArray_O>/507
+// StampWtag = core::SimpleMDArray_byte16_t_O/511
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte16_t_O, sizeof(core::SimpleMDArray_byte16_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9335,8 +9309,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>/515
-// Stamp = core::SimpleMDArrayBaseChar_O/519
+// StampWtag = core::template_SimpleArray<core::SimpleMDArrayBaseChar_O,core::SimpleBaseString_O,core::SimpleMDArray_O>/515
+// StampWtag = core::SimpleMDArrayBaseChar_O/519
 { class_kind, STAMPWTAG_core__SimpleMDArrayBaseChar_O, sizeof(core::SimpleMDArrayBaseChar_O), 0, IS_POLYMORPHIC, "core::SimpleMDArrayBaseChar_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBaseChar_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9360,8 +9334,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>/523
-// Stamp = core::SimpleMDArray_byte64_t_O/527
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte64_t_O,core::SimpleVector_byte64_t_O,core::SimpleMDArray_O>/523
+// StampWtag = core::SimpleMDArray_byte64_t_O/527
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte64_t_O, sizeof(core::SimpleMDArray_byte64_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9385,8 +9359,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>/531
-// Stamp = core::SimpleMDArrayBit_O/535
+// StampWtag = core::template_SimpleArray<core::SimpleMDArrayBit_O,core::SimpleBitVector_O,core::SimpleMDArray_O>/531
+// StampWtag = core::SimpleMDArrayBit_O/535
 { class_kind, STAMPWTAG_core__SimpleMDArrayBit_O, sizeof(core::SimpleMDArrayBit_O), 0, IS_POLYMORPHIC, "core::SimpleMDArrayBit_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArrayBit_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9410,8 +9384,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>/539
-// Stamp = core::SimpleMDArray_byte8_t_O/543
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_byte8_t_O,core::SimpleVector_byte8_t_O,core::SimpleMDArray_O>/539
+// StampWtag = core::SimpleMDArray_byte8_t_O/543
 { class_kind, STAMPWTAG_core__SimpleMDArray_byte8_t_O, sizeof(core::SimpleMDArray_byte8_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_byte8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_byte8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9435,8 +9409,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>/547
-// Stamp = core::SimpleMDArray_int64_t_O/551
+// StampWtag = core::template_SimpleArray<core::SimpleMDArray_int64_t_O,core::SimpleVector_int64_t_O,core::SimpleMDArray_O>/547
+// StampWtag = core::SimpleMDArray_int64_t_O/551
 { class_kind, STAMPWTAG_core__SimpleMDArray_int64_t_O, sizeof(core::SimpleMDArray_int64_t_O), 0, IS_POLYMORPHIC, "core::SimpleMDArray_int64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleMDArray_int64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9460,8 +9434,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>/555
-// Stamp = core::MDArray_int4_t_O/559
+// StampWtag = core::template_Array<core::MDArray_int4_t_O,core::SimpleMDArray_int4_t_O,core::SimpleVector_int4_t_O,core::MDArray_O>/555
+// StampWtag = core::MDArray_int4_t_O/559
 { class_kind, STAMPWTAG_core__MDArray_int4_t_O, sizeof(core::MDArray_int4_t_O), 0, IS_POLYMORPHIC, "core::MDArray_int4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_int4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9485,8 +9459,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>/563
-// Stamp = core::MDArray_double_O/567
+// StampWtag = core::template_Array<core::MDArray_double_O,core::SimpleMDArray_double_O,core::SimpleVector_double_O,core::MDArray_O>/563
+// StampWtag = core::MDArray_double_O/567
 { class_kind, STAMPWTAG_core__MDArray_double_O, sizeof(core::MDArray_double_O), 0, IS_POLYMORPHIC, "core::MDArray_double_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::MDArray_double_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9510,7 +9484,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::ComplexVector_O/571
+// StampWtag = core::ComplexVector_O/571
 { class_kind, STAMPWTAG_core__ComplexVector_O, sizeof(core::ComplexVector_O), 0, IS_POLYMORPHIC, "core::ComplexVector_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9534,8 +9508,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>/575
-// Stamp = core::ComplexVector_double_O/579
+// StampWtag = core::template_Vector<core::ComplexVector_double_O,core::SimpleVector_double_O,core::ComplexVector_O>/575
+// StampWtag = core::ComplexVector_double_O/579
 { class_kind, STAMPWTAG_core__ComplexVector_double_O, sizeof(core::ComplexVector_double_O), 0, IS_POLYMORPHIC, "core::ComplexVector_double_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_double_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9559,8 +9533,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>/583
-// Stamp = core::ComplexVector_int8_t_O/587
+// StampWtag = core::template_Vector<core::ComplexVector_int8_t_O,core::SimpleVector_int8_t_O,core::ComplexVector_O>/583
+// StampWtag = core::ComplexVector_int8_t_O/587
 { class_kind, STAMPWTAG_core__ComplexVector_int8_t_O, sizeof(core::ComplexVector_int8_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9584,8 +9558,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>/591
-// Stamp = core::ComplexVector_byte64_t_O/595
+// StampWtag = core::template_Vector<core::ComplexVector_byte64_t_O,core::SimpleVector_byte64_t_O,core::ComplexVector_O>/591
+// StampWtag = core::ComplexVector_byte64_t_O/595
 { class_kind, STAMPWTAG_core__ComplexVector_byte64_t_O, sizeof(core::ComplexVector_byte64_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9609,8 +9583,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>/599
-// Stamp = core::ComplexVector_T_O/603
+// StampWtag = core::template_Vector<core::ComplexVector_T_O,core::SimpleVector_O,core::ComplexVector_O>/599
+// StampWtag = core::ComplexVector_T_O/603
 { class_kind, STAMPWTAG_core__ComplexVector_T_O, sizeof(core::ComplexVector_T_O), 0, IS_POLYMORPHIC, "core::ComplexVector_T_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_T_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9634,8 +9608,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>/607
-// Stamp = core::ComplexVector_int2_t_O/611
+// StampWtag = core::template_Vector<core::ComplexVector_int2_t_O,core::SimpleVector_int2_t_O,core::ComplexVector_O>/607
+// StampWtag = core::ComplexVector_int2_t_O/611
 { class_kind, STAMPWTAG_core__ComplexVector_int2_t_O, sizeof(core::ComplexVector_int2_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9659,8 +9633,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>/615
-// Stamp = core::ComplexVector_int32_t_O/619
+// StampWtag = core::template_Vector<core::ComplexVector_int32_t_O,core::SimpleVector_int32_t_O,core::ComplexVector_O>/615
+// StampWtag = core::ComplexVector_int32_t_O/619
 { class_kind, STAMPWTAG_core__ComplexVector_int32_t_O, sizeof(core::ComplexVector_int32_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9684,8 +9658,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>/623
-// Stamp = core::ComplexVector_byte16_t_O/627
+// StampWtag = core::template_Vector<core::ComplexVector_byte16_t_O,core::SimpleVector_byte16_t_O,core::ComplexVector_O>/623
+// StampWtag = core::ComplexVector_byte16_t_O/627
 { class_kind, STAMPWTAG_core__ComplexVector_byte16_t_O, sizeof(core::ComplexVector_byte16_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9709,8 +9683,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>/631
-// Stamp = core::ComplexVector_float_O/635
+// StampWtag = core::template_Vector<core::ComplexVector_float_O,core::SimpleVector_float_O,core::ComplexVector_O>/631
+// StampWtag = core::ComplexVector_float_O/635
 { class_kind, STAMPWTAG_core__ComplexVector_float_O, sizeof(core::ComplexVector_float_O), 0, IS_POLYMORPHIC, "core::ComplexVector_float_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_float_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9734,8 +9708,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>/639
-// Stamp = core::ComplexVector_int16_t_O/643
+// StampWtag = core::template_Vector<core::ComplexVector_int16_t_O,core::SimpleVector_int16_t_O,core::ComplexVector_O>/639
+// StampWtag = core::ComplexVector_int16_t_O/643
 { class_kind, STAMPWTAG_core__ComplexVector_int16_t_O, sizeof(core::ComplexVector_int16_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9759,8 +9733,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>/647
-// Stamp = core::ComplexVector_int4_t_O/651
+// StampWtag = core::template_Vector<core::ComplexVector_int4_t_O,core::SimpleVector_int4_t_O,core::ComplexVector_O>/647
+// StampWtag = core::ComplexVector_int4_t_O/651
 { class_kind, STAMPWTAG_core__ComplexVector_int4_t_O, sizeof(core::ComplexVector_int4_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9784,8 +9758,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>/655
-// Stamp = core::ComplexVector_size_t_O/659
+// StampWtag = core::template_Vector<core::ComplexVector_size_t_O,core::SimpleVector_size_t_O,core::ComplexVector_O>/655
+// StampWtag = core::ComplexVector_size_t_O/659
 { class_kind, STAMPWTAG_core__ComplexVector_size_t_O, sizeof(core::ComplexVector_size_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_size_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_size_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9809,8 +9783,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>/663
-// Stamp = core::ComplexVector_byte2_t_O/667
+// StampWtag = core::template_Vector<core::ComplexVector_byte2_t_O,core::SimpleVector_byte2_t_O,core::ComplexVector_O>/663
+// StampWtag = core::ComplexVector_byte2_t_O/667
 { class_kind, STAMPWTAG_core__ComplexVector_byte2_t_O, sizeof(core::ComplexVector_byte2_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9834,8 +9808,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>/671
-// Stamp = core::ComplexVector_byte8_t_O/675
+// StampWtag = core::template_Vector<core::ComplexVector_byte8_t_O,core::SimpleVector_byte8_t_O,core::ComplexVector_O>/671
+// StampWtag = core::ComplexVector_byte8_t_O/675
 { class_kind, STAMPWTAG_core__ComplexVector_byte8_t_O, sizeof(core::ComplexVector_byte8_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9859,8 +9833,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>/679
-// Stamp = core::ComplexVector_byte32_t_O/683
+// StampWtag = core::template_Vector<core::ComplexVector_byte32_t_O,core::SimpleVector_byte32_t_O,core::ComplexVector_O>/679
+// StampWtag = core::ComplexVector_byte32_t_O/683
 { class_kind, STAMPWTAG_core__ComplexVector_byte32_t_O, sizeof(core::ComplexVector_byte32_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9884,8 +9858,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>/687
-// Stamp = core::BitVectorNs_O/691
+// StampWtag = core::template_Vector<core::BitVectorNs_O,core::SimpleBitVector_O,core::ComplexVector_O>/687
+// StampWtag = core::BitVectorNs_O/691
 { class_kind, STAMPWTAG_core__BitVectorNs_O, sizeof(core::BitVectorNs_O), 0, IS_POLYMORPHIC, "core::BitVectorNs_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::BitVectorNs_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9909,7 +9883,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::StrNs_O/695
+// StampWtag = core::StrNs_O/695
 { class_kind, STAMPWTAG_core__StrNs_O, sizeof(core::StrNs_O), 0, IS_POLYMORPHIC, "core::StrNs_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrNs_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9933,8 +9907,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>/699
-// Stamp = core::Str8Ns_O/703
+// StampWtag = core::template_Vector<core::Str8Ns_O,core::SimpleBaseString_O,core::StrNs_O>/699
+// StampWtag = core::Str8Ns_O/703
 { class_kind, STAMPWTAG_core__Str8Ns_O, sizeof(core::Str8Ns_O), 0, IS_POLYMORPHIC, "core::Str8Ns_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Str8Ns_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9958,8 +9932,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>/707
-// Stamp = core::StrWNs_O/711
+// StampWtag = core::template_Vector<core::StrWNs_O,core::SimpleCharacterString_O,core::StrNs_O>/707
+// StampWtag = core::StrWNs_O/711
 { class_kind, STAMPWTAG_core__StrWNs_O, sizeof(core::StrWNs_O), 0, IS_POLYMORPHIC, "core::StrWNs_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::StrWNs_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -9983,8 +9957,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>/715
-// Stamp = core::ComplexVector_byte4_t_O/719
+// StampWtag = core::template_Vector<core::ComplexVector_byte4_t_O,core::SimpleVector_byte4_t_O,core::ComplexVector_O>/715
+// StampWtag = core::ComplexVector_byte4_t_O/719
 { class_kind, STAMPWTAG_core__ComplexVector_byte4_t_O, sizeof(core::ComplexVector_byte4_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_byte4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_byte4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10008,8 +9982,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>/723
-// Stamp = core::ComplexVector_fixnum_O/727
+// StampWtag = core::template_Vector<core::ComplexVector_fixnum_O,core::SimpleVector_fixnum_O,core::ComplexVector_O>/723
+// StampWtag = core::ComplexVector_fixnum_O/727
 { class_kind, STAMPWTAG_core__ComplexVector_fixnum_O, sizeof(core::ComplexVector_fixnum_O), 0, IS_POLYMORPHIC, "core::ComplexVector_fixnum_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_fixnum_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10033,8 +10007,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>/731
-// Stamp = core::ComplexVector_int64_t_O/735
+// StampWtag = core::template_Vector<core::ComplexVector_int64_t_O,core::SimpleVector_int64_t_O,core::ComplexVector_O>/731
+// StampWtag = core::ComplexVector_int64_t_O/735
 { class_kind, STAMPWTAG_core__ComplexVector_int64_t_O, sizeof(core::ComplexVector_int64_t_O), 0, IS_POLYMORPHIC, "core::ComplexVector_int64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::ComplexVector_int64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10058,12 +10032,12 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::AbstractSimpleVector_O/739
+// StampWtag = core::AbstractSimpleVector_O/739
 { class_kind, STAMPWTAG_core__AbstractSimpleVector_O, sizeof(core::AbstractSimpleVector_O), 0, IS_POLYMORPHIC, "core::AbstractSimpleVector_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::AbstractSimpleVector_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::template_SimpleVector<core::SimpleVector_int64_t_O,long long,core::AbstractSimpleVector_O>/743
-// Stamp = core::SimpleVector_int64_t_O/747
+// StampWtag = core::template_SimpleVector<core::SimpleVector_int64_t_O,long long,core::AbstractSimpleVector_O>/743
+// StampWtag = core::SimpleVector_int64_t_O/747
 { class_kind, STAMPWTAG_core__SimpleVector_int64_t_O, sizeof(core::SimpleVector_int64_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10076,12 +10050,12 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")>
 {    variable_field, ctype_long_long, sizeof(long long), 0, 0, "only" },
-// Stamp = core::SimpleString_O/751
+// StampWtag = core::SimpleString_O/751
 { class_kind, STAMPWTAG_core__SimpleString_O, sizeof(core::SimpleString_O), 0, IS_POLYMORPHIC, "core::SimpleString_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleString_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>/755
-// Stamp = core::SimpleBaseString_O/759
+// StampWtag = core::template_SimpleVector<core::SimpleBaseString_O,unsigned char,core::SimpleString_O>/755
+// StampWtag = core::SimpleBaseString_O/759
 { class_kind, STAMPWTAG_core__SimpleBaseString_O, sizeof(core::SimpleBaseString_O), 0, IS_POLYMORPHIC, "core::SimpleBaseString_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBaseString_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10094,8 +10068,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>/763
-// Stamp = core::SimpleCharacterString_O/767
+// StampWtag = core::template_SimpleVector<core::SimpleCharacterString_O,unsigned int,core::SimpleString_O>/763
+// StampWtag = core::SimpleCharacterString_O/767
 { class_kind, STAMPWTAG_core__SimpleCharacterString_O, sizeof(core::SimpleCharacterString_O), 0, IS_POLYMORPHIC, "core::SimpleCharacterString_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleCharacterString_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10108,8 +10082,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>/771
-// Stamp = core::SimpleVector_int16_t_O/775
+// StampWtag = core::template_SimpleVector<core::SimpleVector_int16_t_O,short,core::AbstractSimpleVector_O>/771
+// StampWtag = core::SimpleVector_int16_t_O/775
 { class_kind, STAMPWTAG_core__SimpleVector_int16_t_O, sizeof(core::SimpleVector_int16_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10122,8 +10096,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>/779
-// Stamp = core::SimpleVector_byte16_t_O/783
+// StampWtag = core::template_SimpleVector<core::SimpleVector_byte16_t_O,unsigned short,core::AbstractSimpleVector_O>/779
+// StampWtag = core::SimpleVector_byte16_t_O/783
 { class_kind, STAMPWTAG_core__SimpleVector_byte16_t_O, sizeof(core::SimpleVector_byte16_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte16_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte16_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10136,8 +10110,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_fixnum_O,long long,core::AbstractSimpleVector_O>/787
-// Stamp = core::SimpleVector_fixnum_O/791
+// StampWtag = core::template_SimpleVector<core::SimpleVector_fixnum_O,long long,core::AbstractSimpleVector_O>/787
+// StampWtag = core::SimpleVector_fixnum_O/791
 { class_kind, STAMPWTAG_core__SimpleVector_fixnum_O, sizeof(core::SimpleVector_fixnum_O), 0, IS_POLYMORPHIC, "core::SimpleVector_fixnum_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_fixnum_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10150,8 +10124,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")>
 {    variable_field, ctype_long_long, sizeof(long long), 0, 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>/795
-// Stamp = core::SimpleBitVector_O/799
+// StampWtag = core::template_SimpleBitUnitVector<core::SimpleBitVector_O,1,0>/795
+// StampWtag = core::SimpleBitVector_O/799
 { class_kind, STAMPWTAG_core__SimpleBitVector_O, sizeof(core::SimpleBitVector_O), 0, IS_POLYMORPHIC, "core::SimpleBitVector_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleBitVector_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10164,8 +10138,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>/803
-// Stamp = core::SimpleVector_int4_t_O/807
+// StampWtag = core::template_SimpleBitUnitVector<core::SimpleVector_int4_t_O,4,1>/803
+// StampWtag = core::SimpleVector_int4_t_O/807
 { class_kind, STAMPWTAG_core__SimpleVector_int4_t_O, sizeof(core::SimpleVector_int4_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10178,8 +10152,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/811
-// Stamp = core::SimpleVector_byte32_t_O/815
+// StampWtag = core::template_SimpleVector<core::SimpleVector_byte32_t_O,unsigned int,core::AbstractSimpleVector_O>/811
+// StampWtag = core::SimpleVector_byte32_t_O/815
 { class_kind, STAMPWTAG_core__SimpleVector_byte32_t_O, sizeof(core::SimpleVector_byte32_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10192,8 +10166,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/819
-// Stamp = core::SimpleVector_size_t_O/823
+// StampWtag = core::template_SimpleVector<core::SimpleVector_size_t_O,unsigned long,core::AbstractSimpleVector_O>/819
+// StampWtag = core::SimpleVector_size_t_O/823
 { class_kind, STAMPWTAG_core__SimpleVector_size_t_O, sizeof(core::SimpleVector_size_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_size_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_size_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10206,8 +10180,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/827
-// Stamp = core::SimpleVector_double_O/831
+// StampWtag = core::template_SimpleVector<core::SimpleVector_double_O,double,core::AbstractSimpleVector_O>/827
+// StampWtag = core::SimpleVector_double_O/831
 { class_kind, STAMPWTAG_core__SimpleVector_double_O, sizeof(core::SimpleVector_double_O), 0, IS_POLYMORPHIC, "core::SimpleVector_double_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_double_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10220,8 +10194,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>/835
-// Stamp = core::SimpleVector_int2_t_O/839
+// StampWtag = core::template_SimpleBitUnitVector<core::SimpleVector_int2_t_O,2,1>/835
+// StampWtag = core::SimpleVector_int2_t_O/839
 { class_kind, STAMPWTAG_core__SimpleVector_int2_t_O, sizeof(core::SimpleVector_int2_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10234,8 +10208,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long long,core::AbstractSimpleVector_O>/843
-// Stamp = core::SimpleVector_byte64_t_O/847
+// StampWtag = core::template_SimpleVector<core::SimpleVector_byte64_t_O,unsigned long long,core::AbstractSimpleVector_O>/843
+// StampWtag = core::SimpleVector_byte64_t_O/847
 { class_kind, STAMPWTAG_core__SimpleVector_byte64_t_O, sizeof(core::SimpleVector_byte64_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte64_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte64_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10248,8 +10222,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/851
-// Stamp = core::SimpleVector_int8_t_O/855
+// StampWtag = core::template_SimpleVector<core::SimpleVector_int8_t_O,signed char,core::AbstractSimpleVector_O>/851
+// StampWtag = core::SimpleVector_int8_t_O/855
 { class_kind, STAMPWTAG_core__SimpleVector_int8_t_O, sizeof(core::SimpleVector_int8_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10262,8 +10236,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>/859
-// Stamp = core::SimpleVector_float_O/863
+// StampWtag = core::template_SimpleVector<core::SimpleVector_float_O,float,core::AbstractSimpleVector_O>/859
+// StampWtag = core::SimpleVector_float_O/863
 { class_kind, STAMPWTAG_core__SimpleVector_float_O, sizeof(core::SimpleVector_float_O), 0, IS_POLYMORPHIC, "core::SimpleVector_float_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_float_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10276,8 +10250,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>/867
-// Stamp = core::SimpleVector_O/871
+// StampWtag = core::template_SimpleVector<core::SimpleVector_O,gctools::smart_ptr<core::T_O>,core::AbstractSimpleVector_O>/867
+// StampWtag = core::SimpleVector_O/871
 { class_kind, STAMPWTAG_core__SimpleVector_O, sizeof(core::SimpleVector_O), 0, IS_POLYMORPHIC, "core::SimpleVector_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10290,8 +10264,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>/875
-// Stamp = core::SimpleVector_byte8_t_O/879
+// StampWtag = core::template_SimpleVector<core::SimpleVector_byte8_t_O,unsigned char,core::AbstractSimpleVector_O>/875
+// StampWtag = core::SimpleVector_byte8_t_O/879
 { class_kind, STAMPWTAG_core__SimpleVector_byte8_t_O, sizeof(core::SimpleVector_byte8_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte8_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte8_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10304,8 +10278,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>/883
-// Stamp = core::SimpleVector_byte2_t_O/887
+// StampWtag = core::template_SimpleBitUnitVector<core::SimpleVector_byte2_t_O,2,0>/883
+// StampWtag = core::SimpleVector_byte2_t_O/887
 { class_kind, STAMPWTAG_core__SimpleVector_byte2_t_O, sizeof(core::SimpleVector_byte2_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte2_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte2_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10318,8 +10292,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>/891
-// Stamp = core::SimpleVector_int32_t_O/895
+// StampWtag = core::template_SimpleVector<core::SimpleVector_int32_t_O,int,core::AbstractSimpleVector_O>/891
+// StampWtag = core::SimpleVector_int32_t_O/895
 { class_kind, STAMPWTAG_core__SimpleVector_int32_t_O, sizeof(core::SimpleVector_int32_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_int32_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_int32_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10332,8 +10306,8 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// Stamp = core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>/899
-// Stamp = core::SimpleVector_byte4_t_O/903
+// StampWtag = core::template_SimpleBitUnitVector<core::SimpleVector_byte4_t_O,4,0>/899
+// StampWtag = core::SimpleVector_byte4_t_O/903
 { class_kind, STAMPWTAG_core__SimpleVector_byte4_t_O, sizeof(core::SimpleVector_byte4_t_O), 0, IS_POLYMORPHIC, "core::SimpleVector_byte4_t_O" },
 //      field: "_Length" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
  {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::SimpleVector_byte4_t_O),_Length), 0, "_Length" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -10346,7 +10320,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = core::Symbol_O/907
+// StampWtag = core::Symbol_O/907
 { class_kind, STAMPWTAG_core__Symbol_O, sizeof(core::Symbol_O), 0, IS_POLYMORPHIC, "core::Symbol_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10364,7 +10338,7 @@ public:
  {  fixed_field, ATOMIC_POD_OFFSET_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_Flags), 0, "_Flags" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_PropertyList" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Symbol_O),_PropertyList), 0, "_PropertyList" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Null_O/911
+// StampWtag = core::Null_O/911
 { class_kind, STAMPWTAG_core__Null_O, sizeof(core::Null_O), 0, IS_POLYMORPHIC, "core::Null_O" },
 //      field: "_Name" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleString_O>" :SPECIALIZER "class core::SimpleString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_Name), 0, "_Name" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10382,25 +10356,25 @@ public:
  {  fixed_field, ATOMIC_POD_OFFSET_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_Flags), 0, "_Flags" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_PropertyList" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Null_O),_PropertyList), 0, "_PropertyList" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Character_dummy_O/915
+// StampWtag = core::Character_dummy_O/915
 { class_kind, STAMPWTAG_core__Character_dummy_O, sizeof(core::Character_dummy_O), 0, IS_POLYMORPHIC, "core::Character_dummy_O" },
-// Stamp = llvmo::DataLayout_O/919
+// StampWtag = llvmo::DataLayout_O/919
 { class_kind, STAMPWTAG_llvmo__DataLayout_O, sizeof(llvmo::DataLayout_O), 0, IS_POLYMORPHIC, "llvmo::DataLayout_O" },
 //      field: "_DataLayout" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DataLayout" :NAME "DataLayout"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DataLayout_O),_DataLayout), 0, "_DataLayout" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::LoadTimeValues_O/923
+// StampWtag = core::LoadTimeValues_O/923
 { class_kind, STAMPWTAG_core__LoadTimeValues_O, sizeof(core::LoadTimeValues_O), 0, IS_POLYMORPHIC, "core::LoadTimeValues_O" },
 //      field: "_Objects" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::Vec0<gctools::smart_ptr<core::T_O>>" :NAME "Vec0" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 //      field: "._Vector" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCVector<gctools::smart_ptr<core::T_O>,gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>>" :NAME "GCVector" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::GCContainerAllocator<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>" :NAME "GCContainerAllocator" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::GCVECTOR-MOVEABLE-CTYPE :KEY "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" :NAME "GCVector_moveable" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL))) :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>" :SPECIALIZER "class gctools::GCVector_moveable<class gctools::smart_ptr<core::T_O> >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LoadTimeValues_O),_Objects._Vector._Contents), 0, "_Objects._Vector._Contents" }, // atomic: NIL public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = core::SharpEqualWrapper_O/927
+// StampWtag = core::SharpEqualWrapper_O/927
 { class_kind, STAMPWTAG_core__SharpEqualWrapper_O, sizeof(core::SharpEqualWrapper_O), 0, IS_POLYMORPHIC, "core::SharpEqualWrapper_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Label" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SharpEqualWrapper_O),_Label), 0, "_Label" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::ClaspJIT_O/931
+// StampWtag = llvmo::ClaspJIT_O/931
 { class_kind, STAMPWTAG_llvmo__ClaspJIT_O, sizeof(llvmo::ClaspJIT_O), 0, IS_POLYMORPHIC, "llvmo::ClaspJIT_O" },
 //      field: "_MainJITDylib" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::JITDylib_O>" :SPECIALIZER "class llvmo::JITDylib_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::JITDylib_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ClaspJIT_O),_MainJITDylib), 0, "_MainJITDylib" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10408,7 +10382,7 @@ public:
  {  fixed_field, CXX_FIXUP_OFFSET, sizeof(std::unique_ptr<llvm::orc::LLJIT,std::default_delete<llvm::orc::LLJIT>>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ClaspJIT_O),_LLJIT), 0, "_LLJIT" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "LinkLayer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::orc::ObjectLinkingLayer" :NAME "ObjectLinkingLayer"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ClaspJIT_O),LinkLayer), 0, "LinkLayer" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Readtable_O/935
+// StampWtag = core::Readtable_O/935
 { class_kind, STAMPWTAG_core__Readtable_O, sizeof(core::Readtable_O), 0, IS_POLYMORPHIC, "core::Readtable_O" },
 //      field: "Case_" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),Case_), 0, "Case_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10418,37 +10392,37 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),MacroCharacters_), 0, "MacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "DispatchMacroCharacters_" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTable_O>" :SPECIALIZER "class core::HashTable_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTable_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Readtable_O),DispatchMacroCharacters_), 0, "DispatchMacroCharacters_" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::PosixTime_O/939
+// StampWtag = core::PosixTime_O/939
 { class_kind, STAMPWTAG_core__PosixTime_O, sizeof(core::PosixTime_O), 0, IS_POLYMORPHIC, "core::PosixTime_O" },
 //      field: "_Time" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<boost::posix_time::ptime>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::ptime" :NAME "ptime") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::posix_time::ptime), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time), 0, "_Time" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Exposer_O/943
+// StampWtag = core::Exposer_O/943
 { class_kind, STAMPWTAG_core__Exposer_O, sizeof(core::Exposer_O), 0, IS_POLYMORPHIC, "core::Exposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Exposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::CoreExposer_O/947
+// StampWtag = core::CoreExposer_O/947
 { class_kind, STAMPWTAG_core__CoreExposer_O, sizeof(core::CoreExposer_O), 0, IS_POLYMORPHIC, "core::CoreExposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CoreExposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = asttooling::AsttoolingExposer_O/951
+// StampWtag = asttooling::AsttoolingExposer_O/951
 { class_kind, STAMPWTAG_asttooling__AsttoolingExposer_O, sizeof(asttooling::AsttoolingExposer_O), 0, IS_POLYMORPHIC, "asttooling::AsttoolingExposer_O" },
 //      field: "_Package" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_Package), 0, "_Package" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_PackageName" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::SimpleBaseString_O>" :SPECIALIZER "class core::SimpleBaseString_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBaseString_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AsttoolingExposer_O),_PackageName), 0, "_PackageName" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::StructLayout_O/955
+// StampWtag = llvmo::StructLayout_O/955
 { class_kind, STAMPWTAG_llvmo__StructLayout_O, sizeof(llvmo::StructLayout_O), 0, IS_POLYMORPHIC, "llvmo::StructLayout_O" },
 //      field: "_StructLayout" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::StructLayout" :NAME "StructLayout"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructLayout_O),_StructLayout), 0, "_StructLayout" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::PosixTimeDuration_O/959
+// StampWtag = core::PosixTimeDuration_O/959
 { class_kind, STAMPWTAG_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, IS_POLYMORPHIC, "core::PosixTimeDuration_O" },
 //      field: "_Duration" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<boost::posix_time::time_duration>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::posix_time::time_duration" :NAME "time_duration") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::posix_time::time_duration), __builtin_offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_Duration), 0, "_Duration" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = clasp_ffi::ForeignTypeSpec_O/963
+// StampWtag = clasp_ffi::ForeignTypeSpec_O/963
 { class_kind, STAMPWTAG_clasp_ffi__ForeignTypeSpec_O, sizeof(clasp_ffi::ForeignTypeSpec_O), 0, IS_POLYMORPHIC, "clasp_ffi::ForeignTypeSpec_O" },
 //      field: "m_lisp_symbol" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_lisp_symbol), 0, "m_lisp_symbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10470,19 +10444,19 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clasp_ffi::ForeignData_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_to_object_fn_ptr), 0, "m_to_object_fn_ptr" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "m_from_object_fn_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clasp_ffi::ForeignData_O>" :SPECIALIZER "class clasp_ffi::ForeignData_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clasp_ffi::ForeignData_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clasp_ffi::ForeignTypeSpec_O),m_from_object_fn_ptr), 0, "m_from_object_fn_ptr" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Instance_O/965
+// StampWtag = core::Instance_O/965
 { class_kind, STAMPWTAG_core__Instance_O, sizeof(core::Instance_O), 0, IS_POLYMORPHIC, "core::Instance_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Rack" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Instance_O),_Rack), 0, "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::DerivableCxxObject_O/968
+// StampWtag = core::DerivableCxxObject_O/968
 { class_kind, STAMPWTAG_core__DerivableCxxObject_O, sizeof(core::DerivableCxxObject_O), 0, IS_POLYMORPHIC, "core::DerivableCxxObject_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Rack" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Rack_O>" :SPECIALIZER "class core::Rack_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Rack_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::DerivableCxxObject_O),_Rack), 0, "_Rack" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRep_O/973
+// StampWtag = clbind::ClassRep_O/973
 { class_kind, STAMPWTAG_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, IS_POLYMORPHIC, "clbind::ClassRep_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Class), 0, "_Class" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -10502,12 +10476,12 @@ public:
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_classes), 0, "m_classes" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "m_derivable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),m_derivable), 0, "m_derivable" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::SmallMap_O/979
+// StampWtag = core::SmallMap_O/979
 { class_kind, STAMPWTAG_core__SmallMap_O, sizeof(core::SmallMap_O), 0, IS_POLYMORPHIC, "core::SmallMap_O" },
 //      field: "map" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMap<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>" :NAME "SmallMap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::T_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), 0, "map._Contents" }, // atomic: NIL public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = mpip::Mpi_O/983
+// StampWtag = mpip::Mpi_O/983
 { class_kind, STAMPWTAG_mpip__Mpi_O, sizeof(mpip::Mpi_O), 0, IS_POLYMORPHIC, "mpip::Mpi_O" },
 //      field: "_LastReturnCode" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_LastReturnCode), 0, "_LastReturnCode" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
@@ -10515,41 +10489,41 @@ public:
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_Source), 0, "_Source" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_Tag" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(mpip::Mpi_O),_Tag), 0, "_Tag" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::ExternalObject_O/987
+// StampWtag = core::ExternalObject_O/987
 { class_kind, STAMPWTAG_core__ExternalObject_O, sizeof(core::ExternalObject_O), 0, IS_POLYMORPHIC, "core::ExternalObject_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ExternalObject_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Pass_O/991
+// StampWtag = llvmo::Pass_O/991
 { class_kind, STAMPWTAG_llvmo__Pass_O, sizeof(llvmo::Pass_O), 0, IS_POLYMORPHIC, "llvmo::Pass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Pass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ModulePass_O/995
+// StampWtag = llvmo::ModulePass_O/995
 { class_kind, STAMPWTAG_llvmo__ModulePass_O, sizeof(llvmo::ModulePass_O), 0, IS_POLYMORPHIC, "llvmo::ModulePass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ModulePass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ImmutablePass_O/999
+// StampWtag = llvmo::ImmutablePass_O/999
 { class_kind, STAMPWTAG_llvmo__ImmutablePass_O, sizeof(llvmo::ImmutablePass_O), 0, IS_POLYMORPHIC, "llvmo::ImmutablePass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ImmutablePass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::TargetLibraryInfoWrapperPass_O/1003
+// StampWtag = llvmo::TargetLibraryInfoWrapperPass_O/1003
 { class_kind, STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O, sizeof(llvmo::TargetLibraryInfoWrapperPass_O), 0, IS_POLYMORPHIC, "llvmo::TargetLibraryInfoWrapperPass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetLibraryInfoWrapperPass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::FunctionPass_O/1007
+// StampWtag = llvmo::FunctionPass_O/1007
 { class_kind, STAMPWTAG_llvmo__FunctionPass_O, sizeof(llvmo::FunctionPass_O), 0, IS_POLYMORPHIC, "llvmo::FunctionPass_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Pass" :NAME "Pass"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPass_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ExecutionEngine_O/1011
+// StampWtag = llvmo::ExecutionEngine_O/1011
 { class_kind, STAMPWTAG_llvmo__ExecutionEngine_O, sizeof(llvmo::ExecutionEngine_O), 0, IS_POLYMORPHIC, "llvmo::ExecutionEngine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10557,79 +10531,79 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_DependentModules" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ExecutionEngine_O),_DependentModules), 0, "_DependentModules" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::MCSubtargetInfo_O/1015
+// StampWtag = llvmo::MCSubtargetInfo_O/1015
 { class_kind, STAMPWTAG_llvmo__MCSubtargetInfo_O, sizeof(llvmo::MCSubtargetInfo_O), 0, IS_POLYMORPHIC, "llvmo::MCSubtargetInfo_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MCSubtargetInfo" :NAME "MCSubtargetInfo"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MCSubtargetInfo_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::TargetSubtargetInfo_O/1019
+// StampWtag = llvmo::TargetSubtargetInfo_O/1019
 { class_kind, STAMPWTAG_llvmo__TargetSubtargetInfo_O, sizeof(llvmo::TargetSubtargetInfo_O), 0, IS_POLYMORPHIC, "llvmo::TargetSubtargetInfo_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::MCSubtargetInfo" :NAME "MCSubtargetInfo"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Type_O/1023
+// StampWtag = llvmo::Type_O/1023
 { class_kind, STAMPWTAG_llvmo__Type_O, sizeof(llvmo::Type_O), 0, IS_POLYMORPHIC, "llvmo::Type_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Type_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::PointerType_O/1027
+// StampWtag = llvmo::PointerType_O/1027
 { class_kind, STAMPWTAG_llvmo__PointerType_O, sizeof(llvmo::PointerType_O), 0, IS_POLYMORPHIC, "llvmo::PointerType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PointerType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ArrayType_O/1031
+// StampWtag = llvmo::ArrayType_O/1031
 { class_kind, STAMPWTAG_llvmo__ArrayType_O, sizeof(llvmo::ArrayType_O), 0, IS_POLYMORPHIC, "llvmo::ArrayType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ArrayType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::FunctionType_O/1035
+// StampWtag = llvmo::FunctionType_O/1035
 { class_kind, STAMPWTAG_llvmo__FunctionType_O, sizeof(llvmo::FunctionType_O), 0, IS_POLYMORPHIC, "llvmo::FunctionType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::IntegerType_O/1039
+// StampWtag = llvmo::IntegerType_O/1039
 { class_kind, STAMPWTAG_llvmo__IntegerType_O, sizeof(llvmo::IntegerType_O), 0, IS_POLYMORPHIC, "llvmo::IntegerType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IntegerType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::StructType_O/1043
+// StampWtag = llvmo::StructType_O/1043
 { class_kind, STAMPWTAG_llvmo__StructType_O, sizeof(llvmo::StructType_O), 0, IS_POLYMORPHIC, "llvmo::StructType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StructType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::VectorType_O/1047
+// StampWtag = llvmo::VectorType_O/1047
 { class_kind, STAMPWTAG_llvmo__VectorType_O, sizeof(llvmo::VectorType_O), 0, IS_POLYMORPHIC, "llvmo::VectorType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Type" :NAME "Type"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VectorType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::JITDylib_O/1051
+// StampWtag = llvmo::JITDylib_O/1051
 { class_kind, STAMPWTAG_llvmo__JITDylib_O, sizeof(llvmo::JITDylib_O), 0, IS_POLYMORPHIC, "llvmo::JITDylib_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::orc::JITDylib" :NAME "JITDylib"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::JITDylib_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIContext_O/1055
+// StampWtag = llvmo::DIContext_O/1055
 { class_kind, STAMPWTAG_llvmo__DIContext_O, sizeof(llvmo::DIContext_O), 0, IS_POLYMORPHIC, "llvmo::DIContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DIContext" :NAME "DIContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::TargetPassConfig_O/1059
+// StampWtag = llvmo::TargetPassConfig_O/1059
 { class_kind, STAMPWTAG_llvmo__TargetPassConfig_O, sizeof(llvmo::TargetPassConfig_O), 0, IS_POLYMORPHIC, "llvmo::TargetPassConfig_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetPassConfig" :NAME "TargetPassConfig"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetPassConfig_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::IRBuilderBase_O/1063
+// StampWtag = llvmo::IRBuilderBase_O/1063
 { class_kind, STAMPWTAG_llvmo__IRBuilderBase_O, sizeof(llvmo::IRBuilderBase_O), 0, IS_POLYMORPHIC, "llvmo::IRBuilderBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10637,7 +10611,7 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_CurrentDebugLocationSet" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilderBase_O),_CurrentDebugLocationSet), 0, "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::IRBuilder_O/1067
+// StampWtag = llvmo::IRBuilder_O/1067
 { class_kind, STAMPWTAG_llvmo__IRBuilder_O, sizeof(llvmo::IRBuilder_O), 0, IS_POLYMORPHIC, "llvmo::IRBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10645,25 +10619,25 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_CurrentDebugLocationSet" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IRBuilder_O),_CurrentDebugLocationSet), 0, "_CurrentDebugLocationSet" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::APFloat_O/1071
+// StampWtag = llvmo::APFloat_O/1071
 { class_kind, STAMPWTAG_llvmo__APFloat_O, sizeof(llvmo::APFloat_O), 0, IS_POLYMORPHIC, "llvmo::APFloat_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_valueP" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APFloat" :NAME "APFloat"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APFloat_O),_valueP), 0, "_valueP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::APInt_O/1075
+// StampWtag = llvmo::APInt_O/1075
 { class_kind, STAMPWTAG_llvmo__APInt_O, sizeof(llvmo::APInt_O), 0, IS_POLYMORPHIC, "llvmo::APInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::APInt>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::APInt" :NAME "APInt") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::APInt), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::APInt_O),_value), 0, "_value" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::DIBuilder_O/1079
+// StampWtag = llvmo::DIBuilder_O/1079
 { class_kind, STAMPWTAG_llvmo__DIBuilder_O, sizeof(llvmo::DIBuilder_O), 0, IS_POLYMORPHIC, "llvmo::DIBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DIBuilder" :NAME "DIBuilder"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::SectionedAddress_O/1083
+// StampWtag = llvmo::SectionedAddress_O/1083
 { class_kind, STAMPWTAG_llvmo__SectionedAddress_O, sizeof(llvmo::SectionedAddress_O), 0, IS_POLYMORPHIC, "llvmo::SectionedAddress_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10673,7 +10647,7 @@ public:
 //      field: "_value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::object::SectionedAddress" :NAME "SectionedAddress")
 //      field: ".SectionIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")
  {  fixed_field, ctype_unsigned_long_long, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SectionedAddress_O),_value.SectionIndex), 0, "_value.SectionIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = llvmo::EngineBuilder_O/1087
+// StampWtag = llvmo::EngineBuilder_O/1087
 { class_kind, STAMPWTAG_llvmo__EngineBuilder_O, sizeof(llvmo::EngineBuilder_O), 0, IS_POLYMORPHIC, "llvmo::EngineBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10681,313 +10655,313 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_ErrorStr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BASIC-STRING-CTYPE :KEY "std::basic_string<char,std::char_traits<char>,std::allocator<char>>" :NAME "basic_string")
  {  fixed_field, CXX_FIXUP_OFFSET, sizeof(std::basic_string<char,std::char_traits<char>,std::allocator<char>>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_ErrorStr), 0, "_ErrorStr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::PassManagerBase_O/1091
+// StampWtag = llvmo::PassManagerBase_O/1091
 { class_kind, STAMPWTAG_llvmo__PassManagerBase_O, sizeof(llvmo::PassManagerBase_O), 0, IS_POLYMORPHIC, "llvmo::PassManagerBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::PassManager_O/1095
+// StampWtag = llvmo::PassManager_O/1095
 { class_kind, STAMPWTAG_llvmo__PassManager_O, sizeof(llvmo::PassManager_O), 0, IS_POLYMORPHIC, "llvmo::PassManager_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManager_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::FunctionPassManager_O/1099
+// StampWtag = llvmo::FunctionPassManager_O/1099
 { class_kind, STAMPWTAG_llvmo__FunctionPassManager_O, sizeof(llvmo::FunctionPassManager_O), 0, IS_POLYMORPHIC, "llvmo::FunctionPassManager_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::legacy::PassManagerBase" :NAME "PassManagerBase"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FunctionPassManager_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Metadata_O/1103
+// StampWtag = llvmo::Metadata_O/1103
 { class_kind, STAMPWTAG_llvmo__Metadata_O, sizeof(llvmo::Metadata_O), 0, IS_POLYMORPHIC, "llvmo::Metadata_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Metadata_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::MDNode_O/1107
+// StampWtag = llvmo::MDNode_O/1107
 { class_kind, STAMPWTAG_llvmo__MDNode_O, sizeof(llvmo::MDNode_O), 0, IS_POLYMORPHIC, "llvmo::MDNode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDNode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DINode_O/1111
+// StampWtag = llvmo::DINode_O/1111
 { class_kind, STAMPWTAG_llvmo__DINode_O, sizeof(llvmo::DINode_O), 0, IS_POLYMORPHIC, "llvmo::DINode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DINode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIVariable_O/1115
+// StampWtag = llvmo::DIVariable_O/1115
 { class_kind, STAMPWTAG_llvmo__DIVariable_O, sizeof(llvmo::DIVariable_O), 0, IS_POLYMORPHIC, "llvmo::DIVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DILocalVariable_O/1119
+// StampWtag = llvmo::DILocalVariable_O/1119
 { class_kind, STAMPWTAG_llvmo__DILocalVariable_O, sizeof(llvmo::DILocalVariable_O), 0, IS_POLYMORPHIC, "llvmo::DILocalVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIScope_O/1123
+// StampWtag = llvmo::DIScope_O/1123
 { class_kind, STAMPWTAG_llvmo__DIScope_O, sizeof(llvmo::DIScope_O), 0, IS_POLYMORPHIC, "llvmo::DIScope_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIScope_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIFile_O/1127
+// StampWtag = llvmo::DIFile_O/1127
 { class_kind, STAMPWTAG_llvmo__DIFile_O, sizeof(llvmo::DIFile_O), 0, IS_POLYMORPHIC, "llvmo::DIFile_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIFile_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIType_O/1131
+// StampWtag = llvmo::DIType_O/1131
 { class_kind, STAMPWTAG_llvmo__DIType_O, sizeof(llvmo::DIType_O), 0, IS_POLYMORPHIC, "llvmo::DIType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DICompositeType_O/1135
+// StampWtag = llvmo::DICompositeType_O/1135
 { class_kind, STAMPWTAG_llvmo__DICompositeType_O, sizeof(llvmo::DICompositeType_O), 0, IS_POLYMORPHIC, "llvmo::DICompositeType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompositeType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIDerivedType_O/1139
+// StampWtag = llvmo::DIDerivedType_O/1139
 { class_kind, STAMPWTAG_llvmo__DIDerivedType_O, sizeof(llvmo::DIDerivedType_O), 0, IS_POLYMORPHIC, "llvmo::DIDerivedType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIDerivedType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIBasicType_O/1143
+// StampWtag = llvmo::DIBasicType_O/1143
 { class_kind, STAMPWTAG_llvmo__DIBasicType_O, sizeof(llvmo::DIBasicType_O), 0, IS_POLYMORPHIC, "llvmo::DIBasicType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIBasicType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DISubroutineType_O/1147
+// StampWtag = llvmo::DISubroutineType_O/1147
 { class_kind, STAMPWTAG_llvmo__DISubroutineType_O, sizeof(llvmo::DISubroutineType_O), 0, IS_POLYMORPHIC, "llvmo::DISubroutineType_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubroutineType_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DILocalScope_O/1151
+// StampWtag = llvmo::DILocalScope_O/1151
 { class_kind, STAMPWTAG_llvmo__DILocalScope_O, sizeof(llvmo::DILocalScope_O), 0, IS_POLYMORPHIC, "llvmo::DILocalScope_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocalScope_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DISubprogram_O/1155
+// StampWtag = llvmo::DISubprogram_O/1155
 { class_kind, STAMPWTAG_llvmo__DISubprogram_O, sizeof(llvmo::DISubprogram_O), 0, IS_POLYMORPHIC, "llvmo::DISubprogram_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DISubprogram_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DILexicalBlockBase_O/1159
+// StampWtag = llvmo::DILexicalBlockBase_O/1159
 { class_kind, STAMPWTAG_llvmo__DILexicalBlockBase_O, sizeof(llvmo::DILexicalBlockBase_O), 0, IS_POLYMORPHIC, "llvmo::DILexicalBlockBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlockBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DILexicalBlock_O/1163
+// StampWtag = llvmo::DILexicalBlock_O/1163
 { class_kind, STAMPWTAG_llvmo__DILexicalBlock_O, sizeof(llvmo::DILexicalBlock_O), 0, IS_POLYMORPHIC, "llvmo::DILexicalBlock_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILexicalBlock_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DICompileUnit_O/1167
+// StampWtag = llvmo::DICompileUnit_O/1167
 { class_kind, STAMPWTAG_llvmo__DICompileUnit_O, sizeof(llvmo::DICompileUnit_O), 0, IS_POLYMORPHIC, "llvmo::DICompileUnit_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DICompileUnit_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DIExpression_O/1171
+// StampWtag = llvmo::DIExpression_O/1171
 { class_kind, STAMPWTAG_llvmo__DIExpression_O, sizeof(llvmo::DIExpression_O), 0, IS_POLYMORPHIC, "llvmo::DIExpression_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DIExpression_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DILocation_O/1175
+// StampWtag = llvmo::DILocation_O/1175
 { class_kind, STAMPWTAG_llvmo__DILocation_O, sizeof(llvmo::DILocation_O), 0, IS_POLYMORPHIC, "llvmo::DILocation_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DILocation_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ValueAsMetadata_O/1179
+// StampWtag = llvmo::ValueAsMetadata_O/1179
 { class_kind, STAMPWTAG_llvmo__ValueAsMetadata_O, sizeof(llvmo::ValueAsMetadata_O), 0, IS_POLYMORPHIC, "llvmo::ValueAsMetadata_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ValueAsMetadata_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::MDString_O/1183
+// StampWtag = llvmo::MDString_O/1183
 { class_kind, STAMPWTAG_llvmo__MDString_O, sizeof(llvmo::MDString_O), 0, IS_POLYMORPHIC, "llvmo::MDString_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Metadata" :NAME "Metadata"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MDString_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Test_O/1187
+// StampWtag = core::Test_O/1187
 { class_kind, STAMPWTAG_core__Test_O, sizeof(core::Test_O), 0, IS_POLYMORPHIC, "core::Test_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Test" :NAME "Test"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Test_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Value_O/1191
+// StampWtag = llvmo::Value_O/1191
 { class_kind, STAMPWTAG_llvmo__Value_O, sizeof(llvmo::Value_O), 0, IS_POLYMORPHIC, "llvmo::Value_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Value_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Argument_O/1195
+// StampWtag = llvmo::Argument_O/1195
 { class_kind, STAMPWTAG_llvmo__Argument_O, sizeof(llvmo::Argument_O), 0, IS_POLYMORPHIC, "llvmo::Argument_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Argument_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::BasicBlock_O/1199
+// StampWtag = llvmo::BasicBlock_O/1199
 { class_kind, STAMPWTAG_llvmo__BasicBlock_O, sizeof(llvmo::BasicBlock_O), 0, IS_POLYMORPHIC, "llvmo::BasicBlock_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BasicBlock_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::MetadataAsValue_O/1203
+// StampWtag = llvmo::MetadataAsValue_O/1203
 { class_kind, STAMPWTAG_llvmo__MetadataAsValue_O, sizeof(llvmo::MetadataAsValue_O), 0, IS_POLYMORPHIC, "llvmo::MetadataAsValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::MetadataAsValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::User_O/1207
+// StampWtag = llvmo::User_O/1207
 { class_kind, STAMPWTAG_llvmo__User_O, sizeof(llvmo::User_O), 0, IS_POLYMORPHIC, "llvmo::User_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::User_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Instruction_O/1211
+// StampWtag = llvmo::Instruction_O/1211
 { class_kind, STAMPWTAG_llvmo__Instruction_O, sizeof(llvmo::Instruction_O), 0, IS_POLYMORPHIC, "llvmo::Instruction_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Instruction_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::UnaryInstruction_O/1215
+// StampWtag = llvmo::UnaryInstruction_O/1215
 { class_kind, STAMPWTAG_llvmo__UnaryInstruction_O, sizeof(llvmo::UnaryInstruction_O), 0, IS_POLYMORPHIC, "llvmo::UnaryInstruction_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnaryInstruction_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::VAArgInst_O/1219
+// StampWtag = llvmo::VAArgInst_O/1219
 { class_kind, STAMPWTAG_llvmo__VAArgInst_O, sizeof(llvmo::VAArgInst_O), 0, IS_POLYMORPHIC, "llvmo::VAArgInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::VAArgInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::LoadInst_O/1223
+// StampWtag = llvmo::LoadInst_O/1223
 { class_kind, STAMPWTAG_llvmo__LoadInst_O, sizeof(llvmo::LoadInst_O), 0, IS_POLYMORPHIC, "llvmo::LoadInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LoadInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::AllocaInst_O/1227
+// StampWtag = llvmo::AllocaInst_O/1227
 { class_kind, STAMPWTAG_llvmo__AllocaInst_O, sizeof(llvmo::AllocaInst_O), 0, IS_POLYMORPHIC, "llvmo::AllocaInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AllocaInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::SwitchInst_O/1231
+// StampWtag = llvmo::SwitchInst_O/1231
 { class_kind, STAMPWTAG_llvmo__SwitchInst_O, sizeof(llvmo::SwitchInst_O), 0, IS_POLYMORPHIC, "llvmo::SwitchInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::SwitchInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::AtomicRMWInst_O/1235
+// StampWtag = llvmo::AtomicRMWInst_O/1235
 { class_kind, STAMPWTAG_llvmo__AtomicRMWInst_O, sizeof(llvmo::AtomicRMWInst_O), 0, IS_POLYMORPHIC, "llvmo::AtomicRMWInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicRMWInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::LandingPadInst_O/1239
+// StampWtag = llvmo::LandingPadInst_O/1239
 { class_kind, STAMPWTAG_llvmo__LandingPadInst_O, sizeof(llvmo::LandingPadInst_O), 0, IS_POLYMORPHIC, "llvmo::LandingPadInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LandingPadInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::StoreInst_O/1243
+// StampWtag = llvmo::StoreInst_O/1243
 { class_kind, STAMPWTAG_llvmo__StoreInst_O, sizeof(llvmo::StoreInst_O), 0, IS_POLYMORPHIC, "llvmo::StoreInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::StoreInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::UnreachableInst_O/1247
+// StampWtag = llvmo::UnreachableInst_O/1247
 { class_kind, STAMPWTAG_llvmo__UnreachableInst_O, sizeof(llvmo::UnreachableInst_O), 0, IS_POLYMORPHIC, "llvmo::UnreachableInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UnreachableInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ReturnInst_O/1251
+// StampWtag = llvmo::ReturnInst_O/1251
 { class_kind, STAMPWTAG_llvmo__ReturnInst_O, sizeof(llvmo::ReturnInst_O), 0, IS_POLYMORPHIC, "llvmo::ReturnInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ReturnInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ResumeInst_O/1255
+// StampWtag = llvmo::ResumeInst_O/1255
 { class_kind, STAMPWTAG_llvmo__ResumeInst_O, sizeof(llvmo::ResumeInst_O), 0, IS_POLYMORPHIC, "llvmo::ResumeInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ResumeInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::AtomicCmpXchgInst_O/1259
+// StampWtag = llvmo::AtomicCmpXchgInst_O/1259
 { class_kind, STAMPWTAG_llvmo__AtomicCmpXchgInst_O, sizeof(llvmo::AtomicCmpXchgInst_O), 0, IS_POLYMORPHIC, "llvmo::AtomicCmpXchgInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::AtomicCmpXchgInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::FenceInst_O/1263
+// StampWtag = llvmo::FenceInst_O/1263
 { class_kind, STAMPWTAG_llvmo__FenceInst_O, sizeof(llvmo::FenceInst_O), 0, IS_POLYMORPHIC, "llvmo::FenceInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::FenceInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::CallBase_O/1267
+// StampWtag = llvmo::CallBase_O/1267
 { class_kind, STAMPWTAG_llvmo__CallBase_O, sizeof(llvmo::CallBase_O), 0, IS_POLYMORPHIC, "llvmo::CallBase_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallBase_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::CallInst_O/1271
+// StampWtag = llvmo::CallInst_O/1271
 { class_kind, STAMPWTAG_llvmo__CallInst_O, sizeof(llvmo::CallInst_O), 0, IS_POLYMORPHIC, "llvmo::CallInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::CallInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::InvokeInst_O/1275
+// StampWtag = llvmo::InvokeInst_O/1275
 { class_kind, STAMPWTAG_llvmo__InvokeInst_O, sizeof(llvmo::InvokeInst_O), 0, IS_POLYMORPHIC, "llvmo::InvokeInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InvokeInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::PHINode_O/1279
+// StampWtag = llvmo::PHINode_O/1279
 { class_kind, STAMPWTAG_llvmo__PHINode_O, sizeof(llvmo::PHINode_O), 0, IS_POLYMORPHIC, "llvmo::PHINode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PHINode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::IndirectBrInst_O/1283
+// StampWtag = llvmo::IndirectBrInst_O/1283
 { class_kind, STAMPWTAG_llvmo__IndirectBrInst_O, sizeof(llvmo::IndirectBrInst_O), 0, IS_POLYMORPHIC, "llvmo::IndirectBrInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::IndirectBrInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::BranchInst_O/1287
+// StampWtag = llvmo::BranchInst_O/1287
 { class_kind, STAMPWTAG_llvmo__BranchInst_O, sizeof(llvmo::BranchInst_O), 0, IS_POLYMORPHIC, "llvmo::BranchInst_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BranchInst_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Constant_O/1291
+// StampWtag = llvmo::Constant_O/1291
 { class_kind, STAMPWTAG_llvmo__Constant_O, sizeof(llvmo::Constant_O), 0, IS_POLYMORPHIC, "llvmo::Constant_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Constant_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::GlobalValue_O/1295
+// StampWtag = llvmo::GlobalValue_O/1295
 { class_kind, STAMPWTAG_llvmo__GlobalValue_O, sizeof(llvmo::GlobalValue_O), 0, IS_POLYMORPHIC, "llvmo::GlobalValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10995,7 +10969,7 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_PtrIsOwned" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalValue_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Function_O/1299
+// StampWtag = llvmo::Function_O/1299
 { class_kind, STAMPWTAG_llvmo__Function_O, sizeof(llvmo::Function_O), 0, IS_POLYMORPHIC, "llvmo::Function_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11005,7 +10979,7 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_RunTimeValues" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::LoadTimeValues_O>" :SPECIALIZER "class core::LoadTimeValues_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LoadTimeValues_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Function_O),_RunTimeValues), 0, "_RunTimeValues" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::GlobalVariable_O/1303
+// StampWtag = llvmo::GlobalVariable_O/1303
 { class_kind, STAMPWTAG_llvmo__GlobalVariable_O, sizeof(llvmo::GlobalVariable_O), 0, IS_POLYMORPHIC, "llvmo::GlobalVariable_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11013,121 +10987,121 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_PtrIsOwned" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::GlobalVariable_O),_PtrIsOwned), 0, "_PtrIsOwned" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::BlockAddress_O/1307
+// StampWtag = llvmo::BlockAddress_O/1307
 { class_kind, STAMPWTAG_llvmo__BlockAddress_O, sizeof(llvmo::BlockAddress_O), 0, IS_POLYMORPHIC, "llvmo::BlockAddress_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::BlockAddress_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantDataSequential_O/1311
+// StampWtag = llvmo::ConstantDataSequential_O/1311
 { class_kind, STAMPWTAG_llvmo__ConstantDataSequential_O, sizeof(llvmo::ConstantDataSequential_O), 0, IS_POLYMORPHIC, "llvmo::ConstantDataSequential_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataSequential_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantDataArray_O/1315
+// StampWtag = llvmo::ConstantDataArray_O/1315
 { class_kind, STAMPWTAG_llvmo__ConstantDataArray_O, sizeof(llvmo::ConstantDataArray_O), 0, IS_POLYMORPHIC, "llvmo::ConstantDataArray_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantDataArray_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantStruct_O/1319
+// StampWtag = llvmo::ConstantStruct_O/1319
 { class_kind, STAMPWTAG_llvmo__ConstantStruct_O, sizeof(llvmo::ConstantStruct_O), 0, IS_POLYMORPHIC, "llvmo::ConstantStruct_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantStruct_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantInt_O/1323
+// StampWtag = llvmo::ConstantInt_O/1323
 { class_kind, STAMPWTAG_llvmo__ConstantInt_O, sizeof(llvmo::ConstantInt_O), 0, IS_POLYMORPHIC, "llvmo::ConstantInt_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantInt_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantFP_O/1327
+// StampWtag = llvmo::ConstantFP_O/1327
 { class_kind, STAMPWTAG_llvmo__ConstantFP_O, sizeof(llvmo::ConstantFP_O), 0, IS_POLYMORPHIC, "llvmo::ConstantFP_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantFP_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantExpr_O/1331
+// StampWtag = llvmo::ConstantExpr_O/1331
 { class_kind, STAMPWTAG_llvmo__ConstantExpr_O, sizeof(llvmo::ConstantExpr_O), 0, IS_POLYMORPHIC, "llvmo::ConstantExpr_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantExpr_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantPointerNull_O/1335
+// StampWtag = llvmo::ConstantPointerNull_O/1335
 { class_kind, STAMPWTAG_llvmo__ConstantPointerNull_O, sizeof(llvmo::ConstantPointerNull_O), 0, IS_POLYMORPHIC, "llvmo::ConstantPointerNull_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantPointerNull_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::UndefValue_O/1339
+// StampWtag = llvmo::UndefValue_O/1339
 { class_kind, STAMPWTAG_llvmo__UndefValue_O, sizeof(llvmo::UndefValue_O), 0, IS_POLYMORPHIC, "llvmo::UndefValue_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::UndefValue_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ConstantArray_O/1343
+// StampWtag = llvmo::ConstantArray_O/1343
 { class_kind, STAMPWTAG_llvmo__ConstantArray_O, sizeof(llvmo::ConstantArray_O), 0, IS_POLYMORPHIC, "llvmo::ConstantArray_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Value" :NAME "Value"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ConstantArray_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::TargetMachine_O/1347
+// StampWtag = llvmo::TargetMachine_O/1347
 { class_kind, STAMPWTAG_llvmo__TargetMachine_O, sizeof(llvmo::TargetMachine_O), 0, IS_POLYMORPHIC, "llvmo::TargetMachine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetMachine" :NAME "TargetMachine"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetMachine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::LLVMTargetMachine_O/1351
+// StampWtag = llvmo::LLVMTargetMachine_O/1351
 { class_kind, STAMPWTAG_llvmo__LLVMTargetMachine_O, sizeof(llvmo::LLVMTargetMachine_O), 0, IS_POLYMORPHIC, "llvmo::LLVMTargetMachine_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetMachine" :NAME "TargetMachine"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMTargetMachine_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::ThreadSafeContext_O/1355
+// StampWtag = llvmo::ThreadSafeContext_O/1355
 { class_kind, STAMPWTAG_llvmo__ThreadSafeContext_O, sizeof(llvmo::ThreadSafeContext_O), 0, IS_POLYMORPHIC, "llvmo::ThreadSafeContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::orc::ThreadSafeContext" :NAME "ThreadSafeContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::ThreadSafeContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::NamedMDNode_O/1359
+// StampWtag = llvmo::NamedMDNode_O/1359
 { class_kind, STAMPWTAG_llvmo__NamedMDNode_O, sizeof(llvmo::NamedMDNode_O), 0, IS_POLYMORPHIC, "llvmo::NamedMDNode_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::NamedMDNode" :NAME "NamedMDNode"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::NamedMDNode_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Triple_O/1363
+// StampWtag = llvmo::Triple_O/1363
 { class_kind, STAMPWTAG_llvmo__Triple_O, sizeof(llvmo::Triple_O), 0, IS_POLYMORPHIC, "llvmo::Triple_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Triple" :NAME "Triple"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Triple_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::DWARFContext_O/1367
+// StampWtag = llvmo::DWARFContext_O/1367
 { class_kind, STAMPWTAG_llvmo__DWARFContext_O, sizeof(llvmo::DWARFContext_O), 0, IS_POLYMORPHIC, "llvmo::DWARFContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::DWARFContext" :NAME "DWARFContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::DWARFContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::TargetOptions_O/1371
+// StampWtag = llvmo::TargetOptions_O/1371
 { class_kind, STAMPWTAG_llvmo__TargetOptions_O, sizeof(llvmo::TargetOptions_O), 0, IS_POLYMORPHIC, "llvmo::TargetOptions_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::TargetOptions" :NAME "TargetOptions"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::TargetOptions_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::LLVMContext_O/1375
+// StampWtag = llvmo::LLVMContext_O/1375
 { class_kind, STAMPWTAG_llvmo__LLVMContext_O, sizeof(llvmo::LLVMContext_O), 0, IS_POLYMORPHIC, "llvmo::LLVMContext_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::LLVMContext" :NAME "LLVMContext"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::LLVMContext_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::PassManagerBuilder_O/1379
+// StampWtag = llvmo::PassManagerBuilder_O/1379
 { class_kind, STAMPWTAG_llvmo__PassManagerBuilder_O, sizeof(llvmo::PassManagerBuilder_O), 0, IS_POLYMORPHIC, "llvmo::PassManagerBuilder_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::PassManagerBuilder" :NAME "PassManagerBuilder"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::PassManagerBuilder_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Module_O/1383
+// StampWtag = llvmo::Module_O/1383
 { class_kind, STAMPWTAG_llvmo__Module_O, sizeof(llvmo::Module_O), 0, IS_POLYMORPHIC, "llvmo::Module_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -11137,19 +11111,19 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_UniqueGlobalVariableStrings" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_UniqueGlobalVariableStrings), 0, "_UniqueGlobalVariableStrings" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = llvmo::Target_O/1387
+// StampWtag = llvmo::Target_O/1387
 { class_kind, STAMPWTAG_llvmo__Target_O, sizeof(llvmo::Target_O), 0, IS_POLYMORPHIC, "llvmo::Target_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Target" :NAME "Target"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = llvmo::Linker_O/1391
+// StampWtag = llvmo::Linker_O/1391
 { class_kind, STAMPWTAG_llvmo__Linker_O, sizeof(llvmo::Linker_O), 0, IS_POLYMORPHIC, "llvmo::Linker_O" },
 //      field: "_Class" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_Class), 0, "_Class" }, // atomic: NIL public: (NIL) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PROTECTED   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::Linker" :NAME "Linker"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Linker_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Rack_O/1395
+// StampWtag = core::Rack_O/1395
 { class_kind, STAMPWTAG_core__Rack_O, sizeof(core::Rack_O), 0, IS_POLYMORPHIC, "core::Rack_O" },
 //      field: "_ShiftedStamp" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Rack_O),_ShiftedStamp), 0, "_ShiftedStamp" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -11164,30 +11138,30 @@ public:
 // atomic-smart-ptr-p -> T
 // one -> #<ATOMIC-SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))>
 {    variable_field, ATOMIC_SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "only" },
-// Stamp = core::SmallMultimap_O/1399
+// StampWtag = core::SmallMultimap_O/1399
 { class_kind, STAMPWTAG_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, IS_POLYMORPHIC, "core::SmallMultimap_O" },
 //      field: "map" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "gctools::SmallMultimap<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>,core::SymbolComparer>" :NAME "SmallMultimap" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::SymbolComparer" :NAME "SymbolComparer") :INTEGRAL-VALUE NIL)))
 //      field: "._Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::TAGGED-POINTER-CTYPE :KEY "gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>" :SPECIALIZER "class gctools::GCVector_moveable<struct std::pair<class gctools::smart_ptr<core::Symbol_O>, class gctools::smart_ptr<core::T_O> > >")
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), 0, "map._Contents" }, // atomic: NIL public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
-// Stamp = core::Sigset_O/1403
+// StampWtag = core::Sigset_O/1403
 { class_kind, STAMPWTAG_core__Sigset_O, sizeof(core::Sigset_O), 0, IS_POLYMORPHIC, "core::Sigset_O" },
 //      field: "_sigset" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Sigset_O),_sigset), 0, "_sigset" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Environment_O/1407
+// StampWtag = core::Environment_O/1407
 { class_kind, STAMPWTAG_core__Environment_O, sizeof(core::Environment_O), 0, IS_POLYMORPHIC, "core::Environment_O" },
-// Stamp = core::GlueEnvironment_O/1411
+// StampWtag = core::GlueEnvironment_O/1411
 { class_kind, STAMPWTAG_core__GlueEnvironment_O, sizeof(core::GlueEnvironment_O), 0, IS_POLYMORPHIC, "core::GlueEnvironment_O" },
 //      field: "_Map" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_Map), 0, "_Map" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Args" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlueEnvironment_O),_Args), 0, "_Args" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::LexicalEnvironment_O/1415
+// StampWtag = core::LexicalEnvironment_O/1415
 { class_kind, STAMPWTAG_core__LexicalEnvironment_O, sizeof(core::LexicalEnvironment_O), 0, IS_POLYMORPHIC, "core::LexicalEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LexicalEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::RuntimeVisibleEnvironment_O/1419
+// StampWtag = core::RuntimeVisibleEnvironment_O/1419
 { class_kind, STAMPWTAG_core__RuntimeVisibleEnvironment_O, sizeof(core::RuntimeVisibleEnvironment_O), 0, IS_POLYMORPHIC, "core::RuntimeVisibleEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11197,7 +11171,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_RuntimeEnvironment), 0, "_RuntimeEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Invisible" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::RuntimeVisibleEnvironment_O),_Invisible), 0, "_Invisible" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FunctionValueEnvironment_O/1423
+// StampWtag = core::FunctionValueEnvironment_O/1423
 { class_kind, STAMPWTAG_core__FunctionValueEnvironment_O, sizeof(core::FunctionValueEnvironment_O), 0, IS_POLYMORPHIC, "core::FunctionValueEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11211,7 +11185,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionIndices), 0, "_FunctionIndices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_FunctionFrame" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionFrame_O>" :SPECIALIZER "class core::FunctionFrame_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionValueEnvironment_O),_FunctionFrame), 0, "_FunctionFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::TagbodyEnvironment_O/1427
+// StampWtag = core::TagbodyEnvironment_O/1427
 { class_kind, STAMPWTAG_core__TagbodyEnvironment_O, sizeof(core::TagbodyEnvironment_O), 0, IS_POLYMORPHIC, "core::TagbodyEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11231,7 +11205,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ActivationFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_ActivationFrame), 0, "_ActivationFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_LocalBlocks" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TagbodyEnvironment_O),_LocalBlocks), 0, "_LocalBlocks" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::BlockEnvironment_O/1431
+// StampWtag = core::BlockEnvironment_O/1431
 { class_kind, STAMPWTAG_core__BlockEnvironment_O, sizeof(core::BlockEnvironment_O), 0, IS_POLYMORPHIC, "core::BlockEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11249,7 +11223,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_LocalReturnBlock), 0, "_LocalReturnBlock" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_LocalReturnValue" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BlockEnvironment_O),_LocalReturnValue), 0, "_LocalReturnValue" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::ValueEnvironment_O/1435
+// StampWtag = core::ValueEnvironment_O/1435
 { class_kind, STAMPWTAG_core__ValueEnvironment_O, sizeof(core::ValueEnvironment_O), 0, IS_POLYMORPHIC, "core::ValueEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11263,19 +11237,19 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_SymbolIndex_alist), 0, "_SymbolIndex_alist" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ActivationFrame" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::ValueFrame_O>" :SPECIALIZER "class core::ValueFrame_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ValueFrame_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueEnvironment_O),_ActivationFrame), 0, "_ActivationFrame" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::CompileTimeEnvironment_O/1439
+// StampWtag = core::CompileTimeEnvironment_O/1439
 { class_kind, STAMPWTAG_core__CompileTimeEnvironment_O, sizeof(core::CompileTimeEnvironment_O), 0, IS_POLYMORPHIC, "core::CompileTimeEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CompileTimeEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::CatchEnvironment_O/1443
+// StampWtag = core::CatchEnvironment_O/1443
 { class_kind, STAMPWTAG_core__CatchEnvironment_O, sizeof(core::CatchEnvironment_O), 0, IS_POLYMORPHIC, "core::CatchEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Metadata" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CatchEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::MacroletEnvironment_O/1447
+// StampWtag = core::MacroletEnvironment_O/1447
 { class_kind, STAMPWTAG_core__MacroletEnvironment_O, sizeof(core::MacroletEnvironment_O), 0, IS_POLYMORPHIC, "core::MacroletEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11283,7 +11257,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Macros" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::MacroletEnvironment_O),_Macros), 0, "_Macros" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::SymbolMacroletEnvironment_O/1451
+// StampWtag = core::SymbolMacroletEnvironment_O/1451
 { class_kind, STAMPWTAG_core__SymbolMacroletEnvironment_O, sizeof(core::SymbolMacroletEnvironment_O), 0, IS_POLYMORPHIC, "core::SymbolMacroletEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11291,7 +11265,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Macros" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEq_O>" :SPECIALIZER "class core::HashTableEq_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolMacroletEnvironment_O),_Macros), 0, "_Macros" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::FunctionContainerEnvironment_O/1455
+// StampWtag = core::FunctionContainerEnvironment_O/1455
 { class_kind, STAMPWTAG_core__FunctionContainerEnvironment_O, sizeof(core::FunctionContainerEnvironment_O), 0, IS_POLYMORPHIC, "core::FunctionContainerEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11301,7 +11275,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_Closure), 0, "_Closure" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Function" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionContainerEnvironment_O),_Function), 0, "_Function" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::UnwindProtectEnvironment_O/1459
+// StampWtag = core::UnwindProtectEnvironment_O/1459
 { class_kind, STAMPWTAG_core__UnwindProtectEnvironment_O, sizeof(core::UnwindProtectEnvironment_O), 0, IS_POLYMORPHIC, "core::UnwindProtectEnvironment_O" },
 //      field: "_ParentEnvironment" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_ParentEnvironment), 0, "_ParentEnvironment" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11309,11 +11283,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_Metadata), 0, "_Metadata" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_CleanupForm" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::UnwindProtectEnvironment_O),_CleanupForm), 0, "_CleanupForm" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::ActivationFrame_O/1463
+// StampWtag = core::ActivationFrame_O/1463
 { class_kind, STAMPWTAG_core__ActivationFrame_O, sizeof(core::ActivationFrame_O), 0, IS_POLYMORPHIC, "core::ActivationFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ActivationFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::ValueFrame_O/1467
+// StampWtag = core::ValueFrame_O/1467
 { class_kind, STAMPWTAG_core__ValueFrame_O, sizeof(core::ValueFrame_O), 0, IS_POLYMORPHIC, "core::ValueFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ValueFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11326,7 +11300,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = core::FunctionFrame_O/1471
+// StampWtag = core::FunctionFrame_O/1471
 { class_kind, STAMPWTAG_core__FunctionFrame_O, sizeof(core::FunctionFrame_O), 0, IS_POLYMORPHIC, "core::FunctionFrame_O" },
 //      field: "_Parent" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionFrame_O),_Parent), 0, "_Parent" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11339,39 +11313,39 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = core::RandomState_O/1475
+// StampWtag = core::RandomState_O/1475
 { class_kind, STAMPWTAG_core__RandomState_O, sizeof(core::RandomState_O), 0, IS_POLYMORPHIC, "core::RandomState_O" },
 //      field: "_Producer" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<std::mersenne_twister_engine<unsigned int,32,624,397,31,-1727483681,11,-1,7,-1658038656,15,-272236544,18,1812433253>>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CLASS-TEMPLATE-SPECIALIZATION-CTYPE :KEY "std::mersenne_twister_engine<unsigned int,32,624,397,31,-1727483681,11,-1,7,-1658038656,15,-272236544,18,1812433253>" :NAME "mersenne_twister_engine" :ARGUMENTS (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :INTEGRAL-VALUE NIL) #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 1 :CTYPE NIL :INTEGRAL-VALUE "32") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 2 :CTYPE NIL :INTEGRAL-VALUE "624") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 3 :CTYPE NIL :INTEGRAL-VALUE "397") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 4 :CTYPE NIL :INTEGRAL-VALUE "31") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 5 :CTYPE NIL :INTEGRAL-VALUE "-1727483681") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 6 :CTYPE NIL :INTEGRAL-VALUE "11") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 7 :CTYPE NIL :INTEGRAL-VALUE "-1") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 8 :CTYPE NIL :INTEGRAL-VALUE "7") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 9 :CTYPE NIL :INTEGRAL-VALUE "-1658038656") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 10 :CTYPE NIL :INTEGRAL-VALUE "15") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 11 :CTYPE NIL :INTEGRAL-VALUE "-272236544") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 12 :CTYPE NIL :INTEGRAL-VALUE "18") #S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 13 :CTYPE NIL :INTEGRAL-VALUE "1812433253"))) :INTEGRAL-VALUE NIL)))
-// {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(std::mersenne_twister_engine<unsigned int,32,624,397,31,-1727483681,11,-1,7,-1658038656,15,-272236544,18,1812433253>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RandomState_O),_Producer), 0, "_Producer" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::EntryPointBase_O/1479
+ {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(std::mersenne_twister_engine<unsigned int,32,624,397,31,-1727483681,11,-1,7,-1658038656,15,-272236544,18,1812433253>), __builtin_offsetof(SAFE_TYPE_MACRO(core::RandomState_O),_Producer), 0, "_Producer" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+// StampWtag = core::EntryPointBase_O/1479
 { class_kind, STAMPWTAG_core__EntryPointBase_O, sizeof(core::EntryPointBase_O), 0, IS_POLYMORPHIC, "core::EntryPointBase_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EntryPointBase_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::GlobalEntryPointGenerator_O/1483
+// StampWtag = core::GlobalEntryPointGenerator_O/1483
 { class_kind, STAMPWTAG_core__GlobalEntryPointGenerator_O, sizeof(core::GlobalEntryPointGenerator_O), 0, IS_POLYMORPHIC, "core::GlobalEntryPointGenerator_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPointGenerator_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_entry_point_indices" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPointGenerator_O),_entry_point_indices), 0, "_entry_point_indices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::LocalEntryPointGenerator_O/1487
+// StampWtag = core::LocalEntryPointGenerator_O/1487
 { class_kind, STAMPWTAG_core__LocalEntryPointGenerator_O, sizeof(core::LocalEntryPointGenerator_O), 0, IS_POLYMORPHIC, "core::LocalEntryPointGenerator_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPointGenerator_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_entry_point_indices" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPointGenerator_O),_entry_point_indices), 0, "_entry_point_indices" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::CodeEntryPoint_O/1491
+// StampWtag = core::CodeEntryPoint_O/1491
 { class_kind, STAMPWTAG_core__CodeEntryPoint_O, sizeof(core::CodeEntryPoint_O), 0, IS_POLYMORPHIC, "core::CodeEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CodeEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Code" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::CodeBase_O>" :SPECIALIZER "class llvmo::CodeBase_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::CodeEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::GlobalEntryPoint_O/1495
+// StampWtag = core::GlobalEntryPoint_O/1495
 { class_kind, STAMPWTAG_core__GlobalEntryPoint_O, sizeof(core::GlobalEntryPoint_O), 0, IS_POLYMORPHIC, "core::GlobalEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Code" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<llvmo::CodeBase_O>" :SPECIALIZER "class llvmo::CodeBase_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::GlobalEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::LocalEntryPoint_O/1499
+// StampWtag = core::LocalEntryPoint_O/1499
 { class_kind, STAMPWTAG_core__LocalEntryPoint_O, sizeof(core::LocalEntryPoint_O), 0, IS_POLYMORPHIC, "core::LocalEntryPoint_O" },
 //      field: "_FunctionDescription" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FunctionDescription_O>" :SPECIALIZER "class core::FunctionDescription_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FunctionDescription_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_FunctionDescription), 0, "_FunctionDescription" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11379,13 +11353,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<llvmo::CodeBase_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_Code), 0, "_Code" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_EntryPoint" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LocalEntryPoint_O),_EntryPoint), 0, "_EntryPoint" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::AtomicFixnumHolder_O/1503
+// StampWtag = core::AtomicFixnumHolder_O/1503
 { class_kind, STAMPWTAG_core__AtomicFixnumHolder_O, sizeof(core::AtomicFixnumHolder_O), 0, IS_POLYMORPHIC, "core::AtomicFixnumHolder_O" },
 //      field: "_Object" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<long long>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long"))
  {  fixed_field, ATOMIC_POD_OFFSET_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(core::AtomicFixnumHolder_O),_Object), 0, "_Object" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::HashTableBase_O/1507
+// StampWtag = core::HashTableBase_O/1507
 { class_kind, STAMPWTAG_core__HashTableBase_O, sizeof(core::HashTableBase_O), 0, IS_POLYMORPHIC, "core::HashTableBase_O" },
-// Stamp = core::WeakKeyHashTable_O/1511
+// StampWtag = core::WeakKeyHashTable_O/1511
 { class_kind, STAMPWTAG_core__WeakKeyHashTable_O, sizeof(core::WeakKeyHashTable_O), 0, IS_POLYMORPHIC, "core::WeakKeyHashTable_O" },
 //      field: "_HashTable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakKeyHashTable" :NAME "WeakKeyHashTable")
 //      field: "._RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
@@ -11405,7 +11379,7 @@ public:
 //      field: "_HashTable" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::WeakKeyHashTable" :NAME "WeakKeyHashTable")
 //      field: "._Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::WeakKeyHashTable_O),_HashTable._Mutex), 0, "_HashTable._Mutex" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTable_O/1515
+// StampWtag = core::HashTable_O/1515
 { class_kind, STAMPWTAG_core__HashTable_O, sizeof(core::HashTable_O), 0, IS_POLYMORPHIC, "core::HashTable_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11419,7 +11393,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTable_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTableEqualp_O/1519
+// StampWtag = core::HashTableEqualp_O/1519
 { class_kind, STAMPWTAG_core__HashTableEqualp_O, sizeof(core::HashTableEqualp_O), 0, IS_POLYMORPHIC, "core::HashTableEqualp_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11433,7 +11407,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqualp_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTableEq_O/1523
+// StampWtag = core::HashTableEq_O/1523
 { class_kind, STAMPWTAG_core__HashTableEq_O, sizeof(core::HashTableEq_O), 0, IS_POLYMORPHIC, "core::HashTableEq_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11447,7 +11421,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEq_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTableEql_O/1527
+// StampWtag = core::HashTableEql_O/1527
 { class_kind, STAMPWTAG_core__HashTableEql_O, sizeof(core::HashTableEql_O), 0, IS_POLYMORPHIC, "core::HashTableEql_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11461,7 +11435,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEql_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTableEqual_O/1531
+// StampWtag = core::HashTableEqual_O/1531
 { class_kind, STAMPWTAG_core__HashTableEqual_O, sizeof(core::HashTableEqual_O), 0, IS_POLYMORPHIC, "core::HashTableEqual_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11475,7 +11449,7 @@ public:
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_HashTableCount), 0, "_HashTableCount" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Mutex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<mp::SharedMutex_O>" :SPECIALIZER "class mp::SharedMutex_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<mp::SharedMutex_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableEqual_O),_Mutex), 0, "_Mutex" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::HashTableCustom_O/1535
+// StampWtag = core::HashTableCustom_O/1535
 { class_kind, STAMPWTAG_core__HashTableCustom_O, sizeof(core::HashTableCustom_O), 0, IS_POLYMORPHIC, "core::HashTableCustom_O" },
 //      field: "_RehashSize" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Number_O>" :SPECIALIZER "class core::Number_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Number_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),_RehashSize), 0, "_RehashSize" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11493,7 +11467,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),comparator), 0, "comparator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "hasher" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Function_O>" :SPECIALIZER "class core::Function_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::HashTableCustom_O),hasher), 0, "hasher" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::FunctionDescription_O/1539
+// StampWtag = core::FunctionDescription_O/1539
 { class_kind, STAMPWTAG_core__FunctionDescription_O, sizeof(core::FunctionDescription_O), 0, IS_POLYMORPHIC, "core::FunctionDescription_O" },
 //      field: "_sourcePathname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),_sourcePathname), 0, "_sourcePathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11511,13 +11485,13 @@ public:
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),column), 0, "column" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "filepos" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FunctionDescription_O),filepos), 0, "filepos" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = llvmo::InsertPoint_O/1543
+// StampWtag = llvmo::InsertPoint_O/1543
 { class_kind, STAMPWTAG_llvmo__InsertPoint_O, sizeof(llvmo::InsertPoint_O), 0, IS_POLYMORPHIC, "llvmo::InsertPoint_O" },
 //      field: "_InsertPoint" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<llvm::IRBuilderBase::InsertPoint>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "llvm::IRBuilderBase::InsertPoint" :NAME "InsertPoint") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(llvm::IRBuilderBase::InsertPoint), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::InsertPoint_O),_InsertPoint), 0, "_InsertPoint" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Scope_O/1547
+// StampWtag = core::Scope_O/1547
 { class_kind, STAMPWTAG_core__Scope_O, sizeof(core::Scope_O), 0, IS_POLYMORPHIC, "core::Scope_O" },
-// Stamp = core::FileScope_O/1551
+// StampWtag = core::FileScope_O/1551
 { class_kind, STAMPWTAG_core__FileScope_O, sizeof(core::FileScope_O), 0, IS_POLYMORPHIC, "core::FileScope_O" },
 //      field: "_pathname" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Pathname_O>" :SPECIALIZER "class core::Pathname_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Pathname_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_pathname), 0, "_pathname" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11527,11 +11501,11 @@ public:
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_PermanentFileName), 0, "_PermanentFileName" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_FileHandle" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileScope_O),_FileHandle), 0, "_FileHandle" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Path_O/1555
+// StampWtag = core::Path_O/1555
 { class_kind, STAMPWTAG_core__Path_O, sizeof(core::Path_O), 0, IS_POLYMORPHIC, "core::Path_O" },
 //      field: "_Path" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::DONT-EXPOSE-CTYPE :KEY "dont_expose<boost::filesystem::path>" :NAME "dont_expose" :ARGUMENT (#S(CLASP-ANALYZER::GC-TEMPLATE-ARGUMENT :INDEX 0 :CTYPE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::path" :NAME "path") :INTEGRAL-VALUE NIL)))
  {  fixed_field, DONT_EXPOSE_OFFSET, sizeof(boost::filesystem::path), __builtin_offsetof(SAFE_TYPE_MACRO(core::Path_O),_Path), 0, "_Path" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Pathname_O/1559
+// StampWtag = core::Pathname_O/1559
 { class_kind, STAMPWTAG_core__Pathname_O, sizeof(core::Pathname_O), 0, IS_POLYMORPHIC, "core::Pathname_O" },
 //      field: "_Host" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Host), 0, "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11545,7 +11519,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Type), 0, "_Type" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Version" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Version), 0, "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::LogicalPathname_O/1563
+// StampWtag = core::LogicalPathname_O/1563
 { class_kind, STAMPWTAG_core__LogicalPathname_O, sizeof(core::LogicalPathname_O), 0, IS_POLYMORPHIC, "core::LogicalPathname_O" },
 //      field: "_Host" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Host), 0, "_Host" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11559,21 +11533,21 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Type), 0, "_Type" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Version" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::LogicalPathname_O),_Version), 0, "_Version" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Number_O/1567
+// StampWtag = core::Number_O/1567
 { class_kind, STAMPWTAG_core__Number_O, sizeof(core::Number_O), 0, IS_POLYMORPHIC, "core::Number_O" },
-// Stamp = core::Real_O/1571
+// StampWtag = core::Real_O/1571
 { class_kind, STAMPWTAG_core__Real_O, sizeof(core::Real_O), 0, IS_POLYMORPHIC, "core::Real_O" },
-// Stamp = core::Rational_O/1575
+// StampWtag = core::Rational_O/1575
 { class_kind, STAMPWTAG_core__Rational_O, sizeof(core::Rational_O), 0, IS_POLYMORPHIC, "core::Rational_O" },
-// Stamp = core::Ratio_O/1579
+// StampWtag = core::Ratio_O/1579
 { class_kind, STAMPWTAG_core__Ratio_O, sizeof(core::Ratio_O), 0, IS_POLYMORPHIC, "core::Ratio_O" },
 //      field: "_numerator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_numerator), 0, "_numerator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_denominator" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Integer_O>" :SPECIALIZER "class core::Integer_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Integer_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Ratio_O),_denominator), 0, "_denominator" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Integer_O/1583
+// StampWtag = core::Integer_O/1583
 { class_kind, STAMPWTAG_core__Integer_O, sizeof(core::Integer_O), 0, IS_POLYMORPHIC, "core::Integer_O" },
-// Stamp = core::Bignum_O/1587
+// StampWtag = core::Bignum_O/1587
 { class_kind, STAMPWTAG_core__Bignum_O, sizeof(core::Bignum_O), 0, IS_POLYMORPHIC, "core::Bignum_O" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._Data), 0, "_limbs._Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(core::Bignum_O),_limbs._MaybeSignedLength), 0, NULL },
@@ -11584,29 +11558,29 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = core::Fixnum_dummy_O/1591
+// StampWtag = core::Fixnum_dummy_O/1591
 { class_kind, STAMPWTAG_core__Fixnum_dummy_O, sizeof(core::Fixnum_dummy_O), 0, IS_POLYMORPHIC, "core::Fixnum_dummy_O" },
-// Stamp = core::Float_O/1595
+// StampWtag = core::Float_O/1595
 { class_kind, STAMPWTAG_core__Float_O, sizeof(core::Float_O), 0, IS_POLYMORPHIC, "core::Float_O" },
-// Stamp = core::DoubleFloat_O/1599
+// StampWtag = core::DoubleFloat_O/1599
 { class_kind, STAMPWTAG_core__DoubleFloat_O, sizeof(core::DoubleFloat_O), 0, IS_POLYMORPHIC, "core::DoubleFloat_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")
  {  fixed_field, ctype_double, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(core::DoubleFloat_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::SingleFloat_dummy_O/1603
+// StampWtag = core::SingleFloat_dummy_O/1603
 { class_kind, STAMPWTAG_core__SingleFloat_dummy_O, sizeof(core::SingleFloat_dummy_O), 0, IS_POLYMORPHIC, "core::SingleFloat_dummy_O" },
-// Stamp = core::LongFloat_O/1607
+// StampWtag = core::LongFloat_O/1607
 { class_kind, STAMPWTAG_core__LongFloat_O, sizeof(core::LongFloat_O), 0, IS_POLYMORPHIC, "core::LongFloat_O" },
-// Stamp = core::ShortFloat_O/1611
+// StampWtag = core::ShortFloat_O/1611
 { class_kind, STAMPWTAG_core__ShortFloat_O, sizeof(core::ShortFloat_O), 0, IS_POLYMORPHIC, "core::ShortFloat_O" },
 //      field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")
  {  fixed_field, ctype_float, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(core::ShortFloat_O),_Value), 0, "_Value" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Complex_O/1615
+// StampWtag = core::Complex_O/1615
 { class_kind, STAMPWTAG_core__Complex_O, sizeof(core::Complex_O), 0, IS_POLYMORPHIC, "core::Complex_O" },
 //      field: "_real" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_real), 0, "_real" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_imaginary" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Real_O>" :SPECIALIZER "class core::Real_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Real_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Complex_O),_imaginary), 0, "_imaginary" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Stream_O/1619
+// StampWtag = core::Stream_O/1619
 { class_kind, STAMPWTAG_core__Stream_O, sizeof(core::Stream_O), 0, IS_POLYMORPHIC, "core::Stream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -11723,7 +11697,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Stream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::AnsiStream_O/1623
+// StampWtag = core::AnsiStream_O/1623
 { class_kind, STAMPWTAG_core__AnsiStream_O, sizeof(core::AnsiStream_O), 0, IS_POLYMORPHIC, "core::AnsiStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -11840,7 +11814,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::AnsiStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::TwoWayStream_O/1627
+// StampWtag = core::TwoWayStream_O/1627
 { class_kind, STAMPWTAG_core__TwoWayStream_O, sizeof(core::TwoWayStream_O), 0, IS_POLYMORPHIC, "core::TwoWayStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -11961,7 +11935,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_In), 0, "_In" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Out" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::TwoWayStream_O),_Out), 0, "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::SynonymStream_O/1631
+// StampWtag = core::SynonymStream_O/1631
 { class_kind, STAMPWTAG_core__SynonymStream_O, sizeof(core::SynonymStream_O), 0, IS_POLYMORPHIC, "core::SynonymStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12080,7 +12054,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_SynonymSymbol" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SynonymStream_O),_SynonymSymbol), 0, "_SynonymSymbol" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::ConcatenatedStream_O/1635
+// StampWtag = core::ConcatenatedStream_O/1635
 { class_kind, STAMPWTAG_core__ConcatenatedStream_O, sizeof(core::ConcatenatedStream_O), 0, IS_POLYMORPHIC, "core::ConcatenatedStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12199,7 +12173,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_List" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::ConcatenatedStream_O),_List), 0, "_List" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::FileStream_O/1639
+// StampWtag = core::FileStream_O/1639
 { class_kind, STAMPWTAG_core__FileStream_O, sizeof(core::FileStream_O), 0, IS_POLYMORPHIC, "core::FileStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12320,7 +12294,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_Filename), 0, "_Filename" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_ElementType" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::FileStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::IOFileStream_O/1643
+// StampWtag = core::IOFileStream_O/1643
 { class_kind, STAMPWTAG_core__IOFileStream_O, sizeof(core::IOFileStream_O), 0, IS_POLYMORPHIC, "core::IOFileStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12443,7 +12417,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_FileDescriptor" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOFileStream_O),_FileDescriptor), 0, "_FileDescriptor" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::IOStreamStream_O/1647
+// StampWtag = core::IOStreamStream_O/1647
 { class_kind, STAMPWTAG_core__IOStreamStream_O, sizeof(core::IOStreamStream_O), 0, IS_POLYMORPHIC, "core::IOStreamStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12566,7 +12540,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_ElementType), 0, "_ElementType" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_File" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "__sFILE" :NAME "__sFILE"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::IOStreamStream_O),_File), 0, "_File" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::BroadcastStream_O/1651
+// StampWtag = core::BroadcastStream_O/1651
 { class_kind, STAMPWTAG_core__BroadcastStream_O, sizeof(core::BroadcastStream_O), 0, IS_POLYMORPHIC, "core::BroadcastStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12685,7 +12659,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_Streams" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::BroadcastStream_O),_Streams), 0, "_Streams" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::StringStream_O/1655
+// StampWtag = core::StringStream_O/1655
 { class_kind, STAMPWTAG_core__StringStream_O, sizeof(core::StringStream_O), 0, IS_POLYMORPHIC, "core::StringStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12802,7 +12776,7 @@ public:
 //      field: "_InputCursor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::StreamCursor" :NAME "StreamCursor")
 //      field: "._PrevColumn" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = core::StringOutputStream_O/1659
+// StampWtag = core::StringOutputStream_O/1659
 { class_kind, STAMPWTAG_core__StringOutputStream_O, sizeof(core::StringOutputStream_O), 0, IS_POLYMORPHIC, "core::StringOutputStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -12921,7 +12895,7 @@ public:
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_InputCursor._PrevColumn), 0, "_InputCursor._PrevColumn" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_Contents" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Array_O>" :SPECIALIZER "class core::Array_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Array_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringOutputStream_O),_Contents), 0, "_Contents" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::StringInputStream_O/1663
+// StampWtag = core::StringInputStream_O/1663
 { class_kind, STAMPWTAG_core__StringInputStream_O, sizeof(core::StringInputStream_O), 0, IS_POLYMORPHIC, "core::StringInputStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -13044,7 +13018,7 @@ public:
  {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputPosition), 0, "_InputPosition" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_InputLimit" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")
  {  fixed_field, ctype_long_long, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(core::StringInputStream_O),_InputLimit), 0, "_InputLimit" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::EchoStream_O/1667
+// StampWtag = core::EchoStream_O/1667
 { class_kind, STAMPWTAG_core__EchoStream_O, sizeof(core::EchoStream_O), 0, IS_POLYMORPHIC, "core::EchoStream_O" },
 //      field: "ops" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::FileOps" :NAME "FileOps")
 //      field: ".write_byte8" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "long long (gctools::smart_ptr<core::T_O>, unsigned char *, long long)"))
@@ -13165,7 +13139,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_In), 0, "_In" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Out" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::EchoStream_O),_Out), 0, "_Out" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Package_O/1671
+// StampWtag = core::Package_O/1671
 { class_kind, STAMPWTAG_core__Package_O, sizeof(core::Package_O), 0, IS_POLYMORPHIC, "core::Package_O" },
 //      field: "_InternalSymbols" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEqual_O>" :SPECIALIZER "class core::HashTableEqual_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),_InternalSymbols), 0, "_InternalSymbols" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13203,15 +13177,15 @@ public:
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),userLockedP), 0, "userLockedP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "zombieP" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
  {  fixed_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::Package_O),zombieP), 0, "zombieP" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::FileStatus_O/1675
+// StampWtag = core::FileStatus_O/1675
 { class_kind, STAMPWTAG_core__FileStatus_O, sizeof(core::FileStatus_O), 0, IS_POLYMORPHIC, "core::FileStatus_O" },
-// Stamp = core::InvocationHistoryFrameIterator_O/1679
+// StampWtag = core::InvocationHistoryFrameIterator_O/1679
 { class_kind, STAMPWTAG_core__InvocationHistoryFrameIterator_O, sizeof(core::InvocationHistoryFrameIterator_O), 0, IS_POLYMORPHIC, "core::InvocationHistoryFrameIterator_O" },
 //      field: "_Frame" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::InvocationHistoryFrame" :NAME "InvocationHistoryFrame"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Frame), 0, "_Frame" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
 //      field: "_Index" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
  {  fixed_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::InvocationHistoryFrameIterator_O),_Index), 0, "_Index" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::SourcePosInfo_O/1683
+// StampWtag = core::SourcePosInfo_O/1683
 { class_kind, STAMPWTAG_core__SourcePosInfo_O, sizeof(core::SourcePosInfo_O), 0, IS_POLYMORPHIC, "core::SourcePosInfo_O" },
 //      field: "_FileId" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FileId), 0, "_FileId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
@@ -13225,21 +13199,21 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_FunctionScope), 0, "_FunctionScope" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_InlinedAt" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SourcePosInfo_O),_InlinedAt), 0, "_InlinedAt" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::DirectoryEntry_O/1687
+// StampWtag = core::DirectoryEntry_O/1687
 { class_kind, STAMPWTAG_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, IS_POLYMORPHIC, "core::DirectoryEntry_O" },
 //      field: "_Entry" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "boost::filesystem::directory_entry" :NAME "directory_entry"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::DirectoryEntry_O),_Entry), 0, "_Entry" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::LightUserData_O/1691
+// StampWtag = core::LightUserData_O/1691
 { class_kind, STAMPWTAG_core__LightUserData_O, sizeof(core::LightUserData_O), 0, IS_POLYMORPHIC, "core::LightUserData_O" },
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::LightUserData_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::UserData_O/1695
+// StampWtag = core::UserData_O/1695
 { class_kind, STAMPWTAG_core__UserData_O, sizeof(core::UserData_O), 0, IS_POLYMORPHIC, "core::UserData_O" },
 //      field: "_ptr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::UserData_O),_ptr), 0, "_ptr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Dtor" (instance-field-access iv) -> CLANG-AST:AS-PRIVATE   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::FUNCTION-PROTO-CTYPE :KEY "void (void *)"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::UserData_O),_Dtor), 0, "_Dtor" }, // atomic: NIL public: (NIL) fixable: NIL good-name: T
-// Stamp = core::Record_O/1699
+// StampWtag = core::Record_O/1699
 { class_kind, STAMPWTAG_core__Record_O, sizeof(core::Record_O), 0, IS_POLYMORPHIC, "core::Record_O" },
 //      field: "_alist" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_alist), 0, "_alist" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13247,11 +13221,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_patching_callback), 0, "_patching_callback" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Seen" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), 0, "_Seen" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clbind::ClassRegistry_O/1703
+// StampWtag = clbind::ClassRegistry_O/1703
 { class_kind, STAMPWTAG_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, IS_POLYMORPHIC, "clbind::ClassRegistry_O" },
 //      field: "m_classes" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::HashTableEql_O>" :SPECIALIZER "class core::HashTableEql_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), __builtin_offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), 0, "m_classes" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Frame_O/1707
+// StampWtag = core::Frame_O/1707
 { class_kind, STAMPWTAG_core__Frame_O, sizeof(core::Frame_O), 0, IS_POLYMORPHIC, "core::Frame_O" },
 //      field: "stype" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),stype), 0, "stype" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -13281,13 +13255,13 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),up), 0, "up" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 //      field: "down" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = core::Cons_O/1711
+// StampWtag = core::Cons_O/1711
 { class_kind, STAMPWTAG_core__Cons_O, sizeof(core::Cons_O), 0, 0, "core::Cons_O" },
 //      field: "_Car" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Car), 0, "_Car" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Cdr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Cdr), 0, "_Cdr" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = core::Lisp_O/1715
+// StampWtag = core::Lisp_O/1715
 { class_kind, STAMPWTAG_core__Lisp_O, sizeof(core::Lisp_O), 0, IS_POLYMORPHIC, "core::Lisp_O" },
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 //      field: "._TrueObject" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
@@ -13515,16 +13489,16 @@ public:
  {  fixed_field, ATOMIC_POD_OFFSET_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_EnvironmentId), 0, "_EnvironmentId" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_LineNumber" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
  {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_LineNumber), 0, "_LineNumber" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1719
-// Stamp = asttooling::AstVisitor_O/1723
+// StampWtag = clang::RecursiveASTVisitor<asttooling::AstVisitor_O>/1719
+// StampWtag = asttooling::AstVisitor_O/1723
 { class_kind, STAMPWTAG_asttooling__AstVisitor_O, sizeof(asttooling::AstVisitor_O), 0, IS_POLYMORPHIC, "asttooling::AstVisitor_O" },
 //      field: "_Target" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(asttooling::AstVisitor_O),_Target), 0, "_Target" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = clang::tooling::ToolAction/1727
-// Stamp = clang::tooling::FrontendActionFactory/1731
-// Stamp = clang::ast_matchers::MatchFinder::MatchCallback/1735
-// Stamp = gctools::GCContainer/1739
-// Stamp = gctools::GCArray_moveable<unsigned int>/1743
+// StampWtag = clang::tooling::ToolAction/1727
+// StampWtag = clang::tooling::FrontendActionFactory/1731
+// StampWtag = clang::ast_matchers::MatchFinder::MatchCallback/1735
+// StampWtag = gctools::GCContainer/1739
+// StampWtag = gctools::GCArray_moveable<unsigned int>/1743
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_int_, sizeof(gctools::GCArray_moveable<unsigned int>), 0, 0, "gctools::GCArray_moveable<unsigned int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned int>),_MaybeSignedLength), 0, NULL },
@@ -13535,7 +13509,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")>
 {    variable_field, ctype_unsigned_int, sizeof(unsigned int), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<unsigned long long>/1747
+// StampWtag = gctools::GCArray_moveable<unsigned long long>/1747
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_long_long_, sizeof(gctools::GCArray_moveable<unsigned long long>), 0, 0, "gctools::GCArray_moveable<unsigned long long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long long>),_MaybeSignedLength), 0, NULL },
@@ -13546,7 +13520,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1751
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>/1751
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Cons_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>),_Capacity), 0, NULL },
@@ -13557,7 +13531,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Cons_O>" :SPECIALIZER "class core::Cons_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<double>/1755
+// StampWtag = gctools::GCVector_moveable<double>/1755
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_double_, sizeof(gctools::GCVector_moveable<double>), 0, 0, "gctools::GCVector_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<double>),_Capacity), 0, NULL },
@@ -13568,7 +13542,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<short>/1759
+// StampWtag = gctools::GCArray_moveable<short>/1759
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_short_, sizeof(gctools::GCArray_moveable<short>), 0, 0, "gctools::GCArray_moveable<short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<short>),_MaybeSignedLength), 0, NULL },
@@ -13579,7 +13553,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "short")>
 {    variable_field, ctype_short, sizeof(short), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/1763
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>/1763
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), 0, NULL },
@@ -13590,7 +13564,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<clbind::ClassRep_O>" :SPECIALIZER "class clbind::ClassRep_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, 0, "only" },
-// Stamp = gctools::GCBitUnitArray_moveable<4,0>/1767
+// StampWtag = gctools::GCBitUnitArray_moveable<4,0>/1767
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_, sizeof(gctools::GCBitUnitArray_moveable<4,0>), 4, 0, "gctools::GCBitUnitArray_moveable<4,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,0>),_Length), 0, NULL },
@@ -13601,7 +13575,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::SymbolClassHolderPair>/1771
+// StampWtag = gctools::GCVector_moveable<core::SymbolClassHolderPair>/1771
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_, sizeof(gctools::GCVector_moveable<core::SymbolClassHolderPair>), 0, 0, "gctools::GCVector_moveable<core::SymbolClassHolderPair>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::SymbolClassHolderPair), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassHolderPair>),_Capacity), 0, NULL },
@@ -13619,7 +13593,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "theClassHolder" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::ClassHolder_O>" :SPECIALIZER "class core::ClassHolder_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::ClassHolder_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolClassHolderPair),theClassHolder), 0, "theClassHolder" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCArray_moveable<signed char>/1775
+// StampWtag = gctools::GCArray_moveable<signed char>/1775
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_signed_char_, sizeof(gctools::GCArray_moveable<signed char>), 0, 0, "gctools::GCArray_moveable<signed char>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(signed char), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<signed char>),_MaybeSignedLength), 0, NULL },
@@ -13630,7 +13604,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "signed char")>
 {    variable_field, ctype_signed_char, sizeof(signed char), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/1779
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>/1779
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::List_V>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>),_Capacity), 0, NULL },
@@ -13641,7 +13615,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::List_V>" :SPECIALIZER "class core::List_V")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>/1783
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>/1783
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), 0, NULL },
@@ -13659,7 +13633,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCArray_moveable<unsigned char>/1787
+// StampWtag = gctools::GCArray_moveable<unsigned char>/1787
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_char_, sizeof(gctools::GCArray_moveable<unsigned char>), 0, 0, "gctools::GCArray_moveable<unsigned char>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned char), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned char>),_MaybeSignedLength), 0, NULL },
@@ -13670,7 +13644,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")>
 {    variable_field, ctype_unsigned_char, sizeof(unsigned char), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::KeyValuePair>/1791
+// StampWtag = gctools::GCVector_moveable<core::KeyValuePair>/1791
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_, sizeof(gctools::GCVector_moveable<core::KeyValuePair>), 0, 0, "gctools::GCVector_moveable<core::KeyValuePair>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::KeyValuePair), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeyValuePair>),_Capacity), 0, NULL },
@@ -13688,7 +13662,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::KeyValuePair),_Value), 0, "_Value" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/1795
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>/1795
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), 0, NULL },
@@ -13699,7 +13673,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Symbol_O>" :SPECIALIZER "class core::Symbol_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>/1799
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>/1799
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), 0, NULL },
@@ -13710,7 +13684,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<double>/1803
+// StampWtag = gctools::GCArray_moveable<double>/1803
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_double_, sizeof(gctools::GCArray_moveable<double>), 0, 0, "gctools::GCArray_moveable<double>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(double), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<double>),_MaybeSignedLength), 0, NULL },
@@ -13721,7 +13695,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "double")>
 {    variable_field, ctype_double, sizeof(double), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::OptionalArgument>/1807
+// StampWtag = gctools::GCVector_moveable<core::OptionalArgument>/1807
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_, sizeof(gctools::GCVector_moveable<core::OptionalArgument>), 0, 0, "gctools::GCVector_moveable<core::OptionalArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::OptionalArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), 0, NULL },
@@ -13762,7 +13736,7 @@ public:
 //     field: "_Sensor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Argument" :NAME "Argument")
 //     field: "._ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::OptionalArgument),_Sensor._ArgTargetFrameIndex), 0, "_Sensor._ArgTargetFrameIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = gctools::GCVector_moveable<core::KeywordArgument>/1811
+// StampWtag = gctools::GCVector_moveable<core::KeywordArgument>/1811
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_, sizeof(gctools::GCVector_moveable<core::KeywordArgument>), 0, 0, "gctools::GCVector_moveable<core::KeywordArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::KeywordArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::KeywordArgument>),_Capacity), 0, NULL },
@@ -13810,7 +13784,7 @@ public:
 //     field: "_Sensor" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Argument" :NAME "Argument")
 //     field: "._ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTargetFrameIndex), 0, "_Sensor._ArgTargetFrameIndex" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-// Stamp = gctools::GCVector_moveable<core::RequiredArgument>/1815
+// StampWtag = gctools::GCVector_moveable<core::RequiredArgument>/1815
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_, sizeof(gctools::GCVector_moveable<core::RequiredArgument>), 0, 0, "gctools::GCVector_moveable<core::RequiredArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::RequiredArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), 0, NULL },
@@ -13828,7 +13802,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_ArgTargetFrameIndex" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")
     {    variable_field, ctype_int, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), 0, "_ArgTargetFrameIndex" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/1819
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>/1819
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::FileScope_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>),_Capacity), 0, NULL },
@@ -13839,7 +13813,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::FileScope_O>" :SPECIALIZER "class core::FileScope_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::FileScope_O>), 0, 0, "only" },
-// Stamp = gctools::GCBitUnitArray_moveable<4,1>/1823
+// StampWtag = gctools::GCBitUnitArray_moveable<4,1>/1823
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_, sizeof(gctools::GCBitUnitArray_moveable<4,1>), 4, 0, "gctools::GCBitUnitArray_moveable<4,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<4,1>),_Length), 0, NULL },
@@ -13850,7 +13824,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::SymbolStorage>/1827
+// StampWtag = gctools::GCVector_moveable<core::SymbolStorage>/1827
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_, sizeof(gctools::GCVector_moveable<core::SymbolStorage>), 0, 0, "gctools::GCVector_moveable<core::SymbolStorage>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::SymbolStorage), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), 0, NULL },
@@ -13889,7 +13863,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Shadow" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "_Bool")
     {    variable_field, ctype__Bool, sizeof(_Bool), __builtin_offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), 0, "_Shadow" }, // atomic: NIL public: (T) fixable: NIL good-name: T
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/1831
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>/1831
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Instance_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>),_Capacity), 0, NULL },
@@ -13900,7 +13874,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Instance_O>" :SPECIALIZER "class core::Instance_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Instance_O>), 0, 0, "only" },
-// Stamp = gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>/1835
+// StampWtag = gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>/1835
 { container_kind, STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>),_Length), 0, NULL },
@@ -13911,7 +13885,7 @@ public:
 // atomic-smart-ptr-p -> T
 // one -> #<ATOMIC-SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))>
 {    variable_field, ATOMIC_SMART_PTR_OFFSET, sizeof(std::atomic<gctools::smart_ptr<core::T_O>>), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<long long>/1839
+// StampWtag = gctools::GCArray_moveable<long long>/1839
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_long_long_, sizeof(gctools::GCArray_moveable<long long>), 0, 0, "gctools::GCArray_moveable<long long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<long long>),_MaybeSignedLength), 0, NULL },
@@ -13922,7 +13896,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "long long")>
 {    variable_field, ctype_long_long, sizeof(long long), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<unsigned long>/1843
+// StampWtag = gctools::GCArray_moveable<unsigned long>/1843
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_long_, sizeof(gctools::GCArray_moveable<unsigned long>), 0, 0, "gctools::GCArray_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -13933,7 +13907,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = gctools::GCArraySignedLength_moveable<unsigned long>/1847
+// StampWtag = gctools::GCArraySignedLength_moveable<unsigned long>/1847
 { container_kind, STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_, sizeof(gctools::GCArraySignedLength_moveable<unsigned long>), 0, 0, "gctools::GCArraySignedLength_moveable<unsigned long>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArraySignedLength_moveable<unsigned long>),_MaybeSignedLength), 0, NULL },
@@ -13944,7 +13918,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")>
 {    variable_field, ctype_unsigned_long, sizeof(unsigned long), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/1851
+// StampWtag = gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>/1851
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), 0, NULL },
@@ -13962,7 +13936,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "second" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), 0, "second" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCBitUnitArray_moveable<2,0>/1855
+// StampWtag = gctools::GCBitUnitArray_moveable<2,0>/1855
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_, sizeof(gctools::GCBitUnitArray_moveable<2,0>), 2, 0, "gctools::GCBitUnitArray_moveable<2,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,0>),_Length), 0, NULL },
@@ -13973,7 +13947,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<int>/1859
+// StampWtag = gctools::GCArray_moveable<int>/1859
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_int_, sizeof(gctools::GCArray_moveable<int>), 0, 0, "gctools::GCArray_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<int>),_MaybeSignedLength), 0, NULL },
@@ -13984,7 +13958,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// Stamp = gctools::GCBitUnitArray_moveable<1,0>/1863
+// StampWtag = gctools::GCBitUnitArray_moveable<1,0>/1863
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_, sizeof(gctools::GCBitUnitArray_moveable<1,0>), 1, 0, "gctools::GCBitUnitArray_moveable<1,0>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<1,0>),_Length), 0, NULL },
@@ -13995,7 +13969,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/1867
+// StampWtag = gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>/1867
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>), 0, 0, "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_MaybeSignedLength), 0, NULL },
@@ -14006,7 +13980,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::AuxArgument>/1871
+// StampWtag = gctools::GCVector_moveable<core::AuxArgument>/1871
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, 0, "gctools::GCVector_moveable<core::AuxArgument>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::AuxArgument), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), 0, NULL },
@@ -14031,7 +14005,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 //     field: "_Expression" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC  (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
     {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::AuxArgument),_Expression), 0, "_Expression" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
-// Stamp = gctools::GCBitUnitArray_moveable<2,1>/1875
+// StampWtag = gctools::GCBitUnitArray_moveable<2,1>/1875
 { bitunit_container_kind, STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_, sizeof(gctools::GCBitUnitArray_moveable<2,1>), 2, 0, "gctools::GCBitUnitArray_moveable<2,1>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned long long), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCBitUnitArray_moveable<2,1>),_Length), 0, NULL },
@@ -14042,7 +14016,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long long")>
 {    variable_field, ctype_unsigned_long_long, sizeof(unsigned long long), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<int>/1879
+// StampWtag = gctools::GCVector_moveable<int>/1879
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_int_, sizeof(gctools::GCVector_moveable<int>), 0, 0, "gctools::GCVector_moveable<int>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(int), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<int>),_Capacity), 0, NULL },
@@ -14053,7 +14027,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "int")>
 {    variable_field, ctype_int, sizeof(int), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1883
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>/1883
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), 0, NULL },
@@ -14064,7 +14038,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Package_O>" :SPECIALIZER "class core::Package_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Package_O>), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<float>/1887
+// StampWtag = gctools::GCArray_moveable<float>/1887
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_float_, sizeof(gctools::GCArray_moveable<float>), 0, 0, "gctools::GCArray_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<float>),_MaybeSignedLength), 0, NULL },
@@ -14075,7 +14049,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1891
+// StampWtag = gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>/1891
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>), 0, 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(gctools::smart_ptr<core::Creator_O>), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>),_Capacity), 0, NULL },
@@ -14086,7 +14060,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<SMART-PTR-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O") :base #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::Creator_O>" :SPECIALIZER "class core::Creator_O")>
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<core::T_O *>/1895
+// StampWtag = gctools::GCVector_moveable<core::T_O *>/1895
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_core__T_O___, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, 0, "gctools::GCVector_moveable<core::T_O *>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(core::T_O*), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), 0, NULL },
@@ -14097,7 +14071,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POINTER-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O")) :base #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::T_O" :NAME "T_O"))>
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, 0, "only" },
-// Stamp = gctools::GCArray_moveable<unsigned short>/1899
+// StampWtag = gctools::GCArray_moveable<unsigned short>/1899
 { container_kind, STAMPWTAG_gctools__GCArray_moveable_unsigned_short_, sizeof(gctools::GCArray_moveable<unsigned short>), 0, 0, "gctools::GCArray_moveable<unsigned short>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(unsigned short), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<unsigned short>),_MaybeSignedLength), 0, NULL },
@@ -14108,7 +14082,7 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned short")>
 {    variable_field, ctype_unsigned_short, sizeof(unsigned short), 0, 0, "only" },
-// Stamp = gctools::GCVector_moveable<float>/1903
+// StampWtag = gctools::GCVector_moveable<float>/1903
 { container_kind, STAMPWTAG_gctools__GCVector_moveable_float_, sizeof(gctools::GCVector_moveable<float>), 0, 0, "gctools::GCVector_moveable<float>" },
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Data), 0, "_Data" },
  {  variable_capacity, sizeof(float), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_End), __builtin_offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<float>),_Capacity), 0, NULL },
@@ -14119,9 +14093,9 @@ public:
 // atomic-smart-ptr-p -> NIL
 // one -> #<POD-OFFSET :fields NIL :offset-type #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float") :base #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "float")>
 {    variable_field, ctype_float, sizeof(float), 0, 0, "only" },
-// Stamp = clang::FrontendAction/1907
-// Stamp = clang::ASTFrontendAction/1911
-// Stamp = clang::SyntaxOnlyAction/1915
+// StampWtag = clang::FrontendAction/1907
+// StampWtag = clang::ASTFrontendAction/1911
+// StampWtag = clang::SyntaxOnlyAction/1915
 
 #endif // defined(GC_OBJ_SCAN_HELPERS)
 #if defined(GC_OBJ_SCAN_TABLE)
