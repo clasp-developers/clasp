@@ -628,10 +628,10 @@ void Lisp_O::startupLispEnvironment() {
   global_Started = true;
 
   //
-  // Pause if CLASP_PAUSE_STARTUP environment variable is defined
+  // Pause if CLASP_PAUSE_INIT environment variable is defined
   //
   {
-    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+    char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
       printf("%s:%d PID = %d Paused after initialization - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);

@@ -1,0 +1,11 @@
+b core__gdb
+#b cl__error
+handle SIGPWR nostop noprint
+handle SIGXCPU nostop noprint
+handle SIGXFSZ nostop noprint
+handle SIGSEGV nostop noprint
+uset max-event-log-size 10G
+
+
+source -s -v udb-loader.py
+set python print-stack full

@@ -1,0 +1,22 @@
+# To use this
+#
+# (1) Copy this to ~/.gdbinit or append it
+# (2) define the CLASP_HOME environment variable
+# (3) Start gdb -- ./iclasp-boehm
+# (4) in gdb use:   load_sub to load the logger
+# (5) in gdb set two break points and run to the first one
+#        then type:    sub "/tmp/gdb.log"
+# (6) extract instructions with:     extractInst "/tmp/gdb.log" "/tmp/gdbinst.log"
+
+
+# load the stepiUntilBreakpoint facility
+#
+# Use the CLASP_HOME environment variable
+
+define load_sub
+python
+import os
+gdb.execute('source ' + os.environ['CLASP_HOME'] + '/tools/gdb-tools/pygdb-logg.gdb')
+end
+end
+

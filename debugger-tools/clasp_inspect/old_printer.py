@@ -1,14 +1,9 @@
 
 
 def print_tagged_ptr(debugger,verbose,tptr,toplevel=False):
-    global global_headerStruct
     if (generalp(tptr)):
-        base = untag_general(tptr)
-        header_ptr = base - global_headerStruct._sizeof
-        header = debugger.read_memory(header_ptr,8)
-        if (header):
-            stamp = header>>4
-            if (verbose): debugger.print_("header@%x stamp = %d" % (header_ptr,stamp))
+        (stamp,mtag) = read_stamp_mtag(debugger,tptr)
+        if (stamp):
             class_ = global_kinds[stamp]
             name = class_._name
             printed = print_shallow_object_type(debugger,verbose,0,tptr,toplevel)

@@ -18,7 +18,7 @@ class GdbInterface(Interface):
         exec(code)
         SetupGlobals(self)
         self._ByteOrder = 'little'
-        self._verbose = False
+        self._verbose = True
         
     def print_(self,msg):
         print(msg)
@@ -72,8 +72,8 @@ def do_inspect(args):
     #print "In inspect args: %s" % args
     global global_gdb_interface
     tptr = arg_to_tptr(global_gdb_interface,args)
-    obj = general_tagged_ptr(global_gdb_interface,tptr)
-    print( "general_tagged_ptr returned: %s" % obj.__repr__())
+    obj = any_tagged_ptr(global_gdb_interface,tptr)
+    print( "any_tagged_ptr returned: %s" % obj.__repr__())
     return obj
 
 def do_gdb_init_module():
