@@ -1020,11 +1020,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLOS::METAOBJECT = 716, 
 // Unused COMMON-LISP::UNDEFINED-FUNCTION = 805, 
 // Unused ECLECTOR.READER::BACKQUOTE-CONTEXT-ERROR = 1019, 
-<<<<<<< variant A
 // Unused CONCRETE-SYNTAX-TREE::SINGLETON-PARAMETER-GROUP-MIXIN = 913, 
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__BacktraceEntry_ = 374, 
-======= end
 // Unused CLASP-CLEAVIR-AST::BIND-AST = 1426, 
 // Unused COMMON-LISP::RESTART = 761, 
 // Unused COMMON-LISP::CELL-ERROR = 802, 
@@ -1072,10 +1068,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR-BMIR::STORE = 1456, 
 // Unused CLASP-CLEAVIR-AST::BIND-VA-LIST-AST = 1428, 
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-SHARPSIGN-S = 1070, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_4__false_ = 363, 
-======= end
 // Unused CLASP-ANALYZER::ATOMIC-POD-OFFSET = 1539, 
 // Unused COMMON-LISP::UNBOUND-SLOT = 804, 
 // Unused CLEAVIR-ENVIRONMENT::FUNCTION-DYNAMIC-EXTENT = 1323, 
@@ -1140,16 +1132,8 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CST-TO-AST::BINDINGS-MUST-BE-PROPER-LIST = 1360, 
 // Unused SB-BSD-SOCKETS::NO-RECOVERY-ERROR = 886, 
 // Unused STATIC-GFS::CELL-UPDATER = 755, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 380, 
-======= end
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-BACKQUOTE = 1022, 
 // Unused CLASP-ANALYZER::SIMPLE-STAMP = 1488, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 361, 
-======= end
 // Unused CLEAVIR-AST::LEXICAL-VARIABLE = 1190, 
 // Unused CLEAVIR-BIR::LETI = 1159, 
 // Unused ACCLIMATION::LANGUAGE = 889, 
@@ -1184,10 +1168,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CONCRETE-SYNTAX-TREE::SUPPLIED-P-MIXIN = 938, 
 // Unused SB-BSD-SOCKETS::SOCKET = 864, 
 // Unused ECLECTOR.READER::OBJECT-MUST-FOLLOW-UNQUOTE = 1029, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__CacheRecord_ = 366, 
-======= end
 // Unused CONCRETE-SYNTAX-TREE::KEYWORD-REST = 952, 
 // Unused CLEAVIR-AST::SYMBOL-VALUE-AST = 1192, 
 // Unused ECLECTOR.READER::UNTERMINATED-STRING = 1016, 
@@ -1210,11 +1190,7 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused STAMPWTAG_gctools__GCArray_moveable_long_ = 354, 
 // Unused CLASP-CLEAVIR-BMIR::GENERALP = 1452, 
 // Unused CLASP-CLEAVIR-AST::ATOMIC-CAR-AST = 1411, 
-<<<<<<< variant A
 // Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__KeyValuePair__ = 380, 
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__ExceptionEntry_ = 368, 
-======= end
 // Unused ECLECTOR.READER::END-OF-INPUT-AFTER-QUOTE = 1014, 
 // Unused CLASP-ANALYZER::CXX-FIXUP-OFFSET = 1547, 
 // Unused CORE::SIMPLE-FILE-ERROR = 799, 
@@ -1245,10 +1221,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLANG-TOOL::COUNT-MATCH-CALLBACK = 1465, 
 // Unused CONCRETE-SYNTAX-TREE::FORM-MIXIN = 937, 
 // Unused CONCRETE-SYNTAX-TREE::GENERIC-FUNCTION-OPTIONAL-PARAMETER = 945, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 385, 
-======= end
 // Unused COMMON-LISP::SERIOUS-CONDITION = 764, 
 // Unused CLEAVIR-CST-TO-AST::SPECIAL-SYMBOL-MACRO = 1368, 
 // Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 367, 
@@ -1453,10 +1425,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused INTERPRET-AST::CANNOT-INTERPRET = 1429, 
 // Unused CLEAVIR-CST-TO-AST::FUNCTION-NAME-MUST-BE-PROPER-FUNCTION-NAME = 1359, 
 // Unused CLEAVIR-AST::ASET-AST = 1256, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_2__false_ = 362, 
-======= end
 // Unused CLEAVIR-BIR::MV-LOCAL-CALL = 1150, 
 // Unused CLASP-ANALYZER::GCARRAY-OFFSET = 1552, 
 // Unused COMMON-LISP::CONTROL-ERROR = 788, 
@@ -1532,10 +1500,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLASP-CLEAVIR::CLASP-64BIT = 1387, 
 // Unused CLASP-CLEAVIR-AST::DEBUG-BREAK-AST = 1397, 
 // Unused CLOS::STANDARD-SLOT-DEFINITION = 718, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCVector_moveable_core__DynamicBinding_ = 367, 
-======= end
 // Unused CLEAVIR-CODE-UTILITIES::MALFORMED-DEFGENERIC-KEY = 1288, 
 // Unused CLASP-ANALYZER::SMART-PTR-CTYPE = 1518, 
 // Unused STAMPWTAG_gctools__GCBitUnitArray_moveable_1__false_ = 361, 
@@ -1625,10 +1589,6 @@ STAMPWTAG_clang__SyntaxOnlyAction = ADJUST_STAMP(1915), // Stamp(478)  wtag(3)
 // Unused CLEAVIR-CONDITIONS::PROGRAM-STYLE-WARNING = 1106, 
 // Unused ECLECTOR.READER::UNTERMINATED-MULTIPLE-ESCAPE = 996, 
 // Unused CLASP-ANALYZER::DEBUG-INFO = 1475, 
-<<<<<<< variant A
->>>>>>> variant B
-// Unused STAMPWTAG_gctools__GCArray_moveable_long_ = 354, 
-======= end
 // Unused CLEAVIR-AST::NO-VALUE-AST-MIXIN = 1185, 
 // Unused CLASP-CLEAVIR-AST::WRAPPED-STAMP-AST = 1406, 
 // Unused ECLECTOR.READER::SYMBOL-NAME-MUST-NOT-BE-ONLY-PACKAGE-MARKERS = 1005, 
@@ -6466,3123 +6426,1563 @@ DO_CLASS(SAFE_TYPE_MACRO(core::TwoWayStream_O),STAMPWTAG_core__TwoWayStream_O);
 #if defined(GC_STAMP_SELECTORS)
 template <> class gctools::GCStamp<core::MDArray_size_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_size_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_size_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<float>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_float_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_float_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_fixnum_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_fixnum_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_fixnum_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned short>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_short_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Integer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Integer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Integer_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Frame_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Frame_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Frame_O ;
-======= end
 };
 template <> class gctools::GCStamp<clbind::ClassRegistry_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clbind__ClassRegistry_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clbind__ClassRegistry_O ;
-======= end
 };
 template <> class gctools::GCStamp<asttooling::AstVisitor_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_asttooling__AstVisitor_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_asttooling__AstVisitor_O ;
-======= end
 };
 template <> class gctools::GCStamp<mp::Process_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mp__Process_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mp__Process_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Record_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Record_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Record_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LightUserData_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LightUserData_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LightUserData_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArrayT_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArrayT_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArrayT_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::T_O *>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__T_O___ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__T_O___ ;
-======= end
 };
 template <> class gctools::GCStamp<core::DirectoryEntry_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__DirectoryEntry_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__DirectoryEntry_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Linker_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Linker_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Linker_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Creator_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Creator_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_float_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SourcePosInfo_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SourcePosInfo_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SourcePosInfo_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::BranchInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__BranchInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__BranchInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::AllocaInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__AllocaInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__AllocaInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::StandardClassCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StandardClassCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StandardClassCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_float_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableCustom_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableCustom_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableCustom_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTable_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<float>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_float_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_float_ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::InvocationHistoryFrameIterator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__InvocationHistoryFrameIterator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__InvocationHistoryFrameIterator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_size_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_size_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_size_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIScope_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIScope_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIScope_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FileStatus_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FileStatus_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FileStatus_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::IndirectBrInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__IndirectBrInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__IndirectBrInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::PHINode_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__PHINode_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__PHINode_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Package_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Package_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Package_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBaseChar_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArrayBaseChar_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArrayBaseChar_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DILocation_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DILocation_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILocation_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Stream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Stream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Stream_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<int>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_int_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_int_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::MDString_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__MDString_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__MDString_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ShortFloat_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ShortFloat_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ShortFloat_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Number_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Number_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Number_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::T_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__T_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__T_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DICompileUnit_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DICompileUnit_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DICompileUnit_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::AbstractSimpleVector_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__AbstractSimpleVector_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__AbstractSimpleVector_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Pathname_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Pathname_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Pathname_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Str8Ns_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Str8Ns_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Str8Ns_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::FunctionPass_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__FunctionPass_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__FunctionPass_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::UndefValue_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__UndefValue_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__UndefValue_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<2,1>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_2_1_ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::AuxArgument>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__AuxArgument_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::CallBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__CallBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__CallBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::CompileTimeEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__CompileTimeEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__CompileTimeEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Path_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Path_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Path_O ;
-======= end
 };
 template <> class gctools::GCStamp<mp::SharedMutex_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mp__SharedMutex_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mp__SharedMutex_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<1,0>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_1_0_ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<int>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_int_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_int_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::InstanceCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__InstanceCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__InstanceCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::IOStreamStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__IOStreamStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__IOStreamStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Scope_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Scope_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Scope_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::InsertPoint_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__InsertPoint_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__InsertPoint_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FunctionDescription_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FunctionDescription_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FunctionDescription_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_double_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_double_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_double_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::StrWNs_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StrWNs_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StrWNs_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::EchoStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__EchoStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__EchoStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayBit_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArrayBit_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArrayBit_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArrayBit_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArrayBit_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArrayBit_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::AtomicFixnumHolder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__AtomicFixnumHolder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__AtomicFixnumHolder_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DILocalScope_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DILocalScope_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILocalScope_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LocalEntryPoint_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LocalEntryPoint_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LocalEntryPoint_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<2,0>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_2_0_ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlock_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DILexicalBlock_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILexicalBlock_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DITypeRefArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DITypeRefArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DITypeRefArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<mp::Mutex_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mp__Mutex_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mp__Mutex_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::RecursiveDirectoryIterator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__RecursiveDirectoryIterator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__RecursiveDirectoryIterator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::StringInputStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StringInputStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StringInputStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ModulePass_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ModulePass_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ModulePass_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FunctionFrame_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FunctionFrame_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FunctionFrame_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DILocalVariable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DILocalVariable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILocalVariable_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LongFloat_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LongFloat_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LongFloat_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::TargetLibraryInfoWrapperPass_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__TargetLibraryInfoWrapperPass_O ;
-======= end
 };
 template <> class gctools::GCStamp<asttooling::QualType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_asttooling__QualType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_asttooling__QualType_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LibraryFile_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LibraryFile_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LibraryFile_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::User_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__User_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__User_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_T_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_T_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_T_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::FenceInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__FenceInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__FenceInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::AtomicCmpXchgInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__AtomicCmpXchgInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__AtomicCmpXchgInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ValueFrame_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ValueFrame_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ValueFrame_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_long_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_double_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_double_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_double_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Complex_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Complex_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Complex_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantPointerNull_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantPointerNull_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantPointerNull_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::VectorType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__VectorType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__VectorType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::EntryPointBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__EntryPointBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__EntryPointBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ValueAsMetadata_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ValueAsMetadata_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ValueAsMetadata_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantExpr_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantExpr_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantExpr_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::StructType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__StructType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__StructType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::RandomState_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__RandomState_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__RandomState_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_float_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<long long>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_long_long_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_long_long_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Target_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Target_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Target_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_fixnum_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_fixnum_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_fixnum_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SingleDispatchGenericFunctionClosure_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SingleDispatchGenericFunctionClosure_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::AnsiStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__AnsiStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__AnsiStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::BuiltinClosure_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__BuiltinClosure_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__BuiltinClosure_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SingleFloat_dummy_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SingleFloat_dummy_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SingleFloat_dummy_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIExpression_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIExpression_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIExpression_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Module_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Module_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Module_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Environment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Environment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Environment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ValueEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ValueEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ValueEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::InvokeInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__InvokeInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__InvokeInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::StrNs_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StrNs_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StrNs_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::UnwindProtectEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__UnwindProtectEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__UnwindProtectEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignData_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clasp_ffi__ForeignData_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clasp_ffi__ForeignData_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::CallInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__CallInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__CallInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::FunctionPassManager_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__FunctionPassManager_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__FunctionPassManager_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::DoubleFloat_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__DoubleFloat_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__DoubleFloat_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_atomic<gctools::smart_ptr<core::T_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_atomic_gctools__smart_ptr_core__T_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Instance_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Instance_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::StringStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StringStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StringStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolStorage>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__SymbolStorage_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LibraryBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LibraryBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LibraryBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Sigset_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Sigset_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Sigset_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<asttooling::AsttoolingExposer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_asttooling__AsttoolingExposer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_asttooling__AsttoolingExposer_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::IntegerType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__IntegerType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__IntegerType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_size_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_size_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_size_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SmallMultimap_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SmallMultimap_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SmallMultimap_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBuilder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__PassManagerBuilder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__PassManagerBuilder_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Fixnum_dummy_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Fixnum_dummy_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Fixnum_dummy_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantFP_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantFP_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantFP_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Cons_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Cons_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Cons_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<4,1>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_4_1_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LLVMContext_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LLVMContext_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LLVMContext_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::WeakKeyHashTable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__WeakKeyHashTable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__WeakKeyHashTable_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Rack_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Rack_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Rack_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArrayBaseChar_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArrayBaseChar_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArrayBaseChar_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::UserData_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__UserData_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__UserData_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ExternalObject_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ExternalObject_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ExternalObject_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DINode_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DINode_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DINode_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::GlobalVariable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__GlobalVariable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__GlobalVariable_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::BroadcastStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__BroadcastStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__BroadcastStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::FileScope_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__FileScope_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::General_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__General_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__General_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ObjectFile_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ObjectFile_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ObjectFile_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Library_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Library_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Library_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Closure_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Closure_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Closure_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_size_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_size_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_size_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::RequiredArgument>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__RequiredArgument_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::BlockEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__BlockEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__BlockEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<mpip::Mpi_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mpip__Mpi_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mpip__Mpi_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DINodeArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DINodeArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DINodeArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArraySignedLength_moveable<unsigned long>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArraySignedLength_moveable_unsigned_long_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantDataArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantDataArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SmallMap_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SmallMap_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SmallMap_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Instance_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Instance_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Instance_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::TargetOptions_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__TargetOptions_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__TargetOptions_O ;
-======= end
 };
 template <> class gctools::GCStamp<clasp_ffi::ForeignTypeSpec_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clasp_ffi__ForeignTypeSpec_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clasp_ffi__ForeignTypeSpec_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Unused_dummy_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Unused_dummy_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Unused_dummy_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::PosixTimeDuration_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__PosixTimeDuration_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__PosixTimeDuration_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DWARFContext_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DWARFContext_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DWARFContext_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableEqual_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableEqual_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableEqual_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Triple_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Triple_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Triple_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::BitVectorNs_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__BitVectorNs_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__BitVectorNs_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::CoreExposer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__CoreExposer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__CoreExposer_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeywordArgument>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__KeywordArgument_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::NamedMDNode_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__NamedMDNode_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__NamedMDNode_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ThreadSafeContext_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ThreadSafeContext_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ThreadSafeContext_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::TargetMachine_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__TargetMachine_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__TargetMachine_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Value_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Value_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Value_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleBaseString_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleBaseString_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleBaseString_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Test_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Test_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Test_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Metadata_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Metadata_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Metadata_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::OptionalArgument>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__OptionalArgument_ ;
-======= end
 };
 template <> class gctools::GCStamp<clbind::ClassRep_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clbind__ClassRep_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clbind__ClassRep_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantInt_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantInt_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantInt_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<double>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_double_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_double_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::StructLayout_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__StructLayout_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__StructLayout_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayT_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArrayT_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArrayT_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ActivationFrame_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ActivationFrame_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ActivationFrame_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::PassManagerBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__PassManagerBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__PassManagerBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LoadInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LoadInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LoadInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantStruct_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantStruct_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantStruct_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Exposer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Exposer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Exposer_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::DirectoryIterator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__DirectoryIterator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__DirectoryIterator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DISubroutineType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DISubroutineType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DISubroutineType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LexicalEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LexicalEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LexicalEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::PosixTime_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__PosixTime_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__PosixTime_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::MetadataAsValue_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__MetadataAsValue_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__MetadataAsValue_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleBitVector_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleBitVector_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleBitVector_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FunctionContainerEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FunctionContainerEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FunctionContainerEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ResumeInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ResumeInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ResumeInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Function_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Function_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Function_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Readtable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Readtable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Readtable_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::IRBuilder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__IRBuilder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__IRBuilder_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ClaspJIT_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ClaspJIT_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ClaspJIT_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_byte8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_byte8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_byte8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DILexicalBlockBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DILexicalBlockBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DILexicalBlockBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::MDNode_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__MDNode_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__MDNode_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_fixnum_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_fixnum_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_fixnum_O ;
-======= end
 };
 template <> class gctools::GCStamp<mp::RecursiveMutex_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mp__RecursiveMutex_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mp__RecursiveMutex_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_float_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::VAArgInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__VAArgInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__VAArgInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_fixnum_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_fixnum_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_fixnum_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SharpEqualWrapper_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SharpEqualWrapper_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SharpEqualWrapper_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LoadTimeValues_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LoadTimeValues_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LoadTimeValues_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIFile_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIFile_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIFile_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::CodeBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__CodeBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__CodeBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DataLayout_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DataLayout_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DataLayout_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::BasicBlock_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__BasicBlock_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__BasicBlock_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::EngineBuilder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__EngineBuilder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__EngineBuilder_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::SectionedAddress_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__SectionedAddress_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__SectionedAddress_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::KeyValuePair>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__KeyValuePair_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Character_dummy_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Character_dummy_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Character_dummy_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::TagbodyEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__TagbodyEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__TagbodyEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Constant_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Constant_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Constant_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SpecialForm_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SpecialForm_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SpecialForm_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::FunctionCallee_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__FunctionCallee_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__FunctionCallee_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned char>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_char_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_char_ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIBasicType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIBasicType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIBasicType_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIBuilder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIBuilder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIBuilder_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::NativeVector_int_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__NativeVector_int_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__NativeVector_int_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::APInt_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__APInt_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__APInt_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::APFloat_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__APFloat_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__APFloat_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArrayCharacter_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArrayCharacter_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArrayCharacter_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleCharacterString_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleCharacterString_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleCharacterString_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Symbol_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Symbol_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Symbol_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::Array_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Array_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Array_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Argument_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Argument_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Argument_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Iterator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Iterator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Iterator_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::IRBuilderBase_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__IRBuilderBase_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__IRBuilderBase_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::GlobalEntryPoint_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__GlobalEntryPoint_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__GlobalEntryPoint_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Null_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Null_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Null_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::TargetPassConfig_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__TargetPassConfig_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__TargetPassConfig_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SingleDispatchMethod_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SingleDispatchMethod_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SingleDispatchMethod_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<signed char>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_signed_char_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_signed_char_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::NativeVector_double_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__NativeVector_double_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__NativeVector_double_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::GlueEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__GlueEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__GlueEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::CxxObject_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__CxxObject_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__CxxObject_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ReturnInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ReturnInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ReturnInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::FunctionType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__FunctionType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__FunctionType_O ;
-======= end
 };
 template <> class gctools::GCStamp<clbind::DummyCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clbind__DummyCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clbind__DummyCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIContext_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIContext_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIContext_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::JITDylib_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__JITDylib_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__JITDylib_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Type_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Type_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Type_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Pointer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Pointer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Pointer_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::UnreachableInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__UnreachableInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__UnreachableInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<core::SymbolClassHolderPair>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_core__SymbolClassHolderPair_ ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCBitUnitArray_moveable<4,0>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCBitUnitArray_moveable_4_0_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::FileScope_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FileScope_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FileScope_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Float_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIDerivedType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIDerivedType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIDerivedType_O ;
-======= end
 };
 template <> class gctools::GCStamp<clbind::ConstructorCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_clbind__ConstructorCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_clbind__ConstructorCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ConstantDataSequential_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ConstantDataSequential_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ConstantDataSequential_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::TranslationFunctor_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__TranslationFunctor_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__TranslationFunctor_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Code_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Code_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Code_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_double_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_double_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_double_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::StoreInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__StoreInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__StoreInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DebugLoc_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DebugLoc_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DebugLoc_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::WeakPointer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__WeakPointer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__WeakPointer_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::CodeEntryPoint_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__CodeEntryPoint_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__CodeEntryPoint_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::IOFileStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__IOFileStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__IOFileStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::RuntimeVisibleEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__RuntimeVisibleEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__RuntimeVisibleEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Instruction_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Instruction_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Instruction_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FileStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FileStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FileStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Rational_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Rational_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Rational_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArrayCharacter_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArrayCharacter_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArrayCharacter_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LandingPadInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LandingPadInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LandingPadInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ImmobileObject_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ImmobileObject_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ImmobileObject_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Function_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Function_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Function_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<core::AtomicT_Holder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__AtomicT_Holder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__AtomicT_Holder_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableEql_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableEql_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableEql_O ;
-======= end
 };
 template <> class gctools::GCStamp<mp::ConditionVariable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_mp__ConditionVariable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_mp__ConditionVariable_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Real_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Real_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Real_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_byte8_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_byte8_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_byte8_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FuncallableInstanceCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FuncallableInstanceCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FuncallableInstanceCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::StringOutputStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__StringOutputStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__StringOutputStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::AttributeSet_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__AttributeSet_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__AttributeSet_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::AtomicRMWInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__AtomicRMWInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__AtomicRMWInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::MDBuilder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__MDBuilder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__MDBuilder_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::PassManager_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__PassManager_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__PassManager_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DISubprogram_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DISubprogram_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DISubprogram_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Creator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Creator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Creator_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ArrayType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ArrayType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ArrayType_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_int64_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_int64_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_int64_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleString_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleString_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleString_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DIVariable_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DIVariable_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DIVariable_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::BlockAddress_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__BlockAddress_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__BlockAddress_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::DICompositeType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__DICompositeType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__DICompositeType_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::MCSubtargetInfo_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__MCSubtargetInfo_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__MCSubtargetInfo_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FunctionValueEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FunctionValueEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FunctionValueEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<short>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_short_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_short_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::DerivableCxxClassCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__DerivableCxxClassCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__DerivableCxxClassCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableEq_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableEq_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableEq_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::HashTableEqualp_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__HashTableEqualp_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__HashTableEqualp_O ;
-======= end
 };
 template <> class gctools::GCStamp<asttooling::PresumedLoc_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_asttooling__PresumedLoc_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_asttooling__PresumedLoc_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LambdaListHandler_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LambdaListHandler_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LambdaListHandler_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ConcatenatedStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ConcatenatedStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ConcatenatedStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<double>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_double_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_double_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::SymbolMacroletEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SymbolMacroletEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SymbolMacroletEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MacroletEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MacroletEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MacroletEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ImmutablePass_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ImmutablePass_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ImmutablePass_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::FuncallableInstance_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__FuncallableInstance_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__FuncallableInstance_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SynonymStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SynonymStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SynonymStream_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Ratio_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Ratio_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Ratio_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::MDArray_int2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__MDArray_int2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__MDArray_int2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte2_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte2_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte2_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ClosureWithSlots_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ClosureWithSlots_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ClosureWithSlots_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::ExecutionEngine_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__ExecutionEngine_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__ExecutionEngine_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ClassRepCreator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ClassRepCreator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ClassRepCreator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_int16_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_int16_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_int16_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Attribute_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Attribute_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Attribute_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::DerivableCxxObject_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__DerivableCxxObject_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__DerivableCxxObject_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SymbolToEnumConverter_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SymbolToEnumConverter_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SymbolToEnumConverter_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::SwitchInst_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__SwitchInst_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__SwitchInst_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::NativeVector_float_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__NativeVector_float_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__NativeVector_float_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::Pass_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__Pass_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__Pass_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_int32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_int32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_int32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Lisp_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Lisp_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Lisp_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned long long>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_long_long_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_long_long_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::VaList_dummy_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__VaList_dummy_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__VaList_dummy_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte4_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte4_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte4_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<asttooling::SourceLocation_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_asttooling__SourceLocation_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_asttooling__SourceLocation_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::CatchEnvironment_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__CatchEnvironment_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__CatchEnvironment_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LogicalPathname_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LogicalPathname_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LogicalPathname_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::TargetSubtargetInfo_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__TargetSubtargetInfo_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__TargetSubtargetInfo_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::WrappedPointer_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__WrappedPointer_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__WrappedPointer_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleVector_double_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleVector_double_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleVector_double_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::SimpleMDArray_byte32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__SimpleMDArray_byte32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__SimpleMDArray_byte32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::Bignum_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__Bignum_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__Bignum_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::LLVMTargetMachine_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__LLVMTargetMachine_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__LLVMTargetMachine_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ClassHolder_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ClassHolder_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ClassHolder_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::LocalEntryPointGenerator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__LocalEntryPointGenerator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__LocalEntryPointGenerator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::GlobalEntryPointGenerator_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__GlobalEntryPointGenerator_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__GlobalEntryPointGenerator_O ;
-======= end
 };
 template <> class gctools::GCStamp<core::ComplexVector_byte32_t_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__ComplexVector_byte32_t_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__ComplexVector_byte32_t_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::UnaryInstruction_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__UnaryInstruction_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__UnaryInstruction_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::GlobalValue_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__GlobalValue_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__GlobalValue_O ;
-======= end
 };
 template <> class gctools::GCStamp<llvmo::PointerType_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_llvmo__PointerType_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_llvmo__PointerType_O ;
-======= end
 };
 template <> class gctools::GCStamp<gctools::GCArray_moveable<unsigned int>> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_gctools__GCArray_moveable_unsigned_int_ ;
-======= end
 };
 template <> class gctools::GCStamp<core::TwoWayStream_O> {
 public:
-<<<<<<< variant A
-  static gctools::GCStampEnum const Stamp = gctools::STAMPWTAG_core__TwoWayStream_O ;
->>>>>>> variant B
   static gctools::GCStampEnum const StampWtag = gctools::STAMPWTAG_core__TwoWayStream_O ;
-======= end
 };
 #endif // defined(GC_STAMP_SELECTORS)
 #if defined(GC_OBJ_SCAN)
@@ -14883,15 +13283,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Frame_O),down), 0, "down" }, // atomic: NIL public: (T) fixable: SMART-PTR-FIX good-name: T
 // Stamp = core::Cons_O/1711
 { class_kind, STAMPWTAG_core__Cons_O, sizeof(core::Cons_O), 0, 0, "core::Cons_O" },
-//      field: "_stamp_wtag_mtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::Header_s::StampWtagMtag" :NAME "StampWtagMtag")
-//      field: "._header_data" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CONSTANT-ARRAY-CTYPE :KEY NIL :ARRAY-SIZE 0 :ELEMENT-TYPE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long"))
- {  fixed_field, CONSTANT_ARRAY_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_stamp_wtag_mtag._header_data), 0, "_stamp_wtag_mtag._header_data" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_stamp_wtag_mtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::Header_s::StampWtagMtag" :NAME "StampWtagMtag")
-//      field: "._value" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_stamp_wtag_mtag._value), 0, "_stamp_wtag_mtag._value" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
-//      field: "_stamp_wtag_mtag" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "gctools::Header_s::StampWtagMtag" :NAME "StampWtagMtag")
-//      field: "._header_badge" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned int")
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_stamp_wtag_mtag._header_badge), 0, "_stamp_wtag_mtag._header_badge" }, // atomic: NIL public: (T T) fixable: NIL good-name: T
 //      field: "_Car" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))
  {  fixed_field, ATOMIC_SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Cons_O),_Car), 0, "_Car" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_Cdr" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::ATOMIC-CTYPE :KEY "std::atomic<gctools::smart_ptr<core::T_O>>" :NAME "atomic" :ARGUMENT #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))

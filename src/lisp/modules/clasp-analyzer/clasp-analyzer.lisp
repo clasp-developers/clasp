@@ -3080,7 +3080,7 @@ so that they don't have to be constantly recalculated"
 ;;       (format stream "//GCTemplatedKind for ~a~%" stamp)
        (format stream "template <> class gctools::GCStamp<~A> {~%" (stamp-key stamp))))
     (format stream "public:~%")
-    (format stream "  static gctools::GCStampEnum const Stamp = gctools::~a ;~%" stamp-name)
+    (format stream "  static gctools::GCStampEnum const StampWtag = gctools::~a ;~%" stamp-name)
     (format stream "};~%")))
 
 (defun abstract-species-stamp-p (stamp analysis)
@@ -3690,7 +3690,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
       :jump-table-index-function 'scanner-jump-table-index-for-stamp-name
       :generator (lambda (dest anal)
                    (dolist (stamp (analysis-sorted-stamps anal))
-                     (format (destination-helper-stream dest) "// Stamp = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
+                     (format (destination-helper-stream dest) "// StampWtag = ~a/~a~%" (stamp-key stamp) (stamp-value% stamp))
                      (funcall (species-scan (stamp-species stamp)) dest stamp anal))))
     (do-generator stream analysis
                   :table-name "OBJ_FINALIZE"
