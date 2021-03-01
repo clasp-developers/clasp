@@ -293,7 +293,7 @@ def translate_tagged_ptr(debugger,tptr):
     if (generalp(tptr)):
         base = untag_general(tptr)
         debugger.dbg_print("global_headerStruct in translate -> %s" % debugger._headerStruct )
-        (stamp,mtag) = read_stamp(debugger,tptr)
+        (stamp,mtag) = read_stamp_mtag(debugger,tptr)
         debugger.dbg_print("About to read_memory")
         if (stamp):
             if (stamp not in debugger._kinds):
