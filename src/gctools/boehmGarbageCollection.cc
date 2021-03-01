@@ -290,6 +290,20 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
 #ifdef DEBUG_COUNT_ALLOCATIONS
   maybe_initialize_mythread_backtrace_allocations();
 #endif
+
+
+  //
+  // Set up the _lisp and symbols memory as roots
+  //
+  gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*)&_lisp;
+  GC_add_roots((void*)lispRoot,(void*)((char*)lispRoot+sizeof(void*)));
+  gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*)&global_core_symbols[0];
+  GC_add_roots((void*)coreSymbolRoots,(void*)((char*)coreSymbolRoots+sizeof(void*)*NUMBER_OF_CORE_SYMBOLS));
+  gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*)&global_symbols[0];
+  GC_add_roots((void*)symbolRoots,(void*)((char*)symbolRoots+sizeof(void*)*global_symbol_count));
+
+//  void* dummy = GC_generic_malloc_uncollectable(592,4);
+  
   int exitCode;
   try {
     exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
