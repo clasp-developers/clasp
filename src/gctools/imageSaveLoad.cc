@@ -420,7 +420,7 @@ struct ISLHeader_s {
 struct ISLEndHeader_s : public ISLHeader_s {
   ISLEndHeader_s(ISLKind k) : ISLHeader_s(k,0) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)); };
-  virtual gctools::Header_s* header() const {printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCION__ ); abort(); };
+  virtual gctools::Header_s* header() const {printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ ); abort(); };
 };
 
 
@@ -433,21 +433,21 @@ struct ISLConsHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLConsHeader_s(ISLKind k, size_t s, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,s), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
-  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag));
+  gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLConsHeader_s,_stamp_wtag_mtag)); }
 };
 
 struct ISLWeakHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLWeakHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,sz), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
-  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLWeakHeader_s,_stamp_wtag_mtag));
+  gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLWeakHeader_s,_stamp_wtag_mtag)); }
 };
 
 struct ISLGeneralHeader_s : public ISLHeader_s {
   gctools::Header_s::StampWtagMtag _stamp_wtag_mtag;
   ISLGeneralHeader_s(ISLKind k, uintptr_t sz, gctools::Header_s::StampWtagMtag swm) : ISLHeader_s(k,sz), _stamp_wtag_mtag(swm) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)+this->_Size); };
-  gctools::Header_s* header() const { return ((char*)this + offsetof(ISLGeneralHeader_s,_stamp_wtag_mtag));
+  gctools::Header_s* header() const { return (gctools::Header_s*)((char*)this + offsetof(ISLGeneralHeader_s,_stamp_wtag_mtag));}
 };
 
 struct ISLLibraryHeader_s : public ISLHeader_s {
@@ -590,7 +590,7 @@ struct copy_objects_t : public walker_callback_t {
       size_t consSize;
       size_t bytes = isl_cons_skip(client,consSize) - client;
       if (consSize==0) ISL_ERROR(BF("A zero size cons at %p was encountered") % (void*)client );
-      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O) );
+      ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_stamp_wtag_mtag );
       this->write_buffer(sizeof(ISLConsHeader_s), (char*)&islheader );
       DBG_SAVECOPY(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
       char* new_addr = this->write_buffer(bytes,(char*)header);
@@ -1162,7 +1162,7 @@ int image_load(const std::string& filename )
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
         gctools::Header_s* header = (gctools::Header_s*)clientStart;
         core::Cons_O* cons = (core::Cons_O*)clientStart;
-        auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(cons->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
+        auto obj = gctools::ConsAllocator<core::Cons_O,gctools::DoRegister>::image_save_load_allocate(header->_stamp_wtag_mtag, cons->_Car.load(), cons->_Cdr.load());
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
         DBG_SL_ALLOCATE(BF("---- Allocated Cons %p copy from %p header: %p  set fwd to %p\n")
                         % (void*)obj.raw_()
@@ -1327,8 +1327,7 @@ int image_load(const std::string& filename )
 }
 
 
-}
-
+};
 
 #endif // USE_PRECISE_GC
 

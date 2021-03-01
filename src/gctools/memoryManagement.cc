@@ -522,9 +522,6 @@ stamp_t next_header_kind()
 
 core::Fixnum ensure_fixnum(stamp_t val)
 {
-  if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
-    SIMPLE_ERROR(BF("The value %d cannot be converted into a FIXNUM") % val );
-  }
   return (core::Fixnum)val;
 }
 

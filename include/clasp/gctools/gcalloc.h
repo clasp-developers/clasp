@@ -569,14 +569,14 @@ struct ConsAllocator {
 
 
 #ifdef USE_PRECISE_GC
-  static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag header, core::T_sp car, core::T_sp cdr ) {
+  static smart_ptr<Cons> image_save_load_allocate(Header_s::StampWtagMtag the_header, core::T_sp car, core::T_sp cdr ) {
 # ifdef USE_BOEHM
     Header_s* header = reinterpret_cast<Header_s*>(ALIGNED_GC_MALLOC_KIND(STAMP_UNSHIFT_MTAG(STAMPWTAG_CONS),SizeofConsHeader()+sizeof(Cons),global_cons_kind,&global_cons_kind));
-    header->_stamp_wtag_mtag = header;
+    header->_stamp_wtag_mtag = the_header;
 # else
     printf("%s:%d:%s add support for mps\n", __FILE__, __LINE__, __FUNCTION__ );
 # endif
-    Cons* cons = HeaderPtrToConsPtr(header);
+    Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(car,cdr);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
