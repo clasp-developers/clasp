@@ -1300,7 +1300,7 @@ int image_load(const std::string& filename )
   if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
 #endif
   {
-    char* pause_startup = getenv("CLASP_PAUSE_STARTUP");
+    char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {
       printf("%s:%d PID = %d Paused after image-load - press enter to continue: \n", __FILE__, __LINE__, getpid() );
       fflush(stdout);

@@ -1,5 +1,8 @@
 from io import StringIO
 import clasp_inspect.object_layout
+from clasp_inspect.object_layout import debugger
+
+
 
 def verify_not_tagged(address):
     if (taggedp(address)):
@@ -16,31 +19,34 @@ def is_int(str,base):
         return False
 
 def flags(tptr):
-    return (tptr&clasp_inspect.object_layout.global_ints["IMMEDIATE_MASK"])
+    return (tptr&clasp_inspect.object_layout.debugger._ints["IMMEDIATE_MASK"])
 
 def taggedp(tptr):
     return (flags(tptr)!=0)
                 
 def generalp(tptr):
-    return (flags(tptr)==clasp_inspect.object_layout.global_ints["GENERAL_TAG"])
+    return (flags(tptr)==clasp_inspect.object_layout.debugger._ints["GENERAL_TAG"])
 
 def untag_general(tptr):
-    return tptr-clasp_inspect.object_layout.global_ints["GENERAL_TAG"]
+    return tptr-clasp_inspect.object_layout.debugger._ints["GENERAL_TAG"]
 
 def fixnump(tptr):
-    return (tptr&clasp_inspect.object_layout.global_ints["FIXNUM_MASK"]==0)
+    return (tptr&clasp_inspect.object_layout.debugger._ints["FIXNUM_MASK"]==0)
 
 def consp(tptr):
-    return (flags(tptr)==clasp_inspect.object_layout.global_ints["CONS_TAG"])
+    return (flags(tptr)==clasp_inspect.object_layout.debugger._ints["CONS_TAG"])
 
 def untag_cons(tptr):
-    return tptr-clasp_inspect.object_layout.global_ints["CONS_TAG"]
+    return tptr-clasp_inspect.object_layout.debugger._ints["CONS_TAG"]
+
+def untag(tptr):
+    return tptr - flags(tptr)
 
 def vaslistp(tptr):
-    return (tptr&clasp_inspect.object_layout.global_ints["IMMEDIATE_MASK"]==clasp_inspect.object_layout.global_ints["VASLIST0_TAG"])
+    return (tptr&clasp_inspect.object_layout.debugger._ints["IMMEDIATE_MASK"]==clasp_inspect.object_layout.debugger._ints["VASLIST0_TAG"])
 
 def untag_vaslist(tptr):
-    return (tptr - clasp_inspect.object_layout.global_ints["VASLIST1_TAG"])
+    return (tptr - clasp_inspect.object_layout.debugger._ints["VASLIST1_TAG"])
 
 def read_unsigned_at_offset(debugger,verbose,base,offset):
     tptr = debugger.read_memory(base+offset,8)
@@ -82,13 +88,9 @@ def print_ClosureWithSlots_O(debugger,verbose,indent,class_,obj):
     
 def print_shallow_object_type(debugger,verbose,indent,obj,type_=0,toplevel=False):
     if (generalp(obj)):
-        base = untag_general(obj)
-        header_ptr = base - clasp_inspect.object_layout.global_headerStruct._sizeof;
-        header = debugger.read_memory(header_ptr,8)
-        if (header):
-            stamp = header>>4
-            if (not toplevel and verbose): debugger.dbg_print("%sheader@%x stamp = %d" % (indent,header_ptr,stamp))
-            class_ = clasp_inspect.object_layout.global_kinds[stamp]
+        (stamp,mtag) = read_stamp_mtag(debugger,obj)
+        if (stamp):
+            class_ = debugger._kinds[stamp]
             name = class_._name
             if (name=="core::SimpleBaseString_O"):
                 if (not toplevel and verbose): debugger.dbg_print("class_ = %s" % class_.__dict__)
@@ -112,9 +114,9 @@ def read_string(debugger,address,char_size,end):
         
 
 class Fixnum:
-    def __init__(self,address):
+    def __init__(self,debugger,address):
         if (fixnump(address)):
-            self._Value = clasp_inspect.object_layout.global_ints["FIXNUM_SHIFT"]
+            self._Value = debugger._ints["FIXNUM_SHIFT"]
             return
         raise("%x is not a fixnum" % address)
     def value(self):
@@ -163,19 +165,19 @@ class Cons_O(T_O):
             return ("(%s . %s )" % ( car, cdr))
         
 class General_O(T_O):
-    def __init__(self,debugger,address):
-        if (generalp(address)):
-            address = untag_general(address)
+    def __init__(self,debugger,tclient):
+        if (generalp(tclient)):
+            address = untag_general(tclient)
+        else:
+            address = tclient
         verify_not_tagged(address)
         self._debugger = debugger
         self._address = address
         debugger.dbg_print("In General_O")
-        self._header_ptr = address - clasp_inspect.object_layout.global_headerStruct._sizeof
-        header = debugger.read_memory(self._header_ptr,8)
-        if (header):
-            self._stamp = header>>4
-            self._class = clasp_inspect.object_layout.global_kinds[self._stamp]
-            self._className = self._class._name
+        (stamp,mtag) = read_stamp_mtag(debugger,address)
+        self._stamp = stamp
+        self._class = debugger._kinds[stamp]
+        self._className = self._class._name
     def generalp(self):
         return True
     def field(self,name):
@@ -271,23 +273,33 @@ class GodObject_O(General_O):
             obj = translate_tagged_ptr(self._debugger,tptr)
             out.write("[type: %2d off: +%3d @0x%x] %20s -> 0x%x %s\n" %(cur._data_type, cur._field_offset, addr, cur._field_name, tptr, obj))
         return out.getvalue()
-    
-    
+
+def read_stamp_mtag(debugger,tclient):
+    base = untag(tclient)-debugger._stampWtagMtagStruct._sizeof
+    stamp_wtag_mtag_ptr = base+debugger._stampWtagMtagStruct._fields["_value"]._offset
+    stamp_wtag_mtag_sizeof = debugger._stampWtagMtagStruct._fields["_value"]._sizeof
+    stamp_wtag_mtag = debugger.read_memory(stamp_wtag_mtag_ptr,stamp_wtag_mtag_sizeof)
+    mtag = 0
+    if (stamp_wtag_mtag & debugger._ints["GENERAL_MTAG_MASK"] == debugger._ints["GENERAL_MTAG"]):
+        stamp = stamp_wtag_mtag >> debugger._ints["GENERAL_STAMP_SHIFT"]
+        mtag = 0
+    else:
+        stamp = stamp_wtag_mtag >> debugger._ints["MTAG_SHIFT"]
+        mtag = stamp_wtag_mtag & debugger._ints["MTAG_MASK"]
+    return (stamp, mtag)
+        
 def translate_tagged_ptr(debugger,tptr):
     debugger.dbg_print("In translate_tagged_ptr 0x%x" % tptr)
     if (generalp(tptr)):
         base = untag_general(tptr)
-        debugger.dbg_print("global_headerStruct in translate -> %s" % clasp_inspect.object_layout.global_headerStruct )
-        header_ptr = base - clasp_inspect.object_layout.global_headerStruct._sizeof
+        debugger.dbg_print("global_headerStruct in translate -> %s" % debugger._headerStruct )
+        (stamp,mtag) = read_stamp(debugger,tptr)
         debugger.dbg_print("About to read_memory")
-        header = debugger.read_memory(header_ptr,8)
-        if (header):
-            stamp = header>>4
-            if (debugger._verbose): debugger.dbg_print("header@%x stamp = %d" % (header_ptr,stamp))
-            if (stamp not in clasp_inspect.object_layout.global_kinds):
+        if (stamp):
+            if (stamp not in debugger._kinds):
                 debugger.dbg_print("Could not find class for stamp: %d" % stamp)
             else:
-                class_ = clasp_inspect.object_layout.global_kinds[stamp]
+                class_ = debugger._kinds[stamp]
                 name = class_._name
                 debugger.dbg_print("general object class name = %s" % name)
                 if (name=="core::Package_O"):
@@ -303,26 +315,22 @@ def translate_tagged_ptr(debugger,tptr):
     if (consp(tptr)):
         return Cons_O(debugger,tptr)
     if (fixnump(tptr)):
-        return Fixnum(tptr)
+        return Fixnum(debugger,tptr)
     if (vaslistp(tptr)):
         return Vaslist(debugger,tptr)
 
     
 def any_tagged_ptr(debugger,tptr):
-    debugger.dbg_print("In translate_tagged_ptr 0x%x" % tptr)
+    debugger.dbg_print("In any_tagged_ptr 0x%x" % tptr)
     if (generalp(tptr)):
         base = untag_general(tptr)
-        debugger.dbg_print("global_headerStruct in translate -> %s" % clasp_inspect.object_layout.global_headerStruct )
-        header_ptr = base - clasp_inspect.object_layout.global_headerStruct._sizeof
-        debugger.dbg_print("About to read_memory")
-        header = debugger.read_memory(header_ptr,8)
-        if (header):
-            stamp = header>>4
-            if (debugger._verbose): debugger.dbg_print("header@%x stamp = %d" % (header_ptr,stamp))
-            if (stamp not in clasp_inspect.object_layout.global_kinds):
+        debugger.dbg_print("global_headerStruct in translate -> %s" % debugger._headerStruct )
+        (stamp,mtag) = read_stamp_mtag(debugger,tptr)
+        if (stamp):
+            if (stamp not in debugger._kinds):
                 debugger.dbg_print("Could not find class for stamp: %d" % stamp)
             else:
-                class_ = clasp_inspect.object_layout.global_kinds[stamp]
+                class_ = debugger._kinds[stamp]
                 name = class_._name
                 debugger.dbg_print("general object class name = %s" % name)
                 return GodObject_O(debugger,tptr)
@@ -330,6 +338,6 @@ def any_tagged_ptr(debugger,tptr):
     if (consp(tptr)):
         return Cons_O(debugger,tptr)
     if (fixnump(tptr)):
-        return Fixnum(tptr)
+        return Fixnum(debugger,tptr)
     if (vaslistp(tptr)):
         return Vaslist(debugger,tptr)

@@ -328,6 +328,8 @@ namespace gctools {
     static const tagged_stamp_t header_wtag    =  0b11<<general_mtag_shift;
     static const tagged_stamp_t max_wtag       =  0b11<<general_mtag_shift;
     static const tagged_stamp_t wtag_width     = 2;
+    static const size_t general_stamp_shift    = general_mtag_width+wtag_width; // MUST ALWAYS BE 2 to match Fixnum shift
+    
 // Must match the number of bits to describe where_mask from the 0th bit
     // This is the width of integer that llvm needs to represent the masked off part of a header stamp
     static const tagged_stamp_t where_tag_width =  wtag_width+general_mtag_width; // I'm not sure if this is right

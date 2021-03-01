@@ -2,25 +2,36 @@ global_ints = {}
 global_dataTypes = {}
 global_kinds = {}
 global_structs = {}
-global_headerStruct = None
-global_StampWtagMtag = None
+global_StampWtagMtagStruct = None
+debugger = None
 
-def SetupGlobals(debugger):
-    global global_headerStruct
-    debugger.print_("In SetupGlobals")
-    global_headerStruct = global_structs["gctools::Header_s"]
-    global_StampWtagMtagStruct = global_structs["gctools::Header_s::StampWtagMtag"]
-    if (global_headerStruct==None):
-        raise "Could not find gctools::Header_s struct"
-    else:
-        debugger.print_("  Successfully setup global_headerStruct -> %s" % global_headerStruct)
+def SetupGlobals(dbg):
+    global debugger
+    dbg.print_("In SetupGlobals")
+    dbg._ints = global_ints
+    dbg._dataTypes = global_dataTypes
+    dbg._kinds = global_kinds
+    dbg._structs = global_structs
+    dbg._headerStruct = global_structs["gctools::Header_s"]
+    dbg._stampWtagMtagStruct = global_structs["gctools::Header_s::StampWtagMtag"]
+    debugger = dbg
 
+
+class FieldType:
+    def __init__(self,values):
+        self._name = values[0]
+        self._type = values[1]
+        self._offset = values[2]
+        self._sizeof = values[3]
 
 class StructType:
     def __init__(self,name,sizeof,fields):
         self._name = name
         self._sizeof = sizeof
-        self._fields = fields
+        self._fields = {}
+        for vals in fields:
+            fieldType = FieldType(vals)
+            self._fields[fieldType._name] = fieldType
         
 class DataType:
     def __init__(self,data_type,name,sizeof):
