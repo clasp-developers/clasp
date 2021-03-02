@@ -863,10 +863,6 @@ void Package_O::unexport(Symbol_sp sym) {
 }
 
 void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
-  if (nameKey->get_std_string() == "FUNCTION")
-    printf("%s:%d:%s Interning FUNCTION in package: %s\n",
-           __FILE__, __LINE__, __FUNCTION__,
-           this->_Name->get_std_string().c_str());
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {
