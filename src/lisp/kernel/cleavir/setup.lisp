@@ -214,6 +214,7 @@
     ((and (symbolp function-name) (not (null (macro-function function-name))))
      (make-instance 'cleavir-env:global-macro-info ; we're global, so the macro must be global.
 		    :name function-name
+                    :inline (core:global-inline-status function-name)
 		    :expander (macro-function function-name)
 		    :compiler-macro (compiler-macro-function function-name)))
     ((fboundp function-name)
