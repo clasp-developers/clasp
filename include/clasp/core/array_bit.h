@@ -99,7 +99,6 @@ namespace core {
     void setBit(size_t idx, simple_element_type v) { (*this)[idx] = v; }
   public:
     virtual bool equal(T_sp other) const final;
-    virtual bool equalp(T_sp other) const final { return this->equal(other);};
   public:
     virtual void sxhash_(HashGenerator& hg) const final {
       if (hg.isFilling()) {
