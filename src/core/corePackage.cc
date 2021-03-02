@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/closPackage.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/cleavirEnvPackage.fwd.h>
-#include <clasp/core/cleavirIrPackage.fwd.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/random.h>

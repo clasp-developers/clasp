@@ -93,7 +93,6 @@ SRC_CORE_FILES = \
         'cleavirPrimopsPackage',
         'seqPackage',
         'eclector_readtable',
-        'cleavirIrPackage',
         'compPackage',
         'bootStrapCoreSymbolMap',
         'cons',
