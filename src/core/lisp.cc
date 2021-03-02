@@ -335,10 +335,10 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);
-  //	lisp->__setWeakThis(lisp);
-  //	lisp->__resetInitializationOwner();
+#if 0
   ::globals_ = new globals_t();
   globals_->_DebugStream = new DebugStream(mpiRank);
+#endif
   LOG(BF("The lisp environment DebugStream has been created"));
   Lisp_O::finalizeSpecialSymbols();
   return _lisp;

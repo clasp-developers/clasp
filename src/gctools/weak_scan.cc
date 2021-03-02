@@ -28,10 +28,10 @@
 //#define DEBUG_CONTAINER_POINTER_BITMAPS 1
 
 #ifdef WEAK_SCAN
-RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
+RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUMENTS) {
   SCAN_BEGIN(ss) {
     while (client < limit) {
-      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(gctools::WeakPtrToHeaderPtr(client));
+      const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
       gctools::WeakObject *weakObj = reinterpret_cast<gctools::WeakObject *>(client);
       switch (header._stamp_wtag_mtag._value) {
       case gctools::Header_s::WeakBucketKind: {
@@ -86,7 +86,7 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
 #ifdef WEAK_SKIP
 ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
   GCWEAK_LOG(BF("weak_obj_skip client=%p") % ((void *)client));
-  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(gctools::WeakPtrToHeaderPtr(client));
+  const gctools::Header_s& header = *reinterpret_cast<const gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(client));
   if (header._stamp_wtag_mtag.weakObjectP()) {
     switch (header._stamp_wtag_mtag._value) {
     case gctools::Header_s::WeakBucketKind: {
@@ -123,7 +123,7 @@ ADDR_T WEAK_SKIP(ADDR_T client, bool dbg, size_t& objectSize) {
 
 #ifdef WEAK_FWD
 void WEAK_FWD(ADDR_T old_client, ADDR_T new_client) {
-  gctools::Header_s& header = *reinterpret_cast<gctools::Header_s*>(gctools::WeakPtrToHeaderPtr(old_client));
+  gctools::Header_s& header = *reinterpret_cast<gctools::Header_s*>(WEAK_PTR_TO_HEADER_PTR(old_client));
   size_t objectSize;
   ADDR_T limit = WEAK_SKIP_IN_WEAK_FWD(old_client,false,objectSize);
   size_t size = (char *)limit - (char *)old_client;

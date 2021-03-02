@@ -144,7 +144,7 @@ fields at the same offset as Instance_O.
   // Accessors
    CodeEntryPoint_O(FunctionDescription_sp fdesc, llvmo::CodeBase_sp code) : EntryPointBase_O(fdesc), _Code(code) {  };
  public:
-   virtual void fixupCodePointers( FixupOperation op) { SIMPLE_ERROR(BF("Subclass must implement")); };
+   virtual void fixupInternalsForImageSaveLoad( FixupOperation& op) { SIMPLE_ERROR(BF("Subclass must implement")); };
    void fixupOneCodePointer(FixupOperation op, void** ptr);
  };
 
@@ -157,7 +157,7 @@ fields at the same offset as Instance_O.
   // Accessors
    LocalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code ) : CodeEntryPoint_O(fdesc,code), _EntryPoint(entry_point) {};
  public:
-   virtual void fixupCodePointers( FixupOperation op);
+   virtual void fixupInternalsForImageSaveLoad( FixupOperation& op);
 };
 
 FORWARD(LocalEntryPointGenerator);
@@ -179,7 +179,7 @@ FORWARD(GlobalEntryPoint);
   // Accessors
    GlobalEntryPoint_O(FunctionDescription_sp fdesc, void* entry_point, llvmo::CodeBase_sp code) : CodeEntryPoint_O(fdesc, code), _EntryPoints{entry_point} {};
  public:
-   virtual void fixupCodePointers( FixupOperation op);
+   virtual void fixupInternalsForImageSaveLoad( FixupOperation& op);
  };
 
 FORWARD(GlobalEntryPointGenerator);
@@ -382,7 +382,7 @@ namespace core {
     T_sp closedEnvironment() const override { return _Nil<T_O>(); };
     virtual size_t templatedSizeof() const override { return sizeof(*this); };
     // Fixup the code pointers
-    virtual void fixupCodePointers( FixupOperation op) { SIMPLE_ERROR(BF("Subclass must implement")); };
+    virtual void fixupInternalsForImageSaveLoad( FixupOperation& op) { SIMPLE_ERROR(BF("Subclass must implement")); };
     void fixupOneCodePointer( FixupOperation op, void** address, size_t size );
     virtual const char *describe() const override { return "BuiltinClosure"; };
     bool builtinP() const override { return true; };

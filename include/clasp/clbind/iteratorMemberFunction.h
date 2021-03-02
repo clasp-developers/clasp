@@ -57,7 +57,7 @@ private:
 
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void fixupCodePointers(core::FixupOperation op) {
+  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
   }
 
 public:

@@ -199,12 +199,10 @@ struct KeyValuePair {
 
 //HashTable_mv af_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, DoubleFloat_sp orehash_threshold);
 
+T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
 
 
-  T_mv clasp_gethash_safe(T_sp key, T_sp hashTable, T_sp default_);
 
-
-  
 }; /* core */
 
 

@@ -219,7 +219,7 @@ extern Field_info*      global_field_info;
 extern Field_layout*    global_field_layout;
 
 
-typedef enum { mps_info, lldb_info } WalkKind;
+typedef enum { precise_info, lldb_info } WalkKind;
 void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout=NULL);
 
 

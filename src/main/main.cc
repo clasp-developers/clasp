@@ -350,11 +350,15 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 #ifdef USE_PRECISE_GC
     printf("%s:%d:%s Loading the core image %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
+    ::globals_ = new core::globals_t();
+    globals_->_DebugStream = new core::DebugStream(mpiRank);
     exit_code = imageSaveLoad::image_load(core::global_options->_ImageFile);
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif
   } else {
+    ::globals_ = new core::globals_t();
+    globals_->_DebugStream = new core::DebugStream(mpiRank);
     core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
 
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);

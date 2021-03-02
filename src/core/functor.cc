@@ -81,12 +81,12 @@ void CodeEntryPoint_O::fixupOneCodePointer(FixupOperation op, void** ptr) {
 #endif
 }
 
-void GlobalEntryPoint_O::fixupCodePointers( FixupOperation op) {
+void GlobalEntryPoint_O::fixupInternalsForImageSaveLoad( FixupOperation& op) {
   this->fixupOneCodePointer(op,(void**)&this->_EntryPoints[0]);
 };
 
 
-void LocalEntryPoint_O::fixupCodePointers( FixupOperation op) {
+void LocalEntryPoint_O::fixupInternalsForImageSaveLoad( FixupOperation& op) {
   this->fixupOneCodePointer(op,(void**)&this->_EntryPoint);
 };
 

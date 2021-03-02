@@ -387,6 +387,7 @@ public: // Functions here
 public:
   int fileDescriptor() const { return this->_FileDescriptor; };
   virtual bool has_file_position() const override;
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
 };
 };
 
@@ -398,7 +399,7 @@ struct gctools::GCInfo<core::IOStreamStream_O> {
 };
 
 namespace core {
-  class IOStreamStream_O : public FileStream_O {
+class IOStreamStream_O : public FileStream_O {
   friend FILE *&IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream",FileStream_O);
   //    DECLARE_ARCHIVE();
@@ -421,6 +422,8 @@ public: // Functions here
 
 public:
   FILE *file() const { return this->_File; };
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
+
 };
 }; // core namespace
 

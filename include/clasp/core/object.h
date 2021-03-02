@@ -436,7 +436,7 @@ typedef enum { SaveOp, LoadOp } FixupOperation;
     virtual void validateCodePointer( void** funcPtr, size_t sizeofFuncPtr ) {
       // Do nothing currently
     }
-    virtual void fixupInternalsForImageSaveLoad() {
+    virtual void fixupInternalsForImageSaveLoad(FixupOperation& op) {
       // Do nothing by default
     };
     virtual void fixupOneCodePointer( FixupOperation op, void** address, size_t size ) {

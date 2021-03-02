@@ -203,9 +203,9 @@ inline Header_s* do_boehm_weak_allocation(const Header_s::StampWtagMtag& the_hea
   my_thread_low_level->_Allocations.registerWeakAllocation(the_header._value,true_size);
 #ifdef DEBUG_GUARD
   memset(header,0x00,true_size);
-  new (header) Header_s::StampWtagMtag(the_header);
+  new (header) Header_s(the_header,0,0,true_size);
 #else
-  new (header) Header_s::StampWtagMtag(the_header);
+  new (header) Header_s(the_header);
 #endif
   return header;
 };
@@ -1331,7 +1331,7 @@ struct StrongWeakAllocationPoint<WeakLinks> {
 
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(Header_s::StampWtagMtag the_header, size_type num, const void * = 0) {
-    size_t size = sizeof_container_with_small_header<container_type>(num);
+    size_t size = sizeof_container_with_header<container_type>(num);
 #ifdef USE_BOEHM
     Header_s* base = do_boehm_weak_allocation(the_header,size);
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);

@@ -653,6 +653,11 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
 
+  if (gctools::Header_s::weak_mtag != gctools::character_tag) {
+    printf("%s:%d:%s The Header_s::weak_mtag (%lu) MUST have the same value as gctools::character_tag(%lu)\n",
+           __FILE__, __LINE__, __FUNCTION__, (uintptr_t)gctools::Header_s::weak_mtag, (uintptr_t)gctools::character_tag);
+    abort();
+  }
   void* stackMarker = &stackMarker;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
@@ -663,7 +668,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   // Walk the stamp field layout tables.
   //
   
-  walk_stamp_field_layout_tables(mps_info);
+  walk_stamp_field_layout_tables(precise_info);
   
 #ifdef SIGRTMIN
 # define DEFAULT_THREAD_INTERRUPT_SIGNAL SIGRTMIN + 2

@@ -313,6 +313,11 @@ namespace gctools {
     static const tagged_stamp_t mtag_mask      = 0b111;
     static const tagged_stamp_t invalid_mtag   = 0b001;
     static const tagged_stamp_t cons_mtag      = 0b011;
+    /*!
+     * It is important that weak_mtag is the same value as CHARACTER_TAG so that
+     * it looks like an immediate value in AWL pools and doesn't break the
+     * MPS invariant that only valid tagged pointers are allowed in AWL pools.
+     */
     static const tagged_stamp_t weak_mtag      = 0b010;
     static const tagged_stamp_t stamp_mtag     =  general_mtag;
     static const tagged_stamp_t fwd_mtag       = 0b101;
@@ -570,10 +575,12 @@ namespace gctools {
     {}
 #endif
 #if defined(DEBUG_GUARD)
-#define GUARD1 0xFEEAFEEBDEADBEEF
-#define GUARD2 0xC0FFEEEE
+#define GUARD1 0xFEEAFEEBDEADBEE0
+#define GUARD2 0xC0FFEEE0
 
-    inline void fill_tail() { memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);};
+    inline void fill_tail() {
+      if (this->_tail_size) memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);
+    };
   Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
     : _stamp_wtag_mtag(k), 
       _tail_start(tstart),
@@ -764,11 +771,6 @@ inline size_t sizeof_container_with_header(size_t num) {
       ;
 };
 
- template <class T>
-inline size_t sizeof_container_with_small_header(size_t num) {
-   return sizeof_container<T>(num)+sizeof(Header_s::StampWtagMtag);
-};
-
   /*! Size of containers given the number of binits where BinitWidth is the number of bits/bunit */
   template <typename Cont_impl>
     size_t sizeof_bitunit_container(size_t n) {
@@ -825,46 +827,51 @@ namespace gctools {
 #define EXHAUSTIVE_VALIDATE(ptr)
 #endif
 
-  inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
-    const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
-    return ptr;
-  }
+inline const void *GeneralPtrToHeaderPtr(const void *mostDerived) {
+  const void *ptr = reinterpret_cast<const char *>(mostDerived) - sizeof(Header_s);
+  return ptr;
+}
 
-  inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
-    void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
-    return ptr;
-  }
+inline constexpr size_t SizeofGeneralHeader() { return sizeof(Header_s); };
 
-  inline const Header_s* header_pointer(const void* client_pointer)
-  {
-    const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
-    return header;
-  }
+inline void *GeneralPtrToHeaderPtr(void *mostDerived) {
+  void *ptr = reinterpret_cast<char *>(mostDerived) - SizeofGeneralHeader();
+  return ptr;
+}
 
-  inline void throwIfInvalidClient(core::T_O *client) {
-    Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
-    if (header->_stamp_wtag_mtag.invalidP()) {
-      throw_hard_error_bad_client((void*)client);
-    }
-  }
+inline const Header_s* header_pointer(const void* client_pointer)
+{
+  const Header_s* header = reinterpret_cast<const Header_s*>(reinterpret_cast<const char*>(client_pointer) - sizeof(Header_s));
+  return header;
+}
 
-  template <typename T>
-    inline T *HeaderPtrToGeneralPtr(void *base) {
-    T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
-    return ptr;
+inline void throwIfInvalidClient(core::T_O *client) {
+  Header_s *header = (Header_s *)GeneralPtrToHeaderPtr(client);
+  if (header->_stamp_wtag_mtag.invalidP()) {
+    throw_hard_error_bad_client((void*)client);
   }
+}
 
+template <typename T>
+inline T *HeaderPtrToGeneralPtr(void *base) {
+  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + SizeofGeneralHeader());
+  return ptr;
+}
 
-inline constexpr size_t SizeofWeakHeader() { return sizeof(Header_s::StampWtagMtag); };
-  inline const void *WeakPtrToHeaderPtr(const void *client) {
-    const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
-    return ptr;
-  }
+/*
+ * This must ALWAYS be the same as SizeofGeneralHeader    
+ */
+inline constexpr size_t SizeofWeakHeader() { return SizeofGeneralHeader(); };
 
-  inline void *WeakPtrToHeaderPtr(void *client) {
-    void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
-    return ptr;
-  }
+inline const void *WeakPtrToHeaderPtr(const void *client) {
+  const void *ptr = reinterpret_cast<const char *>(client) - SizeofWeakHeader();
+  return ptr;
+}
+
+inline void *WeakPtrToHeaderPtr(void *client) {
+  void *ptr = reinterpret_cast<char *>(client) - SizeofWeakHeader();
+  return ptr;
+}
 
 inline void*HeaderPtrToWeakPtr(void *header) {
   void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofWeakHeader());
@@ -872,15 +879,16 @@ inline void*HeaderPtrToWeakPtr(void *header) {
 }
 
 inline constexpr size_t SizeofConsHeader() { return sizeof(gctools::Header_s::StampWtagMtag); };
-  inline const void *ConsPtrToHeaderPtr(const void *client) {
-    const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
-    return ptr;
-  }
 
-  inline void *ConsPtrToHeaderPtr(void *client) {
-    void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
-    return ptr;
-  }
+inline const void *ConsPtrToHeaderPtr(const void *client) {
+  const void *ptr = reinterpret_cast<const char *>(client) - SizeofConsHeader();
+  return ptr;
+}
+
+inline void *ConsPtrToHeaderPtr(void *client) {
+  void *ptr = reinterpret_cast<char *>(client) - SizeofConsHeader();
+  return ptr;
+}
 
 inline void* HeaderPtrToConsPtr(void *header) {
   void* ptr = reinterpret_cast<void *>(reinterpret_cast<char *>(header) + SizeofConsHeader());

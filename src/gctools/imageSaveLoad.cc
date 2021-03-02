@@ -41,6 +41,7 @@
 #else
 #define DBG_SL_ALLOCATE(_fmt_)
 #endif
+
 #if 0
 #define DBG_SAVECOPY(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
@@ -72,15 +73,39 @@
 #endif
 
 #if 0
-#define DBG_SL_WALK(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#define DBG_SL_DONTWALK(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
-#define DBG_SL_WALK(_fmt_)
+#define DBG_SL_DONTWALK(_fmt_)
+#endif
+
+#if 0
+#define DBG_SL_WALK_SL(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#else
+#define DBG_SL_WALK_SL(_fmt_)
+#endif
+
+#if 0
+#define DBG_SL_WALK_GC(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#else
+#define DBG_SL_WALK_GC(_fmt_)
+#endif
+
+#if 0
+#define DBG_SL_WALK_TEMP(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#else
+#define DBG_SL_WALK_TEMP(_fmt_)
 #endif
 
 #if 0
 #define DBG_SL_VTABLE(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_VTABLE(_fmt_)
+#endif
+
+#if 1
+#define DBG_SL_ENTRY_POINT(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
+#else
+#define DBG_SL_ENTRY_POINT(_fmt_)
 #endif
 
 
@@ -107,6 +132,7 @@ bool globalFwdMustBeInGCMemory = false;
 void* encodePointer(gctools::clasp_ptr_t address,size_t idx, gctools::clasp_ptr_t start) {
   uintptr_t offset = (uintptr_t)address - (uintptr_t)start;
   uintptr_t result = idx<<48 | offset;
+  DBG_SL_ENTRY_POINT(BF("Library base: %p encode %p/%d -> %p\n") % (void*)start % (void*)address % idx % (void*)result );
   return (void*)result;
 }
 
@@ -134,6 +160,7 @@ void* decodeLibrarySaveAddress(void* codedAddress) {
   uintptr_t offset = (uintptr_t)codedAddress & (((uintptr_t)1<<48) - 1);
   uintptr_t libidx = (uintptr_t)codedAddress>>48;
   gctools::clasp_ptr_t ptr = globalISLLibraries[libidx]._TextStart + offset;
+  DBG_SL_ENTRY_POINT(BF("Library base: %p decode %p -> %p\n") % (void*)globalISLLibraries[libidx]._TextStart % codedAddress % (void*)ptr  );
   return (void*)ptr;
 }
 
@@ -141,12 +168,16 @@ void* decodeLibrarySaveAddress(void* codedAddress) {
 
 void* encodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
   uintptr_t address = (uintptr_t)vaddress;
-  return (void*)(address - code->codeStart());
+  void* result = (void*)(address - code->codeStart());
+  DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %p\n") % (void*)code->codeStart() % vaddress % result  );
+  return result;
 }
 
 void* decodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
   uintptr_t address = (uintptr_t)vaddress;
-  return (void*)(address + code->codeStart());
+  void* result = (void*)(address + code->codeStart());
+  DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %p\n") % (void*)code->codeStart() % vaddress % result  );
+  return result;
 }
 
 
@@ -193,35 +224,68 @@ gctools::clasp_ptr_t headerPointerToGeneralPointer(gctools::Header_s* header)
 
 #define GENERAL_PTR_TO_HEADER_PTR(_general_) generalPointerToHeaderPointer((gctools::clasp_ptr_t)_general_)
 #define HEADER_PTR_TO_GENERAL_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
+#define WEAK_PTR_TO_HEADER_PTR(_general_) generalPointerToHeaderPointer((gctools::clasp_ptr_t)_general_)
+#define HEADER_PTR_TO_WEAK_PTR(_header_) headerPointerToGeneralPointer((gctools::Header_s*)_header_)
 
-typedef gctools::clasp_ptr_t (*PointerFix)(gctools::clasp_ptr_t client, uintptr_t tag);
+typedef gctools::clasp_ptr_t (*PointerFix)(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data);
 PointerFix globalPointerFix;
 
 
-gctools::clasp_ptr_t follow_forwarding_pointer(gctools::clasp_ptr_t client, uintptr_t tag) {
+struct ISLInfo {
+  core::FixupOperation _operation;
+  uintptr_t _islStart;
+  uintptr_t _islEnd;
+  ISLInfo(core::FixupOperation op, uintptr_t s=0, uintptr_t e=0) :
+    _operation(op),
+    _islStart(s),
+    _islEnd(e) {};
+};  
+
+gctools::clasp_ptr_t follow_forwarding_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
+  ISLInfo* islInfo = (ISLInfo*)user_data;
   uintptr_t fwd_client;
   gctools::Header_s* header;
   if (tag==gctools::general_tag) {
     header = GENERAL_PTR_TO_HEADER_PTR(client);
-    fwd_client = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+    if (!header->_stamp_wtag_mtag.fwdP()) {
+      printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
+      abort();
+    }
   } else if (tag==gctools::cons_tag) {
-    header = (gctools::Header_s*)client;
+    header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
+    if (!header->_stamp_wtag_mtag.fwdP()) {
+      printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
+      abort();
+    }
     fwd_client = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
   } else {
-    header = (gctools::Header_s*)gctools::WeakPtrToHeaderPtr(client);
+    header = WEAK_PTR_TO_HEADER_PTR(client);
+    if (!header->_stamp_wtag_mtag.fwdP()) {
+      printf("%s:%d:%s general header %p MUST BE A FORWARDING POINTER - got %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, *(void**)header);
+      abort();
+    }
     fwd_client = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
   }
-  DBG_SL_FFWD(BF("fwdPointer from %p  to header@%p  %p  GC_base %p\n") % (void*)((uintptr_t)client | tag) % (void*)header % ((void*)((uintptr_t)fwd_client | tag)) % GC_base((void*)fwd_client) );
-#ifdef DEBUG_SL_FFWD
-  void* maybe_base = GC_base((void*)fwd_client);
-  if (globalFwdMustBeInGCMemory && !maybe_base) {
-    printf("%s:%d:%s We have a pointer %p that MUST be in GC memory - but it isn't\n", __FILE__, __LINE__, __FUNCTION__, (void*)fwd_client );
-    abort();
+  fwd_client = (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
+  DBG_SL_FFWD(BF("fwdPointer from %p  to header@%p  %p  GC_base %p\n")
+              % (void*)((uintptr_t)client | tag)
+              % (void*)header
+              % ((void*)((uintptr_t)fwd_client | tag))
+              % GC_base((void*)fwd_client) );
+  if (islInfo->_operation == core::SaveOp) {
+    if (!(islInfo->_islStart<=fwd_client)&&(fwd_client<islInfo->_islEnd)) {
+      printf("%s:%d:%s Forwarded pointer does NOT point into the islbuffer\n", __FILE__, __LINE__, __FUNCTION__);
+      abort();
+    }
+  } else if (islInfo->_operation == core::LoadOp) {
+    void* maybe_base = GC_base((void*)fwd_client);
+    if (!maybe_base) {
+      printf("%s:%d:%s We have a pointer %p that MUST be in GC memory - but it isn't\n", __FILE__, __LINE__, __FUNCTION__, (void*)fwd_client );
+      abort();
+    }
   }
-#endif
   return (gctools::clasp_ptr_t)(fwd_client | tag);
 }
-
 
 #define POINTER_FIX(_ptr_) {\
     gctools::clasp_ptr_t *taggedP = reinterpret_cast<gctools::clasp_ptr_t *>(_ptr_);\
@@ -231,7 +295,7 @@ gctools::clasp_ptr_t follow_forwarding_pointer(gctools::clasp_ptr_t client, uint
         gctools::clasp_ptr_t obj = gctools::untag_object<gctools::clasp_ptr_t>(tagged_obj);\
         uintptr_t tag = (uintptr_t)gctools::ptag<gctools::clasp_ptr_t>(tagged_obj);\
         /*printf("%s:%d fixing taggedP@%p obj-> %p tag-> 0x%lx\n", __FILE__, __LINE__, (void*)taggedP, (void*)obj, (uintptr_t)tag);*/ \
-        obj = (globalPointerFix)(obj,tag); \
+        obj = (globalPointerFix)(taggedP,obj,tag,user_data); \
         /*printf("%s:%d     forwarded  obj = %p \n", __FILE__, __LINE__, (void*)obj );*/ \
         *taggedP = obj;\
       };\
@@ -246,7 +310,7 @@ gctools::clasp_ptr_t follow_forwarding_pointer(gctools::clasp_ptr_t client, uint
 #define SCAN_END(ss)
 #define RESULT_TYPE    int
 #define RESULT_OK 1
-#define EXTRA_ARGUMENTS
+#define EXTRA_ARGUMENTS , void* user_data
 
 #undef DEBUG_MPS_SIZE
 #define OBJECT_SKIP_IN_OBJECT_SCAN blah_blah_blah_error
@@ -298,7 +362,7 @@ __attribute__((optnone))
 //
 // Fix root pointers by following the forwarding pointer
 //
-void followForwardingPointersForRoots(gctools::clasp_ptr_t* start, size_t number) {
+void followForwardingPointersForRoots(gctools::clasp_ptr_t* start, size_t number, void* user_data) {
   for ( size_t idx = 0; idx<number; idx++ ) {
     gctools::clasp_ptr_t before = *start;
     POINTER_FIX(start);
@@ -319,7 +383,7 @@ void copyRoots( uintptr_t* destination, uintptr_t* source, size_t numberOfRoots 
  * in the islbuffer at save time.  We need to relocate them to the load location
  * of the islbuffer
  */
-void relocateLoadedRootPointers(gctools::clasp_ptr_t* start, size_t number) {
+void relocateLoadedRootPointers(gctools::clasp_ptr_t* start, size_t number, void* user_data ) {
   for ( size_t idx = 0; idx<number; idx++ ) {
     gctools::clasp_ptr_t before = *start;
     POINTER_FIX(start);
@@ -345,12 +409,12 @@ namespace imageSaveLoad {
  * These are strings that are visible in the image save file
  */
 typedef enum {
-    Object  = 0x215443454a424f21, // !OBJECT!
-    Cons    = 0x4a424f534e4f4321,
-    Weak    = 0x4a424f4b41455721,
-    Library = 0x5952415242494c21,
-    Roots   = 0x3c2153544f4f5221, // ROOTS
-    End     = 0x21444e45444e4521 } ISLKind; // END
+    Object  = 0xbedabb1e01010101, // !OBJECT!
+    Cons    = 0xbedabb1e02020202,
+    Weak    = 0xbedabb1e03030303,
+    Library = 0xbedabb1e04040404,
+    Roots   = 0xbedabb1e05050505, // ROOTS
+    End     = 0xbedabb1e06060606 } ISLKind; // END
 
 
 #define MAGIC_NUMBER 348235823
@@ -375,7 +439,9 @@ struct ISLFileHeader {
 
 
 struct walker_callback_t {
+  ISLInfo _info;
   virtual void callback(gctools::Header_s* header) = 0;
+  walker_callback_t(const ISLInfo& info) : _info(info) {};
 };
 
 };
@@ -399,9 +465,11 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
     if (*(void**)ptr) {
       // If there is a non-zero header then walk it
       gctools::Header_s* header = (gctools::Header_s*)ptr;
-      DBG_SL_WALK(BF("Walking to GC managed header %p %s\n") % (void*)header % header->description() );
+      DBG_SL_WALK_GC(BF("Walking to GC managed header %p %s\n") % (void*)header % header->description() );
       walker->callback((gctools::Header_s*)ptr);
     }
+  } else {
+    DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p\n") % (void*)ptr % kind % *(void**)ptr );
   }
 }
 };
@@ -420,7 +488,7 @@ struct ISLHeader_s {
 struct ISLEndHeader_s : public ISLHeader_s {
   ISLEndHeader_s(ISLKind k) : ISLHeader_s(k,0) {};
   ISLHeader_s* next() const { return (ISLHeader_s*)((char*)this+sizeof(*this)); };
-  virtual gctools::Header_s* header() const {printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ ); abort(); };
+  gctools::Header_s* header() const {printf("%s:%d:%s subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ ); abort(); };
 };
 
 
@@ -471,10 +539,13 @@ struct prepare_for_image_save_t : public walker_callback_t {
       // Fixup general objects that need it
       //
       // Handle them on a case by case basis
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-      core::General_O* generalObject = (core::General_O*)client;
-      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Symbol_O)) {
-        generalObject->fixupInternalsForImageSaveLoad();
+      if (header->preciseIsPolymorphic()) {
+        core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
+        if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
+          core::General_O* generalObject = (core::General_O*)client;
+          core::FixupOperation op = core::SaveOp;
+          generalObject->fixupInternalsForImageSaveLoad(op);
+        }
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       // Nothing
@@ -483,7 +554,7 @@ struct prepare_for_image_save_t : public walker_callback_t {
     }
   }
 
-  prepare_for_image_save_t() {};
+  prepare_for_image_save_t(const ISLInfo& info) : walker_callback_t(info) {};
 };
 
 struct calculate_size_t : public walker_callback_t {
@@ -514,7 +585,7 @@ struct calculate_size_t : public walker_callback_t {
       isl_cons_skip(client,consSize);
       this->_total_size += sizeof(ISLConsHeader_s) + consSize;
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToWeakPtr(header);
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       this->_weak_count++;
       DBG_SL1(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
       size_t objectSize;
@@ -523,10 +594,12 @@ struct calculate_size_t : public walker_callback_t {
     }
   }
 
-  calculate_size_t() : _total_size(0),
-                       _general_count(0),
-                       _cons_count(0),
-                       _weak_count(0)
+  calculate_size_t(const ISLInfo& info) :
+    walker_callback_t(info),
+    _total_size(0),
+    _general_count(0),
+    _cons_count(0),
+    _weak_count(0)
   {};
 };
 
@@ -556,7 +629,7 @@ void walk_garbage_collected_objects(bool saving, Walker& walker) {
 struct copy_objects_t : public walker_callback_t {
   char* _buffer;
   size_t _NumberOfObjects;
-  copy_objects_t(char* buffer) : _buffer(buffer), _NumberOfObjects(0) {}
+  copy_objects_t(char* buffer, const ISLInfo& info) : walker_callback_t(info), _buffer(buffer), _NumberOfObjects(0) {}
 
   char* write_buffer(size_t bytes, char* source ) {
     char* addr = this->_buffer;
@@ -580,8 +653,8 @@ struct copy_objects_t : public walker_callback_t {
       gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
       ISLGeneralHeader_s islheader( Object, clientEnd-clientStart, header->_stamp_wtag_mtag );
       char* islh = this->write_buffer(sizeof(ISLGeneralHeader_s), (char*)&islheader ); 
-      DBG_SAVECOPY(BF("   copying general %p to %p bytes: %lu\n") % header % (void*)this->_buffer % (clientEnd-clientStart) );
       char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
+      DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
       this->_NumberOfObjects++;
       header->_stamp_wtag_mtag.setFwdPointer( new_addr ); // This is a client pointer
       DBG_SL_FWD(BF("setFwdPointer general header %p new_addr -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_addr % (void*)header->_stamp_wtag_mtag.fwdPointer() );
@@ -591,23 +664,24 @@ struct copy_objects_t : public walker_callback_t {
       isl_cons_skip(client,consSize);
       if (consSize==0) ISL_ERROR(BF("A zero size cons at %p was encountered") % (void*)client );
       ISLConsHeader_s islheader( Cons, sizeof(core::Cons_O), header->_stamp_wtag_mtag );
-      this->write_buffer(sizeof(ISLConsHeader_s), (char*)&islheader );
-      DBG_SAVECOPY(BF("  copying cons %p to %p bytes: %lu\n") % header % (void*)this->_buffer % bytes );
+      char* islh = this->write_buffer(sizeof(ISLConsHeader_s), (char*)&islheader );
       char* new_addr = this->write_buffer(consSize,(char*)client);
+      core::Cons_O* cons = (core::Cons_O*)client;
+      DBG_SAVECOPY(BF("   copied cons header %p to %p - %p | CAR: %p CDR: %p\n") % header % (void*)islh % (void*)this->_buffer % (void*)cons->_Car.load().raw_() % (void*)cons->_Cdr.load().raw_() );
       this->_NumberOfObjects++;
       header->_stamp_wtag_mtag.setFwdPointer( new_addr );
       DBG_SL_FWD(BF("setFwdPointer cons header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       printf("%s:%d:%s    weak_skip\n", __FILE__, __LINE__, __FUNCTION__ );
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HeaderPtrToWeakPtr(header);
+      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t weakSize;
       gctools::clasp_ptr_t dummyNextClient = isl_weak_skip(clientStart,false,weakSize);
       if (weakSize==0) ISL_ERROR(BF("A zero size weak object at %p was encountered") % (void*)clientStart );
       gctools::clasp_ptr_t clientEnd = clientStart + weakSize;
       ISLWeakHeader_s islheader( Weak, clientEnd-clientStart, header->_stamp_wtag_mtag );
-      this->write_buffer(sizeof(ISLWeakHeader_s), (char*)&islheader ); 
-      DBG_SAVECOPY(BF("   copying weak %p to %p bytes: %lu\n") % header % (void*)this->_buffer % weakSize );
+      char* islh = this->write_buffer(sizeof(ISLWeakHeader_s), (char*)&islheader ); 
       char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
+      DBG_SAVECOPY(BF("   copied weak header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
       this->_NumberOfObjects++;
       header->_stamp_wtag_mtag.setFwdPointer( new_addr );
       DBG_SL_FWD(BF("setFwdPointer weak header %p new_addr -> %p\n") % (void*)header % (void*)new_addr);
@@ -620,25 +694,25 @@ struct copy_objects_t : public walker_callback_t {
 //
 template <typename Walker>
 void walk_image_save_load_objects( ISLHeader_s* cur, Walker& walker) {
-  DBG_SL_WALK(BF("Starting walk cur = %p\n") % (void*)cur)
+  DBG_SL_WALK_SL(BF("Starting walk cur = %p\n") % (void*)cur)
   while (cur->_Kind != End) {
-    DBG_SL_WALK(BF("walk: %p 0x%lx\n") % (void*)cur % cur->_Kind );
+    DBG_SL_WALK_SL(BF("walk: %p 0x%lx\n") % (void*)cur % cur->_Kind );
     if (cur->_Kind == Object) {
       ISLGeneralHeader_s* generalCur = (ISLGeneralHeader_s*)cur;
       gctools::Header_s* header = generalCur->header();
-      DBG_SL_WALK(BF("general header: %p %s  next: %p\n") % header % header->description() % (void*)generalCur->next() );
+      DBG_SL_WALK_SL(BF("general header: %p %s  next: %p\n") % header % header->description() % (void*)generalCur->next() );
       walker.callback(header);
       cur = generalCur->next();
     } else if (cur->_Kind == Cons) {
       ISLConsHeader_s* consCur = (ISLConsHeader_s*)cur;
       gctools::Header_s* header = consCur->header();
-      DBG_SL_WALK(BF("cons header: %p %s  next: %p\n") % header % header->description() % (void*)consCur->next() );
+      DBG_SL_WALK_SL(BF("cons header: %p %s  next: %p\n") % header % header->description() % (void*)consCur->next() );
       walker.callback(header);
       cur = consCur->next();
     } else if (cur->_Kind == Weak) {
       ISLWeakHeader_s* weakCur = (ISLWeakHeader_s*)cur;
       gctools::Header_s* header = (gctools::Header_s*)((char*)cur + offsetof(ISLWeakHeader_s,_stamp_wtag_mtag));
-      DBG_SL_WALK(BF("weak header: %p %s  next: %p\n") % header % header->description() % (void*)weakCur->next() ); 
+      DBG_SL_WALK_SL(BF("weak header: %p %s  next: %p\n") % header % header->description() % (void*)weakCur->next() ); 
       walker.callback(header);
       cur = weakCur->next();
     } else {
@@ -653,8 +727,10 @@ void walk_image_save_load_objects( ISLHeader_s* cur, Walker& walker) {
 
 
 struct fixup_objects_t : public walker_callback_t {
+  core::FixupOperation _operation;
   gctools::clasp_ptr_t _buffer;
-  fixup_objects_t(gctools::clasp_ptr_t buffer) : _buffer(buffer) {};
+  fixup_objects_t(core::FixupOperation op, gctools::clasp_ptr_t buffer, const ISLInfo& info) :
+    walker_callback_t(info), _operation(op), _buffer(buffer) {};
 
   void callback(gctools::Header_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
@@ -668,26 +744,56 @@ struct fixup_objects_t : public walker_callback_t {
       // 1. entry points to library code -> offset
       // 2. entry points to Code_O objects -> offset
 
-      isl_obj_scan( 0, client, client_limit );
+      isl_obj_scan( 0, client, client_limit, (void*)&this->_info );
+#if 0
       if (header->preciseIsPolymorphic()) {
-        //
-        // Fixup code pointers before we mangle the vtable
-        //
         if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__BuiltinClosure_O)) {
-          ((core::BuiltinClosure_O*)client)->fixupCodePointers(core::SaveOp);
+          printf("%s:%d       doing fixup of BuiltinClosure_O\n", __FILE__, __LINE__ );
+          ((core::BuiltinClosure_O*)client)->fixupCodePointers(this->_operation);
+        } else if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__GlobalEntryPoint_O)) {
+          printf("%s:%d       doing fixup of GlobalEntryPoint_O\n", __FILE__, __LINE__ );
+          ((core::GlobalEntryPoint_O*)client)->fixupCodePointers(this->_operation);
         }
         // Handle other kinds of code objects
       }
+#endif
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       size_t consSkip;
       gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSkip);
-      isl_cons_scan( 0, client, client_limit );
+      isl_cons_scan( 0, client, client_limit, (void*)&this->_info );
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)gctools::HeaderPtrToWeakPtr(header);
+      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
-      isl_weak_scan( 0, clientStart, client_limit );
+      isl_weak_scan( 0, clientStart, client_limit, (void*)&this->_info );
+    }
+  }
+};
+
+
+
+struct fixup_internals_t : public walker_callback_t {
+  core::FixupOperation _operation;
+  fixup_internals_t(core::FixupOperation op, const ISLInfo& info) :
+    walker_callback_t(info), _operation(op) {};
+
+  void callback(gctools::Header_s* header) {
+    if (header->_stamp_wtag_mtag.stampP()) {
+      gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
+      if (header->preciseIsPolymorphic()) {
+        //
+        // Fixup objects when loading/saving
+        //
+        core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
+        if (cast::Cast<core::General_O*,core::T_O*>::isA(client)) {
+          core::General_O* generalObject = (core::General_O*)client;
+          core::FixupOperation op = core::SaveOp;
+          generalObject->fixupInternalsForImageSaveLoad(this->_operation);
+        }
+      }
+    } else if (header->_stamp_wtag_mtag.consObjectP()) {
+    } else if (header->_stamp_wtag_mtag.weakObjectP()) {
     }
   }
 };
@@ -699,7 +805,8 @@ struct fixup_vtables_t : public walker_callback_t {
   uintptr_t _vtableRegionStart;
   uintptr_t _vtableRegionEnd;
   uintptr_t _vtableRegionSize;
-  fixup_vtables_t(bool encoding, uintptr_t vtableRegionStart, uintptr_t vtableRegionEnd) :
+  fixup_vtables_t(bool encoding, uintptr_t vtableRegionStart, uintptr_t vtableRegionEnd, const ISLInfo& info ) :
+    walker_callback_t(info),
     _encoding(encoding), _vtableRegionStart(vtableRegionStart), _vtableRegionEnd(vtableRegionEnd) {
     this->_vtableRegionSize = this->_vtableRegionEnd-this->_vtableRegionStart;
   };
@@ -731,7 +838,7 @@ struct fixup_vtables_t : public walker_callback_t {
       // Do nothing
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       if (header->preciseIsPolymorphic()) {
-        uintptr_t client = (uintptr_t)HeaderPtrToWeakPtr(header);
+        uintptr_t client = (uintptr_t)HEADER_PTR_TO_WEAK_PTR(header);
         uintptr_t vtable;
         uintptr_t new_vtable;
         this->do_vtable(header,client,vtable,new_vtable);
@@ -752,7 +859,7 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
 #ifdef USE_BOEHM
   GC_stop_world_external();
 #endif
-
+  
   if (sizeof(ISLGeneralHeader_s)-offsetof(ISLGeneralHeader_s,_stamp_wtag_mtag) != sizeof(gctools::Header_s::StampWtagMtag)) {
     printf("%s:%d:%s Sanity check for headers in image save/load failed.\n"
            "The _stamp_wtag_mtag field must be the last field in ISLGeneralHeader so that it is IMMEDIATELY followed by a client\n",
@@ -809,12 +916,14 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   // 1. First walk the objects in memory and sum their size.
   //
 
+  ISLInfo islInfo(core::SaveOp);
+
   DBG_SL(BF("0. Prepare objects for image save\n"));
-  prepare_for_image_save_t  prepare;
+  prepare_for_image_save_t prepare(islInfo);
   walk_garbage_collected_objects(true,prepare);
 
   DBG_SL(BF("1. Sum size of all objects\n"));
-  calculate_size_t calc_size;
+  calculate_size_t calc_size(islInfo);
   walk_garbage_collected_objects(true,calc_size);
   printf("%s", (BF("   size = %lu\n") % calc_size._total_size).str().c_str());
   printf("%s", (BF("   general_count = %lu\n") % calc_size._general_count ).str().c_str());
@@ -837,6 +946,10 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   islStart = (gctools::clasp_ptr_t)islbuffer0;
   islEnd = (gctools::clasp_ptr_t)islbuffer+total_size;
 
+  // Add the image save load buffer limits to islInfo
+  islInfo._islStart = (uintptr_t)islStart;
+  islInfo._islEnd = (uintptr_t)islEnd;
+ 
   //
   // 3. Walk all objects in memory
   //     (a) copy them to next position in intermediate-buffer
@@ -845,13 +958,14 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
 
   DBG_SL(BF("  islbuffer = %p\n") % (void*)islbuffer );
   DBG_SL(BF("  Copy objects to islbuffer: %p - %p bytes: %lu\n") % (void*)islbuffer % (void*)(islbuffer+total_size) % total_size );
-  copy_objects_t copy_objects(islbuffer);
+  copy_objects_t copy_objects( islbuffer, islInfo );
   walk_garbage_collected_objects(true,copy_objects);
 
   ISLFileHeader* fileHeader = new (islbuffer0) ISLFileHeader(total_size,copy_objects._NumberOfObjects,(uintptr_t)islbuffer);
 
   ISLEndHeader_s end_header( End );
-  copy_objects.write_buffer( sizeof(end_header), (char*)&end_header );
+  char* endend = copy_objects.write_buffer( sizeof(end_header), (char*)&end_header );
+  DBG_SAVECOPY(BF("   copying END into buffer @ %p\n") % (void*)endend );
 
   //
   // 4. Copy roots into intermediate-buffer
@@ -875,7 +989,7 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
 
   DBG_SL(BF("  Fixing objects starting at %p\n") % (void*)islbuffer);
   {
-    fixup_objects_t fixup_objects((gctools::clasp_ptr_t)islbuffer );
+    fixup_objects_t fixup_objects(core::SaveOp, (gctools::clasp_ptr_t)islbuffer, islInfo );
     globalPointerFix = follow_forwarding_pointer;
     walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_objects);
   }
@@ -889,11 +1003,11 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
     globalPointerFix = follow_forwarding_pointer;
     printf("%s:%d:%s  Fixing roots islbuffer = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)islbuffer, (void*)((char*)islbuffer+total_size));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount );
+    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
     gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
+    followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
     gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount );
+    followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
   }
 
   //
@@ -904,7 +1018,7 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(start,end);
-    fixup_vtables_t fixup_vtables( true, (uintptr_t)start, (uintptr_t)end );
+    fixup_vtables_t fixup_vtables( true, (uintptr_t)start, (uintptr_t)end, islInfo );
     walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
   }
   return fileHeader;
@@ -924,6 +1038,7 @@ void image_save(const std::string& filename) {
   }
   
   wf.write( (char*)start, (end - start ));
+  printf( "%s:%d:%s Writing out %lu globalISLLibraries\n", __FILE__, __LINE__, __FUNCTION__, globalISLLibraries.size() );
   for (size_t idx=0; idx<globalISLLibraries.size(); idx++ ) {
     size_t strLen = globalISLLibraries[idx]._Name.size();
     size_t alignedLen = gctools::AlignUp(strLen+1);
@@ -975,10 +1090,34 @@ struct temporary_root_holder_t {
 };
 
 
+template <typename Walker>
+void walk_temporary_root_objects( const temporary_root_holder_t& roots, Walker& walker) {
+  DBG_SL_WALK_TEMP(BF("Starting walk of %lu roots at %p\n") % roots._Number % (void*)roots._buffer);
+  for (size_t idx = 0; idx< roots._Number; idx++ ) {
+    core::T_O* tagged_client = (core::T_O*)roots._buffer[idx];
+    // This will handle general and weak objects
+    if (gctools::tagged_generalp(tagged_client)) {
+      core::T_O* untagged_client = gctools::untag_general<core::T_O*>(tagged_client);
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(untagged_client);
+      DBG_SL_WALK_TEMP(BF("Walking to GC managed general or weak header %p %s\n") % (void*)header % header->description() );
+      walker.callback(header);
+    } else if (gctools::tagged_consp(tagged_client)) {
+      core::T_O* untagged_client = gctools::untag_cons<core::T_O*>(tagged_client);
+      gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(untagged_client);
+      DBG_SL_WALK_TEMP(BF("Walking to GC managed cons header %p %s\n") % (void*)header % header->description() );
+      walker.callback(header);
+    } else {
+      printf("%s:%d:%s Illegal temporary root pointer %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)tagged_client);
+      abort();
+    }
+  }
+}
+
+
 intptr_t globalSavedBase;
 intptr_t globalLoadedBase;
 
-gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t client, uintptr_t tag) {
+gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t* clientAddress, gctools::clasp_ptr_t client, uintptr_t tag, void* user_data) {
   uintptr_t new_client;
   new_client = (uintptr_t)((intptr_t)client - globalSavedBase + globalLoadedBase);
   DBG_SL_RELOCATE0(BF("Relocate0 from %p  to  %p\n") % (void*)client % (void*)new_client );
@@ -986,24 +1125,24 @@ gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t client, uintptr_t tag
 }
 
 struct relocate_objects_t : public walker_callback_t {
-  relocate_objects_t()  {};
+  relocate_objects_t(const ISLInfo& info) : walker_callback_t(info) {};
   void callback(gctools::Header_s* header) {
     if (header->_stamp_wtag_mtag.stampP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_obj_skip(client,false,objectSize);
-      isl_obj_scan( 0, client, client_limit );
+      isl_obj_scan( 0, client, client_limit, (void*)&this->_info );
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
       gctools::clasp_ptr_t client_limit = isl_cons_skip((gctools::clasp_ptr_t)client,consSize);
-      isl_cons_scan( 0, client, client_limit );
+      isl_cons_scan( 0, client, client_limit, (void*)&this->_info );
       // printf("%s:%d:%s The object @ %p %s isPolymorphic->%d\n", __FILE__, __LINE__, __FUNCTION__, (void*)header, header->description().c_str(), header->preciseIsPolymorphic());
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
-      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HeaderPtrToWeakPtr(header);
+      gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       size_t objectSize;
       gctools::clasp_ptr_t client_limit = isl_weak_skip(clientStart,false,objectSize);
-      isl_weak_scan( 0, clientStart, client_limit );
+      isl_weak_scan( 0, clientStart, client_limit, (void*)&this->_info );
     }
   }
 };
@@ -1032,6 +1171,10 @@ int image_load(const std::string& filename )
     exit(1);
   }
   gctools::clasp_ptr_t islbuffer = (gctools::clasp_ptr_t)(fileHeader+1);
+  gctools::clasp_ptr_t islend = islbuffer+fileHeader->_Size;
+
+  
+  ISLInfo islInfo(core::LoadOp,(uintptr_t)islbuffer,(uintptr_t)islend);
 
   printf("%s:%d:%s Loaded file %s\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str());
   printf("%s:%d:%s islbuffer = %p\n",  __FILE__, __LINE__, __FUNCTION__,(void*)islbuffer);
@@ -1039,6 +1182,7 @@ int image_load(const std::string& filename )
   // Setup the libraries
   //
   ISLLibraryHeader_s* libheader = (ISLLibraryHeader_s*)((char*)fileHeader + fileHeader->_LibrariesOffset);
+  printf("%s:%d:%s Registering %lu globalISLLibraries from image\n", __FILE__, __LINE__, __FUNCTION__, fileHeader->_NumberOfLibraries );
   for ( size_t idx =0; idx<fileHeader->_NumberOfLibraries; idx++ ) {
     char* bufferStart = (char*)(libheader+1);
     std::string name(bufferStart);
@@ -1051,7 +1195,8 @@ int image_load(const std::string& filename )
     printf("%s:%d:%s Registered library: %s @ %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)start );
     globalISLLibraries.push_back(lib);
   }
-  
+  printf("%s:%d:%s Number of globalISLLibraries %lu\n", __FILE__, __LINE__, __FUNCTION__, globalISLLibraries.size() );
+
   
   //
   // Define the buffer range
@@ -1067,9 +1212,8 @@ int image_load(const std::string& filename )
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableVtableSectionRange(start,end);
-  fixup_vtables_t fixup_vtables( false, (uintptr_t)start, (uintptr_t)end );
+  fixup_vtables_t fixup_vtables( false, (uintptr_t)start, (uintptr_t)end, islInfo );
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
-
 
   //
   // Let's fix the pointers so that they are correct for the loaded location in memory
@@ -1080,22 +1224,26 @@ int image_load(const std::string& filename )
   globalLoadedBase = (intptr_t)islbuffer;
   DBG_SL(BF("  Starting   globalSavedBase %p    globalLoadedBase  %p\n") % (void*)globalSavedBase % (void*)globalLoadedBase );
   globalPointerFix = relocate_pointer;
-  relocate_objects_t relocate_objects;
-  walk_image_save_load_objects((ISLHeader_s*)islbuffer,relocate_objects);
+  relocate_objects_t relocate_objects(islInfo);
+  walk_image_save_load_objects( (ISLHeader_s*)islbuffer, relocate_objects );
+  
   // Do the roots as well
   // After this they will be internally consistent with the loaded objects
+  
   gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers(lispRoot,1);
+  relocateLoadedRootPointers(lispRoot,1, (void*)&islInfo );
   gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
+  relocateLoadedRootPointers( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
   gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-  relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount );
+  relocateLoadedRootPointers( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo  );
     
   //
   // Fixup the CodeBase_O objects
   //
   DBG_SL(BF("Fixup the Library_O objects\n"));
   struct fixup_CodeBase_t : public walker_callback_t {
+    fixup_CodeBase_t(const ISLInfo& info) : walker_callback_t(info) {};
+    
     void callback(gctools::Header_s* header) {
       if (header->_stamp_wtag_mtag.stampP() && header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
         llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
@@ -1113,7 +1261,7 @@ int image_load(const std::string& filename )
       }
     }
   };
-  fixup_CodeBase_t fixupCodeBase;
+  fixup_CodeBase_t fixupCodeBase( islInfo );
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixupCodeBase);
 
   //
@@ -1154,7 +1302,7 @@ int image_load(const std::string& filename )
                         % (void*) obj.raw_()
                         % (void*)fwd);
         source_header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-        root_holder.add((void*)fwd);
+        root_holder.add((void*)obj.raw_());
       } else if (cur_header->_Kind == Cons ) {
         ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
         next_header = consHeader->next();
@@ -1169,7 +1317,7 @@ int image_load(const std::string& filename )
                         % (void*) header
                         % (void*)clientStart % (void*)fwd );
         header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-        root_holder.add((void*)fwd);
+        root_holder.add((void*)obj.raw_());
       } else if (cur_header->_Kind == Weak ) {
         ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
         next_header = weakHeader->next();
@@ -1189,7 +1337,7 @@ int image_load(const std::string& filename )
                           % (uintptr_t)kind
                           % (void*)fwd );
           header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-          root_holder.add((void*)fwd);
+          root_holder.add((void*)obj.raw_());
           break;
         }
         case gctools::Header_s::StrongBucketKind: {
@@ -1201,7 +1349,7 @@ int image_load(const std::string& filename )
                           % (uintptr_t)kind
                           % (void*)fwd );
           header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-          root_holder.add((void*)fwd);
+          root_holder.add((void*)obj.raw_());
           break;
         }
 #endif
@@ -1215,7 +1363,7 @@ int image_load(const std::string& filename )
                           % (uintptr_t)kind
                           % (void*)fwd );
           header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-          root_holder.add((void*)fwd);
+          root_holder.add((void*)obj.raw_());
           break;
         }
         case gctools::Header_s::StrongBucketKind: {
@@ -1227,7 +1375,7 @@ int image_load(const std::string& filename )
                           % (uintptr_t)kind
                           % (void*)fwd );
           header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-          root_holder.add((void*)fwd);
+          root_holder.add((void*)obj.raw_());
           break;
         }
 #endif
@@ -1241,7 +1389,7 @@ int image_load(const std::string& filename )
                           % (uintptr_t)kind
                           % (void*)fwd );
           header->_stamp_wtag_mtag.setFwdPointer((void*)fwd);
-          root_holder.add((void*)fwd);
+          root_holder.add((void*)obj.raw_());
           break;
         }
 #endif
@@ -1264,9 +1412,9 @@ int image_load(const std::string& filename )
   //
   DBG_SL(BF("======================= fixup pointers\n"));
   {
-    fixup_objects_t fixup_objects( (gctools::clasp_ptr_t)islbuffer);
+    fixup_objects_t fixup_objects( core::LoadOp, (gctools::clasp_ptr_t)islbuffer, islInfo );
     globalPointerFix = follow_forwarding_pointer;
-    walk_garbage_collected_objects(false,fixup_objects);
+    walk_temporary_root_objects(root_holder,fixup_objects);
   }
 
   // Fixup the roots
@@ -1274,15 +1422,19 @@ int image_load(const std::string& filename )
 
   {
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount );
+    followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
     copyRoots((uintptr_t*)&_lisp, (uintptr_t*)lispRoot, fileHeader->_LispRootCount );
     gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
+    followForwardingPointersForRoots( coreSymbolRoots, fileHeader->_CoreSymbolRootsCount, (void*)&islInfo );
     copyRoots((uintptr_t*)&gctools::global_core_symbols[0], (uintptr_t*)coreSymbolRoots, fileHeader->_CoreSymbolRootsCount );
     gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_SymbolRootsOffset + sizeof(ISLRootHeader_s));
-    followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount );
+    followForwardingPointersForRoots( symbolRoots, fileHeader->_SymbolRootsCount, (void*)&islInfo );
     copyRoots((uintptr_t*)&global_symbols[0], (uintptr_t*)symbolRoots, fileHeader->_SymbolRootsCount );
   }
+
+  printf("%s:%d:%s Number of globalISLLibraries %lu\n", __FILE__, __LINE__, __FUNCTION__, globalISLLibraries.size() );
+  fixup_internals_t  internals( core::LoadOp, islInfo );
+  walk_temporary_root_objects( root_holder, internals );
 
   //
   // Release the temporary roots
@@ -1294,7 +1446,9 @@ int image_load(const std::string& filename )
   // munmap the memory
   //
 #if 1
-  printf("%s:%d:%s Not munmap'ing loaded image\n", __FILE__, __LINE__, __FUNCTION__ );
+  printf("%s:%d:%s Not munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Fill it with 0xc0
+//  memset(memory,0xc0,fsize);
 #else  
   int res = munmap( memory, fsize );
   if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));

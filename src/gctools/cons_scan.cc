@@ -16,11 +16,12 @@
 #define CONS_SCAN                  // Macro to turn on #ifdef inclusion of code
 #define CONS_SKIP                  // Macro to turn on #ifdef inclusion of code
 #define CONS_FWD                   // Macro to turn on #ifdef inclusion of code
+#define EXTRA_ARGUMENTS            // Add extra arguments
  */
 
 
 #ifdef CONS_SCAN
-RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit) {
+RESULT_TYPE CONS_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_ARGUMENTS) {
   //  printf("%s:%d in cons_scan client=%p limit=%p ptag_mask=0x%lx\n", __FILE__, __LINE__, client, limit, gctools::ptag_mask );
   ADDR_T original_client = client;
   SCAN_BEGIN(ss) {

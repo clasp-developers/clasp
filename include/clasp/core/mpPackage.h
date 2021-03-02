@@ -245,24 +245,31 @@ namespace mp {
     bool write_try_lock(bool upgrade=false) {
       return this->_SharedMutex.writeTryLock(upgrade);
     };
-void write_unlock(bool release_read_lock=false) {
+    void write_unlock(bool release_read_lock=false) {
       this->_SharedMutex.writeUnlock(release_read_lock);
     };
     
- void read_lock() {
+    void read_lock() {
       this->_SharedMutex.readLock();
     };
- void read_unlock() {
+    void read_unlock() {
       this->_SharedMutex.readUnlock();
     };
- void shared_lock() {
+    void shared_lock() {
       this->_SharedMutex.readLock();
     };
- void shared_unlock() {
+    void shared_unlock() {
       this->_SharedMutex.readUnlock();
     };
     void setLockNames(core::SimpleBaseString_sp readLockName, core::SimpleBaseString_sp writeLockName);
     string __repr__() const override;
+
+    virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
+      if (op == core::LoadOp) {
+        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+        new (&this->_SharedMutex) mp::UpgradableSharedMutex(core::lisp_nameword(this->_Name));
+      }
+    }
   };
 };
 

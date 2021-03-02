@@ -5919,7 +5919,32 @@ IOStreamStream_O::~IOStreamStream_O() {
 IOFileStream_O::~IOFileStream_O() {
   stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr());
 }
+void IOFileStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  if (op == core::LoadOp) {
+    std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
+    printf("%s:%d:%s What do we do with IOFileStream_O  %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+  }
+}
 
+void IOStreamStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  if (op == core::LoadOp) {
+    std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
+    T_sp stream = this->asSmartPtr();
+    printf("%s:%d:%s Opening %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    if (name == "*STDIN*") {
+      StreamOps(stream) = duplicate_dispatch_table(input_stream_ops);
+      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stdin);
+    } else if (name=="*STDOUT*") {
+      StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
+      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stdout);
+    } else if (name=="*STDERR*") {
+      StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
+      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stderr);
+    } else {
+      printf("%s:%d:%s What do I do to open %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    }
+  }
+}
 
 T_sp Stream_O::filename() const {
   return _Nil<T_O>();
