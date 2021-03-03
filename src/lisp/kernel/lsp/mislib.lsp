@@ -15,11 +15,16 @@
 
 ;;; This could be improved, e.g. getting the lambda expression of
 ;;; interpreted functions, but there are better introspection designs.
+;;; For the second value we unconditionally return T, as the standard
+;;; explicitly allows, because our runtime closure criterion is not
+;;; adequate. For example we can and do optimize
+;;; (let ((x 4)) (lambda () x)) into (lambda () 4), essentially, so
+;;; the resulting function is not a closure as far as the runtime
+;;; system is concerned; but by the standard's definition it IS a
+;;; closure, because it's from a non-null lexical environment. We could
+;;; keep track of that sort of thing separately, but don't bother to.
 (defun function-lambda-expression (function)
-  (values nil
-          (and (typep function 'core:closure)
-               (not (zerop (core:closure-length function))))
-          (core:function-name function)))
+  (values nil t (core:function-name function)))
 
 (defun   logical-pathname-translations (p)
   (or (si:pathname-translations p)
