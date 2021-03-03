@@ -217,13 +217,14 @@ CL_LAMBDA(stream chr);
 CL_DECLARE();
 CL_DOCSTRING("reader_double_quote_string");
 CL_DEFUN T_sp core__reader_double_quote_string(T_sp stream, Character_sp ch) {
+  claspCharacter delimiter = clasp_as_claspCharacter(ch);
   // Create a wide character string buffer
   SafeBufferStrWNs buffer;
   bool done = false;
   while (!done) {
     Character_sp nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
     claspCharacter cc = clasp_as_claspCharacter(nc);
-    if (cc == '"')
+    if (cc == delimiter)
       break;
     if (cc == '\\') {
       nc = gc::As<Character_sp>(cl__read_char(stream, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
