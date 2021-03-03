@@ -72,7 +72,7 @@
 #define DBG_SL_RELOCATE0(_fmt_)
 #endif
 
-#if 0
+#if 1
 #define DBG_SL_DONTWALK(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_DONTWALK(_fmt_)
@@ -462,11 +462,18 @@ void boehm_walker_callback(void* ptr, size_t sz, void* client_data) {
        kind == gctools::global_code_kind ||
        kind == gctools::global_atomic_kind ||
        kind == gctools::global_strong_weak_kind ) {
-    if (*(void**)ptr) {
+    // Either there is a tag in the low 3 bits of the ptr or the second word is not zero
+    // Blocks can be passed to us that have a boehm free-list pointer in the first word and zero everywhere else
+    //   a free-list pointer will have zero in the low 3 bits
+    bool notFreeListPtr = ((*(uintptr_t*)ptr)&0x7);
+    bool secondWordNotZero = *(((uintptr_t*)ptr)+1);
+    if ( notFreeListPtr || secondWordNotZero ) {
       // If there is a non-zero header then walk it
       gctools::Header_s* header = (gctools::Header_s*)ptr;
       DBG_SL_WALK_GC(BF("Walking to GC managed header %p %s\n") % (void*)header % header->description() );
       walker->callback((gctools::Header_s*)ptr);
+    } else {
+      DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p  notFreeListPtr %d  secondWordNotZero %d\n") % (void*)ptr % kind % *(void**)ptr % notFreeListPtr % secondWordNotZero );
     }
   } else {
     DBG_SL_DONTWALK(BF("NOT walking to GC managed header %p kind: %d value -> %p\n") % (void*)ptr % kind % *(void**)ptr );
@@ -832,7 +839,7 @@ struct fixup_vtables_t : public walker_callback_t {
         uintptr_t vtable;
         uintptr_t new_vtable;
         this->do_vtable(header,client,vtable,new_vtable);
-        DBG_SL_VTABLE(BF(" wrote general vtable in memory at %p value: %p to %p %s\n") % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
+        DBG_SL_VTABLE(BF(" wrote general base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
       }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       // Do nothing
@@ -842,7 +849,7 @@ struct fixup_vtables_t : public walker_callback_t {
         uintptr_t vtable;
         uintptr_t new_vtable;
         this->do_vtable(header,client,vtable,new_vtable);
-        DBG_SL_VTABLE(BF(" wrote weak vtable in memory at %p value: %p to %p %s\n") % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
+        DBG_SL_VTABLE(BF(" wrote weak base %p vtable in memory at %p value: %p to %p %s\n") % (void*)this->_vtableRegionStart % (void*)client % (void*)vtable % (void*)new_vtable % header->description() );
       }
     }
   }

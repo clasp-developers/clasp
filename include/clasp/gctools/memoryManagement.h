@@ -583,9 +583,9 @@ namespace gctools {
     };
   Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
     : _stamp_wtag_mtag(k), 
+      _guard(GUARD1),
       _tail_start(tstart),
       _tail_size(tsize),
-      _guard(GUARD1),
       _dup_tail_start(tstart),
       _dup_tail_size(tsize),
       _guard2(GUARD2),

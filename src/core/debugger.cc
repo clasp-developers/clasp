@@ -893,7 +893,8 @@ bool library_with_name( const std::string& name, std::string& libraryName, uintp
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
-    if ( name == entry.second._Filename.substr(entry.second._Filename.size()-name.size()) ) {
+    std::string libName = entry.second._Filename;
+    if ( name.size()<= libName.size() && name == libName.substr(libName.size()-name.size()) ) {
       libraryName = entry.second._Filename;
       start = (uintptr_t)(entry.second._TextStart);
       end = (uintptr_t)(entry.second._TextEnd);
