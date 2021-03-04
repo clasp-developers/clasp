@@ -546,8 +546,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
     printf("%s:%d container_kind = %lu\n", __FILE__, __LINE__, global_container_kind );
     printf("%s:%d     code_kind = %lu\n", __FILE__, __LINE__, global_code_kind );
 #endif
-#endif // #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
   }
+#endif // #if defined(USE_BOEHM) && defined(USE_PRECISE_GC)
   
   if (walk == lldb_info) {
     free(local_stamp_info);
@@ -570,6 +570,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, FILE* fout)
   }
 }
 
+ 
 
 CL_DEFUN Fixnum gctools__size_of_stamp_field_layout_table()
 {
