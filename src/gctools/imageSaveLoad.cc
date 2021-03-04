@@ -431,7 +431,11 @@ struct ISLFileHeader {
   size_t _CoreSymbolRootsCount;
   size_t _SymbolRootsOffset;
   size_t _SymbolRootsCount;
-  ISLFileHeader(size_t sz,size_t num, uintptr_t sbs) : _Magic(MAGIC_NUMBER), _Size(sz), _NumberOfObjects(num), _SaveBufferStart(sbs) {};
+  size_t _global_JITDylibCounter;
+  
+  ISLFileHeader(size_t sz,size_t num, uintptr_t sbs) : _Magic(MAGIC_NUMBER), _Size(sz), _NumberOfObjects(num), _SaveBufferStart(sbs) {
+    this->_global_JITDylibCounter = llvmo::global_JITDylibCounter.load();
+  };
   bool good_magic() const {
     return (this->_Magic == MAGIC_NUMBER);
   }
@@ -490,6 +494,7 @@ struct ISLHeader_s {
   ISLKind     _Kind;
   size_t      _Size;
   ISLHeader_s(ISLKind k, size_t s) : _Kind(k), _Size(s) {};
+  virtual ISLHeader_s* next() const = 0;
 };
 
 struct ISLEndHeader_s : public ISLHeader_s {
@@ -649,6 +654,9 @@ struct copy_objects_t : public walker_callback_t {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (header->_stamp_wtag_mtag.stampP()) {
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp_O)) {
+        printf("%s:%d:%s About to save Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+      }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
 
       //
@@ -1059,7 +1067,15 @@ void image_save(const std::string& filename) {
   }
   
   wf.close();
+  
   printf("%s:%d:%s Wrote file %s - leaving image_save\n", __FILE__, __LINE__, __FUNCTION__, filename.c_str() );
+  
+  if (getenv("CLASP_PAUSE_EXIT")) {
+    printf("%s:%d PID = %d  Paused at exit - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+    fflush(stdout);
+    getchar();
+  }
+    
   free(start);
   exit(0);
 }
@@ -1282,17 +1298,53 @@ int image_load(const std::string& filename )
   //
   DBG_SL(BF("Allocate objects\n"));
   {
-    ISLHeader_s* cur_header = reinterpret_cast<ISLHeader_s*>(fileHeader+1);
+    ISLHeader_s* start_header = reinterpret_cast<ISLHeader_s*>(fileHeader+1);
     gctools::clasp_ptr_t startVtables;
     gctools::clasp_ptr_t end;
     core::executableVtableSectionRange(startVtables,end);
     DBG_SL(BF(" allocate objects\n"));
     ISLHeader_s* next_header;
-    for ( ; cur_header->_Kind != End;) {
+    ISLHeader_s* cur_header;
+
+
+    core::Lisp_O* theLisp;
+    for ( cur_header = start_header; cur_header->_Kind != End; ) {
       DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
       if (cur_header->_Kind == Object) {
         ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
-        next_header = generalHeader->next();
+        if (generalHeader->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp_O)) {
+          printf("%s:%d:%s Found Lisp_O at %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)generalHeader );
+          gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
+          theLisp = (core::Lisp_O*)clientStart;
+        }
+      }
+      next_header = cur_header->next();
+      size_t size = cur_header->_Size;
+      DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
+      cur_header = next_header;
+    }
+    ///
+    // Now we have the Lisp_O
+    //
+    // Initialize the ClaspJIT_O object
+    llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
+    new (&theLisp->_Roots._ClaspJIT) llvmo::ClaspJIT_O();
+    //
+    // Initialize the JITDylibs
+    //
+    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(theLisp->_Roots._ClaspJIT);
+    for ( auto one : (core::List_sp)(theLisp->_Roots._JITDylibs.load()) ) {
+      llvmo::JITDylib_sp dy = gc::As<llvmo::JITDylib_sp>(CONS_CAR(one));
+      jit->registerJITDylibAfterLoad(dy);
+    }
+    
+    
+
+    
+    for ( cur_header = start_header; cur_header->_Kind != End; ) {
+      DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );
+      if (cur_header->_Kind == Object) {
+        ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
         gctools::Header_s* source_header = (gctools::Header_s*)&generalHeader->_stamp_wtag_mtag;
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(generalHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + generalHeader->_Size;
@@ -1302,6 +1354,9 @@ int image_load(const std::string& filename )
                         % generalHeader->_stamp_wtag_mtag._value
                         % generalHeader->_Size
                         % source_header->description().c_str());
+        if (generalHeader->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Lisp_O)) {
+          printf("%s:%d:%s About to allocate Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+        }
         core::T_sp obj;
         obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
         gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
@@ -1312,7 +1367,6 @@ int image_load(const std::string& filename )
         root_holder.add((void*)obj.raw_());
       } else if (cur_header->_Kind == Cons ) {
         ISLConsHeader_s* consHeader = (ISLConsHeader_s*)cur_header;
-        next_header = consHeader->next();
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(consHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + sizeof(core::Cons_O);
         gctools::Header_s* header = consHeader->header();
@@ -1327,7 +1381,6 @@ int image_load(const std::string& filename )
         root_holder.add((void*)obj.raw_());
       } else if (cur_header->_Kind == Weak ) {
         ISLWeakHeader_s* weakHeader = (ISLWeakHeader_s*)cur_header;
-        next_header = weakHeader->next();
         gctools::Header_s* header = (gctools::Header_s*)&weakHeader->_stamp_wtag_mtag;
         gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)(weakHeader+1);
         gctools::clasp_ptr_t clientEnd = clientStart + weakHeader->_Size;
@@ -1407,6 +1460,7 @@ int image_load(const std::string& filename )
       } else {
         printf("%s:%d:%s Unknown header at offset 0x%lx qword: 0x%lx\n", __FILE__, __LINE__, __FUNCTION__, (uintptr_t)cur_header - (uintptr_t)fileHeader, *(uintptr_t*)cur_header );
       }
+      next_header = cur_header->next();
       size_t size = cur_header->_Size;
       DBG_SL1(BF("Done working with cur_header@%p  advanced to %p where cur_header->_Size = %lu\n") % (void*)cur_header % (void*)next_header % size );
       cur_header = next_header;
@@ -1460,6 +1514,17 @@ int image_load(const std::string& filename )
   int res = munmap( memory, fsize );
   if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
 #endif
+
+  // 
+  // Initialize the main thread
+  //  and some other vital objects
+  //
+  SYMBOL_EXPORT_SC_(CompPkg,STARthread_local_builtins_moduleSTAR);
+  
+  _lisp->initializeMainThread();
+  comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
+  comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
+  
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");
     if (pause_startup) {

@@ -82,7 +82,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARdumpObjectFilesSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, dumpObjectFiles );
 SYMBOL_EXPORT_SC_(KeywordPkg, debugObjectFiles );
 SYMBOL_EXPORT_SC_(LlvmoPkg, STARdefault_code_modelSTAR);
-SYMBOL_EXPORT_SC_(LlvmoPkg, STARjit_engineSTAR);
 
 SYMBOL_EXPORT_SC_(CompPkg, thread_local_llvm_context);
 
@@ -115,7 +114,7 @@ CL_DEFUN bool llvm_sys__load_ir(core::T_sp filename, bool verbose, bool print, c
 
 void loadModule(llvmo::Module_sp module, core::T_sp startup_name, const std::string& libname)
 {
-  ClaspJIT_sp jit = core::compiler__jit_engine();
+  ClaspJIT_sp jit = llvm_sys__clasp_jit();
   JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
   std::vector<std::string> startup_functions;
@@ -526,7 +525,11 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcs, core::T_sp only) {
   }
 }
 
-;
+
+CL_DEFUN ClaspJIT_sp llvm_sys__clasp_jit() {
+  return gc::As<ClaspJIT_sp>(_lisp->_Roots._ClaspJIT);
+}
+
 
 void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   //
@@ -586,7 +589,7 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     #endif
 #endif
     GC_ALLOCATE(ClaspJIT_O,jit_engine);
-    llvmo::_sym_STARjit_engineSTAR->defparameter(jit_engine);
+    _lisp->_Roots._ClaspJIT = jit_engine;
     llvmo::_sym_STARdebugObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_debugObjectFiles));
     llvmo::_sym_STARdumpObjectFilesSTAR->defparameter(gc::As<core::Cons_sp>(::cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_dumpObjectFiles));
     if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) {

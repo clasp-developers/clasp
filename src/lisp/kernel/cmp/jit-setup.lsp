@@ -79,7 +79,7 @@
      'llvm-sys:external-linkage         ; linkage
      (jit-constant-i32 0)
      dso-handle-name)
-    (llvm-sys:add-irmodule llvm-sys:*jit-engine*
+    (llvm-sys:add-irmodule (llvm-sys:clasp-jit)
                            dylib
                            module
                            *thread-safe-context*)
@@ -95,10 +95,10 @@
                      (if (probe-file bc-file)
                          (llvm-sys:parse-bitcode-file bc-file (thread-local-llvm-context))
                          (error "Could not find file ~a or ~a" ll-file bc-file))))
-         (dylib (llvm-sys:create-and-register-jitdylib llvm-sys:*jit-engine* (namestring pathname))))
+         (dylib (llvm-sys:create-and-register-jitdylib (llvm-sys:clasp-jit) (namestring pathname))))
     (dso-handle-module dylib)
-    (llvm-sys:add-irmodule llvm-sys:*jit-engine* dylib module *thread-safe-context*)
-    (llvm-sys:jit-finalize-run-cxx-function llvm-sys:*jit-engine* dylib function-name)))
+    (llvm-sys:add-irmodule (llvm-sys:clasp-jit) dylib module *thread-safe-context*)
+    (llvm-sys:jit-finalize-run-cxx-function (llvm-sys:clasp-jit) dylib function-name)))
 
 
 (defun load-bitcode (filename &key print clasp-build-mode)
@@ -790,7 +790,7 @@ The passed module is modified as a side-effect."
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       (irc-verify-module-safe module)
-      (let ((jit-engine llvm-sys:*jit-engine*)
+      (let ((jit-engine (llvm-sys:clasp-jit))
             (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
             (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
         (if (or (null startup-name) (string= startup-name ""))

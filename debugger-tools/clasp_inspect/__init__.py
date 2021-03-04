@@ -25,6 +25,8 @@ global_structs = {}
 global_StampWtagMtagStruct = None
 debugger = None
 
+convenience = 0
+
 info = {}
 
 def SetupGlobals():
@@ -447,6 +449,15 @@ class Symbol_O(General_O):
         except:
             return "Symbol[%s %s]" % (self._Package, self._Name )
 
+def nextConvenienceCharacter():
+    global convenience
+    thechr = chr(convenience+ord('a'))
+    convenience = convenience + 1
+    if (convenience>25):
+        convenience = 0
+    print("Advancing convenience to %d" % convenience)
+    return thechr
+
 class GodObject_O(General_O):
     def __init__(self,debugger,tptr):
         General_O.__init__(self,debugger,tptr)
@@ -458,18 +469,19 @@ class GodObject_O(General_O):
         out = StringIO()
         out.write("Dump %s at 0x%x\n" % (self._class._name, self._Ptr))
         idx = 1
+        convchar = nextConvenienceCharacter()
         for offset in range(0,self._classSize,8):
             if (not offset in self._fieldAtOffset):
                 addr = self._address+offset
                 tptr = self._debugger.read_memory(addr,8)
-                out.write("[         off: +%3d @0x%x] $f%d-> 0x%x %d\n" % (offset, addr, idx, tptr, tptr))
+                out.write("[         off: +%3d @0x%x] $%c%d-> 0x%x %d\n" % (offset, addr, convchar, idx, tptr, tptr))
             else:
                 cur = self._fieldAtOffset[offset]
                 addr = self._address+cur._field_offset
                 tptr = self._debugger.read_memory(addr,8)
                 obj = translate_tagged_ptr(self._debugger,tptr)
-                out.write("[type: %2d off: +%3d @0x%x] $f%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, idx, tptr, cur._field_name, obj))
-            self._debugger.set_convenience_variable("f%d"%idx, tptr )
+                out.write("[type: %2d off: +%3d @0x%x] $%c%d-> 0x%x %20s %s\n" %(cur._data_type, cur._field_offset, addr, convchar, idx, tptr, cur._field_name, obj))
+            self._debugger.set_convenience_variable("%c%d" % (convchar, idx), tptr )
             idx += 1
         return out.getvalue()
 

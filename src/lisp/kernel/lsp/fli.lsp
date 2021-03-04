@@ -426,7 +426,7 @@
 (defun %get-callback (sym-name)
   (let ((mangled-sym-name (mangled-callback-name sym-name)))
     (if sym-name
-        (let ((jit-ptr (llvm-sys:lookup-all-dylibs llvm-sys:*jit-engine* mangled-sym-name)))
+        (let ((jit-ptr (llvm-sys:lookup-all-dylibs (llvm-sys:clasp-jit) mangled-sym-name)))
           (if jit-ptr
               jit-ptr
               (%dlsym mangled-sym-name)))

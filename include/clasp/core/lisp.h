@@ -313,8 +313,10 @@ namespace core {
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp                       _TrueObject; // The True object
-    std::atomic<T_sp>          _AllObjectFiles;
+    T_sp                       _ClaspJIT;
+    std::atomic<T_sp>           _JITDylibs; // Maintain a list of loaded JITDylibs 
     std::atomic<T_sp>          _AllLibraries;
+    std::atomic<T_sp>          _AllObjectFiles;
     GlobalEntryPoint_sp        _UnboundSymbolFunctionEntryPoint;
     GlobalEntryPoint_sp        _UnboundSetfSymbolFunctionEntryPoint;
     T_sp                       _TerminalIO;
@@ -329,7 +331,6 @@ namespace core {
     gctools::Vec0<Instance_sp>     staticClassesUnshiftedNowhere;
     gctools::Vec0<Symbol_sp>    staticClassSymbolsUnshiftedNowhere;
     gctools::Vec0<Creator_sp>   staticInstanceCreatorsUnshiftedNowhere;
-    std::atomic<T_sp>           _JITDylibs; // Maintain a list of loaded JITDylibs 
     gctools::Vec0<FileScope_sp> _SourceFiles;
     gctools::Vec0<SymbolClassHolderPair> bootClassTable; // Map class symbols to classes
     mpip::Mpi_sp                _MpiWorld;
@@ -647,6 +648,9 @@ public:
   /*! Pass the mpi process rank in (rank) */
   static Lisp_sp createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize);
 
+    void initializeMainThread();
+
+    
   /*! Call this to setup the lisp environment
 	 */
   void startupLispEnvironment();

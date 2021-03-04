@@ -4574,6 +4574,7 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
+  dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
   core::Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
   core::T_sp expected;
   core::T_sp current;
@@ -4586,6 +4587,15 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
   } while (expected != current);
   return dylib_sp;
 }
+
+
+void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_sp jitDylib ) {
+  auto dy = this->_LLJIT->createJITDylib(jitDylib->_name->get_std_string());
+  JITDylib& dylib(*dy);
+  dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
+  jitDylib->set_wrapped( &dylib );
+}
+
 
 CL_DOCSTRING(R"doc(Tell LLVM what LLVM_DEBUG messages to turn on. Pass a list of strings like \"dyld\" - which
 turns on messages from RuntimeDyld.cpp if NDEBUG is NOT defined for the llvm build.)doc");

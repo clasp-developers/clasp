@@ -36,6 +36,9 @@ NAMESPACE_PACKAGE_ASSOCIATION(llvmo, LlvmoPkg, "LLVM-SYS");
 
 namespace llvmo {
 
+FORWARD(ClaspJIT);
+
+
 class LlvmoExposer_O : public core::Exposer_O {
 private:
 public:
@@ -57,6 +60,8 @@ void redirect_llvm_interface_addSymbol();
 
 bool llvm_sys__load_bitcode_ll(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name );
 bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat, core::T_sp startup_name );
+
+ClaspJIT_sp llvm_sys__clasp_jit();
 
 
 };

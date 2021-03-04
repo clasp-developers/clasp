@@ -285,8 +285,9 @@ class JITDylib_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::orc::JITDylib, JITDylib_O, "JITDylib", core::ExternalObject_O);
   typedef llvm::orc::JITDylib ExternalType;
   typedef llvm::orc::JITDylib *PointerToExternalType;
-protected:
+public:
   PointerToExternalType _ptr;
+  core::SimpleBaseString_sp _name;
 public:
   virtual void *externalObject() const {
     return this->_ptr;
@@ -4587,6 +4588,8 @@ public:
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
+  void registerJITDylibAfterLoad(JITDylib_sp jitDylib);
+  
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   void addObjectFile(ObjectFile_sp of, bool print=false);
   /*! Return a pointer to a function WHAT FUNCTION???????
@@ -4712,6 +4715,10 @@ struct from_object<llvm::Optional<T>> {
 }
 
 namespace llvmo {
+
+extern std::atomic<size_t> global_JITDylibCounter;
+
+
 void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 

@@ -231,16 +231,8 @@ Lisp_O::Lisp_O() : _Booted(false),
 
 void Lisp_O::shutdownLispEnvironment() {
   this->_Booted = false;
-  if (globals_->_DebugStream != NULL) {
-    globals_->_DebugStream->beginNode(DEBUG_TOPLEVEL);
-  }
+  if (globals_->_DebugStream != NULL) globals_->_DebugStream->beginNode(DEBUG_TOPLEVEL);
   this->_Roots._CommandLineArguments.reset_();
-  this->_Roots._Packages.clear();
-  //	this->_Roots._HiddenBinder.reset();
-  //	this->_Roots._SpecialForms.clear();
-  this->_Roots._TrueObject.reset_();
-
-  //    this->_ClassesByClassSymbol.clear();
   delete globals_->_Bundle;
   if (globals_->_DebugStream != NULL) {
     globals_->_DebugStream->endNode(DEBUG_TOPLEVEL);
@@ -437,6 +429,11 @@ CL_DEFUN void core__set_debug_byte_code(T_sp on)
   global_debug_byte_code = on.notnilp();
 }
 
+void Lisp_O::initializeMainThread() {
+  mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
+  my_thread->initialize_thread(main_process,false);
+}
+
 
 void Lisp_O::startupLispEnvironment() {
  
@@ -619,10 +616,8 @@ void Lisp_O::startupLispEnvironment() {
   //
   // Initialize the main thread info
   //
-  {
-    mp::Process_sp main_process = mp::Process_O::make_process(INTERN_(core,top_level),_Nil<T_O>(),_lisp->copy_default_special_bindings(),_Nil<T_O>(),0);
-    my_thread->initialize_thread(main_process,false);
-  }
+  this->initializeMainThread();
+  
   globals_->_PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
