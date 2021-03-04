@@ -64,6 +64,13 @@ std::string Code_O::__repr__() const {
   return ss.str();
 };
 
+void* Code_O::literalsStart() const {
+  if (this->_State == SaveState) {
+    return (void*)&this->_DataCode[0];
+  }
+  return this->_gcroots->address(0);
+}
+    
 std::string ObjectFile_O::__repr__() const {
   stringstream ss;
   ss << "#<OBJECT-FILE " << this->_FasoName << " @" << (void*)this << ">";

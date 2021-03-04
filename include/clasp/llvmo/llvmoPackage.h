@@ -64,5 +64,7 @@ bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print
 ClaspJIT_sp llvm_sys__clasp_jit();
 
 
+void initialize_llvm();
+
 };
 #endif

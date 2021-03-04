@@ -72,7 +72,7 @@
 #define DBG_SL_RELOCATE0(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_DONTWALK(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_DONTWALK(_fmt_)
@@ -102,7 +102,7 @@
 #define DBG_SL_VTABLE(_fmt_)
 #endif
 
-#if 1
+#if 0
 #define DBG_SL_ENTRY_POINT(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_ENTRY_POINT(_fmt_)
@@ -432,7 +432,8 @@ struct ISLFileHeader {
   size_t _SymbolRootsOffset;
   size_t _SymbolRootsCount;
   size_t _global_JITDylibCounter;
-  
+  size_t _PageAlignedObjectFileStart;
+  size_t _ObjectFileSize;
   ISLFileHeader(size_t sz,size_t num, uintptr_t sbs) : _Magic(MAGIC_NUMBER), _Size(sz), _NumberOfObjects(num), _SaveBufferStart(sbs) {
     this->_global_JITDylibCounter = llvmo::global_JITDylibCounter.load();
   };
@@ -571,7 +572,8 @@ struct prepare_for_image_save_t : public walker_callback_t {
 
 struct calculate_size_t : public walker_callback_t {
 
-  size_t _total_size;
+  size_t _TotalSize;
+  size_t _ObjectFileTotalSize;
   size_t _general_count;
   size_t _cons_count;
   size_t _weak_count;
@@ -582,33 +584,47 @@ struct calculate_size_t : public walker_callback_t {
       this->_general_count++;
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
-      size_t delta = isl_obj_skip(client,false,objectSize)-client;
-      DBG_SL1(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n")
-              % header
-              % header->_stamp_wtag_mtag._value
-              % header->_stamp_wtag_mtag._header_badge
-              % objectSize % delta );
-      this->_total_size += sizeof(ISLGeneralHeader_s) + objectSize;
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
+        //
+        // Calculate the size of a Code_O object keeping only the literals vector
+        //
+        llvmo::Code_O* code = (llvmo::Code_O*)client;
+        this->_TotalSize += sizeof(ISLGeneralHeader_s) + code->frontSize() + code->literalsSize();
+      } else if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+        llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)client;
+        size_t objectFileSize = objectFile->objectFileSizeAlignedUpToPageSize(getpagesize());
+        this->_ObjectFileTotalSize += objectFileSize;
+        this->_TotalSize += sizeof(ISLGeneralHeader_s) + sizeof(llvmo::ObjectFile_O);
+      } else {
+        size_t delta = isl_obj_skip(client,false,objectSize)-client;
+        DBG_SL1(BF("   general header@%p value: 0x%x badge: 0x%x  sz = %lu  obj_skip = %lu\n")
+                % header
+                % header->_stamp_wtag_mtag._value
+                % header->_stamp_wtag_mtag._header_badge
+                % objectSize % delta );
+        this->_TotalSize += sizeof(ISLGeneralHeader_s) + objectSize;
+      }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)gctools::HeaderPtrToConsPtr(header);
       DBG_SL1(BF("   cons header@%p -> %p\n") % header % *(void**)header );
       this->_cons_count++;
       size_t consSize;
       isl_cons_skip(client,consSize);
-      this->_total_size += sizeof(ISLConsHeader_s) + consSize;
+      this->_TotalSize += sizeof(ISLConsHeader_s) + consSize;
     } else if (header->_stamp_wtag_mtag.weakObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_WEAK_PTR(header);
       this->_weak_count++;
       DBG_SL1(BF("weak object header %p   client: %p\n") % (void*)header % (void*)client );
       size_t objectSize;
       gctools::clasp_ptr_t nextClient = isl_weak_skip(client,false,objectSize);
-      this->_total_size += sizeof(ISLWeakHeader_s) + objectSize;
+      this->_TotalSize += sizeof(ISLWeakHeader_s) + objectSize;
     }
   }
 
   calculate_size_t(const ISLInfo& info) :
     walker_callback_t(info),
-    _total_size(0),
+    _TotalSize(0),
+    _ObjectFileTotalSize(0),
     _general_count(0),
     _cons_count(0),
     _weak_count(0)
@@ -641,13 +657,32 @@ void walk_garbage_collected_objects(bool saving, Walker& walker) {
 struct copy_objects_t : public walker_callback_t {
   char* _buffer;
   size_t _NumberOfObjects;
-  copy_objects_t(char* buffer, const ISLInfo& info) : walker_callback_t(info), _buffer(buffer), _NumberOfObjects(0) {}
+  char* _ObjectFileBuffer;
+  size_t _ObjectFileTotalSize;
+  char* _ObjectFileCur;
+  char* _ObjectFileEnd;
+  copy_objects_t(char* buffer, char* objectFileBuffer, size_t objectFileTotalSize, const ISLInfo& info)
+    : walker_callback_t(info), _buffer(buffer),
+      _ObjectFileBuffer(objectFileBuffer), _ObjectFileTotalSize(objectFileTotalSize),
+      _NumberOfObjects(0) {
+    this->_ObjectFileCur = objectFileBuffer;
+    this->_ObjectFileEnd = objectFileBuffer+objectFileTotalSize;
+  }
 
   char* write_buffer(size_t bytes, char* source ) {
     char* addr = this->_buffer;
     memcpy((void*)this->_buffer, (const void*)source, bytes );
     this->_buffer += bytes;
     return addr;
+  }
+
+  char* write_objectFile(size_t exactSize, char* source, size_t pagesize) {
+    size_t pageAlignedSize = ((exactSize+pagesize)/pagesize)*pagesize;
+    memset(this->_ObjectFileCur,'\0',pageAlignedSize);
+    memcpy(this->_ObjectFileCur,source,exactSize);
+    char* pos = this->_ObjectFileCur;
+    this->_ObjectFileCur += pageAlignedSize;
+    return pos;
   }
   
   void callback(gctools::Header_s* header) {
@@ -658,21 +693,57 @@ struct copy_objects_t : public walker_callback_t {
         printf("%s:%d:%s About to save Lisp_O object\n", __FILE__, __LINE__, __FUNCTION__ );
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
-
+      if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
+        //
+        // Calculate the size of a Code_O object keeping only the literals vector
+        //
+        llvmo::Code_O* code = (llvmo::Code_O*)clientStart;
+        gctools::clasp_ptr_t clientEnd = clientStart + code->frontSize();
+        ISLGeneralHeader_s islheader( Object, clientEnd-clientStart, header->_stamp_wtag_mtag );
+        char* islh = this->write_buffer(sizeof(ISLGeneralHeader_s), (char*)&islheader ); 
+        char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
+        llvmo::Code_O* new_code = (llvmo::Code_O*)new_addr;
+        char* literals_addr = this->write_buffer(code->literalsSize(),(char*)code->literalsStart());
+        // Update the new_code object to reflect that contains literals and no code and it's in the "SaveState"
+        new_code->_State = llvmo::SaveState;
+        new_code->_LiteralVectorStart = literals_addr - new_addr;
+        new_code->_LiteralVectorSize = code->literalsSize();
+        DBG_SAVECOPY(BF("   copied general header Code_O object %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+        header->_stamp_wtag_mtag.setFwdPointer( new_addr ); // This is a client pointer
+        DBG_SL_FWD(BF("setFwdPointer general header %p new_addr -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_addr % (void*)header->_stamp_wtag_mtag.fwdPointer() );
+      } else if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+        llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
+        size_t objectFileSize = objectFile->objectFileSizeAlignedUpToPageSize(getpagesize());
+        size_t generalSize;
+        gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
+        if (generalSize==0) ISL_ERROR(BF("A zero size general at %p was encountered") % (void*)clientStart );
+        gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
+        ISLGeneralHeader_s islheader( Object, clientEnd-clientStart, header->_stamp_wtag_mtag );
+        char* islh = this->write_buffer(sizeof(ISLGeneralHeader_s), (char*)&islheader ); 
+        char* new_client = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
+        llvmo::ObjectFile_O* newObjectFile = (llvmo::ObjectFile_O*)new_client;
+        char* objectFileAddress = this->write_objectFile( objectFile->objectFileSize(), (char*)objectFile->objectFileData(), getpagesize() );
+        newObjectFile->_ObjectFileOffset = objectFileAddress - this->_ObjectFileBuffer;
+        newObjectFile->_ObjectFileSize = objectFile->objectFileSize();
+        DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+        header->_stamp_wtag_mtag.setFwdPointer( new_client ); // This is a client pointer
+        DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_client % (void*)header->_stamp_wtag_mtag.fwdPointer() );
+      } else {
       //
       // Now write it into the buffer
       //
-      size_t generalSize;
-      gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
-      if (generalSize==0) ISL_ERROR(BF("A zero size general at %p was encountered") % (void*)clientStart );
-      gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
-      ISLGeneralHeader_s islheader( Object, clientEnd-clientStart, header->_stamp_wtag_mtag );
-      char* islh = this->write_buffer(sizeof(ISLGeneralHeader_s), (char*)&islheader ); 
-      char* new_addr = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
-      DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
-      this->_NumberOfObjects++;
-      header->_stamp_wtag_mtag.setFwdPointer( new_addr ); // This is a client pointer
-      DBG_SL_FWD(BF("setFwdPointer general header %p new_addr -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_addr % (void*)header->_stamp_wtag_mtag.fwdPointer() );
+        size_t generalSize;
+        gctools::clasp_ptr_t dummy = isl_obj_skip(clientStart,false,generalSize);
+        if (generalSize==0) ISL_ERROR(BF("A zero size general at %p was encountered") % (void*)clientStart );
+        gctools::clasp_ptr_t clientEnd = clientStart + generalSize;
+        ISLGeneralHeader_s islheader( Object, clientEnd-clientStart, header->_stamp_wtag_mtag );
+        char* islh = this->write_buffer(sizeof(ISLGeneralHeader_s), (char*)&islheader ); 
+        char* new_client = this->write_buffer(clientEnd-clientStart,(char*)clientStart);
+        DBG_SAVECOPY(BF("   copied general header %p to %p - %p\n") % header % (void*)islh % (void*)this->_buffer );
+        this->_NumberOfObjects++;
+        header->_stamp_wtag_mtag.setFwdPointer( new_client ); // This is a client pointer
+        DBG_SL_FWD(BF("setFwdPointer general header %p new_client -> %p  reread fwdPointer -> %p\n") % (void*)header % (void*)new_client % (void*)header->_stamp_wtag_mtag.fwdPointer() );
+      }
     } else if (header->_stamp_wtag_mtag.consObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HeaderPtrToConsPtr(header);
       size_t consSize;
@@ -869,7 +940,8 @@ struct fixup_vtables_t : public walker_callback_t {
 
 
 
-ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_t& islEnd )
+ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_t& islEnd,
+                             gctools::clasp_ptr_t& objectFileStart, gctools::clasp_ptr_t& objectFileEnd )
 {
 #ifdef USE_BOEHM
   GC_stop_world_external();
@@ -940,7 +1012,7 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   DBG_SL(BF("1. Sum size of all objects\n"));
   calculate_size_t calc_size(islInfo);
   walk_garbage_collected_objects(true,calc_size);
-  printf("%s", (BF("   size = %lu\n") % calc_size._total_size).str().c_str());
+  printf("%s", (BF("   size = %lu\n") % calc_size._TotalSize).str().c_str());
   printf("%s", (BF("   general_count = %lu\n") % calc_size._general_count ).str().c_str());
   printf("%s", (BF("   cons_count = %lu\n") % calc_size._cons_count ).str().c_str());
   printf("%s", (BF("   weak_count = %lu\n") % calc_size._weak_count ).str().c_str());
@@ -950,16 +1022,21 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   //
 
   size_t roots = sizeof(ISLHeader_s)* (1 + NUMBER_OF_CORE_SYMBOLS + global_symbol_count );
-  size_t total_size = 
-    + calc_size._total_size            // for all objects
+  size_t memory_size = 
+    + calc_size._TotalSize            // for all objects
     + roots                                            // size for roots
     + sizeof(ISLHeader_s)*2;                           // size of last End header
-  char* islbuffer0 = (char*)malloc( sizeof(ISLFileHeader) + total_size );
+  // Align up memory_size to pagesize
+  size_t total_size = memory_size + sizeof(ISLFileHeader);
+  total_size = ((total_size+getpagesize())/getpagesize()) * getpagesize();
+  
+  char* islbuffer0 = (char*)malloc( total_size );
   char* islbuffer = islbuffer0 + sizeof(ISLFileHeader);
+  char* objectFileBuffer = (char*)malloc( calc_size._ObjectFileTotalSize );
   globalISLBufferRange._Start = (gctools::clasp_ptr_t)islbuffer;
-  globalISLBufferRange._End = (gctools::clasp_ptr_t)islbuffer+total_size;
+  globalISLBufferRange._End = (gctools::clasp_ptr_t)islbuffer+memory_size;
   islStart = (gctools::clasp_ptr_t)islbuffer0;
-  islEnd = (gctools::clasp_ptr_t)islbuffer+total_size;
+  islEnd = (gctools::clasp_ptr_t)islbuffer+memory_size;
 
   // Add the image save load buffer limits to islInfo
   islInfo._islStart = (uintptr_t)islStart;
@@ -972,11 +1049,11 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   //
 
   DBG_SL(BF("  islbuffer = %p\n") % (void*)islbuffer );
-  DBG_SL(BF("  Copy objects to islbuffer: %p - %p bytes: %lu\n") % (void*)islbuffer % (void*)(islbuffer+total_size) % total_size );
-  copy_objects_t copy_objects( islbuffer, islInfo );
+  DBG_SL(BF("  Copy objects to islbuffer: %p - %p bytes: %lu\n") % (void*)islbuffer % (void*)(islbuffer+memory_size) % memory_size );
+  copy_objects_t copy_objects( islbuffer, objectFileBuffer, calc_size._ObjectFileTotalSize, islInfo );
   walk_garbage_collected_objects(true,copy_objects);
 
-  ISLFileHeader* fileHeader = new (islbuffer0) ISLFileHeader(total_size,copy_objects._NumberOfObjects,(uintptr_t)islbuffer);
+  ISLFileHeader* fileHeader = new (islbuffer0) ISLFileHeader(memory_size,copy_objects._NumberOfObjects,(uintptr_t)islbuffer);
 
   ISLEndHeader_s end_header( End );
   char* endend = copy_objects.write_buffer( sizeof(end_header), (char*)&end_header );
@@ -998,6 +1075,11 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
   fileHeader->_SymbolRootsCount = global_symbol_count;
   copy_objects.write_buffer( sizeof(void*)*global_symbol_count, (char*)&global_symbols[0] );
 
+  fileHeader->_PageAlignedObjectFileStart = total_size;
+  fileHeader->_ObjectFileSize = calc_size._ObjectFileTotalSize;
+  objectFileStart = (gctools::clasp_ptr_t)objectFileBuffer;
+  objectFileEnd = objectFileStart + calc_size._ObjectFileTotalSize;
+  
   //
   // 5. Walk all objects in intermediate-buffer and fixup tagged pointers using forwarding pointer
   //
@@ -1016,7 +1098,7 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
 
   {
     globalPointerFix = follow_forwarding_pointer;
-    printf("%s:%d:%s  Fixing roots islbuffer = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)islbuffer, (void*)((char*)islbuffer+total_size));
+    printf("%s:%d:%s  Fixing roots islbuffer = %p - %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)islbuffer, (void*)((char*)islbuffer+memory_size));
     gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_LispRootOffset + sizeof(ISLRootHeader_s));
     followForwardingPointersForRoots( lispRoot, fileHeader->_LispRootCount, (void*)&islInfo );
     gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*) ((char*)islbuffer + fileHeader->_CoreSymbolRootsOffset + sizeof(ISLRootHeader_s));
@@ -1042,7 +1124,9 @@ ISLFileHeader* do_image_save(gctools::clasp_ptr_t& islStart, gctools::clasp_ptr_
 void image_save(const std::string& filename) {
   gctools::clasp_ptr_t  start;
   gctools::clasp_ptr_t  end;
-  ISLFileHeader* fileHeader = do_image_save(start,end);
+  gctools::clasp_ptr_t  objectFileStart;
+  gctools::clasp_ptr_t  objectFileEnd;
+  ISLFileHeader* fileHeader = do_image_save(start,end,objectFileStart,objectFileEnd);
   fileHeader->_LibrariesOffset = (end - start);
   fileHeader->_NumberOfLibraries = globalISLLibraries.size();
 
@@ -1328,18 +1412,25 @@ int image_load(const std::string& filename )
     //
     // Initialize the ClaspJIT_O object
     llvmo::global_JITDylibCounter.store(fileHeader->_global_JITDylibCounter);
-    new (&theLisp->_Roots._ClaspJIT) llvmo::ClaspJIT_O();
+    llvmo::ClaspJIT_O* claspJIT = (llvmo::ClaspJIT_O*)gctools::untag_general<core::T_O*>(theLisp->_Roots._ClaspJIT.raw_());
+    llvmo::JITDylib_O* mainJITDylib = (llvmo::JITDylib_O*)gc::untag_general<core::T_O*>(claspJIT->_MainJITDylib.raw_());
+    new (claspJIT) llvmo::ClaspJIT_O(true,mainJITDylib);
+  
     //
     // Initialize the JITDylibs
+    // We can't use As at this point because we are working in the image save/load buffer
+    //  and the headers aren't the same as in main memory
     //
-    llvmo::ClaspJIT_sp jit = gc::As<llvmo::ClaspJIT_sp>(theLisp->_Roots._ClaspJIT);
-    for ( auto one : (core::List_sp)(theLisp->_Roots._JITDylibs.load()) ) {
-      llvmo::JITDylib_sp dy = gc::As<llvmo::JITDylib_sp>(CONS_CAR(one));
-      jit->registerJITDylibAfterLoad(dy);
+    core::T_sp tjit = theLisp->_Roots._ClaspJIT;
+    if (tjit.notnilp()) {
+      llvmo::ClaspJIT_sp jit = gc::As_unsafe<llvmo::ClaspJIT_sp>(tjit);
+      core::T_sp cur = theLisp->_Roots._JITDylibs.load();
+      while (cur.consp()) {
+        llvmo::JITDylib_sp dy = gc::As_unsafe<llvmo::JITDylib_sp>(CONS_CAR(cur));
+        jit->registerJITDylibAfterLoad(&*dy);
+        cur = CONS_CDR(cur);
+      }
     }
-    
-    
-
     
     for ( cur_header = start_header; cur_header->_Kind != End; ) {
       DBG_SL_ALLOCATE(BF("-----Allocating based on cur_header %p\n") % (void*)cur_header );

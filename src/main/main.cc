@@ -350,6 +350,7 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
 #ifdef USE_PRECISE_GC
     printf("%s:%d:%s Loading the core image %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
+    llvmo::initialize_llvm();
     ::globals_ = new core::globals_t();
     globals_->_DebugStream = new core::DebugStream(mpiRank);
     exit_code = imageSaveLoad::image_load(core::global_options->_ImageFile);

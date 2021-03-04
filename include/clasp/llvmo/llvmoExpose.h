@@ -4588,7 +4588,7 @@ public:
   core::T_sp lookup_all_dylibs(const std::string& Name);
   JITDylib_sp getMainJITDylib();
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
-  void registerJITDylibAfterLoad(JITDylib_sp jitDylib);
+  void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
   
   void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
   void addObjectFile(ObjectFile_sp of, bool print=false);
@@ -4596,7 +4596,7 @@ public:
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
    */
   void* runStartupCode(JITDylib& dylib, const std::string& startupName, core::T_sp initialDataOrUnbound, Code_sp& codeObject );
-  ClaspJIT_O();
+  ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib = NULL);
   ~ClaspJIT_O();
 public:
   JITDylib_sp _MainJITDylib;

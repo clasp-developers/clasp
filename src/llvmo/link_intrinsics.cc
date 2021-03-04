@@ -1370,12 +1370,3 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
 };
 
 #pragma GCC visibility pop
-
-namespace llvmo {
-// We must link one symbol to the executable or none of this file will be inserted
-
-void initialize_link_intrinsics() {
-//	PRIMITIVE(cc_setSymbolValue);
-//printf("%s:%d  Initializing intrinsics.cc\n", __FILE__, __LINE__ );
-}
-};

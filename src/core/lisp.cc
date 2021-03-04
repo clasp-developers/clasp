@@ -204,6 +204,7 @@ public:
 // Constructor
 //
 Lisp_O::GCRoots::GCRoots() :
+  _ClaspJIT(_Nil<T_O>()),
   _AllObjectFiles(_Nil<T_O>()),
   _AllLibraries(_Nil<T_O>()),
 #ifdef CLASP_THREADS

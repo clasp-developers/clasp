@@ -24,6 +24,7 @@ struct gctools::GCInfo<llvmo::ObjectFile_O> {
 // ObjectFile_O
 namespace llvmo {
 
+typedef enum { SaveState, RunState } CodeState_t;
 
   FORWARD(LibraryBase);
   class LibraryBase_O : public core::CxxObject_O {
@@ -40,7 +41,10 @@ namespace llvmo {
   class ObjectFile_O : public LibraryBase_O {
     LISP_CLASS(llvmo, LlvmoPkg, ObjectFile_O, "ObjectFile", LibraryBase_O);
   public:
+    CodeState_t    _State;
     std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
+      uintptr_t      _ObjectFileOffset; // Only has meaning when _State is SaveState
+      uintptr_t      _ObjectFileSize; // Only has meaning when _State is SaveState
     size_t         _Size;
     size_t         _StartupID;
     JITDylib_sp    _JITDylib;
@@ -53,6 +57,13 @@ namespace llvmo {
     ~ObjectFile_O();
     std::string __repr__() const;
     static void writeToFile(const std::string& filename, const char* start, size_t size);
+    size_t frontSize() { return sizeof(this); }
+    size_t objectFileSize() { return this->_MemoryBuffer->getBufferSize(); };
+    void* objectFileData() { return (void*)this->_MemoryBuffer->getBufferStart(); };
+    size_t objectFileSizeAlignedUpToPageSize(size_t pagesize) {
+      size_t pages = (this->objectFileSize()+pagesize)/pagesize;
+      return pages*pagesize;
+    }
   }; // ObjectFile_O class def
 }; // llvmo
 
@@ -150,6 +161,7 @@ class Code_O : public CodeBase_O {
  public:
   // Store the allocation sizes and alignments
   // Keep track of the Head and Tail indices of the memory in _Data;
+  CodeState_t         _State;
   uintptr_t     _HeadOffset;
   uintptr_t     _TailOffset;
   ObjectFile_sp _ObjectFile;
@@ -159,8 +171,8 @@ class Code_O : public CodeBase_O {
   uintptr_t     _TextSegmentSectionId;
   void*         _StackmapStart;
   uintptr_t     _StackmapSize;
-  void*         _LiteralVectorStart;
-  size_t        _LiteralVectorLength;
+  uintptr_t     _LiteralVectorStart; // offset from start of Code_O object
+  size_t        _LiteralVectorSize; // size in bytes
   gctools::GCArray_moveable<uint8_t> _DataCode;
 
   void* allocateHead(uintptr_t size, uint32_t align);
@@ -169,13 +181,18 @@ class Code_O : public CodeBase_O {
 
   std::string __repr__() const;
  Code_O(uintptr_t totalSize ) :
-  _TailOffset(totalSize)
-    , _ObjectFile(_Unbound<ObjectFile_O>())
-    , _gcroots(NULL)
-    , _DataCode(totalSize,0,true) {};
+   _State(RunState)
+   , _TailOffset(totalSize)
+   , _ObjectFile(_Unbound<ObjectFile_O>())
+   , _gcroots(NULL)
+   , _DataCode(totalSize,0,true) {};
 
   ~Code_O();
   uintptr_t codeStart() const { return (uintptr_t)this->_TextSegmentStart; };
+
+  size_t frontSize() const { return sizeof(*this); };
+  size_t literalsSize() const { return this->_LiteralVectorSize; };
+  void* literalsStart() const;
 };
   
 };

@@ -8275,7 +8275,7 @@ public:
 //      field: "_LiteralVectorStart" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::POINTER-CTYPE :KEY NIL :POINTEE #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "void"))
  {  fixed_field, RAW_POINTER_OFFSET, sizeof(UnknownType), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_LiteralVectorStart), 0, "_LiteralVectorStart" }, // atomic: NIL public: (T) fixable: NIL good-name: T
 //      field: "_LiteralVectorLength" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned long")
- {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_LiteralVectorLength), 0, "_LiteralVectorLength" }, // atomic: NIL public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_LiteralVectorSize), 0, "_LiteralVectorSize" }, // atomic: NIL public: (T) fixable: NIL good-name: T
  {  variable_array0, 0, 0, __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_DataCode._Data), 0, "_DataCode._Data" },
  {  variable_capacity, sizeof(unsigned char), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_DataCode._MaybeSignedLength), __builtin_offsetof(SAFE_TYPE_MACRO(llvmo::Code_O),_DataCode._MaybeSignedLength), 0, NULL },
 /* (base one) -> #S(CLASP-ANALYZER::BUILTIN-CTYPE :KEY "unsigned char")

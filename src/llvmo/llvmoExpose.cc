@@ -4404,11 +4404,12 @@ namespace llvmo {
 
 CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 {
-  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj);
+  printf("%s:%d:%s Creating JIT - we did this already at startup!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+  GC_ALLOCATE_VARIADIC(ClaspJIT_O,cj,false);
   return cj;
 }
 
-ClaspJIT_O::ClaspJIT_O() {
+ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         llvm::ExitOnError ExitOnErr;
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
@@ -4432,7 +4433,20 @@ ClaspJIT_O::ClaspJIT_O() {
                      })
                      .create());
   this->_LLJIT =  std::move(J);
-  this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
+  if (loading) {
+    // Fixup the JITDylib_sp object in place
+    JITDylib& dylib = this->_LLJIT->getMainJITDylib();
+    dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
+    if (!mainJITDylib) {
+      printf("%s:%d:%s the jitdylib @%p is null!\n", __FILE__, __LINE__, __FUNCTION__, &this->_MainJITDylib );
+      abort();
+    }
+    mainJITDylib->set_wrapped( &dylib );
+    this->_MainJITDylib.rawRef_() = (llvmo::JITDylib_O*)gctools::tag_general<llvmo::JITDylib_O*>(mainJITDylib);
+  } else {
+    // Create a new JITDylib_sp object
+    this->_MainJITDylib = core::RP_Create_wrapped<JITDylib_O>(&this->_LLJIT->getMainJITDylib());
+  }
   printf("%s:%d Creating ClaspJIT_O  globalPrefix = %c\n", __FILE__, __LINE__, this->_LLJIT->getDataLayout().getGlobalPrefix());
   this->_LLJIT->getMainJITDylib().addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
 }
@@ -4561,7 +4575,10 @@ void* ClaspJIT_O::runStartupCode(JITDylib& dylib, const std::string& startupName
 }
 
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::getMainJITDylib() {
-  return this->_MainJITDylib;
+  if (this->_MainJITDylib.raw_() && gctools::untag_general<core::T_O*>(this->_MainJITDylib.raw_()) ) {
+    return this->_MainJITDylib;
+  }
+  SIMPLE_ERROR(BF("The main-jit-dylib of the JIT is not setup properly: raw -> %p\n") % (void*)this->_MainJITDylib.raw_());
 }
 
 std::atomic<size_t> global_JITDylibCounter;
@@ -4589,8 +4606,9 @@ CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string
 }
 
 
-void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_sp jitDylib ) {
-  auto dy = this->_LLJIT->createJITDylib(jitDylib->_name->get_std_string());
+void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
+  core::SimpleBaseString_sp name = jitDylib->_name;
+  auto dy = this->_LLJIT->createJITDylib(name->get_std_string());
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   jitDylib->set_wrapped( &dylib );

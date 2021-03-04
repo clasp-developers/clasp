@@ -983,13 +983,6 @@ void initialize_raw_translators( void )
 
 } // initialize_raw_translators
 
-void initialize_intrinsics( void )
-{
-  return;
-}
-
-
-
 
 
 }; // namespace llvmo
