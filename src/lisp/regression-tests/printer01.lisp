@@ -588,5 +588,7 @@ wrong
                  (with-output-to-string (stream)
                    (write-string string stream :start from :end to)))))
 
-
-
+(test ansi-test-format-e
+      (string=
+       (FORMAT NIL "~,2,,2e" 0.05)
+       "50.0e-3"))
