@@ -1368,54 +1368,6 @@
 ;;; causes errors when printing infinities or NaN's.  The Hyperspec is
 ;;; silent here, so let's just print out infinities and NaN's instead
 ;;; of causing an error.
-#+(or)
-(defun format-exp-aux (stream number w d e k ovf pad marker atsign)
-  (if (non-finite-float-p number)
-      (prin1 number stream)
-      (multiple-value-bind (num expt)
-          (sys::scale-exponent (abs number))
-        (when (< expt 0)                ; adjust scale factor
-          (decf k))
-        (let* ((expt (- expt k))
-               (estr (decimal-string (abs expt)))
-               (elen (if e (max (length estr) e) (length estr)))
-               (fdig (if d (if (plusp k) (1+ (- d k)) d) nil))
-               (fmin (if (minusp k) (- 1 k) 0))
-               (spaceleft (if w
-                              (- w 2 elen
-                                 (if (or atsign (minusp number))
-                                     1 0))
-                              nil)))
-          (if (and w ovf e (> elen e)) ;exponent overflow
-              (dotimes (i w) (write-char ovf stream))
-              (multiple-value-bind (fstr flen lpoint)
-                  (sys::flonum-to-string num spaceleft fdig k fmin)
-                (when w 
-                  (decf spaceleft flen)
-                  (when lpoint
-                    (if (> spaceleft 0)
-                        (decf spaceleft)
-                        (setq lpoint nil))))
-                (cond ((and w (< spaceleft 0) ovf)
-                       ;;significand overflow
-                       (dotimes (i w) (write-char ovf stream)))
-                      (t (when w
-                           (dotimes (i spaceleft) (write-char pad stream)))
-                         (if (minusp number)
-                             (write-char #\- stream)
-                             (if atsign (write-char #\+ stream)))
-                         (when lpoint (write-char #\0 stream))
-                         (write-string fstr stream)
-                         (write-char (if marker
-                                         marker
-                                         (format-exponent-marker number))
-                                     stream)
-                         (write-char (if (minusp expt) #\- #\+) stream)
-                         (when e 
-                           ;;zero-fill before exponent if necessary
-                           (dotimes (i (- e (length estr)))
-                             (write-char #\0 stream)))
-                         (write-string estr stream)))))))))
 
 (defun format-exp-aux (stream number w d e k ovf pad marker atsign)
   (if (non-finite-float-p number)
