@@ -125,40 +125,61 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
     (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
 #-clasp-min
-(defun decode-universal-time (orig-ut &optional (tz nil tz-p) &aux (dstp nil))
+(defun check-tz (tz)
+  ;; According to the CLHS glossary, a time zone is "a rational multiple of
+  ;; 1/3600 between -24 (inclusive) and 24 (inclusive)". The multiple of 1/3600
+  ;; part is inexpressible in the type system (short of SATISFIES).
+  ;; We interpret "rational multiple of 1/3600" to mean that a time zone must
+  ;; equal (* n 1/3600) for some n that is an integer. A "time zone" that did
+  ;; not meet this condition would be a non-integral number of seconds different
+  ;; from Greenwich.
+  ;; Of course, this is hopefully academic - actual time zones are a quarter
+  ;; hour off at most, let alone fewer minutes or seconds.
+  (unless (typep tz '(rational -24 24))
+    (error 'type-error :datum tz :expected-type '(rational -24 24)))
+  (unless (zerop (rem 3600 (denominator tz)))
+    (error "~a is not a valid time zone: Must be a rational multiple of 1/3600"
+           tz)))
+
+#+clasp-min (defun check-tz (tz) tz) ; typep not available yet
+
+#-clasp-min
+(defun decode-universal-time (orig-ut &optional (tz (get-local-time-zone) tz-p)
+                              &aux (dstp nil))
   "Args: (integer &optional (timezone (si::get-local-time-zone)))
 Returns as nine values the day-and-time represented by INTEGER.  See GET-
 DECODED-TIME."
-(loop
-  (let* ((ut orig-ut) sec min hour day month year dow days)
-    (unless tz
-      (setq tz (get-local-time-zone)))
-    (decf ut (round (* (+ tz (if dstp -1 0)) 3600)))
-    (multiple-value-setq (ut sec) (floor ut 60))
-    (multiple-value-setq (ut min) (floor ut 60))
-    (multiple-value-setq (days hour) (floor ut 24))
-    (setq dow (mod days 7))
-    (setq year (+ 1900 (floor days 366))) ; Guess!
-    (do ((x))
-        ((< (setq x (- days (number-of-days-from-1900 year)))
-            (if (leap-year-p year) 366 365))
-         (setq day (1+ x)))
-      (incf year))
-    (when (leap-year-p year)
-      (cond ((= day 60) (setf month 2 day 29))
-	    ((> day 60) (decf day))))
-    (unless month
-      (setq month (position day month-startdays :test #'<=)
-	    day (- day (svref month-startdays (1- month)))))
-    (if (and (not tz-p) (daylight-saving-time-p orig-ut year))
-	(setf tz-p t dstp t)
-	(return (values sec min hour day month year dow dstp tz))))))
+  (when tz-p (check-tz tz))
+  (loop
+    (let* ((ut orig-ut) sec min hour day month year dow days)
+      (decf ut (round (* (+ tz (if dstp -1 0)) 3600)))
+      (multiple-value-setq (ut sec) (floor ut 60))
+      (multiple-value-setq (ut min) (floor ut 60))
+      (multiple-value-setq (days hour) (floor ut 24))
+      (setq dow (mod days 7))
+      (setq year (+ 1900 (floor days 366))) ; Guess!
+      (do ((x))
+          ((< (setq x (- days (number-of-days-from-1900 year)))
+              (if (leap-year-p year) 366 365))
+           (setq day (1+ x)))
+        (incf year))
+      (when (leap-year-p year)
+        (cond ((= day 60) (setf month 2 day 29))
+	      ((> day 60) (decf day))))
+      (unless month
+        (setq month (position day month-startdays :test #'<=)
+	      day (- day (svref month-startdays (1- month)))))
+      (if (and (not tz-p) (daylight-saving-time-p orig-ut year))
+	  (setf tz-p t dstp t)
+	  (return (values sec min hour day month year dow dstp tz))))))
 
-(defun encode-universal-time (sec min hour day month year &optional tz)
+(defun encode-universal-time (sec min hour day month year
+                              &optional (tz (get-local-time-zone) tz-p))
   "Args: (second minute hour date month year
        &optional (timezone (si::get-local-time-zone)))
 Returns an integer that represents the given day-and-time.  See
 GET-DECODED-TIME."
+  (when tz-p (check-tz tz))
   (when (<= 0 year 99)
     ;; adjust to year in the century within 50 years of this year
     (multiple-value-bind (sec min hour day month this-year dow dstp tz)
@@ -166,8 +187,7 @@ GET-DECODED-TIME."
       (declare (ignore sec min hour day month dow dstp tz))
       (incf year (* 100 (ceiling (- this-year year 50) 100)))))
   (let ((dst 0))
-    (unless tz
-      (setq tz (get-local-time-zone))
+    (unless tz-p
       (when (daylight-saving-time-p (recode-universal-time sec min hour day month year tz -1) year)
 	;; assume DST applies, and check if at corresponging UT it applies.
 	;; There is an ambiguity between midnight and 1 o'clock on the day
