@@ -115,20 +115,14 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 #-clasp-min
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
-  (let ((ratio (core:unix-get-local-time-zone)))
-    (if (= 1 (denominator ratio))
-        (numerator ratio)
-        ratio)))
+  (core:unix-get-local-time-zone))
 
-;;; Need to treat tz as ratio and still return an integer
-;;; (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days)))))) will return a ratio
 (defun recode-universal-time (sec min hour day month year tz dst)
-  (declare (ignore dst))
   (let ((days (+ (if (and (leap-year-p year) (> month 2)) 1 0)
 		 (1- day)
 		 (svref month-startdays (1- month))
 		 (number-of-days-from-1900 year))))
-    (+ sec (* (+ min (* (+ (+ hour (* days 24)) tz) 60)) 60))))
+    (+ sec (* 60 (+ min (* 60 (+ tz dst hour (* 24 days))))))))
 
 #-clasp-min
 (defun decode-universal-time (orig-ut &optional (tz nil tz-p) &aux (dstp nil))
@@ -173,7 +167,7 @@ GET-DECODED-TIME."
       (incf year (* 100 (ceiling (- this-year year 50) 100)))))
   (let ((dst 0))
     (unless tz
-      (setq tz (rational (get-local-time-zone)))
+      (setq tz (get-local-time-zone))
       (when (daylight-saving-time-p (recode-universal-time sec min hour day month year tz -1) year)
 	;; assume DST applies, and check if at corresponging UT it applies.
 	;; There is an ambiguity between midnight and 1 o'clock on the day
