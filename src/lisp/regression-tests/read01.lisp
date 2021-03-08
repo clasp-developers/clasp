@@ -576,5 +576,14 @@
         (let ()
           (readtable-case *readtable*))))
 
+(test set-syntax-from-char-from-irc-clasp
+      (let ((*readtable* (copy-readtable nil)))
+        (set-syntax-from-char #\0 #\`)
+        (eql (get-macro-character #\0) (get-macro-character #\`))))
+
+(test set-macro-character-from-irc-clasp
+      (let ((*readtable* (copy-readtable nil)))
+        (set-macro-character #\0 (get-macro-character #\`))
+        (eql (get-macro-character #\0) (get-macro-character #\`))))
 
 
