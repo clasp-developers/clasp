@@ -232,11 +232,10 @@ Returns the current day-and-time as nine values:
 	hour (0 - 23)
 	date (1 - 31)
 	month (1 - 12)
-	year (Christian, not Japanese long-live-Emperor)
+	year (A.D.)
 	day of week (0 for Mon, .. 6 for Sun)
-	summer time or not (T or NIL)
-	time zone (-9 in Japan)
-Sunday is the *last* day of the week!!"
+	daylight saving time or not (T or NIL)
+	time zone (Offset from GMT in hours)"
   (decode-universal-time (get-universal-time)))
 
 (defun ensure-directories-exist (pathname &key verbose (mode #o777))
