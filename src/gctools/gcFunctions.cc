@@ -37,6 +37,7 @@ int gcFunctions_after;
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/code.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/gctools/gc_interface.h>
