@@ -174,9 +174,11 @@ class Code_O : public CodeBase_O {
   void*         _StackmapStart;
   uintptr_t     _StackmapSize;
   uintptr_t     _LiteralVectorStart; // offset from start of Code_O object
-  size_t        _LiteralVectorSize; // size in bytes
+  size_t        _LiteralVectorSizeBytes; // size in bytes
   gctools::GCArray_moveable<uint8_t> _DataCode;
-
+public:
+  static size_t sizeofInState(Code_O* code, CodeState_t state);
+public:
   void* allocateHead(uintptr_t size, uint32_t align);
   void* allocateTail(uintptr_t size, uint32_t align);
   void describe() const;
@@ -188,14 +190,14 @@ class Code_O : public CodeBase_O {
    , _ObjectFile(_Unbound<ObjectFile_O>())
    , _gcroots(NULL)
    , _LiteralVectorStart(0)
-   , _LiteralVectorSize(0)
+   , _LiteralVectorSizeBytes(0)
    , _DataCode(totalSize,0,true) {};
 
   ~Code_O();
   uintptr_t codeStart() const { return (uintptr_t)this->_TextSegmentStart; };
 
   size_t frontSize() const { return sizeof(*this); };
-  size_t literalsSize() const { return this->_LiteralVectorSize; };
+  size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
   void* literalsStart() const;
 };
   

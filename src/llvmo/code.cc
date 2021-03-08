@@ -44,6 +44,13 @@ ObjectFile_O::~ObjectFile_O() {
   this->_Code = _Unbound<Code_O>();
 }
 
+size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
+  if (state == SaveState) {
+    return sizeof(Code_O)+code->_LiteralVectorSizeBytes;
+  }
+  return gctools::sizeof_container<Code_O>(code->_DataCode.size());
+}
+
 Code_O::~Code_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
   printf("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this );

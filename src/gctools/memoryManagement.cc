@@ -584,6 +584,20 @@ void initialize_gcroots_in_module(GCRootsInModule* roots, core::T_O** root_addre
   // FIXME: The GCRootsInModule is on the stack - once it's gone we loose the ability
   //        to keep track of the constants and in the future when we start GCing code
   //        we need to keep track of the constants.
+#if (CLASP_BUILD_MODE == 3) // FASO
+  if (roots->_module_memory != module_mem) {
+    printf("%s:%d:%s  In FASO mode the gcroots structure should be initialized already by parseLinkGraph in llvmoExpose.cc\n"
+           "But the roots->_module_memory %p does not match module_mem %p\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)roots->_module_memory, (void*)module_mem );
+    abort();
+  }
+  if (roots->_num_entries != num_roots) {
+    printf("%s:%d:%s  In FASO mode the gcroots structure should be initialized already by parseLinkGraph in llvmoExpose.cc\n"
+           "But the roots->_num_entries %lu does not match num_roots %lu\n",
+           __FILE__, __LINE__, __FUNCTION__, roots->_num_entries, num_roots );
+    abort();
+  }
+#endif
   new (roots) GCRootsInModule(reinterpret_cast<void*>(module_mem),num_roots,transientAlloca, transient_entries, function_pointer_count, (void**)fptrs );
   size_t idx = 0;
   if (initial_data != 0 ) {
@@ -687,9 +701,13 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   return exitCode;
 }
 
+__attribute__((optnone))
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);
   BOUNDS_ASSERT(raw_index<this->_num_entries);
+  printf("%s:%d:%s setting literal raw_index = %lu  this->_module_memory = %p - turn off optnone\n",
+         __FILE__, __LINE__, __FUNCTION__,
+         raw_index, (void*)this->_module_memory );
   reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }

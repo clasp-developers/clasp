@@ -665,11 +665,20 @@ struct calculate_size_t : public walker_callback_t {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
+        printf("%s:%d:%s !!!!!!!!! REALLY DANGEROUS CODE - I AM NOT CALCULATING THE SIZE OF Code_O objects as I SHOULD BE\n",
+               __FILE__, __LINE__, __FUNCTION__ );
         //
         // Calculate the size of a Code_O object keeping only the literals vector
         //
         llvmo::Code_O* code = (llvmo::Code_O*)client;
-        this->_TotalSize += sizeof(ISLGeneralHeader_s) + code->frontSize() + code->literalsSize();
+        size_t saveCodeSize = llvmo::Code_O::sizeofInState(code,llvmo::SaveState);
+        {
+          size_t runCodeSize;
+          isl_obj_skip( (gctools::clasp_ptr_t)code, false, runCodeSize );
+          printf("%s:%d:%s Calculated size of Code_O in RunState: %lu  and in SaveState: %lu\n",
+                 __FILE__, __LINE__, __FUNCTION__, runCodeSize, saveCodeSize );
+        }
+        this->_TotalSize += sizeof(ISLGeneralHeader_s) + saveCodeSize;
       } else if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)client;
         size_t objectFileSize = objectFile->objectFileSizeAlignedUpToPageSize(getpagesize());
@@ -761,20 +770,33 @@ struct copy_objects_t : public walker_callback_t {
       }
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       if (header->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
+        printf("%s:%d:%s !!!!!!!!! REALLY DANGEROUS CODE - I AM NOT CALCULATING THE SIZE OF Code_O objects as I SHOULD BE\n",
+               __FILE__, __LINE__, __FUNCTION__ );
         //
         // Calculate the size of a Code_O object keeping only the literals vector
         //
         llvmo::Code_O* code = (llvmo::Code_O*)clientStart;
-        gctools::clasp_ptr_t clientEnd = clientStart + code->frontSize();
-        ISLGeneralHeader_s islheader( General, clientEnd-clientStart, header->_stamp_wtag_mtag );
+        gctools::clasp_ptr_t clientEndFront = clientStart + code->frontSize();
+        gctools::clasp_ptr_t clientEndAndLiterals = clientStart + llvmo::Code_O::sizeofInState(code,llvmo::SaveState);
+        ISLGeneralHeader_s islheader( General, clientEndAndLiterals-clientStart, header->_stamp_wtag_mtag );
         char* islh = this->_objects->write_buffer( (char*)&islheader, sizeof(ISLGeneralHeader_s)); 
-        char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEnd-clientStart);
+        char* new_addr = this->_objects->write_buffer((char*)clientStart, clientEndFront-clientStart);
         llvmo::Code_O* new_code = (llvmo::Code_O*)new_addr;
-        char* literals_addr = this->_objects->write_buffer((char*)code->literalsStart(), code->literalsSize());
-        // Update the new_code object to reflect that contains literals and no code and it's in the "SaveState"
+        // Set the state and capacity of the new Code_O in the image save load memory
         new_code->_State = llvmo::SaveState;
+        new_code->_DataCode._MaybeSignedLength = clientEndAndLiterals - clientEndFront;
+        // Write the bytes for the literals
+        char* literals_addr = this->_objects->write_buffer((char*)code->literalsStart(), clientEndAndLiterals-clientEndFront );
+        // Update the new_code object to reflect that contains literals and no code and it's in the "SaveState"
+        if (code->literalsSize() !=(clientEndAndLiterals-clientEndFront)) {
+          printf("%s:%d:%s There is a mismatch between the code literalsSize() %lu and the clientEndAndLiterals-clientEndFront %lu\n",
+                 __FILE__, __LINE__, __FUNCTION__,
+                 code->literalsSize(),
+                 (clientEndAndLiterals-clientEndFront) );
+          abort();
+        }
         new_code->_LiteralVectorStart = literals_addr - new_addr;
-        new_code->_LiteralVectorSize = code->literalsSize();
+        new_code->_LiteralVectorSizeBytes = clientEndAndLiterals-clientEndFront;
         DBG_SAVECOPY(BF("   copied general header Code_O object %p to %p - %p\n")
                      % header % (void*)islh % (void*)this->_buffer );
         header->_stamp_wtag_mtag.setFwdPointer( new_addr ); // This is a client pointer

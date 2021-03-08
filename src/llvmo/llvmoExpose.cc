@@ -4075,22 +4075,19 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                  gcroots_in_module_name.c_str(),
                  address, size );
           currentCode->_gcroots = (gctools::GCRootsInModule*)address;
-          printf("%s:%d:%s literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                 currentCode->_gcroots->_module_memory,
-                 currentCode->_gcroots->_num_entries );
           continue;
         }
         pos = sname.find(literals_name);
         if (pos != std::string::npos) {
+          found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
-          currentCode->_LiteralVectorSize = (size_t)ssym->getSize();
-          if (currentCode->_LiteralVectorSize == 0) {
+          currentCode->_LiteralVectorSizeBytes = (size_t)ssym->getSize();
+          if (currentCode->_LiteralVectorSizeBytes == 0) {
             printf("%s:%d:%s The literals vector named %s at %p has zero length - I'm worried this will happen on macOS.\n"
                    "If it does I'll have to dig into the gcroots constant in the module to get the length\n",
                    __FILE__, __LINE__, __FUNCTION__, sname.c_str(), (void*)ssym->getAddress() );
             abort();
           }
-          found_literals = true;
         }
       }        
     }
@@ -4102,6 +4099,17 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str() );
       abort();
     }
+    //
+    // Write the address of literals vector into the gcroots structure
+    // Later when we run the code we will check that the gcroots structure
+    //  has the correct values
+    //
+    currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
+    currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
+    printf("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
+           (gctools::GCRootsInModule*)currentCode->_gcroots,
+           currentCode->_gcroots->_module_memory,
+           currentCode->_gcroots->_num_entries );
   }
   
   void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {

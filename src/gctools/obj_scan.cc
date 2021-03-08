@@ -327,12 +327,17 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
         if (dbg) {LOG(BF("container_layout\n"));}
 #endif
         // special cases
-        gctools::Container_layout& container_layout = *container_layoutP;
+        if (stamp_wtag == gctools::STAMPWTAG_llvmo__Code_O) {
+          llvmo::Code_O* code = (llvmo::Code_O*)client;
+          obj_size = gctools::AlignUp(llvmo::Code_O::sizeofInState(code,code->_State));
+        } else {
+          gctools::Container_layout& container_layout = *container_layoutP;
         // For bignums we allow the _MaybeSignedLength(capacity) to be a negative value to represent negative bignums
         // because GMP only stores positive bignums.  So the value at stamp_layout.capacity_offset is a signed int64_t
         // Because of this we need to take the absolute value to get the number of entries.
-        size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
-        obj_size = gctools::AlignUp(stamp_layout.element_size*capacity + stamp_layout.data_offset);
+          size_t capacity = (size_t)std::llabs(*(int64_t*)((const char*)client + stamp_layout.capacity_offset));
+          obj_size = gctools::AlignUp(stamp_layout.element_size*capacity + stamp_layout.data_offset);
+        }
       } else {
         if (stamp_layout.layout_op == gctools::templated_op) {
 #ifdef DEBUG_ON
@@ -359,8 +364,8 @@ ADDR_T OBJECT_SKIP(ADDR_T client,bool dbg, size_t& obj_size) {
       break;
     }
     case gctools::Header_s::pad1_mtag: {
-        client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
-        break;
+      client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.pad1Size());
+      break;
     }
     case gctools::Header_s::pad_mtag: {
       client = (ADDR_T)((char *)(client) + header._stamp_wtag_mtag.padSize());
