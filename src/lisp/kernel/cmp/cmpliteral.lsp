@@ -748,7 +748,7 @@ Return the index of the load-time-value"
                                                    cmp:%gcroots-in-module% ; type
                                                    nil ; isConstant
                                                    'llvm-sys:internal-linkage
-                                                   (cmp:gcroots-in-module-initial-value bitcast-correct-size-holder (length ordered-literals-list))
+                                                   (cmp:gcroots-in-module-initial-value bitcast-correct-size-holder literal-entries)
                                                    (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number)))))
               (llvm-sys:replace-all-uses-with *gcroots-in-module* correct-initialized-gcroots-in-module)
               (llvm-sys:erase-from-parent *gcroots-in-module*)
