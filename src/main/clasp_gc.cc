@@ -13268,6 +13268,7 @@ public:
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 //      field: "._TrueObject" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TrueObject), 0, "_Roots._TrueObject" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._NilObject), 0, "_Roots._NilObject" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T
 //      field: "_Roots" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::CXXRECORD-CTYPE :KEY "core::Lisp_O::GCRoots" :NAME "GCRoots")
 //      field: "._ClaspJIT" (instance-field-access iv) -> CLANG-AST:AS-PUBLIC   (instance-field-ctype iv) -> #S(CLASP-ANALYZER::SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), __builtin_offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._ClaspJIT), 0, "_Roots._ClaspJIT" }, // atomic: NIL public: (T T) fixable: SMART-PTR-FIX good-name: T

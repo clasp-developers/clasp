@@ -490,6 +490,13 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   return totalSize;
 }
 
+
+
+void* walk_garbage_collected_objects_with_alloc_lock(void* client_data) {
+  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, client_data );
+  return NULL;
+}
+
 #endif
 
 #ifdef USE_MPS
@@ -766,6 +773,26 @@ CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects in memory. x can be T, nil, :default.");
 CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   std::ostringstream OutputStream;
+  gctools__garbage_collect();
+  gctools__garbage_collect();
+#ifdef USE_BOEHM
+  static_ReachableClassKinds = new (ReachableClassMap);
+  invalidHeaderTotalSize = 0;
+  GC_call_with_alloc_lock( walk_garbage_collected_objects_with_alloc_lock, NULL );
+  OutputStream << "Walked LispKinds\n" ;
+  size_t totalSize(0);
+  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
+  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
+  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
+  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
+  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
+  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
+  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
+  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
+  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
+
+  delete static_ReachableClassKinds;
+#endif
 #ifdef USE_MPS
   mps_arena_park(global_arena);
   mps_word_t numCollections = mps_collections(global_arena);
@@ -797,28 +824,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
   OutputStream << std::setw(12) << global_NumberOfRootTables.load() << " module root tables\n";
   OutputStream << std::setw(12) << global_TotalRootTableSize.load() << " words - total module root table size\n";
                                                                 
-#endif
-#ifdef USE_BOEHM
-  static_ReachableClassKinds = new (ReachableClassMap);
-  invalidHeaderTotalSize = 0;
-#if BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE==1
-  GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
-  #else
-  OutputStream <<  __FILE__ << ":" << __LINE__ <<  "The boehm function GC_enumerate_reachable_objects_inner is not available\n";
-#endif
-  OutputStream << "Walked LispKinds\n" ;
-  size_t totalSize(0);
-  OutputStream << "-------------------- Reachable ClassKinds -------------------\n"; 
-  totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(static_ReachableClassKinds->size()) << " ClassKinds\n";
-  OutputStream << "Total invalidHeaderTotalSize = " << std::setw(12) << invalidHeaderTotalSize << '\n';
-  OutputStream << "Total memory usage (bytes):    " << std::setw(12) << totalSize << '\n';
-  OutputStream << "Total GC_get_heap_size()       " << std::setw(12) << GC_get_heap_size() << '\n';
-  OutputStream << "Total GC_get_free_bytes()      " << std::setw(12) << GC_get_free_bytes() << '\n';
-  OutputStream << "Total GC_get_bytes_since_gc()  " <<  std::setw(12) << GC_get_bytes_since_gc() << '\n';
-  OutputStream << "Total GC_get_total_bytes()     " <<  std::setw(12) << GC_get_total_bytes() << '\n';
-
-  delete static_ReachableClassKinds;
 #endif
   clasp_write_string(OutputStream.str(),cl::_sym_STARstandard_outputSTAR->symbolValue());
   return Values(_Nil<core::T_O>());

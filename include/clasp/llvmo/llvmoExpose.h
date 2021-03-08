@@ -287,6 +287,7 @@ class JITDylib_O : public core::ExternalObject_O {
   typedef llvm::orc::JITDylib *PointerToExternalType;
 public:
   PointerToExternalType _ptr;
+  size_t                _Id;
   core::SimpleBaseString_sp _name;
 public:
   virtual void *externalObject() const {
@@ -4590,7 +4591,7 @@ public:
   JITDylib_sp createAndRegisterJITDylib(const std::string& name);
   void registerJITDylibAfterLoad(JITDylib_O* jitDylib);
   
-  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context);
+  void addIRModule(JITDylib_sp dylib, Module_sp cM,ThreadSafeContext_sp context, size_t startupID);
   void addObjectFile(ObjectFile_sp of, bool print=false);
   /*! Return a pointer to a function WHAT FUNCTION???????
         llvm_sys__jitFinalizeReplFunction needs to build a closure over it
@@ -4722,13 +4723,16 @@ extern std::atomic<size_t> global_JITDylibCounter;
 void dump_objects_for_lldb(FILE* fout,std::string indent);
 LLVMContext_sp llvm_sys__thread_local_llvm_context();
 
- std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
+std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size);
  
+typedef enum {DebugObjectFilesOff, DebugObjectFilesPrint, DebugObjectFilesPrintSave } DebugObjectFilesEnum;
+extern DebugObjectFilesEnum globalDebugObjectFiles;
+
 };
 
 
 #ifdef DEBUG_OBJECT_FILES
-# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::_sym_STARdebugObjectFilesSTAR && !llvmo::_sym_STARdebugObjectFilesSTAR.unboundp() && !llvmo::_sym_STARdebugObjectFilesSTAR->symbolValueUnsafe().unboundp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp()) { printf msg; }
+# define DEBUG_OBJECT_FILES_PRINT(msg) if ( llvmo::globalDebugObjectFiles != llvmo::DebugObjectFilesOff )  { printf msg; }
 #else
 # define DEBUG_OBJECT_FILES_PRINT(msg)
 #endif

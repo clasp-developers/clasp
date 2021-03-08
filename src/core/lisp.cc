@@ -301,8 +301,6 @@ void Lisp_O::setupSpecialSymbols() {
   symbol_no_key->_HomePackage = symbol_nil;
   symbol_deleted->_HomePackage = symbol_nil;
   symbol_same_as_key->_HomePackage = symbol_nil;
-  // 
-  my_thread->_PendingInterrupts = symbol_nil;
 }
 
 void Lisp_O::finalizeSpecialSymbols() {
@@ -325,6 +323,8 @@ Lisp_sp Lisp_O::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize)
   }
 #endif
   Lisp_O::setupSpecialSymbols();
+  // Now NIL is defined so we can finish initializing the main thread ThreadLocalState
+  my_thread->finish_initialization_main_thread(_Nil<core::T_O>());
   ::_lisp = gctools::RootClassAllocator<Lisp_O>::allocate();
   _lisp->initialize();
   _lisp->setupMpi(mpiEnabled, mpiRank, mpiSize);

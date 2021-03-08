@@ -83,12 +83,21 @@ namespace core {
 
 std::atomic<size_t> global_jit_compile_counter;
 
-CL_DEFUN void core__increment_jit_compile_counter() {
-  global_jit_compile_counter++;
+CL_DEFUN size_t core__get_jit_compile_counter() {
+  return global_jit_compile_counter.load();
 }
 
-CL_DEFUN size_t core__jit_compile_counter() {
-  return global_jit_compile_counter;
+CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
+  if (val < global_jit_compile_counter.load()) return;
+  size_t expected;
+  do {
+    expected = global_jit_compile_counter.load();
+  } while (!global_jit_compile_counter.compare_exchange_weak(expected, val));
+  printf("%s:%d:%s Set max_jit_compile_counter to %lu\n", __FILE__, __LINE__, __FUNCTION__, val );
+}
+
+CL_DEFUN size_t core__next_jit_compile_counter() {
+  return ++global_jit_compile_counter;
 }
 
 
@@ -851,8 +860,6 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
   }
   return core__load_binary(tpath,verbose,print,external_format);
 }
-
-
 
 
 CL_DOCSTRING(R"doc(Return the startup function name and the linkage based on the current dynamic environment.

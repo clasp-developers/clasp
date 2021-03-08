@@ -43,8 +43,8 @@ typedef enum { SaveState, RunState } CodeState_t;
   public:
     CodeState_t    _State;
     std::unique_ptr<llvm::MemoryBuffer> _MemoryBuffer;
-      uintptr_t      _ObjectFileOffset; // Only has meaning when _State is SaveState
-      uintptr_t      _ObjectFileSize; // Only has meaning when _State is SaveState
+    uintptr_t      _ObjectFileOffset; // Only has meaning when _State is SaveState
+    uintptr_t      _ObjectFileSize; // Only has meaning when _State is SaveState
     size_t         _Size;
     size_t         _StartupID;
     JITDylib_sp    _JITDylib;
@@ -53,7 +53,9 @@ typedef enum { SaveState, RunState } CodeState_t;
     Code_sp        _Code;
   public:
     static ObjectFile_sp create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& fasoName, size_t fasoIndex);
-    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {};
+    ObjectFile_O( std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, core::SimpleBaseString_sp fasoName, size_t fasoIndex) : _MemoryBuffer(std::move(buffer)), _StartupID(startupID), _JITDylib(jitdylib), _FasoName(fasoName), _FasoIndex(fasoIndex), _Code(_Unbound<Code_O>()) {
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s   startupID = %lu\n", __FILE__, __LINE__, __FUNCTION__, startupID));
+    };
     ~ObjectFile_O();
     std::string __repr__() const;
     static void writeToFile(const std::string& filename, const char* start, size_t size);
@@ -185,6 +187,8 @@ class Code_O : public CodeBase_O {
    , _TailOffset(totalSize)
    , _ObjectFile(_Unbound<ObjectFile_O>())
    , _gcroots(NULL)
+   , _LiteralVectorStart(0)
+   , _LiteralVectorSize(0)
    , _DataCode(totalSize,0,true) {};
 
   ~Code_O();
@@ -337,7 +341,8 @@ public:
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
     Code_sp codeObject = Code_O::make(scanSize,totalSize);
     // Associate the Code object with the current ObjectFile
-    codeObject->_ObjectFile = my_thread->topObjectFile();
+    ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(my_thread->topObjectFile());
+    codeObject->_ObjectFile = of;
     my_thread->topObjectFile()->_Code = codeObject;
     // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
     for (auto &KV : Request) {

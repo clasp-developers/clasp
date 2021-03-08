@@ -477,14 +477,12 @@ No DIBuilder is defined for the default module")
 (defun jit-repl-function-name ()
   (sys:bformat nil "JITREPL-%d" (sys:next-number)))
   
-(defun jit-startup-function-name ()
-  (let ((next-id (sys:next-number)))
-    (values (sys:bformat nil "%s-%d" sys:*module-startup-function-name* next-id) next-id)))
+(defun jit-startup-shutdown-function-names (module-id)
+  (values module-id
+          (sys:bformat nil "%s-%d" sys:*module-startup-function-name* module-id)
+          (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* module-id)))
 
-(defun jit-shutdown-function-name ()
-  (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* (sys:next-number)))
-
-(export '(jit-startup-function-name jit-shutdown-function-name jit-repl-function-name))
+(export '(jit-startup-shutdown-function-names jit-repl-function-name))
 
 (defun jit-function-name (lname)
   "Depending on the type of LNAME an actual LLVM name is generated"
@@ -780,7 +778,7 @@ The passed module is modified as a side-effect."
 (progn
   (export '(jit-add-module-return-function jit-add-module-return-dispatch-function jit-remove-module))
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
-  (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
+  (defun jit-add-module-return-function (original-module main-fn startup-shutdown-id literals-list
                                          &key output-path)
     ;; Link the builtins into the module and optimize them
     #+(or)
@@ -790,25 +788,26 @@ The passed module is modified as a side-effect."
     (quick-module-dump original-module "module-before-optimize")
     (let ((module original-module))
       (irc-verify-module-safe module)
-      (let ((jit-engine (llvm-sys:clasp-jit))
-            (startup-name (if startup-fn (llvm-sys:get-name startup-fn) nil))
-            (shutdown-name (if shutdown-fn (llvm-sys:get-name shutdown-fn) nil)))
-        (if (or (null startup-name) (string= startup-name ""))
-            (error "Could not obtain the name of the startup function ~s - got ~s" startup-fn startup-name))
-        (with-track-llvm-time
-            (unwind-protect
-                 (progn
-                   (if *dump-compile-module*
-                       (progn
-                         (core:bformat t "About to dump module%N")
-                         (llvm-sys:dump-module module)
-                         (core:bformat t "startup-name |%s|%N" startup-name)
-                         (core:bformat t "Done dump module%N")
-                         ))
-                   (mp:get-lock *jit-lock*)
-                   #+(or)(llvm-sys:dump-module module)
-                   (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context*)
-                   (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
-              (progn
-                (gctools:thread-local-cleanup)
-                (mp:giveup-lock *jit-lock*))))))))
+      (let ((jit-engine (llvm-sys:clasp-jit)))
+        (multiple-value-bind (dummy-id startup-name shutdown-name)
+            (jit-startup-shutdown-function-names startup-shutdown-id)
+          (let ((function (llvm-sys:get-function module startup-name)))
+            (if (null function)
+                (error "Could not obtain the startup function ~s by name" startup-name)))
+          (with-track-llvm-time
+              (unwind-protect
+                   (progn
+                     (if *dump-compile-module*
+                         (progn
+                           (core:bformat t "About to dump module%N")
+                           (llvm-sys:dump-module module)
+                           (core:bformat t "startup-name |%s|%N" startup-name)
+                           (core:bformat t "Done dump module%N")
+                           ))
+                     (mp:get-lock *jit-lock*)
+                     (llvm-sys:dump-module module)
+                     (llvm-sys:add-irmodule jit-engine (llvm-sys:get-main-jitdylib jit-engine) module cmp:*thread-safe-context* startup-shutdown-id)
+                     (llvm-sys:jit-finalize-repl-function jit-engine startup-name shutdown-name literals-list))
+                (progn
+                  (gctools:thread-local-cleanup)
+                  (mp:giveup-lock *jit-lock*)))))))))

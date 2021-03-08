@@ -228,7 +228,7 @@ class Package_O : public General_O {
 
   virtual void fixupInternalsForImageSaveLoad(FixupOperation& op) {
     if (op == LoadOp) {
-      printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+//      printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
       new (&this->_Lock) mp::SharedMutex(PACKAGE__NAMEWORD);
     }
   }

@@ -5,7 +5,7 @@
             with-interpreter
             module-report
             codegen-startup-shutdown
-            jit-startup-function-name
+            jit-startup-shutdown-function-names
             irc-simple-function-create
             *primitives*
             primitive-argument-types
@@ -18,6 +18,7 @@
             *default-linkage*
             *compile-file-parallel-write-bitcode*
             *default-compile-linkage*
+            *gcroots-in-module*
             quick-module-dump
             write-bitcode
             load-bitcode

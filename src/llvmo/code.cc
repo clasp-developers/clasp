@@ -68,7 +68,7 @@ void* Code_O::literalsStart() const {
   if (this->_State == SaveState) {
     return (void*)&this->_DataCode[0];
   }
-  return this->_gcroots->address(0);
+  return (void*)this->_LiteralVectorStart;
 }
     
 std::string ObjectFile_O::__repr__() const {
@@ -251,7 +251,7 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
     expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
   } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
-  if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
+  if (globalDebugObjectFiles == DebugObjectFilesPrintSave) {
     llvm::MemoryBufferRef mem = *(ofi->_MemoryBuffer);
     dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
   }

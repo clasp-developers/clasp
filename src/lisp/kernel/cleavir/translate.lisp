@@ -1453,11 +1453,11 @@ COMPILE-FILE will use the default *clasp-env*."
                         &key (linkage 'llvm-sys:internal-linkage))
   (declare (ignore linkage))
   (let* (function
-         ordered-raw-constants-list constants-table startup-fn shutdown-fn
+         ordered-raw-constants-list constants-table startup-shutdown-id
          (cleavir-cst-to-ast:*compiler* 'cl:compile)
          (ast (cst->ast cst env)))
     (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
-      (multiple-value-setq (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+      (multiple-value-setq (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv
             (setq function (translate-ast ast)))))
     (unless function
@@ -1465,7 +1465,7 @@ COMPILE-FILE will use the default *clasp-env*."
     ;;(llvm-sys:dump-module cmp:*the-module* *standard-output*)
     (cmp:jit-add-module-return-function
      cmp:*the-module*
-     function startup-fn shutdown-fn ordered-raw-constants-list)))
+     function startup-shutdown-id ordered-raw-constants-list)))
 
 (defun bir-compile-in-env (form &optional env)
   (bir-compile-cst-in-env (cst:cst-from-expression form) env))

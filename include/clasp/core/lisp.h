@@ -313,6 +313,7 @@ namespace core {
   struct GCRoots //: public gctools::HeapRoot
   {
     T_sp                       _TrueObject; // The True object
+    T_sp                       _NilObject; // The NIL object
     T_sp                       _ClaspJIT;
     std::atomic<T_sp>           _JITDylibs; // Maintain a list of loaded JITDylibs 
     std::atomic<T_sp>          _AllLibraries;

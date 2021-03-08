@@ -132,6 +132,62 @@ ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel()
 };
 namespace core {
 
+// For main thread initialization - it happens too early and _Nil is undefined
+// So this partially sets up the ThreadLocalState and the system must invoke
+// ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
+// in GC managed memory.
+ThreadLocalState::ThreadLocalState(bool dummy) :
+  _unwinds(0)
+  , _stackmap(0)
+  , _stackmap_size(0)
+  , _ObjectFileStartUp(NULL)
+  , _CleanupFunctions(NULL)
+  ,_PendingInterrupts()
+  ,_CatchTags()
+  ,_ObjectFiles()
+  ,_BufferStr8NsPool()
+  ,_BufferStrWNsPool()
+{
+  my_thread = this;
+#ifdef _TARGET_OS_DARWIN
+  pthread_threadid_np(NULL, &this->_Tid);
+#else
+  this->_Tid = 0;
+#endif
+  this->_InvocationHistoryStackTop = NULL;
+  this->_xorshf_x = rand();
+  this->_xorshf_y = rand();
+  this->_xorshf_z = rand();
+}
+
+// This needs to be called at initialization immediately after Nil is allocated
+// AND during image load once Nil is found in the image and relocated to its
+// new position in the GC managed memory.
+void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject) {
+  if (!theNilObject.raw_()) {
+    printf("%s:%d:%s reinitialize symbols the _Nil object is not defined!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+    abort();
+  }
+  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Reinitialize all threadlocal lists once NIL is defined
+  // We work with theObject here directly because it's very early in the bootstrapping
+  if (this->_PendingInterrupts.theObject) goto ERR;
+  if (this->_CatchTags.theObject) goto ERR;
+  if (this->_ObjectFiles.theObject) goto ERR;
+  if (this->_BufferStr8NsPool.theObject) goto ERR;
+  if (this->_BufferStrWNsPool.theObject) goto ERR;
+  this->_PendingInterrupts.theObject = theNilObject.theObject;
+  this->_CatchTags.theObject = theNilObject.theObject;
+  this->_ObjectFiles.theObject = theNilObject.theObject;
+  this->_BufferStr8NsPool.theObject = theNilObject.theObject;
+  this->_BufferStrWNsPool.theObject = theNilObject.theObject;
+  return;
+ ERR:
+  printf("%s:%d:%s one of the reinitialize symbols was already initialized\n", __FILE__, __LINE__, __FUNCTION__ );
+  abort();
+};
+
+// This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState() :
   _unwinds(0)
   , _stackmap(0)
@@ -186,7 +242,9 @@ llvmo::ObjectFile_sp ThreadLocalState::topObjectFile() {
   if (of.nilp()) {
     return _Unbound<llvmo::ObjectFile_O>();
   }
-  return gc::As<llvmo::ObjectFile_sp>(CONS_CAR(of));
+  // The following MUST be As_unsafe because we might be loading an image
+  // and we can't check headers in that situation
+  return gc::As_unsafe<llvmo::ObjectFile_sp>(CONS_CAR(of));
 }
 
 void ThreadLocalState::popObjectFile() {

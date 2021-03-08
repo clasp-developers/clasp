@@ -45,10 +45,10 @@
              (mp:giveup-lock *value-table-id-lock*))
   #-threads (incf *value-table-id*))
 
-(defun next-value-table-holder-name (&optional suffix)
+(defun next-value-table-holder-name (module-id &optional suffix)
   (if suffix
-      (bformat nil "%s-%s%d" suffix core:+literals-name+ (incf-value-table-id-value))
-      (bformat nil "%s%d" core:+literals-name+ (incf-value-table-id-value))))
+      (bformat nil "%s-%s%d" suffix core:+literals-name+ module-id)
+      (bformat nil "%s%d" core:+literals-name+ module-id)))
 
 (defstruct (literal-node-toplevel-funcall (:type vector) :named) arguments)
 (defstruct (literal-node-call (:type vector) :named) function source-pos-info holder)
@@ -691,9 +691,8 @@ Return the index of the load-time-value"
                                          cmp:%gcroots-in-module% ; type
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
-                                         (cmp:gcroots-in-module-initial-value) ;; (llvm-sys:undef-value-get cmp:%gcroots-in-module%)
-                                         ;; nil ; initializer
-                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
+                                         (cmp:gcroots-in-module-initial-value)
+                                         (core:bformat nil "dummy-%s%d" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
@@ -701,9 +700,9 @@ Return the index of the load-time-value"
                                          'llvm-sys:internal-linkage
                                          (llvm-sys:undef-value-get cmp:%t*[DUMMY]%)
                                          ;; nil ; initializer
-                                         (next-value-table-holder-name "dummy")))
+                                         (next-value-table-holder-name (core:next-number) "dummy")))
         (cmp:*generate-compile-file-load-time-values* t)
-        (real-name (next-value-table-holder-name))
+        (real-name (next-value-table-holder-name (core:next-number))) ;; do we need to use a module-id???
         (*literal-machine* (make-literal-machine)))
     (llog "About to evaluate body-fn~%")
     (funcall body-fn)
@@ -743,50 +742,60 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (multiple-value-bind (function-vector-length function-vector)
-                (setup-literal-machine-function-vectors cmp:*the-module* :id id)
-              (cmp:with-run-all-entry-codegen
-                  (let ((transient-vector (cmp:alloca-i8* "transients")))
-                    (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                            (list *gcroots-in-module*
-                                                  (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
-                                                  (cmp:jit-constant-size_t literal-entries)
-                                                  (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
-                                                                      cmp:%t*%)
-                                                  transient-vector
-                                                  (cmp:jit-constant-size_t transient-entries)
-                                                  (cmp:jit-constant-size_t function-vector-length)
-                                                  (cmp:irc-bit-cast
-                                                   (cmp:irc-gep function-vector
-                                                                (list (cmp:jit-constant-size_t 0)
-                                                                      (cmp:jit-constant-size_t 0)))
-                                                   cmp:%i8**%)
-                                                  )))))
-            ;; Erase the dummy holder
-            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
+            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
+            (let ((correct-initialized-gcroots-in-module
+                    (llvm-sys:make-global-variable cmp:*the-module*
+                                                   cmp:%gcroots-in-module% ; type
+                                                   nil ; isConstant
+                                                   'llvm-sys:internal-linkage
+                                                   (cmp:gcroots-in-module-initial-value bitcast-correct-size-holder (length ordered-literals-list))
+                                                   (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number)))))
+              (llvm-sys:replace-all-uses-with *gcroots-in-module* correct-initialized-gcroots-in-module)
+              (llvm-sys:erase-from-parent *gcroots-in-module*)
+              (multiple-value-bind (function-vector-length function-vector)
+                  (setup-literal-machine-function-vectors cmp:*the-module* :id id)
+                (cmp:with-run-all-entry-codegen
+                    (let ((transient-vector (cmp:alloca-i8* "transients")))
+                      (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
+                                              (list correct-initialized-gcroots-in-module
+                                                    (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
+                                                    (cmp:jit-constant-size_t literal-entries)
+                                                    (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
+                                                                        cmp:%t*%)
+                                                    transient-vector
+                                                    (cmp:jit-constant-size_t transient-entries)
+                                                    (cmp:jit-constant-size_t function-vector-length)
+                                                    (cmp:irc-bit-cast
+                                                     (cmp:irc-gep function-vector
+                                                                  (list (cmp:jit-constant-size_t 0)
+                                                                        (cmp:jit-constant-size_t 0)))
+                                                     cmp:%i8**%)
+                                                    )))))
+              ;; Erase the dummy holder
+              (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))))
 
 (defmacro with-literal-table ((&key id)&body body)
   `(do-literal-table ,id (lambda () ,@body)))
 
 (defun do-rtv (body-fn)
-  (let ((cmp:*generate-compile-file-load-time-values* nil)
-        (*gcroots-in-module*
-          (llvm-sys:make-global-variable cmp:*the-module*
-                                         cmp:%gcroots-in-module% ; type
-                                         nil ; isConstant
-                                         'llvm-sys:internal-linkage
-                                         (cmp:gcroots-in-module-initial-value)
-                                         ;; nil ; initializer
-                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
-        (cmp:*load-time-value-holder-global-var*
-          (llvm-sys:make-global-variable cmp:*the-module*
-                                         cmp:%t*[0]% ; type
-                                         nil         ; isConstant
-                                         'llvm-sys:internal-linkage
-                                         nil
-                                         (next-value-table-holder-name)))
-        (*run-time-coalesce* (make-similarity-table #'eq))
-        (*literal-machine* (make-literal-machine)))
+  (let* ((cmp:*generate-compile-file-load-time-values* nil)
+         (module-id (core:next-jit-compile-counter))
+         (cmp:*load-time-value-holder-global-var*
+           (llvm-sys:make-global-variable cmp:*the-module*
+                                          cmp:%t*[0]% ; type
+                                          nil         ; isConstant
+                                          'llvm-sys:internal-linkage
+                                          nil
+                                          (next-value-table-holder-name module-id "dummy")))
+         (*gcroots-in-module*
+           (llvm-sys:make-global-variable cmp:*the-module*
+                                          cmp:%gcroots-in-module% ; type
+                                          nil ; isConstant
+                                          'llvm-sys:internal-linkage
+                                          (cmp:gcroots-in-module-initial-value)
+                                          (core:bformat nil "dummy-%s%d" core:+gcroots-in-module-name+ module-id)))
+         (*run-time-coalesce* (make-similarity-table #'eq))
+         (*literal-machine* (make-literal-machine)))
     (let* ((THE-REPL-FUNCTION (funcall body-fn))
            (run-time-values (coerce (literal-machine-run-all-objects *literal-machine*) 'list))
            (num-elements (length run-time-values))
@@ -801,13 +810,23 @@ Return the index of the load-time-value"
                                                               nil ; isConstant
                                                               'llvm-sys:internal-linkage
                                                               (llvm-sys:undef-value-get array-type)
-                                                              (next-value-table-holder-name)))
+                                                              (next-value-table-holder-name module-id)))
           (let ((bitcast-constant-table (cmp:irc-bit-cast constant-table cmp:%t*[0]*% "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (multiple-value-bind (startup-fn shutdown-fn ordered-raw-constant-list)
-                (cmp:codegen-startup-shutdown cmp:*the-module* THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
-              (values ordered-raw-constant-list constant-table startup-fn shutdown-fn))))))))
+            (let ((correct-initialized-gcroots-in-module
+                    (llvm-sys:make-global-variable cmp:*the-module*
+                                                   cmp:%gcroots-in-module% ; type
+                                                   nil ; isConstant
+                                                   'llvm-sys:internal-linkage
+                                                   (cmp:gcroots-in-module-initial-value bitcast-constant-table (length ordered-literals-list))
+                                                   (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number)))))
+              (llvm-sys:replace-all-uses-with *gcroots-in-module* correct-initialized-gcroots-in-module)
+              (llvm-sys:erase-from-parent *gcroots-in-module*)
+
+              (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
+                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION correct-initialized-gcroots-in-module constant-table num-elements ordered-literals-list bitcast-constant-table)
+                (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices

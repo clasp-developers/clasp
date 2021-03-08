@@ -131,6 +131,7 @@ fields at the same offset as Instance_O.
  public:
   // Accessors
    EntryPointBase_O(FunctionDescription_sp fdesc) : _FunctionDescription(fdesc) {  };
+   CL_DEFMETHOD FunctionDescription_sp functionDescription() const { return this->_FunctionDescription; };
  };
 
  FORWARD(CodeEntryPoint);
@@ -146,6 +147,7 @@ fields at the same offset as Instance_O.
  public:
    virtual void fixupInternalsForImageSaveLoad( FixupOperation& op) { SIMPLE_ERROR(BF("Subclass must implement")); };
    void fixupOneCodePointer(FixupOperation op, void** ptr);
+   CL_DEFMETHOD llvmo::CodeBase_sp EntryPoint_code() const { return this->_Code; };
  };
 
  FORWARD(LocalEntryPoint);
@@ -262,6 +264,11 @@ namespace core {
 //    virtual void set_fdesc(FunctionDescription_sp address) { this->_FunctionDescription.store(address); };
 
 
+    CL_LISPIFY_NAME("core:entry-point");
+    CL_DEFMETHOD T_sp entryPoint() const {
+      return this->_EntryPoint.load();
+    }
+    
     CL_LISPIFY_NAME("core:functionName");
     CL_DEFMETHOD virtual T_sp functionName() const {
       return this->fdesc()->functionName();

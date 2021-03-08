@@ -295,13 +295,15 @@ def read_string(debugger,address,char_size,end):
 class Fixnum:
     def __init__(self,debugger,address):
         if (fixnump(address)):
-            self._Value = info["ints"]["FIXNUM_SHIFT"]
+            self._Value = address >> info["ints"]["FIXNUM_SHIFT"]
             return
         raise("%x is not a fixnum" % address)
     def value(self):
         return self._Value
     def __repr__(self):
         return str(self._Value)
+    def consp(self):
+        return False
 
 class Vaslist:
     def __init__(self,debugger,address):

@@ -266,7 +266,7 @@ namespace mp {
 
     virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
       if (op == core::LoadOp) {
-        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+//        printf("%s:%d:%s About to initialize an mp::SharedMutex for a Package_O object\n", __FILE__, __LINE__, __FUNCTION__ );
         new (&this->_SharedMutex) mp::UpgradableSharedMutex(core::lisp_nameword(this->_Name));
       }
     }

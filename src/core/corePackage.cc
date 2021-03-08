@@ -980,6 +980,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_nil->setReadOnly(true);
   _lisp->commonLispPackage()->add_symbol_to_package(SimpleBaseString_O::make("NIL"), _Nil<Symbol_O>(), true);
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
+  _lisp->_Roots._NilObject = _Nil<core::T_O>();
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
   cl::_sym_T_O->setReadOnly(true);
   cl::_sym_STARload_printSTAR->exportYourself()->defparameter(_lisp->_false());

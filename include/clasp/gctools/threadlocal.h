@@ -119,6 +119,8 @@ namespace core {
 
   public:
     // Methods
+    ThreadLocalState(bool dummy);
+    void finish_initialization_main_thread(core::T_sp theNilObject);
     ThreadLocalState();
     void initialize_thread(mp::Process_sp process, bool initialize_GCRoots);
     void pushCatchTag(T_sp);

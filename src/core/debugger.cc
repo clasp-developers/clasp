@@ -855,12 +855,14 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+#if 0
     printf("%s:%d:%s Looking at entry: %s start: %p end: %p isExecutable: %d\n",
            __FILE__, __LINE__, __FUNCTION__,
            entry.second._Filename.c_str(),
            entry.second._VtableSectionStart,
            entry.second._VtableSectionEnd,
            entry.second._IsExecutable );
+#endif
     if (entry.second._IsExecutable) {
       start = entry.second._VtableSectionStart;
       end = entry.second._VtableSectionEnd;

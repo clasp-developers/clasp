@@ -174,7 +174,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun compile-to-module-with-run-time-table (&key definition env pathname (linkage 'llvm-sys:internal-linkage))
   (let* (fn function-kind wrapped-env lambda-name)
-    (multiple-value-bind (ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+    (multiple-value-bind (ordered-raw-constants-list constants-table startup-shutdown-id)
         (literal:with-rtv
             (multiple-value-setq (fn function-kind wrapped-env lambda-name)
               (compile-to-module
@@ -182,14 +182,14 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                :env env
                :pathname pathname
                :linkage linkage)))
-      (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn))))
+      (values fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id))))
 
 (defun bclasp-compile* (definition env pathname
                         &key (linkage 'llvm-sys:internal-linkage))
   "Compile the definition using the bclasp compiler"
   (when core:*debug-startup*
     (core:monitor-write (core:bformat nil "startup bclasp-compile* form: %s%N" definition)))
-  (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-fn shutdown-fn)
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name ordered-raw-constants-list constants-table startup-shutdown-id)
       (compile-to-module-with-run-time-table
        :definition definition
        :env env
@@ -197,7 +197,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
        :linkage linkage)
     (declare (ignore function-kind wrapped-env lambda-name constants-table))
     (quick-module-dump *the-module* "preoptimize")
-    (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-fn shutdown-fn ordered-raw-constants-list)))
+    (let ((compiled-function (jit-add-module-return-function *the-module* fn startup-shutdown-id ordered-raw-constants-list)))
       compiled-function)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

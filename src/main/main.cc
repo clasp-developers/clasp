@@ -421,6 +421,15 @@ int main( int argc, char *argv[] )
   const char* bogus_args[3] = {"clasp","-debug-only","jitlink"};
   llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
 #endif
+
+  const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
+  if (dof) {
+    if (strcmp(dof,"save")==0) {
+      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrintSave;
+    } else {
+      llvmo::globalDebugObjectFiles = llvmo::DebugObjectFilesPrint;
+    }
+  }
   
   // Do not touch debug log until after MPI init
 

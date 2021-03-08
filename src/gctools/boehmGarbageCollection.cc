@@ -270,7 +270,7 @@ int initializeBoehm(MainFunctionType startupFn, int argc, char *argv[], bool mpi
   void* topOfStack;
   // ctor sets up my_thread
   gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
-  core::ThreadLocalState thread_local_state;
+  core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
   my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
   core::transfer_StartupInfo_to_my_thread();

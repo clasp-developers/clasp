@@ -8,6 +8,7 @@
 //#include <llvm/Support/system_error.h>
 #include <dlfcn.h>
 #include <iomanip>
+#include <string>
 #include <clasp/core/foundation.h>
 #include <clasp/llvmo/code.h>
 //
@@ -26,10 +27,13 @@
 //#include <llvm/ExecutionEngine/Orc/MachOPlatform.h>
 
 namespace llvm {
+
+
 namespace orc {
 Error enableObjCRegistration(const char *PathToLibObjC);
 }
 };
+
 #ifdef NDEBUG
 #undef NDEBUG
 #define private public
@@ -144,7 +148,31 @@ llvm::Value* llvm_cast_error_ptr;
 
 
 
+
+
+
+
 namespace llvmo {
+
+SYMBOL_EXPORT_SC_(LlvmoPkg, debugObjectFilesOff );
+SYMBOL_EXPORT_SC_(LlvmoPkg, debugObjectFilesPrint );
+SYMBOL_EXPORT_SC_(LlvmoPkg, debugObjectFilesPrintSave );
+
+DebugObjectFilesEnum globalDebugObjectFiles;
+
+CL_DEFUN void llvm_sys__debugObjectFiles(core::Symbol_sp sym) {
+  if (sym==llvmo::_sym_debugObjectFilesOff) {
+    globalDebugObjectFiles = DebugObjectFilesOff;
+  } else if (sym==llvmo::_sym_debugObjectFilesPrint) {
+    globalDebugObjectFiles = DebugObjectFilesPrint;
+  } else if (sym==llvmo::_sym_debugObjectFilesPrintSave) {
+    globalDebugObjectFiles = DebugObjectFilesPrintSave;
+  } else {
+    SIMPLE_ERROR(BF("Argument must be one of %s in the llvm-sys package") % _rep_(core::Cons_O::createList(llvmo::_sym_debugObjectFilesOff,llvmo::_sym_debugObjectFilesPrint,llvmo::_sym_debugObjectFilesPrintSave)));
+  }
+}
+
+    
 
 std::string uniqueMemoryBufferName(const std::string& prefix, uintptr_t start, uintptr_t size) {
   stringstream ss;
@@ -3863,17 +3891,58 @@ SYMBOL_EXPORT_SC_(LlvmoPkg,library);
 
 namespace llvmo {
 
+#ifdef _TARGET_OS_DARWIN    
+#define TEXT_NAME "__text"
+#define EH_FRAME_NAME "__eh_frame"
+#define STACKMAPS_NAME "__llvm_stackmaps"
+#elif defined(_TARGET_OS_LINUX)
+#define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
+#define STACKMAPS_NAME ".llvm_stackmaps"
+#elif defined(_TARGET_OS_FREEBSD)
+#define TEXT_NAME ".text"
+#define EH_FRAME_NAME ".eh_frame"
+#define STACKMAPS_NAME ".llvm_stackmaps"
+#else
+#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
+#endif
+#if defined(_TARGET_OS_DARWIN)
+  std::string startup_name = "_" CLASP_OBJECT_FILE_STARTUP;
+  std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
+  std::string literals_name = "_" LITERALS_NAME;
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  std::string startup_name = CLASP_OBJECT_FILE_STARTUP;
+  std::string gcroots_in_module_name = GCROOTS_IN_MODULE_NAME;
+  std::string literals_name = LITERALS_NAME;
+#endif
+#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
+#error You need to decide here
+#endif
+
+
 
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR, const llvm::Triple &TT,
                         llvm::jitlink::PassConfiguration &Config) override {
     Config.PrePrunePasses.push_back(
                                     [this](jitlink::LinkGraph &G) -> Error {
-                                      for (auto &Sec : G.sections())
+                                      for (auto &Sec : G.sections()) {
                                         if (Sec.getName() == ".eh_frame")
                                           for (auto *S : Sec.symbols()) {
                                             S->setLive(true);
                                           }
+                                      }
+                                      for (auto ssym : G.defined_symbols()) {
+                                        if (ssym->hasName()) {
+                                          std::string sname = ssym->getName().str();
+                                          if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
+                                            ssym->setLive(true);
+                                          } else if ( sname.find(literals_name) != std::string::npos ) {
+                                            ssym->setLive(true);
+                                          }
+                                        }
+                                      }
                                       return Error::success();
                                     });
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
@@ -3910,22 +3979,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   }
 
 
-#ifdef _TARGET_OS_DARWIN    
-#define TEXT_NAME "__text"
-#define EH_FRAME_NAME "__eh_frame"
-#define STACKMAPS_NAME "__llvm_stackmaps"
-#elif defined(_TARGET_OS_LINUX)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#elif defined(_TARGET_OS_FREEBSD)
-#define TEXT_NAME ".text"
-#define EH_FRAME_NAME ".eh_frame"
-#define STACKMAPS_NAME ".llvm_stackmaps"
-#else
-#error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
-#endif
-
   
   void keepAliveStackmap(llvm::jitlink::LinkGraph &G) {
     for (auto &S : G.sections()) {
@@ -3937,20 +3990,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
       }
     }
   }
-
-#if defined(_TARGET_OS_DARWIN)
-  std::string startup_name = "_" CLASP_OBJECT_FILE_STARTUP;
-  std::string gcroots_name = "_" GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = "_" LITERALS_NAME;
-#endif
-#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string startup_name = CLASP_OBJECT_FILE_STARTUP;
-  std::string gcroots_name = GCROOTS_IN_MODULE_NAME;
-  std::string literals_name = LITERALS_NAME;
-#endif
-#if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
-#error You need to decide here
-#endif
 
   void parseLinkGraph(llvm::jitlink::LinkGraph &G) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Entered\n", __FILE__, __LINE__, __FUNCTION__ ));
@@ -4013,11 +4052,56 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         my_thread->_stackmap_size = (size_t)range.getSize();
       }
     }
-#ifdef DEBUG_OBJECT_FILES
+    size_t gcroots_in_module_name_len = gcroots_in_module_name.size();
+    size_t literals_name_len = literals_name.size();
+    bool found_gcroots_in_module = false;
+    bool found_literals = false;
+    Code_sp currentCode = my_thread->topObjectFile()->_Code;
     for (auto ssym : G.defined_symbols()) {
-      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n", __FILE__, __LINE__, __FUNCTION__, ssym->hasName(), ssym->getName().str().c_str(), (void*)ssym->getAddress(), ssym->getSize()));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
+                                __FILE__, __LINE__, __FUNCTION__,
+                                ssym->hasName(),
+                                ssym->getName().str().c_str(),
+                                (void*)ssym->getAddress(),
+                                ssym->getSize()));
+      if (ssym->hasName()) {
+        std::string sname = ssym->getName().str();
+        size_t pos = sname.find(gcroots_in_module_name);
+        if (pos!=std::string::npos) {
+          found_gcroots_in_module = true;
+          void* address = (void*)ssym->getAddress();
+          size_t size = ssym->getSize();
+          printf("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
+                 gcroots_in_module_name.c_str(),
+                 address, size );
+          currentCode->_gcroots = (gctools::GCRootsInModule*)address;
+          printf("%s:%d:%s literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
+                 currentCode->_gcroots->_module_memory,
+                 currentCode->_gcroots->_num_entries );
+          continue;
+        }
+        pos = sname.find(literals_name);
+        if (pos != std::string::npos) {
+          currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
+          currentCode->_LiteralVectorSize = (size_t)ssym->getSize();
+          if (currentCode->_LiteralVectorSize == 0) {
+            printf("%s:%d:%s The literals vector named %s at %p has zero length - I'm worried this will happen on macOS.\n"
+                   "If it does I'll have to dig into the gcroots constant in the module to get the length\n",
+                   __FILE__, __LINE__, __FUNCTION__, sname.c_str(), (void*)ssym->getAddress() );
+            abort();
+          }
+          found_literals = true;
+        }
+      }        
     }
-#endif
+    if (!found_gcroots_in_module) {
+      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str() );
+      abort();
+    }
+    if (!found_literals) {
+      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str() );
+      abort();
+    }
   }
   
   void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {
@@ -4063,12 +4147,14 @@ std::atomic<size_t> global_object_file_number;
 void ClaspReturnObjectBuffer(std::unique_ptr<llvm::MemoryBuffer> buffer) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s You now OWN MemoryBuffer @%p  size: %lu\n",
                       __FILE__, __LINE__, __FUNCTION__, buffer->getBufferStart(), buffer->getBufferSize() ));
-  if (llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue().notnilp() && llvmo::_sym_STARdebugObjectFilesSTAR->symbolValue() == kw::_sym_dump_repl_object_files) {
+#ifdef DEBUG_OBJECT_FILES
+  if (globalDebugObjectFiles == DebugObjectFilesPrintSave ) {
     stringstream ss;
     ss << "/tmp/clasp_repl_object_file_" << ++global_object_file_number << ".o";
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Writing object file to: %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str()));
     ObjectFile_O::writeToFile(ss.str(), buffer->getBufferStart(), buffer->getBufferSize());
   }
+#endif
   // Grab the buffer and put it in the current ObjectFile
   my_thread->topObjectFile()->_MemoryBuffer = std::move(buffer);
   save_object_file_and_code_info(my_thread->topObjectFile());
@@ -4106,7 +4192,6 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
 #error You need to decide here
 #endif
-
   for ( auto p : symbol_sizes ) {
     llvm::object::SymbolRef symbol = p.first;
     llvm::Expected<llvm::StringRef> expected_symbol_name = symbol.getName();
@@ -4507,12 +4592,12 @@ CL_DEFMETHOD core::T_sp ClaspJIT_O::lookup_all_dylibs(const std::string& name) {
             
         
     
-CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context) {
+CL_DEFMETHOD void ClaspJIT_O::addIRModule(JITDylib_sp dylib, Module_sp module, ThreadSafeContext_sp context, size_t startupID) {
 //  printf("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ );
   std::unique_ptr<llvm::Module> umodule(module->wrappedPtr());
   llvm::ExitOnError ExitOnErr;
  std::unique_ptr<llvm::MemoryBuffer> empty;
-  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), 0, this->getMainJITDylib() ,"REPL", 0);
+  llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(empty), startupID, this->getMainJITDylib() ,"REPL", 0);
   my_thread->pushObjectFile(of);
   ExitOnErr(this->_LLJIT->addIRModule(this->_LLJIT->getMainJITDylib(),llvm::orc::ThreadSafeModule(std::move(umodule),*context->wrappedPtr())));
 }
@@ -4585,13 +4670,13 @@ std::atomic<size_t> global_JITDylibCounter;
 CL_DEFMETHOD JITDylib_sp ClaspJIT_O::createAndRegisterJITDylib(const std::string& name) {
   stringstream sname;
   sname << name << "-" << global_JITDylibCounter;
-  global_JITDylibCounter++;
 //  printf("%s:%d:%s  name -> %s\n", __FILE__, __LINE__, __FUNCTION__, sname.str().c_str());
   auto dy = this->_LLJIT->createJITDylib(sname.str());
   JITDylib& dylib(*dy);
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   JITDylib_sp dylib_sp = core::RP_Create_wrapped<JITDylib_O>(&dylib);
   dylib_sp->_name = core::SimpleBaseString_O::make(sname.str());
+  dylib_sp->_Id = ++global_JITDylibCounter;
   core::Cons_sp cell = core::Cons_O::create(dylib_sp,_Nil<core::T_O>());
   core::T_sp expected;
   core::T_sp current;
@@ -4610,6 +4695,9 @@ void ClaspJIT_O::registerJITDylibAfterLoad(JITDylib_O* jitDylib ) {
   core::SimpleBaseString_sp name = jitDylib->_name;
   auto dy = this->_LLJIT->createJITDylib(name->get_std_string());
   JITDylib& dylib(*dy);
+  if ( jitDylib->_Id >= global_JITDylibCounter.load() ) {
+    global_JITDylibCounter.store(jitDylib->_Id+1);
+  }
   dylib.addGenerator(llvm::cantFail(DynamicLibrarySearchGenerator::GetForCurrentProcess(this->_LLJIT->getDataLayout().getGlobalPrefix())));
   jitDylib->set_wrapped( &dylib );
 }

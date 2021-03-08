@@ -25,9 +25,9 @@
 ;;; Turn on printing messages as object files are converted to runnable code
 ;;;
 (if (member :dump-repl-object-files *features*)
-    (setq llvm-sys::*debug-object-files* :dump-repl-object-files)
+    (llvm-sys:debug-object-files 'llvm-sys:debug-object-files-print)
     (if (member :debug-object-files *features*)
-        (setq llvm-sys::*debug-object-files* t)))
+        (llvm-sys:debug-object-files 'llvm-sys:debug-object-files-print-save)))
 
 (setq *echo-repl-tpl-read* (member :emacs-inferior-lisp *features*))
 (setq *load-print* nil)

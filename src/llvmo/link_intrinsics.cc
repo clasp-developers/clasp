@@ -149,7 +149,6 @@ void cc_initialize_gcroots_in_module(gctools::GCRootsInModule* holder,
                                      size_t function_pointer_count,
                                      fnLispCallingConvention* fptrs )
 {NO_UNWIND_BEGIN();
-  my_thread->_GCRootsInModule = holder;
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GCRootsInModule@%p  root_address@%p  num_roots %lu initial_data = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)holder, (void*)root_address, num_roots, (void*)initial_data ));
   initialize_gcroots_in_module(holder,root_address,num_roots,initial_data,transientAlloca,transient_entries, function_pointer_count, (void**)fptrs);
   NO_UNWIND_END();

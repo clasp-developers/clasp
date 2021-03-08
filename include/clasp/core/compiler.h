@@ -84,6 +84,9 @@ struct MaybeDebugStartup {
 };
 
 
+void core__update_max_jit_compile_counter(size_t val);
+size_t core__get_jit_compile_counter();
+
 };
 
 

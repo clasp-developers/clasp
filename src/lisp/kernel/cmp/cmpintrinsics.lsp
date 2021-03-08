@@ -428,12 +428,17 @@ Boehm and MPS use a single pointer"
    (%i8**%    :function-pointers)
    (%size_t%  :number-of-functions)))
 
-(defun gcroots-in-module-initial-value ()
+(defun gcroots-in-module-initial-value (&optional literals size)
   (llvm-sys:constant-struct-get %gcroots-in-module%
                                 (list
                                  (jit-constant-size_t 0)
+                                 #+(or)(if literals
+                                           (irc-bit-cast literals %i8*%)
+                                           (llvm-sys:constant-pointer-null-get %i8*%))
                                  (llvm-sys:constant-pointer-null-get %i8*%)
-                                 (jit-constant-size_t 0)
+                                 (if size
+                                     (jit-constant-size_t size)
+                                     (jit-constant-size_t 0))
                                  (jit-constant-size_t 0)
                                  (llvm-sys:constant-pointer-null-get %i8**%)
                                  (jit-constant-size_t 0)
@@ -920,33 +925,33 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module func-designator &key position register-library)
+(defun make-boot-function-global-variable (module startup-shutdown-id &key position register-library)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (let ((startup-fn (cond
-                      ((stringp func-designator)
-                       (llvm-sys:get-function module func-designator))
-                      ((typep func-designator 'llvm-sys:function)
-                       func-designator)
-                      (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
-    (unless startup-fn
-      (error "Could not find ~a in module" func-designator))
-    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
-            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
-    (let* ((global-ctor (add-global-ctor-function module startup-fn
-                                                  :position position
-                                                  :register-library register-library)))
-      (incf *compilation-module-index*)
-      (multiple-value-bind (startup-name linkage)
-          (core:startup-function-name-and-linkage)
-        (when (eq linkage 'llvm-sys:internal-linkage)
-          ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
-          ;; static constructors to initialize things.
-          (add-llvm.global_ctors module *compilation-module-index* global-ctor))))))
+  (unless (fixnump startup-shutdown-id)
+    (error "make-boot-function-global-variable startup-shutdown-id is ~a and it must be an integer" startup-shutdown-id))
+  (multiple-value-bind (dummy-id startup-name shutdown-name)
+      (jit-startup-shutdown-function-names startup-shutdown-id)
+    (declare (ignore dummy-id shutdown-name))
+    (let ((startup-fn (llvm-sys:get-function module startup-name)))
+      (unless startup-fn
+        (error "Could not find ~a in module" startup-name))
+      #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+              (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+      (let* ((global-ctor (add-global-ctor-function module startup-fn
+                                                    :position position
+                                                    :register-library register-library)))
+        (incf *compilation-module-index*)
+        (multiple-value-bind (startup-name linkage)
+            (core:startup-function-name-and-linkage)
+          (when (eq linkage 'llvm-sys:internal-linkage)
+            ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
+            ;; static constructors to initialize things.
+            (add-llvm.global_ctors module *compilation-module-index* global-ctor)))))))
 
 ;;
 ;; Ensure that the LLVM model of
@@ -1051,9 +1056,9 @@ and initialize it with an array consisting of one function pointer."
     (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
-(defun codegen-startup-shutdown (module THE-REPL-FUNCTION &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
-  (multiple-value-bind (startup-function-name startup-id)
-      (jit-startup-function-name)
+(defun codegen-startup-shutdown (module module-id THE-REPL-FUNCTION &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
+  (multiple-value-bind (startup-shutdown-id startup-function-name shutdown-function-name)
+      (jit-startup-shutdown-function-names module-id)
     (let ((startup-fn (irc-simple-function-create startup-function-name
                                                   %fn-start-up%
                                                   'llvm-sys:external-linkage ; this should be internal and invoked by a ctor but that doesn't seem to be happening yet
@@ -1107,7 +1112,7 @@ and initialize it with an array consisting of one function pointer."
             (when gcroots-in-module
               (irc-intrinsic-call "cc_finish_gcroots_in_module" (list gcroots-in-module)))
             (irc-ret (irc-bit-cast THE-REPL-FUNCTION %t*%)))))
-      (let ((shutdown-fn (irc-simple-function-create (jit-shutdown-function-name)
+      (let ((shutdown-fn (irc-simple-function-create shutdown-function-name
                                                      %fn-shut-down%
                                                      'llvm-sys::internal-linkage
                                                      module
@@ -1124,8 +1129,8 @@ and initialize it with an array consisting of one function pointer."
               (if gcroots-in-module
                   (irc-intrinsic-call "cc_remove_gcroots_in_module" (list gcroots-in-module)))
               (irc-ret-void))))
-        (make-boot-function-global-variable module startup-fn :position startup-id)
-        (values startup-fn shutdown-fn ordered-raw-literals-list)))))
+        (make-boot-function-global-variable module startup-shutdown-id :position startup-shutdown-id)
+        (values startup-shutdown-id ordered-raw-literals-list)))))
 
 
 ;;; Define what ltvc_xxx functions return
