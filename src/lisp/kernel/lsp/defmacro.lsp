@@ -132,6 +132,25 @@
 	     (let ((x (gensym)))
 	       (push x destructure-symbols)
 	       x))
+           (whole-in-context (whole context)
+             (if (eq context 'destructuring-bind)
+                 whole
+                 ;; Special handling if define-compiler-macro called this
+                 (if (eq context 'define-compiler-macro)
+                     `(if (and (eq (car ,whole) 'cl:funcall)
+                               (consp (cadr ,whole))
+                               (eq (caadr ,whole) 'cl:function)
+                               (consp (cdadr ,whole))
+                               (equal (second (second ,whole)) ',macro-name))
+                          (cddr (the cons ,whole))
+                          (cdr (the cons ,whole)))
+                     ;; deftype- allow bare symbols- symbol = (symbol)
+                     (if (eq context 'deftype)
+                         `(if (symbolp ,whole)
+                              nil
+                              (cdr (the cons ,whole)))
+                         ;; defmacro
+                         `(cdr (the cons ,whole))))))
 	   (dm-vl (vl whole context)
 	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
 		 (si::process-lambda-list vl context)
@@ -143,24 +162,7 @@
 		      (no-check nil)
 		      all-keywords)
 		 ;; In macros, eliminate the name of the macro from the list
-		 (dm-v pointer (if (eq context 'destructuring-bind)
-                                   whole
-                                   ;; Special handling if define-compiler-macro called this
-                                   (if (eq context 'define-compiler-macro)
-                                       `(if (and (eq (car ,whole) 'cl:funcall)
-                                                 (consp (cadr ,whole))
-                                                 (eq (caadr ,whole) 'cl:function)
-                                                 (consp (cdadr ,whole))
-                                                 (equal (second (second ,whole)) ',macro-name))
-                                            (cddr (the cons ,whole))
-                                            (cdr (the cons ,whole)))
-                                       ;; deftype- allow bare symbols- symbol = (symbol)
-                                       (if (eq context 'deftype)
-                                           `(if (symbolp ,whole)
-                                                nil
-                                                (cdr (the cons ,whole)))
-                                           ;; defmacro
-                                           `(cdr (the cons ,whole))))))
+		 (dm-v pointer (whole-in-context whole context))
 		 (dolist (v (cdr reqs))
 		   (dm-v v `(progn
 			      (if (null ,pointer)
