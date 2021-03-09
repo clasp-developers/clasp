@@ -115,15 +115,15 @@
           ((not (member head keywords))
            (push head err)))))
 
-(defun dm-too-many-arguments (current-form)
-  (error "Too many arguments supplied to a macro or a destructuring-bind form:~%~s"
-	 current-form))
+(defun dm-too-many-arguments (current-form vl macro-name)
+  (error 'destructure-wrong-number-of-arguments
+         :macro-name macro-name :lambda-list vl :arguments current-form
+         :problem :too-many))
 
-(defun dm-too-few-arguments (form-or-nil)
-  (if form-or-nil
-      (error "Too few arguments supplied to a macro or a destructuring-bind form:~%~S"
-             form-or-nil)
-      (error "Too few arguments supplied to a inlined lambda form.")))
+(defun dm-too-few-arguments (current-form vl macro-name)
+  (error 'destructure-wrong-number-of-arguments
+         :macro-name macro-name :lambda-list vl :arguments current-form
+         :problem :too-few))
 
 (defun sys::destructure (vl context &optional macro-name
                          &aux dl arg-check (basis-form (gensym))
@@ -166,7 +166,8 @@
 		 (dolist (v (cdr reqs))
 		   (dm-v v `(progn
 			      (if (null ,pointer)
-				  (dm-too-few-arguments ,basis-form))
+				  (dm-too-few-arguments
+                                   ,basis-form ',vl ',macro-name))
 			      (prog1 ,unsafe-car ,unsafe-pop))))
 		 (dotimes (i (pop opts))
 		   (let* ((x (first opts))
@@ -208,7 +209,9 @@
                                               ,(if allow-other-keys 't 'nil)))
                          arg-check))
 		       ((not no-check)
-			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
+			(push `(if ,pointer
+                                   (dm-too-many-arguments
+                                    ,basis-form ',vl ',macro-name))
 			      arg-check))))))
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))

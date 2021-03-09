@@ -798,6 +798,27 @@ due to error:~%  ~:*~a~]"
                              (t           "between ~d and ~d"))
                        min max)))))
 
+(define-condition destructure-wrong-number-of-arguments (program-error)
+  ((%macro-name :initarg :macro-name :reader macro-name)
+   (%lambda-list :initarg :lambda-list :reader lambda-list)
+   (%arguments :initarg :arguments :reader arguments)
+   (%problem :initarg :problem :reader problem))
+  (:report (lambda (condition stream)
+             (let ((name (macro-name condition)))
+               (if name
+                   (format stream "Error while parsing arguments to ~a:
+~2t~a in~%~4t~a~%~2ttosatisfy lambda list~%~4t~a"
+                           name
+                           (ecase (problem condition)
+                             ((:too-many) "Too many arguments")
+                             ((:too-few) "Too few arguments"))
+                           (arguments condition) (lambda-list condition))
+                   (format stream "~a in~%~2t~a~%tosatisfy lambda list~%~2t~a"
+                           (ecase (problem condition)
+                             ((:too-many) "Too many arguments")
+                             ((:too-few) "Too few arguments"))
+                           (arguments condition) (lambda-list condition)))))))
+
 (define-condition core:unrecognized-keyword-argument-error (error)
   ((called-function :initarg :called-function :reader called-function :initform nil)
    (unrecognized-keyword :initarg :unrecognized-keyword :reader unrecognized-keyword))
