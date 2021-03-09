@@ -493,7 +493,7 @@ Integer_sp next_gcd(const mp_limb_t* llimbs, mp_size_t lsize,
     n_result_zero_bits = n_right_zero_bits;
   } else if (n_left_zero_limbs < n_right_zero_limbs) {
     n_result_zero_limbs = n_left_zero_limbs;
-    n_result_zero_bits = n_right_zero_bits;
+    n_result_zero_bits = n_left_zero_bits;
   } else { // equal
     n_result_zero_limbs = n_left_zero_limbs;
     n_result_zero_bits = std::min(n_left_zero_bits, n_right_zero_bits);
