@@ -21,6 +21,7 @@
   ;; We could be smarter about this. For example, for (progn ...) nothing very interesting
   ;; will print, even though subforms are just as toplevel.
   ;; But it's just aesthetic, so cheaping out a little is okay.
+  (fresh-line)
   (write-string ";   ")
   (write form :length 2 :level 2 :lines 1 :pretty nil)
   (terpri)
