@@ -3928,8 +3928,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     Config.PrePrunePasses.push_back(
                                     [this](jitlink::LinkGraph &G) -> Error {
                                       for (auto &Sec : G.sections()) {
-                                        if (Sec.getName() == ".eh_frame")
+                                        if (Sec.getName() == EH_FRAME_NAME )
                                           for (auto *S : Sec.symbols()) {
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, Sec.getName().str().c_str()));
                                             S->setLive(true);
                                           }
                                       }
@@ -3937,8 +3938,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                         if (ssym->hasName()) {
                                           std::string sname = ssym->getName().str();
                                           if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
                                             ssym->setLive(true);
                                           } else if ( sname.find(literals_name) != std::string::npos ) {
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
                                             ssym->setLive(true);
                                           }
                                         }
@@ -4063,7 +4066,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                 ssym->hasName(),
                                 ssym->getName().str().c_str(),
                                 (void*)ssym->getAddress(),
-                                ssym->getSize()));
+                                (size_t)ssym->getSize()));
       if (ssym->hasName()) {
         std::string sname = ssym->getName().str();
         size_t pos = sname.find(gcroots_in_module_name);
@@ -4071,9 +4074,9 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
           found_gcroots_in_module = true;
           void* address = (void*)ssym->getAddress();
           size_t size = ssym->getSize();
-          printf("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
-                 gcroots_in_module_name.c_str(),
-                 address, size );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Symbol-info %s %p %lu\n", __FILE__, __LINE__, __FUNCTION__,
+                                    gcroots_in_module_name.c_str(),
+                                    address, size ));
           currentCode->_gcroots = (gctools::GCRootsInModule*)address;
           continue;
         }
@@ -4106,10 +4109,10 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     //
     currentCode->_gcroots->_module_memory = (void*)currentCode->_LiteralVectorStart;
     currentCode->_gcroots->_num_entries = currentCode->_LiteralVectorSizeBytes/sizeof(void*);
-    printf("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s currentCode->_gcroots @%p literals %p num: %lu\n", __FILE__, __LINE__, __FUNCTION__,
            (gctools::GCRootsInModule*)currentCode->_gcroots,
            currentCode->_gcroots->_module_memory,
-           currentCode->_gcroots->_num_entries );
+                              currentCode->_gcroots->_num_entries ));
   }
   
   void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {
