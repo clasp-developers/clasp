@@ -805,7 +805,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
     SIMPLE_ERROR(BF("Could not mmap %s because of %s") % path_designator % strerror(errno));
   }
   FasoHeader* header = (FasoHeader*)memory;
-  write_bf_stream(BF("NumberOfObjectFiles %d\n") % header->_NumberOfObjectFiles);
+  printf("NumberOfObjectFiles %lu\n", header->_NumberOfObjectFiles);
   for (size_t ofi = 0; ofi<header->_NumberOfObjectFiles; ++ofi) {
     void* of_start = (void*)((char*)header + header->_ObjectFiles[ofi]._StartPage*header->_PageSize);
     size_t of_length = header->_ObjectFiles[ofi]._ObjectFileSize;
@@ -814,7 +814,7 @@ void clasp_unpack_faso(const std::string& path_designator) {
     FILE* fout = fopen(sfilename.str().c_str(),"w");
     fwrite(of_start,of_length,1,fout);
     fclose(fout);
-    write_bf_stream(BF("Object file[%d] ObjectID: %lu  start-page: %lu  bytes: %lu pages: %lu\n") % ofi % header->_ObjectFiles[ofi]._ObjectID % header->_ObjectFiles[ofi]._StartPage % header->_ObjectFiles[ofi]._ObjectFileSize % header->_ObjectFiles[ofi]._NumberOfPages );
+    printf("Object file[%lu] ObjectID: %lu  start-page: %lu  bytes: %lu pages: %lu\n", ofi , header->_ObjectFiles[ofi]._ObjectID , header->_ObjectFiles[ofi]._StartPage , header->_ObjectFiles[ofi]._ObjectFileSize , header->_ObjectFiles[ofi]._NumberOfPages );
   }
 }
     
