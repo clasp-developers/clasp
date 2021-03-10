@@ -705,9 +705,11 @@ __attribute__((optnone))
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);
   BOUNDS_ASSERT(raw_index<this->_num_entries);
+#if 0
   printf("%s:%d:%s setting literal raw_index = %lu  this->_module_memory = %p - turn off optnone\n",
          __FILE__, __LINE__, __FUNCTION__,
          raw_index, (void*)this->_module_memory );
+#endif
   reinterpret_cast<core::T_O**>(this->_module_memory)[raw_index] = reinterpret_cast<core::T_O*>(val);
   return val;
 }
