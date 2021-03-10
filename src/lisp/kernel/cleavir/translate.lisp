@@ -388,14 +388,6 @@
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
   (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
 
-(defmethod translate-terminator ((instruction cleavir-bir:typew) abi next)
-  (declare (ignore abi))
-  (cmp:irc-br (third next)))
-
-(defmethod translate-terminator ((instruction cleavir-bir:choke) abi next)
-  (declare (ignore abi))
-  (cmp:irc-br (first next)))
-
 (defmacro define-tag-test (inst mask tag)
   `(defmethod translate-terminator ((instruction ,inst) abi next)
      (declare (ignore abi))
