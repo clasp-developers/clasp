@@ -925,33 +925,40 @@ have it call the main-function"
                                     (llvm-sys:constant-pointer-null-get %i8*%)))))
    "llvm.global_ctors"))
 
-(defun make-boot-function-global-variable (module startup-shutdown-id &key position register-library)
+(defun make-boot-function-global-variable (module func-designator &key position register-library)
   "* Arguments
 - module :: An llvm module
-- func-ptr :: An llvm function
+- func-designator :: An llvm function designator
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
 and initialize it with an array consisting of one function pointer."
-  (unless (fixnump startup-shutdown-id)
-    (error "make-boot-function-global-variable startup-shutdown-id is ~a and it must be an integer" startup-shutdown-id))
-  (multiple-value-bind (dummy-id startup-name shutdown-name)
-      (jit-startup-shutdown-function-names startup-shutdown-id)
-    (declare (ignore dummy-id shutdown-name))
-    (let ((startup-fn (llvm-sys:get-function module startup-name)))
-      (unless startup-fn
-        (error "Could not find ~a in module" startup-name))
-      #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
-              (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
-      (let* ((global-ctor (add-global-ctor-function module startup-fn
-                                                    :position position
-                                                    :register-library register-library)))
-        (incf *compilation-module-index*)
-        (multiple-value-bind (startup-name linkage)
-            (core:startup-function-name-and-linkage)
-          (when (eq linkage 'llvm-sys:internal-linkage)
-            ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
-            ;; static constructors to initialize things.
-            (add-llvm.global_ctors module *compilation-module-index* global-ctor)))))))
+  (let ((startup-fn (cond
+                      ;; repl functions use an integer ID and we generate the startup-name and
+                      ;;  then lookup the function
+                      ((fixnump func-designator)
+                       (multiple-value-bind (dummy-id startup-name shutdown-name)
+                           (jit-startup-shutdown-function-names func-designator)
+                         (declare (ignore dummy-id shutdown-name))
+                         (llvm-sys:get-function module startup-name)))
+                      ((stringp func-designator)
+                       (llvm-sys:get-function module func-designator))
+                      ((typep func-designator 'llvm-sys:function)
+                       func-designator)
+                      (t (error "~a must be a function name or llvm-sys:function" func-designator)))))
+    (unless startup-fn
+      (error "Could not find ~a in module" startup-name))
+    #+(or)(unless (eql module (llvm-sys:get-parent func-ptr))
+            (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent func-ptr) module))
+    (let* ((global-ctor (add-global-ctor-function module startup-fn
+                                                  :position position
+                                                  :register-library register-library)))
+      (incf *compilation-module-index*)
+      (multiple-value-bind (startup-name linkage)
+          (core:startup-function-name-and-linkage)
+        (when (eq linkage 'llvm-sys:internal-linkage)
+          ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
+          ;; static constructors to initialize things.
+          (add-llvm.global_ctors module *compilation-module-index* global-ctor))))))
 
 ;;
 ;; Ensure that the LLVM model of

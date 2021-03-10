@@ -742,37 +742,28 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (let ((correct-initialized-gcroots-in-module
-                    (llvm-sys:make-global-variable cmp:*the-module*
-                                                   cmp:%gcroots-in-module% ; type
-                                                   nil ; isConstant
-                                                   'llvm-sys:internal-linkage
-                                                   (cmp:gcroots-in-module-initial-value bitcast-correct-size-holder literal-entries)
-                                                   (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number)))))
-              (llvm-sys:replace-all-uses-with *gcroots-in-module* correct-initialized-gcroots-in-module)
-              (llvm-sys:erase-from-parent *gcroots-in-module*)
-              (multiple-value-bind (function-vector-length function-vector)
-                  (setup-literal-machine-function-vectors cmp:*the-module* :id id)
-                (cmp:with-run-all-entry-codegen
-                    (let ((transient-vector (cmp:alloca-i8* "transients")))
-                      (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
-                                              (list correct-initialized-gcroots-in-module
-                                                    (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
-                                                    (cmp:jit-constant-size_t literal-entries)
-                                                    (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
-                                                                        cmp:%t*%)
-                                                    transient-vector
-                                                    (cmp:jit-constant-size_t transient-entries)
-                                                    (cmp:jit-constant-size_t function-vector-length)
-                                                    (cmp:irc-bit-cast
-                                                     (cmp:irc-gep function-vector
-                                                                  (list (cmp:jit-constant-size_t 0)
-                                                                        (cmp:jit-constant-size_t 0)))
-                                                     cmp:%i8**%)
-                                                    )))))
-              ;; Erase the dummy holder
-              (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))))
+            (format t "About to erase-from-parent cmp:*load-time-value-holder-global-var*~%")
+            (multiple-value-bind (function-vector-length function-vector)
+                (setup-literal-machine-function-vectors cmp:*the-module* :id id)
+              (cmp:with-run-all-entry-codegen
+                  (let ((transient-vector (cmp:alloca-i8* "transients")))
+                    (cmp:irc-intrinsic-call "cc_initialize_gcroots_in_module"
+                                            (list *gcroots-in-module*
+                                                  (cmp:irc-pointer-cast correct-size-holder cmp:%t**% "")
+                                                  (cmp:jit-constant-size_t literal-entries)
+                                                  (cmp:irc-int-to-ptr (cmp:jit-constant-uintptr_t 0)
+                                                                      cmp:%t*%)
+                                                  transient-vector
+                                                  (cmp:jit-constant-size_t transient-entries)
+                                                  (cmp:jit-constant-size_t function-vector-length)
+                                                  (cmp:irc-bit-cast
+                                                   (cmp:irc-gep function-vector
+                                                                (list (cmp:jit-constant-size_t 0)
+                                                                      (cmp:jit-constant-size_t 0)))
+                                                   cmp:%i8**%)
+                                                  )))))
+            ;; Erase the dummy holder
+            (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)))))))
 
 (defmacro with-literal-table ((&key id)&body body)
   `(do-literal-table ,id (lambda () ,@body)))

@@ -264,7 +264,6 @@ Compile a lisp source file into an LLVM module."
           (irc-verify-module-safe *the-module*)
           (quick-module-dump *the-module* "preoptimize")
           ;; (2) Add the CTOR next
-          (format t "IN COMPILE-FILE!!!!!!!!!!!!!   run-all-name is ~s and image-startup-position is ~d  - we need to turn this into startup-shutdown-id in second argument~%")
           (make-boot-function-global-variable module run-all-name
                                               :position image-startup-position
                                               :register-library t))
