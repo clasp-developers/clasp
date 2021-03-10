@@ -692,7 +692,7 @@ Return the index of the load-time-value"
                                          nil ; isConstant
                                          'llvm-sys:internal-linkage
                                          (cmp:gcroots-in-module-initial-value)
-                                         (core:bformat nil "dummy-%s%d" core:+gcroots-in-module-name+ (core:next-number))))
+                                         (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number))))
         (cmp:*load-time-value-holder-global-var*
           (llvm-sys:make-global-variable cmp:*the-module*
                                          cmp:%t*[DUMMY]% ; type
