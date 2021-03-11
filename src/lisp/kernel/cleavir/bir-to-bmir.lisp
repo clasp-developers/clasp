@@ -41,7 +41,7 @@
    (lambda (ib)
      (let ((term (cleavir-bir:end ib)))
        (when (typep term 'cleavir-bir:ifi)
-         (let ((test-out (first (cleavir-bir:inputs term))))
+         (let ((test-out (cleavir-bir:input term)))
            (when (typep test-out 'cleavir-bir:output)
              (let ((test (cleavir-bir:definition test-out)))
                (when (typep test 'cleavir-bir:typeq-test)
