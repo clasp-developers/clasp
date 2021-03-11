@@ -204,12 +204,6 @@
 
 (defgeneric translate-conditional-test (instruction next))
 
-(defmethod translate-conditional-test (instruction next)
-  ;; When the test is not a conditional test, just grab the value and
-  ;; compare to NIL.
-  (cmp:irc-cond-br
-   (cmp:irc-icmp-eq (in (first (bir:outputs instruction))) (%nil))
-   (second next) (first next)))
 (defmethod translate-conditional-test
     ((instruction bir:conditional-test) next)
   (declare (ignore next))
@@ -241,13 +235,7 @@
 
 (defmethod translate-terminator ((instruction bir:ifi) abi next)
   (declare (ignore abi))
-  (let ((in (first (bir:inputs instruction))))
-    (etypecase in
-      (bir:output
-       (translate-conditional-test (bir:definition in) next))
-      ((or bir:phi bir:argument)
-       (cmp:irc-cond-br (cmp:irc-icmp-eq (in in) (%nil))
-                        (second next) (first next))))))
+  (translate-conditional-test (bir:definition (bir:input instruction)) next))
 
 (defmethod translate-simple-instruction
     ((instruction bir:conditional-test) abi)
