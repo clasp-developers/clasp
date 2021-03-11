@@ -16,8 +16,7 @@
   (push initializer-thunk *enclose-initializers*))
 
 (defun force-initializers ()
-  (loop (unless *enclose-initializers*
-          (return))
+  (loop (unless *enclose-initializers* (return))
         (funcall (pop *enclose-initializers*))))
 
 (defun iblock-tag (iblock)
@@ -29,7 +28,7 @@
   ;; "simple" means no pretty printer, for a start.
   ;; Using SYMBOL-NAME like this is about 25x faster than using write-to-string,
   ;; and this function is called rather a lot so it's nice to make it faster.
-  (let ((name (cleavir-bir:name datum)))
+  (let ((name (bir:name datum)))
     (if (symbolp name)
         (symbol-name name)
         (write-to-string name
@@ -38,11 +37,11 @@
                          :pretty nil))))
 
 (defun bind-variable (var)
-  (if (cleavir-bir:immutablep var)
+  (if (bir:immutablep var)
       ;; This should get initialized eventually.
       nil
       (setf (gethash var *datum-values*)
-            (ecase (cleavir-bir:extent var)
+            (ecase (bir:extent var)
               ((:local :dynamic)
                ;; just an alloca
                (cmp:alloca-t* (datum-name-as-string var)))
@@ -58,27 +57,27 @@
 (defun variable-as-argument (variable)
   (let ((value/cell (or (gethash variable *datum-values*)
                         (error "BUG: Variable or cell missing: ~a" variable))))
-    (if (or (typep variable 'cleavir-bir:catch)
-            (cleavir-bir:immutablep variable))
+    (if (or (typep variable 'bir:catch)
+            (bir:immutablep variable))
         value/cell
-        (ecase (cleavir-bir:extent variable)
+        (ecase (bir:extent variable)
           (:indefinite value/cell)
           (:dynamic (cmp:irc-bit-cast value/cell cmp:%t*%))
           (:local
            (error "Should not be passing the local variable ~a as an environment argument." variable))))))
 
 (defun in (datum)
-  (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
+  (check-type datum (or bir:phi bir:ssa))
   (or (gethash datum *datum-values*)
       (error "BUG: No variable for datum: ~a defined by ~a"
-             datum (cleavir-bir:definitions datum))))
+             datum (bir:definitions datum))))
 
 (defun variable-in (variable)
-  (check-type variable cleavir-bir:variable)
-  (if (cleavir-bir:immutablep variable)
+  (check-type variable bir:variable)
+  (if (bir:immutablep variable)
       (or (gethash variable *datum-values*)
           (error "BUG: Variable missing: ~a" variable))
-      (ecase (cleavir-bir:extent variable)
+      (ecase (bir:extent variable)
         (:local
          (let ((alloca (or (gethash variable *datum-values*)
                            (error "BUG: Variable missing: ~a" variable))))
@@ -94,7 +93,7 @@
            (cmp:irc-load-atomic (cmp::gen-memref-address cell offset)))))))
 
 (defun out (value datum)
-  (check-type datum cleavir-bir:ssa)
+  (check-type datum bir:ssa)
   (assert (not (gethash datum *datum-values*))
           ()
           "Double OUT for ~a: Old value ~a, new value ~a"
@@ -102,14 +101,14 @@
   (setf (gethash datum *datum-values*) value))
 
 (defun phi-out (value datum llvm-block)
-  (check-type datum cleavir-bir:phi)
+  (check-type datum bir:phi)
   (llvm-sys:add-incoming (in datum) value llvm-block))
 
 (defun variable-out (value variable)
-  (check-type variable cleavir-bir:variable)
-  (if (cleavir-bir:immutablep variable)
+  (check-type variable bir:variable)
+  (if (bir:immutablep variable)
       (setf (gethash variable *datum-values*) value)
-      (ecase (cleavir-bir:extent variable)
+      (ecase (bir:extent variable)
         (:local
          (let ((alloca (or (gethash variable *datum-values*)
                            (error "BUG: Variable missing: ~a" variable))))
@@ -127,7 +126,7 @@
             (cmp::gen-memref-address cell offset)))))))
 
 (defun dynenv-storage (dynenv)
-  (check-type dynenv cleavir-bir:dynamic-environment)
+  (check-type dynenv bir:dynamic-environment)
   (or (gethash dynenv *dynenv-storage*)
       (error "BUG: Missing dynenv storage for ~a" dynenv)))
 

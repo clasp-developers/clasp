@@ -3,6 +3,11 @@
 (defpackage #:clasp-cleavir
   (:use #:common-lisp #:core)
   (:nicknames #:cc #:clasp-cleavir-translate-bir)
+  (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:bir-transformations #:cleavir-bir-transformations)
+                    (#:ast #:cleavir-ast)
+                    (#:cst-to-ast #:cleavir-cst-to-ast)
+                    (#:env #:cleavir-env))
   (:export
    #:*use-cst*
    #:literal
@@ -36,6 +41,7 @@
 
 (defpackage #:clasp-cleavir-ast
   (:nicknames #:cc-ast)
+  (:local-nicknames (#:ast #:cleavir-ast))
   (:use #:common-lisp)
   (:export
    #:debug-message-ast
@@ -80,6 +86,8 @@
 (defpackage #:clasp-cleavir-bir
   (:use #:cl)
   (:nicknames #:cc-bir)
+  (:local-nicknames (#:bir #:cleavir-bir)
+                    (#:ast-to-bir #:cleavir-ast-to-bir))
   (:shadow #:unwind-protect)
   (:export #:unwind-protect #:bind #:header-stamp-case
            #:foreign-call-pointer #:foreign-types
@@ -91,6 +99,7 @@
 
 (defpackage #:cc-bir-to-bmir
   (:use #:cl)
+  (:local-nicknames (#:bir #:cleavir-bir))
   (:export #:reduce-module-typeqs)
   (:export #:reduce-module-primops))
 

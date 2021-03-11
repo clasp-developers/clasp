@@ -1,7 +1,7 @@
 (in-package #:cc-bir-to-bmir)
 
 (defun replace-typeq (typeq)
-  (let ((ts (cleavir-bir:test-ctype typeq)))
+  (let ((ts (bir:test-ctype typeq)))
     ;; Undo some parsing. KLUDGE.
     (cond
       ;; FIXNUM
@@ -37,67 +37,65 @@
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
 
 (defun reduce-local-typeqs (function)
-  (cleavir-bir:map-iblocks
+  (bir:map-iblocks
    (lambda (ib)
-     (let ((term (cleavir-bir:end ib)))
-       (when (typep term 'cleavir-bir:ifi)
-         (let ((test-out (cleavir-bir:input term)))
-           (when (typep test-out 'cleavir-bir:output)
-             (let ((test (cleavir-bir:definition test-out)))
-               (when (typep test 'cleavir-bir:typeq-test)
+     (let ((term (bir:end ib)))
+       (when (typep term 'bir:ifi)
+         (let ((test-out (bir:input term)))
+           (when (typep test-out 'bir:output)
+             (let ((test (bir:definition test-out)))
+               (when (typep test 'bir:typeq-test)
                  (replace-typeq test))))))))
    function))
 
 (defun reduce-module-typeqs (module)
-  (cleavir-set:mapset nil
-                      #'reduce-local-typeqs
-                      (cleavir-bir:functions module)))
+  (cleavir-bir:map-functions #'reduce-local-typeqs module))
 
 (defun maybe-replace-primop (primop)
-  (case (cleavir-primop-info:name (cleavir-bir:info primop))
+  (case (cleavir-primop-info:name (bir:info primop))
     ((cleavir-primop:car)
-     (let ((in (cleavir-bir:inputs primop))
-           (nout (make-instance 'cleavir-bir:output :rtype :address)))
+     (let ((in (bir:inputs primop))
+           (nout (make-instance 'bir:output :rtype :address)))
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
                    :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
-         (cleavir-bir:insert-instruction-before mr primop)
-         (setf (cleavir-bir:inputs primop) (list nout)))))
+         (bir:insert-instruction-before mr primop)
+         (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:cdr)
-     (let ((in (cleavir-bir:inputs primop))
-           (nout (make-instance 'cleavir-bir:output :rtype :address)))
+     (let ((in (bir:inputs primop))
+           (nout (make-instance 'bir:output :rtype :address)))
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
                    :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
-         (cleavir-bir:insert-instruction-before mr primop)
-         (setf (cleavir-bir:inputs primop) (list nout)))))
+         (bir:insert-instruction-before mr primop)
+         (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:rplaca)
-     (let ((in (cleavir-bir:inputs primop))
-           (nout (make-instance 'cleavir-bir:output :rtype :address)))
+     (let ((in (bir:inputs primop))
+           (nout (make-instance 'bir:output :rtype :address)))
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)
                    :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
-         (cleavir-bir:insert-instruction-before mr primop)
-         (setf (cleavir-bir:inputs primop) (list (second in) nout)))))
+         (bir:insert-instruction-before mr primop)
+         (setf (bir:inputs primop) (list (second in) nout)))))
     ((cleavir-primop:rplacd)
-     (let ((in (cleavir-bir:inputs primop))
-           (nout (make-instance 'cleavir-bir:output :rtype :address)))
+     (let ((in (bir:inputs primop))
+           (nout (make-instance 'bir:output :rtype :address)))
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)
                    :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
-         (cleavir-bir:insert-instruction-before mr primop)
-         (setf (cleavir-bir:inputs primop) (list (second in) nout)))))))
+         (bir:insert-instruction-before mr primop)
+         (setf (bir:inputs primop) (list (second in) nout)))))))
 
 (defun reduce-primops (function)
-  (cleavir-bir:map-local-instructions
+  (bir:map-local-instructions
    (lambda (i)
-     (when (typep i 'cleavir-bir:primop)
+     (when (typep i 'bir:primop)
        (maybe-replace-primop i)))
    function))
 
 (defun reduce-module-primops (module)
-  (cleavir-set:mapset nil #'reduce-primops (cleavir-bir:functions module)))
+  (cleavir-set:mapset nil #'reduce-primops (bir:functions module)))
