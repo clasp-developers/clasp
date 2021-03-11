@@ -158,13 +158,13 @@
   (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
                                                inserter system
                                                (:object))
-    (let* ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-           (memref2 (cleavir-ast-to-bir:insert
-                     inserter
-                     (make-instance 'cc-bmir:memref2
-                       :inputs args :outputs (list mr2-out)
-                       :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
-           (out (make-instance 'cleavir-bir:output)))
+    (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
+          (out (make-instance 'cleavir-bir:output)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs args :outputs (list mr2-out)
+         :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:load
@@ -175,13 +175,13 @@
   (cleavir-ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
                                                inserter system
                                                (:object))
-    (let* ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-           (memref2 (cleavir-ast-to-bir:insert
-                     inserter
-                     (make-instance 'cc-bmir:memref2
-                       :inputs args :outputs (list mr2-out)
-                       :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
-           (out (make-instance 'cleavir-bir:output)))
+    (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
+          (out (make-instance 'cleavir-bir:output)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs args :outputs (list mr2-out)
+         :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:load
@@ -193,12 +193,12 @@
                                                 (cleavir-ast:cons-ast ast))
                                                inserter system
                                                (:object :object))
-    (let* ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-           (memref2 (cleavir-ast-to-bir:insert
-                     inserter
-                     (make-instance 'cc-bmir:memref2
-                       :inputs (list (second args)) :outputs (list mr2-out)
-                       :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))))
+    (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs (list (second args)) :outputs (list mr2-out)
+         :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:store
@@ -211,12 +211,12 @@
                                                 (cleavir-ast:cons-ast ast))
                                                inserter system
                                                (:object :object))
-    (let* ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-           (memref2 (cleavir-ast-to-bir:insert
-                     inserter
-                     (make-instance 'cc-bmir:memref2
-                       :inputs (list (second args)) :outputs (list mr2-out)
-                       :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))))
+    (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs (list (second args)) :outputs (list mr2-out)
+         :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:store
@@ -230,13 +230,13 @@
                                                 (cleavir-ast:cons-ast ast))
                                                inserter system
                                                (:object :object :object))
-    (let* ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-           (memref2 (cleavir-ast-to-bir:insert
-                     inserter
-                     (make-instance 'cc-bmir:memref2
-                       :inputs (list (third args)) :outputs (list mr2-out)
-                       :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+))))
-           (out (make-instance 'cleavir-bir:output)))
+    (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
+          (out (make-instance 'cleavir-bir:output)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs (list (third args)) :outputs (list mr2-out)
+         :offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:cas
@@ -251,12 +251,12 @@
                                                inserter system
                                                (:object :object :object))
     (let ((mr2-out (make-instance 'cleavir-bir:output :rtype :address))
-          (memref2 (cleavir-ast-to-bir:insert
-                    inserter
-                    (make-instance 'cc-bmir:memref2
-                      :inputs (list (third args)) :outputs (list mr2-out)
-                      :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+))))
           (out (make-instance 'cleavir-bir:output)))
+      (cleavir-ast-to-bir:insert
+       inserter
+       (make-instance 'cc-bmir:memref2
+         :inputs (list (third args)) :outputs (list mr2-out)
+         :offset (- cmp:+cons-cdr-offset+ cmp:+cons-tag+)))
       (cleavir-ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:cas
