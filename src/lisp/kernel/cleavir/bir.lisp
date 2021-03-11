@@ -1,7 +1,7 @@
 (in-package #:cc-bir)
 
 (defclass unwind-protect (cleavir-bir:dynamic-environment
-                          cleavir-bir::one-input cleavir-bir::no-output
+                          cleavir-bir:one-input cleavir-bir:no-output
                           cleavir-bir:terminator1)
   ())
 
@@ -45,7 +45,7 @@
                  (cleavir-ast-to-bir:begin inserter next)
                  phi)))))))
 
-(defclass bind (cleavir-bir:dynamic-environment cleavir-bir::no-output
+(defclass bind (cleavir-bir:dynamic-environment cleavir-bir:no-output
                 cleavir-bir:terminator1)
   ())
 
@@ -74,7 +74,7 @@
                  (cleavir-ast-to-bir:begin inserter next))
                rv))))))
 
-(defclass mv-foreign-call (cleavir-bir::one-output cleavir-bir:instruction)
+(defclass mv-foreign-call (cleavir-bir:one-output cleavir-bir:instruction)
   ((%function-name :initarg :function-name :reader function-name)))
 
 (defmethod cleavir-ast-to-bir:compile-ast
@@ -89,7 +89,7 @@
          :inputs (mapcar #'first args) :outputs (list output)))
       output)))
 
-(defclass foreign-call-pointer (cleavir-bir::one-output cleavir-bir:instruction)
+(defclass foreign-call-pointer (cleavir-bir:one-output cleavir-bir:instruction)
   ((%foreign-types :initarg :foreign-types :accessor foreign-types)))
 
 (defmethod cleavir-ast-to-bir:compile-ast
@@ -104,7 +104,7 @@
          :inputs (mapcar #'first args) :outputs (list out)))
       (list out))))
 
-(defclass defcallback (cleavir-bir::no-output cleavir-bir:instruction)
+(defclass defcallback (cleavir-bir:no-output cleavir-bir:instruction)
   ((%args :initarg :args :reader defcallback-args)))
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:defcallback-ast)
@@ -118,7 +118,7 @@
        :inputs rv :outputs ())))
   ())
 
-(defclass header-stamp-case (cleavir-bir::one-input cleavir-bir::no-output
+(defclass header-stamp-case (cleavir-bir:one-input cleavir-bir:no-output
                              cleavir-bir:terminator)
   ())
 
@@ -140,7 +140,7 @@
            :type (member :relaxed :acquire :release :acquire-release
                          :sequentially-consistent))))
 
-(defclass fence (atomic cleavir-bir::no-input cleavir-bir::no-output
+(defclass fence (atomic cleavir-bir:no-input cleavir-bir:no-output
                  cleavir-bir:instruction)
   ())
 
@@ -264,13 +264,13 @@
          :outputs (list out) :inputs (list mr2-out (first args) (second args))))
       (list out))))
 
-(defclass atomic-rack-read (atomic cleavir-bir::one-output
+(defclass atomic-rack-read (atomic cleavir-bir:one-output
                             cleavir-bir:instruction)
   ())
-(defclass atomic-rack-write (atomic cleavir-bir::no-output
+(defclass atomic-rack-write (atomic cleavir-bir:no-output
                              cleavir-bir:instruction)
   ())
-(defclass cas-rack (atomic cleavir-bir::one-output cleavir-bir:instruction) ())
+(defclass cas-rack (atomic cleavir-bir:one-output cleavir-bir:instruction) ())
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-rack-read-ast)
                                            inserter system)
@@ -316,9 +316,9 @@
 
 (defclass abstract-vref (cleavir-bir:instruction)
   ((%element-type :initarg :element-type :reader element-type)))
-(defclass vref (atomic cleavir-bir::one-output abstract-vref) ())
-(defclass vset (atomic cleavir-bir::no-output abstract-vref) ())
-(defclass vcas (atomic cleavir-bir::one-output abstract-vref) ())
+(defclass vref (atomic cleavir-bir:one-output abstract-vref) ())
+(defclass vset (atomic cleavir-bir:no-output abstract-vref) ())
+(defclass vcas (atomic cleavir-bir:one-output abstract-vref) ())
 
 (defmethod cleavir-ast-to-bir:compile-ast ((ast cc-ast:atomic-vref-ast)
                                            inserter system)

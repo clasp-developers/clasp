@@ -8,16 +8,16 @@
 (defclass headerq (cleavir-bir:conditional-test)
   ((%info :initarg :info :reader info)))
 
-(defclass memref2 (cleavir-bir::one-input cleavir-bir::one-output
+(defclass memref2 (cleavir-bir:one-input cleavir-bir:one-output
                    cleavir-bir:instruction)
   ((%offset :initarg :offset :reader offset :type integer)))
 
-(defclass load (cc-bir:atomic cleavir-bir::one-input cleavir-bir::one-output
+(defclass load (cc-bir:atomic cleavir-bir:one-input cleavir-bir:one-output
                 cleavir-bir:instruction)
   ())
 
-(defclass store (cc-bir:atomic cleavir-bir::no-output cleavir-bir:instruction)
+(defclass store (cc-bir:atomic cleavir-bir:no-output cleavir-bir:instruction)
   ())
 
-(defclass cas (cc-bir:atomic cleavir-bir::one-output cleavir-bir:instruction)
+(defclass cas (cc-bir:atomic cleavir-bir:one-output cleavir-bir:instruction)
   ())
