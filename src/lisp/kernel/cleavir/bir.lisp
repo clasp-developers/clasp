@@ -138,6 +138,7 @@
 ;;; we just make the bmir directly for atomic car and cdr
 
 (defmethod ast-to-bir:compile-ast ((ast cc-ast:fence-ast) inserter system)
+  (declare (ignore system))
   (ast-to-bir:insert
    inserter
    (make-instance 'cc-bir:fence :order (cc-ast:order ast)))
