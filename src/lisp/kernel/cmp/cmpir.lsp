@@ -762,7 +762,9 @@ the type LLVMContexts don't match - so they were defined in different threads!"
       (error "BUG: Type mismatch in IRC-%CMPXCHG")))
   ;; actual gen
   (llvm-sys:create-atomic-cmp-xchg *irbuilder*
-                                   ptr cmp new order
+                                   ptr cmp new
+                                   8 ; llvm::MaybeAlign(0)
+                                   order
                                    (reduce-failure-order order)
                                    1 #+(or)'llvm-sys:system))
 
@@ -1342,9 +1344,11 @@ and then the irbuilder-alloca, irbuilder-body."
       (unless code (error "irc-create-invoke returning nil"))
       code)))
 
+(defparameter *debug-create-call* nil)
+
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   ;;(throw-if-mismatched-arguments function-name args)
-  ;;(bformat t "irc-create-call-wft entry-point: %s%N" entry-point)
+  (if *debug-create-call* (bformat t "irc-create-call-wft function-type: %s entry-point: %s args: %s%N" function-type entry-point args ))
   (llvm-sys:create-call-array-ref *irbuilder* function-type entry-point args label nil))
 
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))

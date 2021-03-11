@@ -121,7 +121,7 @@ void loadModule(llvmo::Module_sp module, size_t startupID, const std::string& li
   for (auto &F : *module->wrappedPtr()) {
     std::string function_name = F.getName().str();
 //    printf("%s:%d Function: %s\n", __FILE__, __LINE__, function_name.c_str());
-    if (function_name.substr(0,7)=="StartUp") {
+    if (function_name.find(MODULE_STARTUP_FUNCTION_NAME) != std::string::npos) {
       startup_functions.push_back(function_name);
     }
   }

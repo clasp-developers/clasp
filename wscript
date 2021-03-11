@@ -85,8 +85,8 @@ def options(ctx):
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
-LLVM_VERSION = 12
-CLANG_SPECIFIC_VERSION = "11.0.0git"
+LLVM_VERSION = 13
+CLANG_SPECIFIC_VERSION = "13.0.0git"
 
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'f', 'c', 'd' ]
 # Full LTO  -flto
@@ -1978,7 +1978,7 @@ class compile_module(clasp_task):
         cmd = self.clasp_command_line(executable,
                                       image = image_file,
                                       features = ['ignore-extensions'],
-                                      forms = [ '(format t "startup-function-name-and-linkage -> ~s~%" (multiple-value-list (core:startup-function-name-and-linkage)))',
+                                      forms = [ '(format t "startup-linkage -> ~s~%" (multiple-value-list (core:startup-linkage)))',
                                           '(compile-file #P"%s" :output-file #P"%s" :output-type %s)' % (source_file, fasl_file, output_type),
                                                '(core:quit)'])
         return self.exec_command(cmd)

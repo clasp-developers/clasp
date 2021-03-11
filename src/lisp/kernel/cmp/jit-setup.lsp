@@ -478,9 +478,12 @@ No DIBuilder is defined for the default module")
   (sys:bformat nil "JITREPL-%d" (sys:next-number)))
   
 (defun jit-startup-shutdown-function-names (module-id)
-  (values module-id
-          (sys:bformat nil "%s-%d" sys:*module-startup-function-name* module-id)
-          (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* module-id)))
+  (multiple-value-bind (startup-name linkage shutdown-name)
+      (core:startup-linkage-shutdown-names module-id)
+    (values module-id startup-name shutdown-name))
+  #+(or)(values module-id
+                (sys:bformat nil "%s-%d" sys:*module-startup-function-name* module-id)
+                (sys:bformat nil "%s-%d" sys:*module-shutdown-function-name* module-id)))
 
 (export '(jit-startup-shutdown-function-names jit-repl-function-name))
 

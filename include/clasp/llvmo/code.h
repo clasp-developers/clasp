@@ -130,6 +130,7 @@ namespace llvmo {
     CLASP_DEFAULT_CTOR CodeBase_O() {};
   public:
     virtual uintptr_t codeStart() const = 0;
+    virtual std::string filename() const = 0;
   };
  
 };
@@ -199,6 +200,7 @@ public:
   size_t frontSize() const { return sizeof(*this); };
   size_t literalsSize() const { return this->_LiteralVectorSizeBytes; };
   void* literalsStart() const;
+  virtual std::string filename() const;
 };
   
 };
@@ -225,6 +227,7 @@ class Library_O : public CodeBase_O {
   static Library_sp make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name );
   std::string __repr__() const;
   uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
+  std::string filename() const;
 };
 };
 

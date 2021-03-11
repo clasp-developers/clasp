@@ -100,7 +100,7 @@ void byte_code_interpreter(gctools::GCRootsInModule* roots, T_sp byte_code_strea
 void core__throw_function(T_sp tag, T_sp result_form);
 void register_startup_function(const StartUp& startup);
 void transfer_StartupInfo_to_my_thread();
-T_mv core__startup_function_name_and_linkage(size_t id=0, core::T_sp prefix=_Nil<core::T_O>());
+T_mv core__startup_linkage_shutdown_names(size_t id=0, core::T_sp prefix=_Nil<core::T_O>());
 void clasp_unpack_faso(const std::string& path_designator);
 }
 

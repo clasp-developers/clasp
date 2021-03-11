@@ -98,13 +98,13 @@
 #define DBG_SL_WALK_TEMP(_fmt_)
 #endif
 
-#if 0
+#if 1
 #define DBG_SL_VTABLE(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_VTABLE(_fmt_)
 #endif
 
-#if 0
+#if 1
 #define DBG_SL_ENTRY_POINT(_fmt_) { printf("%s:%d:%s ", __FILE__, __LINE__, __FUNCTION__ ); printf("%s",  (_fmt_).str().c_str());}
 #else
 #define DBG_SL_ENTRY_POINT(_fmt_)
@@ -172,14 +172,14 @@ void* decodeLibrarySaveAddress(void* codedAddress) {
 void* encodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
   uintptr_t address = (uintptr_t)vaddress;
   void* result = (void*)(address - code->codeStart());
-  DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %p\n") % (void*)code->codeStart() % vaddress % result  );
+  DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   return result;
 }
 
 void* decodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
   uintptr_t address = (uintptr_t)vaddress;
   void* result = (void*)(address + code->codeStart());
-  DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %p\n") % (void*)code->codeStart() % vaddress % result  );
+  DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   return result;
 }
 
@@ -1625,13 +1625,13 @@ int image_load(const std::string& filename )
           llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
           char* of_start = objectFilesStartAddress + objectFile->_ObjectFileOffset;
           size_t of_length = objectFile->_ObjectFileSize;
-          printf("%s:%d:%s Handle ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
-                 __FILE__, __LINE__, __FUNCTION__,
-                 objectFile,
-                 objectFile->_StartupID,
-                 objectFile->_ObjectFileOffset,
-                 objectFile->_ObjectFileSize,
-                 of_start );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Handle ObjectFile_O @ %p  startupID: %lu  _ObjectFileOffset %lu  _ObjectFileSize %lu  of_start %p\n",
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    objectFile,
+                                    objectFile->_StartupID,
+                                    objectFile->_ObjectFileOffset,
+                                    objectFile->_ObjectFileSize,
+                                    of_start ));
           llvm::StringRef sbuffer((const char*)of_start, of_length);
           std::string uniqueName = llvmo::uniqueMemoryBufferName("of",objectFile->_StartupID, objectFile->_ObjectFileSize );
           llvm::StringRef name(uniqueName);
@@ -1639,11 +1639,11 @@ int image_load(const std::string& filename )
           objectFile->_MemoryBuffer.reset();
           objectFile->_MemoryBuffer = std::move(memoryBuffer);
           llvmo::Code_sp oldCode = objectFile->_Code;
-          printf("%s:%d:%s !!!!!!!!!!!!! About to invoke jit->addObjectFile\n", __FILE__, __LINE__, __FUNCTION__ );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s !!!!!!!!!!!!! About to invoke jit->addObjectFile\n", __FILE__, __LINE__, __FUNCTION__ ));
           jit->addObjectFile(objectFile->asSmartPtr(),false);
-          core::T_mv startupName = core::core__startup_function_name_and_linkage(objectFile->_StartupID,_Nil<core::T_O>());
+          core::T_mv startupName = core::core__startup_linkage_shutdown_names(objectFile->_StartupID,_Nil<core::T_O>());
           core::String_sp str = gc::As<core::String_sp>(startupName);
-          printf("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s I added the ObjectFile to the LLJIT - startupName: %s  --- what do I do to get the code\n", __FILE__, __LINE__, __FUNCTION__, core::_rep_(str).c_str() ));
           void* ptr;
           bool found = jit->do_lookup( *objectFile->_JITDylib->wrappedPtr(), str->get_std_string(), ptr );
           if (!found) {
@@ -1651,18 +1651,18 @@ int image_load(const std::string& filename )
             abort();
           }
           // Allocate a new ObjectFile_O
-          printf("%s:%d:%s Allocating a new ObjectFile_O object - the unix object file is at %p - after giving it to the LLJIT will it be at the same place?\n"
-                 "!!!!        Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
-                 "!!!!        ClaspReturnObjectBuffer will modify our current ObjectFile_O object\n"
-                 "!!!!    ALSO - will runStartupCode be evaluated?  It shouldn't!!!!!!!\n"
-                 "!!!!     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
-                 "!!!!      Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
-                 "!!!!      After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
-                 ,
-                 __FILE__, __LINE__, __FUNCTION__,
-                 of_start,
-                 oldCode.raw_(),
-                 objectFile->_Code.raw_());
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Allocating a new ObjectFile_O object - the unix object file is at %p - after giving it to the LLJIT will it be at the same place?\n"
+                                    "!!!!        Turn on DEBUG_OBJECT_FILES to find out where ClaspReturnObjectBuffer sees the object file\n"
+                                    "!!!!        ClaspReturnObjectBuffer will modify our current ObjectFile_O object\n"
+                                    "!!!!    ALSO - will runStartupCode be evaluated?  It shouldn't!!!!!!!\n"
+                                    "!!!!     We want to get the ObjectFile_O->_Code object and use that as the forward pointer for the\n"
+                                    "!!!!      Code_O object @ %p that was in the ObjectFile_O object BEFORE we called jit->addObjectFile\n"
+                                    "!!!!      After jit->addObjectFile the ObjectFile_O->_Code is %p\n"
+                                    ,
+                                    __FILE__, __LINE__, __FUNCTION__,
+                                    of_start,
+                                    oldCode.raw_(),
+                                    objectFile->_Code.raw_()));
           core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
           gctools::Tagged fwd = (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)obj.raw_());
           DBG_SL_ALLOCATE(BF("allocated general %p fwd: %p\n")
@@ -1678,11 +1678,11 @@ int image_load(const std::string& filename )
           codeFixups.emplace_back(CodeFixup_t((llvmo::Code_O*)oldCode.unsafe_general(),((llvmo::Code_O*)code.unsafe_general())));
         } else if ( generalHeader->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O) ) {
           // Don't do anything with Code_O objects - they are create by the ObjectFile_O objects
-          printf("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Code_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
         } else if ( generalHeader->_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_core__Null_O) ) {
           // Don't do anything with the only Null_O object - it was allocated above when we fished it out
           // of the Lisp_O object and allocated it.
-          printf("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ );
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Skip the Null_O object\n", __FILE__, __LINE__, __FUNCTION__ ));
           countNullObjects++;
         } else {
           core::T_sp obj = gctools::GCObjectAllocator<core::General_O>::image_save_load_allocate(&init);
@@ -1803,12 +1803,12 @@ int image_load(const std::string& filename )
       //
       // This is where we move the literals and change the state of the new code
       //
-      printf("%s:%d:%s  Fixup code old: %p new: %p  new literals start %p  size: %lu\n",
-             __FILE__, __LINE__, __FUNCTION__,
-             oldCodeClient, newCodeClient,
-             (void*)newCodeClient->literalsStart(),
-             newCodeClient->literalsSize() );
-      printf("%s:%d:%s This is where I would copy the literals from the oldCodeClient to the newCodeClient\n", __FILE__, __LINE__, __FUNCTION__ );
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s  Fixup code old: %p new: %p  new literals start %p  size: %lu\n",
+                                __FILE__, __LINE__, __FUNCTION__,
+                                oldCodeClient, newCodeClient,
+                                (void*)newCodeClient->literalsStart(),
+                                newCodeClient->literalsSize() ));
+      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s This is where I would copy the literals from the oldCodeClient to the newCodeClient\n", __FILE__, __LINE__, __FUNCTION__ ));
       if (oldCodeClient->_State != llvmo::SaveState) {
         printf("%s:%d:%s The oldCodeClient at %p must be in SaveState\n", __FILE__, __LINE__, __FUNCTION__, oldCodeClient );
         abort();

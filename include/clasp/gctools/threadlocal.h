@@ -89,7 +89,6 @@ namespace core {
     size_t            _stackmap_size;
     gctools::GCRootsInModule*  _GCRootsInModule;
     StartupInfo       _Startup;
-    void*             _ObjectFileStartUp;
 #ifdef DEBUG_IHS
     // Save the last return address before IHS screws up
     void*                    _IHSBacktrace[IHS_BACKTRACE_SIZE];

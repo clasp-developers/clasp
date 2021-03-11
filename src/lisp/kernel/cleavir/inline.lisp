@@ -1,5 +1,8 @@
 (in-package :clasp-cleavir)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf cmp::*debug-create-call* nil))
+
 (defpackage "PRIMOP"
   (:export #:inlined-two-arg-+
            #:inlined-two-arg--

@@ -724,7 +724,7 @@ Return the index of the load-time-value"
                                             (cmp:jit-constant-size_t byte-code-length)))
               (cmp:irc-intrinsic-call "cc_finish_gcroots_in_module" (list *gcroots-in-module*)))))
       (let ((literal-entries (literal-machine-table-index *literal-machine*)))
-        (when (> literal-entries 0)
+        (when t ;; (> literal-entries 0)
           ;; We have a new table, replace the old one and generate code to register the new one
           ;; and gc roots table
           (let* ((array-type (llvm-sys:array-type-get cmp:%t*% literal-entries))
@@ -742,7 +742,6 @@ Return the index of the load-time-value"
                                                                 "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var*
                                             bitcast-correct-size-holder)
-            (format t "About to erase-from-parent cmp:*load-time-value-holder-global-var*~%")
             (multiple-value-bind (function-vector-length function-vector)
                 (setup-literal-machine-function-vectors cmp:*the-module* :id id)
               (cmp:with-run-all-entry-codegen
@@ -805,19 +804,9 @@ Return the index of the load-time-value"
           (let ((bitcast-constant-table (cmp:irc-bit-cast constant-table cmp:%t*[0]*% "bitcast-table")))
             (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-constant-table)
             (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*)
-            (let ((correct-initialized-gcroots-in-module
-                    (llvm-sys:make-global-variable cmp:*the-module*
-                                                   cmp:%gcroots-in-module% ; type
-                                                   nil ; isConstant
-                                                   'llvm-sys:internal-linkage
-                                                   (cmp:gcroots-in-module-initial-value bitcast-constant-table (length ordered-literals-list))
-                                                   (core:bformat nil "%s%d" core:+gcroots-in-module-name+ (core:next-number)))))
-              (llvm-sys:replace-all-uses-with *gcroots-in-module* correct-initialized-gcroots-in-module)
-              (llvm-sys:erase-from-parent *gcroots-in-module*)
-
-              (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
-                  (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION correct-initialized-gcroots-in-module constant-table num-elements ordered-literals-list bitcast-constant-table)
-                (values ordered-raw-constant-list constant-table startup-shutdown-id)))))))))
+            (multiple-value-bind (startup-shutdown-id ordered-raw-constant-list)
+                (cmp:codegen-startup-shutdown cmp:*the-module* module-id THE-REPL-FUNCTION *gcroots-in-module* constant-table num-elements ordered-literals-list bitcast-constant-table)
+                (values ordered-raw-constant-list constant-table startup-shutdown-id))))))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices

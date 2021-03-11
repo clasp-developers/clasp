@@ -64,6 +64,7 @@ enum Data_types {
   ATOMIC_POD_OFFSET_unsigned_int,
   ATOMIC_POD_OFFSET_long_long,
   ATOMIC_POD_OFFSET__Bool,
+  ATOMIC_POD_OFFSET_long,
   CXX_SHARED_MUTEX_OFFSET,
   last_data_type };
 

@@ -753,7 +753,7 @@ CL_DEFUN core::T_sp core__load_faso(T_sp pathDesig, T_sp verbose, T_sp print, T_
     std::unique_ptr<llvm::MemoryBuffer> memoryBuffer(llvm::MemoryBuffer::getMemBuffer(sbuffer,name,false));
     llvmo::ObjectFile_sp of = llvmo::ObjectFile_O::create(std::move(memoryBuffer),header->_ObjectFiles[ofi]._ObjectID,jitDylib,filename,ofi);
     jit->addObjectFile(of,print.notnilp());
-    T_mv startupName = core__startup_function_name_and_linkage(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
+    T_mv startupName = core__startup_linkage_shutdown_names(header->_ObjectFiles[ofi]._ObjectID,_Nil<core::T_O>());
     String_sp str = gc::As<String_sp>(startupName);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s running startup %s\n", __FILE__, __LINE__, __FUNCTION__, str->get_std_string().c_str()));
     llvmo::Code_sp codeObject;
@@ -863,35 +863,33 @@ CL_DEFUN T_mv core__load_binary_directory(T_sp pathDesig, T_sp verbose, T_sp pri
 
 
 CL_DOCSTRING(R"doc(Return the startup function name and the linkage based on the current dynamic environment.
- The name contains the id as part of itself. )doc");
+ The name contains the id as part of itself. Return (values startup-name linkage shutdown-name).)doc");
 CL_LAMBDA(&optional (id 0) prefix)
-CL_DEFUN T_mv core__startup_function_name_and_linkage(size_t id, core::T_sp prefix)
+CL_DEFUN T_mv core__startup_linkage_shutdown_names(size_t id, core::T_sp prefix)
 {
-  stringstream ss;
-  if (prefix.nilp()) {
-    ss << "StartUp";
-  } else if (gc::IsA<String_sp>(prefix)) {
-    ss << gc::As<String_sp>(prefix)->get_std_string();
-  } else {
+  stringstream sstart;
+  stringstream sshutdown;
+  if (gc::IsA<String_sp>(prefix)) {
+    sstart << gc::As<String_sp>(prefix)->get_std_string() << "-";
+    sshutdown << gc::As<String_sp>(prefix)->get_std_string() << "-";
+  } else if (prefix.notnilp()) {
     SIMPLE_ERROR(BF("Illegal prefix for startup function name: %s") % _rep_(prefix));
-  }
-  ss << "_";
-  ss << id;
-  Symbol_sp linkage_type;
-#if 1
-  // With LLJIT we will search for an internal symbol to startup
-  // linkage_type = llvmo::_sym_InternalLinkage;
-  // BUT!!!! We need a symbol to lookup to materialize the code - initializers don't do it yet.
-  linkage_type = llvmo::_sym_ExternalLinkage;
-#else
-  if (comp::_sym_STARgenerate_fasoSTAR->symbolValue().notnilp() && !(comp::_sym_STARforce_global_ctorsSTAR->symbolValue().notnilp())) {
-    linkage_type = llvmo::_sym_ExternalLinkage;
-  } else {
-    linkage_type = llvmo::_sym_InternalLinkage;
-  }
-#endif
-  return Values(core::SimpleBaseString_O::make(ss.str()),linkage_type);
+  }    
+  sstart << MODULE_STARTUP_FUNCTION_NAME << "_" << id;
+  sshutdown << MODULE_SHUTDOWN_FUNCTION_NAME << "_" << id;
+  Symbol_sp linkage_type = llvmo::_sym_ExternalLinkage;
+  return Values(core::SimpleBaseString_O::make(sstart.str()),linkage_type,core::SimpleBaseString_O::make(sshutdown.str()));
 };
+
+
+CL_LAMBDA(&optional (id 0) prefix)
+CL_DEFUN T_mv core__startup_linkage(size_t id, core::T_sp prefix)
+{
+  T_mv result = core__startup_linkage_shutdown_names(id,prefix);
+  T_sp result1 = result;
+  T_sp result2 = result.second();
+  return Values(result1,result2);
+}
 
 
 CL_LAMBDA(name &optional verbose print external-format);

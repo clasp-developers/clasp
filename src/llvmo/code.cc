@@ -51,6 +51,12 @@ size_t Code_O::sizeofInState(Code_O* code, CodeState_t state ) {
   return gctools::sizeof_container<Code_O>(code->_DataCode.size());
 }
 
+std::string Code_O::filename() const {
+  stringstream ss;
+  ss << this->_ObjectFile->_FasoName->get_std_string() << ":" << this->_ObjectFile->_StartupID;
+  return ss.str();
+}
+
 Code_O::~Code_O() {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this ));
   printf("%s:%d dtor for Code_O %p\n", __FILE__, __LINE__, (void*)this );
@@ -153,6 +159,10 @@ Library_sp Library_O::make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end,
   GC_ALLOCATE_VARIADIC(Library_O, lib, start, end );
   lib->_Name = core::SimpleBaseString_O::make(name);
   return lib;
+}
+
+std::string Library_O::filename() const {
+  return this->_Name->get_std_string();
 }
 
 };

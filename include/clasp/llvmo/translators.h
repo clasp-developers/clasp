@@ -163,7 +163,7 @@ struct from_object<llvm::DICompileUnit::DebugEmissionKind> {
     SIMPLE_ERROR_SPRINTF("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind");
   }
 };
- 
+
 template <>
 struct from_object<llvm::ArrayRef<std::string>> {
   typedef std::vector<std::string> DeclareType;

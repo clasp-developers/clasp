@@ -140,7 +140,6 @@ ThreadLocalState::ThreadLocalState(bool dummy) :
   _unwinds(0)
   , _stackmap(0)
   , _stackmap_size(0)
-  , _ObjectFileStartUp(NULL)
   , _CleanupFunctions(NULL)
   ,_PendingInterrupts()
   ,_CatchTags()
@@ -194,7 +193,6 @@ ThreadLocalState::ThreadLocalState() :
   , _stackmap_size(0)
   , _PendingInterrupts(_Nil<core::T_O>())
   , _CatchTags(_Nil<core::T_O>())
-  , _ObjectFileStartUp(NULL)
   , _ObjectFiles(_Nil<core::T_O>())
   , _CleanupFunctions(NULL)
 {

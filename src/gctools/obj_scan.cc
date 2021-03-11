@@ -118,7 +118,7 @@ RESULT_TYPE    OBJECT_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit EXTRA_A
           // Use new way with pointer bitmaps
           uintptr_t start_pointer_bitmap = stamp_layout.container_layout->container_field_pointer_bitmap;
           if (header._stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Code_O)) {
-            printf("%s:%d:%s obj_scan for Code_o object with header %p\n", __FILE__, __LINE__, __FUNCTION__, &header );
+//            printf("%s:%d:%s obj_scan for Code_o object with header %p\n", __FILE__, __LINE__, __FUNCTION__, &header );
             llvmo::Code_O* code = (llvmo::Code_O*)client;
             core::T_O** addr = (core::T_O**)code->literalsStart();
             core::T_O** addrEnd = addr+(code->literalsSize()/sizeof(core::T_O*));

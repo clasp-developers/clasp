@@ -834,7 +834,7 @@ have it call the main-function"
           (error "The parent of the func-ptr ~a (a module) does not match the module ~a" (llvm-sys:get-parent main-function) module))
 ;;;  (core::bformat t "add-global-ctor-function position: %s%N" position)
   (multiple-value-bind (startup-function-name startup-function-linkage)
-      (core:startup-function-name-and-linkage position)
+      (core:startup-linkage-shutdown-names position)
     (let* ((*the-module* module)
            (ctor-fn (irc-simple-function-create
                      startup-function-name
@@ -852,24 +852,26 @@ have it call the main-function"
                    (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
                    (_                (irc-ret-void))))))
         ;;(llvm-sys:dump fn)
-        (let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
-               #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
-               (outer-fn (irc-simple-function-create
-                          function-name
-                          %fn-ctor%
-                          'llvm-sys:internal-linkage
-                          *the-module*
-                          :argument-names +fn-ctor-argument-names+))
-               (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
-               (*current-function* outer-fn)
-               (entry-bb (irc-basic-block-create "entry" outer-fn)))
-          (irc-set-insert-point-basic-block entry-bb irbuilder-body)
-          (with-landing-pad nil
-            (with-irbuilder (irbuilder-body)
-              (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                     (_                (irc-create-call-wft %fn-ctor% ctor-fn nil))
-                     (_                (irc-ret-void))))))
-          (add-llvm.used *the-module* outer-fn)))
+        #+(or)(let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
+                     #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
+                     (outer-fn (irc-simple-function-create
+                                function-name
+                                %fn-ctor%
+                                'llvm-sys:internal-linkage
+                                *the-module*
+                                :argument-names +fn-ctor-argument-names+))
+                     (irbuilder-body (llvm-sys:make-irbuilder (thread-local-llvm-context)))
+                     (*current-function* outer-fn)
+                     (entry-bb (irc-basic-block-create "entry" outer-fn)))
+                (irc-set-insert-point-basic-block entry-bb irbuilder-body)
+                (with-landing-pad nil
+                  (with-irbuilder (irbuilder-body)
+                    (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
+                           (_                (irc-create-call-wft %fn-ctor% ctor-fn nil))
+                           (_                (irc-ret-void))))))
+                (add-llvm.used *the-module* outer-fn))
+        (add-llvm.used *the-module* ctor-fn) ;; Try this instead of the thing above
+        )
       ctor-fn)))
 
 (defun add-main-function (module run-all-function)
@@ -954,7 +956,8 @@ and initialize it with an array consisting of one function pointer."
                                                   :register-library register-library)))
       (incf *compilation-module-index*)
       (multiple-value-bind (startup-name linkage)
-          (core:startup-function-name-and-linkage)
+          (core:startup-linkage-shutdown-names 0) ; we only want to know linkage
+        (declare (ignore startup-name))
         (when (eq linkage 'llvm-sys:internal-linkage)
           ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
           ;; static constructors to initialize things.

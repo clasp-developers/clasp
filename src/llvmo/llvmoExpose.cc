@@ -100,6 +100,8 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/AssemblyAnnotationWriter.h> // will be llvm/IR
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
+#include <llvm/ExecutionEngine/Orc/TargetProcessControl.h>
+#include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
 #include <llvm-c/Disassembler.h>
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
@@ -3907,12 +3909,10 @@ namespace llvmo {
 #error "What is the name of stackmaps section on this OS??? __llvm_stackmaps or .llvm_stackmaps"
 #endif
 #if defined(_TARGET_OS_DARWIN)
-  std::string startup_name = "_" CLASP_OBJECT_FILE_STARTUP;
   std::string gcroots_in_module_name = "_" GCROOTS_IN_MODULE_NAME;
   std::string literals_name = "_" LITERALS_NAME;
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string startup_name = CLASP_OBJECT_FILE_STARTUP;
   std::string gcroots_in_module_name = GCROOTS_IN_MODULE_NAME;
   std::string literals_name = LITERALS_NAME;
 #endif
@@ -4038,10 +4038,6 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
               core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
             }
 #endif
-            if (name == startup_name) {
-              my_thread->_ObjectFileStartUp = (void*)address;
-              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Found startup_name = %s   address = %p\n", __FILE__, __LINE__, __FUNCTION__, startup_name.c_str(), (void*)address ));
-            }
           }
         }
       } else if (S.getName().str() == EH_FRAME_NAME) {
@@ -4195,10 +4191,10 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
 {
   std::vector< std::pair< llvm::object::SymbolRef, uint64_t > > symbol_sizes = llvm::object::computeSymbolSizes(object_file);
 #if defined(_TARGET_OS_DARWIN)
-  std::string startup_name = "__claspObjectFileStartUp";
+  std::string startup_name = "__claspObjectFileStartup";
 #endif
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
-  std::string startup_name = "_claspObjectFileStartUp";
+  std::string startup_name = "_claspObjectFileStartup";
 #endif
 #if !defined(_TARGET_OS_LINUX) && !defined(_TARGET_OS_FREEBSD) && !defined(_TARGET_OS_DARWIN)
 #error You need to decide here
@@ -4221,11 +4217,6 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
-            if (name == startup_name) {
-              void* ptr = (void*)((char*)section_address+address);
-              my_thread->_ObjectFileStartUp = ptr;
-              printf("%s:%d:%s Found %s -> %p\n", __FILE__, __LINE__, __FUNCTION__, startup_name.c_str(), ptr );
-            }
 //          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
 //          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
           }
@@ -4510,20 +4501,18 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
+        std::unique_ptr<orc::TargetProcessControl> TPC = nullptr;
+//        TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         //  orc::enableObjCRegistration("libobjc.dylib");
         auto J = ExitOnErr(
                            LLJITBuilder()
                            .setJITTargetMachineBuilder(std::move(JTMB))
                            .setPlatformSetUp(orc::setUpMachOPlatform)
-                           .setObjectLinkingLayerCreator([&](ExecutionSession &ES, const Triple &TT) {
-                               //                                                     printf("%s:%d setting ObjectLinkingLayerCreator\n", __FILE__, __LINE__ );
-#if 1 //def USE_MPS
+                           .setObjectLinkingLayerCreator([&TPC,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-#else
-                       auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<jitlink::InProcessMemoryManager>());
-#endif
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
+//                       ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*TPC))));
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
                      })

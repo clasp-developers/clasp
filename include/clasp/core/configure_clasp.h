@@ -59,7 +59,6 @@ THE SOFTWARE.
 
 #if defined( _ADDRESS_MODEL_64 )
 
-#define CLASP_OBJECT_FILE_STARTUP "__claspObjectFileStartup"
 #define GCROOTS_IN_MODULE_NAME "__clasp_gcroots_in_module_"
 #define LITERALS_NAME "__clasp_literals_"
 #define INTPTR_BITS 64
@@ -247,8 +246,8 @@ typedef unsigned int  claspCharacter;
 
 #endif
 
-#define MODULE_STARTUP_FUNCTION_NAME "startup"
-#define MODULE_SHUTDOWN_FUNCTION_NAME "shutdown"
+#define MODULE_STARTUP_FUNCTION_NAME "<<clasp_startup>>"
+#define MODULE_SHUTDOWN_FUNCTION_NAME "<<clasp_shutdown>>"
 
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
