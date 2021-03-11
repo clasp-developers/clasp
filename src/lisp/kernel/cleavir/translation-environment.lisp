@@ -70,7 +70,8 @@
 (defun in (datum)
   (check-type datum (or cleavir-bir:phi cleavir-bir:ssa))
   (or (gethash datum *datum-values*)
-      (error "BUG: No variable for datum: ~a" datum)))
+      (error "BUG: No variable for datum: ~a defined by ~a"
+             datum (cleavir-bir:definitions datum))))
 
 (defun variable-in (variable)
   (check-type variable cleavir-bir:variable)

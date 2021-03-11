@@ -1,7 +1,7 @@
 (in-package #:cc-bmir)
 
-(defclass type-branch (cleavir-bir::one-input cleavir-bir:terminator
-                       cleavir-bir:operation)
+(defclass type-branch (cleavir-bir::one-input cleavir-bir::no-output
+                       cleavir-bir:terminator)
   ())
 
 (defclass fixnump (type-branch) ())
@@ -12,15 +12,16 @@
 (defclass headerq (type-branch)
   ((%info :initarg :info :reader info)))
 
-(defclass memref2 (cleavir-bir::one-input cleavir-bir:computation)
+(defclass memref2 (cleavir-bir::one-input cleavir-bir::one-output
+                   cleavir-bir:instruction)
   ((%offset :initarg :offset :reader offset :type integer)))
-(defmethod cleavir-bir:rtype ((mr memref2)) :address)
 
-(defclass load (cc-bir:atomic cleavir-bir::one-input cleavir-bir:computation)
+(defclass load (cc-bir:atomic cleavir-bir::one-input cleavir-bir::one-output
+                cleavir-bir:instruction)
   ())
-(defmethod cleavir-bir:rtype ((l load)) :object)
 
-(defclass store (cc-bir:atomic cleavir-bir::no-output cleavir-bir:operation) ())
+(defclass store (cc-bir:atomic cleavir-bir::no-output cleavir-bir:instruction)
+  ())
 
-(defclass cas (cc-bir:atomic cleavir-bir:computation) ())
-(defmethod cleavir-bir:rtype ((c cas)) :object)
+(defclass cas (cc-bir:atomic cleavir-bir::one-output cleavir-bir:instruction)
+  ())
