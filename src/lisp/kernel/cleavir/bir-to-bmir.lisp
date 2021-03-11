@@ -1,13 +1,7 @@
 (in-package #:cc-bir-to-bmir)
 
 (defun replace-typeq (typeq)
-  (let* ((ts (cleavir-bir:test-ctype typeq))
-         (out (first (cleavir-bir:outputs typeq)))
-         (ifi (cleavir-bir:use out))
-         (inputs (cleavir-bir:inputs typeq)))
-    (setf (cleavir-bir:inputs ifi) '())
-    (cleavir-bir:delete-instruction typeq)
-    (setf (cleavir-bir:inputs ifi) inputs)
+  (let ((ts (cleavir-bir:test-ctype typeq)))
     ;; Undo some parsing. KLUDGE.
     (cond
       ;; FIXNUM
@@ -31,15 +25,15 @@
        ;; obviously we can't check that.
        (setf ts 'function)))
     (case ts
-      ((fixnum) (change-class ifi 'cc-bmir:fixnump))
-      ((cons) (change-class ifi 'cc-bmir:consp))
-      ((character) (change-class ifi 'cc-bmir:characterp))
-      ((single-float) (change-class ifi 'cc-bmir:single-float-p))
-      ((core:general) (change-class ifi 'cc-bmir:generalp))
+      ((fixnum) (change-class typeq 'cc-bmir:fixnump))
+      ((cons) (change-class typeq 'cc-bmir:consp))
+      ((character) (change-class typeq 'cc-bmir:characterp))
+      ((single-float) (change-class typeq 'cc-bmir:single-float-p))
+      ((core:general) (change-class typeq 'cc-bmir:generalp))
       (t (let ((header-info (gethash ts core:+type-header-value-map+)))
            (cond (header-info
                   (check-type header-info (or integer cons)) ; sanity check
-                  (change-class ifi 'cc-bmir:headerq :info header-info))
+                  (change-class typeq 'cc-bmir:headerq :info header-info))
                  (t (error "BUG: Typeq for unknown type: ~a" ts))))))))
 
 (defun reduce-local-typeqs (function)

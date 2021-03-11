@@ -221,6 +221,24 @@
      (cmp:irc-icmp-eq (in (first inputs)) (in (second inputs)))
      (first next) (second next))))
 
+(defmacro define-tag-test (inst mask tag)
+  `(defmethod translate-conditional-test ((instruction ,inst) next)
+     (cmp:compile-tag-check (in (first (cleavir-bir:inputs instruction)))
+                            ,mask ,tag
+                            (first next) (second next))))
+(define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
+(define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
+(define-tag-test cc-bmir:characterp cmp:+immediate-mask+ cmp:+character-tag+)
+(define-tag-test cc-bmir:single-float-p
+  cmp:+immediate-mask+ cmp:+single-float-tag+)
+(define-tag-test cc-bmir:generalp cmp:+immediate-mask+ cmp:+general-tag+)
+
+(defmethod translate-conditional-test ((instruction cc-bmir:headerq) next)
+  (cmp:compile-header-check
+   (cc-bmir:info instruction)
+   (in (first (cleavir-bir:inputs instruction)))
+   (first next) (second next)))
+
 (defmethod translate-terminator ((instruction cleavir-bir:ifi) abi next)
   (declare (ignore abi))
   (let ((in (first (cleavir-bir:inputs instruction))))
@@ -384,26 +402,6 @@
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
   (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
-
-(defmacro define-tag-test (inst mask tag)
-  `(defmethod translate-terminator ((instruction ,inst) abi next)
-     (declare (ignore abi))
-     (cmp:compile-tag-check (in (first (cleavir-bir:inputs instruction)))
-                            ,mask ,tag
-                            (first next) (second next))))
-(define-tag-test cc-bmir:fixnump cmp:+fixnum-mask+ cmp:+fixnum00-tag+)
-(define-tag-test cc-bmir:consp cmp:+immediate-mask+ cmp:+cons-tag+)
-(define-tag-test cc-bmir:characterp cmp:+immediate-mask+ cmp:+character-tag+)
-(define-tag-test cc-bmir:single-float-p
-  cmp:+immediate-mask+ cmp:+single-float-tag+)
-(define-tag-test cc-bmir:generalp cmp:+immediate-mask+ cmp:+general-tag+)
-
-(defmethod translate-terminator ((instruction cc-bmir:headerq) abi next)
-  (declare (ignore abi))
-  (cmp:compile-header-check
-   (cc-bmir:info instruction)
-   (in (first (cleavir-bir:inputs instruction)))
-   (first next) (second next)))
 
 (defmethod translate-terminator
     ((instruction cc-bir:header-stamp-case) abi next)
