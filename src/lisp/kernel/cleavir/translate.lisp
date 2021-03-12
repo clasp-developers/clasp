@@ -1014,7 +1014,7 @@
             (first (last sub-n-values))
             (let* ((input (first (last (bir:inputs inst))))
                    (outp (typep input 'bir:output))
-                   (inst (bir:definition input)))
+                   (inst (and outp (bir:definition input))))
               (if (typep inst 'bir:values-save)
                   (second (dynenv-storage inst))
                   (progn
