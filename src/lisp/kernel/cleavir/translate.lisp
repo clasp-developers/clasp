@@ -1443,27 +1443,14 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defvar *dis* nil)
 
-(defun dumbprinter (string)
-  (lambda (condition)
-    (declare (ignore condition))
-    (warn string)))
-
 (defun bir-transformations (module system)
   (when *dis*
     (bir::print-disasm
      (bir:disassemble module)))
-  (handler-bind ((error (dumbprinter "to begin with")))
-    (bir:verify module))
   (bir-transformations:module-eliminate-catches module)
-  (handler-bind ((error (dumbprinter "after eliminate-catches")))
-    (bir:verify module))
   (bir-transformations:find-module-local-calls module)
-  (handler-bind ((error (dumbprinter "after local calls")))
-    (bir:verify module))
   (bir-transformations:module-optimize-variables module)
   (bir-transformations:meta-evaluate-module module system)
-  (handler-bind ((error (dumbprinter "after meta evaluate")))
-    (bir:verify module))
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module)
