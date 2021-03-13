@@ -102,6 +102,8 @@ Error enableObjCRegistration(const char *PathToLibObjC);
 #include <llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h>
 #include <llvm/ExecutionEngine/Orc/TargetProcessControl.h>
 #include <llvm/ExecutionEngine/Orc/DebugObjectManagerPlugin.h>
+#include <llvm/ExecutionEngine/Orc/TargetProcess/RegisterEHFrames.h>
+#include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <llvm-c/Disassembler.h>
 //#include <llvm/IR/PrintModulePass.h> // will be llvm/IR  was llvm/Assembly
 
@@ -3843,6 +3845,16 @@ void register_object_file_with_gdb(void* object_file, size_t size)
 
 
 };
+
+
+
+LLVM_ATTRIBUTE_USED void linkComponents() {
+  llvm::errs() << (void *)&llvm_orc_registerEHFrameSectionWrapper
+         << (void *)&llvm_orc_deregisterEHFrameSectionWrapper
+         << (void *)&llvm_orc_registerJITLoaderGDBWrapper;
+}
+
+
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkSizeRecord);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_Location);
 SYMBOL_EXPORT_SC_(LlvmoPkg,make_StkMapRecord_LiveOut);
@@ -3930,18 +3942,19 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                                       for (auto &Sec : G.sections()) {
                                         if (Sec.getName() == EH_FRAME_NAME )
                                           for (auto *S : Sec.symbols()) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, Sec.getName().str().c_str()));
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, Sec.getName().str().c_str()));
                                             S->setLive(true);
                                           }
                                       }
                                       for (auto ssym : G.defined_symbols()) {
                                         if (ssym->hasName()) {
                                           std::string sname = ssym->getName().str();
+                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
                                           if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
                                             ssym->setLive(true);
                                           } else if ( sname.find(literals_name) != std::string::npos ) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
                                             ssym->setLive(true);
                                           }
                                         }
@@ -4035,6 +4048,7 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
             core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)address));
             //register_symbol_with_libunwind(name,section_address+address,size);
             if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
+              DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
               core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
             }
 #endif
@@ -4080,13 +4094,16 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         if (pos != std::string::npos) {
           found_literals = true;
           currentCode->_LiteralVectorStart = (uintptr_t)ssym->getAddress();
-          currentCode->_LiteralVectorSizeBytes = (size_t)ssym->getSize();
-          if (currentCode->_LiteralVectorSizeBytes == 0) {
-            printf("%s:%d:%s The literals vector named %s at %p has zero length - I'm worried this will happen on macOS.\n"
-                   "If it does I'll have to dig into the gcroots constant in the module to get the length\n",
-                   __FILE__, __LINE__, __FUNCTION__, sname.c_str(), (void*)ssym->getAddress() );
+          size_t symbolSize = (size_t)ssym->getSize();
+          if (symbolSize==1) {
+            // A symbol of size 1 is really zero
+            symbolSize = 0;
+          } else if ((symbolSize&7) != 0) {
+            printf("%s:%d:%s The symbol %s is %lu bytes in size but it must be a multiple of 8 bytes!!!\n",
+                   __FILE__, __LINE__, __FUNCTION__, sname.c_str(), symbolSize );
             abort();
           }
+          currentCode->_LiteralVectorSizeBytes = symbolSize;
         }
       }        
     }
@@ -4216,6 +4233,7 @@ void save_symbol_info(const llvm::object::ObjectFile& object_file, const llvm::R
           core::Cons_sp symbol_info = core::Cons_O::createList(core::make_fixnum((Fixnum)size),core::Pointer_O::create((void*)((char*)section_address+address)));
           register_symbol_with_libunwind(name,section_address+address,size);
           if ((!comp::_sym_jit_register_symbol.unboundp()) && comp::_sym_jit_register_symbol->fboundp()) {
+            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Registering jit symbol %s address: %p  size: %lu\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)address, size ));
             core::eval::funcall(comp::_sym_jit_register_symbol,core::SimpleBaseString_O::make(name),symbol_info);
 //          printf("%s:%d  Registering symbol -> %s : %s\n", __FILE__, __LINE__, name.c_str(), _rep_(symbol_info).c_str() );
 //          gc::As<core::HashTableEqual_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue())->hash_table_setf_gethash(core::SimpleBaseString_O::make(name),symbol_info);
@@ -4501,18 +4519,20 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
-        std::unique_ptr<orc::TargetProcessControl> TPC = nullptr;
-//        TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
-        //  orc::enableObjCRegistration("libobjc.dylib");
+        this->_TPC = ExitOnErr(orc::SelfTargetProcessControl::Create(std::make_shared<orc::SymbolStringPool>()));
         auto J = ExitOnErr(
                            LLJITBuilder()
+                           .setExecutionSession(std::make_unique<ExecutionSession>(this->_TPC->getSymbolStringPool()))
                            .setJITTargetMachineBuilder(std::move(JTMB))
                            .setPlatformSetUp(orc::setUpMachOPlatform)
-                           .setObjectLinkingLayerCreator([&TPC,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
+                           .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-//                       ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*TPC))));
+#if 1
+                       // GDB registrar isn't working at the moment
+                       ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+#endif
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
                      })
@@ -4757,10 +4777,9 @@ void dump_objects_for_lldb(FILE* fout,std::string indent)
   python_dump_field(fout,"_tail_start",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_start),sizeof(gctools::Header_s::_tail_start));
   python_dump_field(fout,"_tail_size",true,gctools::ctype_int,offsetof(gctools::Header_s,_tail_size),sizeof(gctools::Header_s::_tail_size));
   python_dump_field(fout,"_guard",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard),sizeof(gctools::Header_s::_guard));
-  python_dump_field(fout,"_dup_tail_start",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_start),sizeof(gctools::Header_s::_dup_tail_start));
-  python_dump_field(fout,"_dup_tail_size",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_tail_size),sizeof(gctools::Header_s::_dup_tail_size));
-  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_stamp_wtag_mtag));
+  python_dump_field(fout,"_source",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_source),sizeof(gctools::Header_s::_source));
   python_dump_field(fout,"_guard2",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_guard2),sizeof(gctools::Header_s::_guard2));
+  python_dump_field(fout,"_dup_stamp_wtag_mtag",true,gctools::ctype_size_t,offsetof(gctools::Header_s,_dup_stamp_wtag_mtag),sizeof(gctools::Header_s::_dup_stamp_wtag_mtag));
 #endif
   fprintf(fout,"] )\n");
 #if 0

@@ -612,7 +612,11 @@ namespace gctools {
       static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init) {
         size_t sizeWithHeader = sizeof(Header_s)+(image_save_load_init->_clientEnd-image_save_load_init->_clientStart);
 #ifdef USE_BOEHM
-        Header_s* base = do_boehm_normal_allocation(image_save_load_init->_stamp_wtag_mtag,sizeWithHeader);
+        Header_s* base = do_boehm_normal_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,sizeWithHeader);
+#ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = image_save_load_init->_headStart->_source;
+#endif
         pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
         uintptr_t guardBefore0 = *(uintptr_t*)((uintptr_t*)ptr-1);
         uintptr_t guardAfter0 = *(uintptr_t*)((uintptr_t*)((char*)ptr+sizeWithHeader-sizeof(Header_s))+1);
@@ -671,7 +675,11 @@ namespace gctools {
 
     static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_atomic_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+#ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = image_save_load_init->_headStart->_source;
+#endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -718,7 +726,11 @@ When would I ever want the GC to automatically collect objects but not move them
 
     static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_normal_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+#ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = image_save_load_init->_headStart->_source;
+#endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -762,7 +774,11 @@ should not be managed by the GC */
 
     static smart_pointer_type image_save_load_allocate(image_save_load_init_s* image_save_load_init, size_t size) {
 #ifdef USE_BOEHM
-      Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_stamp_wtag_mtag,size);
+      Header_s* base = do_boehm_uncollectable_allocation(image_save_load_init->_headStart->_stamp_wtag_mtag,size);
+#ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = image_save_load_init->_headStart->_source;
+#endif
       pointer_type ptr = HeaderPtrToGeneralPtr<OT>(base);
       new (ptr) OT(image_save_load_init);
       printf("%s:%d:%s This is where we should copy in the stuff from the image_save_load_init object\n", __FILE__, __LINE__, __FUNCTION__ );
@@ -1356,7 +1372,11 @@ struct StrongWeakAllocationPoint<WeakLinks> {
   static gctools::tagged_pointer<container_type> image_save_load_allocate( image_save_load_init_s* init ) {
     size_t size = (init->_clientEnd-init->_clientStart)+SizeofWeakHeader();
 #ifdef USE_BOEHM
-    Header_s* base = do_boehm_weak_allocation(init->_stamp_wtag_mtag, size);
+    Header_s* base = do_boehm_weak_allocation(init->_headStart->_stamp_wtag_mtag, size);
+#ifdef DEBUG_GUARD
+        // Copy the source from the image save/load memory.
+        base->_source = init->_headStart->_source;
+#endif
     container_pointer myAddress = (container_pointer)HeaderPtrToWeakPtr(base);
     new (myAddress) container_type(init);
     return gctools::tagged_pointer<container_type>(myAddress);

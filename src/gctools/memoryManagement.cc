@@ -376,8 +376,6 @@ void Header_s::validate() const {
 #endif
     if ( !(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_stamp_wtag_mtag._value))) signal_invalid_object(this,"normal object bad header stamp");
 #ifdef DEBUG_GUARD
-    if ( this->_tail_start != this->_dup_tail_start) signal_invalid_object(this,"normal object bad header tail_start");
-    if ( this->_tail_size != this->_dup_tail_size) signal_invalid_object(this,"normal object bad header tail_size");
     for ( unsigned char *cp=((unsigned char*)(this)+this->_tail_start), 
             *cpEnd((unsigned char*)(this)+this->_tail_start+this->_tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) signal_invalid_object(this,"bad tail content");
@@ -701,7 +699,6 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   return exitCode;
 }
 
-__attribute__((optnone))
 Tagged GCRootsInModule::setLiteral(size_t raw_index, Tagged val) {
   BOUNDS_ASSERT(raw_index<this->_capacity);
   BOUNDS_ASSERT(raw_index<this->_num_entries);

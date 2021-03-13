@@ -84,7 +84,7 @@ names to offsets."
                                      (thread-local-llvm-context)
                                      (list ,@(mapcar #'first fields))
                                      nil))))
-      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* ,name))
+      (let ((field-offsets `(let ((,layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) ,name))
                                   (,field-index 0))
                               (mapcar (lambda (,gs-field)
                                         (prog1
@@ -412,8 +412,8 @@ Boehm and MPS use a single pointer"
 
 (defconstant +cons.car-index+ (c++-field-index :car info.%cons%))
 (defconstant +cons.cdr-index+ (c++-field-index :cdr info.%cons%))
-(let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %cons%))
-       (cons-layout (llvm-sys:data-layout-get-struct-layout *system-data-layout* %cons%))
+(let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %cons%))
+       (cons-layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
        (cons-cdr-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.cdr-index+)))
   (core:verify-cons-layout cons-size cons-car-offset cons-cdr-offset))
@@ -786,7 +786,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 (defun %closure-with-slots%.offset-of[n]/t* (index)
   "This assumes that the t* offset coincides with the tsp start"
   (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure-with-slots%))))
-         (sizeof-element (llvm-sys:data-layout-get-type-alloc-size *system-data-layout* %tsp%)))
+         (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
     (+ (* sizeof-element index) offset-of-data)))
 
 ;;
@@ -970,7 +970,7 @@ and initialize it with an array consisting of one function pointer."
 ;;
                                                    
 (progn
-  (let* ((data-layout *system-data-layout*)
+  (let* ((data-layout (system-data-layout))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
          (symbol-size (llvm-sys:data-layout-get-type-alloc-size data-layout %symbol%))

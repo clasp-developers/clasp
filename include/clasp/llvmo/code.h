@@ -158,7 +158,7 @@ FORWARD(Code);
 class Code_O : public CodeBase_O {
   LISP_CLASS(llvmo, LlvmoPkg, Code_O, "Code", CodeBase_O);
  public:
-  static Code_sp make(uintptr_t scanSize, uintptr_t size);
+  static Code_sp make(uintptr_t scanSize, uintptr_t size, ObjectFile_sp of);
  public:
   typedef uint8_t value_type;
  public:
@@ -280,8 +280,8 @@ public:
 
   Expected<std::unique_ptr<JITLinkMemoryManager::Allocation>>
   allocate(const JITLinkDylib *JD, const SegmentsRequestMap &Request) override {
-
     using AllocationMap = DenseMap<unsigned, sys::MemoryBlock>;
+//    printf("%s:%d:%s ClaspAllocation allocate entered with %lu requests\n", __FILE__, __LINE__, __FUNCTION__, (unsigned long)Request.size() );
 
     // Local class for allocation.
     class IPMMAlloc : public Allocation {
@@ -335,6 +335,7 @@ public:
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
       uint64_t SegmentSize = gctools::AlignUp((ZeroFillStart+Seg.getZeroFillSize()),Seg.getAlignment());
+//      printf("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize());
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s    allocation KV.first = 0x%x Seg info align/ContentSize/ZeroFillSize = %llu/%lu/%llu  \n", __FILE__, __LINE__, __FUNCTION__, KV.first, (unsigned long long)Seg.getAlignment(), Seg.getContentSize(), (unsigned long long)Seg.getZeroFillSize()));
       // Add Seg.getAlignment() just in case we need a bit more space to make alignment.
       if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
@@ -344,23 +345,29 @@ public:
       totalSize += gctools::AlignUp(Seg.getContentSize()+Seg.getZeroFillSize(),Seg.getAlignment())+Seg.getAlignment();
     }
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocation scanSize = %lu  totalSize = %lu\n", __FILE__, __LINE__, __FUNCTION__, scanSize, totalSize));
-    Code_sp codeObject = Code_O::make(scanSize,totalSize);
+    Code_sp codeObject(_Unbound<llvmo::Code_O>());
+    bool allocatingCodeObject = (Request.size()>1);
+    if (allocatingCodeObject) { // It's the allocation that creates a Code object
     // Associate the Code object with the current ObjectFile
-    ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(my_thread->topObjectFile());
-    codeObject->_ObjectFile = of;
-    my_thread->topObjectFile()->_Code = codeObject;
+      ObjectFile_sp of = gc::As_unsafe<ObjectFile_sp>(my_thread->topObjectFile());
+      codeObject = Code_O::make( scanSize, totalSize, of );
     // printf("%s:%d:%s ObjectFile_sp at %p is associated with Code_sp at %p\n", __FILE__, __LINE__, __FUNCTION__, my_thread->topObjectFile().raw_(), codeObject.raw_());
+    }
     for (auto &KV : Request) {
       auto &Seg = KV.second;
       uint64_t ZeroFillStart = Seg.getContentSize();
       size_t SegmentSize = (uintptr_t)gctools::AlignUp(ZeroFillStart+Seg.getZeroFillSize(),Seg.getAlignment());
       void* base;
-      if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
-        base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
-        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
-      } else {
+      if (allocatingCodeObject) {
+        if ((llvm::sys::Memory::MF_RWE_MASK & KV.first) == ( llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE )) {
+          base = codeObject->allocateHead(SegmentSize,Seg.getAlignment());
+          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the head base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
+        } else {
         base = codeObject->allocateTail(SegmentSize,Seg.getAlignment());
         DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s allocating Prot 0x%x from the tail base = %p\n", __FILE__, __LINE__, __FUNCTION__, KV.first, base ));
+        }
+      } else {
+        base = aligned_alloc(Seg.getAlignment(),SegmentSize);
       }
       sys::MemoryBlock SegMem(base,SegmentSize);
         // Zero out the zero-fill memory

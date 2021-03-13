@@ -573,7 +573,9 @@ struct from_object<T *> {
       this->_v = v_alien;
       return;
     }
-    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
+    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s\n"
+           "into  a C++ object that can be passed to a C++ function/method\n"
+           "You need to write a from_object translator for the destination type\n",
            __FILE__, __LINE__, _rep_(o).c_str());
     printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
   }

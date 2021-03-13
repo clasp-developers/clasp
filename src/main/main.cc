@@ -438,30 +438,6 @@ int main( int argc, char *argv[] )
   int  mpiSize    = 1;
 
 
-  // Run a test for endianness and Header_s layout
-  gctools::Header_s::StampWtagMtag swm(0,0);
-  gctools::Header_s testme1(swm);
-  gctools::Header_s testme2(swm);
-  
-  testme1._stamp_wtag_mtag._value = 12;
-  testme2._stamp_wtag_mtag._header_data[0] = 12;
-  
-  if (testme1._stamp_wtag_mtag._header_data[0] != testme2._stamp_wtag_mtag._header_data[0]) {
-    printf("%s:%d testme1 header@ %p  The _stamp_wtag_mtag %lu header_badge %lu does not line up properly with _header_words[0] = %lu\n",
-           __FILE__, __LINE__,
-           &testme1,
-           (uintptr_t)testme1._stamp_wtag_mtag._value,
-           (uintptr_t)testme1._stamp_wtag_mtag._header_badge,
-           (uintptr_t)testme1._stamp_wtag_mtag._header_data[0]);
-    printf("%s:%d testme2 header@ %p  The _stamp_wtag_mtag %lu header_badge %lu does not line up properly with _header_words[0] = %lu\n",
-           __FILE__, __LINE__,
-           &testme2,
-           (uintptr_t)testme2._stamp_wtag_mtag._value,
-           (uintptr_t)testme2._stamp_wtag_mtag._header_badge,
-           (uintptr_t)testme2._stamp_wtag_mtag._header_data[0]);
-    abort();
-  }
-  
   // DO BASIC EXE SETUP
 
   set_abort_flag(); // Set abort flag to default value

@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include <llvm/IR/Module.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/ExecutionEngine/Orc/TargetProcessControl.h>
 #include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/CodeGen/TargetSubtargetInfo.h>
 //#include "llvm/ExecutionEngine/JIT.h"
@@ -4601,6 +4602,7 @@ public:
   ~ClaspJIT_O();
 public:
   JITDylib_sp _MainJITDylib;
+  std::unique_ptr<llvm::orc::TargetProcessControl> _TPC;
   std::unique_ptr<llvm::orc::LLJIT>    _LLJIT;
 //  llvm::jitlink::JITLink* _LinkLayer;
 #if _TARGET_OS_DARWIN

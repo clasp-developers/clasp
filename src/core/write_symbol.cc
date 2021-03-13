@@ -272,7 +272,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
 }
 
 void Symbol_O::__write__(T_sp stream) const {
-  if (globals_->_PrintSymbolsProperly) {
+  if (_lisp->_Roots._PrintSymbolsProperly) {
     clasp_write_symbol(this->asSmartPtr(), stream);
   } else {
     string name = this->formattedName(false);

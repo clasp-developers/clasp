@@ -216,7 +216,9 @@ Lisp_O::GCRoots::GCRoots() :
   _SpecialForms(_Unbound<HashTableEq_O>()),
   _NullStream(_Nil<T_O>()),
   _ThePathnameTranslations(_Nil<T_O>()),
-  _UnixSignalHandlers(_Nil<T_O>())
+  _UnixSignalHandlers(_Nil<T_O>()),
+  _PrintSymbolsProperly(false)
+
 {
   this->_JITDylibs.store(_Nil<core::T_O>());
   this->_SingleDispatchGenericFunctions.store(_Nil<core::T_O>());
@@ -619,7 +621,7 @@ void Lisp_O::startupLispEnvironment() {
   //
   this->initializeMainThread();
   
-  globals_->_PrintSymbolsProperly = true;
+  this->_Roots._PrintSymbolsProperly = true;
   mpip::Mpi_O::initializeGlobals(_lisp);
   global_Started = true;
 

@@ -219,7 +219,6 @@ struct globals_t {
   uint           _StackSampleCount;
   uint           _StackSampleSize;
   uint           _StackSampleMax;
-  bool           _PrintSymbolsProperly;
   int            _Argc; //! Raw argc
   vector<string> _Argv; // Raw argv
   /*! Map source file path strings to FileScope_sp */
@@ -277,7 +276,6 @@ struct globals_t {
                 _StackSampleCount(0),
                 _StackSampleSize(0),
                 _StackSampleMax(0),
-                _PrintSymbolsProperly(false),
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),
@@ -380,6 +378,7 @@ namespace core {
 //    DynamicBindingStack _Bindings;
     HashTableEqual_sp _SourceFileIndices; // map<string,int>
     HashTableEqual_sp _PackageNameIndexMap; // map<string,int>
+    bool           _PrintSymbolsProperly;
     GCRoots();
   };
 

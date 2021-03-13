@@ -65,6 +65,32 @@
 (export 'thread-local-llvm-context)
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Image save load support
+;;;
+;;; Provide a function for image-save to prepare for the save
+;;;
+;;; And another to bring the system back up.
+;;;
+
+(defvar *image-save-hooks* nil)
+
+(defun register-image-save-hook (hook)
+  (setq *image-save-hooks* (cons hook *image-save-hooks*)))
+
+(defun invoke-image-save-hooks ()
+  (dolist (entry *image-save-hooks*)
+    (funcall entry)))
+
+(defun image-load-restore ()
+  )
+
+
+(export '(image-save-prepare image-load-restore register-image-save-hook))
+
+
+
 (defun dump-function (func)
   (warn "Do something with dump-function"))
 (export 'dump-function)
@@ -217,11 +243,18 @@ using features defined in corePackage.cc"
       (bformat nil "module%s" *run-time-module-counter*)
     (setq *run-time-module-counter* (+ 1 *run-time-module-counter*))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (let* ((module (llvm-create-module (next-run-time-module-name)))
-         (data-layout (llvm-sys:get-data-layout module)))
-    (defvar *system-data-layout* data-layout)))
+(defvar *the-system-data-layout*)
+(defun system-data-layout ()
+  (if (not (boundp '*the-system-data-layout*))
+      (let* ((module (llvm-create-module (next-run-time-module-name)))
+             (data-layout (llvm-sys:get-data-layout module)))
+        (setq *the-system-data-layout* data-layout)))
+  *the-system-data-layout*)
 
+(export 'system-data-layout)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (register-image-save-hook (function (lambda () (makunbound '*the-system-data-layout*)))))
 
 (defun load-object-files (&optional (object-files core:*command-line-arguments*))
   (format t "load-object-files trying to load ~a~%" object-files)
@@ -740,6 +773,12 @@ The passed module is modified as a side-effect."
 #+threads(defvar *jit-log-lock* (mp:make-recursive-mutex 'jit-log-lock))
 (defvar *jit-log-stream*)
 (defvar *jit-pid*)
+
+(eval-when (:load-toplevel :execute)
+  (register-image-save-hook
+   (function (lambda ()
+     (makunbound '*jit-pid*)
+     (makunbound '*jit-log-stream*)))))
 
 (defun jit-register-symbol (symbol-name-string symbol-info)
   "This is a callback from llvmoExpose.cc::save_symbol_info for registering JITted symbols"

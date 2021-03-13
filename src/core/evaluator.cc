@@ -1337,6 +1337,17 @@ namespace core {
             // So we only need to worry about :execute and cl:eval.
             ASSERT(env.generalp());
             List_sp situations = oCar(args);
+            for ( auto cur : situations ) {
+              T_sp sit = CONS_CAR(cur);
+              if ( !(sit == kw::_sym_execute ||
+                     sit == kw::_sym_eval ||
+                     sit == kw::_sym_load_toplevel ||
+                     sit == cl::_sym_load ||
+                     sit == kw::_sym_compile_toplevel ||
+                     sit == cl::_sym_compile ) ) {
+                SIMPLE_ERROR(BF("Illegal eval-when situation %s") % _rep_(sit) );
+              }
+            }
             List_sp body = oCdr(args);
             bool execute = cl__member(kw::_sym_execute, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();
             execute |= cl__member(cl::_sym_eval, situations, _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>()).isTrue();

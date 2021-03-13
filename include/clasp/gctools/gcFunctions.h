@@ -18,6 +18,9 @@ core::T_mv gctools__ensure_valid_object(core::T_mv obj);
 
  void save_lisp_and_die(const std::string& filename);
 
+core::T_mv cl__room(core::T_sp x);
+
+
 };
 
 extern "C" {

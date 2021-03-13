@@ -186,6 +186,7 @@ SYMBOL_EXPORT_SC_(CompPkg, STARthread_safe_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARdebug_jitSTAR );
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARoptimization_levelSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARprimitivesSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_class_name_to_lisp_name_PLUS_);

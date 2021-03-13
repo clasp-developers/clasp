@@ -31,6 +31,7 @@ LibraryFile_sp LibraryFile_O::createLibrary(const std::string& slibraryName)
 
 ObjectFile_sp ObjectFile_O::create(std::unique_ptr<llvm::MemoryBuffer> buffer, size_t startupID, JITDylib_sp jitdylib, const std::string& sFasoName, size_t fasoIndex)
 {
+//  printf("%s:%d:%s Creating ObjectFile faso: %s index: %lu\n", __FILE__, __LINE__, __FUNCTION__, sFasoName.c_str(), fasoIndex);
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Creating ObjectFile_O start=%p size= %lu\n", __FILE__, __LINE__, __FUNCTION__, buffer ? buffer->getBufferStart() : NULL, buffer ? buffer->getBufferSize() : 0));
   core::SimpleBaseString_sp fasoName = core::SimpleBaseString_O::make(sFasoName);
   ObjectFile_sp of = gc::GC<ObjectFile_O>::allocate(std::move(buffer),startupID,jitdylib,fasoName,fasoIndex);
@@ -105,9 +106,12 @@ std::string Library_O::__repr__() const {
 namespace llvmo {
 
 
-Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize) {
+Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, ObjectFile_sp objectFile) {
+//  printf("%s:%d:%s Creating Code_O for objectFile: %s %lu\n", __FILE__, __LINE__, __FUNCTION__, objectFile->_FasoName->get_std_string().c_str(), objectFile->_StartupID );
 //  Code_sp code = gctools::GC<Code_O>::allocate_container_partial_scan(scanSize, totalSize);
   Code_sp code = gctools::GC<Code_O>::allocate_container(false,totalSize);
+  code->_ObjectFile = objectFile;
+  objectFile->_Code = code;
   // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
   return code;
 }

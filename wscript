@@ -211,7 +211,8 @@ DEBUG_OPTIONS = [
     "SOURCE_DEBUG", # Allow LOG messages to print - works with CLASP_DEBUG environment variable
     "DEBUG_JIT_LOG_SYMBOLS", # Generate a log of JITted symbols in /tmp/clasp-symbols-<pid>
     "DEBUG_GUARD", # Add guards around allocated objects
-    "DEBUG_GUARD_VALIDATE", # add simple checks of guards (fast)
+    "DEBUG_GUARD_VALIDATE", # Add quick checking of guards
+    "DEBUG_GUARD_BACKTRACE", # add allocation backtraces to guards
     "DEBUG_GUARD_EXHAUSTIVE_VALIDATE", #add exhaustive, slow, checks of guards
     "DEBUG_TRACE_INTERPRETED_CLOSURES", # Count how many interpreted closures are evaluated
     "DEBUG_ENVIRONMENTS",
@@ -1282,6 +1283,8 @@ def configure(cfg):
     if (cfg.env.DEBUG_GUARD):
         cfg.define("DEBUG_GUARD",1)
         cfg.define("DEBUG_GUARD_VALIDATE",1)
+    if (cfg.env.DEBUG_GUARD_BACKTRACE):
+        cfg.define("DEBUG_GUARD_BACKTRACE",1)
     if (cfg.env.DEBUG_GUARD_EXHAUSTIVE_VALIDATE):
         cfg.define("DEBUG_GUARD_EXHAUSTIVE_VALIDATE",1)
     cfg.define("DEBUG_MONITOR_SUPPORT",1) 

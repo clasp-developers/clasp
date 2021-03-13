@@ -49,7 +49,7 @@ RESULT_TYPE WEAK_SCAN(SCAN_STRUCT_T ss, ADDR_T client, ADDR_T limit  EXTRA_ARGUM
         POINTER_FIX((core::T_O**)&obj->dependent.rawRef_());
         for (int i(0), iEnd(obj->length()); i < iEnd; ++i) {
           core::T_O** objptr = (core::T_O**)&obj->bucket[i].rawRef_();
-          printf("%s:%d [%d of %d] objptr@ %p -> %p\n", __FILE__, __LINE__, i, obj->length(), objptr, (void*)(*objptr) );
+//          printf("%s:%d [%d of %d] objptr@ %p -> %p\n", __FILE__, __LINE__, i, obj->length(), objptr, (void*)(*objptr) );
           POINTER_FIX(objptr);
         }
         client = (ADDR_T)((char *)client + sizeof(gctools::StrongBucketsObjectType) + sizeof(typename gctools::StrongBucketsObjectType::value_type) * obj->length() + sizeof(gctools::Header_s));

@@ -1,9 +1,18 @@
 #+debug-lexical-var-reference-depth
 (eval-when (:compile-toplevel)
   (report-lexical-var-reference-depth))
+
 #+cclasp
-(eval-when (:load-toplevel)
-  (cl:in-package :cl-user)
+(cl:defun sys::cclasp-image-load-top-level ()
+    (cl:in-package :cl-user)
+  (let ((core:*use-interpreter-for-eval* nil))
+    (if (core:is-interactive-lisp)
+        (core:top-level :noprint (core:noprint-p))
+        (core:exit 0))))
+
+#+cclasp
+(cl:defun sys::cclasp-top-level ()
+    (cl:in-package :cl-user)
   (let ((core:*use-interpreter-for-eval* nil))
     (core:process-extension-loads)
     (core:maybe-load-clasprc)
@@ -11,3 +20,8 @@
     (if (core:is-interactive-lisp)
         (core:top-level :noprint (core:noprint-p))
         (core:exit 0))))
+
+#+cclasp
+(eval-when (:load-toplevel)
+  (cl:in-package :cl-user)
+  (sys::cclasp-top-level))

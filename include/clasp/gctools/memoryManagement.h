@@ -26,6 +26,9 @@
 // Define compile-time flags that effect structure sizes
 //
 #include <atomic>
+#ifdef DEBUG_GUARD_BACKTRACE
+#include <execinfo.h>
+#endif
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -553,46 +556,86 @@ namespace gctools {
 #endif
     }
   public:
+#define GUARD_BACKTRACE_LEVELS 8
     // The header contains the stamp_wtag_mtag value.
     StampWtagMtag _stamp_wtag_mtag;  // This MUST be the first word of the guard.
 #ifdef DEBUG_GUARD
     int _tail_start;
     int _tail_size;
     uintptr_t _guard;
-    int _dup_tail_start;
-    int _dup_tail_size;
+    uintptr_t _source;
     uint _guard2;
+#endif
+#ifdef DEBUG_GUARD_BACKTRACE
+    void* _backtrace[GUARD_BACKTRACE_LEVELS];
+#endif
+#ifdef DEBUG_GUARD
     // The last word of the guard must be a copy of the first.
     //  this is so that we can get the stamp_wtag_mtag by subtracting
     //  from the client pointer AND we can get it from a header pointer.
     StampWtagMtag _dup_stamp_wtag_mtag; // This MUST be the last word of the guard.
-    
 #endif
   public:
+#ifdef DEBUG_GUARD_BACKTRACE
+    inline void maybe_fill_backtrace(tagged_stamp_t k) {
+      void** bp = (void**)__builtin_frame_address(0);
+      void** bpnew;
+      void* pc;
+      for ( size_t ii = 0; ii<GUARD_BACKTRACE_LEVELS; ++ ii ) {
+        pc = *(void**)(bp+1);
+        bpnew = (void**)*(void**)bp;
+        if ((uintptr_t)bpnew<(uintptr_t)bp) break;
+        if (bpnew>my_thread_low_level->_StackTop) break;
+        bp = bpnew;
+        this->_backtrace[ii] = pc;
+      }
+    };
+#endif
+#ifdef DEBUG_GUARD
+    inline void fill_tail() {
+      if (this->_tail_size) memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);
+    };
+#endif
 #if !defined(DEBUG_GUARD)
     Header_s(const StampWtagMtag& k ) :
         _stamp_wtag_mtag(k)
-    {}
+    {
+    }
+    Header_s(Header_s* headptr) :
+      _stamp_wtag_mtag(headptr->_stamp_wtag_mtag)
+    {};
 #endif
 #if defined(DEBUG_GUARD)
 #define GUARD1 0xFEEAFEEBDEADBEE0
 #define GUARD2 0xC0FFEEE0
 
-    inline void fill_tail() {
-      if (this->_tail_size) memset((void*)(((char*)this)+this->_tail_start),0xcc,this->_tail_size);
-    };
   Header_s(const StampWtagMtag& k, size_t tstart=0, size_t tsize=0, size_t total_size=sizeof(Header_s)) 
     : _stamp_wtag_mtag(k), 
       _guard(GUARD1),
       _tail_start(tstart),
       _tail_size(tsize),
-      _dup_tail_start(tstart),
-      _dup_tail_size(tsize),
+      _source((uintptr_t)this),
       _guard2(GUARD2),
       _dup_stamp_wtag_mtag(k)
     {
+#ifdef DEBUG_GUARD_BACKTRACE
+      this->maybe_fill_backtrace(k._value);
+#endif
       this->fill_tail();
     };
+
+
+    Header_s(Header_s* headptr) :
+      _stamp_wtag_mtag(headptr->_stamp_wtag_mtag), 
+      _guard(GUARD1),
+      _tail_start(0),
+      _tail_size(0),
+      _source(headptr->_source),
+      _guard2(GUARD2),
+      _dup_stamp_wtag_mtag(headptr->_stamp_wtag_mtag)
+    {
+    };
+    
 #endif
     static GCStampEnum value_to_stamp(Fixnum value) { return (GCStampEnum)(StampWtagMtag::unshift_shifted_stamp(value)); };
   public:

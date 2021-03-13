@@ -834,10 +834,16 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x) {
 namespace gctools {
 
 CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
+#if 0
+#ifdef USE_PRECISE_GC
+  imageSaveLoad::image_save(filename);
+#endif
+#else
 #ifdef USE_PRECISE_GC
   throw(core::SaveLispAndDie(filename));
 #else
   SIMPLE_ERROR(BF("save-lisp-and-die only works for precise GC"));
+#endif
 #endif
   
 }
@@ -850,30 +856,6 @@ CL_DEFUN void gctools__slad() {
 
 void save_lisp_and_die(const std::string& filename)
 {
-  //
-  // Release object files
-  //
-  _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
-
-  //
-  // Run 10 GC cycles and force finalizers to run (do I need to run finalizers more than once?)
-  //
-  for (int i=0; i<10; i++ ) {
-    gctools__garbage_collect();
-#ifdef USE_BOEHM
-    int num = GC_invoke_finalizers(); // maybe not necessary
-#endif
-#ifdef USE_MPS
-    // Do something here
-#endif
-
-  }
-
-  //
-  // For now run ROOM
-  //
-  cl__room(_Nil<core::T_O>());
-
   //
   // For real save-lisp-and-die do the following (a simple 19 step plan)
   //
@@ -1105,6 +1087,15 @@ CL_DEFUN void gctools__definalize(core::T_sp object) {
 
 };
 
+
+namespace gctools {
+
+};
+
+
+
+
+
 namespace gctools {
 
 #ifdef DEBUG_COUNT_ALLOCATIONS
@@ -1323,6 +1314,14 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport) ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "**DEFINED**" : "undefined") ).str();
 
+  bool debug_guard_backtrace = false;
+#ifdef DEBUG_GUARD_BACKTRACE
+  debug_guard_backtrace = true;
+  debugging = true;
+  if (setFeatures)  features = core::Cons_O::create(_lisp->internKeyword("DEBUG-GUARD-BACKTRACE"), features);
+#endif
+  if (buildReport) ss << (BF("DEBUG_GUARD_BACKTRACE = %s\n") % (debug_guard_backtrace ? "**DEFINED**" : "undefined") ).str();
+  
   bool debug_validate_guard = false;
 #ifdef DEBUG_VALIDATE_GUARD
   debug_validate_guard = true;

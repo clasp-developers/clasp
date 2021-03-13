@@ -10,11 +10,11 @@
 namespace gctools {
 
 struct image_save_load_init_s {
-  Header_s::StampWtagMtag        _stamp_wtag_mtag;
+  Header_s*                           _headStart;
   gctools::clasp_ptr_t                _clientStart; // include vtable
   gctools::clasp_ptr_t                _clientEnd; // after client
-  image_save_load_init_s(Header_s::StampWtagMtag stamp, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
-    _stamp_wtag_mtag(stamp),
+  image_save_load_init_s(Header_s* head, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
+    _headStart(head),
     _clientStart(clientStart),
     _clientEnd(clientEnd) {};
 
