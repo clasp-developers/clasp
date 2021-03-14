@@ -3936,7 +3936,7 @@ namespace llvmo {
 
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
   void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR, const llvm::Triple &TT,
-                        llvm::jitlink::PassConfiguration &Config) override {
+                        llvm::jitlink::PassConfiguration &Config) {
     Config.PrePrunePasses.push_back(
                                     [this](jitlink::LinkGraph &G) -> Error {
                                       for (auto &Sec : G.sections()) {
