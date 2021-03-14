@@ -459,7 +459,7 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
 void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end, bool dummyHasDataConst, gctools::clasp_ptr_t dummyDataConstStart, gctools::clasp_ptr_t dummyDataConstEnd ) {
 //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
   BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
-  printf("%s:%d:%s Entered is_executable = %d use_origin = %d library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, use_origin, (void*)library_origin );
+//  printf("%s:%d:%s Entered is_executable = %d use_origin = %d library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, use_origin, (void*)library_origin );
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 // Get the start of the library and the symbol_table
   if (!use_origin) {
@@ -517,7 +517,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
                     "__TEXT",
                     text_segment_start,
                     text_segment_size);
-  printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
+//  printf("%s:%d:%s       Looking for __TEXT  library_origin = %p - %p  text_segment_start = %p - %p text_section_size = %lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)library_origin, (void*)((char*)library_origin+text_segment_size), (void*)text_segment_start, (void*)((char*)text_segment_start + text_segment_size), text_segment_size );
   uintptr_t vtableRegionStart = 0;
   uintptr_t vtableRegionEnd = 0;
   bool found = false;

@@ -1,7 +1,7 @@
 
 from io import StringIO
 
-verbose = False
+verbose = True
 layout = None
 debugger = None
 
@@ -314,7 +314,7 @@ class Vaslist:
     def value(self):
         return self._Value
     def __repr__(self):
-        return str(address)
+        return str(self._Value)
     
 class T_O:
     def consp(self):
@@ -590,7 +590,7 @@ def do_lisp_print(debugger_mod,arg):
     return obj
 
 def do_lisp_inspect(debugger_mod,arg):
-    #print "In inspect args: %s" % args
+    print( "In inspect args: %s" % arg )
     tptr = arg_to_tptr(debugger_mod,arg)
     obj = any_tagged_ptr(debugger_mod,tptr)
     print( "any_tagged_ptr returned: %s" % obj.__repr__())

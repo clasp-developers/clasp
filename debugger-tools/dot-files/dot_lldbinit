@@ -42,3 +42,7 @@ command alias lframe-prev expr af_gotoIhsPrev()
 command alias lprint-frame expr af_printCurrentIhsFrame()
 command alias lprint-frame-env expr af_printCurrentIhsFrameEnvironment()
 command regex lgoto-frame 's/lgoto-frame ([0-9]+)/expr af_gotoIhsFrame(%1)/'
+
+
+
+command script import lldb_loader.py

@@ -458,6 +458,7 @@ class StringOutputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
@@ -486,6 +487,7 @@ class StringInputStream_O : public StringStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
 
 public:    // ctor/dtor for classes with shared virtual base
            //    explicit StringStream_O(core::Instance_sp const& mc) : T_O(mc),AnsiStream(mc) {};
@@ -528,6 +530,7 @@ public:
 public: // Functions here
   virtual string __repr__() const override;
   T_sp filename() const override;
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
 
 }; // SynonymStream class
 
@@ -556,6 +559,7 @@ public:
   static T_sp make(T_sp in, T_sp out) {
     return cl__make_two_way_stream(in, out);
   };
+  virtual void fixupInternalsForImageSaveLoad(FixupOperation& op);
 }; // TwoWayStream class
 
 }; // core namespace

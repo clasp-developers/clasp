@@ -783,7 +783,7 @@ Return the index of the load-time-value"
                                           nil ; isConstant
                                           'llvm-sys:internal-linkage
                                           (cmp:gcroots-in-module-initial-value)
-                                          (core:bformat nil "dummy-%s%d" core:+gcroots-in-module-name+ module-id)))
+                                          (core:bformat nil "%s%d" core:+gcroots-in-module-name+ module-id)))
          (*run-time-coalesce* (make-similarity-table #'eq))
          (*literal-machine* (make-literal-machine)))
     (let* ((THE-REPL-FUNCTION (funcall body-fn))

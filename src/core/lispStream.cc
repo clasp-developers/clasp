@@ -4544,45 +4544,49 @@ T_sp core__set_buffering_mode(T_sp stream, T_sp buffer_mode_symbol) {
 }
 
 
+void clasp_setup_stream_ops(T_sp stream, enum StreamMode smm) {
+  switch (smm) {
+  case clasp_smm_io:
+      StreamOps(stream) = duplicate_dispatch_table(io_stream_ops);
+      break;
+  case clasp_smm_probe:
+  case clasp_smm_input:
+      StreamOps(stream) = duplicate_dispatch_table(input_stream_ops);
+      break;
+  case clasp_smm_output:
+      StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
+      break;
+#if defined(ECL_WSOCK)
+  case clasp_smm_input_wsock:
+      StreamOps(stream) = duplicate_dispatch_table(winsock_stream_input_ops);
+      break;
+  case clasp_smm_output_wsock:
+      StreamOps(stream) = duplicate_dispatch_table(winsock_stream_output_ops);
+      break;
+  case clasp_smm_io_wsock:
+      StreamOps(stream) = duplicate_dispatch_table(winsock_stream_io_ops);
+      break;
+  case clasp_smm_io_wcon:
+      StreamOps(stream) = duplicate_dispatch_table(wcon_stream_io_ops);
+      break;
+#endif
+  default:
+      FEerror("Not a valid mode ~D for clasp_make_stream_from_FILE", 1, make_fixnum(smm).raw_());
+  }
+  StreamOutputColumn(stream) = 0;
+  StreamLastOp(stream) = 0;
+}
+
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm,
                                  gctools::Fixnum byte_size, int flags, T_sp external_format) {
   T_sp stream;
   stream = IOStreamStream_O::create();
   StreamMode(stream) = smm;
   StreamClosed(stream) = 0;
-  switch (smm) {
-  case clasp_smm_io:
-    StreamOps(stream) = duplicate_dispatch_table(io_stream_ops);
-    break;
-  case clasp_smm_probe:
-  case clasp_smm_input:
-    StreamOps(stream) = duplicate_dispatch_table(input_stream_ops);
-    break;
-  case clasp_smm_output:
-    StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
-    break;
-#if defined(ECL_WSOCK)
-  case clasp_smm_input_wsock:
-    StreamOps(stream) = duplicate_dispatch_table(winsock_stream_input_ops);
-    break;
-  case clasp_smm_output_wsock:
-    StreamOps(stream) = duplicate_dispatch_table(winsock_stream_output_ops);
-    break;
-  case clasp_smm_io_wsock:
-    StreamOps(stream) = duplicate_dispatch_table(winsock_stream_io_ops);
-    break;
-  case clasp_smm_io_wcon:
-    StreamOps(stream) = duplicate_dispatch_table(wcon_stream_io_ops);
-    break;
-#endif
-  default:
-    FEerror("Not a valid mode ~D for clasp_make_stream_from_FILE", 1, make_fixnum(smm).raw_());
-  }
+  clasp_setup_stream_ops(stream,smm);
   set_stream_elt_type(stream, byte_size, flags, external_format);
   FileStreamFilename(stream) = fname; /* not really used */
-  StreamOutputColumn(stream) = 0;
   IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(f);
-  StreamLastOp(stream) = 0;
   return stream;
 }
 
@@ -5930,19 +5934,18 @@ void IOStreamStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
   if (op == core::LoadOp) {
     std::string name = gc::As<String_sp>(this->_Filename)->get_std_string();
     T_sp stream = this->asSmartPtr();
-    printf("%s:%d:%s Opening %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    printf("%s:%d:%s Opening %s stream = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)stream.raw_());
     if (name == "*STDIN*") {
       StreamOps(stream) = duplicate_dispatch_table(input_stream_ops);
-      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stdin);
     } else if (name=="*STDOUT*") {
       StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
-      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stdout);
     } else if (name=="*STDERR*") {
       StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
-      IOStreamStreamFile(stream) = reinterpret_cast<FILE *>(stderr);
     } else {
       printf("%s:%d:%s What do I do to open %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
     }
+    clasp_setup_stream_ops( stream, StreamMode(stream) );
+    si_stream_external_format_set(stream,StreamFormat(stream));
   }
 }
 
@@ -5956,6 +5959,20 @@ int Stream_O::lineno() const {
 
 int Stream_O::column() const {
   return 0;
+};
+
+void SynonymStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  T_sp stream = this->asSmartPtr();
+  if (op == core::LoadOp) {
+    StreamOps(stream) = duplicate_dispatch_table(synonym_ops);
+  }
+};
+
+void TwoWayStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  T_sp stream = this->asSmartPtr();
+  if (op == core::LoadOp) {
+    StreamOps(stream) = duplicate_dispatch_table(two_way_ops);
+  }
 };
 
 T_sp SynonymStream_O::filename() const {
@@ -6017,6 +6034,20 @@ T_sp StringInputStream_O::make(const string &str) {
   String_sp s = str_create(str);
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
+
+void StringInputStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  T_sp stream = this->asSmartPtr();
+  if (op == core::LoadOp) {
+    StreamOps(stream) = duplicate_dispatch_table(str_in_ops);
+  }
+};
+
+void StringOutputStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
+  T_sp stream = this->asSmartPtr();
+  if (op == core::LoadOp) {
+    StreamOps(stream) = duplicate_dispatch_table(str_out_ops);
+  }
+};
 
 string StringInputStream_O::peerFrom(size_t start, size_t len)
 {

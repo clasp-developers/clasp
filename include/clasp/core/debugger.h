@@ -259,7 +259,7 @@ struct OpenDynamicLibraryInfo {
 struct add_library : public add_dynamic_library {
   std::vector<OpenDynamicLibraryInfo> _Libraries;
   virtual void operator()(const OpenDynamicLibraryInfo& info) {
-    printf("%s:%d:%s registering library: %s start: %p  end: %p\n", __FILE__, __LINE__,  __FUNCTION__, info._Filename.c_str(), info._TextStart, info._TextEnd );
+//    printf("%s:%d:%s registering library: %s start: %p  end: %p\n", __FILE__, __LINE__,  __FUNCTION__, info._Filename.c_str(), info._TextStart, info._TextEnd );
     this->_Libraries.push_back(info);
   }
 };

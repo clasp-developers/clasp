@@ -80,6 +80,7 @@
   (setq *image-save-hooks* (cons hook *image-save-hooks*)))
 
 (defun invoke-image-save-hooks ()
+  (format t "Running ~d *image-save-hooks*~%" (length *image-save-hooks*))
   (dolist (entry *image-save-hooks*)
     (funcall entry)))
 
@@ -777,6 +778,7 @@ The passed module is modified as a side-effect."
 (eval-when (:load-toplevel :execute)
   (register-image-save-hook
    (function (lambda ()
+     (format t "makunbound for *jit-pid* and *jit-log-stream*~%")
      (makunbound '*jit-pid*)
      (makunbound '*jit-log-stream*)))))
 
@@ -797,6 +799,8 @@ The passed module is modified as a side-effect."
                ;; If we are in a forked child then we need to create a new clasp-symbols-<pid> file and
                ;; refer to the parent clasp-symbols-<ppid> file.
                ((and *jit-log-stream* (not (= *jit-pid* (core:getpid))))
+                (format t "Closing the *jit-log-stream* because the *jit-pid* ~d does not match our pid ~d ~%"
+                        *jit-pid* (core:getpid))
                 (close *jit-log-stream*) ; Shut down symbols for forked children
                 (setq *jit-log-stream* nil)))
              (if *jit-log-stream*

@@ -3939,8 +3939,10 @@ namespace llvmo {
 
 
 class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
-  void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR, const llvm::Triple &TT,
+  void modifyPassConfig(llvm::orc::MaterializationResponsibility &MR,
+                        llvm::jitlink::LinkGraph &G,
                         llvm::jitlink::PassConfiguration &Config) {
+    DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspPlugin modifyPassConfig\n", __FILE__, __LINE__, __FUNCTION__ ));
     Config.PrePrunePasses.push_back(
                                     [this](jitlink::LinkGraph &G) -> Error {
                                       for (auto &Sec : G.sections()) {
@@ -4111,12 +4113,12 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
         }
       }        
     }
-    if (!found_gcroots_in_module) {
-      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str() );
-      abort();
-    }
     if (!found_literals) {
       printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, literals_name.c_str() );
+      abort();
+    }
+    if (!found_gcroots_in_module) {
+      printf("%s:%d Did NOT FIND %s\n", __FILE__, __LINE__, gcroots_in_module_name.c_str() );
       abort();
     }
     //
@@ -4520,6 +4522,7 @@ CL_DEFUN ClaspJIT_sp llvm_sys__make_clasp_jit()
 
 ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
         llvm::ExitOnError ExitOnErr;
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Initializing ClaspJIT_O\n", __FILE__, __LINE__, __FUNCTION__));
         auto JTMB = ExitOnErr(JITTargetMachineBuilder::detectHost());
         JTMB.setCodeModel(CodeModel::Small);
         JTMB.setRelocationModel(Reloc::Model::PIC_);
@@ -4532,6 +4535,7 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                            .setObjectLinkingLayerCreator([this,&ExitOnErr](ExecutionSession &ES, const Triple &TT) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+                       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s About to addPlugin for ClaspPlugin\n", __FILE__, __LINE__, __FUNCTION__ ));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
                        // GDB registrar isn't working at the moment
                        if (getenv("CLASP_DEBUGGER_SUPPORT")) {

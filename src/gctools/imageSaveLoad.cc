@@ -134,8 +134,12 @@ bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
 void* encodePointer(gctools::clasp_ptr_t address,size_t idx, gctools::clasp_ptr_t start) {
+  uint8_t firstByte = *(uint8_t*)address; // read the first byte
   uintptr_t offset = (uintptr_t)address - (uintptr_t)start;
-  uintptr_t result = idx<<48 | offset;
+  if (!start) {
+    printf("%s:%d:%s The start address can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__ );
+  }
+  uintptr_t result = ((uintptr_t)firstByte << 56) | idx<<40 | offset;
   DBG_SL_ENTRY_POINT(BF("Library base: %p encode %p/%d -> %p\n") % (void*)start % (void*)address % idx % (void*)result );
   return (void*)result;
 }
@@ -161,10 +165,17 @@ void* encodeLibrarySaveAddress(void* vaddress) {
 
 
 void* decodeLibrarySaveAddress(void* codedAddress) {
-  uintptr_t offset = (uintptr_t)codedAddress & (((uintptr_t)1<<48) - 1);
-  uintptr_t libidx = (uintptr_t)codedAddress>>48;
-  gctools::clasp_ptr_t ptr = globalISLLibraries[libidx]._TextStart + offset;
+  uintptr_t offset = (uintptr_t)codedAddress & (((uintptr_t)1<<40) - 1);
+  uintptr_t libidx = ((uintptr_t)codedAddress>>40) & (uintptr_t)0xffff;
+  uint8_t firstByte = (uint8_t)(((uintptr_t)codedAddress>>56) & 0xff);
+  uintptr_t textStart = (uintptr_t)globalISLLibraries[libidx]._TextStart;
+  gctools::clasp_ptr_t ptr = (gctools::clasp_ptr_t)(textStart + offset);
   DBG_SL_ENTRY_POINT(BF("Library base: %p decode %p -> %p\n") % (void*)globalISLLibraries[libidx]._TextStart % codedAddress % (void*)ptr  );
+  if (*(uint8_t*)ptr != firstByte) {
+    printf("%s:%d:%s during decode function pointer %p must be readable and point to first byte: 0x%x - it doesn't\ncodedAddress: %p  textStart: %p",
+           __FILE__, __LINE__, __FUNCTION__, ptr, (uint32_t)firstByte,
+           (void*)codedAddress, (void*)textStart );
+  }
   return (void*)ptr;
 }
 
@@ -172,15 +183,27 @@ void* decodeLibrarySaveAddress(void* codedAddress) {
 
 void* encodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
   uintptr_t address = (uintptr_t)vaddress;
-  void* result = (void*)(address - code->codeStart());
+  uint8_t firstByte = *(uint8_t*)address;
+  uintptr_t codeStart = (uintptr_t)code->codeStart();
+  if (!codeStart) {
+    printf("%s:%d:%s The start address for code: %p can not be zero!!!\n", __FILE__, __LINE__, __FUNCTION__, (void*)code.raw_() );
+  }
+  void* result = (void*)(((uintptr_t)firstByte<<56) | (address - codeStart));
   DBG_SL_ENTRY_POINT(BF("base: %p encoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
   return result;
 }
 
 void* decodeEntryPointSaveAddress(void* vaddress, llvmo::CodeBase_sp code) {
-  uintptr_t address = (uintptr_t)vaddress;
-  void* result = (void*)(address + code->codeStart());
+  uintptr_t address = (uintptr_t)((uintptr_t)vaddress & (((uintptr_t)1<<56) - 1));
+  uint8_t firstByte = (uint8_t)(((uintptr_t)vaddress >> 56) & (uintptr_t)0xff);
+  uintptr_t codeStart = code->codeStart();
+  void* result = (void*)(address + codeStart);
   DBG_SL_ENTRY_POINT(BF("base: %p decoded %p -> %6p %s\n") % (void*)code->codeStart() % vaddress % result % code->filename() );
+  if (*(uint8_t*)result != firstByte) {
+    printf("%s:%d:%s during decode function pointer %p must be readable and point to 0x%x (first byte) - it doesn't vaddress = %p  codeStart = %p\n",
+           __FILE__, __LINE__, __FUNCTION__, (void*)result, (uint32_t)firstByte,
+           (void*)vaddress, (void*)codeStart );
+  }
   return result;
 }
 
@@ -252,9 +275,13 @@ struct ISLInfo {
     _islEnd(e) {};
 };  
 
+//
+// If you don't want forwarding to stomp on the headers use the following
+//
+#define NO_STOMP_FORWARDING 1
 
 void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo* info ) {
-#if 0
+#ifdef NO_STOMP_FORWARDING
   info->_forwarding[(uintptr_t)header] = (uintptr_t)new_client;
 #else
   header->_stamp_wtag_mtag.setFwdPointer(new_client);
@@ -262,7 +289,7 @@ void set_forwarding_pointer(gctools::Header_s* header, char* new_client, ISLInfo
 }
 
 bool is_forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#if 0
+#ifdef NO_STOMP_FORWARDING
   auto result = info->_forwarding.find((uintptr_t)header);
   return (result != info->_forwarding.end());
 #else
@@ -271,7 +298,7 @@ bool is_forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
 }
 
 uintptr_t forwarding_pointer(gctools::Header_s* header, ISLInfo* info) {
-#if 0
+#ifdef NO_STOMP_FORWARDING
   return info->_forwarding[(uintptr_t)header];
 #else
   return (uintptr_t)header->_stamp_wtag_mtag.fwdPointer();
@@ -1097,12 +1124,17 @@ void image_save(const std::string& filename) {
   //
 #if 0
   _lisp->_Roots._AllObjectFiles.store(_Nil<core::T_O>());
+#else
+  printf("%s:%d:%s NOT releasing code objects\n", __FILE__, __LINE__, __FUNCTION__ );
 #endif
 
   //
   // Call Common Lisp code to release things at image-save time
   //
-  core::eval::funcall( comp::_sym_invoke_image_save_hooks );
+  printf("%s:%d:%s About to invoke-image-save-hooks boundp -> %d\n", __FILE__, __LINE__, __FUNCTION__, comp::_sym_invoke_image_save_hooks->boundP());
+  if (comp::_sym_invoke_image_save_hooks->fboundp()) {
+    core::eval::funcall( comp::_sym_invoke_image_save_hooks );
+  }
 
   //
   // Clear out a few things
@@ -2031,6 +2063,8 @@ int image_load(const std::string& filename ) {
   _lisp->initializeMainThread();
   comp::_sym_STARthread_safe_contextSTAR->defparameter(llvmo::ThreadSafeContext_O::create_thread_safe_context());
   comp::_sym_STARthread_local_builtins_moduleSTAR->defparameter(_Nil<core::T_O>());
+  FILE *null_out = fopen("/dev/null", "w");
+  _lisp->_Roots._NullStream = core::IOStreamStream_O::makeIO("/dev/null", null_out);
   
   {
     char* pause_startup = getenv("CLASP_PAUSE_INIT");

@@ -276,6 +276,7 @@ struct globals_t {
                 _StackSampleCount(0),
                 _StackSampleSize(0),
                 _StackSampleMax(0),
+                _Argc(0),
                 _ReplCounter(1),
                 _Bundle(NULL),
                 _DebugStream(NULL),

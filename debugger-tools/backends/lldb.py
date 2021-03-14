@@ -1,65 +1,45 @@
 import lldb
 
 
-    def __init__(self,debugger,internal_dict,prefix):
-        global global_structs
-        self._debugger = debugger
-        self._process = debugger.GetSelectedTarget().GetProcess()
-        self.print_("In clasp_inspect for lldb_interface")
-        filename = "/tmp/clasp_layout.py"
-        with open(filename, "rb") as source_file:
-            code = compile(source_file.read(), filename, "exec")
-        exec(code)
-        self._verbose = False
-        SetupGlobals(self)
-       
-    def print_(self,msg):
-        print(msg)
+debugger = None
+process = None
 
-    def dbg_print(self,msg):
-        if (self._verbose):
-            print("%s" % msg)
+ByteOrder = 'little'
 
+def read_memory(address,len=8):
+    global debugger,process
+    error = lldb.SBError()
+    tptr = process.ReadUnsignedFromMemory(address,len,error)
+    return tptr
 
-    def read_memory(self,address,len):
-        err = lldb.SBError()
-        tptr = self._process.ReadUnsignedFromMemory(address,len,err)
-        return tptr
+def test_debugger(arg):
+    print("In udb test_debugger arg: %s" % arg)
+
+def dump_memory(address):
+    global debugger
+    cmd0 = "x/8xg 0x%x" % (address-64)
+    print("======dump before header: %s" % cmd0)
+    debugger.HandleCommand(cmd0)
+    cmd = "x/16xg 0x%x" % address
+    print("------Dump from header: %s" % cmd )
+    debugger.HandleCommand(cmd)
     
+def evaluate(string):
+    global debugger,process
+    thread = process.GetSelectedThread()
+    frame = thread.GetSelectedFrame()
+    result = frame.EvaluateExpression(string).unsigned
+    return result
 
-def inspect(debugger,command,result,internal_dict):
-    global global_lldb_interface
-    args = command.split(" ")
-    arg = args[0]
-    verbose = False
-    if (len(args)>1):
-        verbose = True
-    ptr = None
-    if (arg[0:2]=='$r'):
-        debugger.print_("Handle register %s\n" % arg)
-        return
-    if (is_int(arg,16)):
-        tptr = int(arg,16)
-    elif (is_int(arg,10)):
-        tptr = int(arg,10)
-    else:
-        key = lldb.frame.FindVariable(arg)
-        if (verbose): debugger.print_("arg = %s" % key)
-        theObject = key.GetChildMemberWithName("theObject")
-        # theObject.GetValue() returns a string - why? dunno
-        if (verbose): debugger.print_("theObject.GetValue() = %s" % theObject.GetValue())
-        tptr = int(theObject.GetValue(),16)
-    obj = translate_tagged_ptr(global_lldb_interface,tptr)
-    print( "%s" % obj.__repr__())
-    return obj
+def convenience_variable(name):
+    return evaluate("$%s" % name)
 
-def do_lldb_init_module(debugger,internal_dict,prefix):
-    global global_lldb_interface
-    prefix = "%s.clasp_inspect.lldb_interface" % prefix
-    print("In do_lldb_init_module")
-    print("installing %s.inspect" % prefix)
-    debugger.HandleCommand('command script add -f %s.inspect il' % prefix)
-    global_lldb_interface = LldbInterface(debugger,internal_dict,prefix)
-    print("Leaving do_lldb_init_module")
+def set_convenience_variable(name,val):
+    evaluate("uintptr_t $%s = %s" % (name, val))
+
+def set_debugger(dbg):
+    global debugger, process
+    debugger = dbg
+    process = dbg.GetSelectedTarget().GetProcess()
     
     
