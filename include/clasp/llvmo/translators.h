@@ -234,6 +234,16 @@ struct from_object<llvm::ArrayRef<int>> {
     SIMPLE_ERROR_SPRINTF("Could not convert %s to std::function<bool (const llvm::Function&)", core::_rep_(o).c_str());
   }
 };
+
+
+template <>
+struct from_object< llvm::MaybeAlign, std::true_type> {
+  typedef llvm::MaybeAlign DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)) {};
+};
+
+
 };
 
 #endif

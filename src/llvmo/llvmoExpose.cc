@@ -2096,6 +2096,7 @@ CL_EXTERN_DEFMETHOD(LandingPadInst_O, &llvm::LandingPadInst::addClause);;
 
 }; // llvmo
 
+#if 0
 namespace translate {
 template <>
 struct from_object< llvm::MaybeAlign, std::true_type> {
@@ -2104,6 +2105,9 @@ struct from_object< llvm::MaybeAlign, std::true_type> {
   from_object(core::T_sp object) : _v((size_t)core::clasp_to_fixnum(object)) {};
 };
 };
+#endif
+
+
 
 namespace llvmo {
 CL_DEFUN llvm::AllocaInst* llvm_sys__insert_alloca_before_terminator(llvm::Type* type, const llvm::Twine& name, llvm::BasicBlock* block)
@@ -4529,10 +4533,10 @@ ClaspJIT_O::ClaspJIT_O(bool loading, JITDylib_O* mainJITDylib) {
                        auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
                        ObjLinkingLayer->addPlugin(std::make_unique<EHFrameRegistrationPlugin>(ES,std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
                        ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-#if 1
                        // GDB registrar isn't working at the moment
-                       ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
-#endif
+                       if (getenv("CLASP_DEBUGGER_SUPPORT")) {
+                         ObjLinkingLayer->addPlugin(std::make_unique<orc::DebugObjectManagerPlugin>(ES,ExitOnErr(orc::createJITLoaderGDBRegistrar(*this->_TPC))));
+                       }
                        ObjLinkingLayer->setReturnObjectBuffer(ClaspReturnObjectBuffer); // <<< Capture the ObjectBuffer after JITting code
                        return ObjLinkingLayer;
                      })
