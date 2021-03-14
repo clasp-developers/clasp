@@ -1,0 +1,7 @@
+#! /bin/bash
+
+export CLASP_HOME=${PWD%/*/*}
+
+echo CLASP_HOME = $CLASP_HOME
+
+gdb --tui -p `cat /tmp/clasp_pid` --init-eval-command="set dir $CLASP_HOME/debugger-tools"
