@@ -1727,8 +1727,13 @@ jump to blocks within this tagbody."
                    ;; results-in-registers keeps things in the basic tmv format, because
                    ;; here we don't need the store/load values dance.
                    ;; (The C function only gets/needs/wants the primary value.)
+                   #+(or)(_ (format t "About to irc-funcall-results-in-registers-wft c-function-type -> ~s  closure-to-call -> ~s   cl-args -> ~s ~%"
+                                    c-function-type
+                                    closure-to-call
+                                    cl-args ))
+                   (closure-function-type (irc-lisp-function-type (length cl-args)))
                    (cl-result (irc-funcall-results-in-registers-wft
-                               c-function-type
+                               closure-function-type ; NOT c-function-type
                                closure-to-call cl-args (core:bformat nil "%s_closure" c-name))))
               ;; Now generate a call the translator for the return value if applicable, then return.
               ;; NOTE: (eq return-type %void%) doesn't seem to work - and it's sketchy because it's a symbol macro
