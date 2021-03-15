@@ -34,3 +34,4 @@ def convenience_variable(name):
 
 def set_convenience_variable(name,val):
     gdb.set_convenience_variable(name,val)
+
