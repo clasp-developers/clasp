@@ -12,9 +12,9 @@
         (cst (gensym "CST"))
         (environment (gensym "ENVIRONMENT"))
         (system (gensym "SYSTEM")))
-    `(defmethod cleavir-cst-to-ast:convert-special
+    `(defmethod cst-to-ast:convert-special
          ((,head (eql ',name)) ,cst ,environment (,system clasp-cleavir:clasp))
-       (cleavir-cst-to-ast:convert
+       (cst-to-ast:convert
         (destructuring-bind ,lambda-list (cst:raw (cst:rest ,cst))
           (cst:reconstruct (progn ,@body) ,cst ,system))
         ,environment ,system))))
@@ -29,17 +29,17 @@
 
 (defmacro define-functionlike-special-form (name ast (&rest initargs))
   (let ((syms (loop for i in initargs collect (gensym (symbol-name i)))))
-    `(defmethod cleavir-cst-to-ast:convert-special
+    `(defmethod cst-to-ast:convert-special
          ((head (eql ',name)) cst env (system clasp-cleavir:clasp))
        (cst:db origin (op ,@syms) cst
                (declare (ignore op))
                (make-instance
-                ',ast
-                ,@(loop for i in initargs
-                        for s in syms
-                        collect i
-                        collect `(cleavir-cst-to-ast:convert ,s env system))
-                :origin origin)))))
+                   ',ast
+                 ,@(loop for i in initargs
+                         for s in syms
+                         collect i
+                         collect `(cst-to-ast:convert ,s env system))
+                 :origin origin)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -92,7 +92,7 @@
                                      :expected-type ',ty)))
        (values ,@vars))))
 
-(defmethod cleavir-cst-to-ast:type-wrap
+(defmethod cst-to-ast:type-wrap
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; We unconditionally insert a declaration,
   ;; and insert a type check as well on high safety,
@@ -109,14 +109,14 @@
        ast)
       (insert-type-checks
        (let ((check
-               (cleavir-cst-to-ast:convert
+               (cst-to-ast:convert
                 (cst:cst-from-expression
                  (make-type-check-form required system))
                 env system)))
          (cleavir-ast:make-the-ast ast ctype check :origin origin)))
       (t (cleavir-ast:make-the-ast ast ctype nil :origin origin)))))
 
-(defmethod cleavir-cst-to-ast:type-wrap-argument
+(defmethod cst-to-ast:type-wrap-argument
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; Insert an externally checked THE and insert type checks as well
   ;; on high safety, unless the type is top in which case we do
@@ -128,23 +128,23 @@
            'type-check-ftype-arguments))
         (required (cleavir-ctype:values-required ctype system)))
     (cond ((or (every (lambda (ty) (cleavir-ctype:top-p ty system)) required)
-           (null required))
+               (null required))
            ast)
           #+(or) ;; FIXME: doesn't work yet for some reason.
           (insert-type-checks
            (let ((check
-                   (cleavir-cst-to-ast:convert
+                   (cst-to-ast:convert
                     (cst:cst-from-expression
                      (make-type-check-form ctype system))
                     env system)))
              (cleavir-ast:make-the-ast ast ctype check :origin origin)))
           (t (cleavir-ast:make-the-ast ast ctype :external :origin origin)))))
 
-(defmethod cleavir-cst-to-ast:type-wrap-return-values
+(defmethod cst-to-ast:type-wrap-return-values
     (ast ctype origin env (system clasp-cleavir:clasp))
   ;; FIXME: same semantics as TYPE-WRAP but should probably use the
   ;; different policy value. didn't want to copy and paste though.
-  (cleavir-cst-to-ast:type-wrap ast ctype origin env system))
+  (cst-to-ast:type-wrap ast ctype origin env system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -153,13 +153,14 @@
 ;;; This is converted into a call to print a message
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core:debug-message)) cst environment (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core:debug-message)) cst environment
+     (system clasp-cleavir:clasp))
   (declare (ignore environment))
   (assert (typep (cst:raw (cst:second cst)) 'string))
   (make-instance 'clasp-cleavir-ast:debug-message-ast
-                 :debug-message (cst:raw (cst:second cst))
-                 :origin (cst:source cst)))
+    :debug-message (cst:raw (cst:second cst))
+    :origin (cst:source cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -168,11 +169,12 @@
 ;;; This is converted into a call to invoke the debugger
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core:debug-break)) cst environment (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core:debug-break)) cst environment
+     (system clasp-cleavir:clasp))
   (declare (ignore environment))
   (make-instance 'clasp-cleavir-ast:debug-break-ast
-                 :origin (cst:source cst)))
+    :origin (cst:source cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -181,13 +183,14 @@
 ;;; This is converted into an intrinsic call
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core:multiple-value-foreign-call)) cst environment (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core:multiple-value-foreign-call)) cst environment
+     (system clasp-cleavir:clasp))
   (assert (stringp (cst:raw (cst:second cst))))
   (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
-                 :function-name (cst:raw (cst:second cst))
-                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-                 :origin (cst:source cst)))
+    :function-name (cst:raw (cst:second cst))
+    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
+    :origin (cst:source cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -196,16 +199,16 @@
 ;;; This is converted into a pointer call
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core:foreign-call)) cst environment (system clasp-cleavir:clasp))
-                                        ;  (format t "convert-special form: ~a~%"  cst)
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core:foreign-call)) cst environment
+     (system clasp-cleavir:clasp))
   (assert (listp (cst:raw (cst:second cst))))
   (assert (stringp (cst:raw (cst:third cst))))
   (make-instance 'clasp-cleavir-ast:foreign-call-ast
-                 :foreign-types (cst:raw (cst:second cst))
-                 :function-name (cst:raw (cst:third cst))
-                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
-                 :origin (cst:source cst)))
+    :foreign-types (cst:raw (cst:second cst))
+    :function-name (cst:raw (cst:third cst))
+    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest (cst:rest cst))) environment system)
+    :origin (cst:source cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -214,30 +217,30 @@
 ;;; This is converted into a pointer call
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core:foreign-call-pointer)) cst environment (system clasp-cleavir:clasp))
   (assert (listp (cst:raw (cst:second cst))))
   (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
-                 :foreign-types (cst:raw (cst:second cst))
-                 :argument-asts (cleavir-cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
-                 :origin (cst:source cst)))
+    :foreign-types (cst:raw (cst:second cst))
+    :argument-asts (cst-to-ast::convert-sequence (cst:rest (cst:rest cst)) environment system)
+    :origin (cst:source cst)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE:DEFCALLBACK
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core:defcallback)) form env (system clasp-cleavir:clasp))
   (cst:db origin (name convention rtype rtrans atypes atrans params placeholder lisp-callback)
-      (cst:rest form)
-    (let ((args (list (cst:raw name) (cst:raw convention)
-                      (cst:raw rtype) (cst:raw rtrans)
-                      (cst:raw atypes) (cst:raw atrans)
-                      (cst:raw params) (cst:raw placeholder))))
-      (make-instance 'cc-ast:defcallback-ast
-                     :args args
-                     :callee (cleavir-cst-to-ast:convert lisp-callback env system)))))
+          (cst:rest form)
+          (let ((args (list (cst:raw name) (cst:raw convention)
+                            (cst:raw rtype) (cst:raw rtrans)
+                            (cst:raw atypes) (cst:raw atrans)
+                            (cst:raw params) (cst:raw placeholder))))
+            (make-instance 'cc-ast:defcallback-ast
+              :args args
+              :callee (cst-to-ast:convert lisp-callback env system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -258,136 +261,137 @@
 ;;;
 ;;; CASs and other atomic ops are mostly functionlike, except for the order.
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::fence)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (f order) cst
-    (declare (ignore f))
-    (make-instance 'cc-ast:fence-ast :order (cst:raw order))))
+          (declare (ignore f))
+          (make-instance 'cc-ast:fence-ast :order (cst:raw order))))
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::car-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cr order cons) cst
-    (declare (ignore cr))
-    (make-instance 'cc-ast:atomic-car-ast
-      :order (cst:raw order)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore cr))
+          (make-instance 'cc-ast:atomic-car-ast
+            :order (cst:raw order)
+            :cons-ast (cst-to-ast:convert cons env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::cdr-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cr order cons) cst
-    (declare (ignore cr))
-    (make-instance 'cc-ast:atomic-cdr-ast
-      :order (cst:raw order)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore cr))
+          (make-instance 'cc-ast:atomic-cdr-ast
+            :order (cst:raw order)
+            :cons-ast (cst-to-ast:convert cons env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::rplaca-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (rp order nv cons) cst
-    (declare (ignore rp))
-    (make-instance 'cc-ast:atomic-rplaca-ast
-      :order (cst:raw order)
-      :object-ast (cleavir-cst-to-ast:convert nv env system)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore rp))
+          (make-instance 'cc-ast:atomic-rplaca-ast
+            :order (cst:raw order)
+            :object-ast (cst-to-ast:convert nv env system)
+            :cons-ast (cst-to-ast:convert cons env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::rplacd-atomic)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (rp order nv cons) cst
-    (declare (ignore rp))
-    (make-instance 'cc-ast:atomic-rplacd-ast
-      :order (cst:raw order)
-      :object-ast (cleavir-cst-to-ast:convert nv env system)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore rp))
+          (make-instance 'cc-ast:atomic-rplacd-ast
+            :order (cst:raw order)
+            :object-ast (cst-to-ast:convert nv env system)
+            :cons-ast (cst-to-ast:convert cons env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::cas-car)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cas order cmp value cons) cst
-    (declare (ignore cas))
-    (make-instance 'cc-ast:cas-car-ast
-      :order (cst:raw order)
-      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
-      :value-ast (cleavir-cst-to-ast:convert value env system)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore cas))
+          (make-instance 'cc-ast:cas-car-ast
+            :order (cst:raw order)
+            :cmp-ast (cst-to-ast:convert cmp env system)
+            :value-ast (cst-to-ast:convert value env system)
+            :cons-ast (cst-to-ast:convert cons env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::cas-cdr)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cas order cmp value cons) cst
-    (declare (ignore cas))
-    (make-instance 'cc-ast:cas-cdr-ast
-      :order (cst:raw order)
-      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
-      :value-ast (cleavir-cst-to-ast:convert value env system)
-      :cons-ast (cleavir-cst-to-ast:convert cons env system))))
+          (declare (ignore cas))
+          (make-instance 'cc-ast:cas-cdr-ast
+            :order (cst:raw order)
+            :cmp-ast (cst-to-ast:convert cmp env system)
+            :value-ast (cst-to-ast:convert value env system)
+            :cons-ast (cst-to-ast:convert cons env system))))
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::atomic-rack-read)) cst env
      (system clasp-cleavir:clasp))
   (cst:db origin (read order rack index) cst
-    (declare (ignore read))
-    (make-instance 'cc-ast:atomic-rack-read-ast
-      :order (cst:raw order)
-      :rack-ast (cleavir-cst-to-ast:convert rack env system)
-      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore read))
+          (make-instance 'cc-ast:atomic-rack-read-ast
+            :order (cst:raw order)
+            :rack-ast (cst-to-ast:convert rack env system)
+            :slot-number-ast (cst-to-ast:convert index env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::atomic-rack-write)) cst env
      (system clasp-cleavir:clasp))
   (cst:db origin (wr order nv rack index) cst
-    (declare (ignore wr))
-    (make-instance 'cc-ast:atomic-rack-write-ast
-      :order (cst:raw order)
-      :value-ast (cleavir-cst-to-ast:convert nv env system)
-      :rack-ast (cleavir-cst-to-ast:convert rack env system)
-      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore wr))
+          (make-instance 'cc-ast:atomic-rack-write-ast
+            :order (cst:raw order)
+            :value-ast (cst-to-ast:convert nv env system)
+            :rack-ast (cst-to-ast:convert rack env system)
+            :slot-number-ast (cst-to-ast:convert index env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::cas-rack)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (cas order cmp new rack index) cst
-    (declare (ignore cas))
-    (make-instance 'cc-ast:cas-rack-ast
-      :order (cst:raw order)
-      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
-      :value-ast (cleavir-cst-to-ast:convert new env system)
-      :rack-ast (cleavir-cst-to-ast:convert rack env system)
-      :slot-number-ast (cleavir-cst-to-ast:convert index env system))))
+          (declare (ignore cas))
+          (make-instance 'cc-ast:cas-rack-ast
+            :order (cst:raw order)
+            :cmp-ast (cst-to-ast:convert cmp env system)
+            :value-ast (cst-to-ast:convert new env system)
+            :rack-ast (cst-to-ast:convert rack env system)
+            :slot-number-ast (cst-to-ast:convert index env system))))
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::atomic-vref)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (vr order uaet vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:atomic-vref-ast
-      :order (cst:raw order) :element-type (cst:raw uaet)
-      :array-ast (cleavir-cst-to-ast:convert vector env system)
-      :index-ast (cleavir-cst-to-ast:convert index env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore vr))
+          (make-instance 'cc-ast:atomic-vref-ast
+            :order (cst:raw order) :element-type (cst:raw uaet)
+            :array-ast (cst-to-ast:convert vector env system)
+            :index-ast (cst-to-ast:convert index env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::atomic-vset)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (vr order uaet nv vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:atomic-vset-ast
-      :order (cst:raw order) :element-type (cst:raw uaet)
-      :value-ast (cleavir-cst-to-ast:convert nv env system)
-      :array-ast (cleavir-cst-to-ast:convert vector env system)
-      :index-ast (cleavir-cst-to-ast:convert index env system))))
-(defmethod cleavir-cst-to-ast:convert-special
+          (declare (ignore vr))
+          (make-instance 'cc-ast:atomic-vset-ast
+            :order (cst:raw order) :element-type (cst:raw uaet)
+            :value-ast (cst-to-ast:convert nv env system)
+            :array-ast (cst-to-ast:convert vector env system)
+            :index-ast (cst-to-ast:convert index env system))))
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::vcas)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (vr order uaet cmp nv vector index) cst
-    (declare (ignore vr))
-    (make-instance 'cc-ast:vcas-ast
-      :order (cst:raw order) :element-type (cst:raw uaet)
-      :cmp-ast (cleavir-cst-to-ast:convert cmp env system)
-      :value-ast (cleavir-cst-to-ast:convert nv env system)
-      :array-ast (cleavir-cst-to-ast:convert vector env system)
-      :index-ast (cleavir-cst-to-ast:convert index env system))))
+          (declare (ignore vr))
+          (make-instance 'cc-ast:vcas-ast
+            :order (cst:raw order) :element-type (cst:raw uaet)
+            :cmp-ast (cst-to-ast:convert cmp env system)
+            :value-ast (cst-to-ast:convert nv env system)
+            :array-ast (cst-to-ast:convert vector env system)
+            :index-ast (cst-to-ast:convert index env system))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::HEADER-STAMP-CASE
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::header-stamp-case)) cst env (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core::header-stamp-case)) cst env
+     (system clasp-cleavir:clasp))
   (cst:db origin (stamp derivable rack wrapped header) (cst:rest cst)
-    (cleavir-ast:make-branch-ast
-     (clasp-cleavir-ast:make-header-stamp-case-ast
-      (cleavir-cst-to-ast:convert stamp env system)
-      origin)
-     (list (cleavir-cst-to-ast:convert derivable env system)
-           (cleavir-cst-to-ast:convert rack env system)
-           (cleavir-cst-to-ast:convert wrapped env system))
-     (cleavir-cst-to-ast:convert header env system)
-     :origin origin)))
+          (cleavir-ast:make-branch-ast
+           (clasp-cleavir-ast:make-header-stamp-case-ast
+            (cst-to-ast:convert stamp env system)
+            origin)
+           (list (cst-to-ast:convert derivable env system)
+                 (cst-to-ast:convert rack env system)
+                 (cst-to-ast:convert wrapped env system))
+           (cst-to-ast:convert header env system)
+           :origin origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -395,13 +399,15 @@
 ;;;        and core::local-block to block
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::local-tagbody)) cst environment (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast:convert-special 'tagbody cst environment system))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core::local-tagbody)) cst environment
+     (system clasp-cleavir:clasp))
+  (cst-to-ast:convert-special 'tagbody cst environment system))
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::local-block)) cst environment (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast:convert-special 'block cst environment system))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core::local-block)) cst environment
+     (system clasp-cleavir:clasp))
+  (cst-to-ast:convert-special 'block cst environment system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -409,106 +415,106 @@
 ;;;
 ;;; Convert throw into a call
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'cl:throw)) cst environment (system clasp-cleavir:clasp))
   (cst:db origin (tag result-cst) 
-      (cst:rest cst)
-    ;; If I don't use a throw-ast node use the following
-    #+(or)
-    (cleavir-cst-to-ast::convert `(core:throw-function ,tag ,result-cst) environment system)
-    ;; If I decide to go with a throw-ast node use the following
-    (clasp-cleavir-ast:make-throw-ast
-     (cleavir-cst-to-ast:convert tag environment system)
-     (cleavir-cst-to-ast:convert result-cst environment system)
-     origin)))
+          (cst:rest cst)
+          ;; If I don't use a throw-ast node use the following
+          #+(or)
+          (cst-to-ast::convert `(core:throw-function ,tag ,result-cst) environment system)
+          ;; If I decide to go with a throw-ast node use the following
+          (clasp-cleavir-ast:make-throw-ast
+           (cst-to-ast:convert tag environment system)
+           (cst-to-ast:convert result-cst environment system)
+           origin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting UNWIND-PROTECT
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'cl:unwind-protect)) cst env (system clasp-cleavir:clasp))
   (cst:db origin (protected . cleanup) (cst:rest cst)
-    (make-instance 'cc-ast:unwind-protect-ast
-      :body-ast (cleavir-cst-to-ast:convert protected env system)
-      :cleanup-ast (let ((cleanup-source (cst:source cleanup)))
-                     (cleavir-cst-to-ast:convert
-                      (cst:cons
-                       (make-instance 'cst:atom-cst
-                         :raw 'lambda :source cleanup-source)
-                       (cst:cons (make-instance 'cst:atom-cst
-                                   :raw nil :source cleanup-source)
-                                 cleanup
-                                 :source cleanup-source)
-                       :source cleanup-source)
-                      env system)))))
+          (make-instance 'cc-ast:unwind-protect-ast
+            :body-ast (cst-to-ast:convert protected env system)
+            :cleanup-ast (let ((cleanup-source (cst:source cleanup)))
+                           (cst-to-ast:convert
+                            (cst:cons
+                             (make-instance 'cst:atom-cst
+                               :raw 'lambda :source cleanup-source)
+                             (cst:cons (make-instance 'cst:atom-cst
+                                         :raw nil :source cleanup-source)
+                                       cleanup
+                                       :source cleanup-source)
+                             :source cleanup-source)
+                            env system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Converting CORE::BIND-VA-LIST
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core::bind-va-list)) cst
-     environment (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-special ((symbol (eql 'core::bind-va-list)) cst
+                                       environment (system clasp-cleavir:clasp))
   ;; (bind-va-list lambda-list va . body)
   ;; => `(apply (lambda ,lambda-list . ,body) ,va)
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
-    (declare (ignore op))
-    (cleavir-cst-to-ast:convert
-     (cst:list (cst:cst-from-expression 'apply)
-               (cst:cons (cst:cst-from-expression 'lambda)
-                         (cst:cons lambda-list-cst body-cst
-                                   :source origin)
-                         :source origin)
-               va-list-cst)
-     environment system)))
+          (declare (ignore op))
+          (cst-to-ast:convert
+           (cst:list (cst:cst-from-expression 'apply)
+                     (cst:cons (cst:cst-from-expression 'lambda)
+                               (cst:cons lambda-list-cst body-cst
+                                         :source origin)
+                               :source origin)
+                     va-list-cst)
+           environment system)))
 
 #+(or) ;;#+cst
-(defmethod cleavir-cst-to-ast:convert-special
+(defmethod cst-to-ast:convert-special
     ((symbol (eql 'core::bind-va-list)) cst environment (system clasp-cleavir:clasp))
   (cst:db origin (op lambda-list-cst va-list-cst . body-cst) cst
-    (declare (ignore op))
-    (let ((parsed-lambda-list
-            (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
-      (when (null parsed-lambda-list)
-        (error 'cleavir-cst-to-ast::malformed-lambda-list
-               :expr (cst:raw lambda-list-cst)
-               :origin (cst:source lambda-list-cst)))
-      (multiple-value-bind (declaration-csts documentation forms-cst)
-          (cst:separate-function-body body-cst)
-        (declare (ignore documentation))
-        (let* ((declaration-specifiers
-                 (loop for declaration-cst in declaration-csts
-                       append (cdr (cst:listify declaration-cst))))
-               (canonicalized-dspecs
-                 (cst:canonicalize-declaration-specifiers
-                  system
-                  (cleavir-env:declarations environment)
-                  declaration-specifiers)))
-          (multiple-value-bind (idspecs rdspecs)
-              (cleavir-cst-to-ast::itemize-declaration-specifiers-by-parameter-group
-               (cleavir-cst-to-ast::itemize-lambda-list parsed-lambda-list)
-               canonicalized-dspecs)
-            (multiple-value-bind (lexical-lambda-list entries)
-                (cleavir-cst-to-ast::lambda-list-from-parameter-groups
-                 (cst:children parsed-lambda-list))
-              (let ((ast (cleavir-cst-to-ast::process-parameter-groups
-                          (cst:children parsed-lambda-list)
-                          idspecs entries
-                          (cleavir-cst-to-ast::make-body
-                           rdspecs
-                           (cleavir-cst-to-ast::cst-for-body forms-cst nil origin))
-                          environment system)))
-                (cc-ast:make-bind-va-list-ast
-                 lexical-lambda-list
-                 (cleavir-cst-to-ast::convert va-list-cst environment system)
-                 ast
-                 nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
-                 :origin origin)))))))))
+          (declare (ignore op))
+          (let ((parsed-lambda-list
+                  (cst:parse-ordinary-lambda-list system lambda-list-cst :error-p nil)))
+            (when (null parsed-lambda-list)
+              (error 'cst-to-ast::malformed-lambda-list
+                     :expr (cst:raw lambda-list-cst)
+                     :origin (cst:source lambda-list-cst)))
+            (multiple-value-bind (declaration-csts documentation forms-cst)
+                (cst:separate-function-body body-cst)
+              (declare (ignore documentation))
+              (let* ((declaration-specifiers
+                       (loop for declaration-cst in declaration-csts
+                             append (cdr (cst:listify declaration-cst))))
+                     (canonicalized-dspecs
+                       (cst:canonicalize-declaration-specifiers
+                        system
+                        (cleavir-env:declarations environment)
+                        declaration-specifiers)))
+                (multiple-value-bind (idspecs rdspecs)
+                    (cst-to-ast::itemize-declaration-specifiers-by-parameter-group
+                     (cst-to-ast::itemize-lambda-list parsed-lambda-list)
+                     canonicalized-dspecs)
+                  (multiple-value-bind (lexical-lambda-list entries)
+                      (cst-to-ast::lambda-list-from-parameter-groups
+                       (cst:children parsed-lambda-list))
+                    (let ((ast (cst-to-ast::process-parameter-groups
+                                (cst:children parsed-lambda-list)
+                                idspecs entries
+                                (cst-to-ast::make-body
+                                 rdspecs
+                                 (cst-to-ast::cst-for-body forms-cst nil origin))
+                                environment system)))
+                      (cc-ast:make-bind-va-list-ast
+                       lexical-lambda-list
+                       (cst-to-ast::convert va-list-cst environment system)
+                       ast
+                       nil ; FIXME: handle rest-alloc (parse &rest from lambda list)
+                       :origin origin)))))))))
 
-(defmethod cleavir-cst-to-ast:convert-global-function-reference (cst info global-env (system clasp-cleavir:clasp))
+(defmethod cst-to-ast:convert-global-function-reference
+    (cst info global-env (system clasp-cleavir:clasp))
   (declare (ignore global-env))
   (let ((name (cleavir-env:name info))
         (source (cst:source cst)))
@@ -530,9 +536,10 @@
 ;;;
 ;;; FIXME: Maybe just use the primops instead.
 
-(defmethod cleavir-cst-to-ast:convert-special
-    ((symbol (eql 'core:instance-ref)) cst environment (system clasp-cleavir:clasp))
-  (cleavir-cst-to-ast:convert-special 'cleavir-primop:slot-read cst environment system))
+(defmethod cst-to-ast:convert-special
+    ((symbol (eql 'core:instance-ref)) cst environment
+     (system clasp-cleavir:clasp))
+  (cst-to-ast:convert-special 'cleavir-primop:slot-read cst environment system))
 
 ;;; For -set it's mildly more complicated, as slot-write returns no values.
 (def-convert-macro core:instance-set (instance index value)
@@ -546,10 +553,10 @@
 ;;; Bind special variables.
 ;;;
 
-(defmethod cleavir-cst-to-ast:convert-special-binding
+(defmethod cst-to-ast:convert-special-binding
     (variable-cst value-ast next-ast env (system clasp-cleavir:clasp))
   (make-instance 'cc-ast:bind-ast
-    :name-ast (cleavir-cst-to-ast:convert-constant variable-cst env system)
+    :name-ast (cst-to-ast:convert-constant variable-cst env system)
     :value-ast value-ast
     :body-ast next-ast
     :origin (cst:source variable-cst)))

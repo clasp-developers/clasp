@@ -141,7 +141,7 @@ struct SafeRegisterDeregisterProcessWithLisp {
     _lisp->add_process(_Process);
   }
   ~SafeRegisterDeregisterProcessWithLisp() {
-    _Process->_Phase = Exiting;
+    _Process->_Phase = Exited;
     _lisp->remove_process(_Process);
   }
 };
@@ -247,7 +247,7 @@ void start_thread_inner(uintptr_t uniqueId, void* cold_end_of_stack) {
   core::List_sp reversed_bindings = core::cl__reverse(process->_InitialSpecialBindings);
   do_start_thread_inner(process,reversed_bindings);
   // Remove the process
-  process->_Phase = Exiting;
+  process->_Phase = Exited;
   _lisp->remove_process(process);
 #ifdef DEBUG_MONITOR_SUPPORT
     // When enabled, maintain a thread-local map of strings to FILE*
@@ -343,14 +343,13 @@ string SharedMutex_O::__repr__() const {
 
 string Process_O::phase_as_string() const {
   switch (this->_Phase) {
-  case Inactive:
-  case Booting:
+  case Nascent:
       return "(Not yet started)";
   case Active:
       return "(Running)";
   case Suspended:
       return "(Suspended)";
-  case Exiting:
+  case Exited:
       if (this->_Aborted)
         return "(Aborted)";
       else
@@ -377,7 +376,7 @@ CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) 
    return core::SimpleBaseString_O::make(process->phase_as_string());
 };
  
-CL_DOCSTRING("Current Phase of the process Inactive=0,Booting=1,Active=2,Suspended=3,Exiting=4");
+CL_DOCSTRING("Current Phase of the process. Nascent = 0, Active = 1, Suspended = 2, Exited = 3");
 CL_DEFUN int mp__process_phase(Process_sp process) {
   return process->_Phase;
 };
@@ -387,13 +386,16 @@ CL_DEFUN core::T_sp mp__lock_owner(Mutex_sp m) {
   return m->_Owner;
 }
 
-CL_DOCSTRING("Enable a process that has not yet been started, so that it begins executing.");
-CL_DEFUN int mp__process_enable(Process_sp process)
+CL_DOCSTRING("Start execution of a nascent process. Return no values.");
+CL_DEFUN void mp__process_start(Process_sp process)
 {
-  return process->enable();
+  if (process->_Phase == Nascent) {
+    _lisp->add_process(process);
+    process->start();
+  } else SIMPLE_ERROR(BF("The process %s has already started.") % process);
 };
 
-CL_DOCSTRING("Convenience function that creates a process and then immediately enables it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.");
+CL_DOCSTRING("Convenience function that creates a process and then immediately starts it. Arguments are as in MAKE-PROCESS; the ARGUMENTS parameter is always NIL.");
 CL_LAMBDA(name function &optional special_bindings);
 CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp function, core::List_sp special_bindings) {
 #ifdef DEBUG_FASTGF
@@ -402,10 +404,10 @@ CL_DEFUN Process_sp mp__process_run_function(core::T_sp name, core::T_sp functio
 #endif
   if (cl__functionp(function)) {
     Process_sp process = Process_O::make_process(name,function,_Nil<core::T_O>(),special_bindings,DEFAULT_THREAD_STACK_SIZE);
-    // The process needs to be added to the list of processes before process->enable() is called.
+    // The process needs to be added to the list of processes before process->start() is called.
     // The child process code needs this to find the process in the list
     _lisp->add_process(process);
-    process->enable();
+    process->start();
     return process;
   }
   SIMPLE_ERROR(BF("%s is not a function - you must provide a function to run in a separate process") % _rep_(function));
@@ -427,9 +429,9 @@ CL_DEFUN core::T_sp mp__thread_id(Process_sp p) {
   return core::Integer_O::create((uintptr_t)tid);
 }
 
-CL_DOCSTRING("Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been enabled and is not currently suspended.");
-CL_DEFUN core::T_sp mp__process_active_p(Process_sp p) {
-  return (p->_Phase == Active) ? _lisp->_true() : _Nil<core::T_O>();
+CL_DOCSTRING("Return true iff the process is active, i.e. is currently executed. More specifically, this means it has been started and is not currently suspended.");
+CL_DEFUN bool mp__process_active_p(Process_sp p) {
+  return (p->_Phase == Active);
 }
 
 // Internal function used only in process_suspend (which is external).
@@ -466,7 +468,6 @@ CL_DEFUN void mp__process_resume(Process_sp process) {
 
 CL_DOCSTRING("Inform the scheduler that the current process doesn't need control for the moment. It may or may not use this information. Returns no values.");
 CL_DEFUN void mp__process_yield() {
-  // There doesn't appear to be any way to exit sched_yield()
   // On success, sched_yield() returns 0.
   // On error, -1 is returned, and errno is set appropriately.
   int res = sched_yield();
@@ -485,7 +486,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,original_condition);
 CL_DOCSTRING("Wait for the given process to finish executing. If the process's function returns normally, those values are returned. If the process exited due to EXIT-PROCESS, the values provided to that function are returned. If the process was aborted by ABORT-PROCESS or a control transfer, an error of type PROCESS-JOIN-ERROR is signaled.");
 CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   // ECL has a much more complicated process_join function
-  if (process->_Phase>0) {
+  if (process->_Phase != Exited ) {
     pthread_join(process->_Thread._value,NULL);
   }
   if (process->_Aborted)
@@ -498,7 +499,7 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
 
 CL_DOCSTRING("Interrupt the given process to make it call the given function with no arguments. Return no values.");
 CL_DEFUN void mp__interrupt_process(Process_sp process, core::T_sp func) {
-  unlikely_if (mp__process_active_p(process).nilp()) {
+  unlikely_if (process->_Phase != Active) {
     FEerror("Cannot interrupt the inactive process ~A", 1, process);
   }
   clasp_interrupt_process(process,func);

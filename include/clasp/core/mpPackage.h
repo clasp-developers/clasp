@@ -93,14 +93,18 @@ struct ThreadStartInfo {
 
 extern std::atomic<uintptr_t> global_process_UniqueID;
 
-  typedef enum {Inactive=0,Booting,Active,Suspended,Exiting} ProcessPhase;
+typedef enum {Nascent = 0, // Has not yet started, may proceed to Active
+    Active, // Running, may proceed to Suspended or Exited
+    Suspended, // Temporarily paused, may proceed to Active or Exited
+    Exited} // Finished running, permanent state.
+  ProcessPhase;
   
   class Process_O : public core::CxxObject_O {
     LISP_CLASS(mp, MpPkg, Process_O, "Process",core::CxxObject_O);
   public:
     CL_LISPIFY_NAME("make_process");
     CL_LAMBDA(name function &optional arguments special_bindings (stack-size 0));
-    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-ENABLE.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.");
+    CL_DOCSTRING("Make and return a new process object. The new process is inactive; it can be started with PROCESS-START.\n\nNAME is the name of the process for display purposes. FUNCTION is the function that the process should execute. ARGUMENTS is a list of arguments that will be passed to the function when the process is enabled; the default is NIL. SPECIAL-BINDINGS is an alist of (symbol . form): the forms will be evaluated in a null lexical environment, and their values bound to the symbols (as if by PROGV) when the process is started.");
     CL_DEF_CLASS_METHOD static Process_sp make_process(core::T_sp name, core::T_sp function, core::T_sp arguments, core::T_sp special_bindings, size_t stack_size) {
       core::List_sp passed_bindings = core::cl__reverse(special_bindings);
       core::List_sp all_bindings = core::lisp_copy_default_special_bindings();
@@ -142,20 +146,20 @@ extern std::atomic<uintptr_t> global_process_UniqueID;
       : _UniqueID(global_process_UniqueID++), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ThreadInfo(NULL),
         _ReturnValuesList(_Nil<core::T_O>()), _Aborted(false),
-        _AbortCondition(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Booting),
+        _AbortCondition(_Nil<core::T_O>()), _StackSize(stack_size), _Phase(Nascent),
         _SuspensionMutex(SUSPBARR_NAMEWORD) {
       if (!function) {
         printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__ );
       }
     };
     
-    int enable() {
+    int start() {
       pthread_attr_t attr;
       int result;
       result = pthread_attr_init(&attr);
       result = pthread_attr_setstacksize(&attr,this->_StackSize);
       if (result!=0) return result;
-      this->_Phase = Booting;
+      this->_Phase = Active;
       ThreadStartInfo* info = new ThreadStartInfo(this->_UniqueID); // delete this in start_thread
       result = pthread_create(&this->_Thread._value, &attr, start_thread, (void*)info);
       pthread_attr_destroy(&attr);

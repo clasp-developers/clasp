@@ -482,7 +482,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   ;;decl must be a proper list
   (if (not (core:proper-list-p decl))
-      (error "decl must be a proper list: ~a" decl)) 
+      (error 'type-error
+             :datum decl
+             :expected-type '(and list (satisfies core:proper-list-p)))) 
   (cond
     ((eq (car decl) 'SPECIAL)
      (mapc #'sys::*make-special (cdr decl)))

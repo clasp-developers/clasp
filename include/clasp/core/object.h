@@ -660,43 +660,6 @@ namespace core {
   List_sp encode(T_sp);
 };
 
-
-namespace core {
-SMART(AtomicT_Holder);
-class AtomicT_Holder_O : public core::General_O {
-  LISP_CLASS(core, CorePkg, AtomicT_Holder_O, "AtomicT_Holder",core::General_O);
-public:
-  static AtomicT_Holder_sp create(T_sp cl) {
-    GC_ALLOCATE_VARIADIC(AtomicT_Holder_O,ch,cl);
-    return ch;
-  }
-  std::atomic<T_sp> _Object;
-public:
-  bool object_unboundp() const;
-  T_sp object_get() const;
-  void object_set(T_sp cl);
-  void object_makunbound();
-  
-  explicit AtomicT_Holder_O(T_sp c) : _Object(c) {};
-};
-};
-
-namespace core {
-SMART(AtomicFixnumHolder);
-class AtomicFixnumHolder_O : public core::General_O {
-  LISP_CLASS(core, CorePkg, AtomicFixnumHolder_O, "AtomicFixnumHolder",core::General_O);
-public:
-  static AtomicFixnumHolder_sp make_atomic_fixnum(T_sp cl);
-  std::atomic<Fixnum> _Object;
-public:
-  T_sp atomic_fixnum_get() const;
-  void atomic_fixnum_set_unsafe(T_sp cl);
-  void atomic_fixnum_incf_unsafe(T_sp val);
-  explicit AtomicFixnumHolder_O(Fixnum c) : _Object(c) {};
-};
-};
-
-
 namespace core {
 // A dummy class for unused tag 
 class Unused_dummy_O : public T_O {

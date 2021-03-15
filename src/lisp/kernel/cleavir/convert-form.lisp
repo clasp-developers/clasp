@@ -1,10 +1,11 @@
 (in-package #:clasp-cleavir)
 
-(defmethod cleavir-cst-to-ast:convert-code (lambda-list body
-                                            env (system clasp-cleavir:clasp)
-                                            &key block-name-cst origin)
+(defmethod cst-to-ast:convert-code (lambda-list body
+                                    env (system clasp-cleavir:clasp)
+                                    &key block-name-cst origin)
   (declare (ignore env block-name-cst origin))
-  (let ((cst:*ordinary-lambda-list-grammar* clasp-cleavir:*clasp-ordinary-lambda-list-grammar*))
+  (let ((cst:*ordinary-lambda-list-grammar*
+          *clasp-ordinary-lambda-list-grammar*))
     (multiple-value-bind (declaration-csts documentation)
         (cst:separate-function-body body)
       (declare (ignore documentation)) ; handled by cleavir
@@ -23,9 +24,9 @@
                               ((null source) core:*current-source-pos-info*)
                               (t source))))
               (function-ast (call-next-method)))
-          (setf (cleavir-ast:origin function-ast) origin
-                (cleavir-ast:name function-ast)
+          (setf (ast:origin function-ast) origin
+                (ast:name function-ast)
                 (or lambda-name ; from declaration
-                    (cleavir-ast:name function-ast) ; local functions named by cleavir
+                    (ast:name function-ast) ; local functions named by cleavir
                     (list 'lambda (cmp::lambda-list-for-name original-lambda-list))))
           function-ast)))))

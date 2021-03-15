@@ -124,9 +124,10 @@
   (export '(;; atomic operations
             atomic fence cas get-atomic-expansion define-atomic-expander
             not-atomic not-atomic-place
-            atomic-update
-            atomic-incf atomic-decf atomic-push atomic-pop
-            atomic-pushnew
+            atomic-update atomic-update-explicit
+            atomic-incf atomic-decf atomic-incf-explicit atomic-decf-explicit
+            atomic-push atomic-pop
+            atomic-pushnew atomic-pushnew-explicit
             ))
   (core:select-package "CORE"))
 

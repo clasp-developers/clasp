@@ -281,8 +281,8 @@
          (ftype (function (method format-control &rest t)) invalid-method-error)
          (ftype (function (format-control &rest t)) method-combination-error)
          (ftype (function (condition-designator &rest t) null) signal warn)
-         (ftype (function (condition) format-control) simple-condition-format-control)
-         (ftype (function (condition) list) simple-condition-format-arguments)
+         (ftype (function (condition) t) simple-condition-format-control)
+         (ftype (function (condition) t) simple-condition-format-arguments)
          (ftype (function (condition) nil) invoke-debugger)
          (ftype (function (&optional format-control &rest t) null) break)
          (ftype (function (type-specifier &key &allow-other-keys) condition) make-condition)
@@ -342,7 +342,7 @@
          (ftype (function (package-designator) list)
                 package-nicknames package-shadowing-symbols package-use-list package-used-by-list)
          (ftype predicate-function packagep)
-         (ftype (function (package-error) package-designator) package-error-package))
+         (ftype (function (package-error) t) package-error-package))
 
 ;;; Chapter 12 Numbers
 
@@ -409,8 +409,8 @@
          (ftype (function (float) (integer 0)) float-digits float-precision)
          (ftype (function (float) (values integer integer (member -1 1))) integer-decode-float)
          (ftype (function (real &optional float) float) float)
-         (ftype (function (arithmetic-error) list) arithmetic-error-operands)
-         (ftype (function (arithmetic-error) function-designator) arithmetic-error-operation))
+         (ftype (function (arithmetic-error) t) arithmetic-error-operands)
+         (ftype (function (arithmetic-error) t) arithmetic-error-operation))
 
 ;;; Chapter 13 Characters
 
@@ -736,7 +736,7 @@
                           (values pathname physical-pathname physical-pathname))
                 rename-file)
          (ftype (function (pathname-designator) (eql t)) delete-file)
-         (ftype (function (file-error) pathname-designator) file-error-pathname))
+         (ftype (function (file-error) t) file-error-pathname))
 
 ;;; Chapter 21 Streams
 (declaim (ftype (function (stream) t)
@@ -798,7 +798,7 @@
                 make-string-input-stream)
          (ftype (function (&key (:element-type type-specifier)) string-stream)
                 make-string-output-stream)
-         (ftype (function (stream-error) stream) stream-error-stream))
+         (ftype (function (stream-error) t) stream-error-stream))
 
 ;;; Chapter 22 Printer
 

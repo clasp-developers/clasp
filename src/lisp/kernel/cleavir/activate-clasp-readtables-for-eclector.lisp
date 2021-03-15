@@ -120,6 +120,7 @@
 (defun init-clasp-as-eclector-reader ()
   (setq eclector.readtable:*readtable* cl:*readtable*)
   (core::set-eclector-reader-readmacros cl:*readtable*)
+  (core::set-eclector-reader-readmacros (symbol-value 'core:+standard-readtable+))
   ;;; also change read 
   (setq core:*read-hook* 'read-with-readtable-synced)
   (setq core:*read-preserving-whitespace-hook* 'read-preserving-whitespace-with-readtable-synced)

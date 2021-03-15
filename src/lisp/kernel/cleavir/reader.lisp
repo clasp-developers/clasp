@@ -1,14 +1,14 @@
 (in-package :clasp-cleavir)
 
-(defmethod concrete-syntax-tree::all-lambda-list-keywords append ((client clasp-64bit))
+(defmethod cst::all-lambda-list-keywords append ((client clasp-64bit))
+  '(core:&va-rest))
+
+(defmethod cst::allowed-lambda-list-keywords append
+    ((client clasp-64bit) (lambda-list cst:ordinary-lambda-list))
   '(core:&va-rest))
 
 (defmethod concrete-syntax-tree::allowed-lambda-list-keywords append
-    ((client clasp-64bit) (lambda-list concrete-syntax-tree:ordinary-lambda-list))
-  '(core:&va-rest))
-
-(defmethod concrete-syntax-tree::allowed-lambda-list-keywords append
-    ((client clasp-64bit) (lambda-list concrete-syntax-tree:specialized-lambda-list))
+    ((client clasp-64bit) (lambda-list cst:specialized-lambda-list))
   '(core:&va-rest))
 
 
