@@ -1,0 +1,2 @@
+
+sudo dtrace -x ustackframes=4000 -n "profile-997 / arg1 / { @[ustack()] = count() } " -c "../../build/boehmprecise/iclasp-boehmprecise -T core -i test.dat" -o time.out
