@@ -172,9 +172,9 @@ void* decodeLibrarySaveAddress(void* codedAddress) {
   gctools::clasp_ptr_t ptr = (gctools::clasp_ptr_t)(textStart + offset);
   DBG_SL_ENTRY_POINT(BF("Library base: %p decode %p -> %p\n") % (void*)globalISLLibraries[libidx]._TextStart % codedAddress % (void*)ptr  );
   if (*(uint8_t*)ptr != firstByte) {
-    printf("%s:%d:%s during decode function pointer %p must be readable and point to first byte: 0x%x - it doesn't\ncodedAddress: %p  textStart: %p",
-           __FILE__, __LINE__, __FUNCTION__, ptr, (uint32_t)firstByte,
-           (void*)codedAddress, (void*)textStart );
+    printf("%s:%d:%s during decode function pointer %p must be readable and point to first byte: 0x%x - but it points to 0x%x\ncodedAddress: %p  libidx: %lu textStart: %p",
+           __FILE__, __LINE__, __FUNCTION__, ptr, (uint32_t)firstByte, (uint32_t)*(uint8_t*)ptr,
+           (void*)codedAddress, libidx, (void*)textStart );
   }
   return (void*)ptr;
 }
