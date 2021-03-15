@@ -353,6 +353,17 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     llvmo::initialize_llvm();
     ::globals_ = new core::globals_t();
     globals_->_DebugStream = new core::DebugStream(mpiRank);
+
+
+    //
+    // Set up the arguments
+    //
+    const char *argv0 = "./";
+    if (argc > 0) argv0 = argv[0];
+    globals_->_Argc = argc;
+    for (int i = 0; i < argc; ++i) {
+      globals_->_Argv.push_back(string(argv[i]));
+    }
     exit_code = imageSaveLoad::image_load(core::global_options->_ImageFile);
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
