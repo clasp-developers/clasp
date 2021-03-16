@@ -1456,9 +1456,7 @@ COMPILE-FILE will use the default *clasp-env*."
 (defvar *dis* nil)
 
 (defun bir-transformations (module system)
-  (when *dis*
-    (bir::print-disasm
-     (bir:disassemble module)))
+  (when *dis* (cleavir-bir-disassembler:display module))
   (bir-transformations:module-eliminate-catches module)
   (bir-transformations:find-module-local-calls module)
   (bir-transformations:module-optimize-variables module)
