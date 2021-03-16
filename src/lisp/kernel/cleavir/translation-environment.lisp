@@ -46,7 +46,8 @@
 
 (defun bind-variable (var)
   (if (bir:immutablep var)
-      ;; This should get initialized eventually.
+      ;; Since immutable vars are just LLVM Values, they will be initialized
+      ;; by their single VARIABLE-OUT call.
       nil
       (setf (gethash var *datum-values*)
             (ecase (bir:extent var)
@@ -121,7 +122,10 @@
 (defun variable-out (value variable)
   (check-type variable bir:variable)
   (if (bir:immutablep variable)
-      (setf (gethash variable *datum-values*) value)
+      (prog1 (setf (gethash variable *datum-values*) value)
+        (cmp:dbg-variable-value
+         value (datum-name-as-string variable)
+         (origin-spi (bir:origin variable))))
       (ecase (bir:extent variable)
         (:local
          (let ((alloca (or (gethash variable *datum-values*)
