@@ -12,6 +12,14 @@
 (defvar *function-info*)
 (defvar *enclose-initializers*)
 
+;;; In CSTs and stuff the origin is (spi . spi). Use the head.
+(defun origin-spi (origin)
+  (if (consp origin) (car origin) origin))
+
+(defun ensure-origin (origin &optional (num 999905))
+  (or origin
+      (core:make-source-pos-info "no-source-info-available" num num num)))
+
 (defun delay-initializer (initializer-thunk)
   (push initializer-thunk *enclose-initializers*))
 
@@ -36,6 +44,8 @@
                          :readably nil
                          :pretty nil))))
 
+(defvar *test-dbg* t)
+
 (defun bind-variable (var)
   (if (bir:immutablep var)
       ;; This should get initialized eventually.
@@ -44,7 +54,32 @@
             (ecase (bir:extent var)
               ((:local :dynamic)
                ;; just an alloca
-               (cmp:alloca-t* (datum-name-as-string var)))
+               (let* ((name (datum-name-as-string var))
+                      (alloca (cmp:alloca-t* name))
+                      (spi (origin-spi (bir:origin var)))
+                      (type (llvm-sys:create-basic-type
+                             cmp::*the-module-dibuilder*
+                             "T_O*"
+                             64 llvm-sys:+dw-ate-address+ 0)))
+                 ;; set up debug info
+                 (when *test-dbg*
+                 (%intrinsic-call "llvm.dbg.addr"
+                                  (list
+                                   (llvm-sys:metadata-as-value-get
+                                    (cmp:thread-local-llvm-context)
+                                    (llvm-sys:value-as-metadata-get alloca))
+                                   (llvm-sys:metadata-as-value-get
+                                    (cmp:thread-local-llvm-context)
+                                    (cmp::dbg-create-auto-variable
+                                     :name name
+                                     :lineno (core:source-pos-info-lineno spi)
+                                     :type type))
+                                   (llvm-sys:metadata-as-value-get
+                                    (cmp:thread-local-llvm-context)
+                                    (llvm-sys:create-expression-none
+                                     cmp::*the-module-dibuilder*)))))
+                 ;; return
+                 alloca))
               ((:indefinite)
                ;; make a cell
                (%intrinsic-invoke-if-landing-pad-or-call

@@ -272,6 +272,17 @@
       (dbg-set-irbuilder-source-location
        *irbuilder* *current-source-pos-info*))))
 
+(defun dbg-create-auto-variable (&key (scope *dbg-current-scope*)
+                                   name (file *dbg-current-file*)
+                                   lineno type always-preserve)
+  (llvm-sys:create-auto-variable *the-module-dibuilder*
+                                 scope name file lineno type always-preserve
+                                 (core:enum-logical-or
+                                  llvm-sys:diflags-enum
+                                  '(llvm-sys:diflags-zero))
+                                 ;; FIXME: I'm guessing
+                                 64))
+
 (defun dbg-create-parameter-variable (&key (scope *dbg-current-scope*)
                                         name
                                         argno
@@ -289,7 +300,9 @@
                                       lineno
                                       type
                                       always-preserve
-                                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))))
+                                      (core:enum-logical-or
+                                       llvm-sys:diflags-enum
+                                       '(llvm-sys:diflags-zero))))
 
 (defun set-instruction-source-position (origin function-metadata)
   (when *dbg-generate-dwarf*
