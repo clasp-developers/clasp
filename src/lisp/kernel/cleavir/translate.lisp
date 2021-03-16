@@ -437,10 +437,10 @@
   ;; We must force all closure initializers to run before a call.
   (force-initializers))
 
-(defmethod translate-simple-instruction ((instruction bir:leti) abi)
+;; LETI is a subclass of WRITEVAR, so we use a :before to bind the var.
+(defmethod translate-simple-instruction :before ((instruction bir:leti) abi)
   (declare (ignore abi))
-  (bind-variable (first (bir:outputs instruction)))
-  (call-next-method))
+  (bind-variable (first (bir:outputs instruction))))
 
 (defmethod translate-simple-instruction ((instruction bir:writevar)
                                          abi)
@@ -1456,7 +1456,6 @@ COMPILE-FILE will use the default *clasp-env*."
 (defvar *dis* nil)
 
 (defun bir-transformations (module system)
-  (when *dis* (cleavir-bir-disassembler:display module))
   (bir-transformations:module-eliminate-catches module)
   (bir-transformations:find-module-local-calls module)
   (bir-transformations:module-optimize-variables module)
@@ -1470,6 +1469,7 @@ COMPILE-FILE will use the default *clasp-env*."
   (bir-transformations:determine-function-environments module)
   (bir-transformations:determine-closure-extents module)
   (bir-transformations:determine-variable-extents module)
+  (when *dis* (cleavir-bir-disassembler:display module))
   (values))
 
 (defun translate-ast (ast &key (abi *abi-x86-64*)
