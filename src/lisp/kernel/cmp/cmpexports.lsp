@@ -280,6 +280,7 @@
             with-dbg-function
             with-dbg-lexical-block
             dbg-set-current-source-pos
+            dbg-variable-alloca
             compile-file-source-pos-info
             compile-file-serial
             compile-file-parallel

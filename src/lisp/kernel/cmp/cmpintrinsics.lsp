@@ -710,6 +710,26 @@ eg:  (f closure-ptr nargs a b c d ...)
 #-(and x86-64)
 (error "Define calling convention for system")
 
+(defun dbg-variable-alloca (alloca name spi
+                                   &optional (type-name "T_O*")
+                                     (type llvm-sys:+dw-ate-address+))
+  (let* ((type (llvm-sys:create-basic-type
+                *the-module-dibuilder* type-name 64 type 0))
+         (allocamd (llvm-sys:metadata-as-value-get
+                    (thread-local-llvm-context)
+                    (llvm-sys:value-as-metadata-get alloca)))
+         (auto-variable (dbg-create-auto-variable
+                         :name name
+                         :lineno (core:source-pos-info-lineno spi)
+                         :type type))
+         (auto-variable-md (llvm-sys:metadata-as-value-get
+                            (thread-local-llvm-context)
+                            auto-variable))
+         (diexpr (llvm-sys:metadata-as-value-get
+                  (thread-local-llvm-context)
+                  (llvm-sys:create-expression-none *the-module-dibuilder*))))
+    (irc-intrinsic "llvm.dbg.addr" allocamd auto-variable-md diexpr)))
+
 ;;; This is the normal C-style prototype for a function
 (define-symbol-macro %fn-prototype% %fn-registers-prototype%)
 (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+)

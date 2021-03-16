@@ -44,8 +44,6 @@
                          :readably nil
                          :pretty nil))))
 
-(defvar *test-dbg* t)
-
 (defun bind-variable (var)
   (if (bir:immutablep var)
       ;; This should get initialized eventually.
@@ -56,28 +54,9 @@
                ;; just an alloca
                (let* ((name (datum-name-as-string var))
                       (alloca (cmp:alloca-t* name))
-                      (spi (origin-spi (bir:origin var)))
-                      (type (llvm-sys:create-basic-type
-                             cmp::*the-module-dibuilder*
-                             "T_O*"
-                             64 llvm-sys:+dw-ate-address+ 0)))
+                      (spi (origin-spi (bir:origin var))))
                  ;; set up debug info
-                 (when *test-dbg*
-                 (%intrinsic-call "llvm.dbg.addr"
-                                  (list
-                                   (llvm-sys:metadata-as-value-get
-                                    (cmp:thread-local-llvm-context)
-                                    (llvm-sys:value-as-metadata-get alloca))
-                                   (llvm-sys:metadata-as-value-get
-                                    (cmp:thread-local-llvm-context)
-                                    (cmp::dbg-create-auto-variable
-                                     :name name
-                                     :lineno (core:source-pos-info-lineno spi)
-                                     :type type))
-                                   (llvm-sys:metadata-as-value-get
-                                    (cmp:thread-local-llvm-context)
-                                    (llvm-sys:create-expression-none
-                                     cmp::*the-module-dibuilder*)))))
+                 (cmp:dbg-variable-alloca alloca name spi)
                  ;; return
                  alloca))
               ((:indefinite)
