@@ -75,12 +75,19 @@ public:
   void ensure_initialized() { return this->_Vector.ensure_initialized(); };
   size_t capacity() const { return this->_Vector.capacity(); };
   //  pointer_type data() const { return this->_Vector.data(); };
+  inline void operator = (const Vec0_impl& other) {
+    this->_Vector = other._Vector;
+  }
   inline reference operator[](size_t i) { return this->_Vector[i]; };
   inline const_reference operator[](size_t i) const { return this->_Vector[i]; };
   void resize(size_t n, const value_type &initialElement = value_type()) {
     this->_Vector.resize(n, initialElement);
   };
   void reserve(size_t n) { this->_Vector.reserve(n); };
+  void assign( size_t count, const value_type& value ) {
+    this->resize(count);
+    for (size_t zz=0; zz<count; zz++ ) this->_Vector[zz] = value;
+  }
   void clear() { this->_Vector.clear(); };
   void push_back(const_reference val) { this->_Vector.push_back(val); };
   void pop_back() { this->_Vector.pop_back(); };
@@ -145,6 +152,9 @@ public:
   Vec0() : Base() {};
 };
 
+
+};
+namespace gctools {
 template <class T>
 class Vec0_uncopyable : public Vec0<T> {
 public:

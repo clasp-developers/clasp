@@ -568,7 +568,7 @@
                   (function (main-function callee-info))
                   (function-type (llvm-sys:get-function-type function))
                   (result-in-registers
-                    (cmp::irc-call-or-invoke function arguments)))
+                    (cmp::irc-call-or-invoke function-type function arguments)))
              #+(or)(llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
              (out result-in-registers output))))))
 
