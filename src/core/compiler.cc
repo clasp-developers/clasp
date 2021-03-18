@@ -1057,10 +1057,9 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
     } else if (sym == kw::_sym_rtld_next) {
       handle = RTLD_NEXT;
 #ifdef _TARGET_OS_DARWIN
-    } else if (sym == kw::_sym_rtld_self) //NOT PORTABLE TO LINUX
-      {
-        handle = RTLD_SELF;
-      } else if (sym == kw::_sym_rtld_main_only) {
+    } else if (sym == kw::_sym_rtld_self) { //NOT PORTABLE TO LINUX
+      handle = RTLD_SELF;
+    } else if (sym == kw::_sym_rtld_main_only) {
       handle = RTLD_MAIN_ONLY;
 #endif
     } else {

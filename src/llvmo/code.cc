@@ -113,6 +113,11 @@ Code_sp Code_O::make(uintptr_t scanSize, uintptr_t totalSize, ObjectFile_sp obje
   code->_ObjectFile = objectFile;
   objectFile->_Code = code;
   // Don't put DEBUG_OBJECT_FILES_PRINT in here - this is called too early
+#if 0
+  printf("%s:%d:%s Allocated code object from %p to %p\n", __FILE__, __LINE__, __FUNCTION__,
+         (void*)&code->_DataCode[0],
+         (void*)&code->_DataCode[code->_DataCode.size()]);
+#endif
   return code;
 }
 
@@ -241,10 +246,14 @@ namespace llvmo {
 std::atomic<size_t> fileNum;
 
 
-void dumpObjectFile(const char* start, size_t size) {
+void dumpObjectFile(const char* start, size_t size, void* codeStart) {
   size_t num = fileNum++;
   std::stringstream filename;
-  filename << "object-file-" << num << ".o";
+  filename << "object-file-" << num;
+  if (codeStart) {
+    filename << "-" << std::hex << (void*)codeStart;
+  }
+  filename << ".o";
   std::ofstream fout;
   printf("%s:%d:%s dumping object file to %s\n", __FILE__, __LINE__, __FUNCTION__, filename.str().c_str());
   fout.open(filename.str(), std::ios::out | std::ios::binary );
@@ -274,7 +283,7 @@ void save_object_file_and_code_info(ObjectFile_sp ofi)
   } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected,entry));
   if (globalDebugObjectFiles == DebugObjectFilesPrintSave) {
     llvm::MemoryBufferRef mem = *(ofi->_MemoryBuffer);
-    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
+    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize(), (void*)&ofi->_Code->_DataCode[0] );
   }
 }
 
@@ -487,7 +496,7 @@ void 	ClaspSectionMemoryManager::notifyObjectLoaded (RuntimeDyld &RTDyld, const 
   }
   if (llvmo::_sym_STARdumpObjectFilesSTAR->symbolValue().notnilp()) {
     llvm::MemoryBufferRef mem = Obj.getMemoryBufferRef();
-    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize());
+    dumpObjectFile(mem.getBufferStart(),mem.getBufferSize(), (void*)&ovi->_Code->_CodeData[0] ););
   }
 }
 

@@ -3842,8 +3842,9 @@ static cl_index
 output_stream_write_byte8(T_sp strm, unsigned char *c, cl_index n) {
   cl_index out;
   clasp_disable_interrupts();
+  FILE* fout = IOStreamStreamFile(strm);
   do {
-    out = fwrite(c, sizeof(char), n, IOStreamStreamFile(strm));
+    out = fwrite(c, sizeof(char), n, fout );
   } while (out < n && restartable_io_error(strm, "fwrite"));
   clasp_enable_interrupts();
   return out;
@@ -5937,10 +5938,13 @@ void IOStreamStream_O::fixupInternalsForImageSaveLoad(FixupOperation& op) {
     printf("%s:%d:%s Opening %s stream = %p\n", __FILE__, __LINE__, __FUNCTION__, name.c_str(), (void*)stream.raw_());
     if (name == "*STDIN*") {
       StreamOps(stream) = duplicate_dispatch_table(input_stream_ops);
+      IOStreamStreamFile(stream) = stdin;
     } else if (name=="*STDOUT*") {
       StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
+      IOStreamStreamFile(stream) = stdout;
     } else if (name=="*STDERR*") {
       StreamOps(stream) = duplicate_dispatch_table(output_stream_ops);
+      IOStreamStreamFile(stream) = stderr;
     } else {
       printf("%s:%d:%s What do I do to open %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
     }

@@ -382,7 +382,7 @@ public:
 };
 
 
- void dumpObjectFile(const char* start, size_t size);
+void dumpObjectFile(const char* start, size_t size, void* codeStart = NULL );
 
  void save_object_file_and_code_info( ObjectFile_sp of );
 

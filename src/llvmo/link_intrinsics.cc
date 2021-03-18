@@ -419,9 +419,11 @@ LtvcReturn ltvc_make_function_description(gctools::GCRootsInModule* holder, char
   if (!gc::IsA<core::FunctionDescription_sp>(val)) {
     SIMPLE_ERROR(BF("The object is not a FunctionDescription %s") % core::_rep_(val));
   }
+#if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s FunctionDescription_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+#endif
   LTVCRETURN holder->setTaggedIndex(tag,index,val.tagged_());
   NO_UNWIND_END();
 }
@@ -435,9 +437,11 @@ LtvcReturn ltvc_make_local_entry_point(gctools::GCRootsInModule* holder, char ta
   if (!gc::IsA<core::LocalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a LocalEntryPoint %s") % core::_rep_(entryPoint));
   }
+#if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s LocalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+#endif
   LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
   NO_UNWIND_END();
 }
@@ -451,9 +455,11 @@ LtvcReturn ltvc_make_global_entry_point(gctools::GCRootsInModule* holder, char t
   if (!gc::IsA<core::GlobalEntryPoint_sp>(entryPoint)) {
     SIMPLE_ERROR(BF("The object is not a GlobalEntryPoint %s") % core::_rep_(entryPoint));
   }
+#if 0
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s GlobalEntryPoint_sp@%p\n", __FILE__, __LINE__, __FUNCTION__, entryPoint.raw_()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ObjectFile_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()).c_str()));
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Code_sp %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(my_thread->topObjectFile()->_Code).c_str()));
+#endif
   LTVCRETURN holder->setTaggedIndex(tag,index,entryPoint.tagged_());
   NO_UNWIND_END();
 }
