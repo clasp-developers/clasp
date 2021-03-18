@@ -2039,17 +2039,22 @@ int image_load(const std::string& filename ) {
   //
   // Release the temporary roots
   //
+#if 0
   printf("%s:%d:%s Not releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
-  //root_holder.release();
+#else
+  printf("%s:%d:%s Releasing temporary roots\n", __FILE__, __LINE__, __FUNCTION__ );
+  root_holder.release();
+#endif
 
   //
   // munmap the memory
   //
-#if 1
+#if 0
   printf("%s:%d:%s Not munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   // Fill it with 0xc0
 //  memset(memory,0xc0,fsize);
 #else  
+  printf("%s:%d:%s munmap'ing loaded image - filling with 0xc0\n", __FILE__, __LINE__, __FUNCTION__ );
   int res = munmap( memory, fsize );
   if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
 #endif

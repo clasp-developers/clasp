@@ -57,13 +57,15 @@ public:
   typedef const value_type &const_reference;
   typedef typename vector_type::iterator iterator;
   typedef typename vector_type::const_iterator const_iterator;
+  typedef typename vector_type::iterator::difference_type difference_type;
+  typedef typename vector_type::iterator::size_type size_type;
+  typedef typename vector_type::iterator::const_pointer const_pointer;
 public:
   vector_type _Vector;
   Vec0_impl() {
   };
 public:
   typename Vec::pointer_to_moveable contents() const { return this->_Vector.contents(); };
-
 public:
   void swap(Vec0_impl &other) { this->_Vector.swap(other._Vector); };
   iterator begin() { return this->_Vector.begin(); };
@@ -71,9 +73,11 @@ public:
   const_iterator begin() const { return this->_Vector.begin(); };
   const_iterator end() const { return this->_Vector.end(); };
   size_t size() const { return this->_Vector.size(); };
+  bool empty() const { return this->_Vector.size()==0; };
   inline void unsafe_set_end(size_t e) { this->_Vector.unsafe_set_end(e); };
   void ensure_initialized() { return this->_Vector.ensure_initialized(); };
   size_t capacity() const { return this->_Vector.capacity(); };
+  size_t max_size() const { return ~(size_t)0; };
   //  pointer_type data() const { return this->_Vector.data(); };
   inline void operator = (const Vec0_impl& other) {
     this->_Vector = other._Vector;

@@ -46,10 +46,17 @@ public:
   T _Data[0]; // Store _Capacity numbers of T structs/classes starting here
   template <typename Uty>
   struct GCVector_moveable_iterator {
+    mutable tagged_pointer<GCVector_moveable<T>> _Vec;
+    mutable size_t _Index;
     typedef GCVector_moveable_iterator<Uty> Iterator;
     typedef Uty value_type;
-    tagged_pointer<GCVector_moveable<T>> _Vec;
-    mutable size_t _Index;
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using size_type = std::size_t;
+    using pointer = T*;
+    using reference = T&;
+    using const_pointer = const T*;
+
     GCVector_moveable_iterator() : _Index(0) {};
     GCVector_moveable_iterator(tagged_pointer<GCVector_moveable<T>> vec, size_t index) : _Vec(vec), _Index(index) {
       //      printf("%s:%d initializing %p\n", __FILE__, __LINE__, _Vec.raw_() );
@@ -62,8 +69,8 @@ public:
         printf("%s:%d Assigned to an iterator with an empty vector\n", __FILE__, __LINE__ );
       }
     };
-#if 0
-    const Iterator &operator=(const Iterator &other) const {
+#if 1
+    const Iterator& operator=(const Iterator &other) const {
       if (&other == this)
         return *this;
       this->_Vec = other._Vec;

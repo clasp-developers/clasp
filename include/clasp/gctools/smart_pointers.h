@@ -1775,6 +1775,11 @@ public:
     return *untag_general(this->thePointer);
   };
 
+  tagged_pointer<T> &operator=(tagged_pointer<T> const &orig) {
+    this->thePointer = orig.thePointer;
+    return *this;
+  }
+
   template <class U>
   inline bool operator==(tagged_pointer<U> const other) const {
     return this->thePointer == other.thePointer;

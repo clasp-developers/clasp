@@ -634,17 +634,8 @@ The passed module is modified as a side-effect."
 
 (defun code-model (&key jit (target-faso-file *default-object-type*))
   "Return the code-model for the compilation mode"
-  (multiple-value-bind (llvm-version-string llvm-version-val)
-      (ext:llvm-version)
-    (cond
-      ((and (eq target-faso-file :faso) (null jit))
-       (progn
-         'llvm-sys:code-model-small
-         ))
-      ((eq target-faso-file :object)
-       (progn
-         'llvm-sys:code-model-small))
-      (t (error "Handle target-faso-file ~a" target-faso-file)))))
+  #+(or)'llvm-sys:code-model-small
+  'llvm-sys:code-model-large)
 
 (export 'code-model)
 
