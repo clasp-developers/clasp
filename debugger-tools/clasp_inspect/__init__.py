@@ -83,6 +83,7 @@ class ContainerKind:
         self._stamp = stamp
         self._name = name
         self._size = size
+        self._fields = {}
         self._variable_array0 = None
         self._variable_capacity = None
         self._variable_fields = {}
