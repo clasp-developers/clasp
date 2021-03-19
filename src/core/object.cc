@@ -648,19 +648,19 @@ CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
         return x.raw_() == y.raw_();
       } else if (y.single_floatp()) {
         return (x.unsafe_fixnum() == y.unsafe_single_float());
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(gc::As_unsafe<Fixnum_sp>(x), ny) == 0;
-      }
-      return false;
+      } else if (gc::IsA<Number_sp>(y)) {
+        return basic_equalp(gc::As_unsafe<Fixnum_sp>(x),
+                            gc::As_unsafe<Number_sp>(y));
+      } else return false;
     } else if (x.single_floatp()) {
       if (y.single_floatp()) {
         return x.unsafe_single_float() == y.unsafe_single_float();
       } else if (y.fixnump()) {
         return x.unsafe_single_float() == y.unsafe_fixnum();
-      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-        return basic_compare(gc::As<SingleFloat_sp>(x), ny);
-      }
-      return false;
+      } else if (gc::IsA<Number_sp>(y)) {
+        return basic_equalp(gc::As_unsafe<SingleFloat_sp>(x),
+                            gc::As_unsafe<Number_sp>(y));
+      } else return false;
     } else if (x.characterp()) {
       return clasp_charEqual2(x, y);
     } else if (x.consp() ) {
