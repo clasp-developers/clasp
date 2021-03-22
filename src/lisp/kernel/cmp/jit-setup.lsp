@@ -634,8 +634,8 @@ The passed module is modified as a side-effect."
 
 (defun code-model (&key jit (target-faso-file *default-object-type*))
   "Return the code-model for the compilation mode"
-  #+(or)'llvm-sys:code-model-small
-  'llvm-sys:code-model-large)
+  #+target-os-darwin 'llvm-sys:code-model-small
+  #+target-os-linux 'llvm-sys:code-model-large)
 
 (export 'code-model)
 

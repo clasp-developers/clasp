@@ -282,6 +282,9 @@ struct globals_t {
                 _DebugStream(NULL),
                 _SingleStepLevel(UndefinedUnsignedInt),
                 _NoRc(false),
+                _NoPrint(false),
+                _NoInform(false),
+                _DebuggerDisabled(false),
                 _Interactive(true)
   {
     this->_GlobalInitializationCallbacks.clear();
