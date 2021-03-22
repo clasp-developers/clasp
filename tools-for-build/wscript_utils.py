@@ -323,3 +323,22 @@ def libraries_as_link_flags_as_string(fmt, libs):
         result.write(" ")
         result.write(fmt % x)
     return result.getvalue()
+
+
+class link_snapshot(clasp_task):
+    def run(self):
+        executable = self.inputs[0].abspath()
+        output_file = self.outputs[0].abspath()
+        image_file = self.inputs[1].abspath()
+        cmd = self.clasp_command_line(executable,
+                                      image = image_file,
+                                      features = [],
+                                      forms = [ '(gctools:save-lisp-and-die "%s")' % output_file,
+                                                '(core:exit)'])
+        log.info("link_snapshot = %s\n", cmd)
+        return self.exec_command(cmd)
+
+    def display(self):
+        return "link_snapshot.display() would be VERY long - remove display() to display\n"
+    
+

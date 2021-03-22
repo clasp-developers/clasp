@@ -396,12 +396,12 @@ def stage_value(ctx,s):
     return sval
 
 # Called for each variant, at the end of the configure phase
-def configure_common(cfg,variant):
-#    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
+def configure_common(cfg,variant_obj):
+#    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant_obj.variant_dir()) #__class__.__name__)
 #    cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
 #    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     # These will end up in build/config.h
-    cfg.define("EXECUTABLE_NAME",variant.executable_name())
+    cfg.define("EXECUTABLE_NAME",variant_obj.executable_name())
     if (cfg.env.PREFIX):
         pass
     else:
@@ -411,8 +411,8 @@ def configure_common(cfg,variant):
     log.info("cfg.env.PREFIX is %s" % cfg.env.PREFIX)
     cfg.define("CLASP_CLANG_PATH", os.path.join(cfg.env.LLVM_BIN_DIR, "clang"))
     cfg.define("APP_NAME",APP_NAME)
-    cfg.define("BITCODE_NAME",variant.bitcode_name())
-    cfg.define("VARIANT_NAME",variant.variant_name())
+    cfg.define("BITCODE_NAME",variant_obj.bitcode_name())
+    cfg.define("VARIANT_NAME",variant_obj.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags_as_string(cfg.env.LIB_ST,cfg.env.LIB))
     log.debug("cfg.env.LINKFLAGS = %s", cfg.env.LINKFLAGS)
@@ -491,6 +491,13 @@ class variant(object):
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.faspbc' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         else:
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
+    def snapshot_name(self,build,appname=APP_NAME,stage=None):
+        if ( stage == None ):
+            use_stage = self.stage_char
+        else:
+            use_stage = stage
+        return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.snapshot' % (use_stage,appname,self.gc_name,self.mpi_extension(),self.debug_extension()))
+
     def fasl_dir(self, stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -1407,7 +1414,7 @@ def build(bld):
 
     # Reinitialize logging system with a handler that appends to ./build/variant/build.log
     log.reinitialize(console_level = logging.DEBUG if Logs.verbose >= 1 else logging.INFO,
-                     log_file = os.path.join(bld.path.abspath(), out, variant.variant_dir(), "build.log"))
+                     log_file = os.path.join(bld.path.abspath(), out, bld.variant_obj.variant_dir(), "build.log"))
 
     log.debug('build() starts, CLASP_BUILD_MODE = %s, options: %s', bld.env.CLASP_BUILD_MODE, bld.options)
     bld.add_pre_fun(pre_build_hook);
@@ -1418,7 +1425,7 @@ def build(bld):
     bld.stage_val = stage_val
 
     log.pprint('BLUE', 'build(), %s, %s, stage %s=%s%s' %
-                (variant.variant_name(),
+                (bld.variant_obj.variant_name(),
                  bld.env.CLASP_BUILD_MODE,
                  bld.stage,
                  bld.stage_val,
@@ -1477,9 +1484,12 @@ def build(bld):
     bld.extensions_gcinterface_include_files = []
     bld.extensions_builders = []
 
-    bld.bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
-    bld.cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-    bld.iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
+    bld.bclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='b'))
+    bld.cclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='c'))
+    bld.iclasp_executable = bld.path.find_or_declare(bld.variant_obj.executable_name(stage='i'))
+
+    bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
+    bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
 
     bld.set_group('compiling/c++')
 
@@ -1500,19 +1510,19 @@ def build(bld):
     # Gather lisp source files - but don't only use files with these extensions or we will miss lisp assets
     install('lib/clasp/', collect_waf_nodes(bld, 'src/lisp/')) # , suffix = [".lsp", ".lisp", ".asd"]))
 
-    # If the bld.variant is not in bld.all_envs then we have a legal command but the variant wasn't configured
+    # If the bld.variant_name is not in bld.all_envs then we have a legal command but the bld.variant_name wasn't configured
     #   this currently only happens if the user used: ./waf configure    without --enable-mp
     #   and then later did something like ./waf build_iboehm_mpi
     if (bld.variant in bld.all_envs):
         bld.env = bld.all_envs[bld.variant]
     else:
-        log.pprint("RED","The variant %s is not configured - run ./waf configure --enable-mpi" % bld.variant)
+        log.pprint("RED","The bld.variant %s is not configured - run ./waf configure --enable-mpi" % bld.variant)
         exit(1)
         
     include_dirs = ['.']
     include_dirs.append("%s/src/main/" % bld.path.abspath())
     include_dirs.append("%s/include/" % bld.path.abspath())
-    include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(), out, variant.variant_dir()))
+    include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(), out, bld.variant_obj.variant_dir()))
     include_dirs = include_dirs + bld.extensions_include_dirs
     log.debug("include_dirs = %s", include_dirs)
 
@@ -1541,10 +1551,10 @@ def build(bld):
         install_path="${PREFIX}/bin")
 
     # Always build the C++ code
-    intrinsics_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("intrinsics"))
-    builtins_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins"))
-    builtins_no_debug_info_bitcode_node = bld.path.find_or_declare(variant.inline_bitcode_archive_name("builtins-no-debug-info"))
-    cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+    intrinsics_bitcode_node = bld.path.find_or_declare(bld.variant_obj.inline_bitcode_archive_name("intrinsics"))
+    builtins_bitcode_node = bld.path.find_or_declare(bld.variant_obj.inline_bitcode_archive_name("builtins"))
+    builtins_no_debug_info_bitcode_node = bld.path.find_or_declare(bld.variant_obj.inline_bitcode_archive_name("builtins-no-debug-info"))
+    cxx_all_bitcode_node = bld.path.find_or_declare(bld.variant_obj.cxx_all_bitcode_name())
     out_dir_node = bld.path.find_dir(out)
     bclasp_symlink_node = out_dir_node.make_node("bclasp")
     bld_task = bld.program(source = clasp_c_source_files,
@@ -1562,7 +1572,7 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
-        aclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
+        aclasp_common_lisp_output_name_list = bld.variant_obj.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
         task.set_outputs(aclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
     if (bld.stage_val >= 1):
@@ -1574,13 +1584,13 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_aclasp))
-        aclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
+        aclasp_common_lisp_output_name_list = bld.variant_obj.common_lisp_output_name_list(bld, bld.clasp_aclasp, stage = 'a')
         log.debug("find_or_declare aclasp_common_lisp_output_name_list = %s", aclasp_common_lisp_output_name_list)
         task.set_outputs(aclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
 
         #link aclasp from output files
-        aclasp_link_product = variant.fasl_name(bld,stage = 'a')
+        aclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'a')
         print("About to setup link_fasl task: %s -> %s" % (aclasp_common_lisp_output_name_list, aclasp_link_product))
         task = link_fasl(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
@@ -1601,13 +1611,13 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_bclasp))
-        bclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld, bld.clasp_bclasp, stage = 'b')
+        bclasp_common_lisp_output_name_list = bld.variant_obj.common_lisp_output_name_list(bld, bld.clasp_bclasp, stage = 'b')
         log.debug("find_or_declare bclasp_common_lisp_output_name_list = %s", bclasp_common_lisp_output_name_list)
         task.set_outputs(bclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
 
         #link bclasp from output files
-        bclasp_link_product = variant.fasl_name(bld,stage='b')
+        bclasp_link_product = bld.variant_obj.fasl_name(bld,stage='b')
         task = link_fasl(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                          builtins_bitcode_node,
@@ -1627,52 +1637,64 @@ def build(bld):
                          intrinsics_bitcode_node,
                          builtins_bitcode_node] +
                         waf_nodes_for_lisp_files(bld, bld.clasp_cclasp))
-        cclasp_common_lisp_output_name_list = variant.common_lisp_output_name_list(bld,bld.clasp_cclasp,stage='c')
+        cclasp_common_lisp_output_name_list = bld.variant_obj.common_lisp_output_name_list(bld,bld.clasp_cclasp,stage='c')
         log.debug("find_or_declare cclasp_common_lisp_output_name_list = %s", cclasp_common_lisp_output_name_list)
         task.set_outputs(cclasp_common_lisp_output_name_list)
         bld.add_to_group(task)
 
         #link cclasp from output files
-        cclasp_link_product = variant.fasl_name(bld,stage = 'c')
+        # defined above bld.cclasp_link_product = bld.variant_obj.fasl_name(bld,stage = 'c')
         task = link_fasl(env=bld.env)
         task.set_inputs([bld.iclasp_executable,
                           builtins_bitcode_node,
                           intrinsics_bitcode_node] +
                          cclasp_common_lisp_output_name_list)
-        task.set_outputs([cclasp_link_product])
+        task.set_outputs([bld.cclasp_link_product])
         bld.add_to_group(task)
-        install('lib/clasp/', cclasp_link_product)
+        #
+        # Now try the snapshot
+        #
+        cclasp_snapshot_product = bld.variant_obj.snapshot_name(bld,stage = 'c')
+        task_snapshot = link_snapshot(env=bld.env)
+        task_snapshot.set_inputs([bld.iclasp_executable,
+                                  bld.cclasp_link_product,
+                                  builtins_bitcode_node,
+                                  intrinsics_bitcode_node])
+        task_snapshot.set_outputs([cclasp_snapshot_product])
+        bld.add_to_group(task_snapshot)
+        install('lib/clasp/', bld.cclasp_link_product)
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
+        install('lib/clasp/', cclasp_snapshot_product)
 
         if (True):
                 # Build serve-event
             print("bld.iclasp_executable = %s" % bld.iclasp_executable)
-            print("cclasp_link_product = %s" % cclasp_link_product)
-            serve_event_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % variant.fasl_dir(stage = 'c')))
+            print("bld.cclasp_link_product = %s" % bld.cclasp_link_product)
+            serve_event_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/serve-event/serve-event" % bld.variant_obj.fasl_dir(stage = 'c')))
             print("serve_event_fasl = %s\n" % serve_event_fasl.abspath())
             task = compile_module(env=bld.env)
             task.set_inputs([bld.iclasp_executable,
-                             cclasp_link_product] +
+                             bld.cclasp_link_product] +
                             waf_nodes_for_lisp_files(bld, ["src/lisp/modules/serve-event/serve-event"]))
             task.set_outputs(serve_event_fasl)
             bld.add_to_group(task)
             install('lib/clasp/', serve_event_fasl)
             if ( generate_dwarf(bld) ):
-                serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+                serve_event_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/serve-event/serve-event.fasl.dwarf" % bld.variant_obj.fasl_dir(stage = 'c'))
                 install('lib/clasp/', serve_event_dwarf_file)
 
             # Build ASDF
-            cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % variant.fasl_dir(stage='c')))
-            print("cclasp_asdf_fasl = %s\n" % cclasp_asdf_fasl.abspath())
+            # defined above bld.cclasp_asdf_fasl = bld.path.find_or_declare(module_fasl_extension(bld,"%s/src/lisp/modules/asdf/asdf" % bld.variant_obj.fasl_dir(stage='c')))
+            print("bld.cclasp_asdf_fasl = %s\n" % bld.cclasp_asdf_fasl.abspath())
             task = compile_module(env=bld.env)
             task.set_inputs([bld.iclasp_executable,
-                             cclasp_link_product] +
+                             bld.cclasp_link_product] +
                             waf_nodes_for_lisp_files(bld, ["src/lisp/modules/asdf/build/asdf"]))
-            task.set_outputs(cclasp_asdf_fasl)
+            task.set_outputs(bld.cclasp_asdf_fasl)
             bld.add_to_group(task)
-            install('lib/clasp/', cclasp_asdf_fasl)
+            install('lib/clasp/', bld.cclasp_asdf_fasl)
             if (generate_dwarf(bld)):
-                cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % variant.fasl_dir(stage = 'c'))
+                cclasp_asdf_dwarf_file = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl.dwarf" % bld.variant_obj.fasl_dir(stage = 'c'))
                 install('lib/clasp/', cclasp_asdf_dwarf_file)
 
             clasp_symlink_node = out_dir_node.make_node("clasp")
@@ -1701,7 +1723,7 @@ def build(bld):
             bld.recurse('extensions')
             if ( bld.env['DEST_OS'] == DARWIN_OS ):
                 if (bld.env.LTO_FLAG):
-                    cclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % variant.executable_name(stage = 'c'))
+                    cclasp_lto_o = bld.path.find_or_declare('%s_exec.lto.o' % bld.variant_obj.executable_name(stage = 'c'))
                     task.set_outputs([bld.cclasp_executable,
                                       cclasp_lto_o])
                 else:
@@ -1726,31 +1748,24 @@ def build(bld):
 #            os.symlink(bld.iclasp_executable.abspath(), clasp_symlink_node.abspath())
     log.pprint('BLUE', 'build() has finished')
 
+#
+# This function builds classes for every target that can be invoked by waf
+#
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext
     log.pprint('BLUE', "Running init() - this constructs the matrix of legal waf operation names")
     for gc in GCS_NAMES:
         for enable_mpi in ["", "_mpi"]:
             for debug_build in ["", "_d"]:
-                variant_name = "%s%s%s" % (gc,enable_mpi,debug_build)
+                variant_name_ = "%s%s%s" % (gc,enable_mpi,debug_build)
                 for ctx in (BuildContext, CleanContext, InstallContext, UninstallContext, ListContext, StepContext, EnvContext):
                     name = ctx.__name__.replace('Context','').lower()
                     for stage_char in STAGE_CHARS:
                         # This instantiates classes, all with the same name 'tmp'.
                         class tmp(ctx):
-                            variant = variant_name
-                            cmd = name + '_' + stage_char + variant_name
+                            variant = variant_name_
+                            cmd = name + '_' + stage_char + variant_name_
                             stage = stage_char
-
-            # NOTE: these are kinda bitrotten, but left here for now as a reference
-            class tmp(BuildContext):
-                variant = variant_name
-                cmd = 'rebuild_c' + variant
-                stage = 'rebuild'
-            class tmp(BuildContext):
-                variant = variant_name
-                cmd = 'dangerzone_c' + variant
-                stage = 'dangerzone'
 
 #
 #

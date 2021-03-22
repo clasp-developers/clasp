@@ -67,7 +67,7 @@ void process_clasp_arguments(CommandLineOptions* options)
       printf("clasp options\n"
              "-I/--ignore-image    - Don't load the boot image/start with init.lsp\n"
              "-i/--image file      - Use the file as the boot image\n"
-             "-T/--type (slow|core) - Set the type of the image file. (slow == default for now)\n"             
+             "-T/--type (snapshot|image) - Set the type of the image file. (snapshot == default for now)\n"             
              "-g/--debug           - Describe the clasp data structures for lldb Python API to /tmp/clasp.py\n"
              "-d/--describe [file] - Describe the clasp data structures for lldb Python API [file] default is /tmp/clasp.py\n"
              "-t/--stage (a|b|c)   - Start the specified stage of clasp 'c' is default\n"

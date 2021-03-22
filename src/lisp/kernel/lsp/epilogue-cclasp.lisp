@@ -3,7 +3,7 @@
   (report-lexical-var-reference-depth))
 
 #+cclasp
-(cl:defun sys::cclasp-image-load-top-level ()
+(cl:defun sys::cclasp-snapshot-load-top-level ()
     (cl:in-package :cl-user)
   (let ((core:*use-interpreter-for-eval* nil))
     (if (core:is-interactive-lisp)
@@ -24,4 +24,5 @@
 #+cclasp
 (eval-when (:load-toplevel)
   (cl:in-package :cl-user)
+  (setf ext:*image-save-load-startup* (lambda () (sys::cclasp-snapshot-load-top-level)))
   (sys::cclasp-top-level))

@@ -47,7 +47,7 @@ THE SOFTWARE.
 // Load the waf config file
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmacro-redefined"
-#include "config.h"
+#include <config.h>
 #pragma clang diagnostic pop
 // Checkif we are running the static analyzer
 // Modify the preprocessor settings for the static analyzer
