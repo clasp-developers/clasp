@@ -722,6 +722,34 @@ due to error:~%  ~:*~a~]"
 
 (define-condition core:simple-package-error (simple-condition package-error) ())
 
+(define-condition core::name-conflict (package-error)
+  ((%operation :initarg :operation :reader name-conflict-operation)
+   (%troublemaker :initarg :troublemaker :reader name-conflict-troublemaker
+                  :type symbol)
+   (%candidates :initarg :candidates :reader name-conflict-candidates
+                :type list))
+  (:report (lambda (condition stream)
+             (format stream "~s ~s causes name-conflicts in ~s between the following symbols:~%~s"
+                     (name-conflict-operation condition)
+                     (name-conflict-troublemaker condition)
+                     (package-error-package condition)
+                     (name-conflict-candidates condition)))))
+
+(defun core:import-name-conflict (package existing to-import)
+  (restart-case
+      (error 'name-conflict :package package :operation 'import
+                            :troublemaker to-import
+                            :candidates (list existing to-import))
+    (shadowing-import ()
+      :report (lambda (s)
+                (format s "Shadowing-import ~s, uninterning ~s."
+                        to-import existing))
+      (shadowing-import to-import package))
+    (dont-import ()
+      :report (lambda (s)
+                (format s "Don't import ~s, keeping ~s."
+                        to-import existing)))))
+
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 

@@ -156,6 +156,7 @@ class Package_O : public General_O {
   List_sp packageUseList();
   List_sp packageUsedByList();
 
+  void import1(Symbol_sp); // import one symbol
   /*! Import the symbols into this package - see CLHS */
   void import(List_sp symbols);
 

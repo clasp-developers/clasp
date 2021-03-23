@@ -432,8 +432,7 @@ SYMBOL_EXPORT_SC_(ClPkg, shadow);
 SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
 SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
-
-
+SYMBOL_EXPORT_SC_(CorePkg, import_name_conflict);
 
 
 Package_sp Package_O::create(const string &name) {
@@ -988,22 +987,32 @@ bool Package_O::isExported(Symbol_sp sym) {
   return (presentp.isTrue());
 }
 
-void Package_O::import(List_sp symbols) {
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
-  for (auto cur : symbols) {
-    Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
+void Package_O::import1(Symbol_sp symbolToImport) {
+  Symbol_sp foundSymbol;
+  {
+    WITH_PACKAGE_READ_WRITE_LOCK(this);
     SimpleString_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
-    Symbol_sp foundSymbol = values;
+    foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
-    if (status == kw::_sym_external || status == kw::_sym_internal) {
-      // do nothing
-    } else if (status == kw::_sym_inherited || status.nilp()) {
-      this->add_symbol_to_package_no_lock(nameKey,symbolToImport,false);
-    } else {
-      // Impossible status
-      PACKAGE_ERROR(this->sharedThis<Package_O>());
+    if (status.nilp()) {
+      // No conflict: add the symbol.
+      this->add_symbol_to_package_no_lock(nameKey, symbolToImport, false);
+      return;
+    } else if (foundSymbol == symbolToImport) {
+      // Symbol is already present: IMPORT does nothing.
+      return;
     }
+  }
+  // Conflict - resolve w/o lock held as handlers can do crazy things
+  eval::funcall(_sym_import_name_conflict,
+                this->asSmartPtr(), foundSymbol, symbolToImport);
+}
+
+void Package_O::import(List_sp symbols) {
+  for (auto cur : symbols) {
+    Symbol_sp symbolToImport = gc::As<Symbol_sp>(oCar(cur));
+    this->import1(symbolToImport);
   }
 }
 
