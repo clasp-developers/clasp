@@ -230,5 +230,6 @@ class Package_O : public General_O {
 
  
 T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig);
+T_sp cl__delete_package(T_sp pobj);
 };
 #endif //]

@@ -85,6 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/array.h>
 #include <clasp/core/commonLispPackage.h>
 #include <clasp/core/keywordPackage.h>
+#include <clasp/core/package.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/hashTableEql.h>
@@ -980,14 +981,12 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
    * FIXME: This is set up to be correctable, thus the loop, but SIMPLE_ERROR doesn't actually allow correction.
    * */
   while (true) {
+    T_sp oldPackage;
     string usedNickName;
-    string packageUsingNickName;
     {
       WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
-      map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
-      if (it != this->_Roots._PackageNameIndexMap.end()) {
-        goto name_exists;
-      }
+      oldPackage = this->findPackage_no_lock(name, false);
+      if (oldPackage.notnilp()) goto name_exists;
       LOG(BF("Creating package with name[%s]") % name);
       Package_sp newPackage = Package_O::create(name);
       int packageIndex = this->_Roots._Packages.size();
@@ -1003,7 +1002,7 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
           if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
             int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
             usedNickName = nickName;
-            packageUsingNickName = this->_Roots._Packages[existingIndex]->getName();
+            oldPackage = this->_Roots._Packages[existingIndex];
             goto nickname_exists;
           }
           this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
@@ -1029,14 +1028,20 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       }
       return newPackage;
     }
-    // FIXME: These ought to be correctable.
-    // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
-    // Corrections will mean, essentially, setting the name and nicknames variables.
   name_exists:
-    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
+    CORRECTABLE_PACKAGE_ERROR("Delete the old package",
+                              "There already exists a package named ~a",
+                              name);
+    // We use CL:DELETE-PACKAGE which is extra careful about deleting system
+    // packages and so on.
+    cl__delete_package(oldPackage);
     continue;
   nickname_exists:
-    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
+    CORRECTABLE_PACKAGE_ERROR2("Delete the other package",
+                               "Nickname ~a conflicts with existing package ~a",
+                               usedNickName,
+                               gc::As_unsafe<Package_sp>(oldPackage)->getName());
+    cl__delete_package(oldPackage);
     continue;
   }
 }

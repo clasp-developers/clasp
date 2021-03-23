@@ -794,6 +794,7 @@ void Package_O::_export2(Symbol_sp sym) {
                     "and cannot be exported.",
                     "Import the symbol in the package and proceed.",
                     this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
+    this->add_symbol_to_package(nameKey, sym, true);
   } else if (error == already_symbol_with_same_name_in_this_package) {
     FEpackage_error("Cannot export the symbol ~S from ~S,~%"
                     "because there is already a symbol with the same name~%"
@@ -1000,6 +1001,7 @@ void Package_O::import(List_sp symbols) {
     } else if (status == kw::_sym_inherited || status.nilp()) {
       this->add_symbol_to_package_no_lock(nameKey,symbolToImport,false);
     } else {
+      // Impossible status
       PACKAGE_ERROR(this->sharedThis<Package_O>());
     }
   }
