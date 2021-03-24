@@ -137,9 +137,14 @@ extern core::Symbol_sp& _sym_name;
 // #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError, core::lisp_createList(kw::_sym_stream, st))
 // core::_sym_simplePackageError with message and datum
-#define SIMPLE_PACKAGE_ERROR(message, datum)                                                     \
-        ERROR(core::_sym_simplePackageError,                                                     \
-              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(core::lisp_createStr(datum))))
+#define SIMPLE_PACKAGE_ERROR(message, datum)\
+  ERROR(core::_sym_simplePackageError,\
+        core::lisp_createList(kw::_sym_format_control,\
+                              core::lisp_createStr(message),\
+                              kw::_sym_package,\
+                              core::lisp_createStr(datum),\
+                              kw::_sym_format_arguments,\
+                              core::lisp_createList(core::lisp_createStr(datum))))
 #define SIMPLE_PACKAGE_ERROR_2_args(message, datum1, datum2)                                     \
         ERROR(core::_sym_simplePackageError,                                                     \
               core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),       \
