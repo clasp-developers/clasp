@@ -742,19 +742,26 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   return true;
 }
 
-/*! Return a NULL package if there is no conflict */
-Package_sp Package_O::export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym) {
+// Return a list of packages that will have a conflict if this package
+// starts exporting this new symbol. Lock needs to be held around this.
+List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
+  List_sp conflicts = _Nil<List_V>();
   for (auto use_pkg : this->_PackagesUsedBy) {
-    Symbol_mv x = use_pkg->findSymbol_SimpleString(nameKey);
+    Symbol_mv x = use_pkg->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp xsym = x;
     Symbol_sp status = gc::As<Symbol_sp>(x.second());
     if (status.notnilp() && sym != xsym &&
         !use_pkg->_Shadowing->contains(xsym)) {
-      return use_pkg;
+      conflicts = Cons_O::create(use_pkg, conflicts);
     }
   }
-  Package_sp noConflict;
-  return noConflict;
+  return conflicts;
+}
+
+CL_DEFUN List_sp core__export_conflicts(Package_sp package,
+                                        SimpleString_sp nameKey,
+                                        Symbol_sp sym) {
+  return package->export_conflicts(nameKey, sym);
 }
 
 typedef enum { no_problem,
@@ -764,7 +771,7 @@ typedef enum { no_problem,
                name_conflict_in_other_package } Export_errors;
 void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
-  Package_sp error_pkg;
+  List_sp conflicts;
   Export_errors error;
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
@@ -777,17 +784,20 @@ void Package_O::_export2(Symbol_sp sym) {
       error = already_symbol_with_same_name_in_this_package;
     } else if (status == kw::_sym_external) {
       error = no_problem_already_exported;
-    } else if (Package_sp pkg_with_conflict = this->export_conflict_or_NULL(nameKey, sym)) {
-      error = name_conflict_in_other_package;
-      error_pkg = pkg_with_conflict;
     } else {
-      if (status == kw::_sym_internal) {
-        this->_InternalSymbols->remhash(nameKey);
+      conflicts = this->export_conflicts(nameKey, sym);
+      if (conflicts.notnilp()) {
+        error = name_conflict_in_other_package;
+      } else {
+        // All problems resolved. Actually do the export.
+        if (status == kw::_sym_internal) {
+          this->_InternalSymbols->remhash(nameKey);
+        }
+        this->add_symbol_to_package_no_lock(nameKey,sym,true);
+        error = no_problem;
       }
-      this->add_symbol_to_package_no_lock(nameKey,sym,true);
-      error = no_problem;
     }
-  } // TO HERE
+  } // release package lock
   if (error == not_accessible_in_this_package) {
     CEpackage_error("The symbol ~S is not accessible from ~S "
                     "and cannot be exported.",
@@ -804,7 +814,7 @@ void Package_O::_export2(Symbol_sp sym) {
                     "from ~S,~%"
                     "because it will cause a name conflict~%"
                     "in ~S.",
-                    this->asSmartPtr(), 3, sym.raw_(), this->asSmartPtr().raw_(), error_pkg.raw_());
+                    this->asSmartPtr(), 3, sym.raw_(), this->asSmartPtr().raw_(), conflicts.raw_());
   }
 }
 

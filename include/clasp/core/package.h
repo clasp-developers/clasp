@@ -47,6 +47,7 @@ SMART(Package);
 class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
   friend T_sp cl__delete_package(T_sp pobj);
+  friend List_sp core__export_conflicts(Package_sp, SimpleString_sp, Symbol_sp);
  public: // virtual functions inherited from Object
   void initialize() override;
   string __repr__() const override;
@@ -80,9 +81,8 @@ class Package_O : public General_O {
   void bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp = false, bool shadowp = false);
 
  private:
-  // This returns a NULL smart_ptr if it doesn't find a conflict
-  // so that it can be used within the expression of an if statement
-  Package_sp export_conflict_or_NULL(SimpleString_sp nameKey, Symbol_sp sym);
+  // Returns a list of packages that will newly conflict.
+  List_sp export_conflicts(SimpleString_sp nameKey, Symbol_sp sym);
 
  public:
   string packageName() const;
