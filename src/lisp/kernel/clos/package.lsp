@@ -21,7 +21,9 @@
 
 #+clasp (in-package "CLOS")
 #+clasp (use-package '(:CORE) :clos)
-#+clasp (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
+
+;;;; The symbols are either already present or would produce a name conflict., so don't do that
+#+(or) (import '(unbound get-sysprop put-sysprop rem-sysprop simple-program-error
 		 slot-descriptions
 		 SLOT-NAMES SLOT-NAME CLASS-PRECEDENCE-LIST PRINT-FUNCTION
 		 CONSTRUCTORS COUNT-FUNCTION-CONTAINER-ENVIRONMENTS

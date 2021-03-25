@@ -975,19 +975,30 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
    * something, it will try to grab the lock, and it will fail because we already have it.
    * Additionally, CLHS specifies that the errors are CORRECTABLE, so we could hypothetically have the user
    * in the debugger while the package system is locked - that won't work.
-   * Instead we do this: Enter a loop. Grab the lock. Try the operation. If the operation succeeds, just return.
-   * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an error there.
-   * FIXME: This is set up to be correctable, thus the loop, but SIMPLE_ERROR doesn't actually allow correction.
+   * Instead we do this: Grab the lock. Try the operation. If the operation succeeds, just return.
+   * If it fails, goto (yes, really) outside the lock scope so that we ungrab it, and signal an cerror there.
    * */
-  while (true) {
     string usedNickName;
-    string packageUsingNickName;
+    Package_sp packageUsingNickName;
+    Package_sp existing_package;
     {
       WITH_READ_WRITE_LOCK(this->_Roots._PackagesMutex);
       map<string, int>::iterator it = this->_Roots._PackageNameIndexMap.find(name);
       if (it != this->_Roots._PackageNameIndexMap.end()) {
+        existing_package = this->_Roots._Packages[it->second];
         goto name_exists;
       }
+      // first check the nicknames, before we create the package, so that we don't have to undo that
+      for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
+        string nickName = *it;
+        if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
+          int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
+          usedNickName = nickName;
+          packageUsingNickName = this->_Roots._Packages[existingIndex];
+          goto nickname_exists;
+        }
+      }
+      // Now we know that no nicknames already exists, so start creating the package
       LOG(BF("Creating package with name[%s]") % name);
       Package_sp newPackage = Package_O::create(name);
       int packageIndex = this->_Roots._Packages.size();
@@ -1001,9 +1012,10 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
         for (list<string>::const_iterator it = nicknames.begin(); it != nicknames.end(); it++) {
           string nickName = *it;
           if (this->_Roots._PackageNameIndexMap.count(nickName) > 0 && nickName != name) {
+            // should not happen, since we just tested that
             int existingIndex = this->_Roots._PackageNameIndexMap[nickName];
             usedNickName = nickName;
-            packageUsingNickName = this->_Roots._Packages[existingIndex]->getName();
+            packageUsingNickName = this->_Roots._Packages[existingIndex];
             goto nickname_exists;
           }
           this->_Roots._PackageNameIndexMap[nickName] = packageIndex;
@@ -1029,16 +1041,23 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
       }
       return newPackage;
     }
-    // FIXME: These ought to be correctable.
-    // When SIMPLE_ERROR is replaced with something that can do corrections, the continues will be necessary.
-    // Corrections will mean, essentially, setting the name and nicknames variables.
+    // A correctable error is signaled if the package-name or any of the nicknames
+    // is already the name or nickname of an existing package.
+
   name_exists:
-    SIMPLE_PACKAGE_ERROR("There already exists a package with name: ~a", name);
-    continue;
+    CEpackage_error("There already exists a package with name: ~a",
+                    "Return existing package",
+                    existing_package,
+                    1,
+                    SimpleBaseString_O::make(name));   
+    return existing_package;
   nickname_exists:
-    SIMPLE_PACKAGE_ERROR_2_args("Package nickname[~a] is already being used by package[~a]" , usedNickName , packageUsingNickName);
-    continue;
-  }
+    CEpackage_error("There already exists a package with nickname: ~a",
+                    "Return existing package",
+                    existing_package,
+                    1,
+                    SimpleBaseString_O::make(name)); 
+    return packageUsingNickName;
 }
 
 T_sp Lisp_O::findPackage_no_lock(const string &name, bool errorp) const {
