@@ -170,7 +170,7 @@ CL_DEFUN bool cl__unintern(Symbol_sp sym, T_sp packageDesig) {
   return pkg->unintern(sym);
 };
 
-CL_LAMBDA(sym &optional (package *package*));
+CL_LAMBDA(symbol-name &optional (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("findSymbol");
 CL_DEFUN T_mv cl__find_symbol(String_sp symbolName, T_sp packageDesig) {
@@ -195,7 +195,7 @@ CL_DEFUN T_mv cl__make_package(T_sp package_name_desig, List_sp nick_names, List
     Package_sp pkg = coerce::packageDesignator(oCar(uc));
     lup.push_front(pkg->packageName());
   }
-  return (Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup)));
+  return Values(_lisp->makePackage(package_name->get_std_string(), lnn, lup));
 }
 
 /*
@@ -223,7 +223,7 @@ CL_DEFUN T_sp cl__list_all_packages() {
 
 CL_LAMBDA(packages-to-use-desig &optional (package-desig *package*));
 CL_DECLARE();
-CL_DOCSTRING("SeeCLHS use-package");
+CL_DOCSTRING("See CLHS use-package");
 CL_DEFUN T_sp cl__use_package(T_sp packages_to_use_desig, T_sp package_desig) {
   List_sp packages_to_use = coerce::listOfPackageDesignators(packages_to_use_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
@@ -252,18 +252,39 @@ CL_LAMBDA(pkg);
 CL_DOCSTRING("SeeCLHS delete-package");
 CL_DEFUN T_sp cl__delete_package(T_sp pobj)
 {
-  Package_sp pkg = coerce::packageDesignator(pobj);
-  // better would be to check for locked packages as in unintern
-  if (pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage() || pkg == _lisp->corePackage()) {
-    FEpackage_error("Cannot delete the package ~S", pkg, 0);
+  // clhs http://www.lispworks.com/documentation/HyperSpec/Body/f_del_pk.htm
+  // If the package designator is a name that does not currently name a package,
+  // a correctable error of type package-error is signaled. If correction is attempted,
+  // no deletion action is attempted; instead, delete-package immediately returns nil.
+  
+  T_sp potentialPkg = coerce::packageDesignatorNoError(pobj);
+  unlikely_if (potentialPkg.nilp()) {
+    CEpackage_error("Package with designator ~S not found. Cannot delete it.",
+                    "Ignore error and continue.", _Nil<T_O>(), 1, pobj);
+    return _Nil<T_O>();
   }
-  /* 2) Now remove the package from the other packages that use it
-	 *    and empty the package.
-	 */
+  Package_sp pkg = gc::As<Package_sp>(potentialPkg);
+  if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
+    FEpackage_error("Cannot delete the locked package ~S", pkg, 0);
+  }
   if (pkg->packageName() == "") {
     return _Nil<T_O>();
   }
-   // Need to remove the nicknames, since package is not fully deleted
+
+  // If package is used by other packages, a correctable error of type package-error is signaled.
+  // If correction is attempted, unuse-package is effectively called to remove any dependencies,
+  // causing package's external symbols to cease being accessible to those packages that use package.
+  // delete-package then deletes package just as it would have had there been no packages that used it.
+
+  unlikely_if (pkg->_PackagesUsedBy.size() > 0)
+     CEpackage_error("Package with designator ~S is used by at least one other package:",
+                     "Remove dependency in other packages", pkg, 1, pkg);
+  /* 
+    2) Now remove the package from the other packages that use it
+       and empty the package.
+  */
+ 
+  // Need to remove the nicknames, since package is not fully deleted
   // do this before the WITH_PACKAGE_READ_WRITE_LOCK
   for (auto cur : pkg->getNicknames()) {
     _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
@@ -275,6 +296,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
     if (pi.notnilp())
       pkg->unusePackage_no_outer_lock(pi);
   }
+
   for (auto pi : pkg->_PackagesUsedBy) {
     if (pi.notnilp())
       pi->unusePackage_no_inner_lock(pkg);
@@ -318,7 +340,7 @@ CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
   List_sp symbols = coerce::listOfSymbols(symbols_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
   package->import(symbols);
-  return (Values(_lisp->_true()));
+  return Values(_lisp->_true());
 }
 
 CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
@@ -327,7 +349,7 @@ CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
   package->shadow(symbolNames);
-  return (Values(_lisp->_true()));
+  return Values(_lisp->_true());
 }
 
 CL_LAMBDA(package);
@@ -399,7 +421,7 @@ CL_DEFUN T_sp cl__package_use_list(T_sp package_designator) {
   return pkg->packageUseList();
 };
 
-CL_LAMBDA(pkg);
+CL_LAMBDA(package-designator);
 CL_DECLARE();
 CL_DOCSTRING("packageUsedByList");
 CL_DEFUN List_sp cl__package_used_by_list(T_sp pkgDesig) {
@@ -407,7 +429,7 @@ CL_DEFUN List_sp cl__package_used_by_list(T_sp pkgDesig) {
   return pkg->packageUsedByList();
 };
 
-CL_LAMBDA(pkg);
+CL_LAMBDA(package-designator);
 CL_DECLARE();
 CL_DOCSTRING("packageName");
 CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
@@ -540,7 +562,7 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   foundp = ej.second().isTrue();
   if (foundp) {
     LOG(BF("Found it in the _InternalSymbols list - returning[%s]") % (_rep_(first)));
-    return (Values(val, kw::_sym_internal));
+    return Values(val, kw::_sym_internal);
   }
   {
     _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
@@ -602,9 +624,9 @@ T_mv Package_O::packageHashTables() const {
        si != this->_UsingPackages.end(); si++) {
     usingPackages = Cons_O::create(*si, usingPackages);
   }
-  return (Values(this->_ExternalSymbols,
+  return Values(this->_ExternalSymbols,
                  this->_InternalSymbols,
-                 usingPackages));
+                 usingPackages);
 }
 
 bool Package_O::usingPackageP_no_lock(Package_sp usePackage) const {
@@ -775,6 +797,12 @@ void Package_O::_export2(Symbol_sp sym) {
     if (status.nilp()) {
       error = not_accessible_in_this_package;
     } else if (foundSym != sym) {
+      /*
+      seem to happen with uninterned symbols like #:test 
+      printf("Symbol not_accessible_in_this_package\n");
+      printf("Symbol1 %s\n", sym->fullName().c_str());
+      printf("Symbol1 %s\n", foundSym->fullName().c_str());
+      */
       error = already_symbol_with_same_name_in_this_package;
     } else if (status == kw::_sym_external) {
       error = no_problem_already_exported;
@@ -872,6 +900,9 @@ void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp
   } else {
     this->_InternalSymbols->hash_table_setf_gethash(nameKey, sym);
   }
+  // if the symbol has no home-package, set it to this
+  unlikely_if(sym->homePackage().nilp())
+    sym->setPackage(this->asSmartPtr());
 }
 
 void Package_O::add_symbol_to_package(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
