@@ -148,7 +148,7 @@ class Package_O : public General_O {
 		 */
   T_mv intern(SimpleString_sp symbolName);
 
-  bool unintern_no_lock(Symbol_sp sym);
+  bool unintern_unsafe(Symbol_sp sym);
 
   /*! Remove the symbol from the package */
   bool unintern(Symbol_sp sym);

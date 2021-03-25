@@ -750,6 +750,35 @@ due to error:~%  ~:*~a~]"
                 (format s "Don't import ~s, keeping ~s."
                         to-import existing)))))
 
+(defun core:unintern-name-conflict (package symbol candidates)
+  (restart-case
+      (error 'name-conflict :package package :operation 'unintern
+                            :troublemaker symbol :candidates candidates)
+    (resolve-conflict (chosen-symbol)
+      :report "Resolve conflict."
+      :interactive
+      ;; Cribbed from SBCL (function NAME-CONFLICT)
+      (lambda ()
+        (let* ((len (length candidates))
+               (nlen (length (write-to-string len :base 10)))
+               (*print-pretty* t))
+          (format *query-io*
+                  "~&~@<Select a symbol to be made accessible in package ~a:~2i~@:_~{~{~v,' d. ~s~}~@:_~}~@:>"
+                  (package-name package)
+                  (loop for s in candidates for i upfrom 1
+                        collect (list nlen i s)))
+          (loop
+            (format *query-io* "~&Enter an integer (between 1 and ~d): " len)
+            (finish-output *query-io*)
+            (let ((i (parse-integer (read-line *query-io*) :junk-allowed t)))
+              (when (and i (<= 1 i len))
+                (return (list (nth (1- i) candidates))))))))
+      ;; Actual restart body
+      (assert (member chosen-symbol candidates) (chosen-symbol)
+              "~s is not one of the symbols that can resolve the conflict.
+The conflict resolver must be one of ~s" chosen-symbol candidates)
+      (shadowing-import (list chosen-symbol) package))))
+
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 

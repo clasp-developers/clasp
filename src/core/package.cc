@@ -433,7 +433,7 @@ SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
 SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
 SYMBOL_EXPORT_SC_(CorePkg, import_name_conflict);
-
+SYMBOL_EXPORT_SC_(CorePkg, unintern_name_conflict);
 
 Package_sp Package_O::create(const string &name) {
   Package_sp p = Package_O::create();
@@ -542,7 +542,8 @@ Symbol_mv Package_O::findSymbol_SimpleString_no_lock(SimpleString_sp nameKey) co
   }
   {
     _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
-    for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
+    for (auto it = this->_UsingPackages.begin();
+         it != this->_UsingPackages.end(); it++) {
       Package_sp upkg = *it;
       LOG(BF("Looking in package[%s]") % _rep_(upkg));
       T_mv eu = upkg->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
@@ -921,72 +922,82 @@ T_mv Package_O::intern(SimpleString_sp name) {
   return Values(sym, status);
 }
 
-
-bool Package_O::unintern_no_lock(Symbol_sp sym) {
-  // The following is not completely conformant with CLHS
-  // unintern should throw an exception if removing a shadowing symbol
-  // uncovers a name conflict of the symbol in two packages that are being used
-  // never unintern in protected packages 
-  if ((this->getSystemLockedP()) || (this->getUserLockedP()))
-    return false;
-  // dont unintern Symbols belonging to protected packages
-  T_sp home = sym->getPackage();
-    if (!home.nilp()) {
-        Package_sp package = coerce::packageDesignator(home);
-        if ((package->getSystemLockedP()) || (package->getUserLockedP()))
-        return false;
-    }
+// This function is called by both unintern and shadowingImport.
+// It removes a symbol from a package without doing any conflict checking.
+// Make sure to hold the lock around this call.
+bool Package_O::unintern_unsafe(Symbol_sp sym) {
+  Symbol_sp status;
   SimpleString_sp nameKey = sym->_Name;
+  // inherited symbols can't be on the shadow list, so this is safe.
+  this->_Shadowing->remhash(sym);
   {
-    Symbol_sp sym, status;
-    {
-      Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
-      sym = values;
-      status = gc::As<Symbol_sp>(values.valueGet_(1));
-    }
-    if (status.notnilp()) {
-      if (this->_Shadowing->contains(sym)) {
-        this->_Shadowing->remhash(sym);
-      }
-      if (status == kw::_sym_internal) {
-        this->_InternalSymbols->remhash(nameKey);
-        if (sym->getPackage().get() == this)
-          sym->setPackage(_Nil<Package_O>());
-        return true;
-      } else if (status == kw::_sym_external) {
-        this->_ExternalSymbols->remhash(nameKey);
-        if (sym->getPackage().get() == this)
-          sym->setPackage(_Nil<Package_O>());
-        return true;
-      }
-    }
+    Symbol_sp foundSym;
+    Symbol_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
+    foundSym = values;
+    status = gc::As<Symbol_sp>(values.valueGet_(1));
+    // If the symbol is not in the package there is nothing to unintern.
+    if ((foundSym != sym) || (status.nilp())) return false;
   }
-  {
-    _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
-    HashTableEq_sp used_symbols(HashTableEq_O::create());
-    for (auto it = this->_UsingPackages.begin(); it != this->_UsingPackages.end(); it++) {
-      Symbol_sp uf, status;
-      {
-        Symbol_mv values = (*it)->findSymbol_SimpleString_no_lock(nameKey);
-        uf = values;
-        status = gc::As<Symbol_sp>(values.valueGet_(1));
-      }
-      if (status.notnilp()) {
-        if (status != kw::_sym_external) continue;
-        used_symbols->insert(uf);
-      }
-    }
-    if (used_symbols->size() > 0) {
-      SIMPLE_ERROR(BF("unintern symbol[%s] revealed name collision with used packages containing symbols: %s") % _rep_(sym) % _rep_(used_symbols->keysAsCons()));
-    }
+  if (status == kw::_sym_internal) {
+    this->_InternalSymbols->remhash(nameKey);
+    if (sym->getPackage().get() == this)
+      sym->setPackage(_Nil<Package_O>());
+    return true;
+  } else if (status == kw::_sym_external) {
+    this->_ExternalSymbols->remhash(nameKey);
+    if (sym->getPackage().get() == this)
+      sym->setPackage(_Nil<Package_O>());
+    return true;
   }
+  // symbol is accessible but inherited, i.e. not in the package.
   return false;
 }
 
 bool Package_O::unintern(Symbol_sp sym) {
-  WITH_PACKAGE_READ_WRITE_LOCK(this);
-  return this->unintern_no_lock(sym);
-}  
+  List_sp candidates = _Nil<List_V>(); // conflict resolution candidates
+  {
+    WITH_PACKAGE_READ_WRITE_LOCK(this);
+    // Don't allow uninterning from locked packages (e.g. CL)
+    // FIXME: Signal an error.
+    if ((this->getSystemLockedP()) || (this->getUserLockedP())) {
+      return false;
+    }
+    SimpleString_sp nameKey = sym->_Name;
+    if (this->_Shadowing->contains(sym)) {
+      // Uninterning a shadowing symbol will cause a name conflict if this
+      // packages uses multiple packages that export distinct symbols of the
+      // same name.
+      // We check for this before doing anything, because uninterning must be
+      // all or nothing.
+      _BLOCK_TRACEF(BF("Looking in _UsingPackages"));
+      // This is a list of symbols with the same name as the symbol
+      // being uninterned that are exported by packages this package uses.
+      for (auto it = this->_UsingPackages.begin();
+           it != this->_UsingPackages.end(); it++) {
+        Symbol_sp uf, status;
+        {
+          // FIXME: We don't have a lock on the other package!
+          Symbol_mv values = (*it)->findSymbol_SimpleString_no_lock(nameKey);
+          uf = values;
+          status = gc::As<Symbol_sp>(values.valueGet_(1));
+        }
+        // not sure if separate nilp is actually necessary
+        if (status.nilp() || (status != kw::_sym_external))
+          continue;
+        else candidates = Cons_O::create(uf, candidates);
+      }
+      // List complete - now, if there's more than one, we have conflict.
+      if (cl__length(candidates) > 1) goto name_conflict;
+    }
+    return this->unintern_unsafe(sym);
+  } // release lock
+ name_conflict:
+  // This function will resolve the conflict by shadowing-import-ing something.
+  // It's defined later in CL because it uses the condition system heavily.
+  eval::funcall(_sym_unintern_name_conflict,
+                this->asSmartPtr(), sym, candidates);
+  return true;
+}
 
 bool Package_O::isExported(Symbol_sp sym) {
   WITH_PACKAGE_READ_LOCK(this);
@@ -1035,7 +1046,7 @@ void Package_O::shadowingImport(List_sp symbols) {
     Symbol_sp foundSymbol = values;
     Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
     if (status == kw::_sym_internal || status == kw::_sym_external) {
-      this->unintern_no_lock(foundSymbol);
+      this->unintern_unsafe(foundSymbol);
     }
     this->add_symbol_to_package_no_lock(nameKey,symbolToImport,false);
     this->_Shadowing->setf_gethash(symbolToImport, _lisp->_true());
