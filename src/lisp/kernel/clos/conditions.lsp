@@ -735,20 +735,49 @@ due to error:~%  ~:*~a~]"
                      (package-error-package condition)
                      (name-conflict-candidates condition)))))
 
+(defun resolve-conflict-interactive (package candidates)
+  ;; Cribbed from SBCL's NAME-CONFLICT function.
+  (let* ((len (length candidates))
+         (nlen (length (write-to-string len :base 10)))
+         (*print-pretty* t))
+    (format *query-io*
+            "~&~@<Select a symbol to be made accessible in package ~a:~2i~@:_~{~{~v,' d. ~s~}~@:_~}~@:>"
+            (package-name package)
+            (loop for s in candidates for i upfrom 1 collect (list nlen i s)))
+    (loop
+      (format *query-io* "~&Enter an integer (between 1 and ~d): " len)
+      (finish-output *query-io*)
+      (let ((i (parse-integer (read-line *query-io*) :junk-allowed t)))
+        (when (and i (<= 1 i len))
+          (return (list (nth (1- i) candidates))))))))
+
+(defun check-chosen-symbol (chosen-symbol candidates)
+  (assert (member chosen-symbol candidates) (chosen-symbol)
+          "~s is not one of the symbols that can resolve the conflict.
+The conflict resolver must be one of ~s" chosen-symbol candidates))
+
 (defun core:import-name-conflict (package existing to-import)
-  (restart-case
-      (error 'name-conflict :package package :operation 'import
-                            :troublemaker to-import
-                            :candidates (list existing to-import))
-    (shadowing-import ()
-      :report (lambda (s)
-                (format s "Shadowing-import ~s, uninterning ~s."
-                        to-import existing))
-      (shadowing-import to-import package))
-    (dont-import ()
-      :report (lambda (s)
-                (format s "Don't import ~s, keeping ~s."
-                        to-import existing)))))
+  (let ((candidates (list existing to-import)))
+    (restart-case
+        (error 'name-conflict :package package :operation 'import
+                              :troublemaker to-import :candidates candidates)
+      (shadowing-import ()
+        :report (lambda (s)
+                  (format s "Shadowing-import ~s, uninterning ~s."
+                          to-import existing))
+        (shadowing-import to-import package))
+      (dont-import ()
+        :report (lambda (s)
+                  (format s "Don't import ~s, keeping ~s."
+                          to-import existing)))
+      (resolve-conflict (chosen-symbol)
+        :interactive (lambda () (resolve-conflict-interactive
+                                 package candidates))
+        :report "Resolve conflict."
+        (check-chosen-symbol chosen-symbol candidates)
+        (cond ((eq chosen-symbol existing)) ; don't import
+              ((eq chosen-symbol to-import)
+               (shadowing-import to-import package)))))))
 
 (defun core:use-package-name-conflict (package used conflicts)
   (dolist (sym conflicts)
@@ -756,37 +785,51 @@ due to error:~%  ~:*~a~]"
            (new (find-symbol name used)))
       (assert new)
       (multiple-value-bind (old status) (find-symbol name package)
-        (ecase status
-          ((:inherited)
-           (restart-case
-               (error 'name-conflict
-                      :package package :operation 'use-package
-                      :troublemaker used :candidates (list new old))
-             (keep-old ()
-               :report (lambda (s)
-                         (format s "Keep ~s accessible in ~a by importing and shadowing it."
-                                 old package))
-               (shadowing-import (list old) package))
-             (take-new ()
-               :report (lambda (s)
-                         (format s "Make ~s accessible in ~a by importing and shadowing it."
-                                 new package))
-               (shadowing-import (list new) package))))
-          ((:internal :external)
-           (restart-case
-               (error 'name-conflict
-                      :package package :operation 'use-package
-                      :troublemaker used :candidates (list new old))
-             (keep-old ()
-               :report (lambda (s)
-                         (format s "Keep ~s accessible in ~a by shadowing it."
-                                 old package))
-               (shadow (list name) package))
-             (take-new ()
-               :report (lambda (s)
-                         (format s "Make ~s accessible in ~a by uninterning the old symbol."
-                                 new package))
-               (unintern old package)))))))))
+        (let ((candidates (list new old)))
+          (ecase status
+            ((:inherited)
+             (restart-case
+                 (error 'name-conflict
+                        :package package :operation 'use-package
+                        :troublemaker used :candidates candidates)
+               (keep-old ()
+                 :report (lambda (s)
+                           (format s "Keep ~s accessible in ~a by importing and shadowing it."
+                                   old package))
+                 (shadowing-import (list old) package))
+               (take-new ()
+                 :report (lambda (s)
+                           (format s "Make ~s accessible in ~a by importing and shadowing it."
+                                   new package))
+                 (shadowing-import (list new) package))
+               (resolve-conflict (chosen-symbol)
+                 :interactive (lambda () (resolve-conflict-interactive
+                                          package candidates))
+                 :report "Resolve conflict."
+                 (check-chosen-symbol chosen-symbol candidates)
+                 (shadowing-import (list chosen-symbol) package))))
+            ((:internal :external)
+             (restart-case
+                 (error 'name-conflict
+                        :package package :operation 'use-package
+                        :troublemaker used :candidates candidates)
+               (keep-old ()
+                 :report (lambda (s)
+                           (format s "Keep ~s accessible in ~a by shadowing it."
+                                   old package))
+                 (shadow (list name) package))
+               (take-new ()
+                 :report (lambda (s)
+                           (format s "Make ~s accessible in ~a by uninterning the old symbol."
+                                   new package))
+                 (unintern old package))
+               (resolve-conflict (chosen-symbol)
+                 :interactive (lambda () (resolve-conflict-interactive
+                                          package candidates))
+                 :report "Resolve conflict."
+                 (check-chosen-symbol chosen-symbol candidates)
+                 (cond ((eq chosen-symbol old) (shadow (list name) package))
+                       ((eq chosen-symbol new) (unintern old package))))))))))))
 
 (defun core:unintern-name-conflict (package symbol candidates)
   (restart-case
@@ -794,27 +837,9 @@ due to error:~%  ~:*~a~]"
                             :troublemaker symbol :candidates candidates)
     (resolve-conflict (chosen-symbol)
       :report "Resolve conflict."
-      :interactive
-      ;; Cribbed from SBCL (function NAME-CONFLICT)
-      (lambda ()
-        (let* ((len (length candidates))
-               (nlen (length (write-to-string len :base 10)))
-               (*print-pretty* t))
-          (format *query-io*
-                  "~&~@<Select a symbol to be made accessible in package ~a:~2i~@:_~{~{~v,' d. ~s~}~@:_~}~@:>"
-                  (package-name package)
-                  (loop for s in candidates for i upfrom 1
-                        collect (list nlen i s)))
-          (loop
-            (format *query-io* "~&Enter an integer (between 1 and ~d): " len)
-            (finish-output *query-io*)
-            (let ((i (parse-integer (read-line *query-io*) :junk-allowed t)))
-              (when (and i (<= 1 i len))
-                (return (list (nth (1- i) candidates))))))))
+      :interactive (lambda () (resolve-conflict-interactive package candidates))
       ;; Actual restart body
-      (assert (member chosen-symbol candidates) (chosen-symbol)
-              "~s is not one of the symbols that can resolve the conflict.
-The conflict resolver must be one of ~s" chosen-symbol candidates)
+      (check-chosen-symbol chosen-symbol candidates)
       (shadowing-import (list chosen-symbol) package))))
 
 (define-condition core:package-lock-violation (package-error)
