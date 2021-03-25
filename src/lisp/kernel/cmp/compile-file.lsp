@@ -226,7 +226,8 @@ and the pathname of the source file - this will also be used as the module initi
                                  environment
                                  image-startup-position
                                  (optimize t)
-                                 (optimize-level *optimization-level*))
+                                 (optimize-level *optimization-level*)
+                                 external-format)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -241,7 +242,7 @@ Compile a lisp source file into an LLVM module."
 				    :pathname given-input-pathname
 				    :format-control "compile-file-to-module could not find the file ~s to open it"
 				    :format-arguments (list given-input-pathname))))
-         (source-sin (open input-pathname :direction :input))
+         (source-sin (open input-pathname :direction :input :external-format (or external-format :default)))
          (module (llvm-create-module (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname)))
     (or module (error "module is NIL"))
@@ -379,7 +380,8 @@ Compile a lisp source file into an LLVM module."
                                                   :environment environment
                                                   :image-startup-position image-startup-position
                                                   :optimize optimize
-                                                  :optimize-level optimize-level)))
+                                                  :optimize-level optimize-level
+                                                  :external-format external-format)))
               (compile-file-output-module module output-file output-type output-path input-file type
                                           :position image-startup-position)
               (when output-info-pathname (generate-info input-file output-info-pathname))
