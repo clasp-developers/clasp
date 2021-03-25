@@ -304,13 +304,14 @@ multithreaded performance that we should explore."
 
 (defun compile-file-to-result (given-input-pathname
                                &key
-                                 output-type
-                                 output-path
-                                 environment
-                                 (optimize t)
-                                 (optimize-level *optimization-level*)
-                                 ast-only
-                                 write-bitcode)
+                               output-type
+                               output-path
+                               environment
+                               (optimize t)
+                               (optimize-level *optimization-level*)
+                               ast-only
+                               write-bitcode
+                               external-format)
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -320,7 +321,7 @@ Compile a lisp source file into an LLVM module."
   (let* ((*package* *package*)
          (clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
-         (source-sin (open given-input-pathname :direction :input)))
+         (source-sin (open given-input-pathname :direction :input :external-format (or external-format :default))))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*
         (bformat t "; Compiling file parallel: %s%N" (namestring given-input-pathname)))
@@ -415,7 +416,7 @@ Each bitcode filename will contain the form-index.")
                                 (cleanup nil)
                                 (write-bitcode *compile-file-parallel-write-bitcode*))
   "See CLHS compile-file."
-  (declare (ignore external-format type cleanup))
+  (declare (ignore type cleanup))
   (setf output-type (maybe-fixup-output-type output-type output-type-p))
   (let ((*compile-file-parallel* t))
     (if (not output-file-p) (setq output-file (cfp-output-file-default input-file output-type)))
@@ -446,7 +447,8 @@ Each bitcode filename will contain the form-index.")
                      :optimize optimize
                      :optimize-level optimize-level
                      :ast-only ast-only
-                     :write-bitcode write-bitcode)))
+                     :write-bitcode write-bitcode
+                     :external-format external-format)))
               (cond (dry-run (format t "Doing nothing further~%") nil)
                     ((null output-path)
                      (error "The output-file is nil for input filename ~a~%" input-file))

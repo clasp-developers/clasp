@@ -73,5 +73,15 @@
       (let ()
         (load #P"sys:modules;asdf;test;lambda.lisp" :external-format :ISO-8859-2)
         (equal (list 206 357) (%string-char-codes  asdf-test::*LAMBDA-STRING*))))
+
+(test compile-file-with-lambda
+      (let ()
+        (cmp::compile-file-serial #P"sys:regression-tests;latin2-check.lisp" :external-format :iso-8859-1)
+        (cmp::compile-file-parallel #P"sys:regression-tests;latin2-check.lisp" :external-format :iso-8859-1)))
+
+(test-expect-error compile-file-with-lambda-default-encoding
+                   (compile-file #P"sys:regression-tests;latin2-check.lisp" :external-format :us-ascii)
+                   :type ext:stream-decoding-error)
 ;;; clean-up
 (delete-package (find-package :asdf-test))
+(delete-package (find-package :encoding-test))
