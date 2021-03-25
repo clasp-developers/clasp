@@ -25,13 +25,16 @@
 (test unintern-3
       (null (unintern 'defun)))
 
-(test-expect-error unintern-4 (unintern 'every "CL"))
+(test-expect-error unintern-4 (unintern 'cl:standard "CL")
+                   :type package-error)
 
-(test unintern-5
-      (null (unintern :test)))
+;; Make sure that the symbol was not in fact uninterned.
+(test unintern-5 (find-symbol "STANDARD" "CL"))
 
-(test unintern-6
-      (null (unintern 'core:simple-program-error)))
+(test unintern-6 (null (unintern :test)))
+
+(test-expect-error unintern-7 (unintern 'core:simple-program-error "CORE")
+                   :type package-error)
 
 (let ((pkg (make-package "KARSTEN" :nicknames (list "CARLES" "CARLITO"))))
   (delete-package "KARSTEN")
