@@ -750,6 +750,44 @@ due to error:~%  ~:*~a~]"
                 (format s "Don't import ~s, keeping ~s."
                         to-import existing)))))
 
+(defun core:use-package-name-conflict (package used conflicts)
+  (dolist (sym conflicts)
+    (let* ((name (symbol-name sym))
+           (new (find-symbol name used)))
+      (assert new)
+      (multiple-value-bind (old status) (find-symbol name package)
+        (ecase status
+          ((:inherited)
+           (restart-case
+               (error 'name-conflict
+                      :package package :operation 'use-package
+                      :troublemaker used :candidates (list new old))
+             (keep-old ()
+               :report (lambda (s)
+                         (format s "Keep ~s accessible in ~a by importing and shadowing it."
+                                 old package))
+               (shadowing-import (list old) package))
+             (take-new ()
+               :report (lambda (s)
+                         (format s "Make ~s accessible in ~a by importing and shadowing it."
+                                 new package))
+               (shadowing-import (list new) package))))
+          ((:internal :external)
+           (restart-case
+               (error 'name-conflict
+                      :package package :operation 'use-package
+                      :troublemaker used :candidates (list new old))
+             (keep-old ()
+               :report (lambda (s)
+                         (format s "Keep ~s accessible in ~a by shadowing it."
+                                 old package))
+               (shadow (list name) package))
+             (take-new ()
+               :report (lambda (s)
+                         (format s "Make ~s accessible in ~a by uninterning the old symbol."
+                                 new package))
+               (unintern old package)))))))))
+
 (defun core:unintern-name-conflict (package symbol candidates)
   (restart-case
       (error 'name-conflict :package package :operation 'unintern

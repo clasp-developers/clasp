@@ -434,6 +434,7 @@ SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
 SYMBOL_EXPORT_SC_(CorePkg, import_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, unintern_name_conflict);
+SYMBOL_EXPORT_SC_(CorePkg, use_package_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
 
 Package_sp Package_O::create(const string &name) {
@@ -632,54 +633,61 @@ T_sp Package_O::findPackageByLocalNickname(String_sp name) {
   } else return nicks;
 }
 
-  //
-  // Check for symbol conflicts
-  //
+// This is mapped over the external symbols of the package being used.
+// The package using is "_me".
+// FIXME: We don't lock the other package coherently.
 struct FindConflicts : public KeyValueMapper {
 public:
-  HashTableEqual_sp _conflicts;
+  List_sp _conflicts;
   Package_sp _me;
   FindConflicts(Package_sp me) {
     this->_me = me;
-    this->_conflicts = HashTableEqual_O::create_default();
+    this->_conflicts = _Nil<List_V>();
   }
 
   virtual bool mapKeyValue(T_sp key, T_sp value);
 };
 
+bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
+  SimpleString_sp nameKey = gc::As_unsafe<SimpleString_sp>(key);
+  Symbol_sp svalue = gc::As<Symbol_sp>(value);
+  Symbol_mv values = this->_me->findSymbol_SimpleString_no_lock(nameKey);
+  Symbol_sp mine = values;
+  T_sp foundp = values.second();
+  if (foundp.notnilp() && mine != svalue) {
+    // If mine is in my shadowing list then it's not a conflict
+    if ( this->_me->_Shadowing->contains(mine) ) return true;
+    LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
+    this->_conflicts = Cons_O::create(svalue, this->_conflicts);
+  }
+  return true;
+}
 
 bool Package_O::usePackage(Package_sp usePackage) {
   LOG(BF("In usePackage this[%s]  using package[%s]") % this->getName() % usePackage->getName());
-  {
-    WITH_PACKAGE_READ_LOCK(this);
-    if (this->usingPackageP_no_lock(usePackage)) {
-      LOG(BF("You are already using that package"));
-      return true;
-    }
+  while (true) {
     FindConflicts findConflicts(this->asSmartPtr());
     {
-      usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
-      if (findConflicts._conflicts->hashTableCount() > 0) {
-        stringstream ss;
-        findConflicts._conflicts->mapHash([&ss] (T_sp key, T_sp val) {
-            ss << " " << _rep_(key);
-          });
-        SIMPLE_ERROR(BF("Error: Name conflict for USE-PACKAGE of [%s]"
-                        " by package[%s]\n - conflicting symbols: %s") %
-                     usePackage->getName() % this->getName() % (ss.str()));
+      WITH_PACKAGE_READ_LOCK(this);
+      if (this->usingPackageP_no_lock(usePackage)) {
+        LOG(BF("You are already using that package"));
+        return true;
       }
-    }
+      usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
+      if (cl__length(findConflicts._conflicts) > 0)
+        goto name_conflict;
+      this->_UsingPackages.push_back(usePackage);
+      usePackage->_PackagesUsedBy.push_back(this->asSmartPtr());
+    } // release package lock
+    return true;
+  name_conflict:
+    eval::funcall(core::_sym_use_package_name_conflict,
+                  this->asSmartPtr(), usePackage,
+                  findConflicts._conflicts);
+    // That function only returns once conflicts are resolved, so go around
+    // again (rechecking for conflicts because multithreading makes this hard)
+    // FIXME: This doesn't actually perfectly solve multithreading issues.
   }
-  {
-    WITH_PACKAGE_READ_WRITE_LOCK(this);
-    this->_UsingPackages.push_back(usePackage);
-  }
-  Package_sp me(this);
-  {
-    WITH_PACKAGE_READ_WRITE_LOCK(usePackage);
-    usePackage->_PackagesUsedBy.push_back(me);
-  }
-  return true;
 }
 
 bool Package_O::unusePackage_no_outer_lock(Package_sp usePackage) {
@@ -726,22 +734,6 @@ bool Package_O::unusePackage_no_inner_lock(Package_sp usePackage) {
 bool Package_O::unusePackage(Package_sp usePackage) {
   WITH_PACKAGE_READ_WRITE_LOCK(this);
   return this->unusePackage_no_outer_lock(usePackage);
-}
-
-bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
-  SimpleString_sp nameKey = gc::As_unsafe<SimpleString_sp>(key);
-  Symbol_sp svalue = gc::As<Symbol_sp>(value);
-  Symbol_mv values = this->_me->findSymbol_SimpleString(nameKey);
-  Symbol_sp mine = values;
-  T_sp foundp = values.second();
-  if (foundp.notnilp() && mine != svalue) {
-    // If mine is in my shadowing list then it's not a conflict
-    if ( this->_me->_Shadowing->contains(mine) ) return true;
-    LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
-    this->_conflicts->setf_gethash(svalue->symbolName(),svalue);
-//    printf("%s:%d  Found symbol conflict for %s and %s\n", __FILE__, __LINE__, _rep_(svalue).c_str(), _rep_(mine).c_str());
-  }
-  return true;
 }
 
 // Return a list of packages that will have a conflict if this package
