@@ -434,6 +434,7 @@ SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
 SYMBOL_EXPORT_SC_(CorePkg, import_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, unintern_name_conflict);
+SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
 
 Package_sp Package_O::create(const string &name) {
   Package_sp p = Package_O::create();
@@ -958,10 +959,8 @@ bool Package_O::unintern(Symbol_sp sym) {
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     // Don't allow uninterning from locked packages (e.g. CL)
-    // FIXME: Signal an error.
-    if ((this->getSystemLockedP()) || (this->getUserLockedP())) {
-      return false;
-    }
+    if ((this->getSystemLockedP()) || (this->getUserLockedP()))
+      goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     if (this->_Shadowing->contains(sym)) {
       // Uninterning a shadowing symbol will cause a name conflict if this
@@ -997,6 +996,13 @@ bool Package_O::unintern(Symbol_sp sym) {
   eval::funcall(_sym_unintern_name_conflict,
                 this->asSmartPtr(), sym, candidates);
   return true;
+ package_lock_violation:
+  eval::funcall(core::_sym_package_lock_violation,
+                this->asSmartPtr(),
+                core::lisp_createStr("uninterning ~s"), sym);
+  // package lock violation shouldn't return, but the C++ compiler may not
+  // know that, so
+  return false;
 }
 
 bool Package_O::isExported(Symbol_sp sym) {

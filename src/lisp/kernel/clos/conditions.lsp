@@ -779,6 +779,23 @@ due to error:~%  ~:*~a~]"
 The conflict resolver must be one of ~s" chosen-symbol candidates)
       (shadowing-import (list chosen-symbol) package))))
 
+(define-condition core:package-lock-violation (package-error)
+  ((%format-control :initarg :format-control
+                    :reader package-lock-violation-format-control)
+   (%format-arguments :initarg :format-arguments
+                      :reader package-lock-violation-format-arguments))
+  (:report
+   (lambda (condition stream)
+     (format stream "~@<Lock on package ~a violated when ~?~:@>"
+             (package-error-package condition)
+             (package-lock-violation-format-control condition)
+             (package-lock-violation-format-arguments condition)))))
+
+(defun core:package-lock-violation (package
+                                    format-control &rest format-arguments)
+  (error 'core:package-lock-violation :package package
+         :format-control format-control :format-arguments format-arguments))
+
 (define-condition cell-error (error)
   ((name :INITARG :NAME :READER cell-error-name)))
 
