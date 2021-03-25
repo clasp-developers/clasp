@@ -722,11 +722,11 @@ due to error:~%  ~:*~a~]"
 
 (define-condition core:simple-package-error (simple-condition package-error) ())
 
-(define-condition core::name-conflict (package-error)
+(define-condition ext:name-conflict (package-error)
   ((%operation :initarg :operation :reader name-conflict-operation)
    (%troublemaker :initarg :troublemaker :reader name-conflict-troublemaker
                   :type symbol)
-   (%candidates :initarg :candidates :reader name-conflict-candidates
+   (%candidates :initarg :candidates :reader ext:name-conflict-candidates
                 :type list))
   (:report (lambda (condition stream)
              (format stream "~s ~s causes name-conflicts in ~s between the following symbols:~%~s"
@@ -759,18 +759,19 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (defun core:import-name-conflict (package existing to-import)
   (let ((candidates (list existing to-import)))
     (restart-case
-        (error 'name-conflict :package package :operation 'import
-                              :troublemaker to-import :candidates candidates)
-      (shadowing-import ()
+        (error 'ext:name-conflict
+               :package package :operation 'import
+               :troublemaker to-import :candidates candidates)
+      (take-new ()
         :report (lambda (s)
                   (format s "Shadowing-import ~s, uninterning ~s."
                           to-import existing))
         (shadowing-import to-import package))
-      (dont-import ()
+      (keep-old ()
         :report (lambda (s)
                   (format s "Don't import ~s, keeping ~s."
                           to-import existing)))
-      (resolve-conflict (chosen-symbol)
+      (ext:resolve-conflict (chosen-symbol)
         :interactive (lambda () (resolve-conflict-interactive
                                  package candidates))
         :report "Resolve conflict."
@@ -789,7 +790,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
           (ecase status
             ((:inherited)
              (restart-case
-                 (error 'name-conflict
+                 (error 'ext:name-conflict
                         :package package :operation 'use-package
                         :troublemaker used :candidates candidates)
                (keep-old ()
@@ -802,7 +803,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                            (format s "Make ~s accessible in ~a by importing and shadowing it."
                                    new package))
                  (shadowing-import (list new) package))
-               (resolve-conflict (chosen-symbol)
+               (ext:resolve-conflict (chosen-symbol)
                  :interactive (lambda () (resolve-conflict-interactive
                                           package candidates))
                  :report "Resolve conflict."
@@ -810,7 +811,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                  (shadowing-import (list chosen-symbol) package))))
             ((:internal :external)
              (restart-case
-                 (error 'name-conflict
+                 (error 'ext:name-conflict
                         :package package :operation 'use-package
                         :troublemaker used :candidates candidates)
                (keep-old ()
@@ -823,7 +824,7 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
                            (format s "Make ~s accessible in ~a by uninterning the old symbol."
                                    new package))
                  (unintern old package))
-               (resolve-conflict (chosen-symbol)
+               (ext:resolve-conflict (chosen-symbol)
                  :interactive (lambda () (resolve-conflict-interactive
                                           package candidates))
                  :report "Resolve conflict."
@@ -833,9 +834,9 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 
 (defun core:unintern-name-conflict (package symbol candidates)
   (restart-case
-      (error 'name-conflict :package package :operation 'unintern
-                            :troublemaker symbol :candidates candidates)
-    (resolve-conflict (chosen-symbol)
+      (error 'ext:name-conflict :package package :operation 'unintern
+                                :troublemaker symbol :candidates candidates)
+    (ext:resolve-conflict (chosen-symbol)
       :report "Resolve conflict."
       :interactive (lambda () (resolve-conflict-interactive package candidates))
       ;; Actual restart body
