@@ -151,6 +151,7 @@
 
 ;;; Name conflict and resolution tests
 
+;;; IMPORT
 (let* ((nc0 (make-package "NC0")) (nc1 (make-package "NC1"))
        (sname "TEST") (rname "TSET")
        (s0 (intern sname nc0)) (s1 (intern sname nc1))
@@ -195,7 +196,7 @@
                         (list r0 :internal)))))
   (delete-package nc0) (delete-package nc1))
 
-;; Conflicts between a present symbol and a newly inherited symbol
+;;; USE-PACKAGE: Conflicts between a present symbol and a newly inherited symbol
 (let* ((nc0 (make-package "NC0")) (nc1 (make-package "NC1"))
        (aname "A") (a0 (intern aname nc0)) (a1 (intern aname nc1))
        (bname "B") (b0 (intern bname nc0)) (b1 (intern bname nc1)))
@@ -237,10 +238,10 @@
              (null (symbol-package b0))))
   (delete-package nc0) (delete-package nc1))
 
-;; Conflicts between two inherited symbols
-;; These are separate in part because as far as I can tell, SBCL currently gets
-;; this slightly wrong by interning a new symbol in the child package, instead
-;; of shadowing-import-ing one of the existing ones.
+;;; USE-PACKAGE: Conflicts between two inherited symbols
+;;; These are separate in part because as far as I can tell, SBCL currently gets
+;;; this slightly wrong by interning a new symbol in the child package, instead
+;;; of shadowing-import-ing one of the existing ones.
 (let* ((par0 (make-package "PAR0")) (par1 (make-package "PAR1"))
        (aname "A") (a0 (intern aname par0)) (a1 (intern aname par1))
        (bname "B") (b0 (intern bname par0)) (b1 (intern bname par1))
