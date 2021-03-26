@@ -1008,7 +1008,10 @@ bool Package_O::unintern(Symbol_sp sym) {
           status = gc::As<Symbol_sp>(values.valueGet_(1));
         }
         // not sure if separate nilp is actually necessary
-        if (status.nilp() || (status != kw::_sym_external))
+        if (status.nilp() || (status != kw::_sym_external)
+            // A symbol being accessible from different packages is ok.
+            || (candidates.notnilp()
+                && gc::As_unsafe<Cons_sp>(candidates)->memberEq(uf)))
           continue;
         else candidates = Cons_O::create(uf, candidates);
       }
