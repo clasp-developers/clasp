@@ -383,6 +383,103 @@
                         (list r0 :internal)))))
   (delete-package nc0) (delete-package nc1))
 
+;;; EXPORT: Conflicts between a present symbol and a newly inherited symbol
+(let* ((par (make-package "PAR")) (chil (make-package "CHIL"))
+       (aname "A") (par-a (intern aname par)) (chil-a (intern aname chil))
+       (bname "B") (par-b (intern bname par)) (chil-b (intern bname chil)))
+  (use-package par chil)
+  ;; an error is signaled
+  (test-expect-error export-conflict-0 (export par-a par)
+                     :type ext:name-conflict)
+  ;; an abort means the symbol is not exported
+  (test export-conflict-1 (eq (nth-value 1 (find-symbol aname par))
+                              :internal))
+  ;; the restart exists
+  (test export-conflict-2
+        (block nil
+          (handler-bind
+              ((ext:name-conflict
+                 (lambda (c)
+                   (return (find-restart 'ext:resolve-conflict c)))))
+            (export par-a par)
+            nil)))
+  ;; an unrelated symbol can't be used to resolve
+  (test-expect-error export-conflict-3
+                     (handler-bind
+                         ((ext:name-conflict
+                            (lambda (c)
+                              (invoke-restart
+                               (find-restart 'ext:resolve-conflict c)
+                               (gensym)))))
+                       (export par-a par)
+                       nil))
+  ;; After resolving with the old symbol, the symbol is exported
+  (test export-conflict-4
+        (handler-bind
+            ((ext:name-conflict
+               (lambda (c)
+                 (invoke-restart (find-restart 'ext:resolve-conflict c)
+                                 chil-a))))
+          (export par-a par)
+          (eq (nth-value 1 (find-symbol aname par)) :external)))
+  ;; After resolving with the old symbol, said symbol is a shadowing symbol
+  (test export-conflict-5
+        (and (equal (multiple-value-list (find-symbol aname chil))
+                    (list chil-a :internal))
+             (member chil-a (package-shadowing-symbols chil))))
+  ;; After resolving with the new symbol, the symbol is exported
+  (test export-conflict-6
+        (handler-bind
+            ((ext:name-conflict
+               (lambda (c)
+                 (invoke-restart (find-restart 'ext:resolve-conflict c)
+                                 par-b))))
+          (export par-b par)
+          (eq (nth-value 1 (find-symbol bname par)) :external)))
+  ;; ...and the old symbol has been uninterned
+  (test export-conflict-7
+        (and (equal (multiple-value-list (find-symbol bname chil))
+                    (list par-b :inherited))
+             (null (symbol-package chil-b))))
+  (delete-package chil) (delete-package par))
+
+;;; EXPORT: Conflicts between two inherited symbols
+;;; These are separate in part because as far as I can tell, SBCL currently gets
+;;; this slightly wrong by interning a new symbol in the child package, instead
+;;; of shadowing-import-ing one of the existing ones.
+(let* ((par0 (make-package "PAR0")) (par1 (make-package "PAR1"))
+       (aname "A") (a0 (intern aname par0)) (a1 (intern aname par1))
+       (bname "B") (b0 (intern bname par0)) (b1 (intern bname par1))
+       (chil (make-package "CHIL" :use (list par0 par1))))
+  (export (list a0 b0) par0)
+  ;; After resolving with the old symbol, the symbol is exported
+  (test export-conflict-8
+        (handler-bind ((ext:name-conflict
+                         (lambda (c)
+                           (invoke-restart
+                            (find-restart 'ext:resolve-conflict c) a0))))
+          (export a1 par1)
+          (eq (nth-value 1 (find-symbol aname par1)) :external)))
+  ;; ...and the old symbol is now shadow in chil
+  (test export-conflict-9
+        (and (equal (multiple-value-list (find-symbol aname chil))
+                    (list a0 :internal))
+             (member a0 (package-shadowing-symbols chil))))
+  ;; After resolving with the new symbol, the symbol is exported
+  (test export-conflict-10
+        (handler-bind ((ext:name-conflict
+                         (lambda (c)
+                           (invoke-restart
+                            (find-restart 'ext:resolve-conflict c) b1))))
+          (export b1 par1)
+          (eq (nth-value 1 (find-symbol bname par1)) :external)))
+  ;; ... and the new symbol is now shadow in chil
+  (test export-conflict-11
+        (and (equal (multiple-value-list (find-symbol bname chil))
+                    (list b1 :internal))
+             (member b1 (package-shadowing-symbols chil))))
+  (delete-package chil) (delete-package par0) (delete-package par1))
+
 ;;; USE-PACKAGE: Conflicts between a present symbol and a newly inherited symbol
 (let* ((nc0 (make-package "NC0")) (nc1 (make-package "NC1"))
        (aname "A") (a0 (intern aname nc0)) (a1 (intern aname nc1))
