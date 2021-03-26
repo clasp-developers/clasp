@@ -180,6 +180,8 @@
             remove-package-local-nickname
             package-locally-nicknamed-by-list
             keep-old change-nick ; restarts for add-package-local-nicknames
+            ;; symbol name conflicts
+            name-conflict name-conflict-candidates resolve-conflict
             ;; Readers of RESTART objects
             restart-function restart-report-function
             restart-interactive-function restart-test-function

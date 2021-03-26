@@ -137,13 +137,37 @@ extern core::Symbol_sp& _sym_name;
 // #define INVALID_KEYWORD_ARGUMENT_ERROR(obj) ERROR(core::_sym_invalidKeywordArgumentError, obj)
 #define STREAM_ERROR(st) ERROR(cl::_sym_streamError, core::lisp_createList(kw::_sym_stream, st))
 // core::_sym_simplePackageError with message and datum
-#define SIMPLE_PACKAGE_ERROR(message, datum)                                                     \
-        ERROR(core::_sym_simplePackageError,                                                     \
-              core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),kw::_sym_format_arguments, core::lisp_createList(core::lisp_createStr(datum))))
+#define SIMPLE_PACKAGE_ERROR(message, datum)\
+  ERROR(core::_sym_simplePackageError,\
+        core::lisp_createList(kw::_sym_format_control,\
+                              core::lisp_createStr(message),\
+                              kw::_sym_package,\
+                              core::lisp_createStr(datum),\
+                              kw::_sym_format_arguments,\
+                              core::lisp_createList(core::lisp_createStr(datum))))
 #define SIMPLE_PACKAGE_ERROR_2_args(message, datum1, datum2)                                     \
         ERROR(core::_sym_simplePackageError,                                                     \
               core::lisp_createList(kw::_sym_format_control, core::lisp_createStr(message),       \
               kw::_sym_format_arguments, core::lisp_createList(core::lisp_createStr(datum1), core::lisp_createStr(datum2))))
+#define CORRECTABLE_PACKAGE_ERROR(cmessage, message, pack)\
+  eval::funcall(core::_sym_universalErrorHandler,\
+                core::lisp_createStr(cmessage), core::_sym_simplePackageError,\
+                core::lisp_createList(kw::_sym_format_control,\
+                                      core::lisp_createStr(message),\
+                                      kw::_sym_package,\
+                                      core::lisp_createStr(pack),\
+                                      kw::_sym_format_arguments,\
+                                      core::lisp_createList(core::lisp_createStr(pack))));
+#define CORRECTABLE_PACKAGE_ERROR2(cmessage, message, pack, arg)\
+  eval::funcall(core::_sym_universalErrorHandler,\
+                core::lisp_createStr(cmessage), core::_sym_simplePackageError,\
+                core::lisp_createList(kw::_sym_format_control,\
+                                      core::lisp_createStr(message),\
+                                      kw::_sym_package,\
+                                      core::lisp_createStr(pack),\
+                                      kw::_sym_format_arguments,\
+                                      core::lisp_createList(core::lisp_createStr(pack), core::lisp_createStr(arg))));
+
 
 #define PACKAGE_ERROR(p) ERROR(cl::_sym_package_error, core::lisp_createList(kw::_sym_package, p))
 #define ERROR_END_OF_FILE(st) ERROR(cl::_sym_endOfFile, core::lisp_createList(kw::_sym_stream, st))
