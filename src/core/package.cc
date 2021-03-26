@@ -459,6 +459,7 @@ SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
 SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
 SYMBOL_EXPORT_SC_(CorePkg, import_name_conflict);
+SYMBOL_EXPORT_SC_(CorePkg, export_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, unintern_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, use_package_name_conflict);
 SYMBOL_EXPORT_SC_(CorePkg, package_lock_violation);
@@ -778,12 +779,6 @@ List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
   return conflicts;
 }
 
-CL_DEFUN List_sp core__export_conflicts(Package_sp package,
-                                        SimpleString_sp nameKey,
-                                        Symbol_sp sym) {
-  return package->export_conflicts(nameKey, sym);
-}
-
 typedef enum { no_problem,
                no_problem_already_exported,
                not_accessible_in_this_package,
@@ -793,6 +788,7 @@ void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
   List_sp conflicts;
   Export_errors error;
+ start:
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
@@ -829,18 +825,19 @@ void Package_O::_export2(Symbol_sp sym) {
                     "and cannot be exported.",
                     "Import the symbol in the package and proceed.",
                     this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
-    this->add_symbol_to_package(nameKey, sym, true);
+    // Since the symbol is not accessible, importing cannot cause a name
+    // conflict, so we can bypass the usual checks.
+    this->add_symbol_to_package(nameKey, sym, false);
+    goto start; // start over so that we do conflict checking properly
   } else if (error == already_symbol_with_same_name_in_this_package) {
     FEpackage_error("Cannot export the symbol ~S from ~S,~%"
                     "because there is already a symbol with the same name~%"
                     "in the package.",
                     this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
   } else if (error == name_conflict_in_other_package) {
-    FEpackage_error("Cannot export the symbol ~S~%"
-                    "from ~S,~%"
-                    "because it will cause a name conflict~%"
-                    "in ~S.",
-                    this->asSmartPtr(), 3, sym.raw_(), this->asSmartPtr().raw_(), conflicts.raw_());
+    eval::funcall(core::_sym_export_name_conflict, sym, conflicts);
+    // Conflict has been resolved by shadowing-import. Start over.
+    goto start;
   }
 }
 
