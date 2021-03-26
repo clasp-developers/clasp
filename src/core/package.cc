@@ -1011,7 +1011,7 @@ bool Package_O::unintern(Symbol_sp sym) {
         if (status.nilp() || (status != kw::_sym_external)
             // A symbol being accessible from different packages is ok.
             || (candidates.notnilp()
-                && gc::As_unsafe<Cons_sp>(candidates)->memberEq(uf)))
+                && (gc::As_unsafe<Cons_sp>(candidates)->memberEq(uf)).notnilp()))
           continue;
         else candidates = Cons_O::create(uf, candidates);
       }
