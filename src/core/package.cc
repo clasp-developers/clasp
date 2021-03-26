@@ -290,16 +290,20 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
     _lisp->unmapNameToPackage(gc::As<String_sp>(oCar(cur))->get_std_string());
   }
   pkg->setNicknames(_Nil<T_O>());
+
+  // need to grab before the readwriteLock
+  List_sp usedList = pkg->packageUseList();
+  List_sp usedByList = pkg->packageUsedByList();
   
   WITH_PACKAGE_READ_WRITE_LOCK(pkg);
-  for (auto pi : pkg->_UsingPackages) {
-    if (pi.notnilp())
-      pkg->unusePackage_no_outer_lock(pi);
+  for (auto pi : usedList) {
+    Package_sp piLocal = gc::As<Package_sp>(CONS_CAR(pi));
+    pkg->unusePackage_no_outer_lock(piLocal);
   }
 
-  for (auto pi : pkg->_PackagesUsedBy) {
-    if (pi.notnilp())
-      pi->unusePackage_no_inner_lock(pkg);
+  for (auto pi : usedByList) {
+    Package_sp piLocal = gc::As<Package_sp>(CONS_CAR(pi));
+    piLocal->unusePackage_no_inner_lock(pkg);
   }
   pkg->_InternalSymbols->mapHash([pkg](T_sp key, T_sp tsym) {
       Symbol_sp sym = gc::As<Symbol_sp>(tsym);
