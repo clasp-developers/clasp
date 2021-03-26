@@ -364,30 +364,6 @@ bool Cons_O::equalp(T_sp obj) const {
   return cl__equalp(this_cdr, other_cdr);
 }
 
-//CL_LISPIFY_NAME("core:extend");
-//CL_DEFMETHOD
-List_sp Cons_O::extend(List_sp rest) {
-  Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  Cons_sp nc = first;
-  Cons_sp next, newCur;
-  List_sp cur = this->asSmartPtr();
-  while (cur.notnilp()) {
-    newCur = Cons_O::create(oCar(cur), _Nil<T_O>());
-    nc->setCdr(newCur);
-    nc = newCur;
-    cur = oCdr(cur);
-  }
-  // Now attach the rest
-  cur = rest;
-  while (cur.consp()) {
-    newCur = Cons_O::create(oCar(cur), _Nil<T_O>());
-    nc->setCdr(newCur);
-    nc = newCur;
-    cur = oCdr(cur);
-  }
-  return ((oCdr(first)));
-}
-
 List_sp Cons_O::reverse() {
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
