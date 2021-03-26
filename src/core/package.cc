@@ -876,6 +876,9 @@ void Package_O::unexport(Symbol_sp sym) {
   // (The printer will try to access the package name or something, and hang.)
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
+    // Don't allow unexporting from locked packages
+    if (this->getSystemLockedP() || this->getUserLockedP())
+      goto package_lock_violation;
     SimpleString_sp nameKey = sym->_Name;
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
@@ -893,6 +896,10 @@ void Package_O::unexport(Symbol_sp sym) {
                     "and cannot be unexported.",
                     this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
   }
+ package_lock_violation:
+  eval::funcall(core::_sym_package_lock_violation,
+                this->asSmartPtr(),
+                core::lisp_createStr("unexporting ~s"), sym);
 }
 
 void Package_O::add_symbol_to_package_no_lock(SimpleString_sp nameKey, Symbol_sp sym, bool exportp) {
