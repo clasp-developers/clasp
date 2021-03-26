@@ -733,7 +733,7 @@ due to error:~%  ~:*~a~]"
                      (name-conflict-operation condition)
                      (name-conflict-troublemaker condition)
                      (package-error-package condition)
-                     (name-conflict-candidates condition)))))
+                     (ext:name-conflict-candidates condition)))))
 
 (defun resolve-conflict-interactive (package candidates)
   ;; Cribbed from SBCL's NAME-CONFLICT function.
