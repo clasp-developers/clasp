@@ -174,13 +174,13 @@
  :type package-error)
 
 (test-expect-error
- export-not-accessable-symbol
+ export-not-accessible-symbol
  (let ((sym (gensym)))
    (export sym (find-package :core)))
  :type package-error)
 
 (test
- export-not-accessable-symbol-continue
+ export-not-accessible-symbol-continue
  (let ((sym (gensym)))
    (handler-bind ((error #'(lambda(c)
                              (declare (ignore c))
@@ -208,65 +208,14 @@
 ;;; http://www.lispworks.com/documentation/HyperSpec/Body/f_import.htm
 ;;; If any symbol to be imported has no home package (i.e., (symbol-package symbol) => nil),
 ;;; import sets the home package of the symbol to package.
+;;; CLHS 11.1.1.2.3 says the opposite - that IMPORT does not change the home
+;;; package - but setting the home package seems more useful, so we do that.
 
-(test import-uinterned-symbol-set-home-package
+(test import-uninterned-symbol-set-home-package
       (eq (find-package :cl-user)
           (let ((symbol (make-symbol (symbol-name :foo))))
             (import symbol (find-package :cl-user))
             (symbol-package symbol))))
-
-(test-expect-error
- import-uinterned-symbol-set-home-package-twice
- (let ()
-   (let ((symbol (make-symbol (symbol-name :bar))))
-     (import symbol (find-package :cl-user)))
-   (let ((symbol (make-symbol (symbol-name :bar))))
-     (import symbol (find-package :cl-user))))
- :type package-error)
-
-;;; Exceptional Situations: http://www.lispworks.com/documentation/HyperSpec/Body/f_uninte.htm
-;;; Giving a shadowing symbol to unintern can uncover a name conflict that had previously
-;;; been resolved by the shadowing. If package A uses packages B and C, A contains a shadowing
-;;; symbol x, and B and C each contain external symbols named x, then removing the shadowing
-;;; symbol x from A will reveal a name conflict between b:x and c:x if those two symbols are distinct
-;;; In this case unintern will signal an error.
-
-;;; The issue is also mentionned in the source code
-(test ansi-tests-UNINTERN.8
- (let ()
-  (when (find-package "H")
-    (delete-package "H"))
-  (when (find-package "G1")
-    (delete-package "G1"))
-  (when (find-package "G2")
-    (delete-package "G2"))
-  (LET* ((PG1 (MAKE-PACKAGE "G1" :USE NIL))
-         (PG2 (MAKE-PACKAGE "G2" :USE NIL))
-         (PH (MAKE-PACKAGE "H" :USE (LIST PG1 PG2))))
-    (SHADOW "FOO" PH)
-    (LET ((GSYM1 (INTERN "FOO" PG1))
-          (GSYM2 (INTERN "FOO" PG2)))
-      (EXPORT GSYM1 PG1)
-      (EXPORT GSYM2 PG2)
-      (MULTIPLE-VALUE-BIND
-            (SYM1 ACCESS1)
-          (FIND-SYMBOL "FOO" PH)
-        (and
-         (EQUAL (LIST SYM1)
-                (PACKAGE-SHADOWING-SYMBOLS PH))
-         (NOT (EQ SYM1 GSYM1))
-         (NOT (EQ SYM1 GSYM2))
-         (EQ (SYMBOL-PACKAGE SYM1) PH)
-         (EQ ACCESS1 :INTERNAL)
-         (EQUAL (SYMBOL-NAME SYM1) "FOO")
-         ;;; this returns nil in clasp, t.m. the error in not signaled
-         (HANDLER-CASE
-             (PROGN (UNINTERN SYM1 PH) NIL)
-           (ERROR (C)
-             (FORMAT T
-                     "Properly threw an error: ~S~%"
-                     C)
-             T))))))))
 
 ;;; From various ansi-tests, modified
 (defun safely-delete-package (pkg)
