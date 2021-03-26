@@ -267,7 +267,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj)
   if ((pkg->getSystemLockedP()) || (pkg->getUserLockedP())) {
     FEpackage_error("Cannot delete the locked package ~S", pkg, 0);
   }
-  if (pkg->packageName() == "") {
+  if (pkg->packageName() == "") { // already deleted
     return _Nil<T_O>();
   }
 
