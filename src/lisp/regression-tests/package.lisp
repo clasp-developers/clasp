@@ -366,6 +366,19 @@
                                          always
                                             (string= name (symbol-name sym2))))
                             (push sym failures))))))))))
+
+;;; from discussion in https://github.com/clasp-developers/clasp/pull/1152
+(test delete-package-use-packages-correctly
+      (let ((par0 (make-package "PAR0"))
+            (par1 (make-package "PAR1"))
+            (par2 (make-package "PAR2"))
+            (chil (make-package "CHIL")))
+        (use-package (list par0 par1 par2) chil)
+        (delete-package chil)
+        (delete-package par0)
+        (delete-package par1)
+        (delete-package par2)
+        t))
                    
         
       
