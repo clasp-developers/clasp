@@ -34,7 +34,8 @@
 import os, sys, logging
 import time, datetime
 import glob
-
+import copy
+import inspect
 
 try:
     from StringIO import StringIO
@@ -491,13 +492,20 @@ class variant(object):
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.faspbc' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
         else:
             return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.mpi_extension(),self.debug_extension()))
-    def snapshot_name(self,build,appname=APP_NAME,stage=None):
+    def snapshot_node(self,build,appname=APP_NAME,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
         else:
             use_stage = stage
-        return build.path.find_or_declare('fasl/%s%s-%s%s%s-image.snapshot' % (use_stage,appname,self.gc_name,self.mpi_extension(),self.debug_extension()))
+        return build.path.find_or_declare('generated/%s%s-%s%s%s-snapshot.snapshot' % (use_stage,appname,self.gc_name,self.mpi_extension(),self.debug_extension()))
 
+    def snapshot_object_node(self,build,appname=APP_NAME,stage=None):
+        if ( stage == None ):
+            use_stage = self.stage_char
+        else:
+            use_stage = stage
+        return build.path.find_or_declare('generated/%s%s-%s%s%s-snapshot.o' % (use_stage,appname,self.gc_name,self.mpi_extension(),self.debug_extension()))
+    
     def fasl_dir(self, stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -1233,7 +1241,7 @@ def configure(cfg):
             cfg.env.append_value('LINKFLAGS', ['-stdlib=libstdc++']) # libstdc++/GCC libc++/clang
             cfg.env.append_value('LINKFLAGS', ['-lstdc++']) # -lstdc++/GCC -lc++/clang
         else:
-            cfg.env.append_value('CXXFLAGS', ['-stdlib=libc++'])
+            cfg.env.append_value('CXXFLAGS', ['-stdlib=libc++', '-ldynamic'])
             cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++','-lc++', '-lc++abi'])
         cfg.env.append_value('LINKFLAGS', '-pthread')
     if (cfg.env['DEST_OS'] == FREEBSD_OS ):
@@ -1563,7 +1571,9 @@ def build(bld):
                            target = [bld.iclasp_executable],
                            install_path = '${PREFIX}/bin')
     #make_run_dsymutil_task(bld, 'i', iclasp_lto_o)
-
+    print("bld_task = %s" % bld_task)
+    print("bld_task.source = %s" % bld_task.source)
+    print("bld_task.target = %s" % bld_task.target)
     if (bld.stage_val <= -1):
         log.info("Creating run_aclasp task")
 
@@ -1651,20 +1661,8 @@ def build(bld):
                          cclasp_common_lisp_output_name_list)
         task.set_outputs([bld.cclasp_link_product])
         bld.add_to_group(task)
-        #
-        # Now try the snapshot
-        #
-        cclasp_snapshot_product = bld.variant_obj.snapshot_name(bld,stage = 'c')
-        task_snapshot = link_snapshot(env=bld.env)
-        task_snapshot.set_inputs([bld.iclasp_executable,
-                                  bld.cclasp_link_product,
-                                  builtins_bitcode_node,
-                                  intrinsics_bitcode_node])
-        task_snapshot.set_outputs([cclasp_snapshot_product])
-        bld.add_to_group(task_snapshot)
         install('lib/clasp/', bld.cclasp_link_product)
         install('lib/clasp/', cclasp_common_lisp_output_name_list)
-        install('lib/clasp/', cclasp_snapshot_product)
 
         if (True):
                 # Build serve-event
@@ -1701,7 +1699,60 @@ def build(bld):
             log.debug("clasp_symlink_node =  %s", clasp_symlink_node)
             if (os.path.islink(clasp_symlink_node.abspath())):
                 os.unlink(clasp_symlink_node.abspath())
-    if (bld.stage == 'rebuild' or bld.stage_val >= 4):
+    if ( bld.stage_val >= 4):
+        #
+        # Now generate the snapshot
+        #
+        cclasp_snapshot_product = bld.variant_obj.snapshot_node(bld,stage = 'c')
+        print("cclasp_snapshot_product = %s class -> %s" % (cclasp_snapshot_product, cclasp_snapshot_product.__class__))
+        # above will output: cclasp_snapshot_product = /home/meister/Development/cando-future/build/boehmprecise/generated/cclasp-boehmprecise-image.snapshot class -> <class 'waflib.Node.Nod3'>
+        task_snapshot = link_snapshot(env=bld.env)
+        print("task_snapshot = %s class %s" % (task_snapshot, inspect.getmro(task_snapshot.__class__)))
+        task_snapshot.set_inputs([bld.iclasp_executable,
+                                  bld.cclasp_link_product,
+                                  builtins_bitcode_node,
+                                  intrinsics_bitcode_node])
+        task_snapshot.set_outputs([cclasp_snapshot_product])
+        bld.add_to_group(task_snapshot)
+        #
+        # Copy the bld_task for the main executable
+        # Change the target to 'zclasp'
+        # Add a source: src/main/snapshot.c
+        #  Also add the source: cclasp_snapshot_product above because snapshot.c will .objbin load it
+        #
+        bld_task.post()
+        print("len(bld_task.tasks) = %d" % len(bld_task.tasks))
+        idx = 0
+        cxxprogram_task = None
+        for tsk in bld_task.tasks:
+            print("[%d] tsk.__class__.__name__ = %s" % (idx, tsk.__class__.__name__))
+            idx += 1
+            if (tsk.__class__.__name__ == "cxxprogram"):
+                cxxprogram_task = tsk
+#        print("cxxprogram_task = %s" % cxxprogram_task)
+#        print("cxxprogram_task.inputs = %s" % cxxprogram_task.inputs)
+#        print("cxxprogram_task.outputs = %s" % cxxprogram_task.outputs)
+        zbld_task = bld_task.create_task("cxxprogram",src=cxxprogram_task.inputs)
+#        print("zbld_task = %s" % zbld_task )
+        obj_task = bld_task.create_task("c")
+#        print("obj_task = %s" % obj_task )
+        obj_task.inputs = [bld.path.find_node("src/main/snapshot.c")]
+        snapshot_obj = bld.variant_obj.snapshot_object_node(bld,stage = 'c')
+        obj_task.outputs = [snapshot_obj]
+        print("obj_task.inputs = %s" % obj_task.inputs )
+        print("obj_task.outputs = %s" % obj_task.outputs )
+        obj_task.set_run_after(task_snapshot)
+        bld.add_to_group(obj_task)
+        zclasp_target = bld.path.find_or_declare("zclasp")
+        zbld_task.outputs = [ zclasp_target ]
+        zbld_task.inputs.append(obj_task.outputs[0])
+#        zbld_task.source.append(cclasp_snapshot_product)
+#        print("zbld_task.source = %s" % zbld_task.source)
+#        print("zbld_task.target = %s" % zbld_task.target)
+        zbld_task.set_run_after(obj_task)
+        bld.add_to_group(zbld_task)
+        install('lib/clasp/', cclasp_snapshot_product)
+        
         log.debug("building bld.stage = %s  bld.stage_val = %d", bld.stage, bld.stage_val )
         if (bld.env.CLASP_BUILD_MODE=='faso'
             or bld.env.CLASP_BUILD_MODE == "fasoll"
@@ -2303,9 +2354,7 @@ def increase_weight(self):
     for task in self.tasks:
         if (task.__str__().find("src/asttooling/astExpose")!=-1 ):
             task.weight = 4
-            print("Increased weight of task: %s to %d" % (task, task.weight))
         if (task.__str__().find("src/gctools/exposeFunctions")!=-1
             or task.__str__().find("src/gctools/exposeClasses")!=-1
             or task.__str__().find("src/gctools/gc_interface")!=-1 ):
             task.weight = 3
-            print("Increased weight of task: %s to %d" % (task, task.weight))
