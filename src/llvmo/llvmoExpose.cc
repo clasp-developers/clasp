@@ -3943,28 +3943,43 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
                         llvm::jitlink::LinkGraph &G,
                         llvm::jitlink::PassConfiguration &Config) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s ClaspPlugin modifyPassConfig\n", __FILE__, __LINE__, __FUNCTION__ ));
+    auto PersonalitySymbol =
+      MR.getTargetJITDylib().getExecutionSession().intern("DW.ref.__gxx_personality_v0");
+    if (!MR.getSymbols().count(PersonalitySymbol))
+      Config.PrePrunePasses.insert( Config.PrePrunePasses.begin(),
+                                  [this](jitlink::LinkGraph&G) -> Error {
+                                    for (auto ssym : G.defined_symbols()) {
+                                      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
+                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
+                                        ssym->setLinkage(Linkage::Strong);
+                                        ssym->setScope(Scope::Local);
+                                        break;
+                                      }
+                                    }
+                                    return Error::success();
+                                  });
     Config.PrePrunePasses.push_back(
                                     [this](jitlink::LinkGraph &G) -> Error {
+                                      size_t count = 0;
                                       for (auto &Sec : G.sections()) {
                                         if (Sec.getName() == EH_FRAME_NAME )
                                           for (auto *S : Sec.symbols()) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, Sec.getName().str().c_str()));
                                             S->setLive(true);
+                                            count++;
                                           }
                                       }
                                       for (auto ssym : G.defined_symbols()) {
-                                        if (ssym->hasName()) {
-                                          std::string sname = ssym->getName().str();
-                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
-                                          if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
-                                            ssym->setLive(true);
-                                          } else if ( sname.find(literals_name) != std::string::npos ) {
-                                            DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
-                                            ssym->setLive(true);
-                                          }
+                                        std::string sname = ssym->getName().str();
+                                        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass Symbol: %s\n", __FILE__, __LINE__, __FUNCTION__, ssym->getName().str().c_str()));
+                                        if ( sname.find(gcroots_in_module_name) != std::string::npos ) {
+                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                          ssym->setLive(true);
+                                        } else if ( sname.find(literals_name) != std::string::npos ) {
+                                          DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %s\n", __FILE__, __LINE__, __FUNCTION__, sname.c_str() ));
+                                          ssym->setLive(true);
                                         }
                                       }
+                                      DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass setLive %lu symbols\n", __FILE__, __LINE__, __FUNCTION__, count ));
                                       return Error::success();
                                     });
     Config.PrePrunePasses.push_back([this](jitlink::LinkGraph &G) -> Error {
@@ -4077,6 +4092,14 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
     bool found_literals = false;
     Code_sp currentCode = my_thread->topObjectFile()->_Code;
     for (auto ssym : G.defined_symbols()) {
+      if (ssym->getName() == "DW.ref.__gxx_personality_v0") {
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s PrePrunePass found DW.ref.__gxx_personality_v0 setting Strong Linkage and Local scope\n", __FILE__, __LINE__, __FUNCTION__ ));
+        ssym->setLinkage(Linkage::Strong);
+        ssym->setScope(Scope::Local);
+        break;
+      }
+    }
+    for (auto ssym : G.defined_symbols()) {
       DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s defined_symbol -> hasName: %d name: %s at %p size: %lu\n",
                                 __FILE__, __LINE__, __FUNCTION__,
                                 ssym->hasName(),
@@ -4132,6 +4155,14 @@ class ClaspPlugin : public llvm::orc::ObjectLinkingLayer::Plugin {
            (gctools::GCRootsInModule*)currentCode->_gcroots,
            currentCode->_gcroots->_module_memory,
                               currentCode->_gcroots->_num_entries ));
+
+#ifdef DEBUG_OBJECT_FILES
+    for (auto *Sym : G.external_symbols())
+      if (Sym->getName() == "DW.ref.__gxx_personality_v0") {
+        DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Graph %s has external DW.ref.__gxx_personality_v0 reference.\n", __FILE__, __LINE__, __FUNCTION__, G.getName().c_str()));
+        break;
+      }
+#endif
   }
   
   void printLinkGraph(llvm::jitlink::LinkGraph &G, llvm::StringRef Title) {
