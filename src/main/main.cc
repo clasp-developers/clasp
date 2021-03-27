@@ -433,6 +433,12 @@ int main( int argc, char *argv[] )
   llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
 #endif
 
+  extern const char* __attribute__((weak)) start_of_snapshot;
+  printf("%s:%d:%s  start_of_snapshot = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&start_of_snapshot );
+  if (&start_of_snapshot) {
+    printf("%s:%d:%s  start_of_snapshot data = %p\n", __FILE__, __LINE__, __FUNCTION__, *(void**)&start_of_snapshot );
+  }
+  
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {
