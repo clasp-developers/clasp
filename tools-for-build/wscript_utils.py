@@ -1,5 +1,5 @@
 import sys, logging, os, subprocess
-from waflib import Logs, Task
+from waflib import Logs, Task, TaskGen
 import waflib.Options
 
 try:
@@ -325,6 +325,11 @@ def libraries_as_link_flags_as_string(fmt, libs):
     return result.getvalue()
 
 
+#@TaskGen.extension(".snapshot")
+#def process(self, node):
+#    tsk = self.create_task('link_snapshot')
+#    print(tsk.__class__)
+    
 class link_snapshot(clasp_task):
     def run(self):
         executable = self.inputs[0].abspath()
@@ -337,8 +342,5 @@ class link_snapshot(clasp_task):
                                                 '(core:exit)'])
         log.info("link_snapshot = %s\n", cmd)
         return self.exec_command(cmd)
-
-    def display(self):
-        return "link_snapshot.display() would be VERY long - remove display() to display\n"
     
 
