@@ -133,7 +133,22 @@ std::vector<ISLLibrary> globalISLLibraries;
 bool globalFwdMustBeInGCMemory = false;
 #define DEBUG_SL_FFWD 1
 
+void check_dladdr(uintptr_t address) {
+  // do nothing for now
+}
+
+
+uintptr_t encodeVtable(uintptr_t vtable, uintptr_t vtableRegionStart) {
+  check_dladdr(vtable);
+  return vtable - vtableRegionStart;
+}
+
+uintptr_t decodeVtable(uintptr_t vtable, uintptr_t vtableRegionStart) {
+  return vtable + vtableRegionStart;
+}
+
 void* encodePointer(gctools::clasp_ptr_t address,size_t idx, gctools::clasp_ptr_t start) {
+  check_dladdr((uintptr_t)address);
   uint8_t firstByte = *(uint8_t*)address; // read the first byte
   uintptr_t offset = (uintptr_t)address - (uintptr_t)start;
   if (!start) {
@@ -145,6 +160,7 @@ void* encodePointer(gctools::clasp_ptr_t address,size_t idx, gctools::clasp_ptr_
 }
 
 void* encodeLibrarySaveAddress(void* vaddress) {
+  check_dladdr((uintptr_t)vaddress);
   gctools::clasp_ptr_t address = (gctools::clasp_ptr_t)vaddress;
   for (size_t idx = 0; idx<globalISLLibraries.size(); idx++ ) {
     if (globalISLLibraries[idx]._TextStart<=address && address<globalISLLibraries[idx]._TextEnd) {
@@ -1080,10 +1096,10 @@ struct fixup_vtables_t : public walker_callback_t {
   {
     vtable = *(uintptr_t*)client;
     if (this->_encoding) {
-      new_vtable = (uintptr_t)vtable - (uintptr_t)this->_vtableRegionStart;
+      new_vtable = encodeVtable( (uintptr_t)vtable, (uintptr_t)this->_vtableRegionStart );
       if (this->_vtableRegionSize < new_vtable) ISL_ERROR(BF("new_vtable %lu is outside of the allowed range") % new_vtable );
     } else {
-      new_vtable = (uintptr_t)vtable + (uintptr_t)this->_vtableRegionStart;
+      new_vtable = decodeVtable( (uintptr_t)vtable, (uintptr_t)this->_vtableRegionStart );
       if (new_vtable < this->_vtableRegionStart || this->_vtableRegionEnd <= new_vtable) ISL_ERROR(BF("new_vtable %lu is outside of the allowed range") % new_vtable );
     }
     *(uintptr_t*)client = new_vtable;
