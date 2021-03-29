@@ -884,18 +884,18 @@ void Package_O::unexport(Symbol_sp sym) {
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(values.second());
     if (status.nilp()) {
-      error = not_accessible_in_this_package;
+      goto not_accessible;
     } else if (status == kw::_sym_external) {
       this->_ExternalSymbols->remhash(nameKey);
       this->_InternalSymbols->setf_gethash(nameKey,sym);
     }
-  }
-  if (error == not_accessible_in_this_package) {
-    // asSmartPtr.raw_ looks strange, but it fixes the tag.
-    FEpackage_error("The symbol ~S is not accessible from ~S "
-                    "and cannot be unexported.",
-                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
-  }
+    return;
+  } // release lock
+ not_accessible:
+  // asSmartPtr.raw_ looks strange, but it fixes the tag.
+  FEpackage_error("The symbol ~S is not accessible from ~S "
+                  "and cannot be unexported.",
+                  this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
  package_lock_violation:
   eval::funcall(core::_sym_package_lock_violation,
                 this->asSmartPtr(),
