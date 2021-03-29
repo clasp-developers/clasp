@@ -1069,7 +1069,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_internalTimeUnitsPerSecond->defconstant(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
-  // _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
   _sym_STARprintPackageSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_counterSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_stackSTAR->defparameter(_Nil<T_O>());
