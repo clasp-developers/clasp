@@ -334,7 +334,6 @@ public:
   bool _PrintSymbolsProperly;
 
 public:
-  typedef char *Argv[];
   /*!Raw argc*/
   int _Argc;
   /*! Raw argv */
