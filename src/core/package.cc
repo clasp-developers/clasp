@@ -779,66 +779,52 @@ List_sp Package_O::export_conflicts(SimpleString_sp nameKey, Symbol_sp sym) {
   return conflicts;
 }
 
-typedef enum { no_problem,
-               no_problem_already_exported,
-               not_accessible_in_this_package,
-               already_symbol_with_same_name_in_this_package,
-               name_conflict_in_other_package } Export_errors;
 void Package_O::_export2(Symbol_sp sym) {
   SimpleString_sp nameKey = sym->_Name;
   List_sp conflicts;
-  Export_errors error;
  start:
   {
     WITH_PACKAGE_READ_WRITE_LOCK(this);
     T_mv values = this->findSymbol_SimpleString_no_lock(nameKey);
     Symbol_sp foundSym = gc::As<Symbol_sp>(values);
     Symbol_sp status = gc::As<Symbol_sp>(values.second());
-    if (status.nilp()) {
-      error = not_accessible_in_this_package;
-    } else if (foundSym != sym) {
-      /*
-      seem to happen with uninterned symbols like #:test 
-      printf("Symbol not_accessible_in_this_package\n");
-      printf("Symbol1 %s\n", sym->fullName().c_str());
-      printf("Symbol1 %s\n", foundSym->fullName().c_str());
-      */
-      error = already_symbol_with_same_name_in_this_package;
-    } else if (status == kw::_sym_external) {
-      error = no_problem_already_exported;
+    if (status.nilp()) goto not_accessible;
+    else if (foundSym != sym) goto already_symbol_same_name;
+    else if (status == kw::_sym_external) {
+      // Already exported, so EXPORT does nothing.
+      return;
     } else {
       conflicts = this->export_conflicts(nameKey, sym);
-      if (conflicts.notnilp()) {
-        error = name_conflict_in_other_package;
-      } else {
+      if (conflicts.notnilp()) goto name_conflict;
+      else {
         // All problems resolved. Actually do the export.
         if (status == kw::_sym_internal) {
           this->_InternalSymbols->remhash(nameKey);
         }
         this->add_symbol_to_package_no_lock(nameKey,sym,true);
-        error = no_problem;
+        return;
       }
     }
   } // release package lock
-  if (error == not_accessible_in_this_package) {
-    CEpackage_error("The symbol ~S is not accessible from ~S "
-                    "and cannot be exported.",
-                    "Import the symbol in the package and proceed.",
-                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
-    // Since the symbol is not accessible, importing cannot cause a name
-    // conflict, so we can bypass the usual checks.
-    this->add_symbol_to_package(nameKey, sym, false);
-    goto start; // start over so that we do conflict checking properly
-  } else if (error == already_symbol_with_same_name_in_this_package) {
-    FEpackage_error("Cannot export the symbol ~S from ~S,~%"
-                    "because there is already a symbol with the same name~%"
-                    "in the package.",
-                    this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
-  } else if (error == name_conflict_in_other_package) {
-    eval::funcall(core::_sym_export_name_conflict, sym, conflicts);
-    // Conflict has been resolved by shadowing-import. Start over.
-    goto start;
-  }
+ not_accessible:
+  CEpackage_error("The symbol ~S is not accessible from ~S "
+                  "and cannot be exported.",
+                  "Import the symbol in the package and proceed.",
+                  this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
+  // Since the symbol is not accessible, importing cannot cause a name
+  // conflict, so we can bypass the usual checks.
+  this->add_symbol_to_package(nameKey, sym, false);
+  goto start; // start over so that we do conflict checking properly
+ already_symbol_same_name:
+  FEpackage_error("Cannot export the symbol ~S from ~S,~%"
+                  "because there is already a symbol with the same name~%"
+                  "in the package.",
+                  this->asSmartPtr(), 2, sym.raw_(), this->asSmartPtr().raw_());
+  // FEpackage_error never returns.
+ name_conflict:
+  eval::funcall(core::_sym_export_name_conflict, sym, conflicts);
+  // Conflict has been resolved by shadowing-import. Start over.
+  goto start;
 }
 
 
@@ -871,7 +857,6 @@ bool Package_O::shadow(List_sp symbolNames) {
 }
 
 void Package_O::unexport(Symbol_sp sym) {
-  Export_errors error = no_problem;
   // Make sure we don't signal an error without releasing the lock first.
   // (The printer will try to access the package name or something, and hang.)
   {
