@@ -42,13 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/llvmo/intrinsics.h>
 
-#define CACHE_METHOD_LOOKUP
-
 namespace core {
-
-SYMBOL_EXPORT_SC_(ClPkg, compute_applicable_methods);
-SYMBOL_SC_(ClosPkg, compute_applicable_methods_using_classes);
-SYMBOL_SC_(ClosPkg, compute_effective_method_function);
 
 CL_DEFUN void core__print_object_address(T_sp obj)
 {
