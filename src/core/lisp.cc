@@ -99,7 +99,6 @@ THE SOFTWARE.
 //#include <clasp/core/clcenv.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/multipleValues.h>
 #if defined(XML_ARCHIVE)
 #include <xmlLoadArchive.h>
@@ -110,7 +109,6 @@ THE SOFTWARE.
 #endif // defined(OLD_SERIALIZE)
 #include <clasp/core/bootStrapCoreSymbolMap.h>
 #include <clasp/core/numerics.h>
-//#i n c l u d e "genericFunction.h"
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>

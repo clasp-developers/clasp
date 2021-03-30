@@ -407,7 +407,6 @@
       (dolist (m methods)
         (gf-log "Method: %s %s %s%N" (clos::method-specializers m) (clos::method-qualifiers m) m))
       (gf-log "Effective method function -> %s%N" optimized)
-      (gf-log "Effective method function address -> %s%N" (core:object-address optimized))
       (gf-log "^^^************************^^^%N"))
     optimized))
 

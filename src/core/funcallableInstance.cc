@@ -52,7 +52,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/funcallableInstance.h>

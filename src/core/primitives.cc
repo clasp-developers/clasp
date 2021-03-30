@@ -56,7 +56,6 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/predicates.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/symbolTable.h>
 //#include <clasp/core/clcenv.h>

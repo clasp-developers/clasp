@@ -17,7 +17,6 @@ SRC_CORE_FILES = \
         'weakHashTable',
         'weakPointer',
         'compiler',
-        'genericFunction',
         'instance',
         'funcallableInstance',
         'cache',

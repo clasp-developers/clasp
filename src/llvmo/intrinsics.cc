@@ -57,7 +57,6 @@ extern "C" {
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/derivableCxxObject.h>
-#include <clasp/core/genericFunction.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
