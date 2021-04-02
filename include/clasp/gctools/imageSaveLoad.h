@@ -106,7 +106,7 @@ private:
 
 
 void image_save(const std::string& filename);
-int image_load(void* maybeStartOfImage, const std::string& filename);
+int image_load(void* maybeStartOfImage, void* maybeEndOfImage, const std::string& filename);
 
 
 void clearLibraries();

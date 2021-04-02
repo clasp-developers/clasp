@@ -365,7 +365,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
       globals_->_Argv.push_back(string(argv[i]));
     }
     extern const char __attribute__((weak)) start_of_snapshot;
-    exit_code = imageSaveLoad::image_load((void*)&start_of_snapshot,core::global_options->_ImageFile);
+    extern const char __attribute__((weak)) end_of_snapshot;
+    exit_code = imageSaveLoad::image_load( (void*)&start_of_snapshot, (void*)&end_of_snapshot, core::global_options->_ImageFile );
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif

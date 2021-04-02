@@ -1782,7 +1782,7 @@ struct CodeFixup_t {
   CodeFixup_t(llvmo::Code_O* o, llvmo::Code_O* n) : _oldCode(o), _newCode(n) {};
 };
 
-int image_load( void* maybeStartOfImage, const std::string& filename ) {
+int image_load( void* maybeStartOfImage, void* maybeEndOfImage, const std::string& filename ) {
   // When loading forwarding pointers must always forward into GC managed objects
   size_t loadTimeID = 0;
   globalFwdMustBeInGCMemory = true;
@@ -1794,7 +1794,7 @@ int image_load( void* maybeStartOfImage, const std::string& filename ) {
     std::exit(1);
   }
   off_t fsize = 0;
-  void* memory = maybeStartOfImage;
+  void* memory = NULL;
   if ( filename.size() != 0) {
     int fd = open(filename.c_str(),O_RDONLY);
     fsize = lseek(fd, 0, SEEK_END);
@@ -1804,8 +1804,14 @@ int image_load( void* maybeStartOfImage, const std::string& filename ) {
       close(fd);
       SIMPLE_ERROR(BF("Could not mmap %s because of %s") % filename % strerror(errno));
     }
+  } else if (maybeStartOfImage && maybeEndOfImage && (maybeStartOfImage<maybeEndOfImage)) {
+    size_t size = (uintptr_t)maybeEndOfImage - (uintptr_t)maybeStartOfImage;
+    memory = malloc(size);
+    memcpy( memory, maybeStartOfImage, size);
+  } else {
+    printf("There is no snapshot file or embedded\n");
+    abort();
   }
-
   ISLFileHeader* fileHeader = reinterpret_cast<ISLFileHeader*>(memory);
   char* objectFilesStartAddress = (char*)memory + fileHeader->_ObjectFileStart;
   if (!fileHeader->good_magic()) {
@@ -1888,7 +1894,6 @@ int image_load( void* maybeStartOfImage, const std::string& filename ) {
   gctools::clasp_ptr_t end;
   core::executableVtableSectionRange(start,end);
   fixup_vtables_t fixup_vtables( &fixup, (uintptr_t)start, (uintptr_t)end, &islInfo );
-  fixup_vtables._debug = true;
   walk_image_save_load_objects((ISLHeader_s*)islbuffer,fixup_vtables);
 
   //
@@ -2377,6 +2382,9 @@ int image_load( void* maybeStartOfImage, const std::string& filename ) {
   if (maybeStartOfImage==NULL) {
     int res = munmap( memory, fsize );
     if (res!=0) SIMPLE_ERROR(BF("Could not munmap memory"));
+  } else {
+    // It's a copy of the embedded image
+    free(memory);
   }
 #endif
 
