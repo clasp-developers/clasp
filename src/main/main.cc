@@ -345,10 +345,10 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
   core::global_options = new core::CommandLineOptions(argc, argv);
   (core::global_options->_ProcessArguments)(core::global_options);
   if (!core::global_options->_DontLoadImage && // YES load the image
-      core::global_options->_ImageType == core::cloCoreImage // YES its a core image
+      core::global_options->_ImageType == core::cloSnapshot // YES its a snapshot
       ) {
 #ifdef USE_PRECISE_GC
-    printf("%s:%d:%s Loading the core image %s\n",
+    printf("%s:%d:%s Loading the snapshot %s\n",
            __FILE__, __LINE__, __FUNCTION__, core::global_options->_ImageFile.c_str());
     llvmo::initialize_llvm();
     ::globals_ = new core::globals_t();
@@ -364,7 +364,8 @@ static int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &
     for (int i = 0; i < argc; ++i) {
       globals_->_Argv.push_back(string(argv[i]));
     }
-    exit_code = imageSaveLoad::image_load(core::global_options->_ImageFile);
+    extern const char __attribute__((weak)) start_of_snapshot;
+    exit_code = imageSaveLoad::image_load((void*)&start_of_snapshot,core::global_options->_ImageFile);
 #else
     printf("Core image loading is not supported unless precise GC is turned on\n");
 #endif
@@ -433,12 +434,6 @@ int main( int argc, char *argv[] )
   llvm::cl::ParseCommandLineOptions(3,bogus_args,"clasp");
 #endif
 
-  extern const char* __attribute__((weak)) start_of_snapshot;
-  printf("%s:%d:%s  start_of_snapshot = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)&start_of_snapshot );
-  if (&start_of_snapshot) {
-    printf("%s:%d:%s  start_of_snapshot data = %p\n", __FILE__, __LINE__, __FUNCTION__, *(void**)&start_of_snapshot );
-  }
-  
   const char* dof = getenv("CLASP_DEBUG_OBJECT_FILES");
   if (dof) {
     if (strcmp(dof,"save")==0) {

@@ -167,7 +167,7 @@ void ThreadLocalState::finish_initialization_main_thread(core::T_sp theNilObject
     printf("%s:%d:%s reinitialize symbols the _Nil object is not defined!!!\n", __FILE__, __LINE__, __FUNCTION__ );
     abort();
   }
-  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
+//  printf("%s:%d:%s reinitialize symbols here once _Nil is defined\n", __FILE__, __LINE__, __FUNCTION__ );
   // Reinitialize all threadlocal lists once NIL is defined
   // We work with theObject here directly because it's very early in the bootstrapping
   if (this->_PendingInterrupts.theObject) goto ERR;

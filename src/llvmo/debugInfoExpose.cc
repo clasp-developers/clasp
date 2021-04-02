@@ -438,7 +438,7 @@ CL_DEFUN core::T_mv llvm_sys__address_information(void* address, bool verbose)
 
 void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool searchFunctionDescriptions)
 {
-  BT_LOG((buf,"Starting search_jitted_objects\n" ));
+  BT_LOG(("Starting search_jitted_objects\n" ));
   core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
   size_t count = 0;
   while (cur.consp()) {
@@ -448,7 +448,7 @@ void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool se
       WRITE_DEBUG_IO(BF("Jitted-object object-start %p object-end %p name %s\n") % (void*)entry._ObjectPointer % (void*)(entry._ObjectPointer+entry._Size) % entry._Name);
     }
     for (size_t j=0; j<backtrace.size(); ++j ) {
-      BT_LOG((buf, "Comparing to backtrace frame %lu  return address %p %s\n", j, (void*)backtrace[j]._ReturnAddress, backtrace_frame(j,&backtrace[j]).c_str()));
+      BT_LOG(( "Comparing to backtrace frame %lu  return address %p\n", j, (void*)backtrace[j]._ReturnAddress ));
       if (!searchFunctionDescriptions) { // searching for functions
         if ((char*)of->_Code->_TextSegmentStart<=(char*)backtrace[j]._ReturnAddress && (char*)backtrace[j]._ReturnAddress<(char*)of->_Code->_TextSegmentEnd) {
           DWARFContext_sp context = DWARFContext_O::createDwarfContext(of);
@@ -482,7 +482,7 @@ void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool se
           backtrace[j]._Column = info.Column;
           backtrace[j]._StartLine = info.StartLine;
           backtrace[j]._Discriminator = info.Discriminator;
-          BT_LOG((buf,"MATCHED!!!\n"));
+          BT_LOG(("MATCHED!!!\n"));
         }
       }
 #if 0
@@ -492,7 +492,7 @@ void search_jitted_objects(std::vector<core::BacktraceEntry>& backtrace, bool se
           if (entry._Name.compare(btlen,5,"^DESC")==0) {
             backtrace[j]._Stage = lispFrame; // Anything with a FunctionDescription is a lispFrame
             backtrace[j]._FunctionDescription = entry._ObjectPointer;
-            BT_LOG((buf,"MATCHED!!!\n"));
+            BT_LOG(("MATCHED!!!\n"));
           }
         }
       }

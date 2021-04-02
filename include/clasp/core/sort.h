@@ -51,8 +51,7 @@ public:
 
   template <typename Oelement>
     void swap(Oelement &x, Oelement &y) {
-    Oelement t;
-    t = x;
+    Oelement t(x);
     x = y;
     y = t;
   };

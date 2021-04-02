@@ -113,8 +113,8 @@ public:
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+  virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
+    this->fixupOneCodePointer(fixup,(void**)&this->fptr,sizeof(this->fptr));
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {
@@ -157,8 +157,8 @@ public:
         this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+    virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION()
   {

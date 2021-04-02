@@ -230,6 +230,17 @@ std::string thing_as_string(T_sp obj)
     return _rep_(obj);
 }
 
+#if 0
+void walk_library_symbol_table( const char* libraryName, uintptr_t textStart, SymbolCallback* symbolCallback ) {
+#ifdef _TARGET_OS_DARWIN
+  walk_macho_symbol_table( libraryName, textStart, symbolCallback );
+#endif
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  walk_elf_symbol_table( libraryName, textStart, symbolCallback );
+#endif
+}
+#endif
+
 
 CL_LAMBDA(index frame &key (stream *debug-io*) (args t) (source-info t));
 CL_DEFUN void core__backtrace_frame_to_stream(int idx, Frame_sp frame, T_sp stream, bool args, bool do_source_info)
@@ -488,7 +499,7 @@ DebugInfo& debugInfo() {
 bool SymbolTable::findSymbolForAddress(uintptr_t address,const char*& symbol, uintptr_t& startAddress, uintptr_t& endAddress, char& type, size_t& index) {
   if (this->_Symbols.size() == 0) return false;
   SymbolEntry& lastSymbol = this->_Symbols[this->_Symbols.size()-1];
-  BT_LOG((buf,"findSymbolForAddress %p   symbol_table startAddress %p  endAddress %p #symbols %lu, address<first->%d address>=last->%d\n",
+  BT_LOG(("findSymbolForAddress %p   symbol_table startAddress %p  endAddress %p #symbols %lu, address<first->%d address>=last->%d\n",
           (void*)address,
           (void*)this->_SymbolsLowAddress,
           (void*)this->_SymbolsHighAddress,
@@ -521,13 +532,13 @@ bool SymbolTable::findSymbolForAddress(uintptr_t address,const char*& symbol, ui
     startAddress = this->_Symbols[index]._Address;
     endAddress = this->_Symbols[index+1]._Address;
     type = this->_Symbols[index]._Type;
-    BT_LOG((buf,"findSymbolForAddress returning index %zu max %u name: %s startAddress: %p endAddress: %p type|%c|\n", index, this->_End-1, symbol, (void*)startAddress, (void*)endAddress, type));
+    BT_LOG(("findSymbolForAddress returning index %zu max %u name: %s startAddress: %p endAddress: %p type|%c|\n", index, this->_End-1, symbol, (void*)startAddress, (void*)endAddress, type));
     return true;
   }
 };
 
 void SymbolTable::addSymbol(std::string symbol, uintptr_t start, char type) {
-  BT_LOG((buf,"name: %s start: %p  type |%c|\n",symbol.c_str(),(void*)start,type));
+  BT_LOG(("name: %s start: %p  type |%c|\n",symbol.c_str(),(void*)start,type));
   if (start < this->_SymbolsLowAddress) this->_SymbolsLowAddress = start;
   if (this->_SymbolsHighAddress < start ) this->_SymbolsHighAddress = start;
   if ((this->_End+symbol.size()+1)>= this->_Capacity) {
@@ -543,7 +554,7 @@ void SymbolTable::addSymbol(std::string symbol, uintptr_t start, char type) {
   this->_SymbolNames[str+symbol.size()] = '\0';
   this->_End += symbol.size()+1;
   this->_Symbols.emplace_back(start,type,str);
-  BT_LOG((buf,"Wrote symbol index %lu |%s| to %u type |%c|\n",this->_Symbols.size()-1,this->_Symbols[this->_Symbols.size()-1].symbol(this->_SymbolNames),str,type));
+  BT_LOG(("Wrote symbol index %lu |%s| to %u type |%c|\n",this->_Symbols.size()-1,this->_Symbols[this->_Symbols.size()-1].symbol(this->_SymbolNames),str,type));
 }
 
 void SymbolTable::sort() {
@@ -630,7 +641,7 @@ void parse_function(uintptr_t& address, StkSizeRecord& function) {
   function.FunctionAddress = read_then_advance<uint64_t>(address);
   function.StackSize = read_then_advance<uint64_t>(address);
   function.RecordCount = read_then_advance<uint64_t>(address);
-  BT_LOG((buf,"Looking at function record %p function.FunctionAddress = %p\n", (void*)functionAddress, (void*)function.FunctionAddress));
+  BT_LOG(("Looking at function record %p function.FunctionAddress = %p\n", (void*)functionAddress, (void*)function.FunctionAddress));
 }
 
 void parse_constant(uintptr_t& address, uint64_t& constant) {
@@ -639,7 +650,7 @@ void parse_constant(uintptr_t& address, uint64_t& constant) {
 
 void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, size_t functionIndex, const StkSizeRecord& function, StkMapRecord& record, bool library) {
   uintptr_t recordAddress = address;
-  BT_LOG((buf,"Parse record at %p\n", (void*)address));
+  BT_LOG(("Parse record at %p\n", (void*)address));
   uint64_t patchPointID = read_then_advance<uint64_t>(address);
   uint32_t instructionOffset = read_then_advance<uint32_t>(address);
   /* record.Reserved = */ read_then_advance<uint16_t>(address);
@@ -664,22 +675,22 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
       }
     }
     if (patchPointID == 1234567 ) {
-      BT_LOG((buf,"patchPointID matched at %p\n", (void*)recordAddress));
+      BT_LOG(("patchPointID matched at %p\n", (void*)recordAddress));
       for (size_t j=0; j<backtrace.size(); ++j ) {
-        BT_LOG((buf,"comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
+        BT_LOG(("comparing function#%lu @%p to %s\n", functionIndex, (void*)function.FunctionAddress, backtrace_frame(j,&backtrace[j]).c_str() ));
         if (function.FunctionAddress == backtrace[j]._FunctionStart) {
           backtrace[j]._Stage = lispFrame;  // anything with a stackmap is a lisp frame
           backtrace[j]._FrameSize = (int)function.StackSize; // Sometimes the StackSize is (int64_t)-1 why???????
           backtrace[j]._FrameOffset = offsetOrSmallConstant;
-          BT_LOG((buf,"Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
+          BT_LOG(("Identified lispFrame frameOffset = %d\n", offsetOrSmallConstant));
         }
       }
     }
   }
-  BT_LOG((buf,"Done with records at %p\n", (void*)address));
+  BT_LOG(("Done with records at %p\n", (void*)address));
   if (((uintptr_t)address)&0x7) {
     read_then_advance<uint32_t>(address);
-    BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+    BT_LOG(("advanced to alignment %p\n", (void*)address));
   }
   if (((uintptr_t)address)&0x7) {
     printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
@@ -694,7 +705,7 @@ void parse_record(std::vector<BacktraceEntry>& backtrace, uintptr_t& address, si
   }
   if (((uintptr_t)address)&0x7) {
     read_then_advance<uint32_t>(address);
-    BT_LOG((buf,"advanced to alignment %p\n", (void*)address));
+    BT_LOG(("advanced to alignment %p\n", (void*)address));
   }
   if (((uintptr_t)address)&0x7) {
     printf("%s:%d Address %lX is not word aligned - it must be!!!\n", __FILE__, __LINE__, address );
@@ -723,22 +734,22 @@ void walk_one_llvm_stackmap(std::vector<BacktraceEntry>&backtrace, uintptr_t& ad
     abort();
   }
   uintptr_t functionAddress = address;
-  BT_LOG((buf,"PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
+  BT_LOG(("PASS1 Parse function block first pass %p\n", (void*)functionAddress ));
   for ( size_t index=0; index<NumFunctions; ++index ) {
     StkSizeRecord function;
     parse_function(address,function); // dummy - used to skip functions
-    BT_LOG((buf,"PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
+    BT_LOG(("PASS1 Found function #%lu at %p\n", index, (void*)function.FunctionAddress));
   }
   for ( size_t index=0; index<NumConstants; ++index ) {
     uint64_t constant;
     parse_constant(address,constant);
   }
   size_t functionIndex = 0;
-  BT_LOG((buf,"Parse record block %p\n", (void*)address ));
+  BT_LOG(("Parse record block %p\n", (void*)address ));
   for ( size_t functionIndex = 0; functionIndex < NumFunctions; ++functionIndex ) {
     StkSizeRecord function;
     parse_function(functionAddress,function);
-    BT_LOG((buf,"PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
+    BT_LOG(("PASS2 Examining function #%lu at %p - %" PRu " records\n", functionIndex, (void*)function.FunctionAddress, function.RecordCount));
     for ( size_t index=0; index<function.RecordCount; index++) {
       StkMapRecord record;
       parse_record(backtrace,address,functionIndex,function,record,library);
@@ -754,7 +765,7 @@ Pass (size_t)~0 if you don't know how many and want to rely on the memory range.
 Stop parsing them when read numStackmaps or if curAddress >= endAddress */
 void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_t numStackmaps ) {
 //  printf("%s:%d register_llvm_stackmaps %p - %p num: %lu\n", __FILE__, __LINE__, (void*)startAddress, (void*)endAddress, numStackmaps);
-  BT_LOG((buf,"register_llvm_stackmaps  startAddress: %p  endAddress: %p\n", (void*)startAddress, (void*)endAddress));
+  BT_LOG(("register_llvm_stackmaps  startAddress: %p  endAddress: %p\n", (void*)startAddress, (void*)endAddress));
   WITH_READ_WRITE_LOCK(debugInfo()._StackMapsLock);
   StackMapRange range(startAddress,endAddress,numStackmaps);
   debugInfo()._StackMaps[startAddress] = range;
@@ -764,26 +775,26 @@ void register_llvm_stackmaps(uintptr_t startAddress, uintptr_t endAddress, size_
 void search_jitted_stackmaps(std::vector<BacktraceEntry>& backtrace)
 {
 //  printf("%s:%d:%s  fixme \n", __FILE__, __LINE__, __FUNCTION__ );
-  BT_LOG((buf,"Starting search_jitted_stackmaps\n" ));
+  BT_LOG(("Starting search_jitted_stackmaps\n" ));
   size_t num = 0;
   WRITE_DEBUG_IO(BF("search_jitted_stackmaps\n"));
   WITH_READ_LOCK(debugInfo()._StackMapsLock);
   DebugInfo& di = debugInfo();
   for ( auto entry : di._StackMaps ) {
     uintptr_t address = entry.second._StartAddress;
-    BT_LOG((buf," Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
+    BT_LOG((" Stackmap start at %p up to %p\n", (void*)address, (void*)entry.second._EndAddress));
     for ( size_t num = 0; num<entry.second._Number; ++num ) {
       walk_one_llvm_stackmap(backtrace,address,entry.second._EndAddress,false);
       if (address>=entry.second._EndAddress) break;
     }
   }
-  BT_LOG((buf,"Finished search_jitted_stackmaps searched %lu\n", num));
+  BT_LOG(("Finished search_jitted_stackmaps searched %lu\n", num));
 }
 
 
 #if 0
 void register_jitted_object(const std::string& name, uintptr_t address, int size) {
-  BT_LOG((buf,"Starting\n" ));
+  BT_LOG(("Starting\n" ));
   LOG(BF("STACKMAP_LOG  %s name: %s %p %d\n") % __FUNCTION__ % name % (void*)address % size );
   WITH_READ_WRITE_LOCK(debugInfo()._JittedObjectsLock);
   debugInfo()._JittedObjects.emplace_back(JittedObject(name,address,size));
@@ -812,7 +823,7 @@ bool if_dynamic_library_loaded_remove(const std::string& libraryName) {
   bool exists = (fi!=debugInfo()._OpenDynamicLibraryHandles.end());
   if (exists) {
     if (fi->second._SymbolTable._SymbolNames) free((void*)(fi->second._SymbolTable._SymbolNames));
-    BT_LOG((buf,"What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
+    BT_LOG(("What about the stackmaps for this library - you need to remove them as well - I should probably NOT store stackmaps for libraries - but fetch them every time we need a backtrace!\n"));
     if (fi->second._Handle==0) {
       printf("%s:%d:%s You cannot remove the library %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str());
     } else {
@@ -854,7 +865,7 @@ void executableTextRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end
 void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end ) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
-  for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
+  for ( auto& entry : debugInfo()._OpenDynamicLibraryHandles ) {
 #if 0
     printf("%s:%d:%s Looking at entry: %s start: %p end: %p isExecutable: %d\n",
            __FILE__, __LINE__, __FUNCTION__,
@@ -873,34 +884,39 @@ void executableVtableSectionRange( gctools::clasp_ptr_t& start, gctools::clasp_p
 }
 
 
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& executable )
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& executable, uintptr_t& vtableStart, uintptr_t& vtableEnd )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
 //    printf("%s:%d:%s Looking at entry: %s start: %p end: %p\n", __FILE__, __LINE__, __FUNCTION__, entry.second._Filename.c_str(), entry.second._LibraryStart, entry.second._LibraryEnd );
-    if (entry.second._TextStart <= address && address < entry.second._TextEnd ) {
+    if (entry.second._TextStart <= address && address < entry.second._TextEnd
+        || (entry.second._VtableSectionStart <= address && address < entry.second._VtableSectionEnd ) ){
       libraryName = entry.second._Filename;
       start = entry.second._TextStart;
       end = entry.second._TextEnd;
       executable = entry.second._IsExecutable;
+      vtableStart = (uintptr_t)entry.second._VtableSectionStart;
+      vtableEnd = (uintptr_t)entry.second._VtableSectionEnd;
       return true;
     }
   }
   return false;
 }
 
-bool library_with_name( const std::string& name, std::string& libraryName, uintptr_t& start, uintptr_t& end, bool& isExecutable )
+bool library_with_name( const std::string& name, bool isExecutable, std::string& libraryName, uintptr_t& start, uintptr_t& end, uintptr_t& vtableStart, uintptr_t& vtableEnd )
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
   size_t index;
   for ( auto entry : debugInfo()._OpenDynamicLibraryHandles ) {
     std::string libName = entry.second._Filename;
-    if ( name.size()<= libName.size() && name == libName.substr(libName.size()-name.size()) ) {
+    if ( name.size()<= libName.size() && name == libName.substr(libName.size()-name.size())
+         || ( isExecutable && entry.second._IsExecutable)) {
       libraryName = entry.second._Filename;
       start = (uintptr_t)(entry.second._TextStart);
       end = (uintptr_t)(entry.second._TextEnd);
-      isExecutable = entry.second._IsExecutable;
+      vtableStart = (uintptr_t)entry.second._VtableSectionStart;
+      vtableEnd = (uintptr_t)entry.second._VtableSectionEnd;
       return true;
     }
   }
@@ -924,7 +940,7 @@ bool lookup_address_main(uintptr_t address, const char*& symbol, uintptr_t& star
   {
     WITH_READ_LOCK(debugInfo()._JittedObjectsLock);
     for ( auto entry : debugInfo()._JittedObjects ) {
-      BT_LOG((buf,"Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
+      BT_LOG(("Looking at jitted object name: %s @%p size: %d\n", entry._Name.c_str(), (void*)entry._ObjectPointer, entry._Size));
       if (entry._ObjectPointer<=address && address<(entry._ObjectPointer+entry._Size)) {
         symbol = entry._Name.c_str();
         start = entry._ObjectPointer;
@@ -949,7 +965,7 @@ bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, ui
 void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* filename, size_t& symbol_table_size)
 {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  BT_LOG((buf,"search_symbol_table library: %s\n", filename));
+  BT_LOG(("search_symbol_table library: %s\n", filename));
   std::string fname(filename);
   map<std::string,OpenDynamicLibraryInfo>::iterator it = debugInfo()._OpenDynamicLibraryHandles.find(fname);
   if (it == debugInfo()._OpenDynamicLibraryHandles.end()) {
@@ -980,12 +996,12 @@ void search_symbol_table(std::vector<BacktraceEntry>& backtrace, const char* fil
           uintptr_t startAddress;
           uintptr_t endAddress;
           char type;
-          BT_LOG((buf,"Looking for _ReturnAddress %p %s\n",(void*)backtrace[j]._ReturnAddress, backtrace[j]._SymbolName.c_str()));
+          BT_LOG(("Looking for _ReturnAddress %p %s\n",(void*)backtrace[j]._ReturnAddress, backtrace[j]._SymbolName.c_str()));
           bool found = symbol_table.findSymbolForAddress(backtrace[j]._ReturnAddress,symbolName,startAddress,endAddress,type,index);
           if (found) {
-            BT_LOG((buf, "Found symbol index %zu |%s| type: |%c| startAddress %p endAddress %p\n", index, symbolName, type, (void*)startAddress, (void*)endAddress));
+            BT_LOG(( "Found symbol index %zu |%s| type: |%c| startAddress %p endAddress %p\n", index, symbolName, type, (void*)startAddress, (void*)endAddress));
             if (type == 't' || type == 'T') {
-              BT_LOG((buf,"Found %s  start: %p  end: %p\n", symbolName, (void*)startAddress, (void*)endAddress ));
+              BT_LOG(("Found %s  start: %p  end: %p\n", symbolName, (void*)startAddress, (void*)endAddress ));
               backtrace[j]._Stage = symbolicated;
               backtrace[j]._FunctionStart = startAddress;
               backtrace[j]._FunctionEnd = endAddress;
@@ -1628,13 +1644,13 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
   uintptr_t stackTop = (uintptr_t)my_thread_low_level->_StackTop;
-  BT_LOG((buf,"About to operatin_system_backtrace\n" ));
+  BT_LOG(("About to operatin_system_backtrace\n" ));
   //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   operating_system_backtrace(backtrace);
   size_t nptrs = backtrace.size()-2;
   nptrs -= 2; // drop the last two frames
     // Fill in the base pointers
-  BT_LOG((buf,"About to get bp's\n" ));
+  BT_LOG(("About to get bp's\n" ));
   //printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   void* bp = __builtin_frame_address(0);
   for (size_t i = 1; i < nptrs; ++i) {
@@ -1643,17 +1659,17 @@ void fill_backtrace(std::vector<BacktraceEntry>& backtrace) {
       bp = *(void**)bp;
     }
   }
-  BT_LOG((buf,"About to walk library info\n" ));
+  BT_LOG(("About to walk library info\n" ));
   //
   // Walk libraries and jitted objects to fill backtrace.
   //
   // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
   fill_backtrace_or_dump_info(backtrace);
     // Now get the arguments
-  BT_LOG((buf,"Getting arguments\n"));
+  BT_LOG(("Getting arguments\n"));
   // printf("%s:%s:%d\n", __FILE__, __FUNCTION__, __LINE__);
     // fill in the interpreted frames here
-  BT_LOG((buf,"fill in interpreted frames here\n"));;
+  BT_LOG(("fill in interpreted frames here\n"));;
   fill_in_interpreted_frames(backtrace);
 };
 
@@ -1730,7 +1746,7 @@ List_sp fill_backtrace_frames(std::vector<BacktraceEntry>& backtrace, bool args_
       stack_top_hint = (uintptr_t)stack_top_hint_ptr->ptr();
     }
   }
-  BT_LOG((buf," building backtrace as list\n" ));
+  BT_LOG((" building backtrace as list\n" ));
     // Move the frames into Common Lisp
   uintptr_t bp = (uintptr_t)__builtin_frame_address(0);
   T_sp prev_entry = _Nil<T_O>();

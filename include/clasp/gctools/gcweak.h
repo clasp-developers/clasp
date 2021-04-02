@@ -199,7 +199,7 @@ template <class T, class U>
 struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
  Buckets(int l) : BucketsBase<T, U>(l){};
-  Buckets(gctools::image_save_load_init_s* isl) {
+  Buckets(imageSaveLoad::image_save_load_init_s* isl) {
     isl->fill((void*)this);
   }
   virtual ~Buckets() {
@@ -253,7 +253,7 @@ template <class T, class U>
 struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   typedef typename BucketsBase<T, U>::value_type value_type;
  Buckets(int l) : BucketsBase<T, U>(l){};
-  Buckets(gctools::image_save_load_init_s* isl) {
+  Buckets(imageSaveLoad::image_save_load_init_s* isl) {
     isl->fill((void*)this);
   }
   virtual ~Buckets() {}

@@ -349,7 +349,7 @@ void lisp_setStaticInstanceCreator(gctools::Header_s::StampWtagMtag::Value value
   static void register_class_with_redeye() {                            \
     gctools::GCObjectAllocator<oClass>::register_class_with_redeye();   \
   }                                                                     \
-  oClass(gctools::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
+  oClass(imageSaveLoad::image_save_load_init_s* isl) { isl->fill((void*)this); }; \
   static void expose_to_clasp();
 
 #define LISP_TEMPLATE_CLASS(oClass) \
@@ -417,7 +417,6 @@ namespace core {
 //
 namespace core {
 
-typedef enum { SaveOp, LoadOp } FixupOperation;
 
   Instance_sp instance_class(T_sp obj);
 
@@ -436,10 +435,10 @@ typedef enum { SaveOp, LoadOp } FixupOperation;
     virtual void validateCodePointer( void** funcPtr, size_t sizeofFuncPtr ) {
       // Do nothing currently
     }
-    virtual void fixupInternalsForImageSaveLoad(FixupOperation& op) {
+    virtual void fixupInternalsForImageSaveLoad(imageSaveLoad::Fixup* fixup) {
       // Do nothing by default
     };
-    virtual void fixupOneCodePointer( FixupOperation op, void** address, size_t size ) {
+    virtual void fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** address, size_t size ) {
       printf("%s:%d:%s Should never be called - subclass must implement\n", __FILE__, __LINE__, __FUNCTION__ );
     };
       //! Initialize member variables and those that depend on sharedThis

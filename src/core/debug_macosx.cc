@@ -444,6 +444,7 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
   uint32_t num_loaded = _dyld_image_count();
   for ( size_t idx = 0; idx<num_loaded; ++idx ) {
     const char* filename = _dyld_get_image_name(idx);
+    printf("%s:%d:%s Must be a full path!!!    filename = %s\n", __FILE__, __LINE__, __FUNCTION__, filename );
     std::string libname(filename);
     uintptr_t library_origin = (uintptr_t)_dyld_get_image_header(idx);
     bool is_executable = (idx==0);
@@ -458,7 +459,7 @@ void startup_register_loaded_objects(add_dynamic_library* callback) {
     otherwise it uses handle to look up the start of the library. */
 void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable, const std::string& libraryName, bool use_origin, uintptr_t library_origin, void* handle, gctools::clasp_ptr_t dummy_text_start, gctools::clasp_ptr_t dummy_text_end, bool dummyHasDataConst, gctools::clasp_ptr_t dummyDataConstStart, gctools::clasp_ptr_t dummyDataConstEnd ) {
 //  printf("%s:%d:%s Looking for executable?(%d) library |%s|\n", __FILE__, __LINE__, __FUNCTION__, is_executable, libraryName.c_str());
-  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
+  BT_LOG(("Starting to load library: %s\n", libraryName.c_str() ));
 //  printf("%s:%d:%s Entered is_executable = %d use_origin = %d library_origin = %p\n", __FILE__, __LINE__, __FUNCTION__, is_executable, use_origin, (void*)library_origin );
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 // Get the start of the library and the symbol_table
@@ -510,7 +511,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback, bool is_executable,
     symbol_table._StackmapStart = p_section;
     symbol_table._StackmapEnd = p_section+section_size;
   }    
-  BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
+  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t text_segment_start;
   uintptr_t text_segment_size;
   mygetsegmentsize( true,(void*)library_origin,

@@ -849,7 +849,7 @@ CL_DEFUN void gctools__save_lisp_and_die(const std::string& filename) {
 }
 
 CL_DEFUN void gctools__slad() {
-  gctools__save_lisp_and_die("test.dat");
+  gctools__save_lisp_and_die("test.snapshot");
 }
 
 

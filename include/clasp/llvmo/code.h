@@ -62,9 +62,8 @@ typedef enum { SaveState, RunState } CodeState_t;
     size_t frontSize() { return sizeof(this); }
     size_t objectFileSize() { return this->_MemoryBuffer->getBufferSize(); };
     void* objectFileData() { return (void*)this->_MemoryBuffer->getBufferStart(); };
-    size_t objectFileSizeAlignedUpToPageSize(size_t pagesize) {
-      size_t pages = (this->objectFileSize()+pagesize)/pagesize;
-      return pages*pagesize;
+    size_t objectFileSizeAlignedUp() {
+      return gctools::AlignUp(this->objectFileSize());
     }
   }; // ObjectFile_O class def
 }; // llvmo
@@ -219,12 +218,15 @@ namespace llvmo {
 class Library_O : public CodeBase_O {
   LISP_CLASS(llvmo, LlvmoPkg, Library_O, "Library", CodeBase_O);
  public:
+  bool _Executable;
   gctools::clasp_ptr_t   _Start;
   gctools::clasp_ptr_t   _End;
+  uintptr_t _VtableStart;
+  uintptr_t _VtableEnd;
   core::SimpleBaseString_sp _Name;
  public:
- Library_O(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end) : _Start(start), _End(end) {};
-  static Library_sp make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name );
+  Library_O(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd) : _Executable(executable), _Start(start), _End(end), _VtableStart(vtableStart), _VtableEnd(vtableEnd) {};
+  static Library_sp make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name );
   std::string __repr__() const;
   uintptr_t codeStart() const { return (uintptr_t)this->_Start; };
   std::string filename() const;

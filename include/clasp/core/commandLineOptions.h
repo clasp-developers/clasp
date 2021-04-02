@@ -38,8 +38,8 @@ extern bool global_debug_byte_code;
 typedef enum { cloLoad,
                cloEval } LoadEvalEnum;
 
-typedef enum { cloSlowImage,
-    cloCoreImage } ImageTypeEnum;
+typedef enum { cloImage,
+    cloSnapshot } ImageTypeEnum;
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);

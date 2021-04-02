@@ -68,8 +68,8 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
@@ -105,8 +105,8 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
@@ -148,8 +148,8 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer(fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     SIMPLE_ERROR_SPRINTF("What do I do here");

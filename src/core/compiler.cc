@@ -93,7 +93,7 @@ CL_DEFUN void core__update_max_jit_compile_counter(size_t val) {
   do {
     expected = global_jit_compile_counter.load();
   } while (!global_jit_compile_counter.compare_exchange_weak(expected, val));
-  printf("%s:%d:%s Set max_jit_compile_counter to %lu\n", __FILE__, __LINE__, __FUNCTION__, val );
+//  printf("%s:%d:%s Set max_jit_compile_counter to %lu\n", __FILE__, __LINE__, __FUNCTION__, val );
 }
 
 CL_DEFUN size_t core__next_jit_compile_counter() {

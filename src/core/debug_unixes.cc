@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <csignal>
+#include <iostream>
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <clasp/core/foundation.h>
@@ -77,6 +78,20 @@ namespace core {
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
 
 
+const char* global_progname_full = NULL;
+
+const char* getExecutablePath() {
+  if (global_progname_full == NULL) {
+    std::stringstream ss;
+    ss << "/proc/" << getpid() << "/exe";
+    char* result = (char*)malloc(PATH_MAX+1);
+    ssize_t count = readlink( ss.str().c_str(), result, PATH_MAX );
+    result[count] = '\0';
+    global_progname_full = result;
+  }
+  return global_progname_full;
+}
+
 std::atomic<bool> global_elf_initialized;
 void ensure_libelf_initialized() {
   if (!global_elf_initialized) {
@@ -85,11 +100,19 @@ void ensure_libelf_initialized() {
   }
 }
 
-SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size)
+
+void walk_elf_symbol_table(struct dl_phdr_info *info,
+                           const char* filename,
+                           bool executable,
+                           uintptr_t start,
+                           SymbolCallback* symbolCallback )
 {
-  stackmap_start = 0;
-  SymbolTable symbol_table;
-  BT_LOG((buf,"Searching symbol table %s memory-start %p\n", filename, (void*)start ));
+  printf("%s:%d:%s entered filename = %s  start: %p  interested -> %d\n", __FILE__, __LINE__, __FUNCTION__, filename, (void*)start
+         , symbolCallback->interestedInLibrary(filename,executable));
+  
+  if (!symbolCallback->interestedInLibrary(filename,executable)) return;
+  BT_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+  BT_LOG(("Searching symbol table %s memory-start %p\n", filename, (void*)start ));
   Elf         *elf;
   GElf_Shdr   shdr;
   Elf_Data    *data;
@@ -98,7 +121,258 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
   elf_version(EV_CURRENT);
   fd = open(filename, O_RDONLY);
   if (fd < 0) {
-    BT_LOG((buf,"Could not open %s", filename));
+    BT_LOG(("Could not open %s", filename));
+    printf("Could not open %s\n", filename );
+    return;
+  }
+  if ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) {
+    close(fd);
+    SIMPLE_ERROR(BF("Error with elf_begin for file %s - %s") % filename % elf_errmsg(-1));
+  }
+  Elf_Scn     *scn = NULL;
+  // Search the symbol tables for functions that contain the return address
+  scn = NULL;
+  uintptr_t highest_end_address(0);
+  uintptr_t symbol_start = 0;
+  uintptr_t symbol_end;
+  size_t symbolCount = 0;
+  while ((scn = elf_nextscn(elf, scn)) != NULL) {
+    gelf_getshdr(scn, &shdr);
+    BT_LOG(("Looking at section\n" ));
+    if (shdr.sh_type == SHT_SYMTAB) {
+      data = elf_getdata(scn, NULL);
+      count = shdr.sh_size / shdr.sh_entsize;
+      BT_LOG(("Found SYMTAB count: %d\n", count ));
+	/* Search the symbol names */
+      for (ii = 0; ii < count; ++ii) {
+        GElf_Sym sym;
+        gelf_getsym(data, ii, &sym);
+        int seg = sym.st_shndx;
+        uintptr_t addr = 0;
+        symbol_start = (uintptr_t)sym.st_value + addr; // symbols are loaded at 0x0 // +start;
+        symbol_end = symbol_start+sym.st_size;
+        if (symbol_end>highest_end_address) {
+          highest_end_address = symbol_end;
+        }
+        char type = '?';
+        if (ELF64_ST_TYPE(sym.st_info) == STT_FUNC) {
+          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'T';
+          else type = 't';
+        } else if (ELF64_ST_TYPE(sym.st_info) == STT_OBJECT) {
+          if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'D';
+          else type = 'd';
+        }
+        BT_LOG(("Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
+        const char* sname = elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name);
+        if (symbolCallback->debug()) {
+          uintptr_t dlsymStart = (uintptr_t)dlsym( RTLD_DEFAULT, sname );
+          if (dlsymStart!=0 && sym.st_value != 0) {
+            printf("%s:%d %10s address: %p sym.st_value: %p  sym.st_shndx: %lu sym.st_size: %lu  name: %s \n",
+                   __FILE__, __LINE__,
+                   ((uintptr_t)dlsymStart == (uintptr_t)sym.st_value) ? "==" : "XX!=XX",
+                   (void*)dlsymStart, (void*)sym.st_value, (uintptr_t)sym.st_shndx,
+                   (uintptr_t)sym.st_size, sname );
+          }
+          continue;
+        }
+#if 1
+        if (symbolCallback->interestedInSymbol(sname)) {
+          uintptr_t dlsymStart = (uintptr_t)dlsym( RTLD_DEFAULT, sname );
+          if (dlsymStart!=0 && (dlsymStart != symbol_start)) {
+            printf("delta: 0x%0lx %s:%d:%s  The dlsym result %p does NOT match %p sym.st_shndx: %u symbol: %s\n",
+                   ((intptr_t)dlsymStart - (intptr_t)symbol_start),
+                   __FILE__, __LINE__, __FUNCTION__,
+                   (void*)dlsymStart,
+                   (void*)symbol_start,
+                   sym.st_shndx,
+                   sname );
+          }
+          symbolCallback->callback( sname, symbol_start, symbol_end );
+        }
+#endif
+        symbolCount++;
+      }
+    }
+  }
+//  printf("%s:%d:%s  symbolCount = %lu\n", __FILE__, __LINE__, __FUNCTION__, symbolCount );
+  elf_end(elf);
+  close(fd);
+}
+
+struct SearchInfo {
+  const char* _Name;
+  void* _Address;
+  size_t _Index;
+  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0) {};
+};
+
+
+int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
+{
+  SearchInfo* search_callback_info = (SearchInfo*)data;
+  const char* libname;
+  if (search_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
+    libname = getExecutablePath();
+  } else {
+    libname = info->dlpi_name;
+  }
+  BT_LOG(("Name: \"%s\" address: %p (%d segments)\n", libname, (void*)info->dlpi_addr, info->dlpi_phnum));
+  if (strcmp(libname,search_callback_info->_Name)==0) {
+    search_callback_info->_Address = (void*)info->dlpi_addr;
+    BT_LOG(("%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_addr ));
+    BT_LOG(("%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_phdr ));
+    BT_LOG(("%s:%d:%s dlpi_phnum = %d\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_phnum ));
+  }
+  search_callback_info->_Index++;
+  return 0;
+}
+
+
+void* find_base_of_loaded_object(const char* name)
+{
+  BT_LOG(("%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ ));
+  SearchInfo search(name);
+  dl_iterate_phdr(elf_search_loaded_object_callback,&search);
+  return search._Address;
+}
+
+
+
+////////////////////////////////////////////////////////////
+//
+// Walk dynamic libraries
+//
+//
+
+/*! Add a dynamic library.
+    If library_origin points to the start of the library then that address is used,
+    otherwise it uses handle to look up the start of the library. */
+void walk_dynamic_library_impl(struct dl_phdr_info *info,
+                               bool is_executable,
+                               const std::string& libraryName,
+                               bool use_origin,
+                               uintptr_t library_origin,
+                               SymbolCallback* symbol_callback ) {
+  printf("%s:%d:%s  libraryName = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str() );
+  if (!use_origin) {
+    printf("%s:%d:%s This path should never be followed\n", __FILE__, __LINE__, __FUNCTION__ );
+#if 0
+    // Walk all objects looking for the one we just loaded
+    library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
+    if (library_origin==0) {
+      // Try looking for _init symbol
+      void* lorigin;
+      Dl_info data;
+      dlerror();
+      void* addr = dlsym(handle,"_init");
+      const char* error = dlerror();
+      if (error) {
+        printf("%s:%d:%s Could not find library by walking objects or by searching for external symbol '_init' - library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, error, libraryName.c_str());
+        abort();
+      }
+      int ret = dladdr(addr,&data);
+      if (ret==0) {
+        printf("%s:%d:%s Could not use dladdr to get start of library %s dlerror = %s\n", __FILE__, __LINE__, __FUNCTION__, libraryName.c_str(), error);
+        abort();
+      }
+      library_origin = (uintptr_t)data.dli_fbase;
+    }
+#endif
+  }
+  walk_elf_symbol_table(info,libraryName.c_str(),is_executable,library_origin, symbol_callback );
+}
+
+
+int elf_walk_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
+{
+//  printf("%s:%d:%s Startup registering loaded object %s\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_name);
+  SymbolCallback* symbol_callback = (SymbolCallback*)data;
+  bool is_executable;
+  const char* libname;
+  if (!info->dlpi_name ||strlen(info->dlpi_name) == 0 ) {
+    libname = getExecutablePath();
+    is_executable = true;
+  } else {
+    libname = info->dlpi_name;
+    is_executable = false;
+  }
+  printf("%s:%d:%s   libname = %s  is_executable = %d\n", __FILE__, __LINE__, __FUNCTION__, libname, is_executable );
+  gctools::clasp_ptr_t text_start;
+  gctools::clasp_ptr_t text_end;
+  for (int j = 0; j < info->dlpi_phnum; j++) {
+    int p_type = info->dlpi_phdr[j].p_type;
+#if 1
+    const char* type;
+    type =  (p_type == PT_LOAD) ? "PT_LOAD" :
+      (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_NOTE) ? "PT_NOTE" :
+      (p_type == PT_INTERP) ? "PT_INTERP" :
+      (p_type == PT_PHDR) ? "PT_PHDR" :
+      (p_type == PT_TLS) ? "PT_TLS" :
+      (p_type == PT_GNU_EH_FRAME) ? "PT_GNU_EH_FRAME" :
+      (p_type == PT_GNU_STACK) ? "PT_GNU_STACK" :
+      (p_type == PT_GNU_RELRO) ? "PT_GNU_RELRO" : NULL;
+    printf("    %2d: [%14p; memsz:%7jx; END: %14p] flags: %#jx; \n", j,
+           (void *) (info->dlpi_addr + info->dlpi_phdr[j].p_vaddr),
+           (uintmax_t) info->dlpi_phdr[j].p_memsz,
+           (void*) ((char*)info->dlpi_addr + (uintptr_t)info->dlpi_phdr[j].p_vaddr + (uintptr_t)info->dlpi_phdr[j].p_memsz),
+           (uintmax_t) info->dlpi_phdr[j].p_flags);
+#endif
+    if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
+      text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
+      text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
+      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
+    }
+  }
+  walk_dynamic_library_impl(info,
+                            is_executable,
+                            libname,
+                            true,
+                            (uintptr_t)info->dlpi_addr, // origin
+                            symbol_callback
+                            );
+  return 0;
+}
+
+
+void walk_loaded_objects_symbol_table(SymbolCallback* callback)
+{
+  dl_iterate_phdr( elf_walk_loaded_object_callback, callback );
+}
+
+
+CL_DEFUN void core__walk_loaded_objects()
+{
+  SymbolCallback symbol_callback;
+  symbol_callback._debug = true;
+  walk_loaded_objects_symbol_table(&symbol_callback);
+}
+
+
+
+////////////////////////////////////////////////////////////
+
+
+
+
+
+SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintptr_t& stackmap_start, size_t& stackmap_size)
+{
+//  printf("%s:%d:%s  %s memory-start %p\n", __FILE__, __LINE__, __FUNCTION__, filename, (void*)start );
+  BT_LOG(("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__ ));
+  stackmap_start = 0;
+  SymbolTable symbol_table;
+  BT_LOG(("Searching symbol table %s memory-start %p\n", filename, (void*)start ));
+  Elf         *elf;
+  GElf_Shdr   shdr;
+  Elf_Data    *data;
+  int         fd, ii, count;
+  ensure_libelf_initialized();
+  elf_version(EV_CURRENT);
+  fd = open(filename, O_RDONLY);
+  if (fd < 0) {
+    BT_LOG(("Could not open %s", filename));
     return symbol_table;
   }
   if ((elf = elf_begin(fd, ELF_C_READ, NULL)) == NULL) {
@@ -111,11 +385,11 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
   uintptr_t highest_end_address(0);
   while ((scn = elf_nextscn(elf, scn)) != NULL) {
     gelf_getshdr(scn, &shdr);
-    BT_LOG((buf,"Looking at section\n" ));
+    BT_LOG(("Looking at section\n" ));
     if (shdr.sh_type == SHT_SYMTAB) {
       data = elf_getdata(scn, NULL);
       count = shdr.sh_size / shdr.sh_entsize;
-      BT_LOG((buf,"Found SYMTAB count: %d\n", count ));
+      BT_LOG(("Found SYMTAB count: %d\n", count ));
 	/* Search the symbol names */
       for (ii = 0; ii < count; ++ii) {
         GElf_Sym sym;
@@ -133,7 +407,7 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
           if (ELF64_ST_BIND(sym.st_info) == STB_GLOBAL) type = 'D';
           else type = 'd';
         }
-        BT_LOG((buf,"Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
+        BT_LOG(("Looking at symbol %s type: %d\n", elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name), ELF64_ST_TYPE(sym.st_info)));
         std::string sname(elf_strptr(elf,shdr.sh_link , (size_t)sym.st_name));
         symbol_table.addSymbol(sname,symbol_start,type);
       }
@@ -163,54 +437,19 @@ SymbolTable load_linux_symbol_table(const char* filename, uintptr_t start, uintp
   return symbol_table;
 }
 
-const char* progname_full = NULL;
-
-struct SearchInfo {
-  const char* _Name;
-  void* _Address;
-  size_t _Index;
-  SearchInfo(const char* name) : _Name(name), _Address(NULL), _Index(0) {};
-};
-
-int elf_search_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
-{
-  SearchInfo* search_callback_info = (SearchInfo*)data;
-  const char* libname;
-  if (search_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
-  } else {
-    libname = info->dlpi_name;
-  }
-  BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  if (strcmp(libname,search_callback_info->_Name)==0) {
-    search_callback_info->_Address = (void*)info->dlpi_addr;
-    BT_LOG((buf,"%s:%d:%s start Address: %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_addr ));
-    BT_LOG((buf,"%s:%d:%s dlpi_phdr = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)info->dlpi_phdr ));
-    BT_LOG((buf,"%s:%d:%s dlpi_phnum = %d\n", __FILE__, __LINE__, __FUNCTION__, info->dlpi_phnum ));
-  }
-  search_callback_info->_Index++;
-  return 0;
-}
-
 int elf_loaded_object_callback(struct dl_phdr_info *info, size_t size, void* data)
 {
   ScanInfo* scan_callback_info = (ScanInfo*)data;
   const char *type;
   int p_type, j;
-  std::string libname;
+  const char* libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
+    libname = getExecutablePath();
   } else {
     libname = info->dlpi_name;
   }
-  BT_LOG((buf,"Name: \"%s\" address: %p (%d segments)\n", libname.c_str(), (void*)info->dlpi_addr, info->dlpi_phnum));
-  search_symbol_table(*(scan_callback_info->_Backtrace),libname.c_str(),scan_callback_info->_symbol_table_memory);
+  BT_LOG(("Name: \"%s\" address: %p (%d segments)\n", libname, (void*)info->dlpi_addr, info->dlpi_phnum));
+  search_symbol_table(*(scan_callback_info->_Backtrace),libname,scan_callback_info->_symbol_table_memory);
   scan_callback_info->_Index++;
   return 0;
 }
@@ -223,12 +462,9 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
 //  printf("%s:%d:%s one vtablePtr = %p\n", __FILE__, __LINE__, __FUNCTION__, vtablePtr );
   ScanInfo* scan_callback_info = (ScanInfo*)data;
   bool is_executable;
-  std::string libname;
+  const char* libname;
   if (scan_callback_info->_Index==0 && strlen(info->dlpi_name) == 0 ) {
-    if (progname_full == NULL) {
-      progname_full = getprogname();
-    }
-    libname = progname_full;
+    libname = getExecutablePath();
     is_executable = true;
   } else {
     libname = info->dlpi_name;
@@ -241,7 +477,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
   gctools::clasp_ptr_t vtableSectionEnd;
   for (int j = 0; j < info->dlpi_phnum; j++) {
     int p_type = info->dlpi_phdr[j].p_type;
-#if 1
+#if 0
     const char* type;
     type =  (p_type == PT_LOAD) ? "PT_LOAD" :
       (p_type == PT_DYNAMIC) ? "PT_DYNAMIC" :
@@ -264,7 +500,7 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
     if (p_type==PT_LOAD && (info->dlpi_phdr[j].p_flags&0x1)) { // executable
       text_start = (gctools::clasp_ptr_t)(info->dlpi_addr + info->dlpi_phdr[j].p_vaddr);
       text_end = (gctools::clasp_ptr_t)(text_start + info->dlpi_phdr[j].p_memsz);
-      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
+//      printf("%s:%d:%s      text_start = %p     text_end = %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)text_start, (void*)text_end );
     }
     if (low<= vtablePtr && vtablePtr<high) {
       //
@@ -282,10 +518,10 @@ int elf_startup_loaded_object_callback(struct dl_phdr_info *info, size_t size, v
         vtableSectionStart = low;
         vtableSectionEnd = high;
       }
-      printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
+//      printf("%s:%d:%s Found vtableSection %p to %p\n", __FILE__, __LINE__, __FUNCTION__, vtableSectionStart, vtableSectionEnd );
     }
   }
-  add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname.c_str(),(uintptr_t)info->dlpi_addr,
+  add_dynamic_library_using_origin(scan_callback_info->_AdderOrNull,is_executable,libname,(uintptr_t)info->dlpi_addr,
                                    text_start,text_end,
                                    hasVtableSection,
                                    vtableSectionStart, vtableSectionEnd);
@@ -301,14 +537,6 @@ void walk_loaded_objects(std::vector<BacktraceEntry>& backtrace, size_t& symbol_
     // Search the symbol tables and stackmaps
   dl_iterate_phdr(elf_loaded_object_callback,&scan);
   symbol_table_memory += scan._symbol_table_memory;
-}
-
-void* find_base_of_loaded_object(const char* name)
-{
-  BT_LOG((buf,"%s:%d:%s \n", __FILE__, __LINE__, __FUNCTION__ ));
-  SearchInfo search(name);
-  dl_iterate_phdr(elf_search_loaded_object_callback,&search);
-  return search._Address;
 }
 
 void startup_register_loaded_objects(add_dynamic_library* callback)
@@ -332,12 +560,13 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
                               gctools::clasp_ptr_t text_start, gctools::clasp_ptr_t text_end,
                               bool hasVtableSection,
                               gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd ) {
-  BT_LOG((buf,"Starting to load library: %s\n", libraryName.c_str() ));
+  BT_LOG(("Starting to load library: %s\n", libraryName.c_str() ));
 #ifdef CLASP_THREADS
   WITH_READ_WRITE_LOCK(debugInfo()._OpenDynamicLibraryMutex);
 #endif
 // Get the start of the library and the symbol_table
   if (!use_origin) {
+    printf("%s:%d:%s   This path should never be taken!!!!!!\n", __FILE__, __LINE__, __FUNCTION__ );
     // Walk all objects looking for the one we just loaded
     library_origin = (uintptr_t)find_base_of_loaded_object(libraryName.c_str());
     if (library_origin==0) {
@@ -378,7 +607,7 @@ void add_dynamic_library_impl(add_dynamic_library* callback,
     printf("%s:%d The symbol table for %s is not sorted\n", __FILE__, __LINE__, libraryName.c_str());
     abort();
   }
-  BT_LOG((buf,"OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
+  BT_LOG(("OpenDynamicLibraryInfo libraryName: %s handle: %p library_origin: %p\n", libraryName.c_str(),(void*)handle,(void*)library_origin));
   gctools::clasp_ptr_t library_end = (gctools::clasp_ptr_t)library_origin;
   OpenDynamicLibraryInfo odli(is_executable,libraryName,handle,symbol_table,(gctools::clasp_ptr_t)library_origin,text_start,text_end,
                               hasVtableSection,vtableSectionStart,vtableSectionEnd);

@@ -7,13 +7,20 @@
 #define imageSaveLoad_fwd_H
 
 
-namespace gctools {
+namespace imageSaveLoad {
+
+
+typedef enum { SaveOp, LoadOp } FixupOperation_;
+
+struct Fixup;
+
+FixupOperation_ operation(Fixup* fixup);
 
 struct image_save_load_init_s {
-  Header_s*                           _headStart;
+  gctools::Header_s*                  _headStart;
   gctools::clasp_ptr_t                _clientStart; // include vtable
   gctools::clasp_ptr_t                _clientEnd; // after client
-  image_save_load_init_s(Header_s* head, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
+  image_save_load_init_s(gctools::Header_s* head, gctools::clasp_ptr_t clientStart, gctools::clasp_ptr_t clientEnd) :
     _headStart(head),
     _clientStart(clientStart),
     _clientEnd(clientEnd) {};

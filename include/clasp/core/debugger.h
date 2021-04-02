@@ -247,7 +247,9 @@ struct OpenDynamicLibraryInfo {
     _TextEnd(textEnd),
     _HasVtableSection(hasVtableSection),
     _VtableSectionStart(vtableSectionStart),
-    _VtableSectionEnd(vtableSectionEnd)  {};
+    _VtableSectionEnd(vtableSectionEnd)  {
+//    printf("%s:%d:%s filename = %s\n", __FILE__, __LINE__, __FUNCTION__, f.c_str());
+  };
   OpenDynamicLibraryInfo() {};
 };
 
@@ -295,9 +297,9 @@ void add_dynamic_library_using_origin(add_dynamic_library* callback, bool is_exe
                                       bool hasVtableSection,
                                       gctools::clasp_ptr_t vtableSectionStart, gctools::clasp_ptr_t vtableSectionEnd);                                      
  
-bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& isExecutable );
+bool lookup_address_in_library(gctools::clasp_ptr_t address, gctools::clasp_ptr_t& start, gctools::clasp_ptr_t& end, std::string& libraryName, bool& isExecutable, uintptr_t& vtableStart, uintptr_t& vtableEnd );
 bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end, char& type );
-bool library_with_name(const std::string& name, std::string& libraryPath, uintptr_t& start, uintptr_t& end, bool& isExecutable );
+bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryPath, uintptr_t& start, uintptr_t& end, uintptr_t& vtableStart, uintptr_t& vtableEnd );
 
  llvmo::Code_sp lookup_code(uintptr_t address);
 
@@ -346,7 +348,7 @@ void dbg_safe_backtrace_stderr();
 #if 0
 // To turn this on enable SOURCE_DEBUG in wscript.config and set the 0 above to 1
 // If you turn this on it takes a LOT of stack memory!!! and it runs even if DEBUG_SOURCE IS ON!!!!
-#define BT_LOG(msg) {char buf[1024]; sprintf msg; LOG(BF("%s") % buf);}
+#define BT_LOG(msg) printf msg;
 #else
 #define BT_LOG(msg)
 #endif
@@ -371,14 +373,24 @@ namespace core {
 
 typedef void(*scan_callback)(std::vector<BacktraceEntry>&backtrace, const std::string& filename, uintptr_t start);
 
-  
+struct SymbolCallback {
+  bool _debug;
+  virtual bool debug() { return this->_debug; };
+  virtual bool interestedInLibrary(const char* name, bool executable) {return true;};
+  virtual bool interestedInSymbol(const char* name) {return true;};
+  virtual void callback(const char* name, uintptr_t start, uintptr_t end ) {};
+  SymbolCallback() : _debug(false) {};
+};
+
+void walk_loaded_objects_symbol_table( SymbolCallback* symbolCallback );
+
 struct ScanInfo {
   add_dynamic_library* _AdderOrNull;
   size_t  _Index;
   std::vector<BacktraceEntry>* _Backtrace;
   scan_callback _Callback;
   size_t _symbol_table_memory;
-  ScanInfo(add_dynamic_library* ad) : _AdderOrNull(ad), _Index(0), _symbol_table_memory(0) {};
+  ScanInfo(add_dynamic_library* ad) : _AdderOrNull(ad), _Index(0), _Backtrace(NULL), _symbol_table_memory(0) {};
 };
 
 struct JittedObject {

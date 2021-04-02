@@ -164,8 +164,8 @@ void Code_O::describe() const
 
 namespace llvmo {
 
-Library_sp Library_O::make(gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, const std::string& name) {
-  GC_ALLOCATE_VARIADIC(Library_O, lib, start, end );
+Library_sp Library_O::make(bool executable, gctools::clasp_ptr_t start, gctools::clasp_ptr_t end, uintptr_t vtableStart, uintptr_t vtableEnd, const std::string& name) {
+  GC_ALLOCATE_VARIADIC(Library_O, lib, executable, start, end, vtableStart, vtableEnd );
   lib->_Name = core::SimpleBaseString_O::make(name);
   return lib;
 }
@@ -218,12 +218,13 @@ CodeBase_sp identify_code_or_library(gctools::clasp_ptr_t entry_point) {
   //    If we find it, push an entry into the _lisp->_AllLibraries list
     
   gctools::clasp_ptr_t start, end;
+  uintptr_t vtableStart, vtableEnd;
   std::string libraryName;
   bool isExecutable;
-  bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName, isExecutable);
+  bool foundLibrary = core::lookup_address_in_library( reinterpret_cast<gctools::clasp_ptr_t>(entry_point), start, end, libraryName, isExecutable, vtableStart, vtableEnd );
   if (foundLibrary) {
     // printf("%s:%d:%s For entry_point @%p found new library start: %p   end: %p  name: %s\n", __FILE__, __LINE__, __FUNCTION__, entry_point, (void*)start, (void*)end, libraryName.c_str());
-    Library_sp newlib = Library_O::make(reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end),libraryName);
+    Library_sp newlib = Library_O::make(isExecutable, reinterpret_cast<gctools::clasp_ptr_t>(start),reinterpret_cast<gctools::clasp_ptr_t>(end), vtableStart, vtableEnd, libraryName);
     core::T_sp expected;
     core::Cons_sp entry = core::Cons_O::create(newlib,_Nil<core::T_O>());
     do {

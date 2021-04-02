@@ -65,29 +65,27 @@ GlobalEntryPoint_sp ensureEntryPoint(GlobalEntryPoint_sp ep, claspFunction entry
   return ep;
 }
 
-void CodeEntryPoint_O::fixupOneCodePointer(FixupOperation op, void** ptr) {
+void CodeEntryPoint_O::fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** ptr) {
 #ifdef USE_PRECISE_GC
-  if (op==SaveOp) {
-    void* address = ptr[0];
-    void* saveAddress = imageSaveLoad::encodeEntryPointSaveAddress(address,this->_Code);
-    ptr[0] = saveAddress;
-  } else if (op==LoadOp) {
-    void* savedAddress = ptr[0];
-    void* address = imageSaveLoad::decodeEntryPointSaveAddress(savedAddress,this->_Code);
-    ptr[0] = address;
+  if ( imageSaveLoad::operation(fixup) == imageSaveLoad::SaveOp) {
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
+    imageSaveLoad::encodeEntryPoint(fixup, ptrptr, this->_Code);
+  } else if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+    uintptr_t* ptrptr = (uintptr_t*)&ptr[0];
+    imageSaveLoad::decodeEntryPoint(fixup,ptrptr,this->_Code);
   } else {
     SIMPLE_ERROR(BF("Illegal image save/load operation"));
   }
 #endif
 }
 
-void GlobalEntryPoint_O::fixupInternalsForImageSaveLoad( FixupOperation& op) {
-  this->fixupOneCodePointer(op,(void**)&this->_EntryPoints[0]);
+void GlobalEntryPoint_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+  this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoints[0]);
 };
 
 
-void LocalEntryPoint_O::fixupInternalsForImageSaveLoad( FixupOperation& op) {
-  this->fixupOneCodePointer(op,(void**)&this->_EntryPoint);
+void LocalEntryPoint_O::fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup) {
+  this->fixupOneCodePointer( fixup,(void**)&this->_EntryPoint);
 };
 
 
@@ -751,20 +749,21 @@ __attribute__((optnone)) LCC_RETURN unboundFunctionEntryPoint(LCC_ARGS_FUNCALL_E
 
 
 
-void BuiltinClosure_O::fixupOneCodePointer(FixupOperation op, void** funcPtr, size_t sizeofFuncPtr ) {
+void BuiltinClosure_O::fixupOneCodePointer( imageSaveLoad::Fixup* fixup, void** funcPtr, size_t sizeofFuncPtr ) {
 #ifdef USE_PRECISE_GC
-  if (((uintptr_t)funcPtr[0] & 7) == 0) {
-    if (op==SaveOp) {
-      void* address = funcPtr[0];
-      void* saveAddress = imageSaveLoad::encodeLibrarySaveAddress(address);
-      funcPtr[0] = saveAddress;
-    } else if (op==LoadOp) {
-      void* savedAddress = funcPtr[0];
-      void* address = imageSaveLoad::decodeLibrarySaveAddress(savedAddress);
-      funcPtr[0] = address;
-    } else {
-      SIMPLE_ERROR(BF("Illegal image save/load operation"));
+    // Virtual method pointers look different from function pointers - they are small integers
+    //  here we assume a virtual method is always < 1024
+  if ( imageSaveLoad::operation(fixup)==imageSaveLoad::SaveOp) {
+    if ((uintptr_t)funcPtr[0] > 1024) {
+      uintptr_t* ptrptr = (uintptr_t*)&funcPtr[0];
+      imageSaveLoad::registerLibraryFunctionPointer(fixup,ptrptr);
     }
+  } else if ( imageSaveLoad::operation(fixup) == imageSaveLoad::LoadOp) {
+    if ((uintptr_t)funcPtr[0] > 1024) {
+      imageSaveLoad::decodeLibrarySaveAddress(fixup,(uintptr_t*)&funcPtr[0]);
+    }
+  } else {
+    SIMPLE_ERROR(BF("Illegal image save/load operation"));
   }
 #endif
 }

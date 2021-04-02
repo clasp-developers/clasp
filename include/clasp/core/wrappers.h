@@ -54,8 +54,8 @@ namespace core {
   public:
     typedef BuiltinClosure_O TemplatedBase;
     virtual size_t templatedSizeof() const override { return sizeof(TranslationFunctor_O); };
-    virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-      this->fixupOneCodePointer(op,(void**)&this->fptr,sizeof(this->fptr));
+    virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+      this->fixupOneCodePointer( fixup, (void**)&this->fptr, sizeof(this->fptr) );
     }
     static inline LCC_RETURN LISP_CALLING_CONVENTION() {
       TranslationFunctor_O* closure = gctools::untag_general<TranslationFunctor_O*>((TranslationFunctor_O*)lcc_closure);
@@ -96,8 +96,8 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer( fixup, (void**)&this->mptr, sizeof(this->mptr) );
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
@@ -134,8 +134,8 @@ public:
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
-  virtual void fixupInternalsForImageSaveLoad(core::FixupOperation& op) {
-    this->fixupOneCodePointer(op,(void**)&this->mptr,sizeof(this->mptr));
+  virtual void fixupInternalsForImageSaveLoad( imageSaveLoad::Fixup* fixup ) {
+    this->fixupOneCodePointer(fixup,(void**)&this->mptr,sizeof(this->mptr));
   }
   static inline gctools::return_type method_entry_point(LCC_ARGS_ELLIPSIS)
   {
