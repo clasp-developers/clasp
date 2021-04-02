@@ -1,7 +1,7 @@
 (defpackage "CLASP-POSIX"
   (:use)
   (:import-from "CORE"
-                "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD"
+                "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD" "GETPID"
                 "FORK" "FORK-REDIRECT" "SIGCHLD-COUNT"
                 "WAIT" "WIFEXITED" "WIFSIGNALED" "WTERMSIG"
                 "LSEEK" "READ-FD" "CLOSE-FD" "MKSTEMP-FD"
@@ -15,7 +15,7 @@
                 "SIGNAL-SIGTSTP" "SIGNAL-SIGCONT" "SIGNAL-SIGCHLD"
                 "SIGNAL-SIGKILL" "SIGNAL-SIGINT" "SIGNAL-SIGFPE"
                 "SIGNAL-SIGVTALRM" "SIGNAL-SIGTTOU" "SIGNAL-SIGALRM")
-  (:export "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD"
+  (:export "ARGC" "ARGV" "RMDIR" "MKSTEMP" "CHMOD" "GETPID"
            "FORK" "FORK-REDIRECT" "SIGCHLD-COUNT"
            "WAIT" "WIFEXITED" "WIFSIGNALED" "WTERMSIG"
            "LSEEK" "READ-FD" "CLOSE-FD" "MKSTEMP-FD"
