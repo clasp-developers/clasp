@@ -343,6 +343,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
   (assert-result-isa-llvm-value result)
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
+    (declare (ignore source-directory source-filename lineno column))
     (cmp-log "codegen stack-used[%d bytes]%N" (stack-used))
     (cmp-log "codegen evaluate-depth[%d]  %s%N" (evaluate-depth) form)
     ;;
@@ -371,6 +372,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                                                               :form form
                                                               :spi core:*current-source-pos-info*))
                             (let* ((given-name (llvm-sys:get-name fn)))
+                              (declare (ignore given-name))
                               ;; Map the function argument names
                               (cmp-log "Creating repl function with name: %s%N" given-name)
                               ;;	(break "codegen repl form") 

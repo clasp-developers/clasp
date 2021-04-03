@@ -337,7 +337,7 @@ to (literal-machine-function-description-vector *literal-machine*) and return th
   (add-creator "ltvc_make_fixnum" index fixnum fixnum))
 
 (defun ltv/bignum (bignum index read-only-p &key (toplevelp t))
-  (declare (ignore toplevelp))
+  (declare (ignore toplevelp read-only-p))
   (add-creator "ltvc_make_next_bignum" index bignum bignum))
 
 (defun ltv/bitvector (bitvector index read-only-p &key (toplevelp t))
@@ -1063,6 +1063,7 @@ returns (value immediate nil) if the value is an immediate value."
 (defun codegen-literal (result object env)
   "This is called by bclasp.  If result is nil then just return the ltv index.
 If it isn't NIL then copy the literal from its index in the LTV into result."
+  (declare (ignore env))
   (multiple-value-bind (data-or-index in-array)
       (reference-literal object t)
     (if in-array
@@ -1089,6 +1090,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                                                        :form nil
                                                        :spi core:*current-source-pos-info*))
               (let ((given-name (llvm-sys:get-name fn)))
+                (declare (ignore given-name))
                 (cmp:codegen fn-result form fn-env)))))
     (unless cmp:*suppress-llvm-output* (cmp:irc-verify-function fn t))
     (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))

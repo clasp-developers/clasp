@@ -66,6 +66,7 @@
 
 
 (defun dump-function (func)
+  (declare (ignore func))
   (warn "Do something with dump-function"))
 (export 'dump-function)
 
@@ -345,6 +346,7 @@ No DIBuilder is defined for the default module")
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-unique-string-ptr (str &optional (label "unique-str"))
+  (declare (ignore label))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
   (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
@@ -354,12 +356,14 @@ No DIBuilder is defined for the default module")
 
 
 (defun module-make-global-string (str &optional (label ""))
+  (declare (ignore label))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
   (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
           (llvm-sys:get-or-create-uniqued-string-global-variable
            *the-module* str (bformat nil ":::global-str-%s" str)))
          (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty (thread-local-llvm-context)) (1+ (length str)))))
+    (declare (ignore string-type))
     unique-string-global-variable))
 #|
     (let ((gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
@@ -384,8 +388,7 @@ No DIBuilder is defined for the default module")
 (defconstant +target-full-mps+ :full-mps)
 
 (defun escape-and-join-jit-name (names)
-  (let ((all (make-string-output-stream))
-        name)
+  (let ((all (make-string-output-stream)))
     (tagbody
      outer
        (let ((name (string (car names))))
@@ -453,6 +456,7 @@ No DIBuilder is defined for the default module")
 (export 'print-name-from-unescaped-split-name)
 ;;; FIXME: Get the filename from source-pos-info also.
 (defun function-name-from-source-info (lname)
+  (declare (ignore lname))
   (if *current-source-pos-info*
       (let ((lineno (core:source-pos-info-lineno *current-source-pos-info*)))
         (cond
@@ -601,6 +605,7 @@ The passed module is modified as a side-effect."
   "Return the code-model for the compilation mode"
   (multiple-value-bind (llvm-version-string llvm-version-val)
       (ext:llvm-version)
+    (declare (ignore llvm-version-string))
     (cond
       ((and (eq target-faso-file :faso) (null jit))
        (progn
@@ -686,7 +691,8 @@ The passed module is modified as a side-effect."
 
 (si::fset 'with-track-llvm-time
 	   #'(lambda (args env)
-               (declare (core:lambda-name with-track-llvm-time))
+               (declare (core:lambda-name with-track-llvm-time)
+                        (ignore env))
                (let ((code (cdr args)))
                  `(do-track-llvm-time
                       (function
@@ -784,6 +790,7 @@ The passed module is modified as a side-effect."
   (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
   (defun jit-add-module-return-function (original-module main-fn startup-fn shutdown-fn literals-list
                                          &key output-path)
+    (declare (ignore main-fn output-path))
     ;; Link the builtins into the module and optimize them
     #+(or)
     (progn

@@ -214,7 +214,7 @@ Return files."
               (progn
                 (bformat t "%N")
                 (if (and position total-files)
-                    (bformat t "Compiling [%d of %d] %s%N    to %s - will reload: %s%N" position total-files source-path output-path reload)
+                    (bformat t "Compiling [%d of %d] %s%N    to %s - will reload: %s%N" (1+ position) total-files source-path output-path reload)
                     (bformat t "Compiling %s%N   to %s - will reload: %s%N" source-path output-path reload))))
           (let ((cmp::*module-startup-prefix* "kernel")
                 (compile-file-arguments (list* (probe-file source-path)
@@ -562,9 +562,28 @@ Return files."
 
 (export '(compile-system-serial compile-system compile-system-parallel))
 
+(defun select-trailing-source-files (after-file &key system)
+  (or system (error "You must provide :system to select-trailing-source-files"))
+  (let ((cur (reverse system))
+	files file)
+    (tagbody
+     top
+       (setq file (car cur))
+       (if (endp cur) (go done))
+       (if after-file
+	   (if (eq after-file file)
+	       (go done)))
+       (if (not (keywordp file))
+	   (setq files (cons file files)))
+       (setq cur (cdr cur))
+       (go top)
+     done)
+    files))
+
+(export 'select-source-files)
+
 ;; Clean out the bitcode files.
 ;; passing :no-prompt t will not prompt the user
-(export 'clean-system)
 (defun clean-system (after-file &key no-prompt stage system)
   (let* ((files (select-trailing-source-files after-file :system system))
 	 (cur files))
@@ -584,30 +603,7 @@ Return files."
 	   done)
 	  (bformat t "Not deleting%N")))))
 
-
-(export 'select-source-files)
-
-(defun select-trailing-source-files (after-file &key system)
-  (or system (error "You must provide :system to select-trailing-source-files"))
-  (let ((cur (reverse system))
-	files file)
-    (tagbody
-     top
-       (setq file (car cur))
-       (if (endp cur) (go done))
-       (if after-file
-	   (if (eq after-file file)
-	       (go done)))
-       (if (not (keywordp file))
-	   (setq files (cons file files)))
-       (setq cur (cdr cur))
-       (go top)
-     done)
-    files))
-
-
-
-
+(export 'clean-system)
 
 (defun command-line-arguments-as-list ()
   (let ((idx (- (length core:*command-line-arguments*) 1))
@@ -738,6 +734,7 @@ Return files."
                     (system (command-line-arguments-as-list)))
   (cond
     ((eq core:*clasp-build-mode* :bitcode)
+     ;; FIXME all-modules is not defined here, this will error if called
      (cmp:link-bitcode-modules output-file all-modules))
     ((eq core:*clasp-build-mode* :object)
      ;; Do nothing - object files are the result
@@ -868,7 +865,6 @@ Return files."
         (core:*eval-with-env-hook* #'core:interpret-eval-with-env))
     (core:low-level-repl)))
 (export 'bclasp-repl)
-
 
 (eval-when (:execute)
   (bformat t "Loaded clasp-builder.lsp%N")
