@@ -171,7 +171,6 @@
     #+(or)
     (multiple-value-bind (the-function primitive-info)
         (get-or-declare-function-or-error *the-module* "registerReference")
-      (declare (ignore primitive-info))
       (let ((the-function (get-or-declare-function-or-error *the-module* "registerReference"))
             (orig-instr (lexical-variable-reference-instruction var-ref)))
         (llvm-sys:replace-call the-function
