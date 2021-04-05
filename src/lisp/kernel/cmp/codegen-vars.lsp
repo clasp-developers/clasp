@@ -163,6 +163,7 @@
 (defun convert-to-register-access (register var-ref)
   (let* ((symbol (lexical-variable-reference-symbol var-ref))
          #+debug-lexical-depth(ensure-frame-unique-id (lexical-variable-reference-ensure-frame-unique-id var-ref)))
+    (declare (ignorable symbol))
     (cv-log "Converting %s to a register register -> %s%N" symbol register)
     (let ((orig-instr (lexical-variable-reference-instruction var-ref)))
       (llvm-sys:replace-all-uses-with orig-instr register)
@@ -194,14 +195,17 @@
 (defun resize-closures-and-make-non-closures-invisible (new-value-environment-instructions
                                                         closure-environments)
   (maphash (lambda (environment env-maker)
+             (declare (ignore environment))
              (let* ((new-env (value-frame-maker-reference-new-env env-maker))
                     (new-renv (value-frame-maker-reference-new-renv env-maker))
                     (instr (value-frame-maker-reference-instruction env-maker))
                     (closure-size (gethash new-env closure-environments)))
+               (declare (ignore new-renv))
                (if closure-size
                    ;;rewrite the allocation to be the optimized size
                    (multiple-value-bind (the-function primitive-info)
                        (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
+                     (declare (ignore primitive-info))
                      (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
                        (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
                        (let ((parent-renv (car (last args))))
@@ -235,6 +239,8 @@
                (new-index (closure-cell-new-index var-info))
                (the-function (get-or-declare-function-or-error *the-module* "lexicalValueReference"))
                (ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
+          (declare (ignore ensure-frame-unique-id-function the-function)
+                   (ignorable depth))
           (cv-log "About to replace lexicalValueReference for %s  (old depth/index %d/%d)  (new depth/index %d/%d) to env %s  from env %s !!!!!!%N"
                   symbol depth index new-depth new-index (core:environment-address ref-env) start-env)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
@@ -269,6 +275,7 @@
           (old-depth (throw-return-from-depth return-from))
           (start-env (throw-return-from-start-env return-from))
           (block-env (throw-return-from-block-env return-from)))
+      (declare (ignore old-depth))
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env block-env)))
         (let ((the-function (get-or-declare-function-or-error *the-module* "throwReturnFrom"))
               #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
@@ -297,6 +304,7 @@
           (old-depth (throw-dynamic-go-depth go))
           (start-env (throw-dynamic-go-start-env go))
           (tagbody-env (throw-dynamic-go-tagbody-env go)))
+      (declare (ignore old-depth))
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env tagbody-env)))
         (let ((the-function (get-or-declare-function-or-error *the-module* "throwDynamicGo"))
               #+debug-lexical-depth(ensure-frame-unique-id-function (get-or-declare-function-or-error *the-module* "ensureFrameUniqueId")))
@@ -343,6 +351,7 @@
 (defun rewrite-blocks-with-no-return-froms (block-info)
   (when *rewrite-blocks*
     (maphash (lambda (env block-info)
+               (declare (ignore env))
                (atomic-incf-symbol-value '*block-rewrite-counter-total*)
                (unless (block-frame-info-needed block-info)
                  (atomic-incf-symbol-value '*block-rewrite-counter-removed*)
@@ -370,6 +379,7 @@
 (defun rewrite-tagbody-with-no-go (tagbody-info)
   (when *rewrite-tagbody*
     (maphash (lambda (env tagbody-info)
+               (declare (ignore env))
                (atomic-incf-symbol-value '*tagbody-rewrite-counter-total*)
                (unless (tagbody-frame-info-needed tagbody-info)
                  (atomic-incf-symbol-value '*tagbody-rewrite-counter-removed*)
@@ -391,9 +401,11 @@
           (old-depth (lexical-function-reference-depth funcref))
           (start-env (lexical-function-reference-start-env funcref))
           (function-env (lexical-function-reference-function-env funcref)))
+      (declare (ignore old-depth))
       (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env function-env)))
         (multiple-value-bind (the-function primitive-info)
             (get-or-declare-function-or-error *the-module* "va_lexicalFunction")
+          (declare (ignore primitive-info))
           (cv-log "About to replace call to %s%N" instr)
           (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
                  (start-renv (car (last args))))
@@ -570,6 +582,7 @@
   ;;     The top one generates code to access the lexical-var references
   ;;      in activation frames as quickly as possible but cannot use registers
   ;; This second option saves information that can be used later to convert local lexical variables into allocas
+  #-debug-lexical-depth (declare (ignore dest-env))
   (let* ((start-renv (irc-load (irc-renv start-env)))
          #+debug-lexical-depth (info (gethash dest-env *make-value-frame-instructions*))
          #+debug-lexical-depth (frame-unique-id (value-frame-maker-reference-frame-unique-id info))

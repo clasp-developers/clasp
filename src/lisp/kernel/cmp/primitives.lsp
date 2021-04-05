@@ -13,11 +13,13 @@
     (getf props :varargs)))
 
 (defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return ltvc)
+  (declare (ignore name))
   (let (reversed-argument-types
         return-ty
         return-attributes
         argument-attributes
         (index 0))
+    (declare (ignorable  return-ty))
     (if (consp return-ty-attributes)
         (setf return-ty (car return-ty-attributes)
               return-attributes (cdr return-ty-attributes))
@@ -31,10 +33,10 @@
           (progn
             (push arg reversed-argument-types)))
       (incf index))
-    (let* ((return-ty (if (consp return-ty-attributes) (car return-ty-attributes) return-ty-attributes))
+    (let* ((return-ty1 (if (consp return-ty-attributes) (car return-ty-attributes) return-ty-attributes))
            (argument-types (nreverse reversed-argument-types)))
       (make-primitive
-       :return-type return-ty
+       :return-type return-ty1
        :argument-types argument-types
        :return-attributes return-attributes
        :argument-attributes argument-attributes

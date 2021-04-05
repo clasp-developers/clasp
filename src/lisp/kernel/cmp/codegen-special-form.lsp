@@ -367,6 +367,7 @@ and put the values into the activation frame for new-env."
 
 (defun codegen-fill-let*-environment (new-env reqvars
                                       exps parent-env evaluate-env)
+  (declare (ignorable parent-env))
   "Evaluate each of the exps in the evaluate-env environment
 and put the values into the activation frame for new-env."
   (cmp-log "entered codegen-fill-let*-environment%N")
@@ -1451,6 +1452,7 @@ jump to blocks within this tagbody."
         (nvt (alloca-t* "rack-set-value"))
         (rackt (alloca-t* "rack-set-rack"))
         (indext (alloca-t* "rack-set-index")))
+    (declare (ignore order))
     (codegen nvt nv env)
     (codegen rackt rack env)
     (codegen indext index env)

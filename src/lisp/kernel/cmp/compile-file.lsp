@@ -36,6 +36,8 @@
 (defvar *compiler-timer-protection* nil)
 
 (defun do-compiler-timer (closure &rest args &key message report-link-time verbose override)
+  (declare (ignore message)
+           (ignorable report-link-time))
   (cond (override
 	 (let* ((*compiler-timer-protection* nil))
 	   (apply #'do-compiler-timer closure args)))
@@ -53,6 +55,7 @@
                    (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
                    (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
                    (link-time llvm-sys:*accumulated-clang-link-time*))
+               (declare (ignore llvm-finalization-time compiler-real-time compiler-run-time link-time))
                (when verbose
                  #+(or)
                  (let* ((link-string (if report-link-time
@@ -79,6 +82,7 @@
         (t (funcall closure))))
 
 (defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
+  (declare (ignore override))
   `(do-compiler-timer (lambda () (progn ,@body)) :message ,message :report-link-time ,report-link-time :verbose ,verbose))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -175,6 +179,7 @@ and the pathname of the source file - this will also be used as the module initi
                    (_ (llvm-sys:set-enable-tail-merge target-pass-config nil))
                    (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
                    (data-layout (llvm-sys:create-data-layout target-machine)))
+              (declare (ignore _))
               (llvm-sys:set-data-layout module data-layout)
               (llvm-sys:pass-manager-add pm tli)
               (llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream nil #|<-dwo-stream|# file-type module)))))))
@@ -196,6 +201,7 @@ and the pathname of the source file - this will also be used as the module initi
    *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
 
 (defun bclasp-loop-read-and-compile-file-forms (source-sin environment)
+  (declare (ignore environment))
   (let ((eof-value (gensym)))
     (loop
       ;; Required to update the source pos info. FIXME!?
@@ -228,6 +234,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  (optimize t)
                                  (optimize-level *optimization-level*)
                                  external-format)
+  (declare (ignore output-type))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -245,6 +252,7 @@ Compile a lisp source file into an LLVM module."
          (source-sin (open input-pathname :direction :input :external-format (or external-format :default)))
          (module (llvm-create-module (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname)))
+    (declare (ignore module-name))
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*

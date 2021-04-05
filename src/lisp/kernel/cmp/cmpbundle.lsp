@@ -226,6 +226,7 @@
           bundle-file)))))
 
 (defun execute-link-library (in-bundle-file in-all-names &key input-type (output-type :dynamic))
+  (declare (ignore input-type))
   ;; options are a list of strings like (list "-v")
   (let ((output-flag (cond
                        ((member :target-os-darwin *features*)
@@ -316,6 +317,7 @@
   (execute-link-library in-bundle-file in-all-names :input-type input-type :output-type :static))
 
 (defun execute-link-object (output-filename in-all-names &key input-type)
+  (declare (ignore input-type)) 
   (safe-system (list* "ld" "-r"
                            "-o" (namestring output-filename)
                            (mapcar (lambda (f) (namestring (make-pathname :type "o" :defaults f)))
@@ -332,6 +334,7 @@
         (exec-file (ensure-string output-file-name)))
     (multiple-value-bind (link-flags link-lib-path library-extension)
         (core:link-flags)
+      (declare (ignore link-lib-path library-extension))
       (cond
         ((member :target-os-darwin *features*)
          (ext:run-clang `(,@options
@@ -359,7 +362,8 @@
 
 (defun link-bitcode-modules-impl (output-pathname part-pathnames
                                   &key additional-bitcode-pathnames
-                                    clasp-build-mode)
+                                       clasp-build-mode)
+  (declare (ignore additional-bitcode-pathnames))
   "Link a bunch of modules together, return the linked module"
   (let* ((module (link-bitcode-modules-together (namestring output-pathname) part-pathnames :clasp-build-mode clasp-build-mode))
          (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
@@ -435,7 +439,8 @@ Return the **output-pathname**."
 
 (defun builder (kind destination &rest keywords)
   "This is used by ASDF to build fasl files."
-  (declare (optimize (debug 3)))
+  (declare (optimize (debug 3))
+           (ignore kind))
   (apply 'build-fasl destination keywords))
 
 (export '(builder))

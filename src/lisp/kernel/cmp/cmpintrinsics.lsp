@@ -120,17 +120,15 @@ names to offsets."
 
 (defun c++-field-offset (field-name info)
   "Return the integer byte offset of the field for the c++-struct including the tag"
-  (let* ((entry (assoc field-name (c++-struct-field-offsets info)))
-         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
-         (offset (cdr entry)))
-    offset))
+  (let ((entry (assoc field-name (c++-struct-field-offsets info))))
+    (unless entry (error "Could not find field ~a in ~s" field-name info))
+    (cdr entry)))
 
 (defun c++-field-index (field-name info)
   "Return the index of the field "
-  (let* ((entry (assoc field-name (c++-struct-field-indices info)))
-         (_ (unless entry (error "Could not find field ~a in ~s" field-name info)))
-         (index (cdr entry)))
-    index))
+  (let ((entry (assoc field-name (c++-struct-field-indices info))))
+    (unless entry (error "Could not find field ~a in ~s" field-name info))
+    (cdr entry)))
 
 (defun c++-struct-type (struct-info)
   (funcall (c++-struct-type-getter struct-info)))
@@ -681,7 +679,8 @@ eg:  (f closure-ptr nargs a b c d ...)
         (labels ((spill-reg (idx reg addr-name)
                    (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
                           (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                          (_             (irc-store reg-i8* addr "" t)))
+                          (_             (irc-store reg-i8* addr t)))
+                     (declare (ignore _))
                      addr)))
           (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
                  (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
@@ -689,6 +688,7 @@ eg:  (f closure-ptr nargs a b c d ...)
                  (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
                  (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
                  (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
+            (declare (ignore addr-closure addr-nargs addr-farg0 addr-farg1 addr-farg2 addr-farg3))
             (dbg-register-parameter (elt registers 0) "closure" 1) ; start at 1
             (dbg-register-parameter (elt registers 1) "nargs" 2 "int" llvm-sys:+dw-ate-signed-fixed+)
             (dbg-register-parameter (elt registers 2) "farg0" 3)
@@ -822,6 +822,7 @@ eg:  (f closure-ptr nargs a b c d ...)
 
 
 (defun add-global-ctor-function (module main-function &key position register-library)
+  (declare (ignore register-library)) 
   "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
   #+(or)(unless (eql module (llvm-sys:get-parent main-function))
@@ -844,7 +845,8 @@ have it call the main-function"
           (with-irbuilder (irbuilder-body)
             (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                    (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
-                   (_                (irc-ret-void))))))
+                   (_1               (irc-ret-void)))
+              (declare (ignore _ _1)))))
         ;;(llvm-sys:dump fn)
         (let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
                #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
@@ -862,7 +864,8 @@ have it call the main-function"
             (with-irbuilder (irbuilder-body)
               (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
                      (_                (irc-create-call ctor-fn nil))
-                     (_                (irc-ret-void))))))
+                     (_1               (irc-ret-void)))
+                (declare (ignore _ _1 bc-main-function)))))
           (add-llvm.used *the-module* outer-fn)))
       ctor-fn)))
 
@@ -880,10 +883,10 @@ have it call the main-function"
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
       (with-irbuilder (irbuilder-body)
-        (let* (
-               (bc-bf (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer"))
+        (let* ((bc-bf (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer"))
                (_     (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf))
-               (_     (irc-ret-null-t*))))
+               (_1     (irc-ret-null-t*)))
+          (declare (ignore _ _1)))
         ;;(llvm-sys:dump fn)
         fn))))
 
@@ -942,6 +945,7 @@ and initialize it with an array consisting of one function pointer."
       (incf *compilation-module-index*)
       (multiple-value-bind (startup-name linkage)
           (core:startup-function-name-and-linkage)
+        (declare (ignore startup-name))
         (when (eq linkage 'llvm-sys:internal-linkage)
           ;; Internal linkage means we can't look up a symbol to get the startup so we need to depend on
           ;; static constructors to initialize things.
@@ -1051,6 +1055,7 @@ and initialize it with an array consisting of one function pointer."
 
 
 (defun codegen-startup-shutdown (module THE-REPL-FUNCTION &optional gcroots-in-module roots-array-or-nil (number-of-roots 0) ordered-literals array)
+  (declare (ignore array))
   (multiple-value-bind (startup-function-name startup-id)
       (jit-startup-function-name)
     (let ((startup-fn (irc-simple-function-create startup-function-name
@@ -1186,6 +1191,7 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults full-directory)))
+    (declare (ignore base-path))
     (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))
