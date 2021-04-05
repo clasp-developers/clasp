@@ -1597,6 +1597,5 @@
         *standard-pprint-dispatch* *initial-pprint-dispatch*)
   (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) t)
   (setf (first (cdr si::+io-syntax-progv-list+)) *standard-pprint-dispatch*)
-  (setf (first (cdr si::+ecl-syntax-progv-list+)) *standard-pprint-dispatch*)
   #-clasp-min
   (setf *print-pretty* t))

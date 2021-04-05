@@ -131,10 +131,6 @@ void FuncallableInstance_O::__write__(T_sp stream) const {
   }
 }
 
-  SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
-  SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
-
-
 void Integer_O::__write__(T_sp stream) const {
   SafeBufferStr8Ns buffer;
   int print_base = clasp_print_base();
