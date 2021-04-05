@@ -1455,11 +1455,24 @@ COMPILE-FILE will use the default *clasp-env*."
 
 (defvar *dis* nil)
 
+(defun ver (module msg)
+  (handler-bind
+      ((error
+         (lambda (e)
+           (declare (ignore e))
+           (warn msg))))
+    (cleavir-bir:verify module)))
+
 (defun bir-transformations (module system)
+  (ver module "start")
   (bir-transformations:module-eliminate-catches module)
+  (ver module "elim catches")
   (bir-transformations:find-module-local-calls module)
+  (ver module "local calls")
   (bir-transformations:module-optimize-variables module)
+  (ver module "optimize vars")
   (bir-transformations:meta-evaluate-module module system)
+  (ver module "meta")
   (cc-bir-to-bmir:reduce-module-typeqs module)
   (cc-bir-to-bmir:reduce-module-primops module)
   (bir-transformations:module-generate-type-checks module)

@@ -854,8 +854,7 @@ jump to blocks within this tagbody."
 	     (fn-lambda (generate-lambda-block fn-name fn-lambda-list fn-raw-body))
 	     (fn-classified (function-info function-env fn-name))
 	     (fn-index (or (cadddr fn-classified) (error "Could not find lexical function ~a" fn-name)))
-	     (target (irc-intrinsic "functionFrameReference" (irc-load result-af) (jit-constant-i32 fn-index)
-			       (bformat nil "%s-ref-%d" (llvm-sys:get-name result-af) fn-index) )))
+	     (target (irc-intrinsic "functionFrameReference" (irc-load result-af) (jit-constant-i32 fn-index) )))
 	(codegen-closure target fn-lambda closure-env)))))
 
 (defun codegen-flet/labels (operator-symbol result rest env)
@@ -1452,7 +1451,6 @@ jump to blocks within this tagbody."
         (nvt (alloca-t* "rack-set-value"))
         (rackt (alloca-t* "rack-set-rack"))
         (indext (alloca-t* "rack-set-index")))
-    (declare (ignore order))
     (codegen nvt nv env)
     (codegen rackt rack env)
     (codegen indext index env)
@@ -1460,7 +1458,8 @@ jump to blocks within this tagbody."
       (irc-rack-write (irc-load rackt)
                       (irc-untag-fixnum
                        (irc-load indext) %size_t% "slot-location")
-                      nv)
+                      nv
+                      :order order)
       (irc-t*-result nv result))))
 
 (defun codegen-cas-rack (result rest env)

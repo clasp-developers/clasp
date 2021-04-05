@@ -675,29 +675,28 @@ eg:  (f closure-ptr nargs a b c d ...)
           (irc-intrinsic "llvm.dbg.value" (llvm-sys:metadata-as-value-get (thread-local-llvm-context) (llvm-sys:value-as-metadata-get register)) dbg-arg0-value diexpr-value))))
   
   (defun maybe-spill-to-register-save-area (registers register-save-area*)
-    (if registers
-        (labels ((spill-reg (idx reg addr-name)
-                   (let* ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
-                          (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*"))
-                          (_             (irc-store reg-i8* addr t)))
-                     (declare (ignore _))
-                     addr)))
-          (let* ((addr-closure  (spill-reg 0 (elt registers 0) "closure0"))
-                 (addr-nargs    (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1"))
-                 (addr-farg0    (spill-reg 2 (elt registers 2) "arg0")) ; this is the first fixed arg currently.
-                 (addr-farg1    (spill-reg 3 (elt registers 3) "arg1"))
-                 (addr-farg2    (spill-reg 4 (elt registers 4) "arg2"))
-                 (addr-farg3    (spill-reg 5 (elt registers 5) "arg3")))
-            (declare (ignore addr-closure addr-nargs addr-farg0 addr-farg1 addr-farg2 addr-farg3))
-            (dbg-register-parameter (elt registers 0) "closure" 1) ; start at 1
-            (dbg-register-parameter (elt registers 1) "nargs" 2 "int" llvm-sys:+dw-ate-signed-fixed+)
-            (dbg-register-parameter (elt registers 2) "farg0" 3)
-            (dbg-register-parameter (elt registers 3) "farg1" 4)
-            (dbg-register-parameter (elt registers 4) "farg2" 5)
-            (dbg-register-parameter (elt registers 5) "farg3" 6)
-            ))
-        (unless register-save-area*
-          (error "If registers is NIL then register-save-area* also must be NIL"))))
+    (cond
+      (registers
+       (labels ((spill-reg (idx reg addr-name)
+                  (let ((addr          (irc-gep register-save-area* (list (jit-constant-size_t 0) (jit-constant-size_t idx)) addr-name))
+                        (reg-i8*       (irc-bit-cast reg %i8*% "reg-i8*")))
+                    (irc-store reg-i8* addr t)
+                    addr)))
+         (spill-reg 0 (elt registers 0) "closure0")
+         (spill-reg 1 (irc-int-to-ptr (elt registers 1) %i8*%) "nargs1")
+         ;; this is the first fixed arg currently.
+         (spill-reg 2 (elt registers 2) "arg0")
+         (spill-reg 3 (elt registers 3) "arg1")
+         (spill-reg 4 (elt registers 4) "arg2")
+         (spill-reg 5 (elt registers 5) "arg3"))
+       (dbg-register-parameter (elt registers 0) "closure" 1) ; start at 1
+       (dbg-register-parameter (elt registers 1) "nargs" 2 "int" llvm-sys:+dw-ate-signed-fixed+)
+       (dbg-register-parameter (elt registers 2) "farg0" 3)
+       (dbg-register-parameter (elt registers 3) "farg1" 4)
+       (dbg-register-parameter (elt registers 4) "farg2" 5)
+       (dbg-register-parameter (elt registers 5) "farg3" 6))
+      (register-save-area*
+       (error "If registers is NIL then register-save-area* also must be NIL"))))
 
   (defun calling-convention-rewind-va-list-to-start-on-third-argument (cc)
     (let* ((va-list*                      (calling-convention-va-list* cc))
@@ -843,13 +842,13 @@ have it call the main-function"
         (irc-set-insert-point-basic-block entry-bb irbuilder-body)
         (with-landing-pad nil
           (with-irbuilder (irbuilder-body)
-            (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                   (_                (irc-intrinsic "cc_register_startup_function" (jit-constant-size_t position) bc-main-function))
-                   (_1               (irc-ret-void)))
-              (declare (ignore _ _1)))))
+            (let ((bc-main-function
+                    (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
+              (irc-intrinsic "cc_register_startup_function"
+                             (jit-constant-size_t position) bc-main-function)
+              (irc-ret-void))))
         ;;(llvm-sys:dump fn)
         (let* ((function-name "_claspObjectFileStartUp") ; (core:bformat nil "ObjectFileStartUp-%s" (core:next-number)))
-               #+(or)(_ (core:bformat t "add-global-ctor-function name: %s%N" function-name))
                (outer-fn (irc-simple-function-create
                           function-name
                           %fn-ctor%
@@ -862,10 +861,10 @@ have it call the main-function"
           (irc-set-insert-point-basic-block entry-bb irbuilder-body)
           (with-landing-pad nil
             (with-irbuilder (irbuilder-body)
-              (let* ((bc-main-function (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer"))
-                     (_                (irc-create-call ctor-fn nil))
-                     (_1               (irc-ret-void)))
-                (declare (ignore _ _1 bc-main-function)))))
+              (let ((bc-main-function
+                      (irc-bit-cast main-function %fn-start-up*% "fnptr-pointer")))
+                (irc-create-call ctor-fn nil)
+                (irc-ret-void))))
           (add-llvm.used *the-module* outer-fn)))
       ctor-fn)))
 
@@ -883,10 +882,10 @@ have it call the main-function"
            (entry-bb (irc-basic-block-create "entry" fn)))
       (irc-set-insert-point-basic-block entry-bb irbuilder-body)
       (with-irbuilder (irbuilder-body)
-        (let* ((bc-bf (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer"))
-               (_     (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf))
-               (_1     (irc-ret-null-t*)))
-          (declare (ignore _ _1)))
+        (let ((bc-bf
+                (irc-bit-cast run-all-function %fn-start-up*% "run-all-pointer")))
+          (irc-intrinsic "cc_invoke_sub_run_all_function" bc-bf)
+          (irc-ret-null-t*))
         ;;(llvm-sys:dump fn)
         fn))))
 
@@ -1169,21 +1168,16 @@ It has appending linkage.")
 
 (defun compile-file-quick-module-pathname (file-name-modifier &optional (cfo-pathname *compile-file-output-pathname*))
   (let* ((name-suffix (bformat nil "%05d-%s" (core:next-number) file-name-modifier))
-         (base-path (pathname (core:monitor-directory)))
          (cfo-directory0 (pathname-directory cfo-pathname))
-;;;         (_ (format t "cfo-directory0: ~s~%" cfo-directory0))
-;;;         (_ (format t "test ~s~%" (and (consp cfo-directory0) (eq (car cfo-directory0) :absolute))))
          (cfo-directory (make-pathname :directory
                                        (cond
                                          ((and (consp cfo-directory0)
                                                (eq (car cfo-directory0) :absolute))
                                           (list* :relative (cdr cfo-directory0)))
                                          (t cfo-directory0))))
-;;;         (_ (format t "cfo-directory: ~s~%" cfo-directory))
          (full-directory (if cfo-directory
                              (merge-pathnames cfo-directory (core:monitor-directory))
                              (core:monitor-directory)))
-;;;         (_ (format t "full-directory: ~s~%" full-directory))
          (output-path (make-pathname
                        :name (concatenate
                               'string
@@ -1191,7 +1185,6 @@ It has appending linkage.")
                               "-" name-suffix)
                        :type "ll"
                        :defaults full-directory)))
-    (declare (ignore base-path))
     (cmp-log "Dumping module to %s%N" output-path)
     (ensure-directories-exist output-path)
     output-path))

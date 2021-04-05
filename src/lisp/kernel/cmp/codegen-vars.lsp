@@ -203,9 +203,9 @@
                (declare (ignore new-renv))
                (if closure-size
                    ;;rewrite the allocation to be the optimized size
-                   (multiple-value-bind (the-function primitive-info)
-                       (get-or-declare-function-or-error *the-module* "makeValueFrameSetParent")
-                     (declare (ignore primitive-info))
+                   (let ((the-function           
+                           (get-or-declare-function-or-error
+                            *the-module* "makeValueFrameSetParent")))
                      (let ((args (llvm-sys:call-or-invoke-get-argument-list instr)))
                        (if (null args) (error "The args returned by call-or-invoke-get-argument-list for makeValueFrameSetParent are NIL"))
                        (let ((parent-renv (car (last args))))
@@ -402,18 +402,20 @@
           (start-env (lexical-function-reference-start-env funcref))
           (function-env (lexical-function-reference-function-env funcref)))
       (declare (ignore old-depth))
-      (let ((new-depth (core:calculate-runtime-visible-environment-depth start-env function-env)))
-        (multiple-value-bind (the-function primitive-info)
-            (get-or-declare-function-or-error *the-module* "va_lexicalFunction")
-          (declare (ignore primitive-info))
-          (cv-log "About to replace call to %s%N" instr)
-          (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
-                 (start-renv (car (last args))))
-            (llvm-sys:replace-call the-function
-                                   instr
-                                   (list (jit-constant-size_t new-depth)
-                                         (jit-constant-size_t index)
-                                         start-renv))))))))
+      (let ((new-depth
+              (core:calculate-runtime-visible-environment-depth
+               start-env function-env))
+            (the-function
+              (get-or-declare-function-or-error
+               *the-module* "va_lexicalFunction")))
+        (cv-log "About to replace call to %s%N" instr)
+        (let* ((args (llvm-sys:call-or-invoke-get-argument-list instr))
+               (start-renv (car (last args))))
+          (llvm-sys:replace-call the-function
+                                 instr
+                                 (list (jit-constant-size_t new-depth)
+                                       (jit-constant-size_t index)
+                                       start-renv)))))))
 
 (defun optimize-closures (variable-map make-value-environment-instructions)
   (let ((closure-environments (make-hash-table)))

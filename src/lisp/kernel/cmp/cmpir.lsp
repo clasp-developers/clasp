@@ -1386,14 +1386,8 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-intrinsic-invoke (function-name args &optional (landing-pad *current-unwind-landing-pad-dest*) (label ""))
   (irc-intrinsic-call-or-invoke function-name args label landing-pad))
   
-(defun irc-intrinsic (function-name &rest args &aux (label ""))
-  (let* ((last-arg (car (last args)))
-	 (real-args args))
-    (declare (ignorable real-args))
-    (when (stringp last-arg)
-      (setq real-args (nbutlast args))
-      (setq label last-arg))
-    (irc-intrinsic-call-or-invoke function-name args label *current-unwind-landing-pad-dest*)))
+(defun irc-intrinsic (function-name &rest args)
+  (irc-intrinsic-call-or-invoke function-name args))
 
 ;; Helper functions
 

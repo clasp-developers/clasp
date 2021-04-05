@@ -346,13 +346,12 @@ No DIBuilder is defined for the default module")
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 (defun jit-constant-unique-string-ptr (str &optional (label "unique-str"))
-  (declare (ignore label))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
   (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
                  *the-module* str
                  (bformat nil "str-%s" str))))
-    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
+    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 label)))
 
 
 (defun module-make-global-string (str &optional (label ""))
@@ -361,18 +360,8 @@ No DIBuilder is defined for the default module")
   (or *the-module* (error "module-make-global-string-ptr *the-module* is NIL"))
   (let* ((unique-string-global-variable
           (llvm-sys:get-or-create-uniqued-string-global-variable
-           *the-module* str (bformat nil ":::global-str-%s" str)))
-         (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty (thread-local-llvm-context)) (1+ (length str)))))
-    (declare (ignore string-type))
+           *the-module* str (bformat nil ":::global-str-%s" str))))
     unique-string-global-variable))
-#|
-    (let ((gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
-                string-type
-                unique-string-global-variable
-                (list (jit-constant-i32 0) (jit-constant-i32 0)))))
-      gep)))
-|#
-
 
 (defun search* (sym list)
   (if (null list)

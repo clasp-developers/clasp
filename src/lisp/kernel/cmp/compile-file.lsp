@@ -36,8 +36,7 @@
 (defvar *compiler-timer-protection* nil)
 
 (defun do-compiler-timer (closure &rest args &key message report-link-time verbose override)
-  (declare (ignore message)
-           (ignorable report-link-time))
+  (declare (ignorable message report-link-time verbose))
   (cond (override
 	 (let* ((*compiler-timer-protection* nil))
 	   (apply #'do-compiler-timer closure args)))
@@ -51,13 +50,12 @@
                 (llvm-sys:*number-of-clang-links* 0))
            (multiple-value-prog1
                (do-compiler-timer closure)
-             (let ((llvm-finalization-time llvm-sys:*accumulated-llvm-finalization-time*)
-                   (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
-                   (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
-                   (link-time llvm-sys:*accumulated-clang-link-time*))
-               (declare (ignore llvm-finalization-time compiler-real-time compiler-run-time link-time))
-               (when verbose
-                 #+(or)
+             #+(or)
+             (when verbose
+               (let ((llvm-finalization-time llvm-sys:*accumulated-llvm-finalization-time*)
+                     (compiler-real-time (/ (- (get-internal-real-time) *compiler-real-time*) (float internal-time-units-per-second)))
+                     (compiler-run-time (/ (- (get-internal-run-time) *compiler-run-time*) (float internal-time-units-per-second)))
+                     (link-time llvm-sys:*accumulated-clang-link-time*))
                  (let* ((link-string (if report-link-time
                                         (core:bformat nil " link(%.1f)" link-time)
                                         ""))
@@ -81,9 +79,10 @@
                    (finish-output)))))))
         (t (funcall closure))))
 
-(defmacro with-compiler-timer ((&key message report-link-time verbose override) &rest body)
-  (declare (ignore override))
-  `(do-compiler-timer (lambda () (progn ,@body)) :message ,message :report-link-time ,report-link-time :verbose ,verbose))
+(defmacro with-compiler-timer ((&key message report-link-time verbose)
+                               &body body)
+  `(do-compiler-timer (lambda () (progn ,@body))
+     :message ,message :report-link-time ,report-link-time :verbose ,verbose))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -250,9 +249,7 @@ Compile a lisp source file into an LLVM module."
 				    :format-control "compile-file-to-module could not find the file ~s to open it"
 				    :format-arguments (list given-input-pathname))))
          (source-sin (open input-pathname :direction :input :external-format (or external-format :default)))
-         (module (llvm-create-module (namestring input-pathname)))
-	 (module-name (cf-module-name type given-input-pathname)))
-    (declare (ignore module-name))
+         (module (llvm-create-module (namestring input-pathname))))
     (or module (error "module is NIL"))
     (with-open-stream (sin source-sin)
       (when *compile-verbose*

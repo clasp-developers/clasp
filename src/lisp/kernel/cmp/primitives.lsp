@@ -15,15 +15,11 @@
 (defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return ltvc)
   (declare (ignore name))
   (let (reversed-argument-types
-        return-ty
         return-attributes
         argument-attributes
         (index 0))
-    (declare (ignorable  return-ty))
-    (if (consp return-ty-attributes)
-        (setf return-ty (car return-ty-attributes)
-              return-attributes (cdr return-ty-attributes))
-        (setf return-ty return-ty-attributes))
+    (when (consp return-ty-attributes)
+      (setf return-attributes (cdr return-ty-attributes)))
     (dolist (arg passed-args-ty)
       (if (consp arg)
           (let ((arg-ty (car arg))
