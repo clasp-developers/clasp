@@ -137,6 +137,10 @@
   (or (gethash iblock *unwind-ids*)
       (error "Missing unwind ID for ~a" iblock)))
 
+;; Does this iblock have nonlocal entrances?
+(defun has-entrances-p (iblock)
+  (not (cleavir-set:empty-set-p (bir:entrances iblock))))
+
 (defun find-llvm-function-info (function)
   (or (gethash function *function-info*)
       (error "Missing llvm function info for BIR function ~a." function)))

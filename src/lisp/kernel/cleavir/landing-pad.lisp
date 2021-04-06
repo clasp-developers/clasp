@@ -172,10 +172,6 @@
 
 (defgeneric compute-maybe-entry-processor (dynenv tags))
 
-;; Does this iblock have nonlocal entrances?
-(defun has-entrances-p (iblock)
-  (not (cleavir-set:empty-set-p (cleavir-bir:entrances iblock))))
-
 ;; Is this iblock a place unknown values are nonlocally returned to?
 (defun nonlocal-valued-p (iblock)
   (let ((inputs (cleavir-bir:inputs iblock)))

@@ -292,30 +292,39 @@
 
 (defun translate-sjlj-catch (catch successors)
   ;; Call setjmp, switch on the result.
-  (let ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
+  (let ((normal-successor (first successors))
+        (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "jmp-buf")))
     (out (cmp:irc-bit-cast bufp cmp:%t*%) catch)
-    (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
-           (blocks (loop repeat (length (rest successors))
-                         collect (cmp:irc-basic-block-create
-                                  "catch-restore")))
-           (default (cmp:irc-basic-block-create "catch-default"))
-           (sw (cmp:irc-switch sj default (length successors))))
-      (cmp:irc-begin-block default)
-      (cmp:irc-unreachable)
-      (cmp:irc-add-case sw (%i32 0) (first successors))
-      (loop for succ in (rest successors)
-            for block in blocks
-            for iblock in (rest (bir:next catch))
-            for phi = (when (and (= (length (bir:inputs iblock)) 1)
-                                 (eq (bir:rtype
-                                      (first (bir:inputs iblock)))
-                                     :multiple-values))
-                        (first (bir:inputs iblock)))
-            for i from 1
-            do (cmp:irc-add-case sw (%i32 i) block)
-               (cmp:irc-begin-block block)
-               (when phi (phi-out (restore-multiple-value-0) phi block))
-               (cmp:irc-br succ)))))
+    (multiple-value-bind (iblocks blocks successors)
+        ;; We only care about iblocks that are actually unwound to.
+        (loop for iblock in (rest (bir:next catch))
+              for successor in (rest successors)
+              when (has-entrances-p iblock)
+                collect iblock into iblocks
+                and collect (cmp:irc-basic-block-create "catch-restore")
+                      into blocks
+                and collect successor into successors
+              finally (return (values iblocks blocks successors)))
+      (let* ((sj (%intrinsic-call "_setjmp" (list bufp)))
+             (default (cmp:irc-basic-block-create "catch-default"))
+             (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
+        (cmp:irc-begin-block default)
+        (cmp:irc-unreachable)
+        (cmp:irc-add-case sw (%i32 0) normal-successor)
+        (loop for succ in successors
+              for block in blocks
+              for iblock in iblocks
+              for destination-id = (get-destination-id iblock)
+              for phi = (when (and (= (length (bir:inputs iblock)) 1)
+                                   (eq (bir:rtype
+                                        (first (bir:inputs iblock)))
+                                       :multiple-values))
+                          (first (bir:inputs iblock)))
+              ;; 1+ because we can't pass 0 to longjmp, as in unwind below.
+              do (cmp:irc-add-case sw (%i32 (1+ destination-id)) block)
+                 (cmp:irc-begin-block block)
+                 (when phi (phi-out (restore-multiple-value-0) phi block))
+                 (cmp:irc-br succ))))))
 
 (defmethod translate-terminator ((instruction bir:catch) abi next)
   (declare (ignore abi))
@@ -357,7 +366,7 @@
         ;;  the dynamic environment must just be the function.)
         (let ((bufp (cmp:irc-bit-cast cont cmp::%jmp-buf-tag*%)))
           (%intrinsic-invoke-if-landing-pad-or-call
-           ;; `+ because we can't pass 0 to longjmp.
+           ;; 1+ because we can't pass 0 to longjmp.
            "_longjmp" (list bufp (%i32 (1+ destination-id)))))
         ;; C++ exception
         (cmp:with-landing-pad (never-entry-landing-pad
@@ -1368,8 +1377,8 @@
     ;; Assign IDs to unwind destinations.
     (let ((i 0))
       (cleavir-set:doset (entrance (bir:entrances function))
-                         (setf (gethash entrance *unwind-ids*) i)
-                         (incf i)))
+        (setf (gethash entrance *unwind-ids*) i)
+        (incf i)))
     (setf (gethash function *function-info*)
           (allocate-llvm-function-info function :linkage linkage)))
   (allocate-module-constants module)
