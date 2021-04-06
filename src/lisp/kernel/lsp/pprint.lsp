@@ -1334,10 +1334,20 @@
 
 (defun pprint-flet (stream list &rest noise)
   (declare (ignore noise))
-  (funcall (formatter
-	    "~:<~^~W~^ ~@_~:<~@{~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~:@_~@{~W~^ ~_~}~:>~^ ~_~}~:>~1I~@:_~@{~W~^ ~_~}~:>")
-	   stream
-	   list))
+  (if (and (consp list)
+           (consp (cdr list))
+           (not (null (cddr list))))
+      (funcall (formatter
+	        "~:<~^~W~^ ~@_~:<~@{~:<~^~W~^~3I ~:_~/SI:PPRINT-LAMBDA-LIST/~1I~:@_~@{~W~^ ~_~}~:>~^ ~_~}~:>~1I~@:_~@{~W~^ ~_~}~:>")
+	       stream
+	       list)
+      ;; Things like (labels foo) function names.
+      (pprint-logical-block (stream list :prefix "(" :suffix ")")
+        (pprint-exit-if-list-exhausted)
+        (write (pprint-pop) :stream stream)
+        (loop (pprint-exit-if-list-exhausted)
+              (write-char #\Space stream)
+              (write (pprint-pop) :stream stream)))))
 
 (defun pprint-let (stream list &rest noise)
   (declare (ignore noise))
