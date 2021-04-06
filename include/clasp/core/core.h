@@ -276,6 +276,9 @@ struct size_t_pair {
 #include <serializerNode.fwd.h>
 #endif
 
+
+void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size);
+
 namespace core {
   extern bool _ClassesAreInitialized;
   typedef uint handleType;
@@ -910,6 +913,7 @@ uint64_t lisp_nameword(T_sp name);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7);
   T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8);
+
 
 //    void lisp_setGlobalInt(const string& package, const string& n, uint val );
 //    Symbol_sp lisp_allocate_packageless_sid(string const& n);

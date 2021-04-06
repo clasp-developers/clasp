@@ -220,7 +220,7 @@ public:
 
   template <typename RT, class... ARGS>
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicMethoidType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicMethoidType::method_entry_point);
@@ -233,7 +233,7 @@ public:
   template <typename RT, class... ARGS>
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...) const,
                       string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
@@ -246,7 +246,7 @@ public:
   template <typename RT, class... ARGS>
   externalClass_ &def(const string &name, RT (OT::ExternalType::*mp)(ARGS...),
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...)>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
@@ -259,7 +259,7 @@ public:
   template <typename RT, class... ARGS>
   externalClass_ &def(const string &name, RT (OT::ExternalType::*mp)(ARGS...) const,
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
     using VariadicType = IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...) const>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);

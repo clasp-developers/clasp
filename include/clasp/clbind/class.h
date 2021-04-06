@@ -721,6 +721,7 @@ public:
     detail::check_link_compatibility();
 #endif
     LOG_SCOPE(("%s:%d Registing class_ %s\n", __FILE__, __LINE__, name));
+    
     init();
     this->_outer_scope->operator,(*this);
   }
@@ -789,6 +790,7 @@ public:
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
+    maybe_test_function_pointer_dladdr_dlsym(ss.str(),(void*)sig,sizeof(sig));
     this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
     this->m_init_counter++;
     return *this;
@@ -969,6 +971,7 @@ private:
   class_ &virtual_def(const std::string& name, F const& fn,
                       Policies const& policies_,
                       Default const& default_) {
+    maybe_test_function_pointer_dladdr_dlsym(name,(void*)fn,sizeof(fn));
     this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies_));
     this->add_default_member(new detail::memfun_registration<T, Default, Policies>(name, default_,policies_));
     return *this;
@@ -981,6 +984,7 @@ private:
   class_ &virtual_def(const std::string &name, F const &fn,
                       Policies const &policies,
                       reg::null_type) {
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&fn,sizeof(fn));
     this->add_member(new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }

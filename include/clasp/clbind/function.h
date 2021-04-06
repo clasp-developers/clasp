@@ -253,6 +253,7 @@ scope_* fndef(char const *name, F f, Policies const &policies, string const &lam
 
 template <class F>
 scope_* fndef(char const *name, F f, string const &lambdalist = "", string const &declares = "", string const &docstring = "") {
+  maybe_test_function_pointer_dladdr_dlsym(name,(void*)f,sizeof(f));
   return fndef(name, f, policies<>(), lambdalist, declares, docstring);
 }
 #endif

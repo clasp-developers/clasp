@@ -301,6 +301,7 @@ public:
   class_& def(string const &name, RT (OT::*mp)(ARGS...),
               string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
   {
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     std::string pkgName;
     std::string symbolName;
     core::colon_split(name,pkgName,symbolName);
@@ -321,6 +322,7 @@ public:
   class_& def(string const &name, RT (OT::*mp)(ARGS...) const,
               string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
   {
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     std::string pkgName;
     std::string symbolName;
     core::colon_split(name,pkgName,symbolName);

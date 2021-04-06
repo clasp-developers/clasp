@@ -31,6 +31,7 @@ THE SOFTWARE.
 //
 
 #include <csignal>
+#include <dlfcn.h>
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -1672,6 +1673,32 @@ uint32_t lisp_random()
 }
 
 };
+
+size_t global_pointerCount = 0;
+size_t global_goodPointerCount = 0;
+void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size ) {
+  if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
+  global_pointerCount++;
+  Dl_info info;
+  int ret = dladdr( functionPointer, &info );
+  if ( ret == 0 ) {
+    printf("%s:%d %lu/%lu  dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
+    return;
+  }
+  if (!info.dli_sname) {
+    printf("%s:%d %lu/%lu  dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
+    return;
+  }
+  if (info.dli_saddr != functionPointer) {
+    printf("%s:%d %lu/%lu  dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
+    return;
+  }
+  if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
+    printf("%s:%d %lu/%lu dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
+    return;
+  }
+  global_goodPointerCount++;
+}
 
 
 

@@ -89,6 +89,18 @@ THE SOFTWARE.
 namespace core {
 
 
+
+void walk_loaded_objects_symbol_table(SymbolCallback* callback) {
+//    printf("Add support to walk symbol tables and stackmaps for DARWIN\n");
+  uint32_t num_loaded = _dyld_image_count();
+  for ( size_t idx = 0; idx<num_loaded; ++idx ) {
+    const char* filename = _dyld_get_image_name(idx);
+    printf("%s:%d:%s  loaded object[%lu]: %s\n", __FILE__, __LINE__, __FUNCTION__, idx, filename );
+    // Here call for library
+  }
+}
+
+
 static void
 format_display_size(char buf[5], uint64_t size) {
 	const char scale[] = { 'B', 'K', 'M', 'G', 'T', 'P', 'E' };

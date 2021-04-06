@@ -1215,6 +1215,7 @@ def configure(cfg):
 #    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    log.debug("DEBUG includes_from_build_dir = %s", includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++17'])
+
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     if (cfg.env.LTO_FLAG):
         cfg.env.append_value('CXXFLAGS', cfg.env.LTO_FLAG )
@@ -1259,6 +1260,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', '-lexecinfo')
     if (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
+        cfg.env.append_value('LINKFLAGS', [ "-undefined", "dynamic_lookup" ] )
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
         lto_library = "%s/%s" % ( llvm_liblto_dir, lto_library_name)
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
@@ -1877,7 +1879,7 @@ class link_fasl(clasp_task):
                 lto_optimize_flag = ""
             link_options = self.bld.env['LINKFLAGS']
             if (self.env['DEST_OS'] == DARWIN_OS):
-                link_options = link_options + [ "-flat_namespace", "-undefined", "suppress", "-bundle" ]
+                link_options = link_options + [ "-flat_namespace", "-undefined", "dynamic_lookup", "-bundle" ]
             else:
                 link_options = link_options + [ "-shared" ]
             cmd = [self.env.CXX[0]] + \

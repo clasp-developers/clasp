@@ -366,6 +366,7 @@ public:
   {
     typedef policies<PTypes...> Policies;
     Policies curPolicies;
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&f,sizeof(f));
     walk_policy(curPolicies,pols...);
     return this->virtual_def(name, f, curPolicies,reg::null_type());
   }
@@ -601,6 +602,7 @@ private:
   derivable_class_& virtual_def(char const* name, F const& fn
                                 , Default const& default_, Policies const&, boost::mpl::false_)
   {
+    maybe_test_function_pointer_dladdr_dlsym(name,(void*)fn,sizeof(fn));
     this->add_member(
                      new detail::memfun_registration<T, F, Policies>(
                                                                      name, fn, Policies()));
@@ -618,6 +620,7 @@ private:
   template <class F, class Policies>
   derivable_class_ &virtual_def(char const *name, F const &fn,
                                 Policies const &policies, reg::null_type) {
+    maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&fn,sizeof(fn));
     this->add_member( new detail::memfun_registration<T, F, Policies>(name, fn, policies));
     return *this;
   }
@@ -670,6 +673,7 @@ public:
     if (this->m_init_counter) {
       ss << this->m_init_counter;
     }
+    maybe_test_function_pointer_dladdr_dlsym(ss.str(),(void*)sig,sizeof(sig));
     this->def_constructor_(ss.str(),&sig,policies<>(),"","","");
     this->m_init_counter++;
     return *this;
