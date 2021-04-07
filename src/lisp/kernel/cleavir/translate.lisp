@@ -389,6 +389,7 @@
   (cmp:irc-br (first next)))
 
 (defmethod undo-dynenv ((dynenv cc-bir:bind) tmv)
+  (declare (ignore tmv))
   (%intrinsic-call "cc_resetTLSymbolValue" (dynenv-storage dynenv)))
 
 (defmethod translate-terminator
