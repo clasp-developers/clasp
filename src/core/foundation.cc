@@ -1676,6 +1676,8 @@ uint32_t lisp_random()
 
 size_t global_pointerCount = 0;
 size_t global_goodPointerCount = 0;
+std::vector<std::string> global_mangledFunctionNames;
+
 void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size ) {
   if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
   global_pointerCount++;
@@ -1697,8 +1699,19 @@ void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* fun
     printf("%s:%d %lu/%lu dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
     return;
   }
+  global_mangledFunctionNames.push_back(info.dli_sname);
   global_goodPointerCount++;
 }
 
+
+namespace core {
+CL_DEFUN void core__mangledFunctionNames() {
+  printf("# Dumping %lu mangled function names\n", global_mangledFunctionNames.size());
+  for ( size_t ii=0; ii<::global_mangledFunctionNames.size(); ++ii ) {
+    printf("%s\n", ::global_mangledFunctionNames[ii].c_str() );
+  }
+};
+
+};
 
 
