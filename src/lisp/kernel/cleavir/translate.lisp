@@ -140,21 +140,6 @@
   ;; Continue
   (cmp:irc-br (first next)))
 
-#+(or)
-(defmethod translate-terminator ((instruction bir:alloca) abi next)
-  (declare (ignore abi))
-  ;; For now, we only handle m-v-prog1.
-  (assert (eq (bir:rtype instruction) :multiple-values))
-  (with-return-values (return-value abi nvalsl return-regs)
-    (declare (ignore return-regs))
-    (let* ((nvals (cmp:irc-load nvalsl))
-           ;; NOTE: Must be done BEFORE the alloca.
-           (save (%intrinsic-call "llvm.stacksave" nil))
-           (mv-temp (cmp:alloca-temp-values nvals)))
-      (setf (dynenv-storage instruction) (list save nvals mv-temp))))
-  ;; Continue
-  (cmp:irc-br (first next)))
-
 (defgeneric undo-dynenv (dynamic-environment tmv))
 
 (defmethod undo-dynenv ((dynamic-environment bir:dynamic-leti) tmv)
@@ -164,12 +149,6 @@
   ;; ditto, and mark the continuation out of extent
   (declare (ignore tmv)))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
-  (declare (ignore tmv))
-  (destructuring-bind (stackpos storage1 storage2)
-      (dynenv-storage dynenv)
-    (declare (ignore storage1 storage2))
-    (%intrinsic-call "llvm.stackrestore" (list stackpos))))
-(defmethod undo-dynenv ((dynenv bir:alloca) tmv)
   (declare (ignore tmv))
   (destructuring-bind (stackpos storage1 storage2)
       (dynenv-storage dynenv)
@@ -1080,38 +1059,6 @@
                (%intrinsic-call "cc_load_values" (list storage1 storage2))))
            (values-collect-multi inst))
        (first (bir:outputs inst))))
-
-#+(or)
-(defmethod translate-simple-instruction ((inst bir:writetemp)
-                                         return-value abi)
-  (declare (ignore abi))
-  (let ((alloca (bir:alloca inst)))
-    (check-type alloca bir:alloca)
-    ;; only handling m-v-prog1 for the moment
-    (assert (eq (bir:rtype alloca) :multiple-values))
-    (destructuring-bind (stackpos storage1 storage2)
-        (dynenv-storage alloca)
-      (declare (ignore stackpos storage1))
-      (with-return-values (return-value abi nvalsl return-regs)
-        (%intrinsic-call
-         "cc_save_values"
-         (list (cmp:irc-load nvalsl)
-               (cmp:irc-load (return-value-elt return-regs 0))
-               storage2))))))
-
-#+(or)
-(defmethod translate-simple-instruction ((inst bir:readtemp)
-                                         return-value abi)
-  (declare (ignore abi))
-  (let ((alloca (bir:alloca inst)))
-    (check-type alloca bir:alloca)
-    (assert (eq (bir:rtype alloca) :multiple-values))
-    (destructuring-bind (stackpos storage1 storage2)
-        (dynenv-storage alloca)
-      (declare (ignore stackpos))
-      (store-tmv
-       (%intrinsic-call "cc_load_values" (list storage1 storage2))
-       return-value))))
 
 (defmethod translate-simple-instruction
     ((inst bir:load-time-value-reference) abi)
