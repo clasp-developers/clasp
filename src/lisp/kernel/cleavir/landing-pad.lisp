@@ -176,7 +176,7 @@
 (defun nonlocal-valued-p (iblock)
   (let ((inputs (cleavir-bir:inputs iblock)))
     (and (= (length inputs) 1)
-         (eq (cleavir-bir:rtype (first inputs)) :multiple-values))))
+         (eq (cc-bmir:rtype (first inputs)) :multiple-values))))
 
 (defmethod compute-maybe-entry-processor ((dynenv cleavir-bir:catch) tags)
   (if (cleavir-set:empty-set-p (cleavir-bir:unwinds dynenv))

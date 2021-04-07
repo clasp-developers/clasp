@@ -171,7 +171,7 @@
   (assert (= (length next) 1))
   (when (bir:unwindp instruction)
     (if (and (= (length (bir:outputs instruction)) 1)
-             (eq (bir:rtype (first (bir:outputs instruction)))
+             (eq (cc-bmir:rtype (first (bir:outputs instruction)))
                  :multiple-values))
         (translate-local-unwind instruction
                                 (in (first (bir:inputs instruction))))
@@ -295,7 +295,7 @@
               for iblock in iblocks
               for destination-id = (get-destination-id iblock)
               for phi = (when (and (= (length (bir:inputs iblock)) 1)
-                                   (eq (bir:rtype
+                                   (eq (cc-bmir:rtype
                                         (first (bir:inputs iblock)))
                                        :multiple-values))
                           (first (bir:inputs iblock)))
@@ -1029,7 +1029,7 @@
       (let ((ndefinitions (+ (cleavir-set:size (bir:predecessors iblock))
                              (cleavir-set:size (bir:entrances iblock)))))
         (loop for phi in phis
-              for llvm-type = (if (eq (bir:rtype phi) :multiple-values)
+              for llvm-type = (if (eq (cc-bmir:rtype phi) :multiple-values)
                                   cmp::%tmv%
                                   cmp:%t*%)
               do (setf (gethash phi *datum-values*)
