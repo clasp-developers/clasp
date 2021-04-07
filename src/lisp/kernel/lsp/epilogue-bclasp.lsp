@@ -6,7 +6,7 @@
           (let ((core:*use-interpreter-for-eval* nil))
             (core:maybe-load-clasprc)
             (core:process-command-line-load-eval-sequence)
-            (cond ((core:is-interactive-lisp)
+            (cond ((core:interactivep)
                    (unless (core:noinform-p)
                      (format t "Starting bclasp~%"))
                    (core:top-level :noprint (core:noprint-p)))

@@ -181,6 +181,7 @@
 (import 'core:argv :ext)
 (import 'core:rmdir :ext)
 (import 'core:mkstemp :ext)
+(import 'core:interactivep :ext)
 
 ;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -227,8 +228,9 @@
           with-float-traps-masked
           enable-interrupt default-interrupt ignore-interrupt
           get-signal-handler set-signal-handler
-          ;;; for asdf and slime and trivial-garbage to use ext:
-          getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid hash-table-weakness))
+          ;;; for asdf, slime, trivial-garbage and cando to use ext:
+          getpid argc argv rmdir mkstemp weak-pointer-value make-weak-pointer weak-pointer-valid
+          interactivep hash-table-weakness))
 (core:*make-special '*module-provider-functions*)
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -717,7 +719,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun default-prologue-form (&optional features)
   `(progn
      ,@(mapcar #'(lambda (f) `(push ,f *features*)) features)
-     (if (core:is-interactive-lisp)
+     (if (core:interactivep)
          (bformat t "Starting %s ... loading image...%N" (lisp-implementation-version)))))
 
 (export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10

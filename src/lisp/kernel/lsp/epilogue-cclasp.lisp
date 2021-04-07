@@ -8,6 +8,6 @@
     (core:process-extension-loads)
     (core:maybe-load-clasprc)
     (core:process-command-line-load-eval-sequence)
-    (if (core:is-interactive-lisp)
+    (if (core:interactivep)
         (core:top-level :noprint (core:noprint-p))
         (core:exit 0))))

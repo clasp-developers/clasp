@@ -1467,7 +1467,7 @@ CL_DEFUN bool core__debugger_disabled_p() {
   return _lisp->_DebuggerDisabled;
 }
 
-CL_DEFUN bool core__is_interactive_lisp() {
+CL_DEFUN bool core__interactivep() {
   return _lisp->_Interactive;
 }
 
