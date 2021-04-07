@@ -55,7 +55,7 @@
   (case (cleavir-primop-info:name (bir:info primop))
     ((cleavir-primop:car)
      (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output :rtype :address)))
+           (nout (make-instance 'bir:output)))
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
@@ -64,7 +64,7 @@
          (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:cdr)
      (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output :rtype :address)))
+           (nout (make-instance 'bir:output)))
        (change-class primop 'cc-bmir:load :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs in :outputs (list nout)
@@ -73,7 +73,7 @@
          (setf (bir:inputs primop) (list nout)))))
     ((cleavir-primop:rplaca)
      (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output :rtype :address)))
+           (nout (make-instance 'bir:output)))
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)
@@ -82,7 +82,7 @@
          (setf (bir:inputs primop) (list (second in) nout)))))
     ((cleavir-primop:rplacd)
      (let ((in (bir:inputs primop))
-           (nout (make-instance 'bir:output :rtype :address)))
+           (nout (make-instance 'bir:output)))
        (change-class primop 'cc-bmir:store :inputs ())
        (let ((mr (make-instance 'cc-bmir:memref2
                    :inputs (list (first in)) :outputs (list nout)

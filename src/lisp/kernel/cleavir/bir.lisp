@@ -32,7 +32,7 @@
                (let* ((next (ast-to-bir:make-iblock
                              inserter :dynamic-environment ode))
                       (phi (make-instance 'bir:phi
-                             :iblock next :rtype :multiple-values)))
+                             :iblock next)))
                  (setf (bir:inputs next) (list phi))
                  (ast-to-bir:terminate
                   inserter
@@ -76,7 +76,7 @@
     ((ast cc-ast:multiple-value-foreign-call-ast) inserter system)
   (ast-to-bir:with-compiled-arguments (args (cc-ast:argument-asts ast)
                                             inserter system)
-    (let ((output (make-instance 'bir:output :rtype :multiple-values)))
+    (let ((output (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
        (make-instance 'mv-foreign-call
@@ -148,7 +148,7 @@
   (ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address))
+    (let ((mr2-out (make-instance 'bir:output))
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
@@ -164,7 +164,7 @@
   (ast-to-bir:with-compiled-asts (args ((cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address))
+    (let ((mr2-out (make-instance 'bir:output))
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
@@ -182,7 +182,7 @@
                                         (cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object :object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address)))
+    (let ((mr2-out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:memref2
@@ -200,7 +200,7 @@
                                         (cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object :object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address)))
+    (let ((mr2-out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
        (make-instance 'cc-bmir:memref2
@@ -218,7 +218,7 @@
                                         (cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object :object :object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address))
+    (let ((mr2-out (make-instance 'bir:output))
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
@@ -237,7 +237,7 @@
                                         (cleavir-ast:cons-ast ast))
                                        inserter system
                                        (:object :object :object))
-    (let ((mr2-out (make-instance 'bir:output :rtype :address))
+    (let ((mr2-out (make-instance 'bir:output))
           (out (make-instance 'bir:output)))
       (ast-to-bir:insert
        inserter
