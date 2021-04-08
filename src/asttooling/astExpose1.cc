@@ -815,6 +815,34 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_
 CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARclangAccessSpecifierSTAR);
 
 namespace asttooling {
+
+llvm::APSInt 	getAsIntegral(clang::TemplateArgument* arg) {
+  return arg->getAsIntegral();
+}
+
+bool isIntegerType(clang::Type* ty) {
+  return ty->isIntegerType();
+}
+
+
+QualType getElementType (clang::ArrayType* array_type) {
+  return array_type->getElementType();
+}
+
+QualType getInnerType (clang::ParenType* paren_type) {
+  return paren_type->getInnerType();
+}
+
+clang::QualType getPointeeType(clang::Type* type) {
+  if ( auto* ptr = llvm::dyn_cast<clang::PointerType>(type) ) {
+    return ptr->getPointeeType();
+  } else if (auto* mptr = llvm::dyn_cast<clang::MemberPointerType>(type) ) {
+    return mptr->getPointeeType();
+  }
+  SIMPLE_ERROR(BF("getPointeeType only accepts PointerType and MemberPointerType"));
+}
+
+
 void initialize_astExpose() {
   core::Package_sp pkg = gc::As<core::Package_sp>(_lisp->findPackage(ClangAstPkg)); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::SimpleBaseString_O::make("TYPE"));
@@ -1105,8 +1133,9 @@ void initialize_astExpose() {
         //            .  def("getAsStructureType",&clang::Type::getAsStructureType)
     .def("getAsTemplateSpecializationType", &clang::Type::getAs<clang::TemplateSpecializationType>,
          "Specialization of getAs<TemplateSpecializationType>", "", "")
-    .def("isIntegerType", &clang::Type::isIntegerType)
+//    .def("isIntegerType", &clang::Type::isIntegerType)
     .def("getCanonicalTypeInternal", &clang::Type::getCanonicalTypeInternal);
+  m.def("isIntegerType",&isIntegerType);
   m.def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL", "(arg)"_ll);
 
 #define CLASS_TYPE(_m_,_Class_, _Base_) class_<_Class_##Type, _Base_>(_m_,#_Class_ "Type")
@@ -1114,8 +1143,9 @@ void initialize_astExpose() {
     .def("desugar", &clang::BuiltinType::desugar);
   CLASS_TYPE(m,Complex, Type);
   CLASS_TYPE(m,Pointer, Type)
-    .def("desugar", &clang::PointerType::desugar)
-    .def("getPointeeType", &clang::PointerType::getPointeeType);
+    .def("desugar", &clang::PointerType::desugar);
+  //    .def("getPointeeType", &clang::PointerType::getPointeeType);
+  m.def("getPointeeType",&getPointeeType);
   CLASS_TYPE(m,BlockPointer, Type);
   CLASS_TYPE(m,Reference, Type);
   CLASS_TYPE(m,LValueReference, ReferenceType)
@@ -1123,10 +1153,10 @@ void initialize_astExpose() {
   CLASS_TYPE(m,RValueReference, ReferenceType)
     .def("desugar", &clang::RValueReferenceType::desugar);
   CLASS_TYPE(m,MemberPointer, Type)
-    .def("desugar", &clang::MemberPointerType::desugar)
-    .def("getPointeeType", &clang::MemberPointerType::getPointeeType);
-  CLASS_TYPE(m,Array, Type)
-    .def("getElementType", &clang::ArrayType::getElementType);
+    .def("desugar", &clang::MemberPointerType::desugar);
+//    .def("getPointeeType", &clang::MemberPointerType::getPointeeType);
+  CLASS_TYPE(m,Array, Type);
+  m.def("getElementType", &getElementType);
   CLASS_TYPE(m,ConstantArray, ArrayType)
     .def("desugar", &clang::ConstantArrayType::desugar);
   m.def("constant-array-get-size", &af_constant_array_get_size, "returns the size of the constant array", "(constant-array)"_ll);
@@ -1144,8 +1174,9 @@ void initialize_astExpose() {
     .def("desugar", &clang::FunctionProtoType::desugar);
   CLASS_TYPE(m,FunctionNoProto, FunctionType);
   CLASS_TYPE(m,UnresolvedUsing, Type);
-  CLASS_TYPE(m,Paren, Type)
-    .def("getInnerType", &clang::ParenType::getInnerType);
+  CLASS_TYPE(m,Paren, Type);
+//    .def("getInnerType", &clang::ParenType::getInnerType);
+  m.def("getInnerType", &getInnerType);
   CLASS_TYPE(m,Typedef, Type)
     .def("getDecl", &clang::TypedefType::getDecl)
     .def("isSugared", &clang::TypedefType::isSugared)
@@ -1213,12 +1244,12 @@ void initialize_astExpose() {
     .def("pack_size", &clang::TemplateArgument::pack_size)
     .def("getPackAsArray", &clang::TemplateArgument::getPackAsArray)
     .def("getAsType", &clang::TemplateArgument::getAsType)
-    .def("getAsIntegral", &clang::TemplateArgument::getAsIntegral)
     .def("getAsTemplate", &clang::TemplateArgument::getAsTemplate)
     .def("getNullPtrType", &clang::TemplateArgument::getNullPtrType)
     .def("getAsDecl", &clang::TemplateArgument::getAsDecl)
     .def("getAsExpr", &clang::TemplateArgument::getAsExpr);
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
+  m.def("getAsIntegral", &getAsIntegral);
   enum_<clang::TemplateArgument::ArgKind>(m,asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)
     .value("argkind-Type", clang::TemplateArgument::ArgKind::Type)
     .value("argkind-Null", clang::TemplateArgument::ArgKind::Null)

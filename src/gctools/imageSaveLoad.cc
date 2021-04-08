@@ -11,6 +11,7 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <filesystem>
@@ -1255,6 +1256,46 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       }
     }
   }
+  //
+  // This generates a symbol table for the _Library
+  //
+  void generateSymbolTable() {
+    Dl_info info;
+    for (size_t ii = 0; ii<this->_Library._GroupedPointers.size(); ++ii ) {
+      uintptr_t address = this->_Library._GroupedPointers[ii]._address;
+      int ret = dladdr( (void*)address, &info );
+      if ( ret == 0 ) {
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved using dladdr\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               (void*)address);
+        abort();
+      }
+      if (info.dli_sname == NULL) {
+        printf("%s:%d:%s During snapshot save the address %p could not be resolved to a symbol name using dladdr\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               (void*)address);
+        abort();
+      }
+      std::string sname(info.dli_sname);
+      uint addressOffset = (address - (uintptr_t)info.dli_saddr);
+      this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
+                                                  (uint)sname.size(),
+                                                  this->_Library._SymbolBuffer.size() );
+        std::copy( sname.begin(), sname.end(), std::back_inserter(this->_Library._SymbolBuffer) );
+        this->_Library._SymbolBuffer.push_back('\0');
+#if 0
+        printf("%s:%d:%s #%lu symbolLength: %u offset: %u match: %d  start: %p end: %p  %s\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               ii,
+               this->_Library._SymbolInfo[ii]._SymbolLength,
+               this->_Library._SymbolInfo[ii]._SymbolOffset,
+               ((uintptr_t)address == (uintptr_t)start),
+               (void*)start,
+               (void*)end,
+               sname.c_str());
+#endif
+      }
+    }
 };
 
 
@@ -1336,6 +1377,31 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       }
     }
   }
+
+  void loadSymbols() {
+    size_t num = this->_Library._SymbolInfo.size();
+    for (size_t ii = 0; ii<num; ++ii ) {
+      size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
+      size_t gpindex = ii;
+      const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
+      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,myName);
+      if (!dlsymStart) {
+        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        abort();
+      }
+      this->_Library._GroupedPointers[gpindex]._address = dlsymStart;
+#if 0
+      printf("%s:%d:%s GroupedPointers[%lu] restored address %p  offset: %lu saved symbol address %p @%p\n     name: %s\n",
+             __FILE__, __LINE__, __FUNCTION__,
+             gpindex,
+             (void*)dlsymStart,
+             this->_Library._SymbolInfo[ii]._AddressOffset,
+             (void*)this->_Library._SymbolInfo[ii]._Address,
+             (void*)&this->_Library._SymbolInfo[ii]._Address,
+             myName);
+#endif
+    }
+  }
 };
 
 void prepareRelocationTableForSave(Fixup* fixup) {
@@ -1364,7 +1430,11 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     }
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
+#if 0
     core::walk_loaded_objects_symbol_table( &thing );
+#else
+    thing.generateSymbolTable();
+#endif
     printf("%s:%d:%s  Library #%lu contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, idx, curLib._GroupedPointers.size() );
     for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
       if (curLib._SymbolInfo[ii]._SymbolLength<0) {
@@ -1377,7 +1447,11 @@ void prepareRelocationTableForSave(Fixup* fixup) {
 void updateRelocationTableAfterLoad(ISLLibrary& curLib) {
   LoadSymbolCallback thing(curLib);
   curLib._GroupedPointers.resize(curLib._SymbolInfo.size(),NULL);
+#if 0
   core::walk_loaded_objects_symbol_table( &thing );
+#else
+  thing.loadSymbols();
+#endif
   printf("%s:%d:%s  Library %s contains %lu grouped pointers\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str(),curLib._GroupedPointers.size() );
   for ( size_t ii=0; ii<curLib._SymbolInfo.size(); ii++ ) {
     if (curLib._GroupedPointers[ii]._address == 0) {
@@ -1725,12 +1799,12 @@ void walk_temporary_root_objects( const temporary_root_holder_t& roots, Walker& 
     if (gctools::tagged_generalp(tagged_client)) {
       core::T_O* untagged_client = gctools::untag_general<core::T_O*>(tagged_client);
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(untagged_client);
-      DBG_SL_WALK_TEMP(BF("Walking to GC managed general or weak header %p %s\n") % (void*)header % header->description() );
+      DBG_SL_WALK_TEMP(BF("Walking to GC[%lu/%lu] managed general or weak header %p %s\n") % idx % roots._Number % (void*)header % header->description() );
       walker.callback(header);
     } else if (gctools::tagged_consp(tagged_client)) {
       core::T_O* untagged_client = gctools::untag_cons<core::T_O*>(tagged_client);
       gctools::Header_s* header = (gctools::Header_s*)gctools::ConsPtrToHeaderPtr(untagged_client);
-      DBG_SL_WALK_TEMP(BF("Walking to GC managed cons header %p %s\n") % (void*)header % header->description() );
+      DBG_SL_WALK_TEMP(BF("Walking to GC[%lu/%lu] managed cons header %p %s\n") % idx % roots._Number % (void*)header % header->description() );
       walker.callback(header);
     } else if (tagged_client==NULL) {
       // Do nothing

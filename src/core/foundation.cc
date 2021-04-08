@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <csignal>
 #include <dlfcn.h>
 
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -67,6 +68,9 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
 
+#ifdef _TARGET_OS_LINUX
+#include <elf.h>
+#endif
 #ifdef darwin
 #include <stdint.h>
 #include <mach/mach_time.h>
@@ -1682,25 +1686,31 @@ void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* fun
   if ((uintptr_t)functionPointer < 1024) return; // This means it's a virtual method.
   global_pointerCount++;
   Dl_info info;
+#if defined(_TARGET_OS_LINUX)
+  const Elf64_Sym* extra_info;
+  int ret = dladdr1( functionPointer, &info, (void**)&extra_info, RTLD_DL_SYMENT );
+#else
   int ret = dladdr( functionPointer, &info );
+#endif
   if ( ret == 0 ) {
-    printf("%s:%d %lu/%lu  dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
+    printf("%s:%d %lu/%lu FAIL dladdr returned 0x0 for %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, name.c_str());
     return;
   }
   if (!info.dli_sname) {
-    printf("%s:%d %lu/%lu  dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
+    printf("%s:%d %lu/%lu FAIL dladdr could not find a symbol to match %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, name.c_str());
     return;
   }
   if (info.dli_saddr != functionPointer) {
-    printf("%s:%d %lu/%lu  dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
+    printf("%s:%d %lu/%lu FAIL dladdr could not find exact match to %p - found %p of %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, functionPointer, info.dli_saddr, name.c_str());
     return;
   }
   if (dlsym( RTLD_DEFAULT, info.dli_sname ) == 0 ) {
-    printf("%s:%d %lu/%lu dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
+    printf("%s:%d %lu/%lu FAIL dlsym could not find name %s\n", __FILE__, __LINE__, (global_pointerCount-global_goodPointerCount), global_pointerCount, info.dli_sname );
     return;
   }
   global_mangledFunctionNames.push_back(info.dli_sname);
   global_goodPointerCount++;
+  return;
 }
 
 

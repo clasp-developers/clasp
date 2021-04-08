@@ -31,12 +31,6 @@ struct GroupedPointer {
   {};
 };
 
-struct RelocationTable {
-  std::vector<GroupedPointer> _groupedPointers;
-  std::vector<char>           _names;
-  std::vector<uintptr_t>      _offsets;
-};
-
 struct SymbolInfo {
   uintptr_t _Address;
   uint16_t  _AddressOffset;

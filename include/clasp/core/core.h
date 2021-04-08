@@ -277,8 +277,6 @@ struct size_t_pair {
 #endif
 
 
-void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size);
-
 namespace core {
   extern bool _ClassesAreInitialized;
   typedef uint handleType;
@@ -360,6 +358,8 @@ using set = std::set<X>;
 template <typename X>
 using deque = std::deque<X>;
 
+
+void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* functionPointer, size_t size);
 
 
 #ifdef WIN32
