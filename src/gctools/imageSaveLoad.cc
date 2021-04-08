@@ -1276,13 +1276,14 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)address);
         abort();
       }
-      uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,info.dli_sname);
+      std::string saveName(info.dli_sname);
+      uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
       if (!dlsymAddr) {
         printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
                __FILE__, __LINE__, __FUNCTION__,
                ii, this->_Library._GroupedPointers.size(),
                (void*)address,
-               info.dli_sname
+               saveName.c_str()
                );
         // abort();
       } else if ( (dlsymAddr-address) > 64 ) {
@@ -1292,7 +1293,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)address,
                (void*)dlsymAddr,
                (dlsymAddr - address),
-               info.dli_sname
+               saveName.c_str()
                );
       } else {
         printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1301,27 +1302,15 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)address,
                (void*)dlsymAddr,
                (dlsymAddr - address),
-               info.dli_sname
+               saveName.c_str()
                );
       }
-      std::string sname(info.dli_sname);
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
-                                                  (uint)sname.size(),
+                                                  (uint)saveName.size(),
                                                   this->_Library._SymbolBuffer.size() );
-        std::copy( sname.begin(), sname.end(), std::back_inserter(this->_Library._SymbolBuffer) );
+        std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
         this->_Library._SymbolBuffer.push_back('\0');
-#if 0
-        printf("%s:%d:%s #%lu symbolLength: %u offset: %u match: %d  start: %p end: %p  %s\n",
-               __FILE__, __LINE__, __FUNCTION__,
-               ii,
-               this->_Library._SymbolInfo[ii]._SymbolLength,
-               this->_Library._SymbolInfo[ii]._SymbolOffset,
-               ((uintptr_t)address == (uintptr_t)start),
-               (void*)start,
-               (void*)end,
-               sname.c_str());
-#endif
       }
     }
 };
