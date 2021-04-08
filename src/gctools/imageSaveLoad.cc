@@ -1260,8 +1260,9 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   // This generates a symbol table for the _Library
   //
   void generateSymbolTable() {
-    Dl_info info;
-    for (size_t ii = 0; ii<this->_Library._GroupedPointers.size(); ++ii ) {
+    printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
+    for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
+      Dl_info info;
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       int ret = dladdr( (void*)address, &info );
       if ( ret == 0 ) {
@@ -1286,13 +1287,13 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                saveName.c_str()
                );
         // abort();
-      } else if ( (dlsymAddr-address) > 64 ) {
+      } else if ( (address-dlsymAddr) > 64 ) {
         printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
                __FILE__, __LINE__, __FUNCTION__,
                ii, this->_Library._GroupedPointers.size(),
                (void*)address,
                (void*)dlsymAddr,
-               (dlsymAddr - address),
+               (address - dlsymAddr),
                saveName.c_str()
                );
       } else {
@@ -1301,7 +1302,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                ii, this->_Library._GroupedPointers.size(),
                (void*)address,
                (void*)dlsymAddr,
-               (dlsymAddr - address),
+               (address - dlsymAddr),
                saveName.c_str()
                );
       }
