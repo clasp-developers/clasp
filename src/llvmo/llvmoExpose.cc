@@ -1376,8 +1376,8 @@ CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout& ))
 CL_LISPIFY_NAME(setDataLayout.string);
 CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::StringRef )) & llvm::Module::setDataLayout);;
 //CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
-CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* m, llvm::StringRef T) {
-  m->setTargetTriple(T);
+CL_DEFUN void llvm_sys__setTargetTriple(llvm::Module* module, llvm::StringRef triple) {
+  module->setTargetTriple(triple);
 }
 
 
@@ -1643,7 +1643,7 @@ namespace llvmo {
 
 
 CL_LAMBDA(triple);
-CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWRapperPass");
+CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfoWrapperPass");
 CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(llvm::Triple *tripleP) {
   GC_ALLOCATE(TargetLibraryInfoWrapperPass_O, self);
   self->_ptr = new llvm::TargetLibraryInfoWrapperPass(*tripleP);
@@ -2688,8 +2688,8 @@ CL_DEFUN llvm::FenceInst* CreateFence(llvmo::IRBuilderBase_O::ExternalType* obje
   
 CL_LISPIFY_NAME(CreateAlloca);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O, (AllocaInst* (IRBuilderBase_O::ExternalType::*)(llvm::Type *, llvm::Value *, const llvm::Twine &))&IRBuilderBase_O::ExternalType::CreateAlloca);
-CL_DEFUN llvm::AllocaInst* CreateAlloca(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Type *Ty, unsigned AddrSpace, llvm::Value *ArraySize , const llvm::Twine &Name ) {
-  return object->CreateAlloca(Ty,AddrSpace,ArraySize,Name);
+CL_DEFUN llvm::AllocaInst* CreateAlloca(llvmo::IRBuilderBase_O::ExternalType* object, llvm::Type *Ty, llvm::Value *ArraySize , const llvm::Twine &Name ) {
+  return object->CreateAlloca(Ty,ArraySize,Name);
 }
 
 CL_LISPIFY_NAME(CreateNot);
