@@ -890,6 +890,14 @@ bool contextSupportsEnvironment(T_sp context) {
 }
 
 
+/* Check to make sure target is not cl:T
+ */
+void checkTargetArgument(T_sp arg) {
+  if (arg== cl::_sym_T) {
+    SIMPLE_ERROR(BF("The argument in a lambda list cannot be T"));
+  }
+}
+
 
 /*! Process the arguments and return the components
  * context may be: ordinary, macro, destructuring, deftype,
@@ -970,6 +978,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       RequiredArgument required(oarg);
       reqs.push_back(required);
       //      printf("%s:%d   Required argument[%d] _ArgTarget@%p --> %p  array size=%d\n", __FILE__, __LINE__, reqs.size()-1, &(reqs.back()._ArgTarget.rawRef_()), reqs.back()._ArgTarget.raw_(), reqs.size());
+      checkTargetArgument(oarg);
       break;
     }
     case optional: {
@@ -990,7 +999,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
         sarg = oarg;
         LOG(BF("Optional argument was a Symbol_O[%s]") % _rep_(sarg));
       }
-
+      checkTargetArgument(sarg);
       LOG(BF("Saving _OptionalArgument(%s) default(%s) supplied(%s)") % _rep_(sarg) % _rep_(defaultValue) % _rep_(supplied));
       OptionalArgument optional(sarg, defaultValue, supplied);
       optionals.push_back(optional);
@@ -1000,6 +1009,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       if (restarg.isDefined()) {
         SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
+      checkTargetArgument(oarg);
       restarg.setTarget(oarg);
       restarg.VaRest = false;
       break;
@@ -1008,6 +1018,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       if (restarg.isDefined()) {
         SIMPLE_ERROR(BF("Only one name is allowed after &rest - you have already defined: %s") % restarg.asString());
       }
+      checkTargetArgument(oarg);
       restarg.setTarget(oarg);
       restarg.VaRest = true;
       break;
@@ -1016,6 +1027,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       if (oCdr(cur).notnilp()) {
         SIMPLE_ERROR(BF("Lambda list dot followed by more than one argument"));
       }
+      checkTargetArgument(oarg);
       restarg.setTarget(oarg);
       goto DONE;
     }
@@ -1051,6 +1063,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
         SIMPLE_ERROR(BF("key arguments must be symbol or cons"));
       }
       LOG(BF("Saving keyword(%s) local(%s) default(%s) sensor(%s)") % _rep_(keySymbol) % _rep_(localTarget) % _rep_(defaultValue) % _rep_(sensorSymbol));
+      checkTargetArgument(keySymbol);
       KeywordArgument keyed(keySymbol, localTarget, defaultValue, sensorSymbol);
       keys.push_back(keyed);
       break;
