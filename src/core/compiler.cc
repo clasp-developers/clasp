@@ -1068,8 +1068,8 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, String_sp name) {
   } else {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
-  //  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
   string ts = name->get_std_string();
+  printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, handle, ts.c_str());
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
   if( p_sym == nullptr ) {

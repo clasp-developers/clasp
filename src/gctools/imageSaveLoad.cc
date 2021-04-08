@@ -1276,6 +1276,34 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (void*)address);
         abort();
       }
+      uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,info.dli_sname);
+      if (!dlsymAddr) {
+        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               ii, this->_Library._GroupedPointers.size(),
+               (void*)address,
+               info.dli_sname
+               );
+        // abort();
+      } else if ( (dlsymAddr-address) > 64 ) {
+        printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               ii, this->_Library._GroupedPointers.size(),
+               (void*)address,
+               (void*)dlsymAddr,
+               (dlsymAddr - address),
+               info.dli_sname
+               );
+      } else {
+        printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
+               __FILE__, __LINE__, __FUNCTION__,
+               ii, this->_Library._GroupedPointers.size(),
+               (void*)address,
+               (void*)dlsymAddr,
+               (dlsymAddr - address),
+               info.dli_sname
+               );
+      }
       std::string sname(info.dli_sname);
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
@@ -1384,10 +1412,18 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
       size_t gpindex = ii;
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
-      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,myName);
+      stringstream ss;
+#ifdef _TARGET_OS_DARWIN
+      ss << "_";
+#endif
+      ss << myName;
+      printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, RTLD_DEFAULT, ss.str().c_str());
+      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,ss.str().c_str());
       if (!dlsymStart) {
-        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
+        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
         abort();
+      } else {
+        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
       }
       this->_Library._GroupedPointers[gpindex]._address = dlsymStart;
 #if 0
