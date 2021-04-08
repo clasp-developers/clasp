@@ -373,7 +373,7 @@
   (if (member where *features*)
       (progn
         (let ((llt (get-or-declare-function-or-error *the-module* "lowLevelTrace")))
-          (llvm-sys:create-call-array-ref *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
+          (llvm-sys:create-call-function-pointer *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
         (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
       nil))
 
@@ -1349,7 +1349,7 @@ and then the irbuilder-alloca, irbuilder-body."
 (defun irc-create-call-wft (function-type entry-point args &optional (label ""))
   ;;(throw-if-mismatched-arguments function-name args)
   (if *debug-create-call* (bformat t "irc-create-call-wft function-type: %s entry-point: %s args: %s%N" function-type entry-point args ))
-  (llvm-sys:create-call-array-ref *irbuilder* function-type entry-point args label nil))
+  (llvm-sys:create-call-function-pointer *irbuilder* function-type entry-point args label nil))
 
 (defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
