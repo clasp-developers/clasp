@@ -1279,13 +1279,17 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       }
       std::string saveName(info.dli_sname);
       uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
+      Dl_info info2;
+      int ret2 = dladdr( (void*)address, &info2 );
       if (!dlsymAddr) {
-        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
+        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n     error: %s\n",
                __FILE__, __LINE__, __FUNCTION__,
                ii, this->_Library._GroupedPointers.size(),
                (void*)address,
-               saveName.c_str()
+               saveName.c_str(),
+               dlerror()
                );
+        printf("        library: %s  base: %p\n", info.dli_fname, info.dli_fbase );
         // abort();
       } else if ( (address-dlsymAddr) > 64 ) {
         printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1305,6 +1309,12 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (address - dlsymAddr),
                saveName.c_str()
                );
+      }
+      if (ret2 == 0 ) {
+        printf("%s:%d:%s  ret2 is zero\n", __FILE__, __LINE__, __FUNCTION__ );
+      }
+      if (strcmp(info.dli_sname,info2.dli_sname) !=0 ) {
+        printf("%s:%d:%s   Symbols returned by dladdr first and second time don't match\n");
       }
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
