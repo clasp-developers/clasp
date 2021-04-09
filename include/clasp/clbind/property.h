@@ -45,9 +45,9 @@ struct memberpointertraits<M C::*> {
 };
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class GetterMethoid : public core::Closure_O {
+class TEMPLATED_FUNCTION_GetterMethoid : public core::Closure_O {
 public:
-  typedef GetterMethoid<GetterPolicies,OT,VariablePtrType> MyType;
+  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,VariablePtrType> MyType;
   typedef core::Closure_O TemplatedBase;
 
 private:
@@ -59,7 +59,7 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : core::Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   inline static LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -72,9 +72,9 @@ public:
 
 namespace clbind {
 template <typename GetterPolicies, typename OT, typename MemberType>
-class GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
+class TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::Closure_O {
  public:
-  typedef GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*)> MyType;
+  typedef TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies,OT,MemberType *const(OT::*)> MyType;
   typedef core::Closure_O TemplatedBase;
 
 private:
@@ -83,7 +83,7 @@ private:
   typedef MemberType *const(OT::*VariablePtrType);
   VariablePtrType _MemberPtr;
 public:
-  GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, VariablePtrType p) : Closure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), _MemberPtr(p){};
   static inline LCC_RETURN LISP_CALLING_CONVENTION() {
     MyType* closure = gctools::untag_general<MyType*>((MyType*)lcc_closure);
     INCREMENT_FUNCTION_CALL_COUNTER(closure);
@@ -95,9 +95,9 @@ public:
 };
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class gctools::GCStamp<clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_GetterMethoid<GetterPolicies, OT, VariablePtrType>::TemplatedBase>::Stamp;
 };
 
 

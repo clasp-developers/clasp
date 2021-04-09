@@ -75,16 +75,16 @@ namespace core {
 //#include <clasp/core/wrappers_functoids.h>
 
 template <int DispatchOn, typename Policies, typename FunctionPtrType>
-class VariadicMethoid : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicMethoid : public BuiltinClosure_O {
 public:
   typedef BuiltinClosure_O TemplatedBase;
   size_t templatedSizeof() const { return sizeof(*this); };
 };
 
 template <int DispatchOn, typename RT, typename OT, typename... ARGS>
-class VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...)> : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...)> : public BuiltinClosure_O {
 public:
-  typedef VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) > MyType;
+  typedef TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) > MyType;
   typedef BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "VariadicMethoid";};
@@ -92,7 +92,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -119,10 +119,10 @@ public:
 
 
 template <int DispatchOn, typename RT, typename OT, typename... ARGS>
-class VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...) const>
+class TEMPLATED_FUNCTION_VariadicMethoid <DispatchOn, core::policy::clasp, RT(OT::*)(ARGS...) const>
 : public BuiltinClosure_O {
 public:
-  typedef VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) const > MyType;
+  typedef TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, core::policy::clasp,RT(OT::*)(ARGS...) const > MyType;
   typedef BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "VariadicMethoid";};
@@ -130,7 +130,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_VariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -181,7 +181,7 @@ namespace core {
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
    Symbol_sp symbol = _lisp->intern(name, packageName);
-   using VariadicType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+   using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
    GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point);
    BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
@@ -192,7 +192,7 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
   template <typename RT, typename... ARGS>
 void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = _lisp->intern(name, packageName);
-  using VariadicType = clbind::VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
+  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<RT(*)(ARGS...),core::policy::clasp>;
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point);
   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint,fp));
   lisp_defun_setf(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, sizeof...(ARGS));
@@ -204,9 +204,9 @@ void wrap_function_setf(const string &packageName, const string &name, RT (*fp)(
 };
 
 template <int DispatchOn, typename Policies, typename FunctionPtrType>
-class gctools::GCStamp<core::VariadicMethoid<DispatchOn, Policies, FunctionPtrType>> {
+class gctools::GCStamp<core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::VariadicMethoid<DispatchOn, Policies, FunctionPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_VariadicMethoid<DispatchOn, Policies, FunctionPtrType>::TemplatedBase>::Stamp;
 };
 
 namespace core {
@@ -223,7 +223,7 @@ class Function_O;
 // basically like wrap_function.
 inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(List_sp, T_sp env), const string &arguments, const string &declares, const string &docstring, const string &sourcePathname, int lineno) {
   Symbol_sp symbol = lispify_intern(name, packageName);
-  using VariadicType = clbind::VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp>;
+  using VariadicType = clbind::TEMPLATED_FUNCTION_VariadicFunctor<T_mv(*)(List_sp,T_sp),core::policy::clasp>;
   GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription( symbol, VariadicType::entry_point );
   BuiltinClosure_sp f = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring);
@@ -309,7 +309,7 @@ public:
       pkgName = symbol_packageName(this->_ClassSymbol);
     }
     Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-    using VariadicType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
@@ -330,7 +330,7 @@ public:
       pkgName = symbol_packageName(this->_ClassSymbol);
     }
     Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
-    using VariadicType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);

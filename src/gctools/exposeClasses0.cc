@@ -90,8 +90,8 @@ NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_metaclass(gctools::Unshif
 template <class TheClass>
 NOINLINE  gc::smart_ptr<core::Instance_O> allocate_one_class(core::Instance_sp metaClass)
 {
-  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::BuiltInObjectCreator<TheClass>::entry_point);
-  core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
+  core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(_Nil<core::T_O>(),core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>::entry_point);
+  core::Creator_sp cb = gc::As<core::Creator_sp>(gctools::GC<core::TEMPLATED_FUNCTION_BuiltInObjectCreator<TheClass>>::allocate(entryPoint));
   TheClass::set_static_creator(cb);
   gc::smart_ptr<core::Instance_O> class_val = core::Instance_O::createClassUncollectable(TheClass::static_ValueStampWtagMtag,metaClass,REF_CLASS_NUMBER_OF_SLOTS_IN_STANDARD_CLASS,cb);
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,TheClass::static_classSymbol());

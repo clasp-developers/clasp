@@ -81,7 +81,7 @@ private:
 namespace clbind {
 
 template <typename FunctionPtrType, typename Policies>
-class VariadicFunctor : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor : public core::BuiltinClosure_O {
 public:
   typedef core::BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -95,9 +95,9 @@ public:
 namespace clbind {
 
 template <typename Pols , typename RT  ,typename...ARGS>
-class VariadicFunctor< RT(*)(ARGS...), Pols> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), Pols> : public core::BuiltinClosure_O {
 public:
-  typedef VariadicFunctor < RT(*)(ARGS...), Pols> MyType;
+  typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), Pols> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -107,7 +107,7 @@ public:
   
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-  VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
+  TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr)
     : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point))
     , fptr(ptr) {
     this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
@@ -143,9 +143,9 @@ public:
 
 
   template <typename RT  ,typename...ARGS>
-    class VariadicFunctor< RT(*)(ARGS...), core::policy::clasp> : public core::BuiltinClosure_O {
+    class TEMPLATED_FUNCTION_VariadicFunctor< RT(*)(ARGS...), core::policy::clasp> : public core::BuiltinClosure_O {
 public:
-    typedef VariadicFunctor < RT(*)(ARGS...), core::policy::clasp> MyType;
+    typedef TEMPLATED_FUNCTION_VariadicFunctor < RT(*)(ARGS...), core::policy::clasp> MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   typedef RT(*FuncType)(ARGS...);
@@ -153,7 +153,7 @@ public:
 public:
   virtual const char* describe() const { return "VariadicFunctor"; };
   enum { NumParams = sizeof...(ARGS)};
-    VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {
+    TEMPLATED_FUNCTION_VariadicFunctor(core::GlobalEntryPoint_sp ep, FuncType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,entry_point)), fptr(ptr) {
         this->validateCodePointer((void**)&this->fptr,sizeof(this->fptr));
     };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -193,9 +193,9 @@ namespace clbind {
 };
 
 template <typename FunctionPtrType, typename Policies>
-class gctools::GCStamp<clbind::VariadicFunctor<FunctionPtrType, Policies>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::VariadicFunctor<FunctionPtrType, Policies>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_VariadicFunctor<FunctionPtrType, Policies>::TemplatedBase>::Stamp;
 };
 
 namespace clbind {
@@ -224,7 +224,7 @@ struct function_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp symbol = core::lispify_intern(m_name, core::lisp_currentPackageName());
-    using VariadicType = VariadicFunctor<FunctionPointerType, Policies>;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicFunctor<FunctionPointerType, Policies>;
     core::GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::entry_point);
     core::BuiltinClosure_sp functoid = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,functionPtr));
     core::lisp_defun(symbol, core::lisp_currentPackageName(), functoid, m_lambdalist, m_declares, m_docstring, "=external=", 0, (CountFunctionArguments<FunctionPointerType>::value), GatherPureOutValues<Policies, -1>::gather());

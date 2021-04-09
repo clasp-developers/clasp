@@ -1715,10 +1715,16 @@ void maybe_test_function_pointer_dladdr_dlsym(const std::string& name, void* fun
 
 
 namespace core {
-CL_DEFUN void core__mangledFunctionNames() {
-  printf("# Dumping %lu mangled function names\n", global_mangledFunctionNames.size());
+CL_LAMBDA(&optional (stream-designator t));
+CL_DEFUN void core__mangledFunctionNames(T_sp stream_designator) {
+  T_sp stream = coerce::outputStreamDesignator(stream_designator);
+  write_bf_stream(BF("# Dumping %lu mangled function names\n" ) % global_mangledFunctionNames.size(), stream);
   for ( size_t ii=0; ii<::global_mangledFunctionNames.size(); ++ii ) {
-    printf("%s\n", ::global_mangledFunctionNames[ii].c_str() );
+#ifdef _TARGET_OS_DARWIN
+    clasp_write_char('_',stream);
+#endif
+    clasp_write_string(::global_mangledFunctionNames[ii],stream);
+    clasp_terpri(stream);
   }
 };
 

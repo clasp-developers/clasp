@@ -1262,6 +1262,9 @@ struct SaveSymbolCallback : public core::SymbolCallback {
   void generateSymbolTable() {
     printf("%s:%d:%s  generateSymbolTable for library: %s\n", __FILE__, __LINE__, __FUNCTION__, this->_Library._Name.c_str() );
     for (ssize_t ii = this->_Library._GroupedPointers.size()-1; ii>=0; --ii ) {
+      if (ii%1000==0) {
+        printf("%lu remaining pointers to dladdr\n", ii );
+      }
       Dl_info info;
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       int ret = dladdr( (void*)address, &info );
@@ -1279,17 +1282,13 @@ struct SaveSymbolCallback : public core::SymbolCallback {
       }
       std::string saveName(info.dli_sname);
       uintptr_t dlsymAddr = (uintptr_t)dlsym(RTLD_DEFAULT,saveName.c_str() );
-      Dl_info info2;
-      int ret2 = dladdr( (void*)address, &info2 );
       if (!dlsymAddr) {
-        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n     error: %s\n",
+        printf("%s:%d:%s FAIL! address %lu/%lu save the address %p resolved to the symbol %s but that could not be dlsym'd back to an address\n",
                __FILE__, __LINE__, __FUNCTION__,
                ii, this->_Library._GroupedPointers.size(),
                (void*)address,
-               saveName.c_str(),
-               dlerror()
+               saveName.c_str()
                );
-        printf("        library: %s  base: %p\n", info.dli_fname, info.dli_fbase );
         // abort();
       } else if ( (address-dlsymAddr) > 64 ) {
         printf("%s:%d:%s OFFSET-FAIL! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
@@ -1301,6 +1300,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                saveName.c_str()
                );
       } else {
+#if 0
         printf("%s:%d:%s PASS! Address %lu/%lu save the address %p resolved to the symbol and then dlsym'd back to %p delta: %lu symbol: %s\n",
                __FILE__, __LINE__, __FUNCTION__,
                ii, this->_Library._GroupedPointers.size(),
@@ -1309,21 +1309,16 @@ struct SaveSymbolCallback : public core::SymbolCallback {
                (address - dlsymAddr),
                saveName.c_str()
                );
-      }
-      if (ret2 == 0 ) {
-        printf("%s:%d:%s  ret2 is zero\n", __FILE__, __LINE__, __FUNCTION__ );
-      }
-      if (strcmp(info.dli_sname,info2.dli_sname) !=0 ) {
-        printf("%s:%d:%s   Symbols returned by dladdr first and second time don't match\n");
+#endif
       }
       uint addressOffset = (address - (uintptr_t)info.dli_saddr);
       this->_Library._SymbolInfo[ii] = SymbolInfo(/*Debug*/address, addressOffset,
                                                   (uint)saveName.size(),
                                                   this->_Library._SymbolBuffer.size() );
-        std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
-        this->_Library._SymbolBuffer.push_back('\0');
-      }
+      std::copy( saveName.begin(), saveName.end(), std::back_inserter(this->_Library._SymbolBuffer) );
+      this->_Library._SymbolBuffer.push_back('\0');
     }
+  }
 };
 
 
@@ -1412,18 +1407,12 @@ struct LoadSymbolCallback : public core::SymbolCallback {
       size_t symbolOffset = this->_Library._SymbolInfo[ii]._SymbolOffset;
       size_t gpindex = ii;
       const char* myName = (const char*)&this->_Library._SymbolBuffer[symbolOffset];
-      stringstream ss;
-#ifdef _TARGET_OS_DARWIN
-      ss << "_";
-#endif
-      ss << myName;
-      printf("%s:%d:%s  handle = %p  symbol = |%s|\n", __FILE__, __LINE__, __FUNCTION__, RTLD_DEFAULT, ss.str().c_str());
-      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,ss.str().c_str());
+      uintptr_t dlsymStart = (uintptr_t)dlsym(RTLD_DEFAULT,myName);
       if (!dlsymStart) {
-        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ss.str().c_str() );
+        printf("%s:%d:%s Could not resolve address for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, myName );
         abort();
       } else {
-        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
+//        printf("%s:%d:%s Resolved address[%lu] %p for symbol %s\n", __FILE__, __LINE__, __FUNCTION__, ii, (void*)dlsymStart, ss.str().c_str() );
       }
       this->_Library._GroupedPointers[gpindex]._address = dlsymStart;
 #if 0
@@ -1450,12 +1439,17 @@ void prepareRelocationTableForSave(Fixup* fixup) {
   };
   OrderByAddress orderer;
   for ( size_t idx = 0; idx< fixup->_libraries.size(); idx++ ) {
-    sort::quickSort(fixup->_libraries[idx]._Pointers.begin(), fixup->_libraries[idx]._Pointers.end(), orderer );
-    printf("%s:%d:%s What do we do at this point with the %lu fixup->_libraries[%lu]._Pointers\n", __FILE__, __LINE__, __FUNCTION__, fixup->_libraries[idx]._Pointers.size(), idx );
+    auto pointersBegin = fixup->_libraries[idx]._Pointers.begin();
+    auto pointersEnd = fixup->_libraries[idx]._Pointers.end();
+    if ( pointersBegin < pointersEnd ) {
+      sort::quickSortFirstCheckOrder( pointersBegin, pointersEnd, orderer);
+    }
   }
   for ( size_t idx=0; idx<fixup->_libraries.size(); idx++ ) {
     int groupPointerIdx = -1;
     ISLLibrary& curLib = fixup->_libraries[idx];
+    printf("%s:%d:%s  Dealing with library: %s\n", __FILE__, __LINE__, __FUNCTION__, curLib._Name.c_str() );
+    printf("%s:%d:%s  Number of pointers before extracting unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._Pointers.size() );
     for ( size_t ii=0; ii<curLib._Pointers.size(); ii++ ) {
       if (groupPointerIdx < 0 || curLib._Pointers[ii]._address != curLib._Pointers[ii-1]._address ) {
         curLib._GroupedPointers.emplace_back( curLib._Pointers[ii]._address );
@@ -1464,6 +1458,7 @@ void prepareRelocationTableForSave(Fixup* fixup) {
     // Now encode the relocation
       *curLib._Pointers[ii]._ptrptr = encodeRelocation(*(void**)curLib._Pointers[ii]._ptrptr, idx, groupPointerIdx );
     }
+    printf("%s:%d:%s  Number of unique pointers: %lu\n", __FILE__, __LINE__, __FUNCTION__, curLib._GroupedPointers.size() );
     SaveSymbolCallback thing(curLib);
     curLib._SymbolInfo.resize(curLib._GroupedPointers.size(),SymbolInfo());
 #if 0

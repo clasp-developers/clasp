@@ -309,7 +309,7 @@ extern core::globals_t* globals_;
 
 namespace core {
 
-  class Lisp_O {
+class Lisp_O {
   friend T_mv core__file_scope(T_sp sourceFile);
   friend gctools::Layout_code* gctools::get_stamp_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
@@ -898,9 +898,8 @@ public:
   void gdb_untrace_by_name(const char *name);
 
   explicit Lisp_O();
-  virtual ~Lisp_O(){};
-};
-
+  virtual ~Lisp_O();
+} ;
 
  /*! Use RAII to safely allocate a buffer */
  

@@ -232,6 +232,8 @@ Lisp_O::Lisp_O() : _Booted(false),
 //  this->_Roots._Bindings.reserve(1024); // moved to Lisp_O::initialize()
 }
 
+Lisp_O::~Lisp_O() {};
+
 void Lisp_O::shutdownLispEnvironment() {
   this->_Booted = false;
   if (globals_->_DebugStream != NULL) globals_->_DebugStream->beginNode(DEBUG_TOPLEVEL);

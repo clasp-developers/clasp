@@ -42,10 +42,10 @@ THE SOFTWARE.
 namespace core {
 
 template <typename Policies, typename OT, typename MethodPtrType>
-class IndirectVariadicMethoid : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectMethoid : public BuiltinClosure_O {
   typedef BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual const char *describe() const { return "IndirectVariadicMethoid"; };
+  virtual const char *describe() const { return "IndirectMethoid"; };
 };
 };
 
@@ -54,9 +54,9 @@ namespace core {
 //#include <clasp/core/external_wrappers_indirect_methoids.h>
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class IndirectVariadicMethoid <Policies, OT, RT(OT::ExternalType::*)(ARGS...)> : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectMethoid <Policies, OT, RT(OT::ExternalType::*)(ARGS...)> : public BuiltinClosure_O {
 public:
-  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::ExternalType::*)(ARGS...) > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectMethoid<Policies,OT,RT(OT::ExternalType::*)(ARGS...) > MyType;
   typedef BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -64,7 +64,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_IndirectMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -91,9 +91,9 @@ public:
 };
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class IndirectVariadicMethoid <Policies, OT, RT(OT::ExternalType::*)(ARGS...) const> : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectMethoid <Policies, OT, RT(OT::ExternalType::*)(ARGS...) const> : public BuiltinClosure_O {
 public:
-  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::ExternalType::*)(ARGS...) const > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectMethoid<Policies,OT,RT(OT::ExternalType::*)(ARGS...) const > MyType;
   typedef BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -101,7 +101,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_IndirectMethoid(GlobalEntryPoint_sp fdesc, MethodType ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -136,7 +136,7 @@ namespace core {
 #endif
 namespace core {
 template <class D, class C>
-class GetterMethoid : public BuiltinClosure_O {
+class TEMPLATED_FUNCTION_GetterMethoid : public BuiltinClosure_O {
 public:
   typedef BuiltinClosure_O TemplatedBase;
 
@@ -144,7 +144,7 @@ public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
-  GetterMethoid(core::GlobalEntryPoint_sp fdesc, MemPtr ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), mptr(ptr){
+  TEMPLATED_FUNCTION_GetterMethoid(core::GlobalEntryPoint_sp fdesc, MemPtr ptr) : BuiltinClosure_O(ENSURE_ENTRY_POINT(fdesc,entry_point)), mptr(ptr){
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -158,9 +158,9 @@ public:
 };
 
 template <typename Policies, typename OT, typename MethodPtrType>
-class gctools::GCStamp<core::IndirectVariadicMethoid<Policies, OT, MethodPtrType>> {
+class gctools::GCStamp<core::TEMPLATED_FUNCTION_IndirectMethoid<Policies, OT, MethodPtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::IndirectVariadicMethoid<Policies, OT, MethodPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename core::TEMPLATED_FUNCTION_IndirectMethoid<Policies, OT, MethodPtrType>::TemplatedBase>::Stamp;
 };
 
 namespace core {
@@ -222,7 +222,7 @@ public:
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    using VariadicMethoidType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
+    using VariadicMethoidType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...)>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicMethoidType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gc::GC<VariadicMethoidType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
@@ -235,7 +235,7 @@ public:
                       string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    using VariadicType = VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
+    using VariadicType = TEMPLATED_FUNCTION_VariadicMethoid<0, core::policy::clasp, RT (OT::*)(ARGS...) const>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
@@ -248,7 +248,7 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    using VariadicType = IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...)>;
+    using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...)>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
@@ -261,7 +261,7 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     maybe_test_function_pointer_dladdr_dlsym(name,*(void**)&mp,sizeof(mp));
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    using VariadicType = IndirectVariadicMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...) const>;
+    using VariadicType = TEMPLATED_FUNCTION_IndirectMethoid<clbind::policies<>, OT, RT (OT::ExternalType::*)(ARGS...) const>;
     GlobalEntryPoint_sp entryPoint = makeGlobalEntryPointAndFunctionDescription(symbol,VariadicType::method_entry_point);
     BuiltinClosure_sp m = gc::As_unsafe<BuiltinClosure_sp>(gctools::GC<VariadicType>::allocate(entryPoint, mp));
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, true, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);

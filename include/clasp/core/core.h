@@ -1133,6 +1133,9 @@ namespace core {
   extern size_t debug_InvocationHistoryFrame;
 };
 
+
+extern void* _ZTVN4core6Lisp_OE;
+
 #define CLASP_DEFAULT_CTOR
 
 #endif

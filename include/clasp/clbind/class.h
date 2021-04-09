@@ -396,7 +396,7 @@ struct memfun_registration : registration {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(m_name, symbol_packageName(classSymbol));
-    using VariadicType = IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
+    using VariadicType = TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies, Class, MethodPointerType>;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::method_entry_point);
     core::BuiltinClosure_sp ffunc = gc::As<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint,methodPtr));
     lisp_defineSingleDispatchMethod(sym, classSymbol, ffunc, 0, true,
@@ -580,7 +580,7 @@ struct property_registration : registration {
     //                printf("%p\n", i);
      core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
      core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-     using VariadicGetterType = GetterMethoid<reg::null_type, Class, Get>;
+     using VariadicGetterType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
      core::FunctionDescription_sp fdesc = core::makeFunctionDescription(sym,VariadicGetterType::entry_point);
      auto raw_getter = gc::GC<VariadicGetterType>::allocate(fdesc, get);
      core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(raw_getter);
@@ -625,11 +625,11 @@ struct property_registration : registration {
   void register_() const {
     LOG_SCOPE(("%s:%d register_ %s/%s\n", __FILE__, __LINE__, this->kind().c_str(), this->name().c_str()));
     const string n(m_name);
-    //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
+    //                int*** i = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type,Class,Get>(n,get);
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    using VariadicType = GetterMethoid<reg::null_type, Class, Get>;
+    using VariadicType = TEMPLATED_FUNCTION_GetterMethoid<reg::null_type, Class, Get>;
     core::GlobalEntryPoint_sp entryPoint = core::makeGlobalEntryPointAndFunctionDescription(sym,VariadicType::entry_point);
     core::BuiltinClosure_sp getter = gc::As_unsafe<core::BuiltinClosure_sp>(gc::GC<VariadicType>::allocate(entryPoint, get));
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, true, m_arguments, m_declares, m_docstring, true, 1);

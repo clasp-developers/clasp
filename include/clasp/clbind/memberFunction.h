@@ -33,7 +33,7 @@ THE SOFTWARE.
 namespace clbind {
 
 template <typename Policies, typename OT, typename MethodPtrType>
-class IndirectVariadicMethoid : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid : public core::BuiltinClosure_O {
   typedef BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "IndirectVariadicMethoid"; };
@@ -43,9 +43,9 @@ class IndirectVariadicMethoid : public core::BuiltinClosure_O {
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...)> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...)> : public core::BuiltinClosure_O {
 public:
-  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -53,7 +53,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -79,9 +79,9 @@ public:
 };
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...) const> : public core::BuiltinClosure_O {
+class TEMPLATED_FUNCTION_IndirectVariadicMethoid <Policies, OT, RT(OT::*)(ARGS...) const> : public core::BuiltinClosure_O {
 public:
-  typedef IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) const > MyType;
+  typedef TEMPLATED_FUNCTION_IndirectVariadicMethoid<Policies,OT,RT(OT::*)(ARGS...) const > MyType;
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
   virtual const char* describe() const {return "IndirectVariadicMethoid";};
@@ -89,7 +89,7 @@ public:
   MethodType mptr;
 public:
   enum { NumParams = sizeof...(ARGS)+1 };
-  IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
+  TEMPLATED_FUNCTION_IndirectVariadicMethoid(core::GlobalEntryPoint_sp ep, MethodType ptr) : core::BuiltinClosure_O(ENSURE_ENTRY_POINT(ep,&MyType::method_entry_point)), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr,sizeof(this->mptr));
   };
   virtual size_t templatedSizeof() const { return sizeof(*this);};
@@ -118,9 +118,9 @@ public:
 
 
 template <typename Pols, typename OT, typename MethodPtrType>
-class gctools::GCStamp<clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
+class gctools::GCStamp<clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid<Pols, OT, MethodPtrType>> {
 public:
-  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Stamp;
+  static gctools::GCStampEnum const StampWtag = gctools::GCStamp<typename clbind::TEMPLATED_FUNCTION_IndirectVariadicMethoid<Pols, OT, MethodPtrType>::TemplatedBase>::Stamp;
 };
 
 #endif
