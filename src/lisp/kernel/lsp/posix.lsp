@@ -84,15 +84,10 @@
 (defparameter *signal-to-function* nil)
 (defparameter *cache-signal-alist* nil)
 
-(defun get-signal-alist ()
-  (if *cache-signal-alist*
-      *cache-signal-alist*
-      (setq *cache-signal-alist* (core:signal-code-alist))))
-
 ;;; For Signal see https://pubs.opengroup.org/onlinepubs/009695399/basedefs/signal.h.html
 (defun external-to-int-signal (signal)
-  (let* ((signal-alist (get-signal-alist))
-         (found (assoc signal signal-alist)))
+  (let* ((signal-alist (if *cache-signal-alist* *cache-signal-alist* (setq *cache-signal-alist* (core:signal-code-alist))))
+         (found (Assoc signal signal-alist)))
     (if found
         (cdr found)
         nil)))
@@ -113,11 +108,4 @@
         (funcall function signal-as-fixnum)
         (error 'ext:unix-signal-received :code signal-as-fixnum))))
 
-(defun get-all-blocked-signals ()
-  (let ((result nil))
-    (dolist (pair (get-signal-alist))
-      (ecase (is-signal-blocked (cdr pair))
-        (1 (push (first pair) result))
-        (0)
-        (-1 (warn "is-signal-blockedp failed for ~a~%" (cdr pair)))))
-    (reverse result)))
+
