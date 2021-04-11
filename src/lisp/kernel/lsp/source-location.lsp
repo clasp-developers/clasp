@@ -29,6 +29,7 @@
               (src-name (pathname-name src-pathname))
               (src-type (pathname-type src-pathname))
               (filepos pos))
+          (declare (ignore src-name src-type))
           (let ((pn (if (eq (car src-directory) :relative)
                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                         src-pathname)))

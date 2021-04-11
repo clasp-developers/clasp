@@ -233,7 +233,7 @@ and the pathname of the source file - this will also be used as the module initi
                                  (optimize t)
                                  (optimize-level *optimization-level*)
                                  external-format)
-  (declare (ignore output-type))
+  (declare (ignore output-type type))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.

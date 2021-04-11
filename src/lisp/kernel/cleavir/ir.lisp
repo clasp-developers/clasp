@@ -204,6 +204,7 @@ And convert everything to JIT constants."
                              label)))
 
 (defun unsafe-foreign-call (call-or-invoke foreign-types foreign-name args abi &key (label ""))
+  (declare (ignore call-or-invoke abi label))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
                               (%intrinsic-invoke-if-landing-pad-or-call
@@ -224,7 +225,7 @@ And convert everything to JIT constants."
           (%intrinsic-invoke-if-landing-pad-or-call (clasp-ffi::to-translator-name (first foreign-types)) (list foreign-result))))))
 
 (defun unsafe-foreign-call-pointer (call-or-invoke foreign-types pointer args abi)
-  (declare (ignore abi))
+  (declare (ignore call-or-invoke abi))
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (type arg)
                               (%intrinsic-invoke-if-landing-pad-or-call

@@ -893,6 +893,7 @@ as a STRUCTURE doc and can be retrieved by (documentation 'NAME 'structure)."
       (parse-defstruct-options name&opts)
     (let ((slot-descriptions slots) name-offset documentation
           standard-constructor)
+      (declare (ignorable standard-constructor))
       ;; Skip the documentation string.
       (when (and (not (endp slot-descriptions))
                  (stringp (car slot-descriptions)))
